@@ -80,18 +80,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-/*import javax.xml.xpath.XPath;   //requires java 1.5
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-*/
 import org.xml.sax.XMLReader;
-//import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.XMLReaderFactory;
-//import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
@@ -101,10 +92,13 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import ucar.nc2.*;
 import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.point.standard.PointDatasetStandardFactory;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
+import ucar.nc2.write.NetcdfFileFormat;
+import ucar.nc2.write.NetcdfFormatWriter;
 import ucar.ma2.*;
 
 /** The Java DAP classes.  */
@@ -6384,7 +6378,7 @@ Dataset {
             //fill the table
             clear();
             appendNcRows(loadVariables, 0, lastRow);
-            NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
+            NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
             for (int col = 0; col < loadVariables.length; col++) {
                 NcHelper.getVariableAttributes(loadVariables[col], columnAttributes(col));
 
@@ -6443,7 +6437,7 @@ Dataset {
         try {
             //fill the table
             clear();
-            NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
+            NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
             for (int col = 0; col < sourceColumnNames.length; col++) {
                 Attributes atts = new Attributes();
                 addColumn(col, sourceColumnNames[col], 
@@ -6669,11 +6663,12 @@ Dataset {
             clear();
 
             //load the variables
-            Dimension dimensions[] = new Dimension[4];  //all the 4D arrays are 0=t,1=z,2=y,3=x
-            String dimensionNames[] = new String[4];
+            Group group              = ncFile.getRootGroup();
+            Dimension dimensions[]   = new Dimension[4];  //all the 4D arrays are 0=t,1=z,2=y,3=x
+            String dimensionNames[]  = new String[4];
             Variable axisVariables[] = new Variable[4];
-            PrimitiveArray axisPA[] = new PrimitiveArray[4];
-            Attributes axisAtts[]   = new Attributes[4];
+            PrimitiveArray axisPA[]  = new PrimitiveArray[4];
+            Attributes axisAtts[]    = new Attributes[4];
             int xLength, yLength, zLength, tLength;
             boolean needToSetUpAxes = true;
             for (int v = 0; v < loadVariables.length; v++) {
@@ -6688,11 +6683,11 @@ Dataset {
                     List dimList = variable.getDimensions();
                     if (variable.getDataType() != DataType.CHAR && dimList.size() != 4)
                         throw new SimpleException(errorInMethod + 
-                            "nDimensions not 4 for numeric variable: " + variable.getName());
+                            "nDimensions not 4 for numeric variable: " + variable.getFullName());
 
                     if (variable.getDataType() == DataType.CHAR && dimList.size() != 5)
                         throw new SimpleException(errorInMethod + 
-                            "nDimensions not 5 for char variable: " + variable.getName());
+                            "nDimensions not 5 for char variable: " + variable.getFullName());
                         
                     for (int i = 0; i < 4; i++) {
                         dimensions[i] = (Dimension)dimList.get(i);
@@ -6747,7 +6742,7 @@ Dataset {
                 //String2.log("Table.read4DNc v=" + v + ": " + pa);
 
                 //store data
-                addColumn(variable.getName(), pa);
+                addColumn(variable.getFullName(), pa);
                 NcHelper.getVariableAttributes(variable, columnAttributes(nColumns() - 1));
 
                 //does this var point to the pseudo-data var with CF grid_mapping (projection) information?
@@ -6774,7 +6769,7 @@ Dataset {
             }
 
             //load the global metadata
-            NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
             if (gridMappingAtts != null)
                 globalAttributes.add(gridMappingAtts);
 
@@ -6854,7 +6849,7 @@ Dataset {
         StringArray varsNotFound = new StringArray();
         try {
             //load the global metadata
-            NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
 
             //load the variables
             Variable loadVariables[] = null;
@@ -6927,7 +6922,7 @@ Dataset {
 
                 //is it an axis variable?    
                 if (!isChar && variable.getRank() == 1 &&
-                    variable.getDimension(0).getFullName().equals(variable.getFullName())) { //varName = dimName
+                    variable.getDimension(0).getName().equals(variable.getFullName())) { //varName = dimName
                     if (debugMode) String2.log("  skipping axisVariable");
                     continue;
                 }
@@ -6944,7 +6939,7 @@ Dataset {
                     List axisList = variable.getDimensions();                        
                     for (int a = 0; a < nAxes; a++) {
                         Dimension dimension = (Dimension)axisList.get(a);
-                        String axisName = dimension.getFullName();
+                        String axisName = dimension.getName();
                         axisLengths[a] = dimension.getLength();
                         if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
                         Attributes atts = new Attributes();
@@ -7025,7 +7020,7 @@ Dataset {
                         variable.getFullName());
                 }
                 for (int a = 0; a < nAxes; a++) 
-                    Test.ensureEqual(variable.getDimension(a).getFullName(), getColumnName(a),
+                    Test.ensureEqual(variable.getDimension(a).getName(), getColumnName(a),
                         errorInMethod + "Unexpected axis#" + a + 
                         " for variable=" + variable.getFullName());
 
@@ -7086,7 +7081,7 @@ Dataset {
 
                     for (int a = 0; a < nAxes; a++) {
                         Dimension dimension = (Dimension)dimensions.get(a);
-                        String axisName = dimension.getFullName();
+                        String axisName = dimension.getName();
                         Attributes atts = new Attributes();
                         axisLengths[a] = dimension.getLength();
                         if (debugMode) String2.log("  found axisName=" + axisName + " size=" + axisLengths[a]);
@@ -7311,8 +7306,8 @@ Dataset {
         try {
 
             //load the global metadata
-            if (getMetadata)
-                NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            if (getMetadata) 
+                NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
 
             //treatDimensionsAs
             Dimension tDimsAs[][] = null;
@@ -7396,7 +7391,7 @@ Dataset {
                                 }
                                 if (loadDims.indexOf(tDim) < 0) {  //possibly different tDim not yet in the list
                                     loadDims.add(tDim);
-                                    loadDimNames.add(tDim.getFullName());
+                                    loadDimNames.add(tDim.getName());
                                 }   
                             }
                         }
@@ -7430,7 +7425,7 @@ Dataset {
                         for (int d = 0; d < ntDims; d++) {
                             Dimension dim = tDims.get(d);
                             loadDims.add(dim);
-                            loadDimNames.add(dim.getFullName());
+                            loadDimNames.add(dim.getName());
                         }
                     } catch (Exception e) {
                         //FUTURE: read all static variables
@@ -7598,11 +7593,11 @@ Dataset {
                             }
                         }
                         loadDims.set(d, dim); //perhaps change loadDims to different order
-                        loadDimNames.set(d, dim.getFullName());
+                        loadDimNames.set(d, dim.getName());
                         shape[d] = dim.getLength();
                         if (shape[d] == 0) {
                             if (verbose) String2.log(warningInMethod +
-                                "Returning an empty table because dim=" + dim.getFullName() + 
+                                "Returning an empty table because dim=" + dim.getName() + 
                                 "'s length=0! " +
                                 "time=" + (System.currentTimeMillis() - time));
                             return;
@@ -7682,7 +7677,7 @@ Dataset {
                     shape[d] = dim.getLength();
                     if (shape[d] == 0) {
                         if (verbose) String2.log(warningInMethod +
-                            "Returning an empty table because dim=" + dim.getFullName() + 
+                            "Returning an empty table because dim=" + dim.getName() + 
                             "'s length=0! " +
                             "time=" + (System.currentTimeMillis() - time));
                         return;
@@ -9826,7 +9821,9 @@ Dataset {
 
             //Get featureType from globalAttributes.   
             //Match it to values in CF standard table 9.1.
-            NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+
+            Group rootGroup = ncFile.getRootGroup();
+            NcHelper.getGroupAttributes(rootGroup, globalAttributes());
             String featureType = globalAttributes().getString("featureType");
             if (featureType == null) //cdm allows these aliases
                 featureType = globalAttributes().getString("CF:featureType");
@@ -9907,11 +9904,11 @@ Dataset {
             }
 
             //find all dimensions
-            List dimsList = ncFile.getDimensions();
+            List dimsList = rootGroup.getDimensions();
             int nDims = dimsList.size();
             String dimNames[] = new String[nDims];
             for (int d = 0; d < nDims; d++) {
-                dimNames[d] = ((Dimension)dimsList.get(d)).getFullName(); //may be null
+                dimNames[d] = ((Dimension)dimsList.get(d)).getName(); //may be null
                 if (dimNames[d] == null)
                     dimNames[d] = "";
             } 
@@ -10039,7 +10036,7 @@ Dataset {
                     //is this sample_dimension used (and thus, required) by any of the loadVars?
                     for (int lvi = 0; lvi < loadVariableNames.size(); lvi++) {
                         Variable var = ncFile.findVariable(loadVariableNames.get(lvi)); //won't be null
-                        if (var.getRank() > 0 && sd.equals(var.getDimension(0).getFullName())) {
+                        if (var.getRank() > 0 && sd.equals(var.getDimension(0).getName())) {
                             if (debugMode) msg += "\nDebug: sample_dimension=" + 
                                 sd + " isRequired by loadVar=" + loadVariableNames.get(lvi);
                             isRequired = true;
@@ -10147,9 +10144,9 @@ Dataset {
             Dimension outerDimDim = outerDim < 0? null : (Dimension)dimsList.get(outerDim);     
             Dimension innerDimDim = innerDim < 0? null : (Dimension)dimsList.get(innerDim);
             Dimension obsDimDim   = obsDim   < 0? null : (Dimension)dimsList.get(obsDim);
-            String outerDimName  = outerDim < 0? "" : outerDimDim.getFullName(); //may be null
-            String innerDimName  = innerDim < 0? "" : innerDimDim.getFullName();
-            String obsDimName    = obsDim   < 0? "" : obsDimDim.getFullName(); 
+            String outerDimName  = outerDim < 0? "" : outerDimDim.getName(); //may be null
+            String innerDimName  = innerDim < 0? "" : innerDimDim.getName();
+            String obsDimName    = obsDim   < 0? "" : obsDimDim.getName(); 
             String scalarDimName = "scalar"; 
             int outerDimSize  = outerDimDim == null? -1 : outerDimDim.getLength();
             int innerDimSize  = innerDimDim == null? -1 : innerDimDim.getLength();
@@ -10240,10 +10237,10 @@ Dataset {
                         "Invalid file: nLevels=2, outerDim=scalarDim, but can't find " +
                         "variable[innerDim][obsDim].  innerDim=" + innerDim + " obsDim=" + obsDim);
                 obsDimDim     = (Dimension)dimsList.get(obsDim);
-                obsDimName    = obsDimDim.getFullName(); 
+                obsDimName    = obsDimDim.getName(); 
                 obsDimSize    = obsDimDim.getLength();
                 innerDimDim   = (Dimension)dimsList.get(innerDim);
-                innerDimName  = innerDimDim.getFullName();
+                innerDimName  = innerDimDim.getName();
                 innerDimSize  = innerDimDim.getLength();
 
                 //now that innerDim and outerDim are known, find 1D vars that use them
@@ -20175,7 +20172,7 @@ String2.log(table.dataToString());
         Attributes gridMappingAtts = null;
         try {
 
-            NcHelper.getGlobalAttributes(ncFile, globalAttributes());
+            NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
             Attributes gatts = globalAttributes();
 
             //ensure featureType=Profile (other single level types could be supported -- need examples)
@@ -20244,7 +20241,7 @@ String2.log(table.dataToString());
                     Test.ensureEqual(realNDims[v], 1, 
                         "Unexpected number of dimensions for var=" + vNames[v]);
                     Dimension tOuterDim = var.getDimension(0);
-                    String tOuterDimName = tOuterDim.getFullName();
+                    String tOuterDimName = tOuterDim.getName();
                     Test.ensureNotNull(tOuterDimName,  
                         "Unexpected dimensionName=null for var=" + vNames[v]);
                     if (outerDimName == null) {
@@ -20271,7 +20268,7 @@ String2.log(table.dataToString());
                     Test.ensureEqual(realNDims[v], 1, 
                         "Unexpected number of dimensions for var=" + vNames[v]);
                     Dimension tOuterDim = var.getDimension(0);
-                    String tOuterDimName = tOuterDim.getFullName();
+                    String tOuterDimName = tOuterDim.getName();
                     Test.ensureNotNull(tOuterDimName, 
                         "Unexpected dimensionName=null for var=" + vNames[v]);
                     if (outerDimName == null) {
@@ -20335,7 +20332,7 @@ String2.log(table.dataToString());
 
                 } else if (realNDims[v] == 1) {
                     Dimension dim = var.getDimension(0);
-                    String dimName = dim.getFullName();
+                    String dimName = dim.getName();
 
                     //FIX flaws related to Primary_Investigator / numberofpis.
                     //Treat numberofpis differently than other dimNames:
@@ -20494,7 +20491,7 @@ String2.log(table.dataToString());
                 if (realNDims[v] != 1) 
                     continue;
                 Dimension dim = var.getDimension(0);
-                String dimName = dim.getFullName();
+                String dimName = dim.getName();
                 if (outerDimName.equals(dimName) || //already in outer table? 
                     dimName.equals("numberofpis")) 
                     continue;
@@ -24716,7 +24713,7 @@ String2.log(table.dataToString());
             //fill the table
             clear();
             appendNcRows(loadVariables, 0, -1);
-            NcHelper.getGlobalAttributes(netcdfFile, globalAttributes());
+            NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
             for (int col = 0; col < loadVariables.length; col++) {
                 NcHelper.getVariableAttributes(loadVariables[col], columnAttributes(col));
 
@@ -25093,7 +25090,7 @@ String2.log(table.dataToString());
         //get information
         String msg = "  Table.readOpendap " + url;
         long time = System.currentTimeMillis();
-        NetcdfFile netcdfFile = NetcdfDataset.openDataset(url); //NetcdfDataset needed for opendap.
+        NetcdfFile netcdfFile = NetcdfDatasets.openDataset(url); //NetcdfDataset needed for opendap.   //2021: 's' is new API
         try {
             List loadVariables = findNcVariables(netcdfFile, loadColumns);
 
@@ -28357,11 +28354,12 @@ String2.log(table.dataToString());
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         boolean nc3Mode = true;
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                fullName + randomInt);
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
         
             //items determined by looking at a .nc file; items written in that order 
@@ -28375,13 +28373,14 @@ String2.log(table.dataToString());
             PrimitiveArray tPA[] = new PrimitiveArray[nColumns];
 
             //define the dimensions
-            Dimension dimension  = nc.addDimension(rootGroup, dimensionName, nRows);
+            Dimension dimension = NcHelper.addDimension(rootGroup, dimensionName, nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension = new Dimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//rootGroup.addDimension(dimension);
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
-            Variable colVars[] = new Variable[nColumns];
+            Variable.Builder colVars[] = new Variable.Builder[nColumns];
             for (int col = 0; col < nColumns; col++) {
                 String tColName = getColumnNameWithoutSpaces(col);
                 PrimitiveArray pa = getColumn(col);
@@ -28389,12 +28388,12 @@ String2.log(table.dataToString());
                 PAType type = pa.elementType();
                 if (type == PAType.STRING) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension = nc.addDimension(rootGroup, 
+                    Dimension lengthDimension = NcHelper.addDimension(rootGroup, 
                         tColName + NcHelper.StringLengthSuffix, max);
-                    colVars[col] = nc.addVariable(rootGroup, tColName, DataType.CHAR, 
+                    colVars[col] = NcHelper.addVariable(rootGroup, tColName, DataType.CHAR, 
                         Arrays.asList(dimension, lengthDimension)); 
                 } else {
-                    colVars[col] = nc.addVariable(rootGroup, tColName, 
+                    colVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                         NcHelper.getNc3DataType(type), Arrays.asList(dimension)); 
                 }
 //nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
@@ -28431,14 +28430,14 @@ String2.log(table.dataToString());
             }
 
             //leave "define" mode
-            nc.create();
+            ncWriter = nc.build();
 
             //write the data
             for (int col = 0; col < nColumns; col++) {
                 //String2.log("writing col=" + col + " " + getColumnName(col) + 
                 //    " colVars[col]=" + colVars[col] +  
                 //    " size=" + tPA[col].size() + " tPA[col]=" + tPA[col]);
-                nc.write(colVars[col], NcHelper.get1DArray(tPA[col]));
+                ncWriter.write(colVars[col].getFullName(), NcHelper.get1DArray(tPA[col]));
 
                 //convert back to standard MissingValues
                 if (convertToFakeMissingValues) 
@@ -28446,8 +28445,8 @@ String2.log(table.dataToString());
             }
 
             //if close throws exception, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name, instantly replacing the original file
             File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
@@ -28459,15 +28458,12 @@ String2.log(table.dataToString());
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h");
 
         } catch (Exception e) {
-            //try to close the file
-            try {
-                if (nc != null) nc.abort(); 
-            } catch (Exception e2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName + randomInt); 
+                ncWriter = null;
             }
-
-            //delete the partial file
-            File2.delete(fullName + randomInt);
 
             //delete any existing file
             File2.delete(fullName);
@@ -28508,23 +28504,23 @@ String2.log(table.dataToString());
         int nRows = nRows();
         int strlens[] = new int[nCols];  //all 0's
         boolean fileExists = File2.isFile(fileName);
-        NetcdfFileWriter file = null;
-        Group rootGroup = null;
+        NetcdfFormatWriter ncWriter = null;
         Dimension dim;
 
         try {
-            
+            NetcdfFormatWriter.Builder file = null;
+            Group.Builder rootGroup = null;
+
             if (fileExists) {
-                file = NetcdfFileWriter.openExisting(fileName);
+                file = NetcdfFormatWriter.openExisting(fileName);
                 rootGroup = file.getRootGroup();
                 dim = file.findDimension(dimName);
 
             } else {
                 //create the file
-                file = NetcdfFileWriter.createNew(NetcdfFileWriter.Version.netcdf3, 
-                    fileName);
+                file = NetcdfFormatWriter.createNewNetcdf3(fileName);
                 boolean nc3Mode = true;
-                rootGroup = file.addGroup(null, "");
+                rootGroup = file.getRootGroup();
 
                 NcHelper.setAttributes(rootGroup, globalAttributes());
 
@@ -28534,7 +28530,7 @@ String2.log(table.dataToString());
                 dims.add(dim);
 
                 //define Variables
-                Variable colVars[] = new Variable[nCols];
+                Variable.Builder colVars[] = new Variable.Builder[nCols];
                 for (int col = 0; col < nCols; col++) {
                     String colName = getColumnName(col);
                     PrimitiveArray pa = column(col);
@@ -28551,11 +28547,11 @@ String2.log(table.dataToString());
                         ArrayList tDims = new ArrayList();
                         tDims.add(dim);
                         tDims.add(tDim);
-                        colVars[col] = file.addStringVariable(colName, dims, strlen);                        
+                        colVars[col] = NcHelper.addNc3StringVariable(rootGroup, colName, dims, strlen);                        
 
                     } else {
                         //create a non-string variable
-                        colVars[col] = file.addVariable(rootGroup, colName, 
+                        colVars[col] = NcHelper.addVariable(rootGroup, colName, 
                             NcHelper.getNc3DataType(pa.elementType()), dims);
                     }
 
@@ -28567,7 +28563,7 @@ String2.log(table.dataToString());
                 }
 
                 //switch to create mode
-                file.create();
+                ncWriter = file.build();
             }
 
             //add the data
@@ -28621,23 +28617,27 @@ String2.log(table.dataToString());
                     int n = pa.size();
                     for (int i = 0; i < n; i++) 
                         ac.setString(i, pa.getString(i));
-                    file.write(colVars[col], origin2, ac);
+                    ncWriter.write(colVars[col].getFullName(), origin2, ac);
                     
                 } else {
                     //write non-string data
-                    file.write(colVars[col], origin1, Array.factory(pa.toArray()));
+                    ncWriter.write(colVars[col].getFullName(), origin1, Array.factory(pa.toArray()));
                 }
             }
-            file.close();
-            file = null;
+            ncWriter.close();
+            ncWriter = null;
 
             if (reallyVerbose) msg +=  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms";
 
         } catch (Throwable t) {
-            try {  if (file != null) file.abort(); 
-            } catch (Throwable t2) {  }
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fileName); 
+                ncWriter = null;
+            }
 
             if (!reallyVerbose) String2.log(msg); 
             throw t;
@@ -28746,13 +28746,14 @@ String2.log(table.dataToString());
         }
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-            NetcdfFileWriter.Version.netcdf3, fullName + randomInt);
+        NetcdfFormatWriter ncWriter = null;
         long make4IndicesTime = -1;
         boolean nc3Mode = true;
         
         try {
-            Group rootGroup = nc.addGroup(null, "");
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf3(
+                fullName + randomInt);
+            Group.Builder rootGroup = nc.getRootGroup();
             nc.setFill(false);
 
             //if (reallyVerbose) {
@@ -28808,16 +28809,16 @@ String2.log(table.dataToString());
             int stringLength[] = new int[nColumns];
 
             //define the dimensions
-            Dimension xDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(xColumn), nX);
-            Dimension yDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(yColumn), nY);
-            Dimension zDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(zColumn), nZ);
-            Dimension tDimension  = nc.addDimension(rootGroup, getColumnNameWithoutSpaces(tColumn), nT);
+            Dimension xDimension = NcHelper.addDimension(rootGroup, getColumnNameWithoutSpaces(xColumn), nX);
+            Dimension yDimension = NcHelper.addDimension(rootGroup, getColumnNameWithoutSpaces(yColumn), nY);
+            Dimension zDimension = NcHelper.addDimension(rootGroup, getColumnNameWithoutSpaces(zColumn), nZ);
+            Dimension tDimension = NcHelper.addDimension(rootGroup, getColumnNameWithoutSpaces(tColumn), nT);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
-//Dimension rowDimension  = nc.addDimension(rootGroup, "row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
+//Dimension rowDimension  = new Dimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
 
             //add the variables
-            Variable colVars[] = new Variable[nColumns];
+            Variable.Builder colVars[] = new Variable.Builder[nColumns];
             for (int col = 0; col < nColumns; col++) {
 
                 //for x/y/z/t make a 1D variable
@@ -28834,13 +28835,13 @@ String2.log(table.dataToString());
                     if (type == PAType.STRING) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension = nc.addDimension(rootGroup, 
+                        Dimension lengthDimension = NcHelper.addDimension(rootGroup, 
                             tColName + NcHelper.StringLengthSuffix, max);
-                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                        colVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                             DataType.CHAR, 
                             Arrays.asList(aDimension, lengthDimension)); 
                     } else {
-                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                        colVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                             NcHelper.getNc3DataType(type),
                             Arrays.asList(aDimension)); 
                     }
@@ -28853,14 +28854,14 @@ String2.log(table.dataToString());
                     if (type == PAType.STRING) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension  = nc.addDimension(rootGroup, 
+                        Dimension lengthDimension = NcHelper.addDimension(rootGroup,  
                             tColName + NcHelper.StringLengthSuffix, max);
-                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                        colVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                             DataType.CHAR, 
                             Arrays.asList(tDimension, zDimension, yDimension, 
                                 xDimension, lengthDimension)); 
                     } else {
-                        colVars[col] = nc.addVariable(rootGroup, tColName, 
+                        colVars[col] = NcHelper.addVariable(rootGroup, tColName, 
                             NcHelper.getNc3DataType(type),
                             Arrays.asList(tDimension, zDimension, yDimension, 
                                 xDimension)); 
@@ -28897,14 +28898,14 @@ String2.log(table.dataToString());
             }
 
             //create the stringVariable
-            Variable stringVar = null;
+            Variable.Builder stringVar = null;
             if (stringVariableName != null) {
                 stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
-                Dimension lengthDimension = nc.addDimension(rootGroup, 
+                Dimension lengthDimension = NcHelper.addDimension(rootGroup,  
                     stringVariableName + NcHelper.StringLengthSuffix, 
                     Math.max(1, stringVariableValue.length())); //nclib wants at least 1
-                stringVar = nc.addVariable(rootGroup, stringVariableName, DataType.CHAR, 
+                stringVar = NcHelper.addVariable(rootGroup, stringVariableName, DataType.CHAR, 
                     Arrays.asList(lengthDimension)); 
 
                 //save the attributes
@@ -28916,7 +28917,7 @@ String2.log(table.dataToString());
 
             //leave "define" mode
             //if (String2.OSIsWindows) Math2.sleep(100);
-            nc.create();
+            ncWriter = nc.build();
 
             //write the data
             for (int col = 0; col < nColumns; col++) {
@@ -28947,7 +28948,7 @@ String2.log(table.dataToString());
                 }
 
                 //write the data
-                nc.write(colVars[col], ar);
+                ncWriter.write(colVars[col].getFullName(), ar);
 
                 //undo fakeMissingValue
                 if  (col != xColumn && col != yColumn && 
@@ -28962,14 +28963,14 @@ String2.log(table.dataToString());
             if (stringVariableName != null) {
                 //ArrayChar.D1 ar = new ArrayChar.D1(stringVariableValue.length());
                 //ar.setString(stringVariableValue);
-                nc.write(stringVar, 
+                ncWriter.write(stringVar.getFullName(), 
                     NcHelper.get1DArray(stringVariableValue, false));
             }
 
 
             //if close throws exception, it is trouble
-            nc.close(); //it calls flush() and doesn't like flush called separately
-            nc = null;
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
             //rename the file to the specified name, instantly replacing the original file
             File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
@@ -28981,17 +28982,14 @@ String2.log(table.dataToString());
             //String2.log(NcHelper.ncdump(fullName, "-h"));
 
         } catch (Exception e) {
-            //try to close the file
-            try {
-                if (nc != null) nc.abort(); 
-            } catch (Exception e2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(fullName + randomInt); 
+                ncWriter = null;
             }
 
-            //delete the partial file
-            File2.delete(fullName + randomInt);
-
-            //delete the original file
+            //delete the destination file, if any
             File2.delete(fullName);
             if (!reallyVerbose) String2.log(msg);
 
@@ -31738,7 +31736,7 @@ String2.log(table.dataToString());
             Variable var;
             PrimitiveArray pa;
             int col;
-            NcHelper.getGlobalAttributes(nc, globalAttributes);
+            NcHelper.getGroupAttributes(nc.getRootGroup(), globalAttributes);
 
             //The plan is: make minimal changes here. Change metadata etc in ERDDAP.
 

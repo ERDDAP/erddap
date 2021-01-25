@@ -64,11 +64,13 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
  * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
  * Put it in the classpath for the compiler and for Java.
  */
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
-import ucar.ma2.*;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /** 
  * This class represents a table of data from a collection of n-dimensional (1,2,3,4,...) .nc data files.
@@ -326,7 +328,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                     if (var.getRank() + (isChar? -1 : 0) == useDimensions.length) {
                         boolean matches = true;
                         for (int d = 0; d < useDimensions.length; d++) {
-                            if (!var.getDimension(d).getFullName().equals(useDimensions[d])) {
+                            if (!var.getDimension(d).getName().equals(useDimensions[d])) {  //the full name
                                 matches = false;
                                 break;
                             }
@@ -2039,28 +2041,29 @@ expected =
         //for each file
         for (int f = 0; f < names.length; f++) {
             NetcdfFile in = null;
-            NetcdfFileWriter out2 = null;
-            NetcdfFileWriter out3 = null;
+            NetcdfFormatWriter ncWriter2 = null;
+            NetcdfFormatWriter ncWriter3 = null;
 
             try {
+                NetcdfFormatWriter.Builder out2 = null;
+                NetcdfFormatWriter.Builder out3 = null;
+
                 String2.log("in #" + f + "=" + fromDir + names[f]);
                 if (f == 0) 
                     String2.log(NcHelper.ncdump(fromDir + names[f], "-h"));
 
                 in = NcHelper.openFile(fromDir + names[f]);
-                out2 = NetcdfFileWriter.createNew(
-                    NetcdfFileWriter.Version.netcdf3, dir2 + names[f]);
-                out3 = NetcdfFileWriter.createNew(
-                    NetcdfFileWriter.Version.netcdf3, dir3 + names[f]);
+                out2 = NetcdfFormatWriter.createNewNetcdf3(dir2 + names[f]);
+                out3 = NetcdfFormatWriter.createNewNetcdf3(dir3 + names[f]);
                 boolean nc3Mode = true;
-                Group rootGroup2 = out2.addGroup(null, "");
-                Group rootGroup3 = out3.addGroup(null, "");
+                Group.Builder rootGroup2 = out2.getRootGroup();
+                Group.Builder rootGroup3 = out3.getRootGroup();
                 out2.setFill(false);
                 out3.setFill(false);
 
                 //write the globalAttributes
                 Attributes atts = new Attributes();
-                NcHelper.getGlobalAttributes(in, atts);
+                NcHelper.getGroupAttributes(in.getRootGroup(), atts);
                 NcHelper.setAttributes(nc3Mode, rootGroup2, atts);
                 NcHelper.setAttributes(nc3Mode, rootGroup3, atts);
 
@@ -2069,52 +2072,52 @@ expected =
                 Variable latVar  = in.findVariable("LAT");
                 Variable lonVar  = in.findVariable("LON");
                 Math2.ensureArraySizeOkay(timeVar.getSize(), "EDDTableFromNcFiles.makeTestFiles");
-                Dimension tDim2 = out2.addDimension(rootGroup2, "TIME", (int)timeVar.getSize()); //safe since checked above
-                Dimension tDim3 = out3.addDimension(rootGroup3, "TIME", (int)timeVar.getSize()); //safe since checked above
-                Dimension yDim2 = out2.addDimension(rootGroup2, "LAT", 1);
-                Dimension yDim3 = out3.addDimension(rootGroup3, "LAT", 1);
-                Dimension xDim3 = out3.addDimension(rootGroup3, "LON", 1);
+                Dimension tDim2 = NcHelper.addDimension(rootGroup2, "TIME", (int)timeVar.getSize()); //safe since checked above
+                Dimension tDim3 = NcHelper.addDimension(rootGroup3, "TIME", (int)timeVar.getSize()); //safe since checked above
+                Dimension yDim2 = NcHelper.addDimension(rootGroup2, "LAT", 1);
+                Dimension yDim3 = NcHelper.addDimension(rootGroup3, "LAT", 1);
+                Dimension xDim3 = NcHelper.addDimension(rootGroup3, "LON", 1);
                 
                 //create axis variables
-                Variable timeVar2 = out2.addVariable(rootGroup2, "TIME", 
+                Variable.Builder timeVar2 = NcHelper.addVariable(rootGroup2, "TIME", 
                     timeVar.getDataType(), Arrays.asList(tDim2)); 
-                Variable latVar2  = out2.addVariable(rootGroup2, "LAT",  
+                Variable.Builder latVar2  = NcHelper.addVariable(rootGroup2, "LAT",  
                     latVar.getDataType(),  Arrays.asList(yDim2)); 
 
-                Variable timeVar3 = out3.addVariable(rootGroup3, "TIME", 
+                Variable.Builder timeVar3 = NcHelper.addVariable(rootGroup3, "TIME", 
                     timeVar.getDataType(), Arrays.asList(tDim3)); 
-                Variable latVar3 = out3.addVariable(rootGroup3, "LAT",  
+                Variable.Builder latVar3  = NcHelper.addVariable(rootGroup3, "LAT",  
                     latVar.getDataType(),  Arrays.asList(yDim3)); 
-                Variable lonVar3 = out3.addVariable(rootGroup3, "LON",  
+                Variable.Builder lonVar3  = NcHelper.addVariable(rootGroup3, "LON",  
                     lonVar.getDataType(),  Arrays.asList(xDim3)); 
 
                 //write the axis variable attributes
                 atts.clear();
                 NcHelper.getVariableAttributes( timeVar,  atts);
-                NcHelper.setAttributes(nc3Mode, timeVar2, atts, NcHelper.isUnsigned(timeVar2.getDataType()));
-                NcHelper.setAttributes(nc3Mode, timeVar3, atts, NcHelper.isUnsigned(timeVar3.getDataType()));
+                NcHelper.setAttributes(nc3Mode, timeVar2, atts, NcHelper.isUnsigned(timeVar.getDataType()));
+                NcHelper.setAttributes(nc3Mode, timeVar3, atts, NcHelper.isUnsigned(timeVar.getDataType()));
 
                 atts.clear();
                 NcHelper.getVariableAttributes( latVar,  atts);
-                NcHelper.setAttributes(nc3Mode, latVar2, atts, NcHelper.isUnsigned(latVar2.getDataType()));
-                NcHelper.setAttributes(nc3Mode, latVar3, atts, NcHelper.isUnsigned(latVar3.getDataType()));
+                NcHelper.setAttributes(nc3Mode, latVar2, atts, NcHelper.isUnsigned(latVar.getDataType()));
+                NcHelper.setAttributes(nc3Mode, latVar3, atts, NcHelper.isUnsigned(latVar.getDataType()));
 
                 atts.clear();
                 NcHelper.getVariableAttributes( lonVar,  atts);
-                NcHelper.setAttributes(nc3Mode, lonVar3, atts, NcHelper.isUnsigned(lonVar3.getDataType()));
+                NcHelper.setAttributes(nc3Mode, lonVar3, atts, NcHelper.isUnsigned(lonVar.getDataType()));
 
                 //create data variables
-                Variable newVars2[] = new Variable[vars.length];
-                Variable newVars3[] = new Variable[vars.length];
+                Variable.Builder newVars2[] = new Variable.Builder[vars.length];
+                Variable.Builder newVars3[] = new Variable.Builder[vars.length];
                 for (int col = 0; col < vars.length; col++) {
                     //create the data variables
                     Variable var = vars[col];
                     String varName = var.getFullName();
                     Array ar = var.read();
                     DataType dataType = var.getDataType();
-                    newVars2[col] = out2.addVariable(rootGroup2, varName, 
+                    newVars2[col] = NcHelper.addVariable(rootGroup2, varName, 
                         dataType, Arrays.asList(tDim2, yDim2)); 
-                    newVars3[col] = out3.addVariable(rootGroup3, varName, 
+                    newVars3[col] = NcHelper.addVariable(rootGroup3, varName, 
                         dataType, Arrays.asList(tDim3, yDim3, xDim3)); 
 
                     //write the data variable attributes
@@ -2125,18 +2128,18 @@ expected =
                 }
 
                 //leave "define" mode
-                out2.create();
-                out3.create();
+                ncWriter2 = out2.build();
+                ncWriter3 = out3.build();
 
                 //write axis data
                 Array ar = in.findVariable("TIME").read();
-                out2.write(timeVar2, ar);
-                out3.write(timeVar3, ar);
+                ncWriter2.write(timeVar2.getFullName(), ar);
+                ncWriter3.write(timeVar3.getFullName(), ar);
                 ar = in.findVariable("LAT").read();
-                out2.write(latVar2, ar);
-                out3.write(latVar3, ar);
+                ncWriter2.write(latVar2.getFullName(), ar);
+                ncWriter3.write(latVar3.getFullName(), ar);
                 ar = in.findVariable("LON").read();
-                out3.write(lonVar3, ar);
+                ncWriter3.write(lonVar3.getFullName(), ar);
                  
                 for (int col = 0; col < vars.length; col++) {
                     //write the data for each var
@@ -2146,13 +2149,13 @@ expected =
                     int oldShape[] = ar.getShape();
                     int newShape2[] = {oldShape[0], 1};
                     int newShape3[] = {oldShape[0], 1, 1};
-                    out2.write(newVars2[col], ar.reshape(newShape2));
-                    out3.write(newVars3[col], ar.reshape(newShape3));
+                    ncWriter2.write(newVars2[col].getFullName(), ar.reshape(newShape2));
+                    ncWriter3.write(newVars3[col].getFullName(), ar.reshape(newShape3));
                 }
 
                 in.close();
-                out2.close();
-                out3.close();
+                ncWriter2.close();
+                ncWriter3.close();
 
                 if (f == 0) {
                     String2.log("\nout2=" + NcHelper.ncdump(dir2 + names[f], "-h"));
@@ -2162,8 +2165,16 @@ expected =
             } catch (Throwable t) {
                 String2.log(MustBe.throwableToString(t));
                 try { if (in   != null) in.close();   } catch (Exception t2) {}
-                try { if (out2 != null) out2.abort(); } catch (Exception t2) {}
-                try { if (out3 != null) out3.abort(); } catch (Exception t2) {}
+                if (ncWriter2 != null) {
+                    try {ncWriter2.abort(); } catch (Exception t2) {}
+                    File2.delete(dir2 + names[f]); 
+                    ncWriter2 = null;
+                }
+               if (ncWriter3 != null) {
+                    try {ncWriter3.abort(); } catch (Exception t2) {}
+                    File2.delete(dir3 + names[f]); 
+                    ncWriter3 = null;
+                }
             }
         }
     }
@@ -2638,7 +2649,7 @@ expected =
 "      {-170.493, -162.279, -162.058, -160.66, -159.575, -158.303, -158.149, -158.124, -158.116, -157.959, -157.808, -157.756, -157.753, -157.668, -157.1, -157.01, -157.003, -156.93, -156.427, -156.1, -154.97, -154.056, -153.913, -153.9, -152.382, -144.668, 134.669, 144.789, 144.812, 145.662, 171.395}\n" +
 "    latitude = \n" +
 "      {-14.265, 23.445, 24.321, 19.087, 22.286, 21.096, 21.323, 21.281, 21.673, 21.297, 17.094, 21.477, 21.477, 21.417, 20.4, 20.788, 20.75, 21.35, 21.019, 20.4, 19.78, 23.546, 0.0, 23.558, 17.525, 13.729, 7.629, 13.354, 13.683, 15.267, 7.092}\n" +
-"    station = \"51209\", \"51001\", \"51101\", \"51003\", \"51208\", \"51200\", \"51212\", \"51204\", \"51201\", \"51211\", \"51002\", \"51210\", \"51207\", \"51202\", \"51027\", \"51203\", \"51213\", \"51026\", \"51205\", \"51005\", \"51206\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52212\", \"52200\", \"52202\", \"52211\", \"52201\"\n" +
+"    station =   \"51209\",   \"51001\",   \"51101\",   \"51003\",   \"51208\",   \"51200\",   \"51212\",   \"51204\",   \"51201\",   \"51211\",   \"51002\",   \"51210\",   \"51207\",   \"51202\",   \"51027\",   \"51203\",   \"51213\",   \"51026\",   \"51205\",   \"51005\",   \"51206\",   \"51000\",   \"51028\",   \"51100\",   \"51004\",   \"52009\",   \"52212\",   \"52200\",   \"52202\",   \"52211\",   \"52201\"\n" +
 "}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -3657,8 +3668,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-11-19\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2020-11-19\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2021-01-19\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2021-01-19\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -3674,7 +3685,7 @@ expected =
 "  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "\n" +
 "  data:\n" +
-"    station = \"41004\", \"41004\", \"41004\", \"41004\"\n" +
+"    station =   \"41004\",   \"41004\",   \"41004\",   \"41004\"\n" +
 "    time = \n" +
 "      {1.325376E9, 1.3253796E9, 1.3253832E9, 1.3253868E9}\n" +
 "    wd = \n" +
@@ -4902,8 +4913,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2020-12-17\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2020-12-17\";\n" +  // ""
+"  :date_created = \"2021-01-19\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2021-01-19\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4920,7 +4931,7 @@ expected =
 "  data:\n" +
 "    time = \n" +
 "      {1.325379E9, 1.3253898E9, 1.3254042E9}\n" +
-"    station = \"41004\", \"41004\", \"41004\"\n" +
+"    station =   \"41004\",   \"41004\",   \"41004\"\n" +
 "    wd = \n" +
 "      {252, 32767, 288}\n" +         //a test that missing_values are intact (although these weren't keyColumns, so weren't temporarily converted)
 "    atmp = \n" +
@@ -6225,7 +6236,7 @@ expected =
                                 if (tTable == null) {
 
                                     Attributes ncGlobalAtts = new Attributes();
-                                    NcHelper.getGlobalAttributes(ncFile, ncGlobalAtts);
+                                    NcHelper.getGroupAttributes(ncFile.getRootGroup(), ncGlobalAtts);
                                     String tHistory = ncGlobalAtts.getString("history");
                                     tHistory =  tHistory != null && tHistory.length() > 0?
                                         tHistory + "\n" : "";
@@ -6746,7 +6757,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 40769499;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 41014381;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6791,7 +6802,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6064784e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6088121e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6853,7 +6864,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2020-12-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2021-01-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6881,9 +6892,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2020-12-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2021-01-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2020-12-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2021-01-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6901,7 +6912,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2020-12-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2021-01-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6926,7 +6937,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the November 2020 data) but is a subset of the " + //month changes
+    "up to and including the December 2020 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -6939,7 +6950,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-11-27T12:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2020-12-24T12:15:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -8626,7 +8637,7 @@ String expected2 =
 "      {-122.881, -122.833, -122.298, -122.465, -122.975, -122.4, -122.21}\n" +
 "    latitude = \n" +
 "      {37.363, 37.759, 37.772, 37.807, 37.997, 37.928, 37.507}\n" +
-"    station = \"46012\", \"46026\", \"AAMC1\", \"FTPC1\", \"PRYC1\", \"RCMC1\", \"RTYC1\"\n" +
+"    station =   \"46012\",   \"46026\",   \"AAMC1\",   \"FTPC1\",   \"PRYC1\",   \"RCMC1\",   \"RTYC1\"\n" +
 "    rowSize = \n" +
 "      {3, 3, 13, 13, 3, 13, 14}\n" +
 "    time = \n" +
@@ -8841,7 +8852,7 @@ String expected2 =
 "      {-122.881, -122.833, -122.298, -122.465, -122.975, -122.4, -122.21}\n" +
 "    latitude = \n" +
 "      {37.363, 37.759, 37.772, 37.807, 37.997, 37.928, 37.507}\n" +
-"    station = \"46012\", \"46026\", \"AAMC1\", \"FTPC1\", \"PRYC1\", \"RCMC1\", \"RTYC1\"\n" +
+"    station =   \"46012\",   \"46026\",   \"AAMC1\",   \"FTPC1\",   \"PRYC1\",   \"RCMC1\",   \"RTYC1\"\n" +
 "    time = \n" +
 "      {\n" +
 "        {1.1149056E9, 1.1149092E9, 1.1149128E9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},\n" +
@@ -9033,7 +9044,7 @@ String expected2 =
 "  :Westernmost_Easting = -124.6335f; // float\n" +
 "\n" +
 "  data:\n" +
-"    cruise = \"0002\", \"0103\"\n" +
+"    cruise =   \"0002\",   \"0103\"\n" +
 "    rowSize = \n" +
 "      {250, 273}\n" +
 "    time = \n" +
@@ -9206,7 +9217,7 @@ expected =
 "  :Westernmost_Easting = -124.6335f; // float\n" +
 "\n" +
 "  data:\n" +
-"    cruise = \"0002\", \"0103\"\n" +
+"    cruise =   \"0002\",   \"0103\"\n" +
 "    time = \n" +
 "      {\n" +
 "        {9.5810382E8, 9.5810652E8, 9.5811444E8, 9.581178E8, 9.5812548E8, 9.58128E8, 9.581349E8, 9.5814078E8, 9.5814" +
@@ -9610,8 +9621,8 @@ expected =
 "  :Westernmost_Easting = -124.3f; // float\n" +
 "\n" +
 "  data:\n" +
-"    cruise_id = \"nh0207\"\n" +
-"    ship = \"New_Horizon\"\n" +
+"    cruise_id =   \"nh0207\"\n" +
+"    ship =   \"New_Horizon\"\n" +
 "    cast = \n" +
 "      {127, 127}\n" +
 "    longitude = \n" +
@@ -9822,8 +9833,8 @@ expected =
 "  :Westernmost_Easting = -124.3f; // float\n" +
 "\n" +
 "  data:\n" +
-"    cruise_id = \"nh0207\"\n" +
-"    ship = \"New_Horizon\"\n" +
+"    cruise_id =   \"nh0207\"\n" +
+"    ship =   \"New_Horizon\"\n" +
 "    cast = \n" +
 "      {\n" +
 "        {127, 127}\n" +
@@ -10170,11 +10181,11 @@ expected =
 "  :Westernmost_Easting = 173.5403f; // float\n" +
 "\n" +
 "  data:\n" +
-"    trajectory = \"AD_XB_09WR_VKLD 12\", \"ME_TE_33P2_Q990046312\"\n" +
-"    platform = \"09WR\", \"33P2\"\n" +
-"    cruise = \"VKLD 12\", \"Q990046312\"\n" +
-"    org = \"AD\", \"ME\"\n" +
-"    type = \"XB\", \"TE\"\n" +
+"    trajectory =   \"AD_XB_09WR_VKLD 12\",   \"ME_TE_33P2_Q990046312\"\n" +
+"    platform =   \"09WR\",   \"33P2\"\n" +
+"    cruise =   \"VKLD 12\",   \"Q990046312\"\n" +
+"    org =   \"AD\",   \"ME\"\n" +
+"    type =   \"XB\",   \"TE\"\n" +
 "    station_id = \n" +
 "      \\{27478599, 13968849, 13968850\\}\n" +
 "    longitude = \n" +
@@ -10666,11 +10677,11 @@ String expected2 =
 String expected3 = expected2 +
 "\n" +
 "  data:\n" +
-"    trajectory = \"AD_XB_09WR_VKLD 12\", \"ME_TE_33P2_Q990046312\"\n" +
-"    platform = \"09WR\", \"33P2\"\n" +
-"    cruise = \"VKLD 12\", \"Q990046312\"\n" +
-"    org = \"AD\", \"ME\"\n" +
-"    type = \"XB\", \"TE\"\n" +
+"    trajectory =   \"AD_XB_09WR_VKLD 12\",   \"ME_TE_33P2_Q990046312\"\n" +
+"    platform =   \"09WR\",   \"33P2\"\n" +
+"    cruise =   \"VKLD 12\",   \"Q990046312\"\n" +
+"    org =   \"AD\",   \"ME\"\n" +
+"    type =   \"XB\",   \"TE\"\n" +
 "    station_id = \n" +
 "      \\{\n" +
 "        \\{27478599, 2147483647\\},\n" +
@@ -12866,7 +12877,7 @@ expected =
 "      {33.66, 30.43, 28.22, 26.4, 25.63, 23.54, 22.38, 20.15, 33.55, 31.48, 24.93, -99.0, 21.21, 20.54, 17.87, -9999.0, 16.32, 33.61, 33.48, 30.7, 27.05, 25.13, 24.5, 23.95, 16.0, 14.42, 33.28, 28.3, 26.74, 24.96, 23.78, 20.76, 17.72, 16.01, 31.22, 27.47, 13.28, 10.66, 9.61, 8.36, 6.53, 2.86, 0.96, 34.05, 29.47, 18.87, 15.17, 13.84, 9.61, 4.95, 3.46, 34.09, 23.29, 16.01, 10.35, 7.72, 4.37, 2.97, 27.25, 29.98, 22.56, 9.82, 9.19, 6.57, 5.23, 3.81, 0.96, 30.08, 19.88, 8.44, 4.59, 2.67, 1.53, 0.94, 0.47, 30.73, 20.28, 10.61, 7.48, 6.53, 4.51, 3.04, 1.36, 0.89, 32.21, 23.75, 12.04, 7.67, 5.73, 1.14, 1.02, 0.46, 33.16, 27.33, 15.16, 9.7, 9.47, 8.66, 7.65, 4.84}\n" +
 "    time = \n" +
 "      {1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9}\n" +
-"    ship = \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\"\n" +
+"    ship =   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\",   \"New_Horizon\"\n" +
 "}\n";
         tPo = results.indexOf(expected.substring(0, 17));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -13373,7 +13384,7 @@ expected =
             String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
             //!!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
             //!!!THIS IS NOT JUST A READ-FROM-FILE TEST!!!
-            NetcdfFile nc = NetcdfDataset.openFile(tUrl, null);
+            NetcdfFile nc = NetcdfDatasets.openFile(tUrl, null);
             try {
                 results = NcHelper.ncdump(nc, "-h");
                 //2016-05-10 lots of little formatting changes
@@ -13441,7 +13452,7 @@ expected =
                 Test.ensureEqual(results.substring(results.indexOf("  :time_coverage_start")), expected, "RESULTS=\n" + results);
 
                 Attributes attributes = new Attributes();
-                NcHelper.getGlobalAttributes(nc, attributes);
+                NcHelper.getGroupAttributes(nc.getRootGroup(), attributes);
                 Test.ensureEqual(attributes.getString("title"), "GLOBEC NEP Rosette Bottle Data (2002)", "");
 
                 //get attributes for a dimension 
@@ -13473,7 +13484,7 @@ expected =
                 String2.log("\n*** do netcdf-java .nc test");
                 //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON COASTWATCH CWEXPERIMENTAL!!!
                 //!!!THIS IS NOT JUST A LOCAL TEST!!!
-                NetcdfFile nc = NetcdfDataset.openFile(tUrl + ".nc?" + mapDapQuery, null);
+                NetcdfFile nc = NetcdfDatasets.openFile(tUrl + ".nc?" + mapDapQuery, null);
                 try {
                     results = nc.toString();
                     expected = "zz";
@@ -14121,7 +14132,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2020-12-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2021-01-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -15625,7 +15636,7 @@ expected =
 "      {0.0, 1.1, 2.2}\n" +
 "    doubles = \n" +
 "      {1.0E12, 1.0000000000001E12, 1.0000000000002E12}\n" +
-"    Strings = \"0\", \"10\", \"20\"\n" +
+"    Strings =   \"0\",   \"10\",   \"20\"\n" +
 "}\n";
         po = results.indexOf("/tabledap/testSimpleTestNcTable.nc?");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
@@ -16123,7 +16134,7 @@ expected =
 "      {10001, 10002}\n" +
 "    doubles = \n" +
 "      {1.0000000000001E12, 1.0000000000002E12}\n" +
-"    Strings = \"10\", \"20\"\n" +
+"    Strings =   \"10\",   \"20\"\n" +
 "}\n";
         po = results.indexOf("/tabledap/testSimpleTestNcTable.nc?");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 

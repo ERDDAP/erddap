@@ -11,6 +11,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
@@ -43,6 +44,7 @@ import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -96,8 +98,8 @@ import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
-import ucar.nc2.NetcdfFileWriter;
 import ucar.nc2.Variable;
+import ucar.nc2.write.NetcdfFormatWriter;
 
 /** 
  * This class holds a lot of static information set from the setup.xml and messages.xml
@@ -210,7 +212,7 @@ public static boolean developmentMode = false;
     public static String contentDirectory;
 
     public final static String INSTITUTION = "institution";
-    public final static int TITLE_DOT_LENGTH = 95; //max nChar before using " ... "
+    public final static int TITLE_DOT_LENGTH = 95; //max nChar before inserting newlines (was truncate with " ... ")
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
     public static String webInfParentDirectory = String2.webInfParentDirectory(); //with / separator and / at the end
@@ -272,6 +274,8 @@ public static boolean developmentMode = false;
     public final static int DEFAULT_decompressedCacheMaxMinutesOld = 15;
     public final static int DEFAULT_nGridThreads = 1;
     public final static int DEFAULT_nTableThreads = 1;
+    public static String          DEFAULT_palettes[]   = null; //set when messages.xml is read
+    public static HashSet<String> DEFAULT_palettes_set = null;  //set when messages.xml is read
     public static int decompressedCacheMaxGB         = DEFAULT_decompressedCacheMaxGB; 
     public static int decompressedCacheMaxMinutesOld = DEFAULT_decompressedCacheMaxMinutesOld; 
     public static int nGridThreads                   = DEFAULT_nGridThreads;  //will be a valid number 1+
@@ -655,7 +659,7 @@ public static boolean developmentMode = false;
         imageDirHttpsUrl,
         //downloadDirUrl,
         computerName; //e.g., coastwatch (or "")
-    public static Subscriptions subscriptions;
+    public static Subscriptions subscriptions; //null if !EDStatic.subscriptionSystemActive
 
 
     /** These values are loaded from the [contentDirectory]messages.xml file (if present)
@@ -1725,7 +1729,7 @@ public static boolean developmentMode = false;
             throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
         //if (adminCountry.length() == 0)
         //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
-        if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) 
+        if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
             throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
 
         accessConstraints          = setup.getNotNothingString("accessConstraints",          errorInMethod); 
@@ -1901,6 +1905,40 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         //???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
         //logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs) + lowResLogoImageFile + "\" " +
         //    "alt=\"logo\" title=\"logo\">\n";
+
+        //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
+        String tFiles[] = RegexFilenameFilter.recursiveFullNameList(
+            contentDirectory + "images/", ".+", false);
+        for (int i = 0; i < tFiles.length; i++) {
+            int tpo = tFiles[i].indexOf("/images/");
+            if (tpo < 0) tpo = tFiles[i].indexOf("\\images\\");
+            if (tpo < 0) {
+                String2.log("'/images/' not found in images/ file: " + tFiles[i]);
+                continue;
+            }
+            String tName = tFiles[i].substring(tpo + 8);
+            if (verbose) String2.log("  copying images/ file: " + tName);
+            File2.copy(contentDirectory + "images/" + tName, imageDir + tName);
+        }
+
+        //ensure images exist and get their sizes
+        Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
+        lowResLogoImageFileWidth   = tImage.getWidth(null);
+        lowResLogoImageFileHeight  = tImage.getHeight(null);
+        tImage = Image2.getImage(imageDir + highResLogoImageFile, 10000, false);
+        highResLogoImageFileWidth  = tImage.getWidth(null);
+        highResLogoImageFileHeight = tImage.getHeight(null);
+        tImage = Image2.getImage(imageDir + googleEarthLogoFile, 10000, false);
+        googleEarthLogoFileWidth   = tImage.getWidth(null);
+        googleEarthLogoFileHeight  = tImage.getHeight(null);
+
+        //copy all <contentDirectory>cptfiles/ files to cptfiles
+        tFiles = RegexFilenameFilter.list(contentDirectory + "cptfiles/", ".+\\.cpt"); //not recursive
+        for (int i = 0; i < tFiles.length; i++) {
+            if (verbose) 
+                String2.log("  copying cptfiles/ file: " + tFiles[i]);
+            File2.copy(contentDirectory + "cptfiles/" + tFiles[i], fullPaletteDirectory + tFiles[i]);
+        }
 
 
         
@@ -2633,6 +2671,8 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         orComma += " ";
         outOfDateHtml              = messages.getNotNothingString("outOfDateHtml",              errorInMethod);
         palettes                   = String2.split(messages.getNotNothingString("palettes",     errorInMethod), ',');
+        DEFAULT_palettes = palettes; //used by LoadDatasets if palettes tag is empty
+        DEFAULT_palettes_set = String2.stringArrayToSet(palettes);
         palettes0 = new String[palettes.length + 1];
         palettes0[0] = "";
         System.arraycopy(palettes, 0, palettes0, 1, palettes.length);
@@ -2957,43 +2997,46 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         String testNc4Name = fullTestCacheDirectory + 
             "testNC4_" + Calendar2.getCompactCurrentISODateTimeStringLocal() + ".nc";
         //String2.log("testNc4Name=" + testNc4Name);
+        NetcdfFormatWriter ncWriter = null; 
         try {
-            NetcdfFileWriter nc = NetcdfFileWriter.createNew(
-                NetcdfFileWriter.Version.netcdf4, testNc4Name);
-            try {
-                Group rootGroup = nc.addGroup(null, "");
-                nc.setFill(false);
-            
-                int nRows = 4;
-                Dimension dimension  = nc.addDimension(rootGroup, "row", nRows);
-                Variable var = nc.addVariable(rootGroup, "myLongs", 
-                    NcHelper.getNc3DataType(PAType.LONG),
-                    Arrays.asList(dimension)); 
+            NetcdfFormatWriter.Builder nc = NetcdfFormatWriter.createNewNetcdf4(
+                NetcdfFileFormat.NETCDF4, testNc4Name, null); //null=default chunker
+            Group.Builder rootGroup = nc.getRootGroup();
+            nc.setFill(false);
+        
+            int nRows = 4;
+            Dimension dimension = NcHelper.addDimension(rootGroup, "row", nRows);
+            Variable.Builder var = NcHelper.addVariable(rootGroup, "myLongs", 
+                NcHelper.getNc3DataType(PAType.LONG),
+                Arrays.asList(dimension)); 
 
-                //leave "define" mode
-                nc.create();  //error is thrown here if netcdf-c not found
+            //leave "define" mode
+            ncWriter = nc.build();  //error is thrown here if netcdf-c not found
 
-                //write the data
-                Array array = Array.factory(DataType.LONG, new int[]{nRows}, new long[]{0,1,2,3});
-                nc.write(var, new int[]{0}, array);
+            //write the data
+            Array array = Array.factory(DataType.LONG, new int[]{nRows}, new long[]{0,1,2,3});
+            ncWriter.write(var.getFullName(), new int[]{0}, array);
 
-                //if close throws Throwable, it is trouble
-                nc.close(); //it calls flush() and doesn't like flush called separately
-                nc = null;
+            //if close throws Throwable, it is trouble
+            ncWriter.close(); //it calls flush() and doesn't like flush called separately
+            ncWriter = null;
 
-                //success!
-                accessibleViaNC4 = "";
-                String2.log(".nc4 files can be created in this ERDDAP installation.");
-
-            } finally {
-                try {if (nc != null) nc.abort(); } catch (Throwable t3) {}
-            }
+            //success!
+            accessibleViaNC4 = "";
+            String2.log(".nc4 files can be created in this ERDDAP installation.");
 
         } catch (Throwable t) {
             accessibleViaNC4 = String2.canonical(
                 MessageFormat.format(noXxxBecause2, ".nc4",
                     resourceNotFound + "netcdf-c library"));
-            String2.log(t.toString() + "\n" + accessibleViaNC4);
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + t.toString() + "\n" + accessibleViaNC4);
+
+        } finally {
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e9) {}
+                File2.delete(testNc4Name); 
+                ncWriter = null;
+            }
         }
 //        File2.delete(testNc4Name);
 */
@@ -3478,7 +3521,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             StringArray emailAddressesSA = new StringArray(emailAddresses);
             BitSet keep = new BitSet(emailAddressesSA.size());  //all false
             for (int i = 0; i < emailAddressesSA.size(); i++) { 
-                String err = subscriptions.testEmailValid(emailAddressesSA.get(i));  //tests syntax and blacklist             
+                String addr = emailAddressesSA.get(i);
+                String err = subscriptions == null?
+                    String2.testEmailAddress(addr) :     //tests syntax
+                    subscriptions.testEmailValid(addr);  //tests syntax and blacklist             
                 if (err.length() == 0) {
                     keep.set(i);
                 } else {

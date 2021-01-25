@@ -66,6 +66,7 @@ import java.util.List;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;  //only Array is needed; all other ucar is for testing netcdf-java
@@ -4592,7 +4593,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
             //*** test that EDDGridFromDAP works via netcdf-java library
             String2.log("\n****************** EDDGridFromDap test netcdf-java\n");
-            NetcdfFile nc = NetcdfDataset.openFile(EDStatic.erddapUrl + "/griddap/erdMHchla8day", null); //in tests, always non-https url
+            NetcdfFile nc = NetcdfDatasets.openFile(EDStatic.erddapUrl + "/griddap/erdMHchla8day", null); //in tests, always non-https url
             try {
                 results = nc.toString();
                 results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
@@ -4713,7 +4714,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
                 Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
                 attributes.clear();
-                NcHelper.getGlobalAttributes(nc, attributes);
+                NcHelper.getGroupAttributes(nc.getRootGroup(), attributes);
                 Test.ensureEqual(attributes.getString("contributor_name"), "NASA GSFC (OBPG)", "");
                 Test.ensureEqual(attributes.getString("keywords"), 
 "8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, " +
@@ -4857,7 +4858,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Fri Jun 05 09:23:34 HST 2020 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
+"        <att name=\"history\">Wed Jan 06 09:41:52 HST 2021 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
 "        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -8472,7 +8473,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
         //String url = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
 
-        NetcdfDataset nc = NetcdfDataset.openDataset(url);
+        NetcdfDataset nc = NetcdfDatasets.openDataset(url);  //2021: 's' is the new API
         String results, expected;
         Attributes attributes = new Attributes();
         try {
@@ -8592,12 +8593,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "  :time_coverage_start = \"20.{8}T00:00:00Z\";\n" +
 "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, 2002-2013, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
-"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
+"  :_CoordSysBuilder = \"ucar.nc2.internal.dataset.conv.CF1Convention\";\n" +
+//"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" + //2021-01-07 this is pre netcdf v5.4.1
 "\\}\n";
             Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
             attributes.clear();
-            NcHelper.getGlobalAttributes(nc, attributes);
+            NcHelper.getGroupAttributes(nc.getRootGroup(), attributes);
             Test.ensureEqual(attributes.getString("contributor_name"), "NASA GSFC (OBPG)", "");
             Test.ensureEqual(attributes.getString("keywords"), 
 "8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn", 
@@ -8647,7 +8649,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
     /*
         //open as a NetcdfDataset, not a NetcdfFile as above
-        nc = NetcdfDataset.openDataset("http://beach.mbari.org:8180/erddap/griddap/erdRyanSST"); //in tests, always non-https url
+        nc = NetcdfDatasets.openDataset("http://beach.mbari.org:8180/erddap/griddap/erdRyanSST"); //in tests, always non-https url
         String results, expected;
         Attributes attributes = new Attributes();
         try {

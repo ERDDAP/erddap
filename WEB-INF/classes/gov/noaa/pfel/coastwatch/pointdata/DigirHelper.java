@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import javax.xml.xpath.XPath;   //requires java 1.5
 
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 
 /**
  * This class has methods to help dealing with DiGIR (and Darwin and OBIS).
@@ -1772,7 +1773,7 @@ String2.log("inventoryTable:\n" + table.toString());
 
                 //test reading as NetcdfDataset
                 table.saveAsFlatNc(testName, "row");
-                NetcdfDataset ncd = NetcdfDataset.openDataset(testName);
+                NetcdfDataset ncd = NetcdfDatasets.openDataset(testName);   //2021: 's' is new API
                 try {
                     Object o[] = ncd.getCoordinateAxes().toArray();
                     String so = String2.toCSSVString(o);

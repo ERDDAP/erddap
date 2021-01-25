@@ -767,6 +767,18 @@ public class String2 {
         return sar; 
     }
 
+    /** 
+     * This converts a String[] to a HashSet&lt;String&gt;.
+     *
+     */
+    public static HashSet<String> stringArrayToSet(String sar[]) {
+        HashSet<String> hs = new HashSet();
+        int n = sar.length;
+        for (int i = 0; i < n; i++)
+            hs.add(sar[i]);
+        return hs; 
+    }
+
     /**
      * This returns the specified capture group from s. 
      *
@@ -1695,6 +1707,28 @@ public class String2 {
 
         return EMAIL_PATTERN.matcher(email).matches(); 
     }
+
+    /**
+     * This returns "" if email is a valid email address, or an error message.
+     *
+     * @param email a possible email address
+     * @return "" if email is a valid email address, or an error message.
+     */
+    public static String testEmailAddress(String email) {
+        return isEmailAddress(email)? "" : ERROR + ": \"" + email + "\" is not a valid email address.";
+    }
+
+    /**
+     * This throws a RuntimeException if email is not a valid email address.
+     *
+     * @param email a possible email address
+     */
+    public static void ensureEmailAddress(String email) {
+        String s = testEmailAddress(email);
+        if (s.length() > 0)
+           throw new RuntimeException(s);
+    }
+
 
     /**
      * This indicates if 'url' is probably a valid url.
@@ -6873,9 +6907,12 @@ and zoom and pan with controls in
      * @return a.trim(), a.trim()+separator+b.trim(), b.trim(), or ""
      */
     public static String ifSomethingConcat(String a, String separator, String b) {
-        if (isSomething(a)) 
-             return isSomething(b)? a.trim() + separator + b.trim() : a.trim();
-        else return isSomething(b)? b.trim() : "";
+        a = a == null? "" : a.trim();
+        b = b == null? "" : b.trim();
+
+        if (a.length() > 0) 
+             return b.length() > 0? a + separator + b : a;
+        else return b.length() > 0? b : "";
     }
 
     /**

@@ -2275,7 +2275,7 @@ String expected =
         testVerboseOn();
 
         String results = generateDatasetsXml(
-            EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+            EDStatic.unitTestDataDir + "nc", "GL_.*44761\\.nc", "",
             "TIME, DEPTH",
             1440,
             "", "", "", "", //just for test purposes
@@ -2288,11 +2288,11 @@ String expected =
             null) + "\n";
 
 String expected = 
-"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_442a_2710_b83c\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_c6c1_c6d3_fa53\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/nc/</fileDir>\n" +
-"    <fileNameRegex>GL_.*\\.nc</fileNameRegex>\n" +
+"    <fileNameRegex>GL_.*44761\\.nc</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -2649,7 +2649,7 @@ String expected =
         //GenerateDatasetsXml
         results = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromMultidimNcFiles", 
-            EDStatic.unitTestDataDir + "nc", "GL_.*\\.nc", "",
+            EDStatic.unitTestDataDir + "nc", "GL_.*44761\\.nc", "",
             "TIME, DEPTH",
             "1440",
             "", "", "", "", //just for test purposes
@@ -2673,7 +2673,7 @@ String expected =
         //it could be made into valid TimeSeries by adding a few more atts
         String2.log(results);
       
-        String tDatasetID = "nc_442a_2710_b83c";
+        String tDatasetID = "nc_c6c1_c6d3_fa53";
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");

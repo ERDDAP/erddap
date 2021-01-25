@@ -372,7 +372,7 @@ public class Subscriptions {
             email.startsWith("nobody@") || 
             email.startsWith("your.name") || 
             email.startsWith("your.email")) 
-            return String2.ERROR + ": \"" + email + "\" is in not a valid email address.";
+            return String2.ERROR + ": \"" + email + "\" is not a valid email address.";
         if (email.length() > EMAIL_LENGTH) 
             return String2.ERROR + ": emailAddress=" + email + " has more than " + 
                 EMAIL_LENGTH + " characters.";

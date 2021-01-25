@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
  */
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 //import ucar.nc2.dods.*;
 import ucar.nc2.util.*;
 import ucar.ma2.*;
@@ -4808,7 +4809,8 @@ expected =
 "ncmlName=/u00/data/viirs/MappedMonthly4km/m4.ncml\n" +
 "latitude [0]=89.97916666666667 [1]=89.9375 [4319]=-89.97916666666664\n" +
 "longitude [0]=-179.97916666666666 [1]=-179.9375 [8639]=179.97916666666666\n" +
-"time [0]=15340.0 [1]=15371.0 [1]=15371.0\n";
+"time [0]=15340 [1]=15371 [1]=15371\n";
+//"time [0]=15340.0 [1]=15371.0 [1]=15371.0\n";  //2021-01-07 with netcdf java pre 5.4.1 
         Test.ensureEqual(results, expected, "results=\n" + results);
     }
 
@@ -5522,7 +5524,7 @@ expected =
 "      {1.1, 2.2}\n" +
 "    doubles = \n" +
 "      {1.0000000000001E12, 1.0000000000002E12}\n" +
-"    Strings = \"10\", \"20\"\n" +
+"    Strings =   \"10\",   \"20\"\n" +
 "}\n";
         po = results.indexOf("/griddap/testSimpleTestNc.nc?");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
@@ -5816,7 +5818,7 @@ expected =
 "      {42, 43}\n" +
 "    doubles = \n" +
 "      {1.0000000000002E12, 1.0000000000003E12}\n" +
-"    Strings = \"20\", \"30\"\n" +
+"    Strings =   \"20\",   \"30\"\n" +
 "}\n";
         po = results.indexOf("/griddap/testSimpleTestNc.nc?");
         ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
@@ -8781,7 +8783,7 @@ expected =
      *
      * This is an hdf file with no Dimensions, just some array sizes.
      * !!! Support for these files is incomplete. You need a way to specify array sizes
-     * in the dimensionsCSV parameter, to identify matching variables/
+     * in the dimensionsCSV parameter, to identify matching variables.
      */
     public static void testGenerateDatasetsXmlGroups() throws Throwable {
         //A test for Jessica Hausman
@@ -8790,6 +8792,19 @@ expected =
         String tName, results, tResults, expected, userDapQuery;
         int tPo;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+
+        //test if netcdf java considers group name to have trailing slash
+        NetcdfFile ncFile = NetcdfFiles.open(
+            EDStatic.unitTestDataDir + "hdf/Q2011237000100.L2_SCI_V4.0");
+        try {
+            Variable var = ncFile.findVariable("Navigation/scat_latfoot");
+            Test.ensureEqual(var.getParentGroup().getFullName(), "Navigation", "");
+            Test.ensureNotNull(ncFile.findGroup("Navigation"), "");
+            //and ensure group "" is the root group
+            Test.ensureEqual(ncFile.findGroup(""), ncFile.getRootGroup(), "");
+        } finally {
+            ncFile.close();
+        }
 
         results = generateDatasetsXml(
             EDStatic.unitTestDataDir + "hdf/", 
@@ -8800,7 +8815,7 @@ expected =
         expected = 
 "<!-- NOTE! The source for this dataset has nGridVariables=154,\n" +
 "  but this dataset will only serve 1 because the others use different dimensions. -->\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"hdf_4fef_5b21_e56a\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"hdf_3f4c_1962_c249\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>" + EDStatic.unitTestDataDir + "hdf/</fileDir>\n" +
@@ -8880,7 +8895,7 @@ expected =
 "        <att name=\"End_Year\">null</att>\n" +
 "        <att name=\"infoUrl\">https://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
 "        <att name=\"Input_Files\">null</att>\n" +
-"        <att name=\"keywords\">aquarius, Aquarius_Flags/rad_rfi_flags, axis0, axis1, axis2, axis3, biology, center, color, data, flags, flight, goddard, group, gsfc, level, nasa, obpg, ocean, processing, quality, radiometer, rfi, space</att>\n" +
+"        <att name=\"keywords\">aquarius, Aquarius_Flags/axis0, Aquarius_Flags/axis1, Aquarius_Flags/axis2, Aquarius_Flags/axis3, Aquarius_Flags/rad_rfi_flags, axis0, axis1, axis2, axis3, biology, center, color, data, flags, flags/axis0, flags/axis1, flags/axis2, flags/axis3, flight, goddard, group, gsfc, level, nasa, obpg, ocean, processing, quality, radiometer, rfi, space</att>\n" +
 "        <att name=\"Latitude_Units\">null</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Longitude_Units\">null</att>\n" +
@@ -8895,43 +8910,43 @@ expected =
 "        <att name=\"title\">Aquarius Level 2 Data</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis0</sourceName>\n" +
-"        <destinationName>axis0</destinationName>\n" +
+"        <sourceName>Aquarius_Flags/axis0</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_axis0</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags/axis0</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis1</sourceName>\n" +
-"        <destinationName>axis1</destinationName>\n" +
+"        <sourceName>Aquarius_Flags/axis1</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_axis1</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis1</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags/axis1</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis2</sourceName>\n" +
-"        <destinationName>axis2</destinationName>\n" +
+"        <sourceName>Aquarius_Flags/axis2</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_axis2</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis2</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags/axis2</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis3</sourceName>\n" +
-"        <destinationName>axis3</destinationName>\n" +
+"        <sourceName>Aquarius_Flags/axis3</sourceName>\n" +
+"        <destinationName>Aquarius_Flags_axis3</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis3</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
+"            <att name=\"long_name\">Aquarius Flags/axis3</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <dataVariable>\n" +
@@ -9214,7 +9229,7 @@ expected =
 "        <att name=\"End_Year\">null</att>\n" +
 "        <att name=\"infoUrl\">https://oceancolor.gsfc.nasa.gov/cms/</att>\n" +
 "        <att name=\"Input_Files\">null</att>\n" +
-"        <att name=\"keywords\">aquarius, Aquarius_Flags/radiometer_flags, average, axis0, axis1, axis2, biology, Block_Attributes/rad_samples, center, color, data, east, flags, flight, footprint, geodectic, goddard, group, gsfc, latitude, latitudes, level, longitude, longitudes, nasa, Navigation/cellatfoot, Navigation/cellonfoot, Navigation/scat_latfoot, Navigation/scat_lonfoot, number, obpg, ocean, per, processing, quality, radiometer, samples, scatterometer, space, statistics</att>\n" +
+"        <att name=\"keywords\">aquarius, Aquarius_Flags/radiometer_flags, average, axis0, axis1, axis2, biology, Block_Attributes/rad_samples, center, color, data, east, flags, flight, footprint, geodectic, goddard, group, gsfc, latitude, latitudes, level, longitude, longitudes, nasa, navigation, navigation/axis0, navigation/axis1, navigation/axis2, Navigation/cellatfoot, Navigation/cellonfoot, Navigation/scat_latfoot, Navigation/scat_lonfoot, number, obpg, ocean, per, processing, quality, radiometer, samples, scatterometer, space, statistics</att>\n" +
 "        <att name=\"Latitude_Units\">null</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Longitude_Units\">null</att>\n" +
@@ -9229,35 +9244,38 @@ expected =
 "        <att name=\"title\">Aquarius Level 2 Data</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis0</sourceName>\n" +
-"        <destinationName>axis0</destinationName>\n" +
+"        <sourceName>Navigation/axis0</sourceName>\n" +
+"        <destinationName>Navigation_axis0</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis0</att>\n" +
+"            <att name=\"long_name\">Navigation/axis0</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis1</sourceName>\n" +
-"        <destinationName>axis1</destinationName>\n" +
+"        <sourceName>Navigation/axis1</sourceName>\n" +
+"        <destinationName>Navigation_axis1</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis1</att>\n" +
+"            <att name=\"long_name\">Navigation/axis1</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
 "    <axisVariable>\n" +
-"        <sourceName>axis2</sourceName>\n" +
-"        <destinationName>axis2</destinationName>\n" +
+"        <sourceName>Navigation/axis2</sourceName>\n" +
+"        <destinationName>Navigation_axis2</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
-"            <att name=\"long_name\">Axis2</att>\n" +
+"            <att name=\"long_name\">Navigation/axis2</att>\n" +
 "        </addAttributes>\n" +
 "    </axisVariable>\n" +
+// a different group! but the dimensions are unnamed so this might be a match. 
+//Better to have too many vars than to omit some that are desired.
+//Without named dimensions, there is no way to know.
 "    <dataVariable>\n" +
 "        <sourceName>Aquarius_Flags/radiometer_flags</sourceName>\n" +
 "        <destinationName>Aquarius_Flags_radiometer_flags</destinationName>\n" +
@@ -9398,22 +9416,22 @@ expected =
         //String2.log(results);
         expected = 
 "Attributes {\n" +
-"  axis0 {\n" +
+"  Navigation_axis0 {\n" +
 "    Int32 actual_range 0, 4082;\n" +
 "    String ioos_category \"Unknown\";\n" +
-"    String long_name \"Axis0\";\n" +
+"    String long_name \"Navigation/axis0\";\n" +
 "    String units \"count\";\n" +
 "  }\n" +
-"  axis1 {\n" +
+"  Navigation_axis1 {\n" +
 "    Int16 actual_range 0, 2;\n" +
 "    String ioos_category \"Unknown\";\n" +
-"    String long_name \"Axis1\";\n" +
+"    String long_name \"Navigation/axis1\";\n" +
 "    String units \"count\";\n" +
 "  }\n" +
-"  axis2 {\n" +
+"  Navigation_axis2 {\n" +
 "    Int16 actual_range 0, 3;\n" +
 "    String ioos_category \"Unknown\";\n" +
-"    String long_name \"Axis2\";\n" +
+"    String long_name \"Navigation/axis2\";\n" +
 "    String units \"count\";\n" +
 "  }\n" +
 "  Aquarius_Flags_radiometer_flags {\n" +
@@ -9580,56 +9598,56 @@ expected =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Int32 axis0[axis0 = 4083];\n" +
-"  Int16 axis1[axis1 = 3];\n" +
-"  Int16 axis2[axis2 = 4];\n" +
+"  Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"  Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"  Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt32 Aquarius_Flags_radiometer_flags[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      UInt32 Aquarius_Flags_radiometer_flags[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Aquarius_Flags_radiometer_flags;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 Block_Attributes_rad_samples[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      UInt16 Block_Attributes_rad_samples[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Block_Attributes_rad_samples;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 Navigation_cellatfoot[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      Float32 Navigation_cellatfoot[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Navigation_cellatfoot;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 Navigation_cellonfoot[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      Float32 Navigation_cellonfoot[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Navigation_cellonfoot;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 Navigation_scat_latfoot[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      Float32 Navigation_scat_latfoot[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Navigation_scat_latfoot;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 Navigation_scat_lonfoot[axis0 = 4083][axis1 = 3][axis2 = 4];\n" +
+"      Float32 Navigation_scat_lonfoot[Navigation_axis0 = 4083][Navigation_axis1 = 3][Navigation_axis2 = 4];\n" +
 "    MAPS:\n" +
-"      Int32 axis0[axis0 = 4083];\n" +
-"      Int16 axis1[axis1 = 3];\n" +
-"      Int16 axis2[axis2 = 4];\n" +
+"      Int32 Navigation_axis0[Navigation_axis0 = 4083];\n" +
+"      Int16 Navigation_axis1[Navigation_axis1 = 3];\n" +
+"      Int16 Navigation_axis2[Navigation_axis2 = 4];\n" +
 "  } Navigation_scat_lonfoot;\n" +
 "} testGridGroupsNavigation;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -9642,7 +9660,7 @@ expected =
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"axis0,axis1,axis2,Aquarius_Flags_radiometer_flags,Block_Attributes_rad_samples,Navigation_cellatfoot,Navigation_cellonfoot,Navigation_scat_latfoot,Navigation_scat_lonfoot\n" +
+"Navigation_axis0,Navigation_axis1,Navigation_axis2,Aquarius_Flags_radiometer_flags,Block_Attributes_rad_samples,Navigation_cellatfoot,Navigation_cellonfoot,Navigation_scat_latfoot,Navigation_scat_lonfoot\n" +
 "count,count,count,,,degrees,degrees,degrees,degrees\n" +
 "0,0,0,0,55,-78.5692,-0.8074951,-79.0485,-1.7279968\n" +
 "0,0,1,278600,60,-79.08211,-2.3416138,-78.6658,-0.50601196\n" +
@@ -9682,7 +9700,7 @@ expected =
             gdxResults.length() + " " + results.length());
 
         expected = 
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"charles_2c88_14af_91ba\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"charles_4ff2_d5fd_9411\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/data/charles/</fileDir>\n" +
@@ -9693,6 +9711,7 @@ expected =
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
+"        <att name=\"_NCProperties\">version=2,netcdf=4.7.3,hdf5=1.10.4</att>\n" + //2021-01-07 appeared with netcdf-java 5.4.1
 "        <att name=\"CHS_Data_Format\">Version_1</att>\n" +
 "        <att name=\"Latitude_Units\">deg</att>\n" +
 "        <att name=\"Longitude_Units\">deg</att>\n" +
@@ -9711,6 +9730,7 @@ expected =
 "        <att name=\"Vertical_Datum\">NAVD88</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"_NCProperties\">null</att>\n" + //2021-01-07 appeared because of change is source above
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
@@ -9838,7 +9858,7 @@ expected =
         String2.log("results=\n" + results);
         Test.ensureEqual(results, expected, "");
 
-        //*** test that dataset  !!! Notably getting appropriated global metadata from the group
+        //*** test that dataset  !!! Notably getting appropriate metadata from the group
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testGridGroups2a"); 
 
         //*** test getting das for entire dataset
@@ -9900,6 +9920,7 @@ expected =
 "    String units \"hPa\";\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
+"    String _NCProperties \"version=2,netcdf=4.7.3,hdf5=1.10.4\";\n" + //2021-01-07 appeared with netcdf-java 5.4.1
 "    String cdm_data_type \"Grid\";\n" +
 "    String CHS_Data_Format \"Version_1\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
@@ -9925,11 +9946,11 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String project \"USACE_S2G\";\n" +
-"    Float64 Record_Interval 15.0;\n" +
-"    String Record_Interval_Units \"min\";\n" +
+"    Float64 Record_Interval 15.0;\n" +          
+"    String Record_Interval_Units \"min\";\n" +  
 "    String Region \"Sabine_to_Galveston\";\n" +
-"    Float64 Save_Point_Depth 13.2322;\n" +
-"    String Save_Point_Depth_Units \"m\";\n" +
+"    Float64 Save_Point_Depth 13.2322;\n" +      
+"    String Save_Point_Depth_Units \"m\";\n" +   
 "    Float64 Save_Point_ID 2491.0;\n" +                //global att
 "    Float64 Save_Point_Latitude 29.1969;\n" +
 "    Float64 Save_Point_Longitude -94.1768;\n" +
@@ -10043,24 +10064,26 @@ expected =
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +  
-"        <att name=\"CHS_Data_Format\">Version_1</att>\n" +                     //rootGroup global att
-"        <att name=\"Latitude_Units\">deg</att>\n" +                            //rootGroup global att
-"        <att name=\"Longitude_Units\">deg</att>\n" +                           //rootGroup global att
-"        <att name=\"Project\">USACE_S2G</att>\n" +                             //rootGroup global att
-"        <att name=\"Record_Interval\" type=\"double\">15.0</att>\n" +
-"        <att name=\"Record_Interval_Units\">min</att>\n" +
-"        <att name=\"Region\">Sabine_to_Galveston</att>\n" +                    //rootGroup global att
-"        <att name=\"Save_Point_Depth\" type=\"double\">13.2322</att>\n" +
-"        <att name=\"Save_Point_Depth_Units\">m</att>\n" +
-"        <att name=\"Save_Point_ID\" type=\"double\">2491.0</att>\n" +          //rootGroup global att
-"        <att name=\"Save_Point_Latitude\" type=\"double\">29.1969</att>\n" +   //rootGroup global att
-"        <att name=\"Save_Point_Longitude\" type=\"double\">-94.1768</att>\n" + //rootGroup global att
+"        <att name=\"_NCProperties\">version=2,netcdf=4.7.3,hdf5=1.10.4</att>\n" +  
+"        <att name=\"CHS_Data_Format\">Version_1</att>\n" +                        //rootGroup att
+"        <att name=\"Latitude_Units\">deg</att>\n" +                               //rootGroup att
+"        <att name=\"Longitude_Units\">deg</att>\n" +                              //rootGroup att
+"        <att name=\"Project\">USACE_S2G</att>\n" +                                //rootGroup att
+"        <att name=\"Record_Interval\" type=\"double\">15.0</att>\n" +             //group att
+"        <att name=\"Record_Interval_Units\">min</att>\n" +                        //group att 
+"        <att name=\"Region\">Sabine_to_Galveston</att>\n" +                       //rootGroup att
+"        <att name=\"Save_Point_Depth\" type=\"double\">13.2322</att>\n" +         //group att
+"        <att name=\"Save_Point_Depth_Units\">m</att>\n" +                         //group att  
+"        <att name=\"Save_Point_ID\" type=\"double\">2491.0</att>\n" +             //rootGroup att
+"        <att name=\"Save_Point_Latitude\" type=\"double\">29.1969</att>\n" +      //rootGroup att
+"        <att name=\"Save_Point_Longitude\" type=\"double\">-94.1768</att>\n" +    //rootGroup att
 "        <att name=\"Storm_ID\">035</att>\n" +
 "        <att name=\"Storm_Name\">Synthetic_035</att>\n" +
 "        <att name=\"Storm_Type\">Tropical_Synthetic</att>\n" +
-"        <att name=\"Vertical_Datum\">NAVD88</att>\n" +                         //rootGroup global att
+"        <att name=\"Vertical_Datum\">NAVD88</att>\n" +                            //rootGroup global att
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"_NCProperties\">null</att>\n" +  
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
@@ -10781,7 +10804,7 @@ expected =
                 String2.log("test #" + i);
             NetcdfFile ncFile = null; 
             try {
-                ncFile = NetcdfFile.open(fileName); //this is what fails with 1/10000th file
+                ncFile = NetcdfFiles.open(fileName); //this is what fails with 1/10000th file
                 Variable var = ncFile.findVariable("MWcdom");  //size=[1,1,2321,4001]
                 Array array = var.read();          
                 System.out.println("shape=" + Arrays.toString(array.getShape()));
@@ -10839,7 +10862,7 @@ expected =
 
         NetcdfFile ncFile = null; 
         try {
-            ncFile = NetcdfFile.open(fileName); //this is what fails with 1/10000th file
+            ncFile = NetcdfFiles.open(fileName); //this is what fails with 1/10000th file
             System.out.println("1) Shouldn't get here!"); //It doesn't get here. Good! Test is done early on.
 
             Variable var = ncFile.findVariable("MWcdom");  //size=[1,1,2321,4001]
@@ -10859,16 +10882,13 @@ expected =
             ncFile.close();
         } catch (Throwable t) {
             //expected
-            try {
-                if (ncFile != null)
-                    ncFile.close();
-            } catch (Throwable t2) {
-                //don't care
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
+            if (ncFile != null) {
+                try {ncFile.close(); } catch (Exception e9) {}
             }
             String msg = t.toString();
-            String2.log("caught: " + msg);
             Test.ensureEqual(msg,
-                "java.io.IOException: java.io.IOException: File is truncated calculated size= 37201448 actual = 6200241",
+                "java.io.IOException: java.io.IOException: File is truncated, calculated size= 37201448 actual = 6200241",
                 "");
         }
     }
@@ -14383,8 +14403,8 @@ expected =
                     if (test == 41) testCacheFiles(false);                   //does require localhost erddap
 
                     //tests of remote sources on-the-fly
-                    //NetcdfFile.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
-                    //NetcdfDataset.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+                    //NetcdfFiles.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
+                    //NetcdfDatasets.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
                     //from command line: curl --head https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
                     if (test == 42) testGenerateDatasetsXmlWithRemoteThreddsFiles();  
                     //if (test == 43) testRemoteThreddsFiles(true); //deleteCachedInfo. Don't do this. Use <cacheFromUrl> instead

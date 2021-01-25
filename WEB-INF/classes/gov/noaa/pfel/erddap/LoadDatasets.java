@@ -587,6 +587,27 @@ public class LoadDatasets extends Thread {
                         EDStatic.DEFAULT_nTableThreads : tnt; 
                     String2.log("nTableThreads=" + EDStatic.nTableThreads);
 
+                } else if (tags.equals("<erddapDatasets><palettes>")) {
+                } else if (tags.equals("<erddapDatasets></palettes>")) {
+                    String tContent = xmlReader.content();
+                    String tPalettes[] = String2.isSomething(tContent)?
+                        String2.split(tContent, ',') : EDStatic.DEFAULT_palettes;
+                    //ensure that all of the original palettes are present
+                    HashSet<String> newPaletteSet = String2.stringArrayToSet(tPalettes);
+                    //String2.log(">>> newPaletteSet=" + String2.toCSSVString(newPaletteSet));
+                    //String2.log(">>> defPaletteSet=" + String2.toCSSVString(EDStatic.DEFAULT_palettes_set));
+
+                    if (!newPaletteSet.containsAll(EDStatic.DEFAULT_palettes_set))
+                        throw new RuntimeException(
+                            "The <palettes> tag MUST include all of the palettes listed in the <palettes> tag in messages.xml.");
+                    String tPalettes0[] = new String[tPalettes.length + 1];
+                    tPalettes0[0] = "";
+                    System.arraycopy(tPalettes, 0, tPalettes0, 1, tPalettes.length);
+                    //then copy into place
+                    EDStatic.palettes  = tPalettes;
+                    EDStatic.palettes0 = tPalettes0; 
+                    String2.log("palettes=" + String2.toCSSVString(tPalettes));
+
                 } else if (tags.equals("<erddapDatasets><partialRequestMaxBytes>")) {
                 } else if (tags.equals("<erddapDatasets></partialRequestMaxBytes>")) {
                     int tnt = String2.parseInt(xmlReader.content());

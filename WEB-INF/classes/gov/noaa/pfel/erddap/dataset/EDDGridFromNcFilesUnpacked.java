@@ -2172,7 +2172,7 @@ expected =
                 } else {
                     if (test ==  0) testGenerateDatasetsXml();
                     if (test ==  1) testBasic(deleteCachedDatasetInfo);
-if (test ==  2) testUInt16File();  //trouble
+                    if (test ==  2) testUInt16File();  //trouble
                     if (test ==  3) testMissingValue();
                     if (test ==  4) testSuperPreciseTimeUnits();
                 }

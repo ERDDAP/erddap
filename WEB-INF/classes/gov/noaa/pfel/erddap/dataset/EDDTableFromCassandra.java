@@ -256,6 +256,9 @@ import gov.noaa.pfel.erddap.variable.*;
 //  https://github.com/datastax/java-driver/tree/3.0/upgrade_guide
 import com.datastax.driver.core.*;
 
+//see commented out usage below
+//import com.codahale.metrics.jmx.JmxReporter;
+
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -856,7 +859,7 @@ public class EDDTableFromCassandra extends EDDTable{
         long tTime = System.currentTimeMillis();
         //see http://www.datastax.com/documentation/developer/java-driver/2.1/java-driver/fourSimpleRules.html
         Cluster.Builder builder = Cluster.builder().addContactPoint(url);
-        
+
         //options
         //Note that any tag with no value causes nothing to be done.
         //http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/Cluster.Builder.html
@@ -887,13 +890,22 @@ public class EDDTableFromCassandra extends EDDTable{
             if (verbose) String2.log("  " + opt + " was set.");
         }        
 
+        //2021-01-25 to deal with java.lang.NoClassDefFoundError: com/codahale/metrics/JmxReporter
+        //metrics is now always false.
+        //https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility
         opt = "metrics";
-        if (verbose) String2.log("  " + opt + " default=true"); 
+        //if (verbose) String2.log("  " + opt + " default=true"); 
         ts = connectionProperties.get(opt);
-        if (String2.isSomething(ts) && !String2.parseBoolean(ts)) { //unusual
+        //if (String2.isSomething(ts) && !String2.parseBoolean(ts)) { //unusual
             builder.withoutMetrics(); //set it to false
-            if (verbose) String2.log("  " + opt + "  set to false");
-        }
+            if (verbose) String2.log("  " + opt + "  set to false (always)");
+        //} else { 
+        //    builder.withoutJMXReporting();
+        //    JmxReporter reporter = JmxReporter.forRegistry(builder.getMetrics().getRegistry())
+        //        .inDomain(builder.getClusterName() + "-metrics")
+        //        .build();
+        //    reporter.start();
+        //}       
 
         opt = "port"; 
         if (verbose) String2.log("  " + opt + " default=9042");
@@ -1013,7 +1025,7 @@ public class EDDTableFromCassandra extends EDDTable{
             String2.log("clusterName=" + metadata.getClusterName());
             for (Host host : metadata.getAllHosts()) 
                 String2.log("datacenter=" + host.getDatacenter() +
-                    " host=" + host.getAddress() + 
+                    " host=" + host.getEndPoint().resolve().getAddress() + 
                     " rack=" + host.getRack());            
         }
 

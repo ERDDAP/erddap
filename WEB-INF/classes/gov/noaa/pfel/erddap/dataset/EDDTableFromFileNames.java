@@ -2572,7 +2572,7 @@ String expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
-"2018, 2019, 2020";  
+"2018, 2019, 2020, 2021";  
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
             msg = "get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)";

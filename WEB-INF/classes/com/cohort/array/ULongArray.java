@@ -764,9 +764,8 @@ public class ULongArray extends PrimitiveArray {
         if (array.length == size)
             return array;
         Math2.ensureMemoryAvailable(8L * size, "ULongArray.toArray");
-        long[] tArray = new long[size];
-        System.arraycopy(array, 0, tArray, 0, size);
-        return tArray;
+        //this is faster than making array then arraycopy because it doesn't have to fill the initial array with 0's
+        return Arrays.copyOfRange(array, 0, size);
     }
    
     /**
@@ -1227,7 +1226,21 @@ public class ULongArray extends PrimitiveArray {
      * to the beginning.
      */
     public void sort() {
-        Arrays.sort(array, 0, size);
+        //see switchover point and speed comparison in 
+        //  https://www.baeldung.com/java-arrays-sort-vs-parallelsort
+        if (size < 8192)
+             Arrays.sort(array, 0, size);
+        else Arrays.parallelSort(array, 0, size);
+
+        //Then find the first value >=0, and move it and subsequent to beginning of array.
+        //You can't use PrimitiveArray.binarySearch because it works on unsigned values
+        //  (via PAOne) and the array is sorted according to the signed values.
+        //This is not ideal, but this is rarely used.
+        //[Future: you could use Arrays.binarySearch() with extra effort to find *first* value >=0.]
+        int which = 0;
+        while (which < size && array[which] < 0)
+            which++;
+        move(which, size, 0);
     }
 
     /**
@@ -2015,6 +2028,18 @@ public class ULongArray extends PrimitiveArray {
         anArray.setMaxIsMV(true);
         Test.ensureEqual(anArray                                       .tryToFindNumericMissingValue(), "18446744073709551615", ""); 
         Test.ensureEqual((new ULongArray(new long[] {1, 99          })).tryToFindNumericMissingValue(),   99, "");
+
+        //sort
+        anArray = new ULongArray(new BigInteger[]{
+            MAX_VALUE, 
+            MAX_VALUE.divide(new BigInteger("2")).add(BigInteger.ONE), 
+            new BigInteger("0"), 
+            new BigInteger("5"), 
+            MAX_VALUE.divide(new BigInteger("2"))});
+        anArray.sort();
+        Test.ensureEqual(anArray.toString(), 
+            "0, 5, 9223372036854775807, 9223372036854775808, 18446744073709551615", "");
+
 
         /* */
     }
