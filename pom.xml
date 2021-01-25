@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Website to search for maven plugins and dependencies: https://mvnrepository.com/ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>gov.noaa.pfel.erddap</groupId>
+    <artifactId>ERDDAP</artifactId>
+    <version>2.12-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>erddap</name>
+    <url>https://coastwatch.pfeg.noaa.gov/erddap/index.html</url>
+
+    <properties>
+        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>unidata-releases</id>
+            <name>UNIDATA Releases</name>
+            <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                    <include>**/*.csv</include>
+                    <include>**/*.tsv</include>
+                    <include>**/*.txt</include>
+                    <include>**/*.cpt</include>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+
+                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <failOnError>true</failOnError>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <excludes>
+                        <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/sgt/MapGraph.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/sgt/MapProj.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/sgt/GSHHSNewOnHold.java_NOT_YET</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/griddata/Grd.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/griddata/GridDataSetCWOpendap.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/griddata/GridDataSetPathfinder.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/griddata/WriteShapefile.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/pointdata/DigirIobisTDSP.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/pointdata/DigirObisTDSP.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/hdf/HdfWriter.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/coastwatch/HelloWorld.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromBinaryFile.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromMatFiles.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableCopyPost.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromBMDE.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromMWFS.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNOS.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNWISDV.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostDatabase.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostNcFiles.javaINACTIVE</exclude>
+                        
+                        <exclude>gov/noaa/pfel/coastwatch/util/FileVisitorDNLS.javaOLD</exclude>
+
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-war-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.0.0</version>
+            </plugin>
+
+            <!-- https://mvnrepository.com/artifact/org.apache.tomcat.maven/tomcat8-maven-plugin -->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat8-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <port>8081</port>
+                    <path>/erddap</path>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+          <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.10</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.surefire</groupId>
+                    <artifactId>surefire-junit4</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-utils</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
+            <dependency>
+              <groupId>software.amazon.awssdk</groupId>
+              <artifactId>bom</artifactId>
+              <version>2.15.47</version>
+              <type>pom</type>
+              <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/junit/junit
+             There are newer versions with different domain name, but cause trouble with dependency checking. -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Kyle had this: 
+             https://mvnrepository.com/artifact/org.apache.ant/ant 
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>1.10.9</version>
+        </dependency>   -->
+
+        <!-- for dods.dap (for code I wasn't compiling): 
+             https://mvnrepository.com/artifact/gnu-regexp/gnu-regexp
+             'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
+             -->
+        <dependency>
+            <groupId>gnu-regexp</groupId>
+            <artifactId>gnu-regexp</artifactId>
+            <version>1.1.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- for dods.dap (for code I wasn't compiling):  
+             https://mvnrepository.com/artifact/gnu.getopt/java-getopt
+             'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
+              -->
+        <dependency>
+            <groupId>gnu.getopt</groupId>
+            <artifactId>java-getopt</artifactId>
+            <version>1.0.13</version>
+            <scope>provided</scope>
+        </dependency> 
+
+        <!-- https://mvnrepository.com/artifact/com.lowagie/itext 
+             Newer version is available, but license now gpl?!
+             -->
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+
+        <!-- Kyle had this: 
+        <dependency>
+            <groupId>wsdl4j</groupId>
+            <artifactId>wsdl4j</artifactId>
+            <version>1.6.3</version>
+        </dependency-->
+
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
+             I need to change my code before I can use newer versions. -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>3.5.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20201115</version>
+            <!-- was version>20140107</version -->
+        </dependency>
+
+        <!-- I have private copy of source code in with my code.
+             2020-12-21 I tried to remove my copy and use this, but failed.
+             https://mvnrepository.com/artifact/org.jdom/jdom 
+        <dependency>
+            <groupId>org.jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>2.0.2</version>
+        </dependency-->
+
+        <!-- Kyle had this: 
+        <dependency>
+            <groupId>org.apache.axis</groupId>
+            <artifactId>axis</artifactId>
+            <version>1.4</version>
+        </dependency-->
+
+        <!-- Kyle had this: 
+        <dependency>
+            <groupId>atg.taglib.json</groupId>
+            <artifactId>json-taglib</artifactId>
+            <version>0.4.1</version>
+        </dependency-->
+
+        <!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.20</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>30.1-jre</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.11.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.11.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.11.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
+             Cassandra still refers to this older version from older domain. -->
+        <dependency>
+            <groupId>net.jpountz.lz4</groupId>
+            <artifactId>lz4</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
+             -->
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>4.1.16</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
+            2021-01-25 Tried: To deal with java.lang.NoClassDefFoundError: com/codahale/metrics/JmxReporter
+            But now "metrics" option is always set to false.
+            See EDDTableFromCassandra references to JmxReporter.
+            See https://docs.datastax.com/en/developer/java-driver/3.5/manual/metrics/#metrics-4-compatibility            
+            and need for Cluster.builder().withoutJMXReporting()
+            which is probably a workable solution.           
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jmx</artifactId>
+            <version>4.1.16</version>
+        </dependency -->
+
+        <!-- NO LONGER NEEDED! It's in netcdf-all.jar
+             https://mvnrepository.com/artifact/org.slf4j/slf4j-simple 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.30</version>
+            <scope>runtime</scope>
+        </dependency  -->
+
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.56.Final</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.18</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java -->
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>1.1.8.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
+             2020-12-23 was 5.3.3 -->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdfAll</artifactId>
+            <version>5.4.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-jexl3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jexl3</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>3.10.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
+        <dependency>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>s3</artifactId>
+          <version>2.15.47</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>regions</artifactId>
+            <version>2.15.47</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+    </dependencies>
+</project>
