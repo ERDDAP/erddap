@@ -43,22 +43,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//import org.apache.lucene.analysis.Analyzer;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;
-//import org.apache.lucene.document.Document;
-//import org.apache.lucene.document.Field;
-//import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-//import org.apache.lucene.queryParser.ParseException;
-//import org.apache.lucene.queryParser.QueryParser;
-//import org.apache.lucene.search.TopDocs;
-//import org.apache.lucene.search.IndexSearcher;
-//import org.apache.lucene.search.Query;
-//import org.apache.lucene.store.Directory;
-//import org.apache.lucene.store.SimpleFSDirectory;
-//import org.apache.lucene.util.Version;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP.
@@ -1301,8 +1286,9 @@ public class LoadDatasets extends Thread {
 
                 //update the datasetIDs
                 long tTime = System.currentTimeMillis();
+                HashSet deletedSet = new HashSet();
                 for (int idi = 0; idi < nDatasetIDs; idi++) {
-                    String tDatasetID = datasetIDs.get(idi); 
+                    String tDatasetID = String2.canonical(datasetIDs.get(idi)); 
                     EDD edd = erddap.gridDatasetHashMap.get(tDatasetID);
                     if (edd == null) 
                         edd = erddap.tableDatasetHashMap.get(tDatasetID);
@@ -1310,25 +1296,32 @@ public class LoadDatasets extends Thread {
                         //remove it from Lucene     luceneIndexWriter is thread-safe
                         EDStatic.luceneIndexWriter.deleteDocuments( 
                             new Term("datasetID", tDatasetID));
+                        deletedSet.add(tDatasetID);
+
                     } else {
-                        //update it in Lucene
+                        //add/update it in Lucene
                         EDStatic.luceneIndexWriter.updateDocument(
                             new Term("datasetID", tDatasetID),
                             edd.searchDocument());                                    
+
                     }
                 }
 
                 //commit the changes  (recommended over close+reopen)
                 EDStatic.luceneIndexWriter.commit();
 
+                //after commit (so after changes made), remove deleted datasetIDs from luceneDocNToDatasetID
+                String2.removeValues(EDStatic.luceneDocNToDatasetID, deletedSet);
+
                 String2.log("updateLucene() finished." + 
-                    " nDocs=" + EDStatic.luceneIndexWriter.numDocs() + 
+                    " nDocs=" + EDStatic.luceneIndexWriter.getPendingNumDocs() + 
                     " nChanged=" + nDatasetIDs + 
                     " time=" + (System.currentTimeMillis() - tTime) + "ms");
             } catch (Throwable t) {
 
                 //any exception is pretty horrible
                 //  e.g., out of memory, index corrupt, IO exception
+                EDStatic.useLuceneSearchEngine = false;
                 String subject = String2.ERROR + " in updateLucene()";
                 String content = MustBe.throwableToString(t); 
                 String2.log(subject + ":\n" + content);
@@ -1339,7 +1332,7 @@ public class LoadDatasets extends Thread {
                     //close luceneIndexWriter  (see indexWriter javaDocs)
                     try {
                         //abandon pending changes
-                        EDStatic.luceneIndexWriter.close(true);
+                        EDStatic.luceneIndexWriter.close();
                         Math2.gcAndWait(); //part of dealing with lucene trouble
                     } catch (Throwable t2) {
                         String2.log(MustBe.throwableToString(t2));

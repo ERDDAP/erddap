@@ -15,23 +15,11 @@ import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.*;
 
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 
-//import org.apache.lucene.analysis.Analyzer;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;
-//import org.apache.lucene.document.Document;
-//import org.apache.lucene.document.Field;
-//import org.apache.lucene.index.IndexReader;
-//import org.apache.lucene.index.IndexWriter;
-//import org.apache.lucene.index.IndexWriterConfig;
-//import org.apache.lucene.index.Term;
-//import org.apache.lucene.queryParser.ParseException;
-//import org.apache.lucene.queryParser.QueryParser;
-//import org.apache.lucene.search.TopDocs;
-//import org.apache.lucene.search.IndexSearcher;
-//import org.apache.lucene.search.Query;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.SimpleFSDirectory;
-//import org.apache.lucene.util.Version;
+//import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.NIOFSDirectory;
 
 /**
  * This class is in charge of creating and monitoring LoadDatasets threads.
@@ -66,18 +54,22 @@ public class RunLoadDatasets extends Thread {
 
         if (EDStatic.useLuceneSearchEngine) {
             try {
+                //delete old index files
+                //Index will be recreated, and Lucense throws exception if it tries to read from old indices.
+                File2.deleteAllFiles(EDStatic.fullLuceneDirectory);
+
                 //Since I recreate index when erddap restarted, I can change anything
                 //  (e.g., Directory type, Version) any time
                 //  (no worries about compatibility with existing index).
-                //??? For now, use SimpleFSDirectory,
-                //  BUT EVENTUALLY SWITCH to FSDirectory.open(fullLuceneDirectory);
-                //  See FSDirectory javadocs (I need to stop using thread.interrupt).
-                EDStatic.luceneDirectory = new SimpleFSDirectory(new File(EDStatic.fullLuceneDirectory));    
+                //??? For now, use NIOFSDirectory,
+                //  See NIOFSDirectory javadocs (I need to stop using thread.interrupt).
+                EDStatic.luceneDirectory = new NIOFSDirectory(FileSystems.getDefault().getPath(EDStatic.fullLuceneDirectory));    
 
                 //At start of ERDDAP, always create a new index.  Never re-use existing index.
                 //Do it here to use true and also to ensure it can be done.
                 EDStatic.createLuceneIndexWriter(true); //throws exception if trouble
             } catch (Throwable t) {
+                EDStatic.useLuceneSearchEngine = false;
                 throw new RuntimeException(t);
             }
         }
