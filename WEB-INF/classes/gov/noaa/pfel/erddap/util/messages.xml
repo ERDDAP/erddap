@@ -4131,7 +4131,7 @@ in your search.
 <li>In this ERDDAP, you may search for the start of a word. For example,
 searching for <kbd>spee</kbd> will find datasets with <kbd>speed</kbd>, but not datasets
 with <kbd>WindSpeed</kbd>.
-<li>In this ERDDAP, all words in a phrase must be a complete words.
+<li>In this ERDDAP, all words in a phrase must be complete words.
 </ul>
 ]]></searchHintsLuceneTooltip>
 

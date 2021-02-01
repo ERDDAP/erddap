@@ -1051,11 +1051,10 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
 
-        //*** All of the unit tests for CWBrowsers and ERDDAP.
+        //*** All of the unit tests for CWBrowsers and ERDDAP. 
 
         //low level utilities
         TestUtil.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);

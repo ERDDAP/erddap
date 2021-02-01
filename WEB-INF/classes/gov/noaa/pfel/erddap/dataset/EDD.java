@@ -78,8 +78,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -2627,10 +2628,11 @@ public abstract class EDD {
 
         if (searchBytes == null) {
             byte tSearchBytes[] = String2.stringToUtf8Bytes(searchString().toLowerCase());
-            if (EDStatic.useOriginalSearchEngine)
+            if (EDStatic.useLuceneSearchEngine) {
+                return tSearchBytes;        //don't cache it (10^6 datasets?!) (uses should be rare)
+            } else {
                 searchBytes = tSearchBytes; //cache it
-            else return tSearchBytes;       //don't cache it (10^6 datasets?!) (uses should be rare)
-            //was NOT_ORIGINAL_SEARCH_ENGINE_BYTES;
+            }
         }
         return searchBytes;
     }
@@ -2686,106 +2688,19 @@ public abstract class EDD {
         Document doc = new Document();
         //Store specifies if the original string also needs to be stored as is
         //  (e.g., so I can retrieve datasetID field from a matched document).
-        //ANALYZED breaks string into tokens;  NOT_ANALYZED treats string as 1 token.
-        //"datasetID" Store.YES lets me later figure out which dataset a given document is for.
-        doc.add(new Field("datasetID",                 datasetID,      Field.Store.YES, Field.Index.NOT_ANALYZED));
-        doc.add(new Field(EDStatic.luceneDefaultField, searchString(), Field.Store.NO,  Field.Index.ANALYZED));
+        //"datasetID" is not tokenized and is stored so later I can figure out which dataset a given document is for.
+        doc.add(new StringField("datasetID",               datasetID,      Field.Store.YES)); //YES= StringField is not tokenized, so can be retrieved whole (also, it's just one word)
+        doc.add(new TextField(EDStatic.luceneDefaultField, searchString(), Field.Store.NO));  //NO=  TextField is tokenized
         
-        //Do duplicate searches of title (boost=10, plus it is shorter, so scores higher), 
+        //Do duplicate searches of title to boost the score, 
         //  so score from lucene and original are closer. 
         //!!! FUTURE: support separate searches within the datasets' titles
         //   If so, add support in searchEngine=original, too.
-        Field field = new Field("title",               title(),        Field.Store.NO,  Field.Index.ANALYZED);
-        field.setBoost(10);
+        Field field = new TextField("title",               title(),        Field.Store.NO);   //NO=  TextField is tokenized
+        //field.setBoost(10);  //in 3.5.0 the title field was boosted. Then query was boosted. Now?
         doc.add(field);
         return doc;
     }
-
-
-    /* * This is like startOfSearchString but creates the start of a Document for Lucene. */
-    /*protected Document startOfSearchDocument() {
-
-        StringBuilder sb = new StringBuilder();
-
-        field = new Field("title", title(), fs, fi);
-        field.setBoost(20);
-        doc.add(field);
-
-        field = new Field("datasetID", datasetID, fs, fi);
-        field.setBoost(10);
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int dv = 0; dv < dataVariables.length; dv++) 
-            sb.append(dataVariables[dv].destinationName() + ", ");
-        field = new Field("variableName", sb.toString(), fs, fi);
-        field.setBoost(10);
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int dv = 0; dv < dataVariables.length; dv++) 
-            sb.append(dataVariables[dv].sourceName() + ", ");
-        field = new Field("variableSourceName", sb.toString(), fs, fi);
-        field.setBoost(5);
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int dv = 0; dv < dataVariables.length; dv++) 
-            sb.append(dataVariables[dv].longName() + ", ");
-        field = new Field("variableLongName", sb.toString(), fs, fi);
-        field.setBoost(5);
-        doc.add(field);
-
-        sb.setLength(0);
-        sb.append(combinedGlobalAttributes.toString());
-        String2.replaceAll(sb, "\"", ""); //no double quotes (esp around attribute values)
-        String2.replaceAll(sb, "\n    ", "\n"); //occurs for all attributes
-        field = new Field("globalAttributes", sb.toString(), fs, fi);
-        field.setBoost(2);
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int dv = 0; dv < dataVariables.length; dv++) 
-            sb.append(dataVariables[dv].combinedAttributes().toString() + "\n");
-        String2.replaceAll(sb, "\"", ""); //no double quotes (esp around attribute values)
-        String2.replaceAll(sb, "\n    ", "\n"); //occurs for all attributes
-        field = new Field("variableAttributes", sb.toString(), fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        //protocol=...  is suggested in Advanced Search for text searches from protocols
-        //protocol=griddap and protocol=tabledap *were* mentioned in searchHintsTooltip, 
-        //  now commented out
-        sb.setLength(0);
-        sb.append(dapProtocol());  
-        if (accessibleViaSOS().length()      == 0) sb.append(", SOS");
-        if (accessibleViaWCS().length()      == 0) sb.append(", WCS");
-        if (accessibleViaWMS().length()      == 0) sb.append(", WMS");
-        field = new Field("protocol", sb.toString(), fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        sb.setLength(0);
-        if (accessibleViaFGDC().length()     == 0) sb.append("FGDC, ");
-        if (accessibleViaISO19115().length() == 0) sb.append("ISO19115, ");
-        if (accessibleViaMAG().length()      == 0) sb.append("MakeAGraph, ");
-        if (accessibleViaNcCF().length()     == 0) sb.append("NcCF, ");
-        if (accessibleViaSubset().length()   == 0) sb.append("Subset, ");
-        field = new Field("service", sb.toString(), fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        field = new Field("className", "className", fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        field = new Field("all", "all", fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        return doc;
-    } */
-
 
     /**
      * This returns the types of data files that this dataset can be returned as.

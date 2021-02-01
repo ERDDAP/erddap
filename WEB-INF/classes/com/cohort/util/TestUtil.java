@@ -21,8 +21,11 @@ import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
 import javax.imageio.ImageIO;
@@ -1418,6 +1421,18 @@ public class TestUtil {
         Test.ensureEqual(String2.findWholeWord("a ", "a"),  0, "");
         Test.ensureEqual(String2.findWholeWord(" a", "a"),  1, "");
 
+        //removeValues(Map map, Set set) 
+        Map map = new HashMap();
+        map.put("0", "00");
+        map.put("1", "11");
+        map.put("2", "22");
+        Set set = new HashSet();
+        set.add("11");
+        set.add("zz");
+        String2.removeValues(map, set);
+        Test.ensureEqual(String2.toString(map), "0 = 00\n2 = 22\n", "results=\n" + String2.toString(map));
+        Test.ensureEqual(String2.toCSSVString(set), "zz", "");
+
         //noLongLinesAtSpace
         s = "a abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlasdabc fakjasdfg(b)";
         s = String2.noLongLinesAtSpace(s, 15, "  "); 
@@ -2251,7 +2266,7 @@ public class TestUtil {
 
         //toString(map)
         String2.log("test toString(map)");
-        HashMap map = new HashMap();
+        map = new HashMap();
         map.put("key a", "value a");
         map.put("Bob",   "Simons");
         //order of elements is not specified and may change

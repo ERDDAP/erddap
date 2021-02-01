@@ -480,54 +480,6 @@ public abstract class EDDGrid extends EDD {
         return sb.toString();
     }
 
-    /* NEVER ACTIVE  This was an experiment with making the Document directly 
-       (instead of from searchString).  But searchString works well and has advantages.
-     *
-     * This makes the Document that Lucene searches.
-     *
-     * @return the Document that Lucene searches.
-     */
-    /* public Document searchDocument() {
-
-        Document doc = startOfSearchDocument();
-        Field.Store fs = Field.Store.YES;
-        Field.Index fi = Field.Index.ANALYZED;
-        Field field;
-        StringBuilder sb = new StringBuilder();
-
-        sb.setLength(0);
-        for (int av = 0; av < axisVariables.length; av++) 
-            sb.append(axisVariables[av].destinationName() + ", ");
-        field = new Field("variableName", sb.toString(), fs, fi);
-        field.setBoost(5);  //half of dataVariables
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int av = 0; av < axisVariables.length; av++) 
-            sb.append(axisVariables[av].sourceName() + ", ");
-        field = new Field("variableSourceName", sb.toString(), fs, fi);
-        field.setBoost(2);  //half of dataVariables
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int av = 0; av < axisVariables.length; av++) 
-            sb.append(axisVariables[av].longName() + ", ");
-        field = new Field("variableLongName", sb.toString(), fs, fi);
-        field.setBoost(2);  //half of dataVariables
-        doc.add(field);
-
-        sb.setLength(0);
-        for (int av = 0; av < axisVariables.length; av++) 
-            sb.append(axisVariables[av].combinedAttributes().toString() + "\n");
-        String2.replaceAll(sb, "\"", ""); //no double quotes (esp around attribute values)
-        String2.replaceAll(sb, "\n    ", "\n"); //occurs for all attributes
-        field = new Field("variableAttributes", sb.toString(), fs, fi);
-        field.setBoost(1);
-        doc.add(field);
-
-        return doc;
-    } */
-
     /** 
      * A string like [time][latitude][longitude] with the axis destination names.
      */
