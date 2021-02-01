@@ -4534,7 +4534,7 @@ that has made this project possible and enabled its growth.
 <p>The bulk of the funding for work on ERDDAP has come from NOAA,
 in that it pays Bob Simons' salary (he is a full time government employee with 
 "hard"-money/full funding).
-For the first two years of ERDDAP, when he was a government contractor, 
+For the first year of ERDDAP, when he was a government contractor, 
 funding came from the
 <a rel="bookmark" href="https://coastwatch.noaa.gov/">NOAA CoastWatch<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4556,13 +4556,20 @@ Thus, ERDDAP is a great example of
 where product innovation often comes from consumers (ERDDAP users), not just the producers (ERDDAP developers).
 
 
-<p>Here is the list of software that ERDDAP uses. We are very grateful for all of these.
+<p>Here is the list of software and datasets that are in the ERDDAP distribution.
+We are very grateful for all of these.
 Thank you very much.
-(If we have accidentally omitted a project, please let us know so we can give
-credit where credit is due.)
+<br>[Starting in 2021, it has become almost impossible to properly list all of the
+sources of code for ERDDAP because a few of the libraries we use (notably
+netcdf-java and especially AWS) in turn use many, many other libraries. 
+All of the libraries that ERDDAP code calls directly are included below,
+as are many of the libraries that the other libraries call in turn.
+If you see that we have omitted a project below, please let us know so we can 
+add the project below and give credit where credit is due.]
 
 <ul>
-<li>ERDDAP is a 
+<li>Overview
+    <br>ERDDAP is a 
     <a rel="help" href="https://www.oracle.com/technetwork/java/javaee/servlet/index.html">Java Servlet<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -4587,19 +4594,41 @@ credit where credit is due.)
   system (license: <a rel="bookmark" href="https://www.gnu.org/licenses/gpl-3.0.html">GPL<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
-<li>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
+  <br>&nbsp;
+
+<li>Datasets
+  <br>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
   "institution", and "license") for each dataset.  
   Many datasets have a restriction on their use that requires you to cite/credit the 
   data provider whenever you use the data.  It is always good form to cite/credit the 
   data provider. See
   <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#citeDataset"
   >How to Cite a Dataset in a Paper</a>.
-<li><a rel="bookmark" href="#licenseCoHortSoftware">The com/cohort classes</a> are from CoHort Software 
+  <br>&nbsp;
+
+<li>CoHort Software
+  <br><a rel="bookmark" href="#licenseCoHortSoftware">The com/cohort classes</a> are from CoHort Software 
     (<a rel="help" href="https://www.cohort.com">https://www.cohort.com<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
     which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
-<li>Data from <a rel="help" href="https://www.opendap.org">OPeNDAP<img 
+  <br>&nbsp;
+
+<li>CoastWatch Browser
+  <br>ERDDAP uses code from the 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
+    project from the
+    <a rel="bookmark" href="https://coastwatch.noaa.gov">NOAA CoastWatch</a>
+    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
+    (license:  
+    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
+  That project was initiated and managed by Dave Foley, a former Coordinator of the NOAA CoastWatch 
+  West Coast Regional Node.  
+  All of the CoastWatch Browser code was written by Bob Simons.
+  <br>&nbsp;
+
+<li>OPeNDAP
+  <br>Data from <a rel="help" href="https://www.opendap.org">OPeNDAP<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     servers are read 
@@ -4607,7 +4636,10 @@ credit where credit is due.)
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
     (license: LGPL).
-<li>NetCDF files (.nc), GMT-style NetCDF files (.grd), GRIB, and BUFR are read and written with code in the
+  <br>&nbsp;
+
+<li>NetCDF-java
+  <br>NetCDF files (.nc), GMT-style NetCDF files (.grd), GRIB, and BUFR are read and written with code in the
   <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf-java/"
   >NetCDF Java Library<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4618,123 +4650,83 @@ credit where credit is due.)
     from <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-<li>The NetCDF Java Library and Cassandra need <a rel="help" href="http://www.slf4j.org/"
-  >slf4j from the Simple Logging Facade for Java</a> project.
-  Currently, ERDDAP uses the slf4j-simple-xxx.jar renamed as slf4j.jar to meet this need.
-    (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-<li>The NetCDF Java Library uses <a rel="help" href="https://www.joda.org/joda-time/">Joda<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-     for calendar calculations (which are probably not used by ERDDAP).
-     (license: <a rel="bookmark" 
-     href="https://www.joda.org/joda-time/licenses.html">Apache 2.0<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>). 
-<li>ERDDAP and the NetCDF Java Library uses code from some .jar files from 
-  <a rel="help" href="https://www.apache.org/">Apache projects<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>:
-  <a rel="help" href="https://commons.apache.org/codec/">commons-codec<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="https://hc.apache.org/httpcomponents-client-ga/">commons-httpclient<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>, and
-  <a rel="help" href="https://commons.apache.org/discovery/">commons-discovery<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (For all: license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-  These are included in the netcdfAll.jar.
-<li>The NetCDF Java Library uses XML processing code from 
-    <a rel="help" href="http://www.jdom.org/">JDOM<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-    (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-      which is included in the netcdfAll.jar.
-<li>ERDDAP support for evaluating expressions and scripts in &lt;sourceNames&gt;'s relies on the
-  <a rel="help" href="https://www.apache.org/">Apache project's<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>:
-  <a rel="help" href="https://commons.apache.org/proper/commons-jexl/">Java Expression Language (JEXL)<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-<li> For working with Amazon AWS and S3, the NetCDF Java Library and ERDDAP use the
-  <a rel="help" href="https://aws.amazon.com/sdk-for-java/">aws-java-sdk.jar<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-      which is included in the netcdfAll.jar.
-  <br>aws-java-sdk.jar requires commons-codec.jar, commons-logging.jar,
-      fluent-hc.jar,
-      httpclient.jar, httpclient-cache.jar, httpclient-win.jar, 
-      httpcore.jar, and httpmime.jar, which are all from the    
-      <a rel="help" href="https://hc.apache.org/downloads.cgi">Apache Project<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-      (license: 
-      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-      which are included in the netcdfAll.jar.
-  <br>aws-java-sdk.jar also requires the 
-      <a rel="help" href="https://github.com/java-native-access/jna">Java Native Access 
-      jna.jar and jna-platform.jar<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-      (license: 
-      <a rel="bookmark" href="https://github.com/java-native-access/jna/blob/master/LICENSE">Apache 2.0<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-      which are included in the netcdfAll.jar.
-  <br>aws-java-sdk.jar also requires the 
-      <a rel="help" href="https://mvnrepository.com/artifact/com.fasterxml.jackson.core"
-      >jackson-annotations.jar, jackson-core.jar, and jackson-databind.jar<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> from 
-      <a rel="help" href="https://github.com/FasterXML">FasterXML<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-      (license: 
-      <a rel="bookmark" href="https://github.com/FasterXML/jackson-core#overview"
-      >Apache 2.0<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-      which are included in the netcdfAll.jar.
 
-<li>ERDDAP uses 
-    <a rel="help" href="https://www.json.org/index.html">json.org's Java-based JSON library<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-    to parse <a rel="help" href="https://www.json.org/">JSON<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> data
-  (license: <a rel="bookmark" href="https://www.json.org/license.html">copyrighted open source<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-<li>ERDDAP use code from Apache
-  <a rel="help" href="https://commons.apache.org/compress/">commons-compress<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  and
-  <a rel="help" href="https://commons.apache.org/compress/">commons-jexl<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (License: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
-<li>The graphs and maps are created on-the-fly with a modified version of NOAA's 
+  <p>Software Included in the NetCDF Java .jar:
+    <ul>
+    <li>slf4j
+      <br>The NetCDF Java Library and Cassandra need <a rel="help" href="http://www.slf4j.org/"
+      >slf4j from the Simple Logging Facade for Java</a> project.
+      Currently, ERDDAP uses the slf4j-simple-xxx.jar renamed as slf4j.jar to meet this need.
+        (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>).
+      <br>&nbsp;
+    <li>JDOM
+      <br>The NetCDF Java .jar includes XML processing code from 
+        <a rel="help" href="http://www.jdom.org/">JDOM<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>
+        (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>),
+          which is included in the netcdfAll.jar.
+      <br>&nbsp;
+    <li>Joda
+      <br>The NetCDF Java .jar includes <a rel="help" href="https://www.joda.org/joda-time/">Joda<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a> 
+         for calendar calculations (which are probably not used by ERDDAP).
+         (license: <a rel="bookmark" 
+         href="https://www.joda.org/joda-time/licenses.html">Apache 2.0<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>). 
+      <br>&nbsp;
+    <li>Apache
+      <br>The NetCDF Java .jar includes .jar files from several 
+      <a rel="help" href="https://www.apache.org/">Apache projects<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>:
+      <br><a rel="help" href="https://commons.apache.org/proper/commons-codec/">commons-codec<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>,
+      <br><a rel="help" href="https://commons.apache.org/discovery/">commons-discovery<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>, 
+      <br><a rel="help" href="https://hc.apache.org/httpcomponents-client-ga/">commons-httpclient<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>,
+      <br><a rel="help" href="https://commons.apache.org/proper/commons-logging/">commons-logging<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>
+      <br><a rel="help" href="https://hc.apache.org">HttpComponents<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>,
+      <br>(For all: license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+          src="../images/external.png" alt=" (external link)" 
+          title="This link to an external website does not constitute an endorsement."></a>)
+      <br>These are included in the netcdfAll.jar.
+      <br>&nbsp;
+    <li>Other
+      <br>The NetCDF Java .jar also includes code from: 
+      
+      com.google.code.findbugs,
+      com.google.errorprone,
+      com.google.guava,
+      com.google.j2objc,
+      com.google.protobuf,
+      edu.ucar,
+      org.codehaus.mojo,
+
+      com.beust.jcommander,
+      com.google.common,
+      com.google.re2j, and
+      com.google.thirdparty.
+      <br>&nbsp;
+
+    </ul>
+
+<li>SGT
+  <br>The graphs and maps are created on-the-fly with a modified version of NOAA's 
     <a rel="help" href="https://www.pmel.noaa.gov/epic/java/sgt/">SGT<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> version 3
@@ -4746,20 +4738,29 @@ credit where credit is due.)
   >copyrighted open source<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
-<li>Big, HTML tooltips on ERDDAP's HTML pages are created with Walter Zorn's wz_tooltip.js
+  <br>&nbsp;
+
+<li>Walter Zorn
+  <br>Big, HTML tooltips on ERDDAP's HTML pages are created with Walter Zorn's wz_tooltip.js
     <!-- was http://wztip.info/index.php/Main_Page -->
   (license: LGPL).
-<li>Sliders and the drag and drop feature of the Slide Sorter are created with Walter Zorn's
+  <br>Sliders and the drag and drop feature of the Slide Sorter are created with Walter Zorn's
   wz_dragdrop.js <!-- was http://www.walterzorn.com/dragdrop/dragdrop_e.htm -->
     (license: LGPL).
-<li>The .pdf files are created with
+  <br>&nbsp;
+
+<li>iText
+  <br>The .pdf files are created with
     <a rel="help" href="https://itextpdf.com/">iText<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
       (version 1.3.1, which used the 
     <!-- was http://www.lowagie.com/iText/download.html --> Mozilla license),
     a free Java-PDF library by Bruno Lowagie and Paulo Soares.
-<li>The shoreline and lake data are from
+  <br>&nbsp;
+
+<li>GSHHS
+  <br>The shoreline and lake data are from
     <a rel="help" href="https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">GSHHS<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -4771,7 +4772,10 @@ credit where credit is due.)
     and created by Paul Wessel and Walter Smith.
     <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE SHORELINE DATA THAT COMES WITH ERDDAP --
     DO NOT USE IT FOR NAVIGATIONAL PURPOSES.
-<li>The political boundary and river data are from the 
+  <br>&nbsp;
+
+<li>GMT pscoast
+  <br>The political boundary and river data are from the 
     <a rel="help" href="https://www.soest.hawaii.edu/gmt/gmt/html/man/pscoast.html">pscoast<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -4786,7 +4790,9 @@ credit where credit is due.)
     (license: public domain).
     <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE POLITICAL BOUNDARY
     DATA THAT COMES WITH ERDDAP.
-<li>The bathymetry/topography data used in the background of some maps is the  
+
+<li>ETOPO
+  <br>The bathymetry/topography data used in the background of some maps is the  
   <a rel="help" href="https://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
@@ -4802,19 +4808,9 @@ credit where credit is due.)
       title="This link to an external website does not constitute an endorsement."></a>.
     <p>WE MAKE NO CLAIM ABOUT THE CORRECTNESS OF THE BATHYMETRY/TOPOGRAPHY
     DATA THAT COMES WITH ERDDAP. DO NOT USE IT FOR NAVIGATIONAL PURPOSES.
-<li>The color palettes which have the prefix "KT_" are a    
-    <a rel="help" href="http://soliton.vm.bytemark.co.uk/pub/cpt-city/cmocean/index.html"
-    >collection of .cpt palettes by Kristen Thyng<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-    (license: 
-    <a rel="bookmark" href="http://soliton.vm.bytemark.co.uk/pub/cpt-city/cmocean/copying.html"
-      >MIT/X<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>),
-     but slightly reformatted by Jennifer Sevadjian of NOAA so that they conform
-     to ERDDAP's .cpt requirements.
-<li>Emails are sent using code in mail.jar from Oracle's   
+
+<li>JavaMail
+  <br>Emails are sent using code in mail.jar from Oracle's   
     <a rel="help" href="https://javaee.github.io/javamail/">JavaMail API<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -4823,7 +4819,23 @@ credit where credit is due.)
       >COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
-<li>ERDDAP includes the 
+  <br>&nbsp;
+
+<li>JSON
+  <br>ERDDAP uses 
+    <a rel="help" href="https://www.json.org/index.html">json.org's Java-based JSON library<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> 
+    to parse <a rel="help" href="https://www.json.org/">JSON<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> data
+  (license: <a rel="bookmark" href="https://www.json.org/license.html">copyrighted open source<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>).
+  <br>&nbsp;
+
+<li>PostgrSQL
+  <br>ERDDAP includes the 
      <a rel="help" href="https://jdbc.postgresql.org/download.html">PostGres JDBC<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> driver
@@ -4831,7 +4843,44 @@ credit where credit is due.)
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
     The driver is Copyright (c) 1997-2010, PostgreSQL Global Development Group. All rights reserved.
-<li>ERDDAP includes  
+  <br>&nbsp;
+
+<li>Lucene
+  <br>ERDDAP use code from Apache
+  <a rel="help" href="https://lucene.apache.org/">Lucene<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+  (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>)
+  for the "lucene" search engine option (but not for the default "original" search engine).
+  <br>&nbsp;
+
+<li>commons-compress
+  <br>ERDDAP use code from Apache
+  <a rel="help" href="https://commons.apache.org/compress/">commons-compress<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+  (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>).
+  <br>&nbsp;
+
+<li>JEXL
+  <br>ERDDAP support for evaluating expressions and scripts in &lt;sourceNames&gt;'s relies on the
+  <a rel="help" href="https://www.apache.org/">Apache project's<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>:
+  <a rel="help" href="https://commons.apache.org/proper/commons-jexl/">Java Expression Language (JEXL)<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+  (license: <a rel="bookmark" href="https://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>).
+  <br>&nbsp;
+
+<li>Cassandra
+  <br>ERDDAP includes Apache
      <a rel="help"
       href="https://cassandra.apache.org/">Cassandra's<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4847,25 +4896,10 @@ credit where credit is due.)
 
     <br>Cassandra's cassandra-driver-core.jar requires (and so ERDDAP includes):
     <ul>
-    <li><a rel="help" href="https://netty.io/downloads.html">netty-all.jar<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>
-      (license: <a rel="bookmark" href="https://netty.io/downloads.html">Apache 2.0<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>).
-
     <li><a rel="help" href="https://code.google.com/p/guava-libraries/">guava.jar<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
       (license: <a rel="bookmark" href="https://code.google.com/p/guava-libraries/">Apache 2.0<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>).
-
-    <li><a rel="help"
-      href="https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2">metrics-core.jar<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>
-      (license: <a rel="bookmark" href="https://github.com/codahale/metrics/blob/master/LICENSE">MIT<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>).
 
@@ -4877,6 +4911,21 @@ credit where credit is due.)
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>).
 
+    <li><a rel="help"
+      href="https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2">metrics-core.jar<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+      (license: <a rel="bookmark" href="https://github.com/codahale/metrics/blob/master/LICENSE">MIT<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>).
+
+    <li><a rel="help" href="https://netty.io/downloads.html">netty-all.jar<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>
+      (license: <a rel="bookmark" href="https://netty.io/downloads.html">Apache 2.0<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>).
+
     <li><a rel="help" href="https://xerial.org/snappy-java/">snappy-java.jar<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -4884,28 +4933,103 @@ credit where credit is due.)
       <a rel="bookmark" href="https://github.com/xerial/snappy-java/blob/develop/LICENSE">Apache 2.0<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>).
+      <br>&nbsp;
     </ul>
 
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<li>KT_ palettes
+  <br>The color palettes which have the prefix "KT_" are a    
+    <a rel="help" href="http://soliton.vm.bytemark.co.uk/pub/cpt-city/cmocean/index.html"
+    >collection of .cpt palettes by Kristen Thyng<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+    (license: 
+    <a rel="bookmark" href="http://soliton.vm.bytemark.co.uk/pub/cpt-city/cmocean/copying.html"
+      >MIT/X<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>),
+     but slightly reformatted by Jennifer Sevadjian of NOAA so that they conform
+     to ERDDAP's .cpt requirements.
+  <br>&nbsp;
+
+<li>AWS
+  <br>For working with Amazon AWS (including S3), ERDDAP uses v2 of the
+  <a rel="help" href="https://aws.amazon.com/sdk-for-java/">AWS SDK for Java<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> 
+      (license: 
+      <a rel="bookmark" href="https://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>).
+  
+  <p>AWS requires Maven to pull in the dependencies. They include the following 
+      .jar files (where xxx is the version number, which changes over time):
+      annotations-xxx.jar,
+      apache-client-xxx.jar,
+      ams-xxx.jar,
+      asm-xxx.jar,
+      asm-analysis-xxx.jar,
+      asm-commons-xxx.jar,
+      asm-tree-xxx.jar,
+      asm-util-xxx.jar,
+      auth-xxx.jar,
+      aws-core-xxx.jar,
+      aws-query-protocol-xxx.jar,
+      aws-xml-protocol-xxx.jar,
+      checker-qual-xxx.jar,
+      error_prone_annotations-xxx.jar,
+      eventstream-xxx.jar,
+      failureaccess-xxx.jar,
+      httpcore-xxx.jar,
+      j2obc-annotations-xxx.jar,
+      jackson-annotations-xxx.jar,
+      jackson-core-xxx.jar,
+      jackson-databind-xxx.jar,
+      jaxen-xxx.jar,
+      jffi-xxx.jar,
+      jffi-xxx.native.jar,
+      jnr-constants-xxx.jar,
+      jnr-ffi-xxx.jar,
+      jnr-posix-xxx.jar,
+      jnr-x86asm-xxx.jar,
+      json-xxx.jar,
+      jsr305-xxx.jar,
+      listenablefuture-xxx.jar,
+      about a dozen netty .jar's,
+      profiles-xxx.jar,
+      protocol-core-xxx.jar,
+      reactive-streams-xxx.jar,
+      regions-xxx.jar,
+      s3-xxx.jar,
+      sdk-core-xxx.jar,
+      utils-xxx.jar.
+
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+  <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGridFromMergeIRFiles.java</a> was written and contributed by
    Jonathan Lafite and Philippe Makowski of 
    <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
    (license: copyrighted open source). Thank you, Jonathan and Philippe!
+  <br>&nbsp;
 
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<li>TableWriterDataTable
+  <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> was written and contributed by Roland Schweitzer of NOAA
    (license: copyrighted open source). Thank you, Roland!
+  <br>&nbsp;
 
-<li>The initial version of the 
+<li>json-ld
+  <br>The initial version of the 
   <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a>
   feature (and thus all of the hard work in designing the content) was 
   written and contributed (license: copyrighted open source)
   by Adam Leadbetter and Rob Fuller of the Marine Institute in Ireland.
   Thank you, Adam and Rob!
+  <br>&nbsp;
 
-<li>The code for the 
+<li>orderBy
+  <br>The code for the 
   <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filter</a> 
   in tabledap and the extensive changes to the code to
@@ -4916,55 +5040,53 @@ credit where credit is due.)
   was written and contributed (license: copyrighted open source)
   by Rob Fuller and Adam Leadbetter of the Marine Institute in Ireland.
   Thank you, Rob and Adam!
+  <br>&nbsp;
 
-<li>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
+<li>Borderless Marker Types
+  <br>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
     Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
     Thank you Marco Alba.
 <!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
-
-<li>ERDDAP uses code from the 
-    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
-    project from the
-    <a rel="bookmark" href="https://coastwatch.noaa.gov">NOAA CoastWatch</a>
-    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
-    (license:  
-    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
-  That project was initiated and managed by Dave Foley, a former Coordinator of the NOAA CoastWatch 
-  West Coast Regional Node.  
-  The CoastWatch Browser code was written by Bob Simons.
+  <br>&nbsp;
 </ul>
 
-<p>We are also very grateful for all of the software that we use when developing ERDDAP, 
+<p>We are also very grateful for all of the software and websites that we use when developing ERDDAP, 
 including
-    <a rel="help" href="https://www.google.com/chrome/browser/desktop/">Chrome<img 
+    <br><a rel="help" href="https://www.google.com/chrome/browser/desktop/">Chrome<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-    <a rel="help" href="https://curl.haxx.se/">curl<img 
+    <br><a rel="help" href="https://curl.haxx.se/">curl<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    <a rel="help" href="https://duckduckgo.com/?q=">DuckDuckGo<img 
+    <br><a rel="help" href="https://duckduckgo.com/?q=">DuckDuckGo<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    <a rel="help" href="https://www.editplus.com/">EditPlus<img 
+    <br><a rel="help" href="https://www.editplus.com/">EditPlus<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-    <a rel="help" href="https://filezilla-project.org/">FileZilla<img 
+    <br><a rel="help" href="https://filezilla-project.org/">FileZilla<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-    <a rel="help" href="https://github.com/">GitHub<img 
+    <br><a rel="help" href="https://github.com/">GitHub<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
-    <a rel="help" href="https://www.google.com/webhp">Google Search<img 
+    <br><a rel="help" href="https://www.google.com/webhp">Google Search<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    <a rel="help" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY<img 
+    <br><a rel="help" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    <a rel="help" href="https://todoist.com/?lang=en">todoist<img 
+    <br><a rel="help" href="https://stackoverflow.com/">stack overflow<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>, 
-    the Internet, the World Wide Web, and all the great, helpful websites.
-Thank you very much.
+    <br><a rel="help" href="https://todoist.com/?lang=en">todoist<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>, 
+    <br><a rel="help" href="https://www.wikipedia.org/">Wikipedia<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>, 
+    <br>the Internet, the World Wide Web, and all the other, great, helpful websites.
+<br>Thank you very much.
 
 <!-- ******* -->
 <h2><a class="selfLink" id="license" href="#license" rel="bookmark">License</a></h2>

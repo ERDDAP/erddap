@@ -75,24 +75,16 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.ServletException;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.FieldCache;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
-
-//import org.apache.lucene.document.Document;
-//import org.apache.lucene.document.Field;
-//import org.apache.lucene.index.IndexWriter;
-//import org.apache.lucene.search.TopDocs;
-//import org.apache.lucene.store.SimpleFSDirectory;
-
-//import org.verisign.joid.consumer.OpenIdFilter;
 
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -408,22 +400,19 @@ public static boolean developmentMode = false;
     }
 
     /** For Lucene. */
-    //The latest version as of writing this.
     //Since I recreate the index when erddap restarted, I can change anything
     //  (e.g., Directory type, Version) any time
     //  (no worries about compatibility with existing index).
     //useful documentatino 
-    //  https://lucene.apache.org/java/3_5_0/queryparsersyntax.html
     //  https://wiki.apache.org/lucene-java/LuceneFAQ
     //  https://wiki.apache.org/lucene-java/BasicsOfPerformance
     //  http://affy.blogspot.com/2003/04/codebit-examples-for-all-of-lucenes.html
-    public  static Version       luceneVersion = Version.LUCENE_35;
     public  final static String  luceneDefaultField = "text";
     //special characters to be escaped
     //see bottom of https://lucene.apache.org/java/3_5_0/queryparsersyntax.html
     public  static String        luceneSpecialCharacters = "+-&|!(){}[]^\"~*?:\\";
 
-    //made below if useLuceneSearchEngine
+    //made if useLuceneSearchEngine
     //there are many analyzers; this is a good starting point
     public  static Analyzer      luceneAnalyzer;    
     private static QueryParser   luceneQueryParser; //not thread-safe
@@ -437,11 +426,11 @@ public static boolean developmentMode = false;
     private static Object        luceneIndexReaderLock = Calendar2.newGCalendarLocal();
     public  static boolean       needNewLuceneIndexReader = true;  
     private static IndexSearcher luceneIndexSearcher; //is thread-safe, so can reuse
-    private static String[]      luceneDatasetIDFieldCache;
+    public  static ConcurrentHashMap<Integer,String> luceneDocNToDatasetID;
 
     //also see updateLucene in LoadDatasets
 
-    public final static int defaultItemsPerPage = 1000; //1000, for /info/index.xxx and search
+    public final static int    defaultItemsPerPage     = 1000; //1000, for /info/index.xxx and search
     public final static String defaultPIppQuery        = "page=1&itemsPerPage=" + defaultItemsPerPage;
     public final static String allPIppQuery            = "page=1&itemsPerPage=1000000000";
     /** The HTML/XML encoded form */
@@ -618,7 +607,8 @@ public static boolean developmentMode = false;
         wmsClientActive, 
         sosActive, wcsActive, wmsActive,
         quickRestart, subscribeToRemoteErddapDataset,
-        useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
+        //if useLuceneSearchEngine=false (a setting, or after error), original search engine will be used 
+        useLuceneSearchEngine,  
         variablesMustHaveIoosCategory,
         verbose;
     public static String  categoryAttributes[];       //as it appears in metadata (and used for hashmap)
@@ -1822,19 +1812,19 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         searchEngine               = setup.getString(          "searchEngine",               "original");
 
         subscribeToRemoteErddapDataset = setup.getBoolean(     "subscribeToRemoteErddapDataset", true);
-        subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
-        convertersActive           = setup.getBoolean(         "convertersActive",           true);
-        slideSorterActive          = setup.getBoolean(         "slideSorterActive",          true);
-        variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory", true);
-        warName                    = setup.getString(          "warName",                    "erddap");
+        subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",       true);
+        convertersActive           = setup.getBoolean(         "convertersActive",               true);
+        slideSorterActive          = setup.getBoolean(         "slideSorterActive",              true);
+        variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory",  true);
+        warName                    = setup.getString(          "warName",                        "erddap");
 
         //use Lucence?
         if (searchEngine.equals("lucene")) {
             useLuceneSearchEngine = true;
+            luceneDocNToDatasetID = new ConcurrentHashMap();
         } else {
             Test.ensureEqual(searchEngine, "original", 
                 "<searchEngine> must be \"original\" (the default) or \"lucene\".");
-            useOriginalSearchEngine = true;
         }
         
        
@@ -3154,6 +3144,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Calendar2.reallyVerbose = reallyVerbose;
         EDD.reallyVerbose = reallyVerbose;
         EDV.reallyVerbose = reallyVerbose;
+        Erddap.reallyVerbose = reallyVerbose;
         File2.reallyVerbose = reallyVerbose;
         FileVisitorDNLS.reallyVerbose = reallyVerbose;
         FilledMarkerRenderer.reallyVerbose = reallyVerbose;
@@ -3161,8 +3152,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         GSHHS.reallyVerbose = reallyVerbose;
         LoadDatasets.reallyVerbose = reallyVerbose;
         NcHelper.reallyVerbose = reallyVerbose;
+        //OutputStreamFromHttpResponse.reallyVerbose = reallyVerbose;  currently no such setting
         PathCartesianRenderer.reallyVerbose = reallyVerbose;
         PrimitiveArray.reallyVerbose = reallyVerbose;
+        //Projects.reallyVerbose = reallyVerbose;  currently no such setting
         SgtGraph.reallyVerbose = reallyVerbose;
         SgtMap.reallyVerbose = reallyVerbose;
         SgtUtil.reallyVerbose = reallyVerbose;
@@ -3171,6 +3164,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Table.reallyVerbose = reallyVerbose;
         //Table.debug = reallyVerbose; //for debugging
         TaskThread.reallyVerbose = reallyVerbose;
+        //Units2.reallyVerbose = reallyVerbose;  currently no such setting
 
         String2.log("logLevel=" + logLevel + ": verbose=" + verbose + " reallyVerbose=" + reallyVerbose);
         return logLevel;
@@ -4192,22 +4186,18 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //finally
             if (useLuceneSearchEngine) 
                 String2.log("stopping lucene..."); 
-
-            try { 
-                if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
-            } catch (Throwable t) {}
+            useLuceneSearchEngine = false;
             luceneIndexSearcher = null;
-
             try {
                 if (luceneIndexReader   != null) luceneIndexReader.close();  
             } catch (Throwable t) {}
             luceneIndexReader = null;
-            luceneDatasetIDFieldCache = null;
+            luceneDocNToDatasetID = null;
 
             try {
                 if (luceneIndexWriter   != null) 
                     //indices will be thrown away, so don't make pending changes
-                    luceneIndexWriter.close(false); 
+                    luceneIndexWriter.close(); 
             } catch (Throwable t) {}
             luceneIndexWriter = null;
 
@@ -4564,14 +4554,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
     /** This is called by the ERDDAP constructor to initialize Lucene. */
     public static void initializeLucene() {
-        //ERDDAP consciously doesn't use any stopWords (words not included in the index)
+        //ERDDAP consciously doesn't use any stopWords (words not included in the index, e.g. a, an, the)
         //1) this matches the behaviour of the original searchEngine
         //2) this is what users expect, e.g., when searching for a phrase
         //3) the content here isn't prose, so the stop words aren't nearly as common
-        HashSet stopWords = new HashSet();
-        luceneAnalyzer = new StandardAnalyzer(luceneVersion, stopWords);
+        luceneAnalyzer = new StandardAnalyzer(CharArraySet.EMPTY_SET);  //the set of stopWords
         //it is important that the queryParser use the same analyzer as the indexWriter
-        luceneQueryParser = new QueryParser(luceneVersion, luceneDefaultField, luceneAnalyzer);
+        luceneQueryParser = new QueryParser(luceneDefaultField, luceneAnalyzer);
     }
 
     /** 
@@ -4589,37 +4578,35 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             //if this is being called, directory shouldn't be locked
             //see javaDocs for indexWriter.close()
-            if (IndexWriter.isLocked(luceneDirectory)) 
-                IndexWriter.unlock(luceneDirectory);
 
             //create indexWriter
             IndexWriterConfig lucConfig = 
-                new IndexWriterConfig(luceneVersion, luceneAnalyzer);
+                new IndexWriterConfig(luceneAnalyzer);
             lucConfig.setOpenMode(firstTime?
                 IndexWriterConfig.OpenMode.CREATE :
                 IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-            luceneIndexWriter = new IndexWriter(luceneDirectory, lucConfig);
-            luceneIndexWriter.setInfoStream(
+            lucConfig.setInfoStream(
                 verbose? new PrintStream(new String2LogOutputStream()) : null); 
+
+            luceneIndexWriter = new IndexWriter(luceneDirectory, lucConfig);
             String2.log("  createLuceneIndexWriter finished.  time=" +
                 (System.currentTimeMillis() - tTime) + "ms");
         } catch (Throwable t) {
+            useLuceneSearchEngine = false;
             throw new RuntimeException(t);
         }
     }
 
     /** 
-     * This returns the Lucene IndexSearcher and datasetIDFieldCache (thread-safe).
+     * This returns the Lucene IndexSearcher (thread-safe).
      * IndexSearch uses IndexReader (also thread-safe).
      * IndexReader works on a snapshot of an index, 
      * so it is recreated if flagged at end of LoadDatasetsevery 
      * via needNewLuceneIndexReader.
      *
-     * @return Object[2]: [0]=a luceneIndexSearcher (thread-safe), or null if trouble.
-     *    [1]=luceneDatasetIDFieldCache, or null if trouble.
-     *    Either both will be null or both will be !null.
+     * @return a luceneIndexSearcher (thread-safe) or null if trouble.
      */
-    public static Object[] luceneIndexSearcher() {
+    public static IndexSearcher luceneIndexSearcher() {
 
         //synchronize 
         synchronized(luceneIndexReaderLock) {
@@ -4629,24 +4616,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             if (luceneIndexReader == null || needNewLuceneIndexReader ||
                 luceneIndexSearcher == null) {
 
-                //clear out old one
-                try { 
-                    if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
-                } catch (Throwable t) {}
                 luceneIndexSearcher = null;
-
-                try {
-                    if (luceneIndexReader   != null) luceneIndexReader.close();  
-                } catch (Throwable t) {}
-                luceneIndexReader = null;
-                luceneDatasetIDFieldCache = null;
-
+                if (luceneIndexReader != null) {
+                    try {luceneIndexReader.close(); } catch (Throwable t2) {}
+                    luceneIndexReader = null;
+                }
                 needNewLuceneIndexReader = true;
 
                 //create a new one
                 try {
                     long rTime = System.currentTimeMillis();
-                    luceneIndexReader = IndexReader.open(luceneDirectory); // read-only=true
+                    luceneIndexReader = DirectoryReader.open(luceneDirectory); // read-only=true
                     luceneIndexSearcher = new IndexSearcher(luceneIndexReader);
                     String2.log("  new luceneIndexReader+Searcher time=" + 
                         (System.currentTimeMillis() - rTime) + "ms");
@@ -4654,45 +4634,44 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     //create the luceneDatasetIDFieldCache
                     //save memory by sharing the canonical strings  
                     //(EDD.ensureValid makes datasetID's canonical)
-                    rTime = System.currentTimeMillis();
-                    luceneDatasetIDFieldCache = FieldCache.DEFAULT.getStrings(luceneIndexReader, 
-                        "datasetID");
-                    int n = luceneDatasetIDFieldCache.length;
-                    for (int i = 0; i < n; i++)
-                        luceneDatasetIDFieldCache[i] = String2.canonical(luceneDatasetIDFieldCache[i]);
-                    String2.log("  new luceneDatasetIDFieldCache time=" + 
-                        (System.currentTimeMillis() - rTime) + "ms");
+                    //rTime = System.currentTimeMillis();
+                    //luceneDatasetIDFieldCache = FieldCache.DEFAULT.getStrings(luceneIndexReader, 
+                    //    "datasetID");
+                    //int n = luceneDatasetIDFieldCache.length;
+                    //for (int i = 0; i < n; i++)
+                    //    luceneDatasetIDFieldCache[i] = String2.canonical(luceneDatasetIDFieldCache[i]);
+                    //String2.log("  new luceneDatasetIDFieldCache time=" + 
+                    //    (System.currentTimeMillis() - rTime) + "ms");
 
                     //if successful, we no longer needNewLuceneIndexReader
                     needNewLuceneIndexReader = false;  
                     //if successful, fall through
 
                 } catch (Throwable t) {
-                    String subject = String2.ERROR + " while creating Lucene Searcher";
-                    String msg = MustBe.throwableToString(t);
-                    email(emailEverythingToCsv, subject, msg);
-                    String2.log(subject + "\n" + msg);            
+                    //this may occur before indexes have initially been created
+                    //so don't give up on lucene
+                    if (!initialLoadDatasets()) {
+                        String subject = String2.ERROR + " while creating Lucene Searcher";
+                        String msg = MustBe.throwableToString(t);
+                        email(emailEverythingToCsv, subject, msg);
+                        String2.log(subject + "\n" + msg);            
+                    }
 
                     //clear out old one
-                    try { 
-                        if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
-                    } catch (Throwable t2) {}
                     luceneIndexSearcher = null;
 
-                    try {
-                        if (luceneIndexReader   != null) luceneIndexReader.close();  
-                    } catch (Throwable t2) {}
-                    luceneIndexReader = null;
-                    luceneDatasetIDFieldCache = null;
-
+                    if (luceneIndexReader != null) {
+                        try {luceneIndexReader.close(); } catch (Throwable t2) {}
+                        luceneIndexReader = null;
+                    }
                     needNewLuceneIndexReader = true;
 
                     //return
-                    return new Object[]{null, null};
+                    return null;
                 }
             }
 
-            return new Object[]{luceneIndexSearcher, luceneDatasetIDFieldCache};
+            return luceneIndexSearcher;
         }
     }
 

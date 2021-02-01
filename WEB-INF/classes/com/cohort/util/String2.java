@@ -6488,7 +6488,7 @@ and zoom and pan with controls in
 
 
     /**
-     * This replaces each of the substrings with the canonical String.
+     * This replaces each of the elements with the canonical String.
      * If any is null, it is left as null.
      *
      * @return the same array, for convenience. null returns null.
@@ -7072,6 +7072,29 @@ and zoom and pan with controls in
             String2.log("public method #" + i + ": " + methods[i]);
         }
      }
+
+     /**
+      * Given a map, this reasonably efficiently removes all entries where a value is in the set.
+      *
+      * @param map Which maps keys to values.
+      * @param set The set of values. Presumably, each value in set is just a value in the map
+      *   one time. Afterward, the set will contain just the values which weren't removed. 
+      */
+     public static void removeValues(Map map, Set set) {
+         if (map == null || set == null || map.isEmpty() || set.isEmpty())
+             return;
+
+         Iterator<Map.Entry> it = map.entrySet().iterator();
+         while (it.hasNext()) {
+             Map.Entry entry = it.next();
+             Object key = entry.getKey();
+             Object val = entry.getValue();
+             if (set.contains(val)) {
+                 it.remove();  //remove entry through iterator, or exception
+                 set.remove(val);
+             }
+         }
+    }
 
 
 

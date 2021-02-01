@@ -1,5 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Website to search for maven plugins and dependencies: https://mvnrepository.com/ -->
+<!-- 
+
+This is how Bob uses Maven for ERDDAP. 
+Maven users will probably be mystified/horrified, 
+but it works for me and does what I need it to do: 
+  identify and gather all needed .jar dependencies
+since this is impossible for AWS S3 dependencies without Maven.
+
+* One time: Make a new Maven project/archetype: 
+  cd \programs\mavenERDDAP
+  mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
+
+* Update the version numbers starting with <dependencyManagement> section.
+  Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
+
+* Compile in Maven and gather dependency .jar files
+  (pom.xml based on Kyle's pom from https://github.com/axiom-data-science/erddap )
+
+  Copy Java source files from Tomcat/webapps/cwexperimental to Maven:
+    With bash:
+      cd /c/content/bat
+      ./synchToMaven.sh
+
+  From Bash or DOS command line (after synchToMaven.sh has copied source files to Maven dir):
+      //mvn -help 
+      //add -e for full error messages
+      //add -X for debug messages
+      cd /c/programs/mavenERDDAP/ERDDAP   //pom.xml is there
+      mvn clean               //removes previously generated .class files and ...
+      mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
+      mvn dependency:analyze  //Identifies excess or missing dependencies/.jars.
+                              //  Expected: WARNINGS for Cassandra dependencies:
+                              //    guava, netty, snappy, lz4, metrics.
+      mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
+   
+* Delete all (.jar) files in tomcat/webapps/cwexperimental/WEB-INF/lib
+
+* Extract all .jar files 
+    from inside target/ERDDAP-...-SNAPSHOT.war    WEB-INF/lib directory
+    to   tomcat/webapps/cwexperimental/WEB-INF/lib
+    The vast majority of .jars are from the AWS S3 dependency.
+  
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -130,7 +172,8 @@
     <dependencyManagement>
         <dependencies>
 
-            <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/bom -->
+            <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/bom 
+                 Parent for reading/writing to AWS S3. -->
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
@@ -144,7 +187,8 @@
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/junit/junit
-             There are newer versions with different domain name, but cause trouble with dependency checking. -->
+             There are newer versions with different domain name, but cause trouble with dependency checking. 
+             For testing (by Kyle? Maven?). -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -160,8 +204,10 @@
             <version>1.10.9</version>
         </dependency>   -->
 
-        <!-- for dods.dap (for code I wasn't compiling): 
+
+        <!-- 
              https://mvnrepository.com/artifact/gnu-regexp/gnu-regexp
+             This is needed for dods.dap code I wasn't compiling but Maven does.  
              'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
              -->
         <dependency>
@@ -171,8 +217,8 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- for dods.dap (for code I wasn't compiling):  
-             https://mvnrepository.com/artifact/gnu.getopt/java-getopt
+        <!-- https://mvnrepository.com/artifact/gnu.getopt/java-getopt
+             This is needed for dods.dap code I wasn't compiling but Maven does.  
              'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
               -->
         <dependency>
@@ -183,6 +229,7 @@
         </dependency> 
 
         <!-- https://mvnrepository.com/artifact/com.lowagie/itext 
+             This is the pdf writer.
              Newer version is available, but license now gpl?!
              -->
         <dependency>
@@ -199,14 +246,23 @@
         </dependency-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-core 
-             I need to change my code before I can use newer versions. -->
+             The Lucene search option uses this. -->
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>3.5.0</version>
+            <version>8.7.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
+             The Lucene search option uses this. -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>8.7.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.json/json 
+             This is the JSON reader. -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -237,50 +293,95 @@
             <version>0.4.1</version>
         </dependency-->
 
-        <!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail -->
+        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api 
+             This is the servlet API used by ERDDAP. -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail 
+             Used to send emails. -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress -->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress 
+             File2 and EDDTableFromNcFiles use this. -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.20</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <!-- https://mvnrepository.com/artifact/jaxen/jaxen 
+             org.jdom.xpath code uses this. -->
+        <dependency>
+            <groupId>jaxen</groupId>
+            <artifactId>jaxen</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
+             This is the netcdf-java library.
+             2020-12-23 was 5.3.3 -->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdfAll</artifactId>
+            <version>5.4.1</version>
+        </dependency>
+
+        <!-- NO LONGER NEEDED! It's in netcdf-all.jar  
+             and something else gets slf4j-api-...jar
+             https://mvnrepository.com/artifact/org.slf4j/slf4j-simple  
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.30</version>
+            <scope>runtime</scope>
+        </dependency  -->
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-jexl3 
+             This is the expression parser/processor used by EDDTableFromFiles Derived Variables. -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jexl3</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
+             Postgresql users use this. I include for their convenience. -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.18</version>
+        </dependency>
+
+
+
+        <!-- CASSANDRA 
+             https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core 
+             Cassandra uses this. -->
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>3.10.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava 
+             Cassandra driver uses this. -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>30.1-jre</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.11.4</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.11.4</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.11.4</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
-             Cassandra still refers to this older version from older domain. -->
+             Cassandra uses this. C* still refers to this older version from older domain. -->
         <dependency>
             <groupId>net.jpountz.lz4</groupId>
             <artifactId>lz4</artifactId>
@@ -288,11 +389,27 @@
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-core 
-             -->
+             Cassandra uses this.  -->
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
             <version>4.1.16</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
+             Cassandra uses this. -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.56.Final</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
+             Cassandra uses this. -->
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>1.1.8.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
@@ -308,85 +425,23 @@
             <version>4.1.16</version>
         </dependency -->
 
-        <!-- NO LONGER NEEDED! It's in netcdf-all.jar
-             https://mvnrepository.com/artifact/org.slf4j/slf4j-simple 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.30</version>
-            <scope>runtime</scope>
-        </dependency  -->
 
-        <!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.56.Final</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.2.18</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java -->
-        <dependency>
-            <groupId>org.xerial.snappy</groupId>
-            <artifactId>snappy-java</artifactId>
-            <version>1.1.8.2</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
-             2020-12-23 was 5.3.3 -->
-        <dependency>
-            <groupId>edu.ucar</groupId>
-            <artifactId>netcdfAll</artifactId>
-            <version>5.4.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-jexl3 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-jexl3</artifactId>
-            <version>3.1</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core -->
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>3.10.2</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3 -->
+        <!-- AWS
+             https://mvnrepository.com/artifact/software.amazon.awssdk/s3 
+             This is the core AWS SDK code. 
+             See awssdk/bom in <dependencyManagement> section above. -->
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
           <version>2.15.47</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions -->
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
+            This is the AWS code for Regions. -->
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
             <version>2.15.47</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
-        <dependency>
-            <groupId>jaxen</groupId>
-            <artifactId>jaxen</artifactId>
-            <version>1.2.0</version>
         </dependency>
 
     </dependencies>

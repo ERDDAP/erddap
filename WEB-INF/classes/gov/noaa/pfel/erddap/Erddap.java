@@ -92,11 +92,9 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.WildcardQuery;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11585,6 +11583,15 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
     /**
      * This finds the datasets that match a searchFor string.
      *
+     * <p>REJECTED: Especially for Lucene, could you speed this up by adding a 
+     * maxHits parameter so this method doesn't have to look up all the datasetID's
+     * (which is timeconsuming if e.g., 30,000 datasets).
+     * No. Because 
+     * <br>1) The number of hits is shown to user, so truncating would make that incorrect.
+     * <br>2) Sometimes the caller resorts the results (e.g., by datasetID), 
+     *    so the first nHits here may not be the first nHits shown to user.
+     * <br>Or possibly yes but with a very sophisticated system to avoid the problems.
+     *
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *    This is used to determine if the user has the right to know if a given
      *    dataset exists.  (But dataset will be matched if EDStatic.listPrivateDatasets.)  
@@ -11623,22 +11630,24 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         String roles[] = EDStatic.getRoles(loggedInAs);
         int nDatasetsSearched = 0;
         long tTime = System.currentTimeMillis();
+        String tSearchEngine = "original"; 
         if (nSearchWords > 0) {
             int ntDatasetIDs = tDatasetIDs.size();
 
             //try to get luceneIndexSearcher
-            //if fail, go back to original search
-            Object object2[] = EDStatic.useLuceneSearchEngine?
-                EDStatic.luceneIndexSearcher() : new Object[]{null, null};                   
-            IndexSearcher indexSearcher = (IndexSearcher)object2[0];
-            String datasetIDFieldCache[] = (String[])object2[1];
+            //if failure (e.g., at startup, before Lucene indexes are made), 
+            //  temporarily go back to original search
+            IndexSearcher indexSearcher = EDStatic.useLuceneSearchEngine? 
+                EDStatic.luceneIndexSearcher() : null;
 
-            if (indexSearcher != null && datasetIDFieldCache != null) { 
-                //useLuceneSearchEngine=true and searcher is valid
-                //do the searches with the LUCENE searchEngine
+            if (indexSearcher != null && EDStatic.luceneDocNToDatasetID != null) { 
+                //If useLuceneSearchEngine=true and searcher is valid,
+                //do the searches with the LUCENE searchEngine.
                 //??? future: allow "title:..." searches
+                tSearchEngine = "lucene"; 
                 try {
-                    BooleanQuery booleanQuery = new BooleanQuery();
+                    //See https://riptutorial.com/lucene/example/19933/booleanquery
+                    BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
                     boolean allNegative = true;
                     boolean booleanQueryHasTerms = false;
                     for (int w = 0; w < nSearchWords; w++) {
@@ -11671,7 +11680,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         }
                         sw = sb2.toString();
 
-                        //initial parsing (is it a Term or a Phrase?)
+                        //initial parsing (is it a Term (single word) or a Phrase?)
                         //use queryParser to parse each part of the pre-parsed query
                         //(using same Analyzer here as in IndexWriter
                         //was emphasized at https://darksleep.com/lucene/ )
@@ -11698,14 +11707,15 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         if (tQuery == null)
                             continue; //shouldn't happen
                         booleanQueryHasTerms = true;
-                        booleanQuery.add(tQuery, occur);
+                        booleanQueryBuilder.add(tQuery, occur);
 
-                        //boost score if it is also in title
+                        //boost score if search word is also in title
                         if (occur == BooleanClause.Occur.MUST) { //if it isn't in 'text', it won't be in title
                             tQuery = EDStatic.luceneParseQuery("title:" + sw);
                             if (tQuery != null) {
+                                //tQuery.setBoost(10);  //in 3.5.0 the title field was boosted. Then query was boosted. Now?
                                 booleanQueryHasTerms = true;
-                                booleanQuery.add(tQuery, BooleanClause.Occur.SHOULD);
+                                booleanQueryBuilder.add(tQuery, BooleanClause.Occur.SHOULD);
                             } //if tQuery couldn't be parsed, it is fine to just drop it
                         }                           
                     }
@@ -11715,7 +11725,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     if (reallyVerbose) String2.log("allNegative=" + allNegative);
                     if (allNegative) {
                         if (booleanQueryHasTerms) {
-                            booleanQuery.add(
+                            booleanQueryBuilder.add(
                                 new TermQuery(new Term(EDStatic.luceneDefaultField, "all")),
                                 BooleanClause.Occur.MUST);
                         } else {
@@ -11725,6 +11735,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                         }
                     }
                     //now, booleanQuery must have terms
+                    BooleanQuery booleanQuery = booleanQueryBuilder.build();
                     if (reallyVerbose) String2.log("booleanQuery=" + booleanQuery.toString());
 
                     //make a hashSet of tDatasetIDs (so seachable quickly)
@@ -11734,21 +11745,38 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
                     //do the lucene search
                     long luceneTime = System.currentTimeMillis();
-                    TopDocs hits = indexSearcher.search(booleanQuery, 
-                        indexSearcher.maxDoc()); //max n search results
+                    TopDocs hits = indexSearcher.search(booleanQuery, 100000); //max n search results
                     ScoreDoc scoreDocs[] = hits.scoreDocs;
                     int nHits = scoreDocs.length;
                     if (reallyVerbose) 
                         String2.log("  luceneQuery nMatches=" + nHits + 
-                            " time=" + (System.currentTimeMillis() - luceneTime) + "ms");
+                            " search time=" + (System.currentTimeMillis() - luceneTime) + "ms");
+                    luceneTime = System.currentTimeMillis();                     
                     for (int i = 0; i < nHits; i++) {
-                        //was (without luceneDatasetIDFieldCache)
-                        //Document hitDoc = indexSearcher.doc(hits.scoreDocs[i].doc);
-                        //String tDatasetID = hitDoc.get("datasetID"); 
+                        //3 ways to find datasetID:
 
-                        //with luceneDatasetIDFieldCache
-                        String tDatasetID = datasetIDFieldCache[scoreDocs[i].doc]; //doc#
+                        //without a cache
+                        //String tDatasetID = indexSearcher.doc(hits.scoreDocs[i].doc).get("datasetID"); 
+
+                        //with luceneDatasetIDFieldCache (now, not an option)
+                        //String tDatasetID = datasetIDFieldCache[scoreDocs[i].doc]; //doc#
                         //String2.log("hit#" + i + ": datasetID=" + tDatasetID);
+
+                        //with EDStatic.luceneDocNToDatasetID
+                        //(lazy population of luceneDocNToDatasetID);
+                        int docN = hits.scoreDocs[i].doc;
+                        Integer docNI = new Integer(docN);
+                        String tDatasetID = EDStatic.luceneDocNToDatasetID.get(docNI);
+                        if (tDatasetID == null) {  //not yet in luceneDocNToDatasetID
+                            Document doc = indexSearcher.doc(docN);
+                            if (doc == null) //perhaps just removed from index
+                                continue;
+                            tDatasetID = doc.get("datasetID"); 
+                            if (tDatasetID == null)  //shouldn't happen
+                                continue;
+                            tDatasetID = String2.canonical(tDatasetID); //save space in luceneDocNToDatasetID
+                            EDStatic.luceneDocNToDatasetID.put(docNI, tDatasetID);
+                        }
 
                         //ensure tDatasetID is in tDatasetIDs (e.g., just grid datasets)
                         if (!hashSet.contains(tDatasetID))
@@ -11770,9 +11798,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                             idPa.add(tDatasetID);
                         }
                     }
+                    if (reallyVerbose) 
+                        String2.log("  luceneQuery nMatches=" + nHits + 
+                            " lookup time=" + (System.currentTimeMillis() - luceneTime) + "ms");
 
-                //it needs to be sorted because of DEPRECATION penalty
-                table.leftToRightSort(3);
+                    //it needs to be sorted because of DEPRECATION penalty
+                    table.leftToRightSort(3);
 
                 } catch (Throwable t) {
                     EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -11781,7 +11812,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 }
 
             } else {
-                //do the searches with the ORIGINAL searchEngine
+                //default: do the searches with the ORIGINAL searchEngine
                 //prepare the byte[]s
                 boolean isNegative[]  = new boolean[nSearchWords];
                 byte searchWordsB[][] = new byte[   nSearchWords][];
@@ -11832,7 +11863,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         }
         if (verbose) {
             tTime = System.currentTimeMillis() - tTime;
-            String2.log("Erddap.search(" + EDStatic.searchEngine + ") " +
+            String2.log("Erddap.search(" + tSearchEngine + ") " +
                 //"searchFor=" + searchFor + "\n" +
                 //"searchWords=" + searchWords.toString() + "\n" +
                 //"nDatasetsSearched=" + nDatasetsSearched + 

@@ -74,7 +74,7 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>BUG FIX: 
+  <li>CHANGED: 
     <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
@@ -103,18 +103,19 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#findDuplicateTime">findCuplicateTime</a>
     <br>&nbsp;
   <li>NEW: datasets.xml can now include a <palettes> tag which overrides 
-      the <palettes> tag value from messages.xml (or reverts to the messages.xml
+      the &lt;palettes&gt; tag value from messages.xml (or reverts to the messages.xml
       value if it is empty). 
+      This lets you change the list of available palettes while ERDDAP is running. 
       Also, if you have a cptfiles subdirectory in the ERDDAP content directory, 
       ERDDAP will copy all the *.cpt files in that directory
       into the [tomcat]/webapps/erddap/WEB-INF/cptfiles directory each time ERDDAP starts up.
-      This lets you change the list of available palettes while ERDDAP is running. 
-      It also lets you make a change and have it persist when you install a new version of ERDDAP.
+      Together, these changes let you add palettes 
+      and have the changes persist when you install a new version of ERDDAP.
       See the <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#palettes">palettes documentation</a>
-      <br>Thanks to Jennifer Sevadjian and perhaps other CoastWatch people.
+      <br>Thanks to Jennifer Sevadjian, Melanie Abecassis, and perhaps other CoastWatch people.
     <br>&nbsp;
-
+  <li>CHANGED from old version of Lucene to v8.7.0. 
   </ul>
 </ul>
 
