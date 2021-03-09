@@ -875,8 +875,11 @@ public class EDDGridFromDap extends EDDGrid {
 
                 //if OutOfMemoryError or too much data, rethrow t
                 String tToString = t.toString();
-                if (t instanceof java.lang.OutOfMemoryError ||
-                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException ||
+                    t instanceof OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                    tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                     throw t;
 
                 String2.log(MustBe.throwableToString(t));
@@ -4847,19 +4850,19 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         testVerboseOn();
         //don't test local dataset because of dns/numericIP problems
         //this dataset is good test because it has 2 dimension combos
-        String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.1.6";
+        String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
 
 String expected1 = 
-"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_418c_b59f_8e9e\" active=\"true\">\n" +
-"    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.1.6</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_82a3_7247_c8d7\" active=\"true\">\n" +
+"    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n" +
 "    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
-"        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
-"        <att name=\"history\">Wed Jan 06 09:41:52 HST 2021 : imported by GrADS Data Server 2.0</att>\n" + //changes sometimes
-"        <att name=\"title\">SODA v2.1.6 monthly means</att>\n" +
+"        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
+"        <att name=\"history\">Wed Feb 10 14:34:42 HST 2021 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -4868,14 +4871,14 @@ String expected1 =
 "        <att name=\"creator_name\">HAWAII SOEST</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.atmos.umd.edu/~ocean/</att>\n" +
-"        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.1.6.php</att>\n" +
+"        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
 "        <att name=\"institution\">HAWAII SOEST</att>\n" +
-"        <att name=\"keywords\">assimilation, currents, data, degc, density, depth, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, oceans, pop2.1.6, practical, psu, salinity, salt, school, science, sea, sea_water_practical_salinity, seawater, simple, soda, soest, technology, temperature, time, u, unit, v, v2.1.6, velocity, water, zonal</att>\n" +
+"        <att name=\"keywords\">assimilation, currents, data, degc, density, depth, earth, Earth Science &gt; Oceans &gt; Salinity/Density &gt; Salinity, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, oceans, pop2.2.4, practical, psu, salinity, salt, school, science, sea, sea_water_practical_salinity, seawater, simple, soda, soest, technology, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, water, zonal</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
-"        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.1.6 monthly means (soda pop2.1.6)</att>\n" +
-"        <att name=\"title\">SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5&#xb0;, 1958-2008</att>\n" +
+"        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.2.4 monthly means (soda pop2.2.4)</att>\n" +
+"        <att name=\"title\">SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5&#xb0;, 1871-2010</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -4883,19 +4886,19 @@ String expected1 =
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"grads_dim\">t</att>\n" +
 "            <att name=\"grads_mapping\">linear</att>\n" +
-"            <att name=\"grads_min\">00z15jan1958</att>\n" +
-"            <att name=\"grads_size\">612</att>\n" +
+"            <att name=\"grads_min\">00z15jan1871</att>\n" +
+"            <att name=\"grads_size\">1680</att>\n" +
 "            <att name=\"grads_step\">1mo</att>\n" +
 "            <att name=\"long_name\">time</att>\n" +
-"            <att name=\"maximum\">00z15dec2008</att>\n" +
-"            <att name=\"minimum\">00z15jan1958</att>\n" +
-"            <att name=\"resolution\" type=\"float\">30.436989</att>\n" +
+"            <att name=\"maximum\">00z15dec2010</att>\n" +
+"            <att name=\"minimum\">00z15jan1871</att>\n" +
+"            <att name=\"resolution\" type=\"float\">30.43657</att>\n" +
 "            <att name=\"units\">days since 1-1-1 00:00:0.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"axis\">T</att>\n" +
-"            <att name=\"data_max\">00z15dec2008</att>\n" +
-"            <att name=\"data_min\">00z15jan1958</att>\n" +
+"            <att name=\"data_max\">00z15dec2010</att>\n" +
+"            <att name=\"data_min\">00z15jan1871</att>\n" +
 "            <att name=\"grads_dim\">null</att>\n" +
 "            <att name=\"grads_mapping\">null</att>\n" +
 "            <att name=\"grads_min\">null</att>\n" +
@@ -5046,9 +5049,21 @@ String expected1 =
 "            <att name=\"ioos_category\">Currents</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>w</sourceName>\n" +
+"        <destinationName>w</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">vertical velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_90cf_3790_6762\" active=\"true\">\n";
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_c755_ddeb_6545\" active=\"true\">\n";
 
         String results = generateDatasetsXml(url, 
             null, null, null, -1, null);
@@ -5068,14 +5083,14 @@ String expected1 =
             "Unexpected results from GenerateDatasetsXml.doIt.");
 
         //ensure it is ready-to-use by making a dataset from it
-        String tDatasetID = "hawaii_soest_418c_b59f_8e9e";
+        String tDatasetID = "hawaii_soest_82a3_7247_c8d7";
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), 
-            "SODA v2.1.6 monthly means (soda pop2.1.6) [time][lev][lat][lon], 0.5°, 1958-2008", "");
+            "SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-            "temp, salt, u, v", "");    
+            "temp, salt, u, v, w", "");    
     }
 
 
@@ -5275,7 +5290,7 @@ String expected2 =
         int po2 = results.indexOf("</att>", po);
         String tResults = results.substring(po, po2 + 6);
         String tExpected = "<att name=\"title\">SST, GOES Imager, Day and Night, " +
-            "Western Hemisphere, 2006-present (Hourly) (erdGAsstahday), " +
+            "Western Hemisphere, 2006-2020 (Hourly) (erdGAsstahday), " +
             "0.05&#xb0;</att>";  //important test of catching resolution
         Test.ensureEqual(tResults, tExpected, "results=\n" + results);
    
@@ -8200,6 +8215,9 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "  regular load dataset       time=" + time1 + "ms\n" +
             "  quick restart load dataset time=" + time2 + "ms");
         Test.ensureEqual(searchString1, searchString2, "");
+
+        //but add something to it so again EDStatic.initialLoadDatasets() will be false
+        EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n"); 
     }
 
 
@@ -10255,7 +10273,7 @@ expected =
 "        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
 "        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
 "        <att name=\"start_time\">00:00:00 UTC</att>\n" +
-"        <att name=\"stop_date\">2020-09-21 UTC</att>\n" +  //changes 
+"        <att name=\"stop_date\">2020-11-16 UTC</att>\n" +  //changes 
 "        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
 "        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
 "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
@@ -10414,22 +10432,22 @@ expected =
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 833];\n" +
+"  Float64 time[time = 837];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 833][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = 837][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 833];\n" +
+"      Float64 time[time = 837];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 833][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"      UInt16 qual_sst4[time = 837][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
 "    MAPS:\n" +
-"      Float64 time[time = 833];\n" +
+"      Float64 time[time = 837];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
@@ -10446,7 +10464,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.6006464e+9;\n" +  //changes
+"    Float64 actual_range 1.0257408e+9, 1.6054848e+9;\n" +  //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -10581,7 +10599,7 @@ expected =
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
 //"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
-"    String time_coverage_end \"2020-09-21T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String time_coverage_end \"2020-11-16T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +
@@ -10936,7 +10954,7 @@ expected =
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,2002-07-04T00:00:00Z\\n2020-09-21T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
+"time,actual_range,2002-07-04T00:00:00Z\\n2020-11-16T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +

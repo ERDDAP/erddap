@@ -91,7 +91,8 @@ public class WatchDirectory {
             throw new RuntimeException(
                 "The OS doesn't support WatchService for that file system.");
         if (recursive) {
-            StringArray alps = FileVisitorSubdir.oneStep(watchDir, pathRegex); //will have matching slashes and trailing slashes
+            StringArray alps = FileVisitorSubdir.oneStep(    //throws IOException if "Too many open files"
+                watchDir, pathRegex); //will have matching slashes and trailing slashes
             int n = alps.size();
             for (int i = 0; i < n; i++) {
                 WatchKey key = Paths.get(alps.get(i)).register(watchService, events);

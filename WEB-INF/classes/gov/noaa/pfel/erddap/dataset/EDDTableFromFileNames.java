@@ -419,7 +419,8 @@ public class EDDTableFromFileNames extends EDDTable{
             if (tCachedDNLSTable == null) {
 
                 //get the info to be cached
-                tCachedDNLSTable = FileVisitorDNLS.oneStep(fileDir, fileNameRegex,
+                tCachedDNLSTable = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                    fileDir, fileNameRegex,
                     from == fromOnTheFly? false : recursive, 
                     pathRegex, 
                     from == fromOnTheFly? true : false); //tDirectoriesToo
@@ -797,7 +798,8 @@ public class EDDTableFromFileNames extends EDDTable{
             if (from == fromOnTheFly) {
                 //get it on-the-fly from source
 //check that nextPath matches pathRegex?
-                Table dnlsTable = FileVisitorDNLS.oneStep(fileDir + nextPath, 
+                Table dnlsTable = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                    fileDir + nextPath, 
                     fileNameRegex, false, pathRegex, true); //tRecursive, pathRegex, tDirectoriesToo
                 if (dnlsTable == null) {
                     return null;
@@ -870,7 +872,7 @@ public class EDDTableFromFileNames extends EDDTable{
            
             Table dnlsTable =  
                 from == fromRemoteFiles? getCachedDNLSTable() :
-                FileVisitorDNLS.oneStep(  //fromLocalFiles
+                FileVisitorDNLS.oneStep(  //fromLocalFiles   //throws IOException if "Too many open files"
                     fileDir, fileNameRegex, recursive, pathRegex,
                     false); //dirToo=false
 
@@ -2546,10 +2548,10 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1607033308000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+"index.html,1614111141000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
             Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe13, SUVI-L1b-Fe131, SUVI-L1b-Fe17, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303";
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, GLM-L2-LCFA, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy).\n" +
@@ -2617,7 +2619,7 @@ String expected =
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2020-12-03T22:08:28Z,32357.0,.html\n" + //changes sometimes
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-02-23T20:12:21Z,32357.0,.html\n" + //changes sometimes
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
@@ -2635,6 +2637,8 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
@@ -2680,9 +2684,7 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe13/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe17/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
@@ -2699,9 +2701,7 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe13/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe17/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +

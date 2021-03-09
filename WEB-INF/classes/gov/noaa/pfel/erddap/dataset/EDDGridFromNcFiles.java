@@ -3956,7 +3956,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testGrib2_43(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFiles.testGrib2_43() *****************\n");
+        String2.log("\n****************** EDDGridFromNcFiles.testGrib2_43(" + deleteCachedDatasetInfo + ") *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -3965,7 +3965,7 @@ expected =
 
         //generateDatasetsXml
         //file dir is EDStatic.unitTestDataDir: /erddapTest/
-        try {   
+        //try {   
         String id = "testGrib2_43";
         if (deleteCachedDatasetInfo) 
             deleteCachedDatasetInfo(id);
@@ -4428,7 +4428,7 @@ expected=
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
-        } catch (Throwable t) {
+/*        } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) +
 "\n2012-07-12 with change to Java 4.3.8, this doesn't pass because of\n" +
 "spaces and parens in attribute names. John Caron says he will fix.\n" +
@@ -4441,6 +4441,7 @@ expected=
 "[2015?] Now generatedDatasetsXml suggests setting original to null \n" +
 "and adds a variant with a valid CF attribute name.\n"); 
         }
+*/
     }
 
 
@@ -11043,7 +11044,8 @@ expected =
         //what does oneStep see in source?
         String2.log("What does one step see in source?");
 
-        results = FileVisitorDNLS.oneStep(tSourceUrl, tFileNameRegex, tRecursive,
+        results = FileVisitorDNLS.oneStep(    //throws IOException if "Too many open files"
+            tSourceUrl, tFileNameRegex, tRecursive,
             tPathRegex, tDirectoriesToo).dataToString();
 expected = 
 "directory,name,lastModified,size\n" +
@@ -11060,7 +11062,8 @@ expected =
 
             //what does oneStep see locally?
             String2.log("What does one step see in tLocalDir=" + tLocalDir + " ?");
-            results = FileVisitorDNLS.oneStep(tLocalDir, tFileNameRegex, tRecursive,
+            results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                tLocalDir, tFileNameRegex, tRecursive,
                 tPathRegex, tDirectoriesToo).dataToString();
     expected = 
     "directory,name,lastModified,size\n" +
@@ -11077,8 +11080,8 @@ expected =
         Test.ensureEqual(nTasks, expectedN, "nFilesToDownload");
         String2.pressEnterToContinue("\nPress Enter when the download tasks are finished (" +
             expectedN + " minutes?).");
-        results = FileVisitorDNLS.oneStep(tLocalDir, 
-            tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
+        results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            tLocalDir, tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
 expected = 
 "directory,name,lastModified,size\n" +
 "/u00/data/points/testEDDGridMakeCopyFileTasks/v4.1/2018/010/,20180110090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc,1526396428000,400940089\n" +
@@ -12079,7 +12082,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 3.675888e+8, 3.681072e+8;\n" +
+"    Float64 actual_range 3.675888e+8, 1.609416e+9;\n" +
 "    String axis \"T\";\n" +
 "    String comment \"This is the centered, reference time.\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -12089,9 +12092,11 @@ expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  latitude {\n" +
+"    Int32 _ChunkSizes 4320;\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -89.97916, 89.97917;\n" +
+"    Float32 actual_range -89.979, 89.979;\n" + //2021-03-08 was -89.97916, 89.97917
 "    String axis \"Y\";\n" +
+"    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
 "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n" +
@@ -12101,9 +12106,11 @@ expected =
 "    Float32 valid_min -90.0;\n" +
 "  }\n" +
 "  longitude {\n" +
+"    Int32 _ChunkSizes 8640;\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range -179.9792, 179.9792;\n" +
+"    Float32 actual_range -179.979, 179.979;\n" + //2021-03-08 was -179.9792, 179.9792 
 "    String axis \"X\";\n" +
+"    String grids \"uniform grids from -180 to 180 by 0.04\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n" +
@@ -12113,7 +12120,7 @@ expected =
 "    Float32 valid_min -180.0;\n" +
 "  }\n" +
 "  sea_surface_temperature {\n" +
-"    Float64 _FillValue -327.68;\n" +
+"    Float64 _FillValue NaN;\n" +
 "    String ancillary_variables \"quality_level pathfinder_quality_level l2p_flags\";\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -12122,15 +12129,15 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"NOAA Climate Data Record of sea surface skin temperature\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String standard_name \"sea_surface_skin_temperature\";\n" +
 "    String units \"degree_C\";\n" +
 "    Float64 valid_max 45.0;\n" +
-"    Float64 valid_min -1.8;\n" +
+"    Float64 valid_min -1.7999999999999545;\n" +
 "  }\n" +
 "  dt_analysis {\n" +
-"    Float64 _FillValue -12.8;\n" +
+"    Float64 _FillValue NaN;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"The difference between this SST and the previous day's SST.\";\n" +
@@ -12138,16 +12145,15 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Statistics\";\n" +
 "    String long_name \"deviation from last SST analysis\";\n" +
-"    String platform \"NOAA-7\";\n" +
+"    String platform \"NOAA-19\";\n" +
 "    String references \"AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.\";\n" +
 "    String source \"NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)\";\n" +
 "    String units \"degree_C\";\n" +
-"    Float64 valid_max 12.700000000000001;\n" +  //2020-08-04 changed from NaN with change to maxIsMV support
+"    Float64 valid_max 12.700000000000001;\n" +
 "    Float64 valid_min -12.700000000000001;\n" +
 "  }\n" +
 "  wind_speed {\n" +
-"    Byte _FillValue -128;\n" +
-"    String _Unsigned \"false\";\n" + //ERDDAP adds
+"    String _Unsigned \"false\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.\";\n" +
@@ -12156,15 +12162,15 @@ expected =
 "    String height \"10 m\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"10m wind speed\";\n" +
-"    String source \"NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.1981.nc, v_wind.10m.gauss.1981.nc\";\n" +
+"    String source \"NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.2020.nc, v_wind.10m.gauss.2020.nc\";\n" +
 "    String standard_name \"wind_speed\";\n" +
-"    Float64 time_offset 2.0946;\n" +
+"    Float64 time_offset 3.1036;\n" +
 "    String units \"m s-1\";\n" +
 "    Byte valid_max 127;\n" +
 "    Byte valid_min -127;\n" +
 "  }\n" +
 "  sea_ice_fraction {\n" +
-"    Float64 _FillValue -1.28;\n" +
+"    Float64 _FillValue NaN;\n" +
 "    Float64 colorBarMaximum 1.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String comment \"Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.3 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.3 grid.\";\n" +
@@ -12173,16 +12179,16 @@ expected =
 "    String ioos_category \"Ice Distribution\";\n" +
 "    String long_name \"sea ice fraction\";\n" +
 "    String references \"Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5\";\n" +
-"    String source \"NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 19810901-NCDC-L4LRblend-GLOB-v01-fv02_0-AVHRR_OI.nc.gz\";\n" +
+"    String source \"NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 20201231120000-NCEI-L4_GHRSST-SSTblend-AVHRR_OI-GLOB-v02.0-fv02.1.nc.gz\";\n" +
 "    String standard_name \"sea_ice_area_fraction\";\n" +
 "    Float64 time_offset 2.0;\n" +
-"    String units \"percent\";\n" +
-"    Float64 valid_max 1.27;\n" +  //2020-08-04 changed from NaN with change to maxIsMV support
+"    String units \"%\";\n" +
+"    Float64 valid_max 1.27;\n" +
 "    Float64 valid_min -1.27;\n" +
 "  }\n" +
 "  quality_level {\n" +
-"    Byte _FillValue 0;\n" +
-"    String _Unsigned \"false\";\n" + //ERDDAP adds
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String ancillary_variables \"pathfinder_quality_level\";\n" +
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 6.0;\n" +
@@ -12202,15 +12208,15 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"quality level of SST pixel\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Byte valid_max 5;\n" +
 "    Byte valid_min 1;\n" +
 "  }\n" +
 "  pathfinder_quality_level {\n" +
-"    Byte _FillValue -1;\n" +
-"    String _Unsigned \"false\";\n" + //ERDDAP adds
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String colorBarContinuous \"false\";\n" +
 "    Float64 colorBarMaximum 8.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -12222,8 +12228,8 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Pathfinder SST quality flag\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Byte valid_max 7;\n" +
 "    Byte valid_min 0;\n" +
@@ -12232,20 +12238,21 @@ expected =
 "    Int16 _FillValue 32767;\n" +
 "    Float64 colorBarMaximum 300.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1. Bits six (6) indicates the daytime unrealistic SST values (>39.8°C) that remain in pf_quality_level 4 to 7. Users are recommended to avoid these values.\";\n" +
+"    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.\";\n" +
 "    String coverage_content_type \"auxiliaryInformation\";\n" +
 "    Int16 flag_masks 1, 2, 4, 8, 16, 32, 64, 128, 256;\n" +
-"    String flag_meanings \"microwave land ice lake river reserved_for_future_use extreme_sst unused_currently unused_currently\";\n" +
+"    String flag_meanings \"microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently\";\n" +
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"L2P flags\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Int16 valid_max 256;\n" +
 "    Int16 valid_min 0;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
+"    String _NCProperties \"version=2,netcdf=4.7.4,hdf5=1.10.5\";\n" +
 "    String acknowledgement \"Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the NOAA National Centers for Environmental Information (NCEI). This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String cdr_id \"gov.noaa.ncdc:C00983\";\n" +
@@ -12260,32 +12267,32 @@ expected =
 "    String creator_name \"Kenneth S. Casey\";\n" +
 "    String creator_type \"person\";\n" +
 "    String creator_url \"https://pathfinder.nodc.noaa.gov\";\n" +
-"    String date_created \"2016-05-12T14:51:42Z\";\n" +
+"    String date_created \"2021-01-15T20:58:10Z\";\n" +
 "    String date_issued \"2016-03-01T00:00:00Z\";\n" +
 "    String date_metadata_modified \"2016-01-25T00:00:00Z\";\n" +
-"    String date_modified \"2016-05-12T14:51:42Z\";\n" +
+"    String date_modified \"2021-01-15T20:58:10Z\";\n" +
 "    String day_or_night \"Day\";\n" +
-"    Float64 Easternmost_Easting 179.9792;\n" +
+"    Float64 Easternmost_Easting 179.979;\n" +  //2021-03-08 was 179.9792
 "    String gds_version_id \"2.0\";\n" +
 "    String geospatial_bounds \"-180.0000 -90.0000, 180.0000 90.0000\";\n" +
 "    String geospatial_bounds_crs \"EPSG:4326\";\n" +
-"    Float64 geospatial_lat_max 89.97917;\n" +
-"    Float64 geospatial_lat_min -89.97916;\n" +
-"    Float64 geospatial_lat_resolution 0.04166666589488307;\n" +
+"    Float64 geospatial_lat_max 89.979;\n" +   //2021-03-08 all these were to 5 or 4 digits
+"    Float64 geospatial_lat_min -89.979;\n" +
+"    Float64 geospatial_lat_resolution 0.04166658948830748;\n" + //was 0.04166666589488307;
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 179.9792;\n" +
-"    Float64 geospatial_lon_min -179.9792;\n" +
-"    Float64 geospatial_lon_resolution 0.041666674383609215;\n" +
+"    Float64 geospatial_lon_max 179.979;\n" +
+"    Float64 geospatial_lon_min -179.979;\n" +
+"    Float64 geospatial_lon_resolution 0.041666628081953934;\n" +  //was 0.041666674383609215
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"smigen_both ifile=1981243.b4kd3-pf53ap-n07-sst.hdf ofile=1981243.i4kd3-pf53ap-n07-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; /srv/disk_v1t/PFV5.3CONV/bin/Converter/hdf2nc_PFV53_L3C.x -v /srv/disk_v1t/PFV5.3CONV/Data_PFV53/PFV53_HDF_L3C/1981/1981243.i4kd3-pf53ap-n07-sst.hdf";
+"    String history \"smigen_both ifile=2020366.b4kd3-pf53ap-n19-sst.hdf ofile=2020366.i4kd3-pf53ap-n19-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; /data/ncei1/ncei.home/ksaha/PFv53_main/Converters/bin/Converter/hdf2nc_PFV53_L3C.x -v /data/ncei1/ncei.home/ksaha/PFv53_main/Converters/Data_PFV53/PFV53_HDF_L3C/2020/2020366.i4kd3-pf53ap-n19-sst.hdf";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
     
 expected = 
-   "String id \"AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
+    "String id \"AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String infoUrl \"https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String institution \"NCEI\";\n" +
-"    String instrument \"AVHRR-2\";\n" +
+"    String instrument \"AVHRR-3\";\n" +
 "    String instrument_vocabulary \"NASA Global Change Master Directory (GCMD) Science Keywords v8.4\";\n" +
 "    String keywords \"10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere, atmospheric, avhrr, bias, centers, climate, collated, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Cryosphere > Sea Ice > Ice Extent, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Sea Ice > Ice Extent, environmental, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, information, l2p, l2p_flags, l3-collated, l3c, level, national, ncei, noaa, ocean, oceans, optical, optical properties, pathfinder, pathfinder_quality_level, pixel, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -12300,9 +12307,9 @@ expected =
 "    String metadata_link \"https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String naming_authority \"org.ghrsst\";\n" +
 "    String ncei_template_version \"NCEI_NetCDF_Grid_Template_v2.0\";\n" +
-"    Float64 Northernmost_Northing 89.97917;\n" +
+"    Float64 Northernmost_Northing 89.979;\n" + //2021-03-08 was 89.97916
 "    String orbit_node \"Ascending\";\n" +
-"    String platform \"NOAA-7\";\n" +
+"    String platform \"NOAA-19\";\n" +
 "    String platform_vocabulary \"NASA Global Change Master Directory (GCMD) Science Keywords v8.4\";\n" +
 "    String processing_level \"L3C\";\n" +
 "    String product_version \"PFV5.3\";\n" +
@@ -12314,19 +12321,19 @@ expected =
 "    String publisher_url \"https://www.ghrsst.org\";\n" +
 "    String references \"https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.\";\n" +
 "    String sea_name \"World-Wide Distribution\";\n" +
-"    String sensor \"AVHRR-2\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String sensor \"AVHRR-3\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String sourceUrl \"https://www.ncei.noaa.gov/thredds-ocean/catalog/pathfinder/Version5.3/L3C/catalog.html\";\n" +
-"    Float64 Southernmost_Northing -89.97916;\n" +
+"    Float64 Southernmost_Northing -89.979;\n" +  //2021-03-08 was -89.97916
 "    String spatial_resolution \"0.0416667 degree\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Advanced Very High Resolution Radiometer (AVHRR) Pathfinder Version 5.3 L3-Collated (L3C) sea surface temperature. This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.3 of the Pathfinder algorithm and the file is nearly but not completely compliant with the Global High-Resolution Sea Surface Temperature (GHRSST) Data Specifications V2.0 (GDS2). The sses_bias and sses_standard_deviation variables are empty. Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created by the NOAA National Centers for Environmental Information (NCEI).\";\n" +
 "    String time_coverage_duration \"P1D\";\n" +
-"    String time_coverage_end \"1981-08-31T12:00:00Z\";\n" +
+"    String time_coverage_end \"2020-12-31T12:00:00Z\";\n" +
 "    String time_coverage_resolution \"P1D\";\n" +
 "    String time_coverage_start \"1981-08-25T12:00:00Z\";\n" +
 "    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)\";\n" +
-"    Float64 Westernmost_Easting -179.9792;\n" +
+"    Float64 Westernmost_Easting -179.979;\n" +  //2021-03-08 was -179.9792
 "  }\n" +
 "}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
@@ -12343,62 +12350,62 @@ expected =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 7];\n" +
+"  Float64 time[time = 8];\n" +
 "  Float32 latitude[latitude = 4320];\n" +
 "  Float32 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 sea_surface_temperature[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 sea_surface_temperature[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } sea_surface_temperature;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 dt_analysis[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 dt_analysis[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } dt_analysis;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte wind_speed[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte wind_speed[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } wind_speed;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 sea_ice_fraction[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 sea_ice_fraction[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } sea_ice_fraction;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte quality_level[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte quality_level[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } quality_level;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte pathfinder_quality_level[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte pathfinder_quality_level[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } pathfinder_quality_level;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Int16 l2p_flags[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Int16 l2p_flags[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } l2p_flags;\n" +
@@ -12423,7 +12430,8 @@ expected =
 "1981-08-28T12:00:00Z\n" +
 "1981-08-29T12:00:00Z\n" +
 "1981-08-30T12:00:00Z\n" +
-"1981-08-31T12:00:00Z\n";
+"1981-08-31T12:00:00Z\n" +
+"2020-12-31T12:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -12436,20 +12444,22 @@ expected =
         expected = 
 "time,latitude,longitude,sea_surface_temperature\n" +
 "UTC,degrees_north,degrees_east,degree_C\n" +
-"1981-08-25T12:00:00Z,23.312502,-179.5625,1.35\n" +
-"1981-08-25T12:00:00Z,23.270836,-179.5625,-0.58\n" +
-"1981-08-26T12:00:00Z,23.312502,-179.5625,19.0\n" +
-"1981-08-26T12:00:00Z,23.270836,-179.5625,22.580000000000002\n" +
-"1981-08-27T12:00:00Z,23.312502,-179.5625,27.22\n" +
-"1981-08-27T12:00:00Z,23.270836,-179.5625,26.48\n" +
-"1981-08-28T12:00:00Z,23.312502,-179.5625,28.98\n" +
-"1981-08-28T12:00:00Z,23.270836,-179.5625,28.93\n" +
-"1981-08-29T12:00:00Z,23.312502,-179.5625,28.150000000000002\n" +
-"1981-08-29T12:00:00Z,23.270836,-179.5625,27.68\n" +
-"1981-08-30T12:00:00Z,23.312502,-179.5625,28.36\n" +
-"1981-08-30T12:00:00Z,23.270836,-179.5625,28.51\n" +
-"1981-08-31T12:00:00Z,23.312502,-179.5625,-3.0\n" +
-"1981-08-31T12:00:00Z,23.270836,-179.5625,-3.0\n";
+"1981-08-25T12:00:00Z,23.312456,-179.56233,1.3500000000000227\n" +
+"1981-08-25T12:00:00Z,23.27079,-179.56233,-0.5799999999999841\n" +
+"1981-08-26T12:00:00Z,23.312456,-179.56233,19.0\n" +
+"1981-08-26T12:00:00Z,23.27079,-179.56233,22.579999999999984\n" +
+"1981-08-27T12:00:00Z,23.312456,-179.56233,27.220000000000027\n" +
+"1981-08-27T12:00:00Z,23.27079,-179.56233,26.480000000000018\n" +
+"1981-08-28T12:00:00Z,23.312456,-179.56233,28.980000000000018\n" +
+"1981-08-28T12:00:00Z,23.27079,-179.56233,28.930000000000007\n" +
+"1981-08-29T12:00:00Z,23.312456,-179.56233,28.149999999999977\n" +
+"1981-08-29T12:00:00Z,23.27079,-179.56233,27.680000000000007\n" +
+"1981-08-30T12:00:00Z,23.312456,-179.56233,28.360000000000014\n" +
+"1981-08-30T12:00:00Z,23.27079,-179.56233,28.50999999999999\n" +
+"1981-08-31T12:00:00Z,23.312456,-179.56233,-3.0\n" +
+"1981-08-31T12:00:00Z,23.27079,-179.56233,-3.0\n" +
+"2020-12-31T12:00:00Z,23.312456,-179.56233,NaN\n" +
+"2020-12-31T12:00:00Z,23.27079,-179.56233,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName() finished successfully.");
@@ -13170,7 +13180,7 @@ expected =
 "java.io.IOException: HTTP status code=413 for URL: http://localhost:8080/cwexperimental/griddap/erdBAssta5day.nc?sst\n" +
 "(Error {\n" +
 "    code=413;\n" +
-"    message=\"Payload Too Large: Your query produced too much data.  Try to request less data.  80001 MB is more than the .nc 2 GB limit.\";\n" +
+"    message=\"Payload Too Large: Your query produced too much data.  Try to request less data. [memory]  80001 MB is more than the .nc 2 GB limit.\";\n" +
 "})", 
             "results=\n" + results + comment);
 
@@ -14107,7 +14117,8 @@ expected =
             expected = 
 "Name,Last modified,Size,Description\n" +
 "1981/,NaN,NaN,\n" +
-"1994/,NaN,NaN,\n";
+"1994/,NaN,NaN,\n" +
+"2020/,NaN,NaN,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/

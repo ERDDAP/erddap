@@ -263,7 +263,7 @@ public abstract class EDDTable extends EDD {
         "https://linux.die.net/man/1/ncdump", //ncHeader
         "https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries", //ncCF Discrete Sampling Geometries 
         "https://linux.die.net/man/1/ncdump", //ncCFHeader
-        "https://www.nodc.noaa.gov/data/formats/netcdf/", //.ncCFMA
+        "https://www.ncei.noaa.gov/netcdf-templates", //.ncCFMA
         "https://linux.die.net/man/1/ncdump", //ncCFMAHeader
 //        "https://www.unidata.ucar.edu/software/netcdf/", //nc4
 //        "https://linux.die.net/man/1/ncdump", //nc4Header
@@ -5402,7 +5402,7 @@ public abstract class EDDTable extends EDD {
      * cdm_profile_variables are defined correctly. 
      * 
      * @param nodcMode If true, data will be saved in .ncCFMA file conforming to
-     *    NODC Templates https://www.nodc.noaa.gov/data/formats/netcdf/
+     *    NODC Templates https://www.ncei.noaa.gov/netcdf-templates
      *    with Multidimensional Array Representation.
      *    If false, data will be saved in .ncCF file with 
      *    Contiguous Ragged Array Representation.
@@ -5747,7 +5747,7 @@ public abstract class EDDTable extends EDD {
      * are defined correctly. 
      * 
      * @param nodcMode If true, data will be saved in .ncCFMA file conforming to
-     *    NODC Templates https://www.nodc.noaa.gov/data/formats/netcdf/
+     *    NODC Templates https://www.ncei.noaa.gov/netcdf-templates
      *    with Multidimensional Array Representation.
      *    If false, data will be saved in .ncCF file with 
      *    Contiguous Ragged Array Representation.
@@ -7695,7 +7695,7 @@ public abstract class EDDTable extends EDD {
             "      >Discrete Sampling Geometries" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "   conventions, which were previously named \"CF Point Observation Conventions\".\n" +
-            "   This is the file type used by the <a rel=\"help\" href=\"https://www.nodc.noaa.gov/data/formats/netcdf/\">NODC Templates" +
+            "   This is the file type used by the <a rel=\"help\" href=\"https://www.ncei.noaa.gov/netcdf-templates\">NODC Templates" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "   A request will succeed only if the dataset has a cdm_data_type other than \"Other\"\n" +
             "   and if the request includes at least one data variable (not just the outer, descriptive variables).\n" +

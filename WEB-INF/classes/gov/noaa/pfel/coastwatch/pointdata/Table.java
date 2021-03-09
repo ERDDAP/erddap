@@ -32719,7 +32719,7 @@ String2.log(table.dataToString());
 Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
   
 expected = 
-"https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
+"https://data.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
 "\t\t:infoUrl = \"www.ecofoci.noaa.gov\" ;\n" +
 "\t\t:INST_TYPE = \"Sea-Bird CTD SBE911\" ;\n" +
 "\t\t:institution = \"PMEL EcoFOCI\" ;\n" +
@@ -32754,7 +32754,7 @@ expected =
         int po = results.indexOf(expected.substring(0, 60));
         Test.ensureEqual(results.substring(Math.max(0, po)), expected, "results=\n" + results);
 
-        url = "https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
+        url = "https://data.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4?" +
             "prof,id,cast,cruise,time,longitude,lon360,latitude&time%3E=2012-09-04&time%3C=2012-09-07"; 
         table.readOpendapSequence(url, false); //boolean: skipDapSpacerRows
         results = table.toString(3);
@@ -32856,7 +32856,7 @@ expected =
 
 
 expected = 
-"https://ferret.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
+"https://data.pmel.noaa.gov/pmel/erddap/tabledap/ChukchiSea_454a_037a_fcf4.das\" ;\n" +
 "\t\t:infoUrl = \"www.ecofoci.noaa.gov\" ;\n" +
 "\t\t:INST_TYPE = \"Sea-Bird CTD SBE911\" ;\n" +
 "\t\t:institution = \"PMEL EcoFOCI\" ;\n" +

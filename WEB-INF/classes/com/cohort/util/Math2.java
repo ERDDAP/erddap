@@ -71,16 +71,21 @@ public class Math2 {
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
      * These are MessageFormat-style strings, so any single quote ' must be escaped as ''. 
-     * !!! If you add another, add it to EDStatic.sendError(), which looks for these.
      */
+    //EDStatic.sendError(), which looks for this to detect a memory-related error message.
+    //So be sure it is in the error message in a case-insensitive way.
+    public static String memory = "memory";  //must be all lower case
     public static String memoryTooMuchData = 
-        "Your query produced too much data.  Try to request less data.";
+        "Your query produced too much data.  Try to request less data. [memory]";
     public static String memoryThanCurrentlySafe = "The request needs more memory ({0} MB) " +
         "than is currently available ({1} MB).";
     public static String memoryThanSafe = "The request needs more memory ({0} MB) " +
         "than is ever safely available in this Java setup ({1} MB).";
     public static String memoryArraySize = 
-        "The request needs an array size ({0}) bigger than Java ever allows ({1}).";
+        "The request needs an array size ({0}) bigger than Java ever allows ({1}). [memory]";
+
+    public final static String TooManyOpenFiles = "Too many open files";  //Java's words, so don't change this
+
     /** shortSleep is used by gcAndWait() and a few other places.
      * 2013-12-06 If I use -verbose:gc with my localhost ERDDAP 
      * and hammer it with WMS requests, I can get memory use up to 500 MB (1.5 GB allocated).

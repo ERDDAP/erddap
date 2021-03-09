@@ -235,22 +235,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         redirect = tRedirect;
         nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
         dimensionValuesInMemory = tDimensionValuesInMemory; 
-        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
-        if (accessibleViaFiles) {
-            try {
-                //this will only work if remote ERDDAP is v2.10+
-                int po = localSourceUrl.indexOf("/griddap/");
-                Test.ensureTrue(po > 0, "localSourceUrl doesn't have /griddap/.");
-                InputStream is = SSR.getUrlBufferedInputStream(
-                    String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + 
-                    "/.csv");
-                try {is.close();} catch (Exception e2) {}
-            } catch (Exception e) {
-                String2.log("accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ (or is <v2.10 so no support for /files/.csv):\n" +
-                    MustBe.throwableToString(e));
-                accessibleViaFiles = false;
-            }
-        }
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;  //tentative. see below
 
         //quickRestart
         Attributes quickRestartAttributes = null;       
@@ -418,8 +403,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //try to get sourceErddapVersion
         byte versionBytes[] = new byte[]{(byte)32};
         try {
-            int po = localSourceUrl.indexOf("/erddap/");
-            String vUrl = localSourceUrl.substring(0, po + 8) + "version";
+            String lookFor = "/" + EDStatic.warName + "/";
+            int po = localSourceUrl.indexOf(lookFor);
+            String vUrl = localSourceUrl.substring(0, po + lookFor.length()) + "version";
             versionBytes = quickRestartAttributes == null?
                 SSR.getUrlResponseBytes(vUrl) : //has timeout and descriptive error 
                 ((ByteArray)quickRestartAttributes.get("versionBytes")).toArray();
@@ -431,6 +417,30 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             }
         } catch (Throwable t) {
             //leave as default: 1.22
+            //String2.log("Caught:\n" + MustBe.throwableToString(t));
+        }
+
+        //finalize accessibleViaFiles
+        if (accessibleViaFiles) {
+            if (sourceErddapVersion < 2.10) {
+                accessibleViaFiles = false;
+                String2.log("accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
+
+            } else {
+                try {
+                    //this will only work if remote ERDDAP is v2.10+
+                    int po = localSourceUrl.indexOf("/griddap/");
+                    Test.ensureTrue(po > 0, "localSourceUrl doesn't have /griddap/.");
+                    InputStream is = SSR.getUrlBufferedInputStream(
+                        String2.replaceAll(localSourceUrl, "/griddap/", "/files/") + 
+                        "/.csv");
+                    try {is.close();} catch (Exception e2) {}
+                } catch (Exception e) {
+                    String2.log("accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :\n" +
+                        MustBe.throwableToString(e));
+                    accessibleViaFiles = false;
+                }
+            }
         }
 
         //save quickRestart info
@@ -804,8 +814,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
                 //if OutOfMemoryError or too much data, rethrow t
                 String tToString = t.toString();
-                if (t instanceof java.lang.OutOfMemoryError ||
-                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException ||
+                    t instanceof OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                    tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                     throw t;
 
                 //request should be valid, so any other error is trouble with dataset
@@ -1773,7 +1786,8 @@ expected2 =
             expected = 
 "Name,Last modified,Size,Description\n" +
 "1981/,NaN,NaN,\n" +
-"1994/,NaN,NaN,\n";
+"1994/,NaN,NaN,\n" +
+"2020/,NaN,NaN,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/

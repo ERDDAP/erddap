@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -684,6 +685,16 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             badFileMap = newEmptyBadFileMap();
         }
 
+        //skip loading until after intial loadDatasets?
+        if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+            String msg = "NOTE: For datasetID=" + datasetID + ", fileTable.nRows=0 and intialLoadDatasets=true,\n" +
+                "so I'm not loading this dataset now\n" +
+                "and I'm setting a flag for this dataset so it will be loaded after the initial loadDatasets.";
+            requestReloadASAP();
+            String2.log(msg);
+            throw new RuntimeException(msg);
+        } 
+
         //get the dirTable and fileTable PrimitiveArrays
         StringArray dirList      = (StringArray)dirTable.getColumn(0);
         ShortArray  ftDirIndex   = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
@@ -724,10 +735,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 break; //successful, no need to continue
             } catch (Throwable t) {
                 String reason = MustBe.throwableToShortString(t); 
-                addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
                 String2.log(String2.ERROR + " in " + datasetID + 
                     " constructor while getting metadata for " + tDir + tName + "\n" + 
-                    MustBe.throwableToString(t));
+                    reason);
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException ||
+                    reason.indexOf(Math2.TooManyOpenFiles) >= 0)
+                    throw t;  //stop loading this dataset
+                if (!(t instanceof TimeoutException))
+                    addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
             }
         }
         //initially there are no files, so haveValidSourceInfo will still be false
@@ -1050,6 +1066,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                         fullName + "\n" +
                         MustBe.throwableToString(t);
                     String2.log(msg);
+                    if (Thread.currentThread().isInterrupted() ||
+                        t instanceof InterruptedException ||
+                        t instanceof TimeoutException ||
+                        msg.indexOf(Math2.TooManyOpenFiles) >= 0)
+                        throw t;  //stop loading this dataset
                     msg = "";
                     nRemoved++;
                     removeCumTime -= System.currentTimeMillis();
@@ -1111,7 +1132,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 emailSB.toString());
         }
 
-        //get source metadataFrom FIRST|LAST file (lastModifiedTime)
+        //get source metadataFrom and axis values from FIRST|LAST file (lastModifiedTime)
         sourceGlobalAttributes = new Attributes();
         sourceAxisAttributes   = new Attributes[nav];
         sourceDataAttributes   = new Attributes[ndv];
@@ -1130,6 +1151,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             ftFileList.get(tFileI),
             sourceAxisNames, sourceDataNames, sourceDataTypes,
             sourceGlobalAttributes, sourceAxisAttributes, sourceDataAttributes);
+        //2020-03-09 added this so source axis values from FIRST|LAST too
+        sourceAxisValues = getSourceAxisValues(
+            dirList.get(ftDirIndex.get(tFileI)),
+            ftFileList.get(tFileI),
+            sourceAxisNames, sourceDataNames);
         haveValidSourceInfo = tHave;
 
         //make combinedGlobalAttributes
@@ -1514,8 +1540,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         //get BadFile and FileTable info and make local copies
         ConcurrentHashMap badFileMap = readBadFileMap(); //already a copy of what's in file
-        Table tDirTable  = getDirTableCopy(); 
-        Table tFileTable = getFileTableCopy();
+        Table tDirTable  = getDirTableCopy();   //not null, throws Throwable
+        Table tFileTable = getFileTableCopy();  //not null, throws Throwable
         if (debugMode) String2.log(msg + "\n" +
             tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" + 
                 tDirTable.dataToString(5) + 
@@ -1765,18 +1791,19 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             return table;
         }
          
-        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
+        return FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            fileDir, fileNameRegex, recursive, pathRegex,
             false); //dirsToo
     }
 
     /** 
      * This gets the dirTable (perhaps the private copy) for read-only use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwable if trouble
      */
-    public Table getDirTable() {
+    public Table getDirTable() throws Throwable {
         Table tDirTable = fileTableInMemory? 
-            dirTable : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+            dirTable : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tDirTable, "dirTable");
         return tDirTable;
     }
@@ -1784,11 +1811,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This gets the fileTable (perhaps the private copy) for read-only use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwable if trouble
      */
-    public Table getFileTable() {
+    public Table getFileTable() throws Throwable {
         Table tFileTable = fileTableInMemory? 
-            fileTable : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //shouldn't be null
+            fileTable : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tFileTable, "fileTable");
         return tFileTable;
     }
@@ -1796,11 +1823,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This gets a copy of the dirTable (not the private copy) for read/write use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwable if trouble
      */
-    public Table getDirTableCopy() {
+    public Table getDirTableCopy() throws Throwable {
         Table tDirTable = fileTableInMemory? 
-            (Table)(dirTable.clone()) : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+            (Table)(dirTable.clone()) : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tDirTable, "dirTable");
         return tDirTable;
     }
@@ -1808,11 +1835,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * This gets a copy of the fileTable (not the private copy) for read/write use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwalbe if trouble
      */
-    public Table getFileTableCopy() {
+    public Table getFileTableCopy() throws Throwable {
         Table tFileTable = fileTableInMemory? 
-            (Table)(fileTable.clone()) : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //shouldn't be null
+            (Table)(fileTable.clone()) : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tFileTable, "fileTable");
         return tFileTable;
     }
@@ -1821,9 +1848,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * Try to load the dirTable or fileTable.
      *
      * @param fileName datasetDir() + DIR_TABLE_FILENAME or FILE_TABLE_FILENAME
-     * @return the dirTable fileTable (null if trouble).  (No exception if trouble.)
+     * @return the dirTable fileTable (null if minor trouble)  
+     * @throws Throwable if serious trouble (e.g., Too many open files, out of memory)
      */
-    protected Table tryToLoadDirFileTable(String fileName) {
+    protected Table tryToLoadDirFileTable(String fileName) throws Throwable {
         try {
             if (File2.isFile(fileName)) {
                 Table table = new Table();
@@ -1839,10 +1867,20 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 return null;
             }
         } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
+                msg);  
+
+            //serious problem?
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                msg.indexOf(Math2.TooManyOpenFiles) >= 0 ||
+                msg.toLowerCase().indexOf(Math2.memory) >= 0)
+                throw t;
+
+            //if minor problem
             File2.delete(datasetDir() + DIR_TABLE_FILENAME);
             File2.delete(datasetDir() + FILE_TABLE_FILENAME);
-            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
-                MustBe.throwableToString(t));  
             return null;
         }
     }
@@ -1866,8 +1904,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             return null;
         try {
             //get a copy of the source file information
-            Table tDirTable  = getDirTableCopy(); 
-            Table tFileTable = getFileTableCopy();
+            Table tDirTable  = getDirTableCopy();   //not null, throws Throwable
+            Table tFileTable = getFileTableCopy();  //not null, throws Throwable
 
             //make the results Table
             Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
@@ -1886,8 +1924,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             accessibleViaFilesMakeReadyForUser(dnlsTable);
             return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
 
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
             return null;
         }
     }
@@ -1933,9 +1971,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             }                   
             String2.log(msg + "fullName=" + localDir + " not in dirTable+fileTable.");
             return null;
-        } catch (Exception e) {
+        } catch (Throwable t) {
             String2.log(msg + "\n" +
-                MustBe.throwableToString(e));
+                MustBe.throwableToString(t));
             return null;
         }
      }
@@ -2336,10 +2374,14 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
-                //if OutOfMemory or too much data, rethrow t so request fails
+                //if OutOfMemory or too much data or Too many open files, rethrow t so request fails
                 String tToString = t.toString();
-                if (t instanceof java.lang.OutOfMemoryError ||
-                    tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException ||
+                    t instanceof TimeoutException ||
+                    t instanceof OutOfMemoryError ||
+                    tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                    tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                     throw t;
 
                 //sleep and give it one more try

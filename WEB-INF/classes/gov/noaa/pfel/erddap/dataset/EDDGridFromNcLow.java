@@ -69,8 +69,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
     /** 
      * Subclasses overwrite this: 
-     * EDDGridFromNcFilesUnpacked applies scale_factor and add_offset and
-     * converts times variables to epochSeconds at a low level (when it reads each file). 
+     * EDDGridFromNcFilesUnpacked applies scale_factor and add_offset, 
+     * converts times variables to epochSeconds at a low level (when it reads each file),
+     * and standardizes the units. 
      * Also the &lt;dataType&gt; is applied. */
     public boolean unpack() {
         return false;

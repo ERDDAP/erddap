@@ -49,6 +49,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1219,6 +1220,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
             badFileMap = newEmptyBadFileMap();
         }
 
+        //skip loading until after intial loadDatasets?
+        if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+            String msg = "NOTE: For datasetID=" + datasetID + ", fileTable.nRows=0 and intialLoadDatasets=true,\n" +
+                "so I'm not loading this dataset now\n" +
+                "and I'm setting a flag for this dataset so it will be loaded after the initial loadDatasets.";
+            requestReloadASAP();
+            String2.log(msg);
+            throw new RuntimeException(msg);
+        } 
+
         //get the PrimitiveArrays from fileTable
         StringArray dirList         = (StringArray)dirTable.getColumn(0);
         ShortArray  ftDirIndex      = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL); //0
@@ -1546,15 +1557,22 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         fullName + "\n" +
                         MustBe.throwableToString(t);
                     String2.log(msg); 
-                    msg = "";
+                    if (Thread.currentThread().isInterrupted() ||
+                        t instanceof InterruptedException ||
+                        msg.indexOf(Math2.TooManyOpenFiles) >= 0)
+                        throw t;  //stop loading this dataset
                     nRemoved++;
                     removeCumTime -= System.currentTimeMillis();
                     fileTable.removeRow(fileListPo);
                     removeCumTime += System.currentTimeMillis();
                     tFileListPo++;
-                    if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE) 
+                    if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE &&
+                        !(t instanceof TimeoutException)
+                        //??? This assumes any memory problem is permanent
+                        ) 
                         //>30 minutes old, so not still being ftp'd, so add to badFileMap
                         addBadFile(badFileMap, tDirI, tFileS, tLastMod, MustBe.throwableToShortString(t));
+                    msg = "";
                 }
             }
             if (verbose) String2.log("fileTable updated; time=" + 
@@ -1654,7 +1672,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
              " last=" + Calendar2.millisToIsoStringTZ(ftLastMod.get(nMinMaxIndex[2])));
         Table tTable = getSourceDataFromFile(mdFromDir, mdFromName,
             sourceDataNames, sourceDataTypes, -1, Double.NaN, Double.NaN, 
-            null, null, null, true, false);  //getMetadata, mustGetData
+            null, null, null, true, false);  //getMetadata, mustGetData   //throws Exception if trouble
         //String2.log(">> EDDTableFromFiles get source metadata table header (nCols=" + 
         //    tTable.nColumns() + " nRows=" + tTable.nRows() + "):\n" + tTable.getNCHeader("row"));
 
@@ -1946,6 +1964,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * Make arrays to hold expected source add_offset, fillValue, missingValue, scale_factor, units. 
      *
      * @return true if successful
+     * @throws Throwable if serious trouble ("Too many open files")
      */
     private boolean makeExpected(Object[][] tDataVariables, 
         StringArray dirList, ShortArray ftDirIndex, 
@@ -2003,7 +2022,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 Table table = getSourceDataFromFile(dir, name,
                     sourceDataNames, sourceDataTypes, 
                     -1, Double.NaN, Double.NaN, 
-                    null, null, null, true, false); //getMetadata=true, getData=false
+                    null, null, null, true, false); //getMetadata=true, getData=false.  throws Throwable if trouble
                 //String2.log("here 2");
 
                 //get the expected attributes;     ok if NaN or null
@@ -2464,8 +2483,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //get BadFile and FileTable info and make local copies
         ConcurrentHashMap badFileMap = readBadFileMap(); //already a copy of what's in file
-        Table tDirTable  = getDirTableCopy(); 
-        Table tFileTable = getFileTableCopy();
+        Table tDirTable  = getDirTableCopy();   //not null, throws Throwable
+        Table tFileTable = getFileTableCopy();  //not null, throws Throwable
         if (debugMode) String2.log(msg + "\n" +
             tDirTable.nRows() + " rows in old dirTable.  first 5 rows=\n" + 
                 tDirTable.dataToString(5) + 
@@ -2575,8 +2594,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         debugMode? evi : -1);
 
                 } else {
-                    //File exists and is bad.
 
+                    if (reasonBad.indexOf(Math2.TooManyOpenFiles) >= 0)
+                        throw new RuntimeException(reasonBad);
+
+                    //File exists and is bad.
                     //Remove from tFileTable if it is there.
                     if (dirIndex >= 0) { //it might be in tFileTable
                         if (removeFromFileTable(dirIndex, fileName, 
@@ -2728,11 +2750,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** 
      * This gets the dirTable (perhaps the private copy) for read-only use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwable if trouble
      */
-    public Table getDirTable() {
+    public Table getDirTable() throws Throwable {
         Table tDirTable = fileTableInMemory? 
-            dirTable : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+            dirTable : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tDirTable, "dirTable");
         return tDirTable;
     }
@@ -2740,11 +2762,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** 
      * This gets the fileTable (perhaps the private copy) for read-only use. 
      *
-     * @throw RuntimeException if trouble
+     * @throw Throwable if trouble
      */
-    public Table getFileTable() {
+    public Table getFileTable() throws Throwable {
         Table tFileTable = fileTableInMemory? 
-            fileTable : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //shouldn't be null
+            fileTable : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tFileTable, "fileTable");
         return tFileTable;
     }
@@ -2752,11 +2774,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** 
      * This gets a copy of the dirTable (not the private copy) for read/write use. 
      *
-     * @throw RuntimeException if trouble
+     * @returns the table, not null
+     * @throw Throwable if trouble
      */
-    public Table getDirTableCopy() {
+    public Table getDirTableCopy() throws Throwable {
         Table tDirTable = fileTableInMemory? 
-            (Table)(dirTable.clone()) : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //shouldn't be null
+            (Table)(dirTable.clone()) : tryToLoadDirFileTable(datasetDir() +  DIR_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tDirTable, "dirTable");
         return tDirTable;
     }
@@ -2764,11 +2787,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** 
      * This gets a copy of the fileTable (not the private copy) for read/write use. 
      *
-     * @throw RuntimeException if trouble
+     * @returns the table, not null
+     * @throw Throwable if trouble
      */
-    public Table getFileTableCopy() {
+    public Table getFileTableCopy() throws Throwable {
         Table tFileTable = fileTableInMemory? 
-            (Table)(fileTable.clone()) : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //shouldn't be null
+            (Table)(fileTable.clone()) : tryToLoadDirFileTable(datasetDir() +  FILE_TABLE_FILENAME); //may be null
         Test.ensureNotNull(tFileTable, "fileTable");
         return tFileTable;
     }
@@ -2779,9 +2803,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * then sourceMin, sourceMax, hasNaN columns for each dv. 
      *
      * @param fileName dirTableFileName or fileTableFileName
-     * @return the dirTable fileTable (null if trouble).  (No exception if trouble.)
+     * @return the dirTable fileTable (null if minor trouble, eg no such file) 
+     * @throws Throwable if serious trouble (e.g., Too many open files, out of memory)
      */
-    protected Table tryToLoadDirFileTable(String fileName) {
+    protected Table tryToLoadDirFileTable(String fileName) throws Throwable {
         try {
             if (File2.isFile(fileName)) {
                 Table table = new Table();
@@ -2811,10 +2836,20 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 return null;
             }
         } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
+                msg);  
+
+            //serious problem?
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                msg.indexOf(Math2.TooManyOpenFiles) >= 0 ||
+                msg.toLowerCase().indexOf(Math2.memory) >= 0)
+                throw t; 
+
+            //if minor problem
             File2.delete(datasetDir() + DIR_TABLE_FILENAME);
             File2.delete(datasetDir() + FILE_TABLE_FILENAME);
-            String2.log(String2.ERROR + " reading dir/file table " + fileName + "\n" + 
-                MustBe.throwableToString(t));  
             return null;
         }
     }
@@ -2822,11 +2857,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /** 
      * This gets a table with the DNLS info all the files.
      * lastMod is type=LongArray epochMillis. size is type=LongArray.
+     *
+     * @throws Throwable if trouble
      */
-    public Table getDnlsTable() {
+    public Table getDnlsTable() throws Throwable {
         //get a copy of the source file information
-        Table tDirTable  = getDirTableCopy(); 
-        Table tFileTable = getFileTableCopy();
+        Table tDirTable  = getDirTableCopy();   //not null, throws Throwable
+        Table tFileTable = getFileTableCopy();  //not null, throws Throwable
 
         //make the results Table
         Table dnlsTable = FileVisitorDNLS.makeEmptyTable();
@@ -2867,8 +2904,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             accessibleViaFilesMakeReadyForUser(dnlsTable);
             return new Object[]{dnlsTable, subDirs, fileDir + nextPath};
 
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
             return null;
         }
     }
@@ -2914,9 +2951,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             }
             String2.log(msg + "fullName=" + localDir + " not in dirTable+fileTable.");            
             return null;
-        } catch (Exception e) {
+        } catch (Throwable t) {
             String2.log(msg + "\n" +
-                MustBe.throwableToString(e));
+                MustBe.throwableToString(t));
             return null;
         }
     }
@@ -2960,8 +2997,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return table;
         }
          
-        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive, pathRegex,
-            false); //dirsToo
+        return FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            fileDir, fileNameRegex, recursive, pathRegex, false); //dirsToo
     }
 
     /**
@@ -3040,7 +3077,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * 
      * @param sourceDataTypes  e.g., "float", "String". "boolean"
      *   indicates the data should be interpreted as a boolean, but stored as a byte.
-     * @throws an exception if too much data.
+     * @throws an exception if too much data and other problems.
      *  This won't (shouldn't) throw an exception if no data.
      */
     public Table getSourceDataFromFile(String tFileDir, String tFileName, 
@@ -3879,7 +3916,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //all is well. process all pending tasks
             while (task > nProcessed) {
                 //get results table from a futureTask
-                //Put null that position in futureTasks so it can be gc'd after this method
+                //Put null in that position in futureTasks so it can be gc'd after this method
                 FutureTask futureTask = futureTasks.set(nProcessed++, null);                
                 Table resultsTable = (Table)(futureTask.get());   //blocks until done, throws ExecutionException
                 if (resultsTable == null) {
@@ -3901,9 +3938,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             //if interrupted, OutOfMemoryError or too much data, rethrow t
             String tToString = t.toString();
-            if (t instanceof InterruptedException ||
-                t instanceof java.lang.OutOfMemoryError ||
-                tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                t instanceof OutOfMemoryError ||
+                tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                 throw t;
 
             if (!(t instanceof NoMoreDataPleaseException)) { //the only exception to keep going 
