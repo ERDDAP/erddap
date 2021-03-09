@@ -706,8 +706,11 @@ public class EDDTableFromDapSequence extends EDDTable{
                 throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says DAP)", t);
 
             //if OutOfMemoryError or too much data, rethrow t
-            if (t instanceof java.lang.OutOfMemoryError ||
-                tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                t instanceof OutOfMemoryError ||
+                tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                 throw t;
 
             //any other error is real trouble

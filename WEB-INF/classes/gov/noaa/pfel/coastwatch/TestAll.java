@@ -95,6 +95,9 @@ public class TestAll  {
         File2.deleteAllFiles(EDStatic.fullPublicDirectory, true, false);  //recursive, deleteEmptySubdirectories 
         File2.deleteAllFiles(EDStatic.fullCacheDirectory,  true, false);  
 
+        //make it appear that initialLoadDatasets() is not true
+        EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
+
 //INDIVIDUAL TESTS (for convenience) -- ~alphabetical by class name
 
         /* 
@@ -118,10 +121,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/melanie/o2_ATMassim_10NS_100err_WOA_0.1_3rd.196001-201712.nc"; 
-//      String2.log(NcHelper.ncdump("/data/hsu/gcoos_ioos-station-wmo-42043_2020_01.nc", "-h"));  
+//      String tFileName = "/data/kerfoot/dat_24.nc"; 
+//      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"etopo180", "-verbose"});
+//      DasDds.main(new String[]{"testGridFromErddap", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -303,7 +306,7 @@ public class TestAll  {
 //        String2.log(EDD.testDasDds(ds)); 
 //    }
 
-//    s = EDDGridFromNcFiles.generateDatasetsXml("/erddapTest/something/", "something.nc", "", "", -1, "", null);
+//    s = EDDGridFromNcFiles.generateDatasetsXml("/data/rtofs/", ".*\\.nc", "", "", "", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
 //    DasDds.main(new String[]{"ncdcOisst21Agg", "-verbose"});
@@ -375,7 +378,7 @@ public class TestAll  {
           //"/data/s3/awsS3NoaaGoes16.jsonlCSV";
           //"/data/s3/awsS3NasanexNexDcp30rlilpl.jsonlCSV";
           //"/data/s3/awsS3NasanexNexDcp30Conus.jsonlCSV";
-      FileVisitorDNLS.oneStep(
+      FileVisitorDNLS.oneStep(    //throws IOException if "Too many open files"
           "https://noaa-goes17.s3.us-east-1.amazonaws.com/", //ABI-L1b-RadC/2018/338/", 
           //"https://noaa-goes16.s3.us-east-1.amazonaws.com/", 
           //"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
@@ -537,7 +540,9 @@ public class TestAll  {
       //Don't add source_id or stream_ident: they are usually (always?) empty
 //    1) (overnight?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=[my email address])
-//      from GTSPP dir: /pub/data.nodc/gtspp/bestcopy/netcdf to my local: c:/data/gtspp/bestNcZip
+//      from GTSPP dir: /nodc/data/gtspp/bestcopy/netcdf
+//         was /pub/data.nodc/gtspp/bestcopy/netcdf
+//      to my local: c:/data/gtspp/bestNcZip
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
 
@@ -553,7 +558,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 10, 2020, 12, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2020, 11, 2021, 1, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -586,7 +591,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 10, 2020, 12); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2020, 11, 2021, 1); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -767,8 +772,7 @@ public class TestAll  {
 //    SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
 //    SSR.testForBrokenLinks("g:/NOAA-Navy-SanctSound_CI01_01_BB_1h.xml");
 //
-//    StringArray.repeatedDiff("c:/downloads/httpd.conf", 
-//                             "c:/downloads/httpd.confOrig");
+//    StringArray.repeatedDiff("c:/downloads/f1.txt", "c:/downloads/f2.txt");
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
 //                  "c:/programs/mapserver/WVBoreholeResponsePretty.xml");
 

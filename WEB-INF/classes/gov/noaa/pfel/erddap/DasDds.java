@@ -85,6 +85,8 @@ public class DasDds {
             Calendar2.getCurrentISODateTimeStringLocalTZ() + " erddapVersion=" + EDStatic.erddapVersion + "\n" +        
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage());  
+        //trick EDStatic.initialLoadDatasets by making majorLoadDatasetsTimeSeriesSB not empty
+        EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
         outFile = new BufferedWriter(new FileWriter(outFileName)); //default charset
         try {
 

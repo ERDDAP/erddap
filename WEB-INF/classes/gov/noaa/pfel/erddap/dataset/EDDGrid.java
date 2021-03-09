@@ -399,17 +399,21 @@ public abstract class EDDGrid extends EDD {
 
     /**
      * If the subclass is EDDGridFromFiles or EDDGridCopy, this returns
-     * the dirTable (or throws RuntimeException).  Other subclasses return null.
+     * the dirTable (or throws Throwable).  Other subclasses return null.
+     *
+     * @throws Throwable if trouble
      */
-    public Table getDirTable() {
+    public Table getDirTable() throws Throwable {
         return null;
     }
 
     /**
      * If the subclass is EDDGridFromFiles or EDDGridCopy, this returns
-     * the fileTable (or throws RuntimeException).  Other subclasses return null.
+     * the fileTable (or throws Throwable).  Other subclasses return null.
+     *
+     * @throws Throwable if trouble
      */
-    public Table getFileTable() {
+    public Table getFileTable() throws Throwable {
         return null;
     }
 

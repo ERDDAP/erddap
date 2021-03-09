@@ -638,6 +638,7 @@ public static boolean developmentMode = false;
         fullCopyDirectory,
         fullLuceneDirectory,
         fullResetFlagDirectory,
+        fullBadFilesFlagDirectory,
         fullHardFlagDirectory,
         fullCptCacheDirectory,         
         fullPlainFileNcCacheDirectory,         
@@ -1568,6 +1569,7 @@ public static boolean developmentMode = false;
         fullDecompressedGenerateDatasetsXmlDirectory
                                   = bigParentDirectory + "decompressed/GenerateDatasetsXml/";
         fullResetFlagDirectory    = bigParentDirectory + "flag/";
+        fullBadFilesFlagDirectory = bigParentDirectory + "badFilesFlag/";
         fullHardFlagDirectory     = bigParentDirectory + "hardFlag/";
         fullLogsDirectory         = bigParentDirectory + "logs/";
         fullCopyDirectory         = bigParentDirectory + "copy/";
@@ -1582,6 +1584,7 @@ public static boolean developmentMode = false;
         File2.makeDirectory(fullDecompressedDirectory);
         File2.makeDirectory(fullDecompressedGenerateDatasetsXmlDirectory);
         File2.makeDirectory(fullResetFlagDirectory);
+        File2.makeDirectory(fullBadFilesFlagDirectory);
         File2.makeDirectory(fullHardFlagDirectory);
         File2.makeDirectory(fullLogsDirectory);
         File2.makeDirectory(fullCopyDirectory);
@@ -2603,6 +2606,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         magZoomOutData             = messages.getNotNothingString("magZoomOutData",             errorInMethod);
         magGridTooltip             = messages.getNotNothingString("magGridTooltip",             errorInMethod);
         magTableTooltip            = messages.getNotNothingString("magTableTooltip",            errorInMethod);
+        Math2.memory               = messages.getNotNothingString("memory",                     errorInMethod);
         Math2.memoryTooMuchData    = messages.getNotNothingString("memoryTooMuchData",          errorInMethod);
         Math2.memoryArraySize      = messages.getNotNothingString("memoryArraySize",            errorInMethod);
       Math2.memoryThanCurrentlySafe= messages.getNotNothingString("memoryThanCurrentlySafe",    errorInMethod);
@@ -3712,8 +3716,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void addCommonStatistics(StringBuilder sb) {
         if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
             sb.append(
-"Major LoadDatasets Time Series: MLD    Datasets Loaded         Requests (median times in ms)           Number of Threads      Memory (MB)\n" +
-"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater\n");
+"Major LoadDatasets Time Series: MLD    Datasets Loaded         Requests (median times in ms)           Number of Threads      Memory (MB)     Open\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater  Files\n");
             sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
         }
@@ -3963,8 +3967,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
                     datasetID);
 
-            if (slowDownTroubleMillis > 0)
-                Math2.sleep(slowDownTroubleMillis);
             lowSendError(response, HttpServletResponse.SC_UNAUTHORIZED, message);
 
         } catch (Throwable t2) {
@@ -4210,16 +4212,18 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     /** This interrupts the thread and waits up to maxSeconds for it to finish.
      * If it still isn't finished, it is stopped.
      * 
+     * @return true if it had to be actively stop()'ed.
      */
-    public static void stopThread(Thread thread, int maxSeconds) {
+    public static boolean stopThread(Thread thread, int maxSeconds) {
+        boolean stopped = false;
         try {
             if (thread == null)
-                return;
+                return false;
             String name = thread.getName();
             if (verbose) String2.log("stopThread(" + name + ")...");
             if (!thread.isAlive()) {
                 if (verbose) String2.log("thread=" + name + " was already not alive.");
-                return;
+                return false;
             }
             thread.interrupt();
             int waitSeconds = 0;
@@ -4230,12 +4234,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             if (thread.isAlive()) {
                 if (verbose) String2.log("!!!Stopping thread=" + name + " after " + waitSeconds + " s");
                 thread.stop();
+                stopped = true;
             } else {
                 if (verbose) String2.log("thread=" + name + " noticed interrupt in " + waitSeconds + " s");
             }
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
         }
+        return stopped;
     }
 
     /**
@@ -5043,8 +5049,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             File2.makeDirectory(tLocalDir); //throws exception if unable to comply
 
             //get remote file info
-            Table remoteFiles = FileVisitorDNLS.oneStep(tSourceUrl, 
-                tFileNameRegex, tRecursive, tPathRegex, false); //tDirectoriesToo
+            Table remoteFiles = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                tSourceUrl, tFileNameRegex, tRecursive, tPathRegex, false); //tDirectoriesToo
             if (remoteFiles.nRows() == 0) {
                 if (verbose) String2.log("  " + tClassName + ".makeCopyFileTasks: no matching source files.");
                 return 0;
@@ -5056,8 +5062,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             LongArray   remoteSize    =   (LongArray)remoteFiles.getColumn(FileVisitorDNLS.SIZE);
 
             //get local file info
-            Table localFiles = FileVisitorDNLS.oneStep(tLocalDir, 
-                tFileNameRegex, tRecursive, tPathRegex, false); //tDirectoriesToo
+            Table localFiles = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                tLocalDir, tFileNameRegex, tRecursive, tPathRegex, false); //tDirectoriesToo
             localFiles.leftToRightSort(2); //should be already
             StringArray localDirs    = (StringArray)localFiles.getColumn(FileVisitorDNLS.DIRECTORY);
             StringArray localNames   = (StringArray)localFiles.getColumn(FileVisitorDNLS.NAME);
@@ -5267,7 +5273,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             } else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) {
                 errorNo = HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE; //http error 416
 
-            } else if (tError.indexOf(Math2.memoryArraySize) >= 0) {
+            } else if (tError.indexOf(Math2.memoryArraySize.substring(0, 25)) >= 0) {
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
                 String ipAddress = EDStatic.getIPAddress(request);
                 tally.add("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)",  ipAddress);
@@ -5275,7 +5281,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 tally.add("OutOfMemory (Array Size), IP Address (since startup)",                  ipAddress);
 
             } else if (tError.indexOf("OutOfMemoryError") >= 0 ||  //java's words
-                       tError.indexOf(Math2.memoryThanCurrentlySafe) >= 0) {
+                       tError.indexOf(Math2.memoryThanCurrentlySafe.substring(0, 25)) >= 0) { //!!! TROUBLE: but that matches memoryThanSafe (in English) too!
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
                 dangerousMemoryFailures++;
                 String ipAddress = EDStatic.getIPAddress(request);
@@ -5283,10 +5289,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 tally.add("OutOfMemory (Too Big), IP Address (since last daily report)",           ipAddress);
                 tally.add("OutOfMemory (Too Big), IP Address (since startup)",                     ipAddress);
 
-            } else if (tError.indexOf(MustBe.OutOfMemoryError) >= 0 || 
-                       tError.indexOf(Math2.memoryThanSafe)    >= 0 ||
-                       tError.indexOf(Math2.memoryTooMuchData) >= 0) {
-                //catchall for remaining possibilities
+            } else if (tErrorLC.indexOf(Math2.memory) >= 0) {
+                //catchall for remaining memory problems
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large)
                 String ipAddress = EDStatic.getIPAddress(request);
                 tally.add("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
@@ -5345,6 +5349,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void lowSendError(HttpServletResponse response, int errorNo, String msg) {
         try {
             msg = String2.isSomething(msg)? msg.trim() : "(no details)";
+
+            //slowDownTroubleMillis applies to all errors 
+            //because any of these errors could be in a script
+            //and it's good to slow the script down (prevent 100 bad requests/second)
+            //and if it's a human they won't even notice a short delay
+            if (EDStatic.slowDownTroubleMillis > 0)
+                Math2.sleep(EDStatic.slowDownTroubleMillis);
 
             //put the HTTP status code name at the start of the message (from Wikipedia list
             // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes

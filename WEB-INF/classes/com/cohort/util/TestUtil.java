@@ -3405,6 +3405,10 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.tryToIsoString("1-1-1 00:00:0.0Z"),     "0001-01-01T00:00:00.000Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("1-1-1 00:00:0Z"),       "0001-01-01T00:00:00Z", "");
         Test.ensureEqual(Calendar2.tryToIsoString("20171221T023531Z"),     "2017-12-21T02:35:31Z", "");
+        Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02T23:59:59.987000000Z"), "9985-01-02T23:59:59.987000000Z", "");  
+        Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02T23:59:59.100Z"), "9985-01-02T23:59:59.100Z", "");  
+        //test to consider supporting SSSSSSSSS
+        //Test.ensureEqual(Calendar2.tryToIsoString("9985-01-02T23:59:59.987654321Z"), "9985-01-02T23:59:59.987Z", "");  //it trunc's, not rounds
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2017-12-21T023531"), "yyyy-MM-dd'T'HHmmss", "");
         Test.ensureEqual(Calendar2.tryToIsoString("2017-12-21T023531"),    "2017-12-21T02:35:31Z", "");

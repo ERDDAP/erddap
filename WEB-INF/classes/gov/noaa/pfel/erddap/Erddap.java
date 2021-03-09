@@ -484,8 +484,6 @@ public class Erddap extends HttpServlet {
                     EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
                     EDStatic.tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
                     String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
-                    if (EDStatic.slowDownTroubleMillis > 0)
-                        Math2.sleep(EDStatic.slowDownTroubleMillis);
                     EDStatic.lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
                         EDStatic.blacklistMsg);
                     return;
@@ -542,8 +540,11 @@ public class Erddap extends HttpServlet {
                 doRss(request, response, loggedInAs, protocol, protocolEnd + 1);
             } else if (endOfRequest.startsWith("search/advanced.")) {  //before test for "search"
                 doAdvancedSearch(request, response, loggedInAs, protocolEnd + 1, userQuery);
-            } else if (protocol.equals("search")) {
-                doSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
+            } else if (endOfRequest.startsWith("search/index.")) {
+                doSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);            
+            } else if (endOfRequest.equals("search/") ||
+                       endOfRequest.equals("search")) {
+                sendRedirect(response, tErddapUrl + "/search/index.html?" + EDStatic.defaultPIppQuery);
             } else if (protocol.equals("opensearch1.1")) {
                 doOpenSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("categorize")) {
@@ -1758,6 +1759,15 @@ public class Erddap extends HttpServlet {
             writer.write("</div>\n");
             endHtmlWriter(out, writer, tErddapUrl, false);
         }
+
+        //[this is called because we aren't using lowSendError which normally does this]
+        //slowDownTroubleMillis applies to all errors 
+        //because any of these errors could be in a script
+        //and it's good to slow the script down (prevent 100 bad requests/second)
+        //and if it's a human they won't even notice a short delay
+        if (EDStatic.slowDownTroubleMillis > 0)
+            Math2.sleep(EDStatic.slowDownTroubleMillis);
+
         return;
     }
 
@@ -5799,78 +5809,79 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         
         //for a specific dataset
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
-        if (eddGrid != null) {
-            if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
-                !eddGrid.graphsAccessibleToPublic()) { 
-                //WMS access: all requests are graphics requests
-                //listPrivateDatasets doesn't apply
-                EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
-                    false);
-                return;
-            }
-
-            //request is for /wms/datasetID/...
-            if (endEnd.equals("") || endEnd.equals("index.htm")) {
-                sendRedirect(response, tErddapUrl + "/wms/index.html?" +
-                    EDStatic.passThroughPIppQueryPage1(request));
-                return;
-            }
-
-            //give the dataset the opportunity to update  (WMS)
-            try {
-                eddGrid.update();
-            } catch (WaitThenTryAgainException e) {
-                //unload the dataset and set flag to reload it
-                LoadDatasets.tryToUnload(this, tDatasetID, new StringArray(), true); //needToUpdateLucene
-                EDD.requestReloadASAP(tDatasetID);
-                throw e;
-            }
-
-            if (endEnd.equals("index.html")) {
-                doWmsDemo(request, response, loggedInAs, "1.3.0", tDatasetID);
-                return;
-            }
-
-            if (endEnd.equals(EDD.WMS_SERVER)) {
-                //if eddGrid instanceof EDDGridFromErddap, redirect the request
-                if (eddGrid instanceof EDDGridFromErddap) {
-                    EDDGridFromErddap fe = (EDDGridFromErddap)eddGrid;
-                    if (fe.redirect() &&
-                        //earlier versions of wms work ~differently
-                        fe.sourceErddapVersion() >= 1.23 && 
-                        userQuery != null &&
-                        //erddap versions before 1.82 handled wms v1.3.0 differently
-                        (userQuery.toLowerCase().indexOf("&version=1.1.") >= 0 || fe.sourceErddapVersion() >= 1.82)) {
-                        //https://coastwatch.pfeg.noaa.gov/erddap/wms/erdMHchla8day/request?
-                        //EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=erdMHchla8day
-                        //%3Achlorophyll&TIME=2010-07-24T00%3A00%3A00Z&ELEVATION=0.0
-                        //&TRANSPARENT=true&BGCOLOR=0x808080&FORMAT=image%2Fpng&SERVICE=WMS
-                        //&REQUEST=GetMap&STYLES=&BBOX=307.2,-90,460.8,63.6&WIDTH=256&HEIGHT=256
-                        //tUrl  e.g. https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMhchla8day
-                        String tUrl = fe.getPublicSourceErddapUrl();
-                        String sourceDatasetID = File2.getNameNoExtension(tUrl);
-                        //!this is good but imperfect because fe.datasetID %3A may be part of some other part of the request
-                        //handle percent encoded or not
-                        String tQuery = String2.replaceAll(userQuery, fe.datasetID() + "%3A", sourceDatasetID + "%3A");
-                        tQuery =        String2.replaceAll(tQuery,    fe.datasetID() + ":",   sourceDatasetID + ":");
-                        sendRedirect(response, String2.replaceAll(tUrl, "/griddap/", "/wms/") + "/" + EDD.WMS_SERVER + 
-                            "?" + tQuery);
-                        return;
-                    }
-                }
-
-                doWmsRequest(request, response, loggedInAs, tDatasetID, userQuery); 
-                return;
-            }
-
-            //error
-            sendResourceNotFoundError(request, response, "unmatched WMS request");
+        if (eddGrid == null) {
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
-        } 
+        }
+
+        if (!eddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs)) &&
+            !eddGrid.graphsAccessibleToPublic()) { 
+            //WMS access: all requests are graphics requests
+            //listPrivateDatasets doesn't apply
+            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+                false);
+            return;
+        }
+
+        //request is for /wms/datasetID/
+        if (endEnd.equals("") || endEnd.equals("index.htm")) {
+            sendRedirect(response, tErddapUrl + "/wms/index.html?" +
+                EDStatic.passThroughPIppQueryPage1(request));
+            return;
+        }
+
+        //give the dataset the opportunity to update  (WMS)
+        try {
+            eddGrid.update();
+        } catch (WaitThenTryAgainException e) {
+            //unload the dataset and set flag to reload it
+            LoadDatasets.tryToUnload(this, tDatasetID, new StringArray(), true); //needToUpdateLucene
+            EDD.requestReloadASAP(tDatasetID);
+            throw e;
+        }
+
+        if (endEnd.equals("index.html")) {
+            doWmsDemo(request, response, loggedInAs, "1.3.0", tDatasetID);
+            return;
+        }
+
+        if (endEnd.equals(EDD.WMS_SERVER)) {
+            //if eddGrid instanceof EDDGridFromErddap, redirect the request
+            if (eddGrid instanceof EDDGridFromErddap) {
+                EDDGridFromErddap fe = (EDDGridFromErddap)eddGrid;
+                if (fe.redirect() &&
+                    //earlier versions of wms work ~differently
+                    fe.sourceErddapVersion() >= 1.23 && 
+                    userQuery != null &&
+                    //erddap versions before 1.82 handled wms v1.3.0 differently
+                    (userQuery.toLowerCase().indexOf("&version=1.1.") >= 0 || fe.sourceErddapVersion() >= 1.82)) {
+                    //https://coastwatch.pfeg.noaa.gov/erddap/wms/erdMHchla8day/request?
+                    //EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=erdMHchla8day
+                    //%3Achlorophyll&TIME=2010-07-24T00%3A00%3A00Z&ELEVATION=0.0
+                    //&TRANSPARENT=true&BGCOLOR=0x808080&FORMAT=image%2Fpng&SERVICE=WMS
+                    //&REQUEST=GetMap&STYLES=&BBOX=307.2,-90,460.8,63.6&WIDTH=256&HEIGHT=256
+                    //tUrl  e.g. https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMhchla8day
+                    String tUrl = fe.getPublicSourceErddapUrl();
+                    String sourceDatasetID = File2.getNameNoExtension(tUrl);
+                    //!this is good but imperfect because fe.datasetID %3A may be part of some other part of the request
+                    //handle percent encoded or not
+                    String tQuery = String2.replaceAll(userQuery, fe.datasetID() + "%3A", sourceDatasetID + "%3A");
+                    tQuery =        String2.replaceAll(tQuery,    fe.datasetID() + ":",   sourceDatasetID + ":");
+                    sendRedirect(response, String2.replaceAll(tUrl, "/griddap/", "/wms/") + "/" + EDD.WMS_SERVER + 
+                        "?" + tQuery);
+                    return;
+                }
+            }
+
+            doWmsRequest(request, response, loggedInAs, tDatasetID, userQuery); 
+            return;
+        }
 
         //error
-        sendResourceNotFoundError(request, response, "unmatched WMS request (2)");
-    }
+        throw new SimpleException(EDStatic.queryError +
+            MessageFormat.format(EDStatic.queryErrorInvalid, "endEnd=" + String2.toJson(endEnd)));
+    } 
 
     /**
      * This handles a request for the /wms/request or /wms/datasetID/request -- a real WMS service request.
@@ -10212,19 +10223,19 @@ breadCrumbs + endBreadCrumbs +
             String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
                 requestUrl.substring(datasetIDStartsAt);
 
+            //ensure /search/index.[known file type]
+            if (endOfRequestUrl.equals("index.html") ||
+                endsWithPlainFileType(endOfRequestUrl, "index")) {
+                //fall through
+            } else {
+                sendResourceNotFoundError(request, response, "unsupported endOfRequestUrl");
+                return;
+            }
+
             //get the 'searchFor' value
             searchFor = request.getParameter("searchFor");
             searchFor = searchFor == null? "" : searchFor.trim();
 
-            //redirect to index.html
-            if (endOfRequestUrl.equals("") ||
-                endOfRequestUrl.equals("index.htm")) {
-                sendRedirect(response, tErddapUrl + "/" + protocol + "/index.html?" +
-                    EDStatic.passThroughPIppQueryPage1(request) +
-                    (searchFor.length() == 0? "" : "&searchFor=" + SSR.minimalPercentEncode(searchFor)));
-                return;
-            }           
-            
             //ensure query has simplistically valid page= itemsPerPage=
             if (!Arrays.equals(
                     EDStatic.getRawRequestedPIpp(request),
@@ -10237,8 +10248,9 @@ breadCrumbs + endBreadCrumbs +
                 return;
             }      
 
-            fileTypeName = File2.getExtension(endOfRequestUrl); //eg ".html"
+            fileTypeName = endOfRequestUrl.substring(5); //after "index"  eg ".html"
             boolean toHtml = fileTypeName.equals(".html");
+
             if (reallyVerbose) String2.log("  searchFor=" + searchFor + 
                 "\n  fileTypeName=" + fileTypeName);
             EDStatic.tally.add("Search For (since startup)", searchFor);
@@ -18190,19 +18202,6 @@ expected =
             }
             Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
         }
-
-
-        //NOT ACTIVE - google Gadgets (always at coastwatch)
-        //results = SSR.getUrlResponseStringUnchanged(
-        //    "https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html");
-        //Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-        //Test.ensureTrue(results.indexOf(
-        //    "Google Gadgets with Graphs or Maps") >= 0, 
-        //    "results=\n" + results);
-        //Test.ensureTrue(results.indexOf(
-        //    "are self-contained chunks of web content") >= 0, 
-        //    "results=\n" + results);
-
 
         //embed a graph  (always at coastwatch)
         results = SSR.getUrlResponseStringUnchanged(

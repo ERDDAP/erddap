@@ -1198,6 +1198,20 @@ public abstract class EDD {
     }
 
     /** 
+     * This deletes the specified dataset's badFiles.nc file.
+     * No error if it doesn't exist.
+     */
+    public static void deleteBadFilesFile(String tDatasetID) {
+        if (!String2.isFileNameSafe(tDatasetID)) //e.g., null or "" or malicious name
+            return;
+        String dir = datasetDir(tDatasetID);
+        if (verbose)
+            String2.log("*** deleting cached dataset info for datasetID=" + tDatasetID);
+        File2.delete(dir + BADFILE_TABLE_FILENAME);  //just files, not subdirs.  Are there ever subdirs?
+        //was: delete individual files, e.g, dir + QUICK_RESTART_FILENAME
+    }
+
+    /** 
      * This deletes the specified dataset's cached dataset info.
      * No error if it doesn't exist.
      */
@@ -10754,7 +10768,8 @@ public abstract class EDD {
         //  every parent directory is listed before all of its child directories.
         //result which have matching slashes and trailing slashes
         startDir = File2.addSlash(String2.replaceAll(startDir, '\\', '/')); //now always '/'
-        StringArray dirs = FileVisitorSubdir.oneStep(startDir, ".*"); //pathRegex
+        StringArray dirs = FileVisitorSubdir.oneStep(   //throws IOException if "Too many open files"
+            startDir, ".*"); //pathRegex    
         int nDirs = dirs.size();
         //String2.pressEnterToContinue(String2.toNewlineString(dirs.toArray()));
         
@@ -10785,7 +10800,8 @@ public abstract class EDD {
                 continue;
             }
 
-            Table fileTable = FileVisitorDNLS.oneStep(tDir, ".*", 
+            Table fileTable = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                tDir, ".*", 
                 false, null, false); //tRecursive, tPathRegex, tDirectoriesToo
             StringArray names = (StringArray)fileTable.getColumn(FileVisitorDNLS.NAME);
             StringArray exts = new StringArray();

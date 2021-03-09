@@ -94,16 +94,24 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
     }
 
 
-    /** Invoked for a file that could not be visited. */
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    /** Invoked for a file that could not be visited. 
+     *
+     * @throws IOException if "Too many open files". 
+     */
+    public FileVisitResult visitFileFailed(Path file, IOException exc) 
+        throws IOException {
         //2015-03-10 I added this method to override the superclass
-        //which apparently throws the exception and stops the parent
-        //SimpleFileVisitor. This class just ignores the error.
-        //A one time test that this change solves the problem: call
+        //  which apparently throws the exception and stops the parent
+        //  SimpleFileVisitor. This class just ignores the error (unless "Too many open files").
+        //  A one time test that this change solves the problem: call
         //    new FileVisitorSubdir("/") 
         //  on my Windows computer with message below enabled.
-        //Always show message here. It is useful information.     (message is just filename)
-        String2.log("WARNING: FileVisitorSubdir.visitFileFailed: " + exc.getMessage());
+        //  Always show message here. It is useful information.     (message is just filename, or "Too many open files")
+        //2021-02-16 I revised to throw exception if it is "Too many open files"
+        String msg = exc.getMessage();
+        String2.log("WARNING: FileVisitorSubdir.visitFileFailed: " + msg);
+        if (msg.indexOf(Math2.TooManyOpenFiles) >= 0)
+            throw exc;            
         return FileVisitResult.CONTINUE;    
     }
 
@@ -113,9 +121,9 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
      * @return a StringArray with dir and subdir names 
      *   (with same slashes as tDir and with with the OS's slashes -- \\ for Windows!).
+     * @throws IOException notably, if "Too many open files". 
      */
-    public static StringArray oneStep(String tDir, String tPathRegex) 
-        throws IOException {
+    public static StringArray oneStep(String tDir, String tPathRegex) throws IOException {
         long time = System.currentTimeMillis();
 
         tPathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;

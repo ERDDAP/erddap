@@ -1570,7 +1570,7 @@ public class OpendapHelper  {
      * @param whichTests -1 for all, or 0.. for specific ones
      */
     public static void testAllDapToNc(int whichTests) throws Throwable {
-        //tests from nodc template examples https://www.nodc.noaa.gov/data/formats/netcdf/
+        //tests from nodc template examples https://www.ncei.noaa.gov/netcdf-templates
         String2.log("\n*** OpendapHelper.testAllDapToNc(" + whichTests + ")");
         String dir = "c:/data/nodcTemplates/";
         String fileName;

@@ -1271,7 +1271,7 @@ expected2 =
             results = "Caught: " + t.toString();
         }
         expected = 
-            "Caught: com.cohort.util.SimpleException: Your query produced too much data.  Try to request less data.: " +
+            "Caught: com.cohort.util.SimpleException: Your query produced too much data.  Try to request less data. [memory]: " +
             "Your request for data from 2 axis[0] (time) values exceeds the maximum allowed for this dataset (1). " +
             "Please add tighter constraints on the time variable.";
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1898,7 +1898,7 @@ expected2 =
     "http://localhost:8080/cwexperimental/tabledap/erdMBsstdmday_AsATable.csv?latitude,longitude,altitude,time&latitude%3E0&sst%3E37\n" +
 "(Error {\n" +
 "    code=413;\n" +
-"    message=\"Payload Too Large: Your query produced too much data.  Try to request less data.: " +
+"    message=\"Payload Too Large: Your query produced too much data.  Try to request less data. [memory]: " +
     "Your request for data from 2 axis[0] (time) values exceeds the maximum allowed for this dataset (1). Please add tighter constraints on the time variable.\";\n" +
 "})";
         Test.ensureEqual(results, expected, "results=\n" + results);      

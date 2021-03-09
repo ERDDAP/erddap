@@ -121,7 +121,8 @@ public class RunLoadDatasets extends Thread {
                 loadDatasets.start(); //starts the thread and calls run() 
 
             } catch (Throwable t) {
-                if (t instanceof InterruptedException) {
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException) {
                     break whileNotInterrupted;
                 }
                 try {
@@ -131,17 +132,17 @@ public class RunLoadDatasets extends Thread {
                     String2.log(subject + ": " + content);
                     EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
-                    if (t2 instanceof InterruptedException) 
+                    if (Thread.currentThread().isInterrupted() ||
+                        t2 instanceof InterruptedException) 
                         break whileNotInterrupted;
                 }
             }
             
-            //********** Flag loop waits (hopefully just loadDatasetsMinMillis, 
-            //  but not longer than loadDatasetsMaxMillis)
+            //********** Flag loop waits (not longer than 3/4 loadDatasetsMaxMillis)
             try {
                 whileWait:
                 while (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis < 
-                    EDStatic.loadDatasetsMaxMillis) {
+                    EDStatic.loadDatasetsMaxMillis*3/4) {
 
                     //isInterrupted?
                     if (isInterrupted()) 
@@ -170,13 +171,14 @@ public class RunLoadDatasets extends Thread {
                         } else {
 
                             //main load datasets finished early; we have free time;
-                            //so check hardFlag and flag directories
+                            //so check hardFlag, flag, and badFilesFlag directories
                             String fDir[] = {
-                                EDStatic.fullHardFlagDirectory,
-                                EDStatic.fullResetFlagDirectory};
-                            String fDirName[] = {"hardFlag", "flag"};
+                                EDStatic.fullHardFlagDirectory,     //order is used below. see "hs =="
+                                EDStatic.fullResetFlagDirectory,    //so safer to add rather than insert new option before end of list
+                                EDStatic.fullBadFilesFlagDirectory};
+                            String fDirName[] = {"hardFlag", "flag", "badFilesFlag"};
 
-                            for (int hs = 0; hs < 2; hs++) {
+                            for (int hs = 0; hs < fDir.length; hs++) {
 
                                 StringArray tFlagNames = new StringArray(); 
                                 try {                                    
@@ -207,7 +209,7 @@ public class RunLoadDatasets extends Thread {
                                                 edd = (EDD)(erddap.tableDatasetHashMap.get(ttName));
 
                                             //if hardFlag, delete cached dataset info
-                                            //  (whether dataset matches datasetsRegex or is live or not)
+                                            //  (whether the dataset is live or not)
                                             if (hs == 0) {
                                                 if (edd != null) {
                                                     StringArray childDatasetIDs = edd.childDatasetIDs();
@@ -216,6 +218,18 @@ public class RunLoadDatasets extends Thread {
                                                 }
                                                 LoadDatasets.tryToUnload(erddap, ttName, new StringArray(), true); //needToUpdateLucene
                                                 EDD.deleteCachedDatasetInfo(ttName); //the important difference
+
+                                            } else if (hs == 2) {
+   
+                                                //if badFilesFlag, delete badFiles.nc info
+                                                //  (whether the dataset is live or not)
+                                                if (edd != null) {
+                                                    StringArray childDatasetIDs = edd.childDatasetIDs();
+                                                    for (int cd = 0; cd < childDatasetIDs.size(); cd++)
+                                                        EDD.deleteBadFilesFile(childDatasetIDs.get(cd)); //delete the children's badFiles.nc
+                                                }
+                                                LoadDatasets.tryToUnload(erddap, ttName, new StringArray(), true); //needToUpdateLucene
+                                                EDD.deleteBadFilesFile(ttName); //the important difference
                                             }
 
                                             if (ttName.matches(EDStatic.datasetsRegex)) {
@@ -278,7 +292,8 @@ public class RunLoadDatasets extends Thread {
                 }
 
             } catch (Throwable t) {
-                if (t instanceof InterruptedException) {
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException) {
                     break whileNotInterrupted;
                 }
                 try {
@@ -288,7 +303,8 @@ public class RunLoadDatasets extends Thread {
                     String2.log(subject + ": " + content);
                     EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
-                    if (t2 instanceof InterruptedException) 
+                    if (Thread.currentThread().isInterrupted() ||
+                        t2 instanceof InterruptedException) 
                         break whileNotInterrupted;
                 }
             }
@@ -300,9 +316,9 @@ public class RunLoadDatasets extends Thread {
 
             //********* need to call loadDatasets.stop???
             try {
-                //in case fell through to here, wait as long as loadDatasetsMaxMillis till thread is done
+                //first: if loadDatasets finished normally above, wait 10 seconds for !loadDatasets.isAlive()
                 while (loadDatasets != null && loadDatasets.isAlive() && 
-                    (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis < EDStatic.loadDatasetsMaxMillis)) {
+                    (System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis < EDStatic.loadDatasetsMaxMillis*3/4)) {
 
                     //isInterrupted?
                     if (isInterrupted()) 
@@ -326,19 +342,27 @@ public class RunLoadDatasets extends Thread {
                 }
 
 
-                //is loadDatasets still running???  (it's now longer than loadDatasetsMaxMillis!!!)
+                //is loadDatasets still running???  (interrupt it, and stop if longer than loadDatasetsMaxMillis!!!)
                 if (loadDatasets != null) {
                     //loadDatasets is stalled; interrupt it
-                    String tError = "RunLoadDatasets is interrupting a stalled LoadDatasets thread (" +
+
+                    String tError = "RunLoadDatasets is interrupting a long running LoadDatasets thread (" +
                         Calendar2.elapsedTimeString(System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis) +
-                        " > " + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis) + ") at " + 
+                        " > 3/4 " + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis) + ") at " + 
                         Calendar2.getCurrentISODateTimeStringLocalTZ();
-                    EDStatic.email(EDStatic.emailEverythingToCsv, 
-                        "RunLoadDatasets Stalled", tError);
                     String2.log("\n*** " + tError);
 
-                    //wait up to 5 more minutes for !loadDatasets.isAlive
-                    EDStatic.stopThread(loadDatasets, 5*60); //seconds
+                    //wait the final 1/4 loadDatasetsMax for !loadDatasets.isAlive
+                    if (EDStatic.stopThread(loadDatasets, Math2.narrowToInt(EDStatic.loadDatasetsMaxMillis/1000 /4))) { //seconds
+                        tError = "RunLoadDatasets stopped a stalled LoadDatasets thread (" +
+                            Calendar2.elapsedTimeString(System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis) +
+                            " > " + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis) + ") at " + 
+                            Calendar2.getCurrentISODateTimeStringLocalTZ();
+                        String2.log("\n*** " + tError);
+                        EDStatic.email(EDStatic.emailEverythingToCsv, 
+                            "RunLoadDatasets Stalled", tError);
+                    }
+
                     loadDatasets = null;
                     EDStatic.runningThreads.remove("loadDatasets");
                     if (lastMajorLoadDatasetsStopTimeMillis < lastMajorLoadDatasetsStartTimeMillis) {
@@ -348,7 +372,8 @@ public class RunLoadDatasets extends Thread {
                 }
 
             } catch (Throwable t) {
-                if (t instanceof InterruptedException) {
+                if (Thread.currentThread().isInterrupted() ||
+                    t instanceof InterruptedException) {
                     break whileNotInterrupted;
                 }
                 try {
@@ -358,7 +383,8 @@ public class RunLoadDatasets extends Thread {
                     String2.log(subject + ": " + content);
                     EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
-                    if (t2 instanceof InterruptedException) 
+                    if (Thread.currentThread().isInterrupted() ||
+                        t2 instanceof InterruptedException) 
                         break whileNotInterrupted;
                 }
             }

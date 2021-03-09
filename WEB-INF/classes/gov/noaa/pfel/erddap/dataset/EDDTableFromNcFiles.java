@@ -3668,8 +3668,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-01-19\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2021-01-19\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2021-02-18\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2021-02-18\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4913,8 +4913,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-01-19\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2021-01-19\";\n" +  // ""
+"  :date_created = \"2021-02-18\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2021-02-18\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -6757,7 +6757,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 41014381;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 41387848;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -6802,7 +6802,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6088121e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6121373e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -6864,7 +6864,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2021-01-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2021-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -6892,9 +6892,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2021-01-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2021-02-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2021-01-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2021-02-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -6912,7 +6912,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2021-01-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2021-02-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -6937,7 +6937,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the December 2020 data) but is a subset of the " + //month changes
+    "up to and including the January 2021 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -6950,7 +6950,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2020-12-24T12:15:00Z\";\n" + //changes
+"    String time_coverage_end \"2021-01-31T23:55:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -14132,7 +14132,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2021-01-04 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2021-03-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14321,7 +14321,7 @@ So the changes seem good. */
 "4n38w\n" +
 "4n67e\n" + //added 2019-11-22, removed 2018-09-15, added 2018-08-09 
 "4n90e\n" +
-"4n95w\n" +
+//"4n95w\n" + //disappeared 2021-02-26
 "4s57e\n" + //2015-12-28 added
 "4s67e\n" +
 "4s80.5e\n" +
@@ -17700,7 +17700,8 @@ nThreads=4 time=26
         //what does oneStep see in source?
         String2.log("What does one step see in source?");
 
-        results = FileVisitorDNLS.oneStep(tSourceUrl, tFileNameRegex, tRecursive,
+        results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            tSourceUrl, tFileNameRegex, tRecursive,
             tPathRegex, tDirectoriesToo).dataToString();
 expected = 
 "directory,name,lastModified,size\n" +
@@ -17715,7 +17716,8 @@ expected =
         String2.log("What does one step see in tLocalDir=" + tLocalDir + " ?");
 FileVisitorDNLS.verbose = true;
 FileVisitorDNLS.reallyVerbose = true;
-        results = FileVisitorDNLS.oneStep(tLocalDir, tFileNameRegex, tRecursive,
+        results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            tLocalDir, tFileNameRegex, tRecursive,
             tPathRegex, tDirectoriesToo).dataToString();
 expected = 
 "directory,name,lastModified,size\n";
@@ -17730,8 +17732,8 @@ expected =
         Math2.sleep(5000);
         String2.pressEnterToContinue("Hopefully the first download tasks finished.");
         
-        results = FileVisitorDNLS.oneStep(tLocalDir, 
-            tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
+        results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            tLocalDir, tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
 "/u00/data/points/testEDDTableCopyFiles/3/,1937.nc,1262881740000,24672\n" +
@@ -17755,8 +17757,8 @@ expected =
         Math2.sleep(3000);
         String2.pressEnterToContinue("Hopefully the download tasks finished.");
         
-        results = FileVisitorDNLS.oneStep(tLocalDir, 
-            tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
+        results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            tLocalDir, tFileNameRegex, tRecursive, tPathRegex, false).dataToString();
         //expected = same
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -18706,7 +18708,8 @@ FileVisitorDNLS.debugMode = false;
         for (int year = year1; year <= year2; year++) {
             for (int month = 1; month <= 12; month++) {
                 String dir = "/data/gtspp/bestNcConsolidated/" + year + "/" + String2.zeroPad("" + month, 2) + "/";
-                Table table = FileVisitorDNLS.oneStep(dir, ".*\\.nc", false, //recursive?
+                Table table = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                    dir, ".*\\.nc", false, //recursive?
                     ".*", false); // tDirectoriesToo?
                 if (table.nRows() == 0) {
                     String2.pressEnterToContinue("No files in " + dir);
@@ -19087,7 +19090,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 13 : 72;
+            lastTest = interactive? 15 : 72;
         String msg = "\n^^^ EDDTableFromNcFiles.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -19110,6 +19113,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 11) testNewTime();
                     if (test == 12) testMakeCopyFileTasks();           //requires fedCalLandings in localhost ERDDAP
                     if (test == 13) testCopyFilesGenerateDatasetsXml();//requires fedCalLandings
+                    if (test == 14) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
+                    if (test == 15) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
 
                 } else {
                     if (test ==  0) test1D(false); //deleteCachedDatasetInfo
@@ -19173,8 +19178,6 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 62) testTimeSince19000101();
                     if (test == 63) testHardFlag();
 
-                    if (test == 65) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
-                    if (test == 66) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
                     if (test == 67) testNThreads();
                     if (test == 68) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
 

@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -133,6 +134,7 @@ public class SSR {
     public static String erddapVersion = "2"; //vague. will be updated by EDStatic
 
     private static String tempDirectory; //lazy creation by getTempDirectory
+    private static ReentrantLock emailLock = new ReentrantLock();
 
     static {
         HttpURLConnection.setFollowRedirects(true);  //it's a static method!
@@ -1171,18 +1173,14 @@ public class SSR {
     }
 
     /**
-     * This procedure sends an email. For example,
+     * This procedure sends a plain text email. For example,
      * <pre>sendEmail("mail.server.name", 25, "joe.smith", password, "joe@smith.com", "sue@smith.com",
      *           "re: dinner", "How about at 7?");
      * </pre>
      *
-     * <p>THREAD SAFE? SYNCHRONIZED? 
-     * I don't think use of this needs to be synchronized. I could be wrong.
-     * I haven't tested.
+     * This is thread safe..
      *
-     * <p>This code uses /libs/mail.jar from the JavaMail API (currently 1.5.1).
-     * This requires additions to javac's and java's -cp: 
-     * ";C:\programs\_tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar"
+     * <p>This code uses /libs/mail.jar.
      * The mail.jar files are available from Sun
      * (see https://www.oracle.com/technetwork/java/javamail/index.html).
      * The software is copyrighted by Sun, but Sun grants anyone 
@@ -1195,6 +1193,8 @@ public class SSR {
      * http://javaalmanac.com/egs/javax.mail/SendApp.html
      * and http://www.websina.com/bugzero/kb/sunmail-properties.html
      * <br>See also http://kickjava.com/2872.htm
+     * <br>2021-02-18 https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/javamail/javamail.html
+     *   (Glassfish-oriented) https://docs.oracle.com/cd/E26576_01/doc.312/e24930/javamail.htm#GSDVG00204
      *
      * <p>If this fails with "Connection refused" error, 
      *   make sure McAffee "Virus Scan Console :
@@ -1218,7 +1218,7 @@ public class SSR {
      *    If all or one is null or "" or "null", it's a silent error.
      * @param subject The subject is sent with UTF-8 encoding, 
      *    so any Unicode characters are (theoretically) ok.
-     * @param content The content is sent with UTF-8 encoding, 
+     * @param content This plain text content is sent with UTF-8 encoding, 
      *    so any Unicode characters are (theoretically) ok.
      * @throws Exception if trouble
      */
@@ -1227,87 +1227,92 @@ public class SSR {
         String fromAddress, String toAddresses,
         String subject, String content) throws Exception {
 
-        //String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
-        //    "  properties=" + properties + "\n" +
-        //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
-        //    "  toAddress=" + toAddress);
-
-        String notSendingMsg = String2.ERROR + " in SSR.sendEmail: not sending email because ";
-        if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
-            String2.log(notSendingMsg + "no toAddresses.");
-            return;
-        }
-        if (!String2.isSomething(smtpHost)) 
-            throw new Exception(notSendingMsg + "smtpHost wasn't specified.");
-        if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
-            throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
-        if (!String2.isSomething(fromAddress)) 
-            throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
-        //I'm not sure if System.getProperties returns a new Properties 
-        //  or a reference to the same system properties object
-        //  so use new Properties to make System properties just the defaults
-        //  so this is thread safe.
-        //The Oracle example uses System.getProperties, but I think it is
-        //  unnecessary and exposes information needlessly.
-        //Properties props = new Properties(System.getProperties()); 
-        Properties props = new Properties(); 
-        if (properties != null && properties.trim().length() > 0) {
-            String sar[] = String2.split(properties, '|');
-            int n = (sar.length / 2) * 2;
-            for (int i = 0; i < n; i += 2)
-                props.setProperty(sar[i], sar[i+1]);
-        }
-        props.setProperty("mail.smtp.host", smtpHost);
-        props.setProperty("mail.smtp.port", "" + smtpPort);
-
-
-        //get a session
-        Session session;   
-        if (password == null || password.length() == 0) {
-            session = Session.getInstance(props, null);
-        } else {
-            //use non-default Session.getInstance (not shared) for password sessions
-            props.setProperty("mail.smtp.auth", "true");
-            props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-            session = Session.getInstance(props);
-        }
-        if (debugMode) session.setDebug(true);
-
-        Transport smtpTransport = null;
-        if (password != null && password.length() > 0) {
-            smtpTransport = session.getTransport("smtp");
-            smtpTransport.connect(smtpHost, userName, password);
-        }
+        emailLock.lock();
         try {
-            // Send the message
-            String addresses[] = toAddresses.split(",");
-            for (int add = 0; add < addresses.length; add++) {
-                String toAddress = addresses[add].trim();
-                if (toAddress.length() == 0 || toAddress.equals("null"))
-                    continue;
+            //String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
+            //    "  properties=" + properties + "\n" +
+            //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
+            //    "  toAddress=" + toAddress);
 
-                // Construct the message
-                MimeMessage msg = new MimeMessage(session);
-                msg.setFrom(new InternetAddress(fromAddress));
-                msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
-                msg.setSubject(subject, String2.UTF_8);
-                msg.setText(content, String2.UTF_8); 
-                msg.setHeader("X-Mailer", "msgsend");
-                msg.setSentDate(new Date());
-                msg.saveChanges();  //do last.  don't forget this
+            
+            String notSendingMsg = String2.ERROR + " in SSR.sendEmail: not sending email because ";
+            if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
+                String2.log(notSendingMsg + "no toAddresses.");
+                return;
+            }
+            if (!String2.isSomething(smtpHost)) 
+                throw new Exception(notSendingMsg + "smtpHost wasn't specified.");
+            if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
+                throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
+            if (!String2.isSomething(fromAddress)) 
+                throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
+            //I'm not sure if System.getProperties returns a new Properties 
+            //  or a reference to the same system properties object
+            //  so use new Properties so this is thread safe.
+            //The Oracle example uses System.getProperties, but I think it is
+            //  unnecessary and exposes email password information needlessly.
+            //Properties props = new Properties(System.getProperties()); 
+            Properties props = new Properties(); 
+            if (properties != null && properties.trim().length() > 0) {
+                String sar[] = String2.split(properties, '|');
+                int n = (sar.length / 2) * 2;
+                for (int i = 0; i < n; i += 2)
+                    props.setProperty(sar[i], sar[i+1]);
+            }
+            props.setProperty("mail.smtp.host", smtpHost);
+            props.setProperty("mail.smtp.port", "" + smtpPort);
 
-                try {
-                    if (password == null || password.length() == 0)
-                        Transport.send(msg);
-                    else 
-                        smtpTransport.sendMessage(msg, msg.getAllRecipients());
-                } catch (Exception e) {
-                    String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
+
+            //get a session
+            Session session;   
+            if (password == null || password.length() == 0) {
+                session = Session.getDefaultInstance(props, null);
+            } else {
+                //use non-default Session.getInstance (not shared) for password sessions
+                props.setProperty("mail.smtp.auth", "true");
+                props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+                session = Session.getDefaultInstance(props);
+            }
+            if (debugMode) session.setDebug(true);
+
+            Transport smtpTransport = null;
+            if (password != null && password.length() > 0) {
+                smtpTransport = session.getTransport("smtp");
+                smtpTransport.connect(smtpHost, userName, password);
+            }
+            try {
+                // Send the message separately to each recipient (so other's email addresses aren't exposed)
+                String addresses[] = toAddresses.split(",");
+                for (int add = 0; add < addresses.length; add++) {
+                    String toAddress = addresses[add].trim();
+                    if (toAddress.length() == 0 || toAddress.equals("null"))
+                        continue;
+
+                    // Construct the message
+                    MimeMessage msg = new MimeMessage(session);
+                    msg.setFrom(new InternetAddress(fromAddress));
+                    msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
+                    msg.setSubject(subject, String2.UTF_8);
+                    msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); 
+                    msg.setHeader("X-Mailer", "msgsend");
+                    msg.setSentDate(new Date());
+                    msg.saveChanges();  //do last.  don't forget this
+
+                    try {
+                        if (password == null || password.length() == 0)
+                            Transport.send(msg);
+                        else 
+                            smtpTransport.sendMessage(msg, msg.getAllRecipients());
+                    } catch (Exception e) {
+                        String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
+                    }
                 }
+            } finally {
+                if (smtpTransport != null)
+                    smtpTransport.close();    
             }
         } finally {
-            if (smtpTransport != null)
-                smtpTransport.close();    
+            emailLock.unlock();
         }
     }
 

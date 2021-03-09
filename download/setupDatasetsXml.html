@@ -6387,8 +6387,8 @@ subclasses, this dataset type does not serve data from within the files.
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>
       <li>Most Apache-like directory listings, e.g., 
-      <br><a rel="help" href="https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/"
-                             >https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/<img 
+      <br><a rel="help" href="https://www1.ncdc.noaa.gov/pub/data/cmb/ersst/v5/netcdf/"
+                             >https://www1.ncdc.noaa.gov/pub/data/cmb/ersst/v5/netcdf/<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>
       </ul>
@@ -10673,22 +10673,23 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
     ><kbd><strong>&lt;slowDownTroubleMillis&gt;</strong></kbd></a>
     is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml which contains 
     an integer specifying the number of milliseconds (default=1000) to pause when 
-    responding to some types of bad requests, e.g., from a user on the blacklist. E.g., 
-    <br><kbd>&lt;partialRequestMaxBytes&gt;100000000&lt;/partialRequestMaxBytes&gt;</kbd>
+    responding to all failed requests, e.g., unknown dataset, request too large, user on the blacklist. E.g., 
+    <br><kbd>&lt;slowDownTroubleMillis&gt;2000&lt;/slowDownTroubleMillis&gt;</kbd>
 
-    <p>Blacklisted IP addresses often have troublesome scripts that make
-    rapid-fire, repeated, bad requests.
-    With this setting, you can slow down the response to blacklisted IP addresses 
-    or other failed requests by some number of milliseconds. 
+    <p>If a script is making one request immediately after another, 
+    then it might rapidly make one bad request after another.
+    With this setting, you can slow down a failing script so ERDDAP isn't flooded with
+    bad requests.
+    If a human makes a bad request, they won't even notice this delay.
     Recommendations:
     <ul>
     <li>If the trouble is a Distributed Denial Of Service (DDOS) attack from 100+
-      attackers, set this to a smaller number (0? 10? 100?).
-      Slowing them all down for too long leads to too many waiting threads.
+      attackers, set this to a smaller number (100?).
+      Slowing them all down for too long leads to too many active threads.
     <li>If the trouble is from 1-10 sources, set this to 1000 ms (the default),
       but a larger number (like 10000) is also reasonable.
       That slows them down so they waste fewer network resources.
-      Also, 1000 ms won't annoy human users who make a bad request.
+      Also, 1000 ms or so won't annoy human users who make a bad request.
     </ul>
     Any changes to this tag's value will take effect the next time ERDDAP reads datasets.xml,
   including in response to a dataset
@@ -13097,8 +13098,8 @@ while processing each request.
         <a rel="help" href="#standard_name">standard_name</a>s 
         are taken.
         For example,
-        <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v65&lt;/att&gt;</kbd>
-        <br>for version 65 of the 
+        <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v77&lt;/att&gt;</kbd>
+        <br>for version 77 of the 
         <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard name table<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
@@ -13178,6 +13179,8 @@ while processing each request.
           you should consider not including that variable in the list of subsetVariables;
           otherwise, it takes a long time to transmit the 
           <i>datasetID</i>.subset, <i>datasetID</i>.graph, and <i>datasetID</i>.html web pages.
+          Also, on a Mac, it is very hard to make selections from a drop down 
+          list with more than 500 items because of the lack of a scroll bar.
           A compromise is: remove variables from the list when users are not
           likely to select values from a drop down list.
         <li>You should test each dataset to see if the subsetVariables setting is okay.

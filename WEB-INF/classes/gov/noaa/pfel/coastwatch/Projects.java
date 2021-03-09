@@ -9932,8 +9932,9 @@ towTypesDescription);
 
         String today = Calendar2.getCurrentISODateTimeStringLocalTZ().substring(0, 10);
 
-        Table table = FileVisitorDNLS.oneStep("/git/open-data-registry/datasets/", 
-            ".*.yaml", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, dirToo
+        Table table = FileVisitorDNLS.oneStep(    //throws IOException if "Too many open files"
+            "/git/open-data-registry/datasets/", 
+            ".*.yaml", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, dirToo     
         StringArray dirs  = (StringArray)table.getColumn(0);
         StringArray names = (StringArray)table.getColumn(1);
         StringBuilder sb     = new StringBuilder();
@@ -10228,6 +10229,7 @@ XML.encodeAsXML(
             return sb.toString();
 
         }
+
 
 }
 

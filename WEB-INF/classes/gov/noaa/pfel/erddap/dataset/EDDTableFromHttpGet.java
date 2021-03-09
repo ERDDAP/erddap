@@ -399,19 +399,23 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //read needed columns of the file (so UPDATE's and DELETE's can be processed)
         Table table = new Table();
-        //synchronized: don't read from file during a file write in insertOrDelete
-        fullFileName = String2.canonical(fullFileName);
-        ReentrantLock lock = String2.canonicalLock(fullFileName);
-        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-            throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
-        try {
-            //but probably not too bad if in middle of write
+
+        //2021-03-05 CHANGE to no lock. 
+        //  Since file is add-only, it doesn't matter if another thread is writing to the end of this file.
+        //  Worst case: there's a partial line at end of file and readJsonlCSV will stop at that line.
+
+        ////synchronized: don't read from file during a file write in insertOrDelete
+        //fullFileName = String2.canonical(fullFileName);
+        //ReentrantLock lock = String2.canonicalLock(fullFileName);
+        //if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+        //    throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
+        //try {
             table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
-        } finally {
-            lock.unlock();
-        }
-        //String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
-        //table.saveAsDDS(System.out, "s");
+        //} finally {
+        //    lock.unlock();
+        //}
+        ////String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
+        ////table.saveAsDDS(System.out, "s");
 
         //gather info about the table
         int nCols = table.nColumns();
@@ -1292,6 +1296,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      *     If hammer&gt;0, this doesn't delete existing files and  
      *       makes 10000 insertions with data values =hammer.
      *     If hammer==0, this prints the hammer'd data file -- raw, no processing.
+     *     If hammer==3, repeatedly checks the hammer'd data file to ensure it ends with ']'.
      */
     public static void testStatic(int hammer) throws Throwable {
         String2.log("\n*** EDDTableFromHttpGet.testStatic");
@@ -1358,10 +1363,42 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         Table table;
 
+        //***  read the hammer data
+        if (hammer == 0) {
+            //test the read time
+            String name = startDir + "46088/46088_1980-01.jsonl";
+            table = readFile(name, columnNamesSA, columnTypes, 
+                requiredVariableNames, requiredVariableTypes,
+                true, Double.NaN); 
+
+            File2.copy(name, name + ".txt");
+            SSR.displayInBrowser("file://" + name + ".txt");
+            return;
+        }
+
+        //***  read the hammer data file repeatedly for 10 seconds to ensure last char is ']'
+        if (hammer == 3) {
+            
+            //test the read time
+            String name = startDir + "46088/46088_1980-01.jsonl";
+            long start = System.currentTimeMillis();
+            int count = 0;
+            while (System.currentTimeMillis() - start < 20000) {
+                count++;
+                String text = String2.directReadFromUtf8File(name);
+                text = text.substring(Math.max(0, text.length() - 80)).trim();
+                if (text.endsWith("]"))
+                    String2.log("The file ends with ']' as expected.");
+                else throw new RuntimeException("Unexpected end of file:\n..." + text);
+            }
+            String2.log("All " + count + " tests passed.");
+            return;
+        }
+
         //***  hammer the system with inserts
         if (hammer > 0) {
             long time = System.currentTimeMillis();
-            int n = 2000;
+            int n = 20000;
             String tHammer = "" + hammer;
             if (hammer >= 10) 
                 tHammer = "[" + 
@@ -1386,19 +1423,6 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             }
             String2.log("\n*** hammer(" + hammer + ") n=" + n + " finished successfully. Avg time=" +
                 ((System.currentTimeMillis() - time) / (n + 0.0)) + "ms");
-            return;
-        }
-
-        //***  read the hammer data
-        if (hammer == 0) {
-            //test the read time
-            String name = startDir + "46088/46088_1980-01.jsonl";
-            table = readFile(name, columnNamesSA, columnTypes, 
-                requiredVariableNames, requiredVariableTypes,
-                true, Double.NaN); 
-
-            File2.copy(name, name + ".txt");
-            SSR.displayInBrowser("file://" + name + ".txt");
             return;
         }
 
@@ -2739,7 +2763,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
                     // and/or addIfDifferent if will result in a change to the data
                     //  E.g., Use addIfNew to "add" all of the data from NdbcMet last5days file.
 
-                    //happer: -1 for static tests, 1... for a hammer test, 0 for results of hammer test
+                    //hammer: -1 for static tests, 1... for a hammer test, 0 for results of hammer test
                     if (test ==  0) testStatic(-1); 
                     if (test ==  1) testGenerateDatasetsXml();
                     if (test ==  2) testBasic(); 
@@ -2756,6 +2780,17 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
             }
         }
     }
+
+    /**
+     * Run TestAll (set to call this) a few times simultaneously and enter 1, 2, 3, 4.
+     * '3' repeatedly tests that the file is valid.
+     * Wait till they are done, then run this with 0 to see resulting file from multithreaded hammer test.
+     */
+    public static void testMultithreadedReadWrite() throws Throwable {
+        int value = String2.parseInt(String2.getStringFromSystemIn("What integer (1, 2, 4, ..., or 3 to test file validity, or 0 to see results)?"));
+        testStatic(value);
+    }
+
 
 }
 

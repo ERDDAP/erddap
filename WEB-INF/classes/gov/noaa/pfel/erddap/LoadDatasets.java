@@ -14,6 +14,8 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
 
+import com.sun.management.UnixOperatingSystemMXBean;
+
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
@@ -30,6 +32,8 @@ import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
@@ -256,11 +260,28 @@ public class LoadDatasets extends Thread {
                     //Test third: look at flag/age  or active=false
                     if (!skip) {
                         //always check both flag locations
-                        boolean isFlagged     = File2.delete(EDStatic.fullResetFlagDirectory + tId);
-                        boolean isHardFlagged = File2.delete(EDStatic.fullHardFlagDirectory  + tId);
+                        boolean isFlagged         = File2.delete(EDStatic.fullResetFlagDirectory    + tId);
+                        boolean isBadFilesFlagged = File2.delete(EDStatic.fullBadFilesFlagDirectory + tId);
+                        boolean isHardFlagged     = File2.delete(EDStatic.fullHardFlagDirectory     + tId);
                         if (isFlagged) {
                             String2.log("*** reloading datasetID=" + tId + 
                                 " because it was in the flag directory.");
+
+                        } else if (isBadFilesFlagged) {
+                            String2.log("*** reloading datasetID=" + tId + 
+                                " because it was in the badFilesFlag directory.");
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
+                            if (oldEdd == null)
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
+                            if (oldEdd != null) {
+                                StringArray childDatasetIDs = oldEdd.childDatasetIDs();
+                                for (int cd = 0; cd < childDatasetIDs.size(); cd++) {
+                                    String cid = childDatasetIDs.get(cd);
+                                    EDD.deleteBadFilesFile(cid); //delete the children's info
+                                }
+                            }
+                            EDD.deleteBadFilesFile(tId); //the important difference
+
                         } else if (isHardFlagged) {
                             String2.log("*** reloading datasetID=" + tId + 
                                 " because it was in the hardFlag directory.");
@@ -869,7 +890,7 @@ public class LoadDatasets extends Thread {
                 //get thread info
                 String threadList = MustBe.allStackTraces(true, true);
                 String threadSummary = null;
-                String threadCounts = String2.right("", 22);
+                String threadCounts = String2.right("", 23);
                 int po = threadList.indexOf('\n');
                 if (po > 0) {
                     //e.g., "Number of threads: Tomcat-waiting=9, inotify=1, other=22"
@@ -878,14 +899,41 @@ public class LoadDatasets extends Thread {
                     Pattern p = Pattern.compile(".*waiting=(\\d+), inotify=(\\d+), other=(\\d+).*");
                     Matcher m = p.matcher(threadSummary);
                     if (m.matches()) {
-                        threadCounts = String2.right(m.group(1), 8) +
+                        threadCounts = String2.right(m.group(1), 9) +
                                        String2.right(m.group(2), 8) +
                                        String2.right(m.group(3), 6);
                         //System.out.println("**** REGEX MATCHED! " + threadCounts);
                     } else {
                         //System.out.println("**** REGEX NOT MATCHED!");
                     }
+                }
 
+                //get OpenFiles
+                String openFiles = "      ?";
+                try {
+                    OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+                    if (os instanceof UnixOperatingSystemMXBean) {
+                        UnixOperatingSystemMXBean uBean = (UnixOperatingSystemMXBean)os;
+                        long nF = uBean.getOpenFileDescriptorCount();
+                        long maxF = uBean.getMaxFileDescriptorCount();
+                        int percent = Math2.narrowToInt((nF * 100) / maxF);
+                        openFiles = String2.right(percent + "%", 7);
+                        String msg ="openFileCount=" + nF + " of max=" + maxF + " %=" + percent;
+                        String2.log(msg); 
+                        if (percent > 50) 
+                            EDStatic.email(
+                                String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
+                                "Too many open files!!!",
+                                msg + "\n" +
+                                "Anything >50%, is risky.\n" +
+                                "Don't let this reach 100% or it will cause horrible problems.\n" +
+                                "A (basically) ever-increasing number indicates a file handle leak in ERDDAP.\n" +
+                                "In any case, you should increase the maximum number of open files allowed\n" +
+                                "and restart ERDDAP. See\n" +
+                                "https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#TooManyOpenFiles\n");
+                    }
+                } catch (Throwable t) {
+                    String2.log("Caught: " + MustBe.throwableToString(t));
                 }
 
                 String2.log(
@@ -934,8 +982,8 @@ public class LoadDatasets extends Thread {
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
-//"Major LoadDatasets Time Series: MLD    Datasets Loaded        Requests (medianTime in seconds)         Number of Threads      Memory (MB)\n" +
-//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater\n");
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded        Requests (medianTime in seconds)         Number of Threads      Memory (MB)     Open\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater  Files\n");
                     "  " + cDateTimeLocal +  
                     String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
                     String2.right("" + nTry, 7) + 
@@ -949,6 +997,7 @@ public class LoadDatasets extends Thread {
                     threadCounts + 
                     String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
                     String2.right("" + maxUsingMemory/Math2.BytesPerMB, 10) + //highWater
+                    openFiles +
                     "\n");
                 
                 //reset

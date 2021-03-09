@@ -603,9 +603,11 @@ public class GridDataAccessor {
 
             //if interrupted, OutOfMemoryError or too much data, rethrow t
             String tToString = t.toString();
-            if (t instanceof InterruptedException ||
-                t instanceof java.lang.OutOfMemoryError ||
-                tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                t instanceof OutOfMemoryError ||
+                tToString.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                tToString.indexOf(Math2.TooManyOpenFiles) >= 0)
                 throw t;
 
             //anything else: rewrap it as WTTAE
@@ -803,7 +805,8 @@ class GetChunkCallable implements Callable {
             throw new ExecutionException(t); //not allowed in call(), so wrap it so it will be unwrapped later
         }
     }
-} //end of class GetChunkCallable
+
+} //end of embedded class GetChunkCallable
 
     /** 
      * The partialDataValues array.
