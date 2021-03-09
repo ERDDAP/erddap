@@ -246,24 +246,37 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             if (namePA.size()         > oSize) namePA.remove(oSize);
             if (lastModifiedPA.size() > oSize) lastModifiedPA.remove(oSize);
             if (sizePA.size()         > oSize) sizePA.remove(oSize);
-            String2.log(MustBe.throwableToString(t));
+            String msg = MustBe.throwableToString(t);  
+            String2.log(msg);
+            if (Thread.currentThread().isInterrupted() ||
+                t instanceof InterruptedException ||
+                t instanceof OutOfMemoryError ||                                   
+                t instanceof IOException ||
+                msg.indexOf(Math2.TooManyOpenFiles) >= 0)
+                throw (IOException)t;  //stop this effort
         }
     
         return FileVisitResult.CONTINUE;    
     }
 
     /** Invoked for a file that could not be visited. */
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) 
+        throws IOException {
         //2015-03-10 I added this method to override the superclass
-        //which apparently throws the exception and stops the parent
-        //SimpleFileVisitor. This class just ignores the error.
-        //Partial test that this change solves the problem: call
+        //  which apparently throws the exception and stops the parent
+        //  SimpleFileVisitor. This class just ignores the error.
+        //  Partial test that this change solves the problem: call
         //    new FileVisitorSubdir("/") 
         //  on my Windows computer with message analogous to below enabled.
         //  It shows several files where visitFileFailed.
-        //Always show message here. It is useful information.     (message is just filename)
-        String2.log("WARNING: FileVisitorDNLS.visitFileFailed: " + exc.getMessage());
+        //  Always show message here. It is useful information.     (message is just filename)
+        //2021-02-16 I revised to throw exception if it is "Too many open files"
+        String msg = exc.getMessage();
+        String2.log("WARNING: FileVisitorDNLS.visitFileFailed: " + msg);
+        if (msg.indexOf(Math2.TooManyOpenFiles) >= 0)
+            throw exc;            
         return FileVisitResult.CONTINUE;    
+
     }
 
     /** table.dataToString(); */
@@ -327,7 +340,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      *    are otherwise unknown, the value will be Long.MAX_VALUE.
      *    If directoriesToo=true, the original dir won't be included and any 
      *    directory's file NAME will be "".
-     * @throws IOException if trouble
+     * @throws IOException if trouble (notably, "Too many open files")
      */
     public static Table oneStep(String tDir, String tFileNameRegex, boolean tRecursive,
         String tPathRegex, boolean tDirectoriesToo) throws IOException {
@@ -600,6 +613,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         FileVisitorDNLS fv = new FileVisitorDNLS(tDir, tFileNameRegex, tRecursive, 
             tPathRegex, tDirectoriesToo);
         EnumSet<FileVisitOption> opts = EnumSet.of(FileVisitOption.FOLLOW_LINKS);
+        //2021-02-16 I revised so it throws IOException if "Too many open files"
         Files.walkFileTree(FileSystems.getDefault().getPath(tDir), 
             opts,               //follow symbolic links
             Integer.MAX_VALUE,  //maxDepth

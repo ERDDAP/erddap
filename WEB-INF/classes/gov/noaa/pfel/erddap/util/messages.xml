@@ -1190,7 +1190,7 @@ divisible by 4, e.g., ..., -0008, -0004, 0000, 0004, 0008, ....
 If you remember to use Astronomical Year Numbers, ERDDAP will work for 
 dates far in the past and future.
 
-<p>The <a rel="help" href="https://www.seadatanet.org/"
+<p>The <a rel="help" href="https://www.seadatanet.org"
     >SeaDataNet<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
@@ -3805,9 +3805,12 @@ below.
 ]]></magTableTooltip>
 
 
-<memoryTooMuchData>Your query produced too much data.  Try to request less data.</memoryTooMuchData>
+<!-- memory related errors must contain this word. This should be all lower case (for case insensitive testing).-->
+<memory>memory</memory>
 
-<memoryArraySize>The request needs an array size ({0}) bigger than Java ever allows ({1}).</memoryArraySize>
+<memoryTooMuchData>Your query produced too much data.  Try to request less data. [memory]</memoryTooMuchData>
+
+<memoryArraySize>The request needs an array size ({0}) bigger than Java ever allows ({1}). [memory]</memoryArraySize>
 
 <memoryThanCurrentlySafe>The request needs more memory ({0} MB) than is currently available in this Java setup ({1} MB).</memoryThanCurrentlySafe> 
 
@@ -4882,6 +4885,7 @@ subsets of scientific datasets in common file formats and make graphs and maps.
   <li><a rel="bookmark" href="#modular">ERDDAP has a modular structure.</a>
   <li><a rel="bookmark" href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a>
   </ul>
+<li><a rel="bookmark" href="#WhatsTheDifference">DAP? OPeNDAP? DODS? ERDDAP? What's the difference?</a>
 <li><a rel="bookmark" href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
 <li><a rel="bookmark" href="#sustainable">How sustainable is the ERDDAP project?</a>
 <li><a rel="bookmark" href="#citeDataset">How to Cite a Dataset in a Paper</a>
@@ -5460,6 +5464,37 @@ like
 </ul>
 
 
+<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP? OPeNDAP? DODS? ERDDAP? What's the difference?</a></strong>
+My (Bob's) understanding is:
+
+<p>DODS (Distributed Oceanographic Data System) was created in the 1990's, 
+before there was http: (!). The DODS system created and used the dods: protocol on the Internet.
+When HTTP came along and was so successful, they switched from dods: to http:.
+
+<p>At some point, they realized the system was useful for more than just oceanographic data.
+So they ditched that DODS name (although it lives on in some code), 
+formed a small organization called 
+<a rel="bookmark" href="https://www.opendap.org/">OPeNDAP<img 
+      src="&erddapUrl;/images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+and wrote the 
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP (Data Access Protocol) specification<img 
+      src="&erddapUrl;/images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>,
+which standardizes the format of the requests for metadata and/or data, 
+and the responses with the metadata and/or data. 
+OPeNDAP (the organization) still 
+shepherds DAP (the specification) and is the author of Hyrax (the data server which 
+is often mistakenly referred to as OPeNDAP).
+
+<p>Hyrax, THREDDS, GRADS, ERDDAP and others are data servers (software) which implement DAP.
+They each implement a subset of DAP but do other things very differently.
+
+<p>ERDDAP uses code (in the "dods" directory) (actually written by Jake Hamby at NASA JPL)
+for some features of reading data from external DAP servers.  
+ERDDAP uses its own code to write out DAP responses.
+<br>&nbsp;
+
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Is ERDDAP a solution to everyone's data distribution / data access problems?</a></strong>
 <br>No. ERDDAP tries to find a sweet spot that is a really good solution to most of the
 data distribution problems that we confronted.
@@ -5924,6 +5959,9 @@ https://earthdata.nasa.gov/about/esdis-project/eso/standards-and-references#ed-s
 
 http://www.esdswg.org/
 https://earthdata.nasa.gov/
+
+www.nodc.noaa.gov/data/formats/netcdf/
+www.ncei.noaa.gov/netcdf-templates
 
 gmt.soest.hawaii.edu/
 www.soest.hawaii.edu/gmt/

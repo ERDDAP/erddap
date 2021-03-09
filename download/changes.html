@@ -79,16 +79,56 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>NEW system to monitor the number of open files 
+    (which includes sockets and some other things, not just files) in Tomcat on Linux computers.
+    If some files mistakenly never get closed, the number of open files may increase until
+    it exceeds the maximum allowed and numerous really bad things happen.
+    So now, on Linux computers (the information isn't available for Windows):
+    <ul>
+    <li>There is a new "Open Files" column on the far right of the status.html web page
+      showing the percent of max files open. On Windows, it just shows "?".
+    <li>When ERDDAP generates that information at the end of each major dataset reload,
+      it will print to the log.txt file: 
+      <br><kbd>&nbsp;&nbsp;openFileCount=<i>current</i> of max=<i>max</i> %=<i>percent</i></kbd>
+    <li>If the percentage is &gt;50%, an email is sent to the ERDDAP adminstrator
+      and the emailEverythingTo email addresses.
+    </ul>
+    To find out more, or if you see this problem on your ERDDAP, see
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#TooManyOpenFiles"
+        >Too Many Open Files</a>.
+    <br>&nbsp;
+
+  <li>NEW [bigParentDirectory]/badFilesFlag directory: 
+    <br>If you put a file in this directory with a datasetID as the file name (the file contents don't matter),
+    ERDDAP will delete the badFiles.nc file for that dataset (if any) and reload the dataset ASAP.
+    This causes ERDDAP to try again to work with the files previously (erroneously?) marked as bad.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+
+  <il>CHANGED: I added a lot more checking for and handling of "Too many open files", so the
+    task just stops and the user sees the error. Data files will no longer be marked bad
+    if reading them results in a "Too many open files" error.
+    <br>&nbsp;
+
+  <li>CHANGED: At startup, if a fromFiles dataset has 0 files (e.g., it's a new dataset),
+    then ERDDAP defers loading it and sets a flag so that it will be loaded
+    ASAP after the major loadDatasets is finished.
+    This speeds up the initial startup when there are new datasets.
+    <br>&nbsp;
+    
   <li>CHANGED: FileVisitorDNLS.testAWSS3() and FileVisitorSubdir.testAWSS3(); 
     now use AWS v2 SDK.
     So now the Git distribution no longer needs you to add the massive v1 AWS SDK jar file.
     <br>&nbsp;
+
   <li>CHANGED: I switched to using Maven to detect/gather dependencies (the .jar files in /lib).
     The change to v2 of the AWS SDK necessitated this. It will be needed for
     other imported code in the future.
     A huge thanks to Kyle Wilcox who provided the pom.xml he created and uses, 
     which solved several problems for me.
     <br>&nbsp;
+
   <li>CHANGED: The classpath used in GenerateDatasetXml and other small programs and 
     in the advice to programmers is now much simpler and shouldn't ever change again
     since it refers to the directory, not the individual files:
@@ -115,7 +155,33 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#palettes">palettes documentation</a>
       <br>Thanks to Jennifer Sevadjian, Melanie Abecassis, and perhaps other CoastWatch people.
     <br>&nbsp;
+  <li>CHANGED: EDDTableFromHttpGet now doesn't try to get a lock when reading 
+    the data files. The files are add-only, so there is no need for a lock.
+    Thanks to Marco Alba.
+    <br>&nbsp;
+  <li>CHANGED: <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#slowDownTroubleMillis">&lt;slowDownTroubleMillis&gt;</a>
+        is now used for all failed requests, not just a few types.
+    <br>&nbsp;
+  <li>CHANGED: The RunLoadDatasets thread now interrupts the LoadDatasets thread
+    at 3/4 LoadDatasetsMaxMinutes so there is more time for LoadDatasets 
+    to notice the interruption and exit gracefully. 
+    Also there are more and better diagnostic messages for this.
   <li>CHANGED from old version of Lucene to v8.7.0. 
+    <br>&nbsp;
+  <li>CHANGE: Emails sent by ERDDAP now appear with a fixed width font.
+    <br>&nbsp;
+  <li>CHANGE: EDDGridFromFiles now gets axis values as well as attributes
+    from FIRST|LAST file, as specified in &lt;metadataFrom&gt;. 
+    Thanks (not) to Ken Casey, et al.
+  <li>ADDED support for the invalid units "degree_North" and "degree_East" 
+    which are erroneously used by the recent files (since 2020-10-01) in the 
+    AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST datasets
+    (nceiPH53sstd1day and nceiPH53sstn1day).
+    ERDDAP can now standardize them to valid units.
+    Thanks (not) to Ken Casey, et al.
+    <br>&nbsp;
+
   </ul>
 </ul>
 
@@ -239,7 +305,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
     web-security standpoint.
     Administrators now have the option of setting <kbd>relaxedQueryChars='[]|'</kbd>
     in the Tomcat server.xml file (less secure) or not (more secure).
-    <br>Thanks to Antoine Queric and others.
+    <br>Thanks to Antoine Queric, Dominic Fuller-Rowell, and others.
     <br>&nbsp;
 
   <li>NEW: If a request to an EDDTable datasets includes 
@@ -465,6 +531,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
       For these, the files from a given remote/child dataset will only be accessible
       if both the parent and the the remote/child dataset have accessibleViaFiles 
       set to <kbd>true</kbd> (perhaps via &lt;defaultAccessibleViaFiles&gt;).
+      Thanks to Damian Smyth and Rob Fuller.
       <br>&nbsp;
 
     <li>TO DO / RECOMMENDATION: 
@@ -506,6 +573,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
     of the dimensions that you want this dataset to use.
     Use "" to get the variables that use the most dimensions, as before.
     Also, a related small bug that occurred with this type of file is now fixed.
+    Thanks to Sujal Manandhar.
     <br>&nbsp;
 
   <li>BUG FIX: GenerateDatasetsXml now properly lists "EDDTableFromJsonlCSVFiles" 
@@ -515,7 +583,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
   <li>IMPROVED: EDDGridFromNcFilesUnpacked now standardizes "units" attributes to 
     standard/"canonical" udunits (the same method as the Units converter).
     For example, "meter per second", "meters/second", "m.s^-1", and "m s-1"
-    all become "m s-1".
+    all become "m s-1". Thanks to Andy Ziegler.
 
     <p>WARNING: It is possible this will cause problems for some existing datasets
     (e.g., cause new files to be labeled "bad").  If so, set a 
@@ -609,7 +677,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
   <li>NEW: Now it is okay if some of the files in a EDDGridFromFiles dataset
     don't have all of the dataset's variables. The files will be included as if
     they had the variables (with all missing values).
-    <br>Thanks to Dale Robinson.
+    <br>Thanks to Dale Robinson and Doug Latornell.
     <br>&nbsp;
 
   <li>NEW: There are new usage statistics in the log file and the Daily Report to help 
@@ -1262,7 +1330,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl" rel="bookmark"
     >cacheFromUrl documentation</a> for details.
     Thanks to Bob Simons and Roy Mendelssohn (who for years have been writing scripts
-    to handle making local copies of remote dataset files), Eugene Burger, 
+    to handle making local copies of remote dataset files), Lloyd Cotten, Eugene Burger, 
     Conor Delaney (when he was at Amazon Web Services), and the Google Cloud Platform.
     <br>&nbsp;
 
@@ -1616,11 +1684,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
       Note that different browsers support different file types, so 
       the examples may not work in your browser.
       <br>Thanks to these people/links for ideas and sample code for 
-      <a rel="help"
-        href="https://codepen.io/electricalbah/pen/eJRLVd"
-        >CSS-only image tooltips<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>      
+      CSS-only image tooltips (was at https://codepen.io/electricalbah/pen/eJRLVd)
         and  
       <a rel="help"
         href="https://varvy.com/pagespeed/defer-images.html"
@@ -2943,7 +3007,7 @@ in ERDDAP version 1.70 (released 2016-04-15)</h2>
 
   <li>The authentication/login system was revamped.  
     Thanks to Thomas Gardner, Emanuele Lombardi, and the U.S. government's new 
-    <a rel="help" href="https://https.cio.gov/">HTTPS-Only Standard</a>.
+    <a rel="help" href="https://home.dotgov.gov/management/preloading/dotgovhttps/">HTTPS-Only Standard</a>.
     <ul>    
 
 

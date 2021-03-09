@@ -2098,6 +2098,7 @@ String2.log("5/9=" + (5/9.0));
      *   valid_max, valid_min, valid_range.
      * missing_value and _FillValue will be converted to PA standard mv 
      *   for the the unpacked datatype (or current type if not packed).
+     * And units will be standardized.
      *
      * @param atts the set of attributes that will be unpacked/revised.
      * @param varName the var's fullName, for diagnostic messages only
@@ -2120,7 +2121,7 @@ String2.log("5/9=" + (5/9.0));
             //presumably, String time var doesn't have numeric time units
         else if (Calendar2.isStringTimeUnits(oUnits)) 
             {}
-        else 
+        else //standardize the units 
             newAtts.set("units", Units2.safeStandardizeUdunits(oUnits));
 
         PrimitiveArray unsignedPA = newAtts.remove("_Unsigned");
@@ -2625,9 +2626,11 @@ testToUcumToUdunits("degree_C",         "Cel",              "degree_C",         
 testToUcumToUdunits("degree_C day-1",   "Cel.d-1",          "degree_C day-1",   "Cel.d-1");
 testToUcumToUdunits("degree_Celsius",   "Cel",              "degree_C",         "Cel");
 testToUcumToUdunits("degree_east",      "deg{east}",        "degrees_east",     "deg{east}");
+testToUcumToUdunits("degree_East",      "deg{east}",        "degrees_east",     "deg{east}");   //East is not valid udunits
 testToUcumToUdunits("degree_F",         "[degF]",           "degree_F",         "[degF]");
 testToUcumToUdunits("degree_K",         "K",                "degree_K",         "K");
 testToUcumToUdunits("degree_north",     "deg{north}",       "degrees_north",    "deg{north}");
+testToUcumToUdunits("degree_North",     "deg{north}",       "degrees_north",    "deg{north}"); //North is not valid udunits
 testToUcumToUdunits("degree_true",      "deg{true}",        "degrees_true",     "deg{true}");
 testToUcumToUdunits("degrees",          "deg",              "degree",           "deg");
 testToUcumToUdunits("degrees (+E)",     "deg{east}",        "degrees_east",     "deg{east}");

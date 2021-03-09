@@ -246,8 +246,6 @@ public class TestSSR {
             File2.delete(gzipDir + fileName);
         }
 
-        testEmail();
-        
         //getURLResponse (which uses getURLInputStream)
         //FUTURE: test various compressed url's
         String2.log("test getURLResponse");
@@ -379,7 +377,8 @@ public class TestSSR {
                 SSR.sendEmail(emailServer, String2.parseInt(emailPort), emailUser, emailPassword, 
                     "mail.smtp.starttls.enable|true",
                     emailReplyToAddress, emailToAddresses,
-                    "gmail email test", "This is a gmail email test from TestSSR.");
+                    "gmail email test", 
+                    "This is a gmail email test from TestSSR with embedded special characters < > & û.\nSecond line.");
             } catch (Exception e) {
                 String2.pressEnterToContinue(MustBe.throwableToString(e)); 
             }
@@ -471,7 +470,7 @@ public class TestSSR {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 1 : -1;
+            lastTest = interactive? 2 : -1;
         String msg = "\n^^^ TestSSR.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -481,7 +480,8 @@ public class TestSSR {
             
                 if (interactive) {
                     if (test ==  0) runNonUnixTests();
-                    if (test ==  1) testPostFormGetResponseString();
+                    if (test ==  1) testEmail();
+                    if (test ==  2) testPostFormGetResponseString();
 
                     if (test == 1000) runUnixTests();
 

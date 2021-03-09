@@ -1495,7 +1495,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String mslp_indicator \"at sensor height\";\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"millibar\";\n" +
-"    Int32 qcindex 19;\n" + //2018-09-15 was 18
+"    Int32 qcindex 20;\n" + //2021-02-26 was 19  2018-09-15 was 18
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_pressure\";\n" +
@@ -1518,7 +1518,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String long_name \"Air Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    Int32 qcindex 21;\n" +  //2018-09-15 was 12
+"    Int32 qcindex 22;\n" +  //2021-02-26 was 21, 2018-09-15 was 12
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_temperature\";\n" +
@@ -1570,7 +1570,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"percent\";\n" +
-"    Int32 qcindex 22;\n" + //2018-09-15 was 13
+"    Int32 qcindex 23;\n" + //2021-02-26 was 22, 2018-09-15 was 13
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"relative_humidity\";\n" +
@@ -1678,7 +1678,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
 "    String original_units \"knot\";\n" +
-"    Int32 qcindex 13;\n" + //2018-09-15 was 9
+"    Int32 qcindex 14;\n" + //2021-02-26 was 13, 2018-09-15 was 9
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +
@@ -1789,7 +1789,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"knot\";\n" +
-"    Int32 qcindex 16;\n" + //2018-09-15 was 10
+"    Int32 qcindex 17;\n" + //2021-02-26 was 16, 2018-09-15 was 10
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +

@@ -224,22 +224,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         publicSourceErddapUrl = convertToPublicSourceUrl(localSourceUrl);
         subscribeToRemoteErddapDataset = tSubscribeToRemoteErddapDataset;
         redirect = tRedirect;
-        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
-        if (accessibleViaFiles) {
-            try {
-                //this will only work if remote ERDDAP is v2.10+
-                int po = localSourceUrl.indexOf("/tabledap/");
-                Test.ensureTrue(po > 0, "localSourceUrl doesn't have /tabledap/.");
-                InputStream is = SSR.getUrlBufferedInputStream(
-                    String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + 
-                    "/.csv");
-                try {is.close();} catch (Exception e2) {}
-            } catch (Exception e) {
-                String2.log("accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ (or is <v2.10 so no support for /files/.csv):\n" +
-                    MustBe.throwableToString(e));
-                accessibleViaFiles = false;
-            }
-        }
+        accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles; //tentative. see below
 
         //erddap support all constraints:
         sourceNeedsExpandedFP_EQ = false;
@@ -420,6 +405,31 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         //make addVariablesWhereAttNames and addVariablesWhereAttValues
         makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+
+        //finalize accessibleViaFiles
+        if (accessibleViaFiles) {
+            if (sourceErddapVersion < 2.10) {
+                accessibleViaFiles = false;
+                String2.log("accessibleViaFiles=false because remote ERDDAP version is <v2.10, so no support for /files/.csv .");
+
+            } else {
+
+                try {
+                    //this will only work if remote ERDDAP is v2.10+
+                    int po = localSourceUrl.indexOf("/tabledap/");
+                    Test.ensureTrue(po > 0, "localSourceUrl doesn't have /tabledap/.");
+                    InputStream is = SSR.getUrlBufferedInputStream(
+                        String2.replaceAll(localSourceUrl, "/tabledap/", "/files/") + 
+                        "/.csv");
+                    try {is.close();} catch (Exception e2) {}
+                } catch (Exception e) {
+                    String2.log("accessibleViaFiles=false because remote ERDDAP dataset isn't accessible via /files/ :\n" +
+                        MustBe.throwableToString(e));
+                    accessibleViaFiles = false;
+                }
+            }
+        }
+
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl

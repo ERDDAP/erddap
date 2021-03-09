@@ -532,8 +532,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         tStandardizeWhat = tStandardizeWhat < 0 || tStandardizeWhat == Integer.MAX_VALUE?
             DEFAULT_STANDARDIZEWHAT : tStandardizeWhat;      
 
-        Table table = FileVisitorDNLS.oneStep(startUrl, 
-            emlFileNameRegex, //"knb-lter-sbc\\.\\d+",
+        Table table = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+            startUrl, emlFileNameRegex, //"knb-lter-sbc\\.\\d+",
             false, ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
         StringArray names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
 
@@ -2189,7 +2189,8 @@ boolean columnar = false;  // are there any? how detect?
             emlDir = baseDataDir + "lterSbc/";  
             startUrl = "https://sbclter.msi.ucsb.edu/external/InformationManagement/eml_2018_erddap/";
                 //2020-01-08 gone. was "http://sbc.lternet.edu/data/eml/files/";        
-            Table table = FileVisitorDNLS.oneStep(startUrl, "knb-lter-sbc\\.\\d+",
+            Table table = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                startUrl, "knb-lter-sbc\\.\\d+",
                 false, ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
             names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
             localTimeZone = "US/Pacific";
@@ -2200,7 +2201,8 @@ boolean columnar = false;  // are there any? how detect?
             emlDir = baseDataDir + "lterNtl/";  
             startUrl = "https://lter.limnology.wisc.edu/eml_view/";
             //ids = new int[]{31881};
-            Table table = FileVisitorDNLS.oneStep(startUrl, "???r-ntl\\.\\d+",
+            Table table = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
+                startUrl, "???r-ntl\\.\\d+",
                 false, ".*", false); //tRecursive, tPathRegex, tDirectoriesToo
             names = (StringArray)table.getColumn(FileVisitorDNLS.NAME);
             localTimeZone = "US/Central";

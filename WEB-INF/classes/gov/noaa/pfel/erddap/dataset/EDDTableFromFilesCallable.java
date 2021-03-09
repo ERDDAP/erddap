@@ -15,6 +15,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 
 /** 
@@ -112,11 +113,14 @@ public class EDDTableFromFilesCallable implements Callable {
                 String t2String = t2.toString();
                 String2.log(identifier + ": caught while reading file=" + 
                     fileDir + fileName + ": " + t2String);
-                if (t2 instanceof WaitThenTryAgainException ||
+                if (Thread.currentThread().isInterrupted() ||
+                    t2 instanceof WaitThenTryAgainException ||
                     t2 instanceof InterruptedException ||
+                    t2 instanceof TimeoutException ||
                     EDStatic.isClientAbortException(t2) ||
-                    t2 instanceof java.lang.OutOfMemoryError ||                    
-                    t2String.indexOf(Math2.memoryTooMuchData) >= 0) {
+                    t2 instanceof OutOfMemoryError ||                    
+                    t2String.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                    t2String.indexOf(Math2.TooManyOpenFiles) >= 0) {
                     throw t2;
                 }
 
@@ -134,11 +138,13 @@ public class EDDTableFromFilesCallable implements Callable {
                 } catch (Throwable t3) {
                     String t3String = t3.toString();
                     if (debugMode) String2.log(identifier + ": caught while 2nd reading file: " + t3String);
-                    if (t3 instanceof WaitThenTryAgainException ||
+                    if (Thread.currentThread().isInterrupted() ||
+                        t3 instanceof WaitThenTryAgainException ||
                         t3 instanceof InterruptedException ||
                         EDStatic.isClientAbortException(t3) ||
-                        t3 instanceof java.lang.OutOfMemoryError ||
-                        t3String.indexOf(Math2.memoryTooMuchData) >= 0) {
+                        t3 instanceof OutOfMemoryError ||
+                        t3String.indexOf(Math2.memoryTooMuchData) >= 0 ||
+                        t3String.indexOf(Math2.TooManyOpenFiles) >= 0) {
                         throw t3;
                     }
 

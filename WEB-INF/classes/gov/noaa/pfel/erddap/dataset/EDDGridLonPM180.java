@@ -1753,6 +1753,58 @@ expected =
     }
 
 
+    /** This tests badFilesFlag.
+     */
+    public static void testBadFilesFlag() throws Throwable {
+        String2.log("\n*** EDDGridLonPM180.testBadFilesFlag()\n" +
+            "This test requires erdMWchlamday_LonPM180 and test_erdMWchlamday_LonPM180 \n" +
+            "be loaded in the local ERDDAP.");
+
+        String datasetID      = "test_erdPHsstamday_LonPM180";
+        String childDatasetID = "test_erdPHsstamday_LonPM180Child";
+        String request = "http://localhost:8080/cwexperimental/griddap/" + datasetID + ".csvp?time";
+        String results, expected;
+
+
+        //test that all times are present
+        results = SSR.getUrlResponseStringUnchanged(request);
+        String fullExpected = 
+"time (UTC)\n" +
+"1981-09-16T00:00:00Z\n" +
+"1981-10-16T12:00:00Z\n";
+        Test.ensureEqual(results, fullExpected, "results=\n" + results);
+        
+        //mark a file bad
+        EDDGridLonPM180 edd = (EDDGridLonPM180)oneFromDatasetsXml(null, datasetID); 
+        EDDGridFromFiles childEdd = (EDDGridFromFiles)edd.getChildDataset(); 
+        Table fileTable = childEdd.getFileTable(); // throws Throwable
+        int dirIndex    = fileTable.getColumn(EDDGridFromFiles.FT_DIR_INDEX_COL).getInt(0);
+        String fileName = fileTable.getColumn(EDDGridFromFiles.FT_FILE_LIST_COL).getString(0);
+        long lastMod    = fileTable.getColumn(EDDGridFromFiles.FT_LAST_MOD_COL ).getLong(0);
+        childEdd.addBadFileToTableOnDisk(dirIndex, fileName, lastMod, "for EDDGridLonPM180.testBadFilesFlag()");
+
+        //set regular flag
+        String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
+
+        //wait 10 seconds and test that that time point is gone
+        String2.log("I marked a file as bad. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(10000);
+        results = SSR.getUrlResponseStringUnchanged(request);
+        expected = 
+"time (UTC)\n" +
+"1981-10-16T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //set badFileFlag (to delete the badFiles.nc file and reload the dataset)
+        String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
+
+        //wait 10 seconds and test that all times are present
+        String2.log("I set the badFileFlag. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(10000);
+        results = SSR.getUrlResponseStringUnchanged(request);
+        Test.ensureEqual(results, fullExpected, "results=\n" + results);
+    }
+
     /** This tests hardFlag.
      */
     public static void testHardFlag() throws Throwable {
@@ -1918,7 +1970,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 3 : 2;
+            lastTest = interactive? 3 : 3;
         String msg = "\n^^^ EDDGridLonPM180.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -1935,7 +1987,8 @@ expected =
                 } else {
                     if (test ==  0) testGenerateDatasetsXmlFromErddapCatalog(); 
                     if (test ==  1) testHardFlag(); //if fails, try again
-                    if (test ==  2) testFiles();
+                    if (test ==  2) testBadFilesFlag(); 
+                    if (test ==  3) testFiles();
 
                     //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
                     //so there is a test for that in the constructor, 

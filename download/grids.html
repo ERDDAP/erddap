@@ -65,6 +65,7 @@ changes. This was last updated 2019-04-15.
 <ul>
 <li><a rel="chapter" href="#DISCLAIMER">DISCLAIMER</a>
 <li><a rel="chapter" href="#heavyLoads">Heavy Loads</a>
+<li><a rel="chapter" href="#loadBalancingNo">Multiple Identical ERDDAP's with Load Balancing? No</a>
 <li><a rel="chapter" href="#grids">Grids, Clusters, and Federations</a>
 <li><a rel="chapter" href="#cloudComputing">Cloud Computing</a>
 <li><a rel="chapter" href="#RemoteReplicationOfDatasets">Remote Replication of Datasets</a>
@@ -167,6 +168,111 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   </ol>
 
 
+<hr><h2><a class="selfLink" id="loadBalancingNo" href="#loadBalancingNo" rel="bookmark"
+><strong>Multiple Identical ERDDAPs with Load Balancing? No</strong></a></h2> 
+The question often comes up: 
+"To deal with heavy loads, can I set up multiple identical ERDDAPs with load balancing?"
+It's an interesting question because it quickly gets to the core of ERDDAP's design.
+The quick answer is "no".
+I know that is a disappointing answer, 
+but there are a couple of direct reasons and some larger fundamental reasons
+why I designed ERDDAP to use a different approach 
+(a federation of ERDDAPs, described in the bulk of this document),
+which I believe is a better solution.
+
+<p>Some direct reasons why you can't/shouldn't set up multiple identical ERDDAPs are:
+  <ul>
+  <li>A given ERDDAP reads each data file when it first becomes available
+    in order to find the ranges of data in the file. It then stores 
+    that information in an index file. 
+    Later, when a user request for data comes in,
+    ERDDAP uses that index to figure out which files to look in for the requested data.
+    If there were multiple identical ERDDAPs, they would each be doing 
+    this indexing, which is wasted effort.
+    With the federated system described below, the indexing is only done once, by one of the ERDDAPs.
+  <li>For some types of user requests (e.g., for .nc, .png, .pdf files) 
+    ERDDAP has to make the entire file before the response can be sent.
+    So ERDDAP caches these files for a short time. If an identical request
+    comes in (as it often does, especially for images where the URL is embedded in a web page),
+    ERDDAP can reuse that cached file.
+    In a system of multiple identical ERDDAPs, those cached files are not shared,
+    so each ERDDAP would needlessly and wastefully recreate the .nc, .png, or .pdf files.
+    With the federated system described below, the files are only made once, by one of the ERDDAPs, and reused.
+  <li>ERDDAP's subscription system is not set up to be shared by multiple ERDDAPs.
+    For example, if the load balancer sends a user to one ERDDAP and the user subscribes to a dataset,
+    then the other ERDDAPs won't be aware of that subscription. Later,
+    if the load balancer sends the user to a different ERDDAP and asks for 
+    a list of his/her subscriptions, the other ERDDAP will say there are none
+    (leading him/her to make a duplicate subscription on the other EREDDAP).
+    With the federated system described below, the subscription system is 
+    simply handled by the main, public, composite ERDDAP.
+  </ul>
+
+Yes, for each of those problems, I could (with great effort) engineer a solution  
+(to share the information between ERDDAPs), but I think the
+<a rel="chapter" href="#grids">federation-of-ERDDAPs approach</a>
+(described in the bulk of this document) is a much better overall solution, 
+partly because it deals with other problems 
+that the multiple-identical-ERDDAPs-with-a-load-balancer approach does not even start to address,
+notably the decentralized nature of the data sources in the world.
+
+<p>It's best to accept the simple fact that I didn't design ERDDAP to be deployed as 
+multiple identical ERDDAPs with a load balancer. I consciously designed ERDDAP 
+to work well within a federation of ERDDAPs, which I believe has many advantages.
+Notably, a federation of ERDDAPs is perfectly aligned with the decentralized, distributed system of
+data centers that we have in the real world (think of the different IOOS regions, 
+or the different CoastWatch regions, or the different parts of NCEI, 
+or the 100 other data centers in NOAA, or the different NASA DAACs, 
+or the 1000's of data centers throughout the world). 
+Instead of telling all the data centers
+of the world that they need to abandon their efforts and put all their data
+in a centralized "data lake" (even if it were possible, it is a horrible idea for numerous reasons 
+-- see the various analyses showing the numerous advantages of 
+<a rel="help" href="https://en.wikipedia.org/wiki/Decentralised_system">decentralized systems<img 
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external website does not constitute an endorsement."></a>),
+ERDDAP's design works with the world as it is.
+Each data center which produces data can continue to maintain, curate, and serve their data (as they should),
+and yet, with ERDDAP, the data can also be instantly available from a centralized ERDDAP,
+without the need for transmitting the data to the centralized ERDDAP or 
+storing duplicate copies of the data.
+Indeed, a given dataset can be simultaneously available 
+<br>from an ERDDAP at the organization that produced and actually stores the data (e.g., GoMOOS), 
+<br>from an ERDDAP at the parent organization
+(e.g., IOOS central), 
+<br>from an all-NOAA ERDDAP, 
+<br>from an all-US-federal government ERDDAP,  
+<br>from a global ERDDAP (GOOS),  
+<br>and from specialized ERDDAPs (e.g., 
+an ERDDAP at an institution devoted to HAB research), 
+<br>all essentially instantaneously,
+and efficiently because only the metadata is transferred between ERDDAPs, not the data.
+Best of all, after the initial ERDDAP at the originating organization, all of the 
+other ERDDAPs can be set up quickly (a few hours work), with minimal resources
+(one server that doesn't need any RAIDs for data storage since it stores no data locally),
+and thus at truly minimal cost. 
+Compare that to the cost of setting up and maintaing a centralized data center with a data lake
+and the need for a truly massive, truly expensive, Internet connection), 
+plus the attendant problem of the centralized data center being a single point of failure.
+To me, ERDDAPs decentralized, federated approach is far, far superior.
+
+<p>In situations where a given data center needs multiple ERDDAPs to meet
+high demand, ERDDAP's design is fully capable of matching or exceeding the performance 
+of the multiple-identical-ERDDAPs-with-a-load-balancer approach.
+You always have the option of setting up 
+<a rel="help" href="#multipleCompositeERDDAPs"
+      >multiple composite ERDDAPs (as discussed below)</a>, 
+each of which gets all of their data from other ERDDAPs, without load balancing. 
+In this case, I recommend that you make a point of giving each of the composite 
+ERDDAPs a different name / identity 
+and if possible setting them up in different parts of the world
+(e.g., different AWS regions), 
+e.g., ERD_US_East, ERD_US_West, ERD_IE, ERD_FR, ERD_IT,
+so that users consciously, repeatedly, work with a specific ERDDAP,
+with the added benefit that you have removed the risk from a single point of failure.
+<br>&nbsp;
+
+
 <hr><h2><a class="selfLink" id="grids" href="#grids" rel="bookmark"><strong>Grids, Clusters, and Federations</strong></a></h2> 
   Under very heavy use, a single standalone ERDDAP will run into one or more of the 
     <a rel="help" href="#heavyLoads">constraints</a> listed 
@@ -191,7 +297,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   non-centrally owned and administered (federations) 
   is that they distribute the human workload 
   and the cost, and may provide some additional fault tolerance. 
-  The solution I propose below works well for all grid topographies.
+  The solution I propose below works well for all grid, cluster, and federation topographies.
 
   <p>The basic idea of designing a scalable system is to identify the potential bottlenecks
     and then design the system so that parts of the system can be replicated as needed to 
@@ -446,6 +552,14 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
         title="This link to an external website does not constitute an endorsement."></a>. 
       Thus, the most robust setup is to have composite ERDDAPs with different URLs.        
 
+      <p>Or, perhaps better, set up multiple composite ERDDAPs without load balancing. 
+        In this case, you should make a point of giving each of the ERDDAPs a different
+        name / identity and if possible setting them up in different parts of the world
+        (e.g., different AWS regions), 
+        e.g., ERD_US_East, ERD_US_West, ERD_IE, ERD_FR, ERD_IT,
+        so that users consciously, repeatedly work with a specific ERDDAP.
+
+
     <li>[For a fascinating design of a high performance system running on one server, 
         see this <a rel="help" 
       href="https://mailinator.blogspot.com/2007/01/architecture-of-mailinator.html">detailed description of Mailinator<img 
@@ -525,8 +639,8 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
       to handle load balancing.
-      Note that a given composite ERDDAP can handle a large number of requests
-      from a large number of users, because 
+      Note that a given composite ERDDAP can handle a very large number of requests
+      from a large number of users because 
       <br>requests for metadata are small and are handled by information that is in memory, 
         and
       <br>requests for data (which may be large) are redirected to the child ERDDAPs.  
