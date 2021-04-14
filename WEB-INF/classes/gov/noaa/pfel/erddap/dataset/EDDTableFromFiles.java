@@ -38,6 +38,7 @@ import gov.noaa.pfel.erddap.dataset.NoMoreDataPleaseException;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.nio.file.WatchEvent;
@@ -1567,7 +1568,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     removeCumTime += System.currentTimeMillis();
                     tFileListPo++;
                     if (System.currentTimeMillis() - tLastMod > 30 * Calendar2.MILLIS_PER_MINUTE &&
-                        !(t instanceof TimeoutException)
+                        !(t instanceof TimeoutException &&
+                        !(t instanceof FileNotFoundException))  //occurs when a RAID unmounts itself. If really gone, removing from file list is enough. 
                         //??? This assumes any memory problem is permanent
                         ) 
                         //>30 minutes old, so not still being ftp'd, so add to badFileMap

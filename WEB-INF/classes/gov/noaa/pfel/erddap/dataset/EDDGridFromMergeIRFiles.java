@@ -371,8 +371,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
             "\nnb: lat=" + nbLat + ", lon=" + nbLon + ", time=" + nbTime + ", total size=" + total);         
         int indexOut = 0;//index in data array
         
-        BufferedInputStream inStream = new BufferedInputStream( //because it supports "marks"
-            new FileInputStream(tFullName)); //may throw exception
+        InputStream inStream = File2.getDecompressedBufferedInputStream(tFullName); //may throw exception
 
         try {
              

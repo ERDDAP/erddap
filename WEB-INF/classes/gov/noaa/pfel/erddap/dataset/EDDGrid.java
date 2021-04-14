@@ -9470,7 +9470,7 @@ Attributes {
             //nc
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc" +
+            "    <a rel=\"help\" href=\"https://github.com/Unidata/netcdf-c/blob/master/docs/file_format_specifications.md\">.nc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
             "    - <a class=\"selfLink\" id=\"nc\" href=\"#nc\" rel=\"bookmark\">Requests</a> for .nc files return the requested subset of the dataset in a\n" +
             "  standard, NetCDF-3, 32-bit, .nc file.\n" +
@@ -9905,7 +9905,7 @@ Attributes {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n " +
             "    <a rel=\"help\" href=\"https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions\">projection constraint" +
+            "    <a rel=\"help\" href=\"https://opendap.github.io/documentation/UserGuideComprehensive.html#Constraint_Expressions\">projection constraint" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> query\n" +
             "  which can request:\n" +
             "   <ul>\n" +

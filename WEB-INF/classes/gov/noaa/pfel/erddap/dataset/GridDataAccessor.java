@@ -349,6 +349,16 @@ public class GridDataAccessor {
         tDirTable  = eddGrid.getDirTable();   //throw exception if trouble
         tFileTable = eddGrid.getFileTable(); 
 
+        //if current memory usage plus this request is even slightly high, 
+        //  set nThreads for this request to 1
+        boolean reducedNThreads = false;
+        if (nThreads > 1 &&
+            (nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 8 ||   //this alone justifies nThreads=1
+            Math2.getMemoryInUse() + nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 4)) {
+            nThreads = 1;
+            reducedNThreads = true;
+        }
+
         //finish up
         Math2.ensureMemoryAvailable(nBytesPerPartialRequest, "GridDataAccessor");
         driverIndex = new NDimensionalIndex(driverShape);
@@ -360,9 +370,9 @@ public class GridDataAccessor {
             //driverShape e.g., [15][1][1][1],  note getAllOfNAxes 1's on right if row-major
             "\n      driverShape=" + String2.toCSSVString(driverShape) +  
             //partialShape e.g., [1][1][43][45],  note 1's on left if row-major
-            "\n      partialShape=" + String2.toCSSVString(partialShape) +  
-            "\n      nBytesPerPartialRequest=" + nBytesPerPartialRequest +
-            "\n      totalNBytes=" + totalNBytes);
+                  "  partialShape=" + String2.toCSSVString(partialShape) +  
+            "\n      nBytesPerPartialRequest=" + nBytesPerPartialRequest + " totalNBytes=" + totalNBytes + 
+                  "  nThreads=" + nThreads + " reducedNThreads=" + reducedNThreads);
         
     }
 

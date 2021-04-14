@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import ucar.ma2.StructureData;
+
 /**
  * IntArray is a thin shell over an int[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
@@ -300,6 +302,16 @@ public class IntArray extends PrimitiveArray {
         //double is good intermediate because it has the idea of NaN
         addDouble(value != null && value instanceof Number?
             ((Number)value).doubleValue() : Double.NaN); 
+    }
+
+    /**
+     * This reads one value from the StrutureData and adds it to this PA.
+     *
+     * @param sd from an .nc file
+     * @param memberName
+     */
+    public void add(StructureData sd, String memberName) {
+        add(sd.getScalarInt(memberName));
     }
 
     /**
@@ -1933,6 +1945,22 @@ public class IntArray extends PrimitiveArray {
         Test.ensureEqual((new IntArray(new int[] {Integer.MIN_VALUE})).tryToFindNumericMissingValue(), Integer.MIN_VALUE, "");
         Test.ensureEqual((new IntArray(new int[] {Integer.MAX_VALUE})).tryToFindNumericMissingValue(), Integer.MAX_VALUE, "");
         Test.ensureEqual((new IntArray(new int[] {1, 99  })).tryToFindNumericMissingValue(),   99, "");
+    }
+
+    public static void testSynchSpeed() {
+        String2.log("\n*** IntArray.testSynchSpeed");
+        int n = 100000000;
+        long time = System.currentTimeMillis();
+        IntArray ia = IntArray.fromCSV("0, 11, 22, 33, 44, 55, 66, 77");
+        int count = 0;
+        long tTime = 0;
+        for (int i = 0; i < n; i++) {
+            tTime = System.currentTimeMillis();  //so this is in the loop too
+            synchronized (ia) {
+                count += ia.indexOf(33);
+            }
+        }
+        String2.log("n=" + n + " time/test=" + (((System.currentTimeMillis() - time) * 1000000) / n) + " nanoseconds  (~31) currentTime=" + tTime);
     }
 
     /**

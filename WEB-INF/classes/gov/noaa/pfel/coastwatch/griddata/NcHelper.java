@@ -88,6 +88,13 @@ public class NcHelper  {
     public final static int LONG_MAXSTRINGLENGTH = 20;
 
     /**
+     * For my purposes (not part of NetCDF system), 
+     * this is the character used to separate a structureName|memberName
+     * so that structure members can be handled like other variables.
+     */
+    public final static char STRUCTURE_MEMBER_SEPARATOR = '|';
+
+    /**
      * Tell netcdf-java to object if a file is truncated 
      *  (e.g., didn't get completely copied over)
      * See email from Christian Ward-Garrison Nov 2, 2016
@@ -591,14 +598,12 @@ public class NcHelper  {
 
     /** 
      * This converts an netcdf DataType into a PrimitiveArray elementType 
-     * (e.g., PAType.INT for integer primitives).
+     * (e.g., Datatype.UINT becomes PAType.UINT).
      * BEWARE: This returns the stated dataType (not overthinking it).
      * .nc3 files store strings as char arrays, so 
      * if variable.getRank()==1 it is a char variable, but
      * if variable.getRank()==2 it should later be converted to to a String variable.
      * But .nc4 files have true String dataType.
-     *
-     * <p>Unsigned types return the same type, signed, e.g., ubyte returns byte.
      *
      * @param dataType the Netcdf dataType
      * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer primitives)
@@ -613,6 +618,20 @@ public class NcHelper  {
              if (dataType == DataType.INT)    return PAType.UINT;
              if (dataType == DataType.LONG)   return PAType.LONG;
          }
+         return getElementPAType(dataType);
+     }
+
+
+    /** 
+     * This SIMPLISTICALLY converts an netcdf DataType into a PAType 
+     * (e.g., Datatype.UINT becomes PAType.UINT).
+     * See the variant above to deal with unsigned variables in .nc3 files.
+     *
+     * @param dataType the Netcdf dataType
+     * @return the corresponding PrimitiveArray elementPAType (e.g., PAType.INT for integer primitives)
+     * @throws RuntimeException if dataType is null or unexpected.
+     */
+     public static PAType getElementPAType(DataType dataType) {
          if (dataType == DataType.BOOLEAN) return PAType.BOOLEAN;
          if (dataType == DataType.BYTE)    return PAType.BYTE;
          if (dataType == DataType.UBYTE)   return PAType.UBYTE;
@@ -2944,6 +2963,165 @@ String2.log(pas13.toString());
     }
 
     /**
+     * This reads the specified data from a multidimensional structure.
+     *
+     * @param nc the netcdfFile
+     * @param structureName the name of the structure
+     * @param memberNames the name of the desired members of the structure).
+     *   If a memberName isn't a member in this file, the PA returned will be all CoHort mv
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
+     * @return a PrimitiveArray[], with one for each varName.
+     *   If a memberName wasn't found, its PrimitiveArray will be null
+     * @throws Exception if trouble: IOError, structureName isn't found or isn't a structure, 
+     *    unexpected nDimensions, or similar. MemberName not found isn't an error.
+     */
+    public static PrimitiveArray[] readStructure(NetcdfFile nc, String structureName,
+        String memberNames[], IntArray tConstraints) throws Exception {
+
+        Variable v = nc.findVariable(structureName);
+        if (v == null) 
+            throw new RuntimeException("structureName=" + structureName + " isn't the nc/hdf file.");
+        if (!(v instanceof Structure)) 
+            throw new RuntimeException(structureName + " isn't a structure.");
+        Structure s = (Structure)v;
+
+        //get structure's dimensions
+        List<Dimension> dims = s.getDimensions(); 
+        int nDim = dims.size();
+        int shape[] = new int[nDim];
+        for (int d = 0; d < nDim; d++) 
+            shape[d] = dims.get(d).getLength();
+        NDimensionalIndex index = new NDimensionalIndex(shape);
+        int currentIndex[] = index.getCurrent();
+        int subsetIndex[]  = index.makeSubsetIndex(structureName, tConstraints);
+        boolean getAll     = index.willGetAllValues(tConstraints);
+        int subsetSize     = index.subsetSize(tConstraints);
+
+        StructureMembers sm = s.makeStructureMembers();
+        //System.out.println("sm=" + sm);
+        int nMembers = memberNames.length;
+        PrimitiveArray pa[] = new PrimitiveArray[nMembers]; 
+        for (int m = 0; m < nMembers; m++) {
+            StructureMembers.Member smm = sm.findMember(memberNames[m]);
+            if (smm != null) 
+                pa[m] = PrimitiveArray.factory(getElementPAType(smm.getDataType()), subsetSize, false); //active?
+        }
+
+        //boolean buildStringsFromChars = false;
+        //boolean isUnsigned = false; 
+        StructureDataIterator it = s.getStructureIterator();
+        int recNo = 0;
+        boolean done = false;
+        try {
+            while (it.hasNext()) {
+                StructureData sd = it.next(); //increment structure position
+                boolean saveThisOne = true;
+                if (!getAll) {
+                    index.increment();    //increment my count
+                    for (int d = nDim-1; d >= 0; d--) {  //for efficiency, check fastest varying first
+                        if (currentIndex[d] != subsetIndex[d]) {
+                            saveThisOne = false;
+                            break;
+                        }
+                    }
+                }
+                if (saveThisOne) {
+                    for (int m= 0; m < nMembers; m++) {
+                        if (pa[m] != null) 
+                            pa[m].add(sd, memberNames[m]); //faster if use Member? but it returns junk numbers
+                    }
+
+                    if (!getAll) 
+                        if (!index.incrementSubsetIndex(subsetIndex, tConstraints))
+                            break; //we got the entire subset
+                }
+                recNo++;
+            }
+        } finally {
+            it.close(); 
+        }   
+        
+        return pa;
+    }
+
+    /**
+     * This is the test that I sent to Sean. It only uses netcdf-java methods, not NcHelper.
+     */
+    public static void testReadStructure() throws Throwable {
+        String fileName = String2.unitTestDataDir + "nc/SDScompound.h5";
+        System.out.println(ncdump(fileName, "-v ArrayOfStructures"));
+        NetcdfFile nc = NetcdfFiles.open(fileName);
+        try {
+            System.out.println(nc.toString());
+            Variable v = nc.findVariable("ArrayOfStructures");
+            if (v instanceof Structure) {
+                System.out.println("v=" + v);
+                Structure s = (ucar.nc2.Structure)v;
+                StructureMembers sm = s.makeStructureMembers();
+                System.out.println("sm=" + sm);
+                StructureMembers.Member smma = sm.findMember("a_name");
+                StructureMembers.Member smmb = sm.findMember("b_name");
+                StructureMembers.Member smmc = sm.findMember("c_name");
+                //boolean buildStringsFromChars = false;
+                //boolean isUnsigned = false; 
+                StructureDataIterator it = s.getStructureIterator();
+                int recNo = 0;
+                try {
+                    while (it.hasNext()) {
+                        StructureData sd = it.next();
+                        System.out.println("byName recNo=" + recNo + 
+                            " a_name=" + sd.getScalarInt(   "a_name") +
+                            " b_name=" + sd.getScalarFloat( "b_name") +
+                            " c_name=" + sd.getScalarDouble("c_name"));
+                        System.out.println("byMem  recNo=" + recNo + 
+                            " a_name=" + sd.getScalarInt(   smma) +
+                            " b_name=" + sd.getScalarFloat( smmb) +
+                            " c_name=" + sd.getScalarDouble(smmc));
+                        recNo++;
+                    }
+                } finally {
+                    it.close();
+                }             
+            }
+
+        } finally {
+            nc.close();
+        }
+    }
+
+    /**
+     * ERDDAP: require that all vars be in same structure
+     */
+    public static void testReadStructure2() throws Throwable {
+        String fileName = String2.unitTestDataDir + "nc/SDScompound.h5";
+        System.out.println(ncdump(fileName, "-v ArrayOfStructures"));
+        NetcdfFile nc = NetcdfFiles.open(fileName);
+        try {
+            String memberNames[] = new String[]{"a_name", "b_name", "c_name"}; 
+            PrimitiveArray pa[] = readStructure(nc, "ArrayOfStructures",
+                memberNames, IntArray.fromCSV("0,1,9"));
+            Test.ensureEqual(pa[0].toString(), "0, 1, 2, 3, 4, 5, 6, 7, 8, 9", "a_name");
+            Test.ensureEqual(pa[1].toString(), "0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0", "b_name");
+            Test.ensureEqual(pa[2].toString(), "1.0, 0.5, 0.3333333333333333, 0.25, 0.2, 0.16666666666666666, 0.14285714285714285, 0.125, 0.1111111111111111, 0.1", "c_name");
+
+            pa = readStructure(nc, "ArrayOfStructures", memberNames, IntArray.fromCSV("2,3,9"));
+            Test.ensureEqual(pa[0].toString(), "2, 5, 8", "a_name");
+            Test.ensureEqual(pa[1].toString(), "4.0, 25.0, 64.0", "b_name");
+            Test.ensureEqual(pa[2].toString(), "0.3333333333333333, 0.16666666666666666, 0.1111111111111111", "c_name");
+
+            pa = readStructure(nc, "ArrayOfStructures", memberNames, IntArray.fromCSV("2,3,8"));
+            Test.ensureEqual(pa[0].toString(), "2, 5, 8", "a_name");
+            Test.ensureEqual(pa[1].toString(), "4.0, 25.0, 64.0", "b_name");
+            Test.ensureEqual(pa[2].toString(), "0.3333333333333333, 0.16666666666666666, 0.1111111111111111", "c_name");
+        } finally {
+            nc.close();
+        }
+    }
+
+
+    /**
      * This runs all of the interactive or not interactive tests for this class.
      *
      * @param errorSB all caught exceptions are logged to this.
@@ -2957,7 +3135,7 @@ String2.log(pas13.toString());
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 2;
+            lastTest = interactive? -1 : 3;
         String msg = "\n^^^ NcHelper.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -2972,6 +3150,7 @@ String2.log(pas13.toString());
                     if (test ==  0) testBasic();
                     if (test ==  1) testFindAllVariablesWithDims();
                     if (test ==  2) testUnlimited();        
+                    if (test ==  3) testReadStructure2();        
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

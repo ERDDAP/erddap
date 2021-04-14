@@ -10,7 +10,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import java.util.Arrays;
-
+ 
 /** 
  * This class lets you treat a 1D array (e.g., a PrimitiveArray) as an 
  * nDimensional array.  For example, think of new int[]{2,3}
@@ -294,6 +294,183 @@ public class NDimensionalIndex {
         return new NDimensionalIndex(tShape);
     }
 
+
+    /**
+     * Given tConstraints, this calculates the number of values in the subset.
+     *
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
+     * @return the number of values in the subset.
+     */
+    public int subsetSize(IntArray tConstraints) {
+        int n = 1;
+        int nDimensions = tConstraints.size() / 3;
+        for (int d = 0; d < nDimensions; d++) {
+            int base = d * 3;
+            int start  = tConstraints.get(base);
+            int stride = tConstraints.get(base + 1);
+            int stop   = tConstraints.get(base + 2);
+            int dSize = ((stop+1 - start)/stride) + 1;
+            n *= dSize;
+        }
+        return n;
+    }
+
+    /**
+     * Given a subset selection for this index, this creates a subsetIndex.
+     *
+     * @param variableName
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
+     * @return int[nDim] with the start values for all dimensions.
+     * @throws RuntimeException if something is wrong.
+     */
+    public int[] makeSubsetIndex(String variableName, IntArray tConstraints) {
+        if (nDimensions * 3 != tConstraints.size())
+            throw new RuntimeException("Variable=" + variableName + " has nDimensions=" + nDimensions + 
+                " but the subset constraints have nDimensions=" + (tConstraints.size()/3) + ".");
+        int subsetIndex[] = new int[nDimensions];
+        for (int d = 0; d < nDimensions; d++) {
+            int base = d * 3;
+            int start  = tConstraints.get(base);
+            int stride = tConstraints.get(base + 1);
+            int stop   = tConstraints.get(base + 2);
+            subsetIndex[d] = start;
+            if (start < 0)
+                throw new RuntimeException("The subset constraints start[" + d + "]=" + start + " is < 0.");
+            if (start >= shape[d])
+                throw new RuntimeException("The subset constraints start[" + d + "]=" + start + " is >= shape[" + d + "].");
+            if (stride <= 0)
+                throw new RuntimeException("The subset constraints stride[" + d + "]=" + stride + " is <= 0.");
+            if (stop < 0)
+                throw new RuntimeException("The subset constraints stop[" + d + "]=" + stop + " is < 0.");
+            if (stop >= shape[d])
+                throw new RuntimeException("The subset constraints stop[" + d + "]=" + stop + " is >= shape[" + d + "].");
+        }
+        return subsetIndex;
+    }
+
+    /**
+     * This tests if a subset selection for this index will get all values.
+     *
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
+     * @return true if it will get all values.
+     */
+    public boolean willGetAllValues(IntArray tConstraints) {
+        for (int d = 0; d < nDimensions; d++) {
+            int base = d * 3;
+            int stop = tConstraints.get(base + 2);
+            if (tConstraints.get(base + 0) != 0 ||        //start
+                tConstraints.get(base + 1) != 1 ||        //stride
+                stop                       != shape[d]-1) //stop
+                return false;
+            if (stop >= shape[d]) 
+                throw new RuntimeException("Requested stop[" + d + "]=" + stop + " >= size[" + d + "]=" + shape[d] + ".");
+        }
+        return true;
+    }
+
+    
+    /**
+     * Given a subset selection for this index, this increments (by stride[nDim-1])
+     * the subsetIndex (and other dimensions if needed).
+     * 
+     * @param subsetIndex as created by getSubsetIndex().
+     * @param tConstraints 
+     *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
+     *   !!! If there is a special axis0, this will not include constraints for axis0.
+     * @return true if increment was successful and still points to a valid value.
+     *   So false means we're done with the entire subset selection.
+     */
+    public boolean incrementSubsetIndex(int subsetIndex[], IntArray tConstraints) {
+        for (int d = nDimensions-1; d >= 0; d--) {
+            int base = d*3;
+            subsetIndex[d] += tConstraints.get(base+1);     //stride
+            if (subsetIndex[d] <= tConstraints.get(base+2)) //stop
+                return true;
+            subsetIndex[d] = tConstraints.get(base);        //start
+        }  
+        return false;
+    }
+
+    /**
+     * This tests the subsetIndex system.
+     */
+    public static void testSubsetIndex() {
+        String2.log("\n*** NDimensionalIndex.testSubsetIndex");
+
+        //test get all 
+        NDimensionalIndex index = new NDimensionalIndex(new int[]{4,5});
+        int current[] = index.getCurrent();
+        IntArray tConstraints = IntArray.fromCSV("0, 1, 3, 0, 1, 4"); //get all
+        int subsetIndex[] = index.makeSubsetIndex("myVarName", tConstraints);
+        Test.ensureEqual(index.willGetAllValues(tConstraints), true, "");
+        for (int i = 0; i < 20; i++) {
+            Test.ensureEqual(index.increment(), true, "i=" + i);
+            Test.ensureEqual(current, subsetIndex,   "i=" + i);
+
+            Test.ensureEqual(index.incrementSubsetIndex(subsetIndex, tConstraints), i < 19, "i=" + i);
+        }
+        Test.ensureEqual(index.increment(), false, "at the end");
+
+        //test get subset
+        index.reset();
+        tConstraints = IntArray.fromCSV("1, 2, 3, 0, 3, 4");  //not that 2nd stop is beyond last matching value
+        subsetIndex = index.makeSubsetIndex("myVarName", tConstraints);
+        Test.ensureEqual(index.willGetAllValues(tConstraints), false, "");
+        StringBuilder results = new StringBuilder();
+        for (int i = 0; i < 20; i++) {
+            Test.ensureEqual(index.increment(), true, "i=" + i);
+
+            if (Test.testEqual(String2.toCSSVString(current), String2.toCSSVString(subsetIndex), "msg").equals("")) {
+                results.append("equal at i=" + i + " current=" + String2.toCSSVString(current) + "\n");
+                if (!index.incrementSubsetIndex(subsetIndex, tConstraints)) {
+                    results.append("done at i=" + i + "\n");
+                    break;
+                }
+            }
+        }
+        String expected = 
+"equal at i=5 current=1, 0\n" +
+"equal at i=8 current=1, 3\n" +
+"equal at i=15 current=3, 0\n" +
+"equal at i=18 current=3, 3\n" +
+"done at i=18\n";
+        Test.ensureEqual(results.toString(), expected, "results=\n" + results.toString());
+
+        //test get subset
+        index.reset();
+        tConstraints = IntArray.fromCSV("0, 3, 3, 1, 2, 4");
+        subsetIndex = index.makeSubsetIndex("myVarName", tConstraints);
+        Test.ensureEqual(index.willGetAllValues(tConstraints), false, "");
+        results = new StringBuilder();
+        for (int i = 0; i < 20; i++) {
+            Test.ensureEqual(index.increment(), true, "i=" + i);
+
+            if (Test.testEqual(String2.toCSSVString(current), String2.toCSSVString(subsetIndex), "msg").equals("")) {
+                results.append("equal at i=" + i + " current=" + String2.toCSSVString(current) + "\n");
+                if (!index.incrementSubsetIndex(subsetIndex, tConstraints)) {
+                    results.append("done at i=" + i + "\n");
+                    break;
+                }
+            }
+        }
+        expected = 
+"equal at i=1 current=0, 1\n" +
+"equal at i=3 current=0, 3\n" +
+"equal at i=16 current=3, 1\n" +
+"equal at i=18 current=3, 3\n" +
+"done at i=18\n";
+        Test.ensureEqual(results.toString(), expected, "results=\n" + results.toString());
+
+    }
+
+
+
     /**
      * This tests this class.
      * @throws Exception if trouble
@@ -444,6 +621,7 @@ public class NDimensionalIndex {
             if (e.toString().indexOf("isn't 3") < 0) 
                 throw e;
         }
+
         try {
             a.setCurrent(new int[]{1,-1,1});
             throw new Exception("");            
@@ -474,7 +652,7 @@ public class NDimensionalIndex {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
+            lastTest = interactive? -1 : 1;
         String msg = "\n^^^ NDimensionalIndex.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -487,6 +665,7 @@ public class NDimensionalIndex {
 
                 } else {
                     if (test ==  0) basicTest();
+                    if (test ==  1) testSubsetIndex();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

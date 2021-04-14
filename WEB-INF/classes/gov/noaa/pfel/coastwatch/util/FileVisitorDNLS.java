@@ -4,14 +4,6 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.model.CommonPrefix;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.services.s3.S3Client;
-
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.LongArray;
@@ -67,6 +59,15 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 
+//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+//import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.CommonPrefix;
+import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3Client;
+
+
 /**
  * This class gathers basic information about a group of files.
  * This follows Linux symbolic links, but not Windows .lnk's (see testSymbolicLinks() below).
@@ -79,9 +80,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      * These are thread-safe ways to recognize different types of servers. 
      * Use them in this order.
      */
-    public final static String  AWS_S3_REGEX    = String2.AWS_S3_REGEX;
-    /** If testing a "dir", url should have a trailing slash.*/
-    public final static Pattern AWS_S3_PATTERN  = String2.AWS_S3_PATTERN;
+    //See String2.AWS_S3_REGEX and AWS_S3_PATTERN. 
     //test hyrax before tds because some hyrax offer a tds-like catalog
     public final static String  HYRAX_REGEX     = "https?://.+/opendap/.+";
     public final static Pattern HYRAX_PATTERN   = Pattern.compile(HYRAX_REGEX);
@@ -354,7 +353,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             //Is it an S3 bucket with "files"?
             //If testing a "dir", url should have a trailing slash.
             //S3 gives precise file size and lastModified
-            Matcher matcher = AWS_S3_PATTERN.matcher(File2.addSlash(tDir)); //force trailing slash
+            Matcher matcher = String2.AWS_S3_PATTERN.matcher(File2.addSlash(tDir)); //force trailing slash
             if (matcher.matches()) {
                 try {
                     //it matches with /, so actually add it (if not already there)
@@ -392,13 +391,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                             "\nURL=" + tDir);
                             //"\nbucket=" + bucketName + " prefix=" + prefix);
 
-                    //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
-                    //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
-                    S3Client s3client = S3Client.builder()
-    //                    .credentials(ProfileCredentialsProvider.create())
-                        .region(Region.of(region))  
-                        .build();               
-
                     //I wanted to generate lastMod for dir based on lastMod of files
                     //but it would be inconsistent for different requests (recursive, fileNameRegex).
                     //so just a set of dir names.
@@ -417,6 +409,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
                     ListObjectsRequest req = reqBuilder.build();
 
+                    S3Client s3client = File2.getS3Client(region);               
                     ListObjectsResponse response = s3client.listObjects(req);
 
                     //get common prefixes
@@ -3285,7 +3278,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
                 entry.setSize(sizePA.get(fi));
                 entry.setModTime(lastModifiedPA.get(fi));
                 tar.putArchiveEntry(entry);
-                InputStream fis = new BufferedInputStream(new FileInputStream(fullName)); //not File2.getDecompressedBufferedInputStream(). Read file as is.
+                InputStream fis = File2.getBufferedInputStream(fullName); //not File2.getDecompressedBufferedInputStream(). Read file as is.
                 try {
                     while ((nBytes = fis.read(buffer)) > 0) 
                         tar.write(buffer, 0, nBytes);
