@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import ucar.ma2.StructureData;
+
 /**
  * LongArray is a thin shell over a long[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
@@ -287,6 +289,16 @@ public class LongArray extends PrimitiveArray {
         } else {
             addDouble(Double.NaN);
         }
+    }
+
+    /**
+     * This reads one value from the StrutureData and adds it to this PA.
+     *
+     * @param sd from an .nc file
+     * @param memberName
+     */
+    public void add(StructureData sd, String memberName) {
+        add(sd.getScalarLong(memberName));
     }
 
     /**

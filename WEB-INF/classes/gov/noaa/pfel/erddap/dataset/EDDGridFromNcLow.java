@@ -228,6 +228,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
      * @param sourceDataNames When there are unnamed dimensions, this is
      *   to find out the shape of the variable to make index values 0, 1, size-1.
      * @return a PrimitiveArray[] with the results (with the requested sourceDataTypes).
+     *   The values will be unpacked if unpack()=true.
      *   It needn't set sourceGlobalAttributes or sourceDataAttributes
      *   (but see getSourceMetadata).
      * @throws Throwable if trouble (e.g., invalid file).
@@ -294,13 +295,13 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
     /**
      * This gets source data from one file.
      *
-     * @param tFullName
+     * @param tFullName of the file
      * @param tDataVariables the desired data variables
      * @param tConstraints 
      *   For each axis variable, there will be 3 numbers (startIndex, stride, stopIndex).
      *   !!! If there is a special axis0, this will not include constraints for axis0.
      * @return a PrimitiveArray[] with an element for each tDataVariable with the dataValues.
-     *   <br>The dataValues are straight from the source, not modified.
+     *   <br>The values will be unpacked if unpack()=true.
      *   <br>The primitiveArray dataTypes are usually the sourceDataPAType,
      *     but can be any type. EDDGridFromFiles will convert to the sourceDataPAType.
      *   <br>Note the lack of axisVariable values!
@@ -330,9 +331,55 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
             for (int dvi = 0; dvi < ndv; dvi++) {
                 edv = tDataVariables[dvi];
-                Variable var = ncFile.findVariable(edv.sourceName());  
-                if (var == null) {
-                    //this var isn't in this file: return array of missing_values
+
+                //is it in a structure?
+                int po = edv.sourceName().indexOf(NcHelper.STRUCTURE_MEMBER_SEPARATOR);
+                if (po > 0) {
+                    //Reading 1 member at a time isn't the most efficient approach,
+                    //but it is the simplist solution by far when a request may
+                    //include data from multiple structures and variables.
+                    try {
+                        paa[dvi] = NcHelper.readStructure(ncFile, 
+                            edv.sourceName().substring(0, po),
+                            new String[]{edv.sourceName().substring(po+1)}, tConstraints)[0]; //[0] the first and only pa returned 
+
+                    } catch (Exception e) {
+                        //and paa[dvi] will be null, which will be dealt with below
+                        String2.log("Caught exception will reading sourceName=" + edv.sourceName() + ":\n" +
+                            MustBe.throwableToString(e));
+                    }
+
+                } else {
+
+                    //is it a regular variable?
+                    Variable var = ncFile.findVariable(edv.sourceName());  
+                    if (var != null) {
+                        String tSel = selection;
+                        if (edv.sourceDataPAType() == PAType.STRING) 
+                            tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
+                        paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel), true, NcHelper.isUnsigned(var));
+                        //2020-02-27 WARNING: in netcdf-java 5+, when reading nc3 file,
+                        //  variable with _Unsigned="true" behaves in raw way
+                        /* 
+                        String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + edv.sourceName() + 
+                            " sourceDataPAType()=" + edv.sourceDataPAType() +
+                            " var.getDataType()=" + var.getDataType() +                //returns raw (signed) dataType
+                            " dataType.isUnsigned=" + var.getDataType().isUnsigned() + //returns false
+                            " pa.elementType()=" + paa[dvi].elementType() + 
+                            " pa.isUnsigned=" + paa[dvi].isUnsigned() );
+                            //    "[" + selection + "]\n" + paa[dvi].toString());  
+                        /* */
+
+                        if (unpack()) 
+                            paa[dvi] = NcHelper.unpackPA(var, paa[dvi], 
+                                true, true); //lookForStringTime, lookForUnsigned (which changes type, eg unsigned byte to signed short)
+
+                        nValues = paa[dvi].size();
+                    }
+                }
+
+                //this var isn't in this file: return array of missing_values
+                if (paa[dvi] == null) {
                     if (nValues == -1) {
                         nValues = 1;
                         for (int avi = 0; avi < nav; avi++) {
@@ -353,29 +400,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     paa[dvi].addNDoubles(nValues, 
                         !Double.isNaN(edv.sourceFillValue())? edv.sourceFillValue():
                         edv.sourceMissingValue());
-                } else {
-                    String tSel = selection;
-                    if (edv.sourceDataPAType() == PAType.STRING) 
-                        tSel += ",0:" + (var.getShape(var.getRank() - 1) - 1);
-                    paa[dvi] = NcHelper.getPrimitiveArray(var.read(tSel), true, NcHelper.isUnsigned(var));
-                    //2020-02-27 WARNING: in netcdf-java 5+, when reading nc3 file,
-                    //  variable with _Unsigned="true" behaves in raw way
-                    /* 
-                    String2.log(">> EDDGridFrimNcFilesLow.getSourceDataFromFile " + edv.sourceName() + 
-                        " sourceDataPAType()=" + edv.sourceDataPAType() +
-                        " var.getDataType()=" + var.getDataType() +                //returns raw (signed) dataType
-                        " dataType.isUnsigned=" + var.getDataType().isUnsigned() + //returns false
-                        " pa.elementType()=" + paa[dvi].elementType() + 
-                        " pa.isUnsigned=" + paa[dvi].isUnsigned() );
-                        //    "[" + selection + "]\n" + paa[dvi].toString());  
-                    /* */
-
-                    if (unpack()) 
-                        paa[dvi] = NcHelper.unpackPA(var, paa[dvi], 
-                            true, true); //lookForStringTime, lookForUnsigned (which changes type, eg unsigned byte to signed short)
-
-                    nValues = paa[dvi].size();
                 }
+
             }
 
             //I care about this exception

@@ -3117,13 +3117,13 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,creator_url,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,Data_Source,Global Tropical Moored Buoy Array Project Office/NOAA/PMEL\n" +
 "*GLOBAL*,defaultGraphQuery,\"longitude,latitude,T_25&time>=now-7days\"\n" +
-"*GLOBAL*,Easternmost_Easting,350.0d\n" +
+"*GLOBAL*,Easternmost_Easting,357.0d\n" +
 "*GLOBAL*,featureType,TimeSeries\n" +
 "*GLOBAL*,File_info,Contact: Dai.C.McClurg@noaa.gov\n" +
 "*GLOBAL*,geospatial_lat_max,21.0d\n" +
 "*GLOBAL*,geospatial_lat_min,-25.0d\n" +
 "*GLOBAL*,geospatial_lat_units,degrees_north\n" +
-"*GLOBAL*,geospatial_lon_max,350.0d\n" +
+"*GLOBAL*,geospatial_lon_max,357.0d\n" +
 "*GLOBAL*,geospatial_lon_min,0.0d\n" +
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
 "*GLOBAL*,geospatial_vertical_max,15.0d\n" +
@@ -3131,7 +3131,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2021-03-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2021-04-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3146,7 +3146,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-03-02T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-04-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3164,7 +3164,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "wmo_platform_code,missing_value,2147483647i\n" +
 "longitude,*DATA_TYPE*,float\n" +
 "longitude,_CoordinateAxisType,Lon\n" +
-"longitude,actual_range,0.0f,350.0f\n" +
+"longitude,actual_range,0.0f,357.0f\n" +
 "longitude,axis,X\n" +
 "longitude,epic_code,502i\n" +
 "longitude,ioos_category,Location\n" +
@@ -3186,7 +3186,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2021-03-02T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2021-04-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -3270,13 +3270,13 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,creator_url,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,Data_Source,Global Tropical Moored Buoy Array Project Office/NOAA/PMEL\n" +
 "*GLOBAL*,defaultGraphQuery,\"longitude,latitude,T_25&time>=now-7days\"\n" +
-"*GLOBAL*,Easternmost_Easting,350.0d\n" +
+"*GLOBAL*,Easternmost_Easting,357.0d\n" +
 "*GLOBAL*,featureType,TimeSeries\n" +
 "*GLOBAL*,File_info,Contact: Dai.C.McClurg@noaa.gov\n" +
 "*GLOBAL*,geospatial_lat_max,21.0d\n" +
 "*GLOBAL*,geospatial_lat_min,-25.0d\n" +
 "*GLOBAL*,geospatial_lat_units,degrees_north\n" +
-"*GLOBAL*,geospatial_lon_max,350.0d\n" +
+"*GLOBAL*,geospatial_lon_max,357.0d\n" +
 "*GLOBAL*,geospatial_lon_min,0.0d\n" +
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
 "*GLOBAL*,geospatial_vertical_max,15.0d\n" +
@@ -3284,7 +3284,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2021-03-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2021-04-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -3303,7 +3303,7 @@ expected2 =
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-03-02T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-04-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +

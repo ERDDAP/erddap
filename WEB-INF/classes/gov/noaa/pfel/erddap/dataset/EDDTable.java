@@ -7590,7 +7590,7 @@ public abstract class EDDTable extends EDD {
             //nc
             "  <p><strong><a rel=\"bookmark\" href=\"https://www.unidata.ucar.edu/software/netcdf/\">NetCDF" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a rel=\"help\" href=\"https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html\">.nc" +
+            "    <a rel=\"help\" href=\"https://github.com/Unidata/netcdf-c/blob/master/docs/file_format_specifications.md\">.nc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></strong>\n" +
             "     - <a class=\"selfLink\" id=\"nc\" href=\"#nc\" rel=\"bookmark\">Requests</a>\n" +
             "      for .nc files will always return the data in a table-like, NetCDF-3,\n" +

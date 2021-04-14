@@ -100,6 +100,9 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
   <li><a rel="help" href="#convertToPublicSourceUrl"><kbd>&lt;convertToPublicSourceUrl&gt;</kbd></a>
   <li><a rel="help" href="#drawLandMask"><kbd>&lt;drawLandMask&gt;</kbd></a>
   <li><a rel="help" href="#graphBackgroundColor"><kbd>&lt;graphBackgroundColor&gt;</kbd></a>
+  <li><a rel="help" href="#ipAddressMaxRequests"><kbd>&lt;ipAddressMaxRequests&gt;</kbd></a>
+  <li><a rel="help" href="#ipAddressMaxRequestsActive"><kbd>&lt;ipAddressMaxRequestsActive&gt;</kbd></a>
+  <li><a rel="help" href="#ipAddressUnlimited"><kbd>&lt;ipAddressUnlimited&gt;</kbd></a>
   <li><a rel="help" href="#loadDatasetsMinMinutes"><kbd>&lt;loadDatasetsMinMinutes&gt;</kbd></a>
   <li><a rel="help" href="#loadDatasetsMaxMinutes"><kbd>&lt;loadDatasetsMaxMinutes&gt;</kbd></a>
   <li><a rel="help" href="#logLevel"><kbd>&lt;logLevel&gt;</kbd></a>
@@ -968,6 +971,9 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
   <a rel="help" href="#drawLandMask">&lt;drawLandMask&gt;</a>...&lt;/drawLandMask&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#emailDiagnosticsToErdData">&lt;emailDiagnosticsToErdData&gt;</a>...&lt;/emailDiagnosticsToErdData&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#graphBackgroundColor">&lt;graphBackgroundColor&gt;</a>...&lt;/graphBackgroundColor&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#ipAddressMaxRequests">&lt;ipAddressMaxRequests&gt;</a>...&lt;/ipAddressMaxRequests&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#ipAddressMaxRequestsActive">&lt;ipAddressMaxRequestsActive&gt;</a>...&lt;ipAddressMaxRequestsActive&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#ipAddressUnlimited">&lt;ipAddressUnlimited&gt;</a>...&lt;ipAddressUnlimited&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#loadDatasetsMinMinutes">&lt;loadDatasetsMinMinutes&gt;</a>...&lt;/loadDatasetsMinMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#loadDatasetsMaxMinutes">&lt;loadDatasetsMaxMinutes&gt;</a>...&lt;/loadDatasetsMaxMinutes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#logLevel">&lt;logLevel&gt;</a>...&lt;/logLevel&gt; &lt;!-- 0 or 1 --&gt;
@@ -1718,24 +1724,36 @@ apples to oranges comparison.)
 
 <p><a class="selfLink" id="AwsS3Buckets" href="#AwsS3Buckets" rel="bookmark"
   ><strong>The Contents of a Bucket. Keys. Objects. Delimiters.</strong></a>
-<br>Technically, S3 buckets aren't hierarchical file structures like disk drives on a computer.
+<br>Technically, S3 buckets aren't organized in a hierarchical file structure like a file system on a computer.
 Instead, buckets only contain "objects" (files), each of which has a "key" (a name).
 An example of a key in that noaa-goes17 bucket is 
 <pre>ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc</pre>
-The corresponding object (at bucket URL + key, e.g.,
+The corresponding URl for that object is 
 <pre><a rel="help" 
   href="https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc"
        >https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a></pre>
-) is the actual .nc file. 
-It is common practice to make key names, as with this example, look like a hierarchical path 
+AWS supports a little variation in how that URL is constructed, 
+but ERDDAP requires this one specific format:
+<br>&nbsp;&nbsp;https://<i>bucketName</i>.s3.<i>region</i>.amazonaws.com/<i>key</i> 
+<br>It is common practice, as with this example, to make key names look like a hierarchical path 
 plus a file name, but technically they aren't.
 Since it is common and useful, ERDDAP treats keys with /'s as if they are a hierarchical path plus file name,
 and this documentation will refer to them as such.
 If a bucket's keys don't use /'s (e.g., a key like 
 <br>ABI-Lib.2018.052.22.OR_ABI-L1b-RadM2-M3C10_G16_s20180522247575), then 
 ERDDAP will just treat the whole key as a long file name.
+
+<p><a class="selfLink" id="AwsCredentials" href="#AwsCredentials" rel="bookmark"
+ ><strong>AWS Credentials</strong></a>
+ <br>To read the contents of non-public buckets, you need AWS credentials and
+ you need to store a credentials file in the standard place so ERDDAP can find the information.
+See the AWS SDK for Java 2.x documentation: <a rel="help" 
+  href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials"
+       >Set default credentials<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>.
 
 <p><a class="selfLink" id="ErddapAndS3Buckets" href="#ErddapAndS3Buckets" rel="bookmark"
   ><strong>ERDDAP and S3 Buckets</strong></a>
@@ -6999,8 +7017,8 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>
       <li>Most Apache-like directory listings, e.g., 
-      <br><a rel="help" href="https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/"
-                             >https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/<img 
+      <br><a rel="help" href="https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/"
+                             >https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>
       <li>S3 buckets, e.g, 
@@ -10439,6 +10457,94 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a>. 
   <br>&nbsp;
 
+<li><a class="selfLink" id="ipAddressMaxRequests" href="#ipAddressMaxRequests" rel="bookmark"
+  ><kbd><strong>&lt;ipAddressMaxRequests&gt;</strong></kbd></a>
+  is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  that is part of a system to limit the ability of 
+  overly aggressive legitimate users and malicious users to make a 
+  large number of simultaneous requests which would degrade system performance for other users.
+  ipAddressMaxRequests specifies the maximum number of simultaneous requests
+        that will be accepted from any specific IP address. Additional 
+        requests will receive an HTTP 429 error: Too Many Requests.
+        The small, static files in erddap/download/ and erddap/images/
+        are NOT exempt from this count.
+        The default is 7. ERDDAP won't accept a number less than 6 because
+        many legitimate users (notably web browsers and WMS clients) make
+        up to 6 requests at a time. The ERDDAP Daily Report and the
+        similar information written to the log.txt file with each Major Dataset Reload,
+        will now include a tally of the requests by these IP addresses
+        under the title "Requester's IP Address (Too Many Requests)".
+  <br>Any changes to this tag's value will take effect the next time ERDDAP reads datasets.xml,
+  including in response to a dataset
+  <a rel="help" 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a>. 
+
+        <p>The "Major LoadDatasets Time Series" section of status.html includes
+        a "tooMany" column which lists the number of requests which exceeded
+        a user's ipAddressMaxRequests setting and thus saw a "Too Many Requests" error. 
+        This lets you easily see
+        when there are active overly aggressive legitimate users and malicious users
+        so you can (optionally) look in the log.txt file and decide if you want to 
+        blacklist those users.
+
+   <p>There's nothing specifically wrong with setting this to a higher number. It's up to you.
+     But doing so allows/encourages people to set up systems that use a large number of
+     threads to work on projects and then gives them no feedback that what they are
+     doing isn't getting them any benefit.
+
+<li><a class="selfLink" id="ipAddressMaxRequestsActive" href="#ipAddressMaxRequestsActive" rel="bookmark"
+  ><kbd><strong>&lt;ipAddressMaxRequestsActive&gt;</strong></kbd></a>
+  is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  that is part of a system to limit the ability of 
+  overly aggressive legitimate users and malicious users to make a 
+  large number of simultaneous requests which would degrade system performance for other users.
+  ipAddressMaxRequestsActive specifies the maximum number of simultaneous requests
+       that will be actively processed from any specific IP address. 
+       Additional requests will sit in a queue until the previous requests
+       have been processed.
+       The small, static files in erddap/download/ and erddap/images/
+       ARE exempt from this count and the related throttling.
+       The default is 2. 
+       You can set this to 1 to be strict, especially if you have problems
+       with overly aggressive or malicious users.
+       Users will still quickly get all the data they request (up to ipAddressMaxRequests),
+       but they won't be able to hog system resources.
+       We don't recommend setting this to a larger number because it allows 
+       overly aggressive legitimate users and malicious users to dominate 
+       ERDDAP's processing capacity.
+  <br>Any changes to this tag's value will take effect the next time ERDDAP reads datasets.xml,
+  including in response to a dataset
+  <a rel="help" 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a>. 
+  <br>&nbsp;
+
+<li><a class="selfLink" id="ipAddressUnlimited" href="#ipAddressUnlimited" rel="bookmark"
+  ><kbd><strong>&lt;ipAddressUnlimited&gt;</strong></kbd></a>
+  is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  that is part of a system to limit the ability of 
+  overly aggressive legitimate users and malicious users to make a 
+  large number of simultaneous requests which would degrade system performance for other users.
+  ipAddressUnlimited is a comma-separated list of IP addresses that
+        you want to allow unlimited access to your ERDDAP. 
+        Look in your log.txt file to see which format your server is using for the IP addresses.
+        On some servers, the IP addresses will be in the format #.#.#.# (where # is an integer
+        from 0 to 255); whereas on others it will be in the format #:#:#:#:#:#:#:# .
+        Requesters on this list are not subject to either the ipAddressMaxRequests
+        or the ipAddressMaxRequestsActive settings.   This might be 
+        a secondary ERDDAP or for certain users or servers in your system.
+        ERDDAP always adds "(unknownIPAddress)", which ERDDAP uses when 
+        the requester's IP address can't be determined, e.g., for other 
+        processes running on the same server.
+  <br>Any changes to this tag's value will take effect the next time ERDDAP reads datasets.xml,
+  including in response to a dataset
+  <a rel="help" 
+    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag</a>. 
+
+  <p>If for some reason all of a user's requests get the error message
+  "Timeout waiting for your other requests to process.", then 
+  you can solve the problem by adding the user's IP address to the 
+  ipAddressUnlimited list, applying that change, then removing it from that list.
+
 <li><a class="selfLink" id="loadDatasetsMinMinutes" href="#loadDatasetsMinMinutes" rel="bookmark"
   ><kbd><strong>&lt;loadDatasetsMinMinutes&gt;</strong></kbd></a>
   is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml to specify
@@ -11473,6 +11579,13 @@ while processing each request.
       >ERDDAP's status page</a>. You shouldn't ever come close to maxing out the memory usage
       in ERDDAP; otherwise there will be serious errors and failures.
 
+    <li><a class="selfLink" id="nThreads1" href="#nThreads1" rel="bookmark"
+      >Temporarily Set to 1</a>
+      <br>If current memory usage is even slightly high, 
+        ERDDAP will set nThreads for this request to 1.
+        Thus, ERDDAP conserves memory when memory are scarce.
+      <br>&nbsp;
+
     <li>Diminishing Returns
       <br>There are diminishing returns to increasing the nThreads setting: 
       2 threads will be way better than 1 (if we ignore dynamic overclocking). 
@@ -11578,6 +11691,8 @@ while processing each request.
     quickly by setting up a 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
       >grid/cluster/federation of ERDDAPs</a>.
+    <br>&nbsp;
+
     </ul>
 
 <li><a class="selfLink" id="palettes" href="#palettes" rel="bookmark"

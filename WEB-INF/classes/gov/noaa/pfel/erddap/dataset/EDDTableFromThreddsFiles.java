@@ -1845,7 +1845,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
 "    String featureType \"Trajectory\";\n" +
-"    String files_merged \"\\[WTEP_202.....v10001.nc, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc)\\]\";\n" + //changes, so neutered
+"    String files_merged \"\\[WTEP_202.....v10001.nc(|, WTEP_202.....v10002.nc(|, WTEP_202.....v10003.nc))\\]\";\n" + //changes, so neutered
 "    String fsu_version \"...\";\n" +  //changes 300 to 301 to 300
 "    Float64 geospatial_lat_max 72.51;\n" +
 "    Float64 geospatial_lat_min -46.45;\n" +

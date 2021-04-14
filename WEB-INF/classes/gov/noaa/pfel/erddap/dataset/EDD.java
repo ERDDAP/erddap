@@ -509,10 +509,9 @@ public abstract class EDD {
     public static EDD oneFromDatasetsXml(Erddap erddap, String tDatasetID) throws Throwable {
         String2.log("\nEDD.oneFromDatasetsXml(" + tDatasetID + ")...");
 
-        SimpleXMLReader xmlReader = new SimpleXMLReader(
-            //below not File2.getDecompressedBufferedInputStream(). Read file as is.
-            new BufferedInputStream(new FileInputStream(EDStatic.contentDirectory +  
-                "datasets" + (EDStatic.developmentMode? "2" : "") + ".xml")), 
+        SimpleXMLReader xmlReader = new SimpleXMLReader(            
+            File2.getBufferedInputStream(EDStatic.contentDirectory +  //not File2.getDecompressedBufferedInputStream(). Read file as is.
+                "datasets" + (EDStatic.developmentMode? "2" : "") + ".xml"), 
             "erddapDatasets");
         try {
             while (true) {
@@ -558,6 +557,12 @@ public abstract class EDD {
                 } else if (tags.equals("<erddapDatasets></emailDiagnosticsToErdData>")) {
                 } else if (tags.equals("<erddapDatasets><graphBackgroundColor>")) {
                 } else if (tags.equals("<erddapDatasets></graphBackgroundColor>")) {
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
+                } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
                 } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
                 } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
                 } else if (tags.equals("<erddapDatasets><loadDatasetsMaxMinutes>")) {

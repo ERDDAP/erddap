@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
@@ -85,6 +86,14 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
+
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+//import software.amazon.awssdk.services.s3.model.CommonPrefix;
+//import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
+//import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+//import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -240,7 +249,7 @@ public static boolean developmentMode = false;
     public static String datasetsThatFailedToLoad = "";
     public static String errorsDuringMajorReload = "";
     public static StringBuffer majorLoadDatasetsTimeSeriesSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
-    public static HashSet requestBlacklist = null;
+    public static HashSet requestBlacklist = null; //is read-only. Replacement is swapped into place.
     public static long startupMillis = System.currentTimeMillis();
     public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
     public static int nGridDatasets = 0;  
@@ -249,6 +258,18 @@ public static boolean developmentMode = false;
     public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
     private static ConcurrentHashMap<String,String> sessionNonce = 
         new ConcurrentHashMap(16, 0.75f, 4); //for a session: loggedInAs -> nonce
+
+    public final static String ipAddressNotSetYet = "NotSetYet"; 
+    public final static String ipAddressUnknown   = "(unknownIPAddress)";
+    public final static ConcurrentHashMap<String,IntArray> ipAddressQueue = new ConcurrentHashMap();  //ipAddress -> list of request#
+    public final static int    DEFAULT_ipAddressMaxRequestsActive = 2; //in datasets.xml
+    public final static int    DEFAULT_ipAddressMaxRequests = 7; //in datasets.xml //more requests will see Too Many Requests error. This must be at least 6 because browsers make up to 6 simultaneous requests. This can't be >1000.
+    public final static String DEFAULT_ipAddressUnlimited = ", " + ipAddressUnknown;
+    public static int ipAddressMaxRequestsActive = DEFAULT_ipAddressMaxRequestsActive; //in datasets.xml
+    public static int ipAddressMaxRequests = DEFAULT_ipAddressMaxRequests; //in datasets.xml //more requests will see Too Many Requests error. This must be at least 6 because browsers make up to 6 simultaneous requests.
+    public static HashSet<String> ipAddressUnlimited =  //in datasets.xml  //read only. New one is swapped into place. You can add and remove addresses as needed.
+        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(EDStatic.DEFAULT_ipAddressUnlimited).toArray())); 
+    public static int tooManyRequests = 0; //nRequests exceeding ipAddressMaxRequests, since last major datasets reload
 
     //things that can be specified in datasets.xml (often added in ERDDAP v2.00)
     public final static String DEFAULT_ANGULAR_DEGREE_UNITS = "angular_degree,angular_degrees,arcdeg,arcdegs,degree," +
@@ -464,8 +485,6 @@ public static boolean developmentMode = false;
         accessConstraints,
         accessRequiresAuthorization,
 
-        awsS3OutputBucket, //null or valid
-
         fees,
         keywords,
         units_standard,
@@ -597,6 +616,11 @@ public static boolean developmentMode = false;
     public final static String anyoneLoggedIn        = "[anyoneLoggedIn]"; //final so not changeable
     public final static String anyoneLoggedInRoles[] = new String[]{anyoneLoggedIn};
     public final static int minimumPasswordLength = 8;
+
+    //these are all non-null if in awsS3Output mode, otherwise all are null
+    public static String   awsS3OutputBucketUrl = null;  
+    public static String   awsS3OutputBucket    = null;  //the short name of the bucket
+    public static S3Client awsS3OutputClient    = null;
 
     public static boolean listPrivateDatasets, 
         reallyVerbose,
@@ -1234,6 +1258,7 @@ public static boolean developmentMode = false;
         noXxxNoMinMax,
         noXxxItsGridded,
         noXxxItsTabular,
+        oneRequestAtATime,
         optional,
         options,
         orRefineSearchWith,
@@ -1352,6 +1377,7 @@ public static boolean developmentMode = false;
         subscriptionAdd2,
         subscriptionAddSuccess,
         subscriptionEmail,
+        subscriptionEmailOnBlacklist,
         subscriptionEmailInvalid,
         subscriptionEmailTooLong,
         subscriptionEmailUnspecified,
@@ -1425,6 +1451,7 @@ public static boolean developmentMode = false;
 
         tabledapVideoIntro,
         Then,
+        timeoutOtherRequests,
         unknownDatasetID,
         unknownProtocol,
         unsupportedFileType,
@@ -1730,9 +1757,40 @@ public static boolean developmentMode = false;
         fees                       = setup.getNotNothingString("fees",                       errorInMethod);
         keywords                   = setup.getNotNothingString("keywords",                   errorInMethod);
 
-        //awsS3OutputBucket          = setup.getString(          "awsS3OutputBucket",          null);
-        if (!String2.isSomething(awsS3OutputBucket))
-            awsS3OutputBucket = null;
+        awsS3OutputBucketUrl       = setup.getString(          "awsS3OutputBucketUrl",       null);
+        if (!String2.isSomething(awsS3OutputBucketUrl))
+            awsS3OutputBucketUrl = null;
+        if (awsS3OutputBucketUrl != null) {
+            //If something was specified, ERDDAP insists that it be valid, so set it up.
+            //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
+            //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
+
+            //ensure that it is valid
+            String s3parts[] = String2.parseAwsS3Url(awsS3OutputBucketUrl);
+            if (s3parts == null)
+                throw new RuntimeException(
+                    "The value of <awsS3OutputBucketUrl> specified in setup.xml doesn't match this regular expression: " +
+                    String2.AWS_S3_REGEX);
+
+            //ensure that the keyName (or prefix) is ""
+            awsS3OutputBucket = s3parts[0]; 
+            String region     = s3parts[1]; 
+            String prefix     = s3parts[2]; 
+            if (prefix.length() > 0) 
+                throw new RuntimeException(
+                    "The value of <awsS3OutputBucket> specified in setup.xml must not include an object key (AKA directory or file name).");
+
+            //build the s3client for use with awsS3OutputBucket
+            S3Client awsS3OutputClient = S3Client.builder()
+//                .credentials(ProfileCredentialsProvider.create())
+                .region(Region.of(region))  
+                .build();               
+
+            //note that I could set LifecycleRule(s) for the bucket via
+            //awsS3OutputClient.putBucketLifecycleConfiguration
+            //but LifecycleRule precision seems to be days, not e.g., minutes
+            //So make my own system
+        }
 
         units_standard             = setup.getString(          "units_standard",             "UDUNITS");
 
@@ -2655,6 +2713,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              errorInMethod);
         noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            errorInMethod);
         noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            errorInMethod);
+        oneRequestAtATime          = messages.getNotNothingString("oneRequestAtATime",          errorInMethod);
         optional                   = messages.getNotNothingString("optional",                   errorInMethod);
         options                    = messages.getNotNothingString("options",                    errorInMethod);
         orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         errorInMethod);
@@ -2786,6 +2845,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         subscriptionAdd2           = messages.getNotNothingString("subscriptionAdd2",           errorInMethod);
         subscriptionAddSuccess     = messages.getNotNothingString("subscriptionAddSuccess",     errorInMethod);
         subscriptionEmail          = messages.getNotNothingString("subscriptionEmail",          errorInMethod);
+        subscriptionEmailOnBlacklist=messages.getNotNothingString("subscriptionEmailOnBlacklist",errorInMethod);
         subscriptionEmailInvalid   = messages.getNotNothingString("subscriptionEmailInvalid",   errorInMethod);
         subscriptionEmailTooLong   = messages.getNotNothingString("subscriptionEmailTooLong",   errorInMethod);
         subscriptionEmailUnspecified=messages.getNotNothingString("subscriptionEmailUnspecified",errorInMethod);
@@ -2860,6 +2920,8 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         tabledapVideoIntro         = messages.getNotNothingString("tabledapVideoIntro",         errorInMethod);
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
         Then                       = messages.getNotNothingString("Then",                       errorInMethod);
+        timeoutOtherRequests       = messages.getNotNothingString("timeoutOtherRequests",       errorInMethod);
+
         unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
         unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
         unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
@@ -3520,7 +3582,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             BitSet keep = new BitSet(emailAddressesSA.size());  //all false
             for (int i = 0; i < emailAddressesSA.size(); i++) { 
                 String addr = emailAddressesSA.get(i);
-                String err = subscriptions == null?
+                String err = subscriptions == null? //don't use EDStatic.subscriptionSystemActive for this test -- it's a separate issue
                     String2.testEmailAddress(addr) :     //tests syntax
                     subscriptions.testEmailValid(addr);  //tests syntax and blacklist             
                 if (err.length() == 0) {
@@ -3661,6 +3723,46 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     /**
+     * This tests if the ipAddress is on the blacklist (and calls sendLowError if it is).
+     *
+     * @param ipAddress the requester's ipAddress
+     * @param requestNumber for the diagnostic message
+     * @param response so the response can be sent the error
+     * @return true if user is on the blacklist.
+     */
+    public static boolean isOnBlacklist(String ipAddress, int requestNumber, HttpServletResponse response) {
+        //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
+
+        //for testing:
+        //  int tr = Math2.random(3);
+        //  ipAddress=tr==0? "101.2.34.56" : tr==1? "1:2:3:4:56:78" : "(unknownIPAddress)";
+
+        int periodPo1 = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below for IP v4 address
+        boolean hasPeriod = periodPo1 > 0;
+        if (!hasPeriod)
+            periodPo1 = ipAddress.lastIndexOf(':'); //to make #:#:#:#:#:#:#:* test below for IP v6 address
+        String ipAddress1 = periodPo1 <= 0? null : ipAddress.substring(0, periodPo1+1) + "*";
+        int periodPo2 = ipAddress1 == null? -1 :   ipAddress.substring(0, periodPo1).lastIndexOf(hasPeriod? '.' : ':');
+        String ipAddress2 = periodPo2 <= 0? null : ipAddress.substring(0, periodPo2+1) + (hasPeriod? "*.*" : "*:*");
+        //String2.log(">> ipAddress=" + ipAddress + " ipAddress1=" + ipAddress1 + " ipAddress2=" + ipAddress2);
+        if (requestBlacklist != null &&
+            (requestBlacklist.contains(ipAddress) ||
+             (ipAddress1 != null && requestBlacklist.contains(ipAddress1)) ||   //#.#.#.*
+             (ipAddress2 != null && requestBlacklist.contains(ipAddress2)))) {  //#.#.*.*
+            //use full ipAddress, to help id user                //odd capitilization sorts better
+            tally.add("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", ipAddress);
+            tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
+            tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
+            String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
+            lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
+                blacklistMsg);
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
      * This adds the common, publicly accessible statistics to the StringBuilder.
      */
     public static void addIntroStatistics(StringBuilder sb) {
@@ -3677,6 +3779,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append("nTotalDatasets = " + (nGridDatasets + nTableDatasets) + "\n");
         sb.append(datasetsThatFailedToLoad);
         sb.append(errorsDuringMajorReload);
+        sb.append("Unique users (since startup)                            n = " + ipAddressQueue.size() + "\n");
         sb.append("Response Failed    Time (since last major LoadDatasets) ");
         sb.append(String2.getBriefDistributionStatistics(failureTimesDistributionLoadDatasets) + "\n");
         sb.append("Response Failed    Time (since last Daily Report)       ");
@@ -3716,8 +3819,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void addCommonStatistics(StringBuilder sb) {
         if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
             sb.append(
-"Major LoadDatasets Time Series: MLD    Datasets Loaded         Requests (median times in ms)           Number of Threads      Memory (MB)     Open\n" +
-"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater  Files\n");
+"Major LoadDatasets Time Series: MLD    Datasets Loaded            Requests (median times in ms)              Number of Threads      MB    Open\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) memFail tooMany  tomWait inotify other  inUse  Files\n" +
+"----------------------------  -----   -----------------  ------------------------------------------------  ---------------------  -----  -----\n"
+);
             sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
         }
@@ -5232,7 +5337,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         }
         ipAddress = ipAddress.trim();
         if (ipAddress.length() == 0)
-            ipAddress = "(unknownIPAddress)";
+            ipAddress = ipAddressUnknown; 
         return ipAddress;
     }
 
@@ -5373,6 +5478,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 msg = "Payload Too Large: " + msg;
             else if (errorNo == HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE) //http error 416
                 msg = "Requested Range Not Satisfiable: " + msg;
+            else if (errorNo == 429) //http error 429  isn't defined in HttpServletResponse.
+                msg = "Too Many Requests: " + msg;
             else if (errorNo == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) //http error 500
                 msg = "Internal Server Error: " + msg;
 

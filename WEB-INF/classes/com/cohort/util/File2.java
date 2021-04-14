@@ -30,6 +30,11 @@ import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
+//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.S3Client;
+
 /**
  * File2 has useful static methods for working with files.
  *
@@ -808,22 +813,68 @@ public class File2 {
                  ext.equals(".bz2")));
     }
 
+    /**
+     * This gets a new S3Client for the specified region.
+     *
+     * @param region
+     * @return an S3Client
+     */
+    public static S3Client getS3Client(String region) {
+        //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
+        //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
+//FUTURE??? should I have a static concurrentHashmap with region:S3Client to reuse S3Clients?
+//  I saw no encouragement for this in the AWS documentation.
+        return S3Client.builder()
+            //was .credentials(ProfileCredentialsProvider.create()) //now it uses default credentials
+            .region(Region.of(region))  
+            .build();               
+    }
 
 
     /**
-     * This gets a decompressed, buffered InputStream from a file. 
+     * This gets a (not decompressed), buffered InputStream from a file or S3 URL. 
+     * If the file is compressed, it is assumed to be the only file (entry) in the archive.
+     * 
+     * @param fullFileName The full file name or S3 URL. 
+     * @return a buffered InputStream from a file or S3 URL. 
+     * @throws Exception if trouble
+     */
+    public static BufferedInputStream getBufferedInputStream(String fullFileName) throws Exception {
+        String ext = getExtension(fullFileName); //if e.g., .tar.gz, this returns .gz
+
+        //is it an AWS S3 object?
+        String bro[] = String2.parseAwsS3Url(fullFileName); //[bucket, region, objectKey]
+        InputStream is = null;
+        if (bro == null) {
+            //no, it's a regular file
+            is = new FileInputStream(fullFileName); 
+        } else { 
+            //yes, it's an AWS S3 object. Get it.
+            //example: https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#download-object
+            //example: https://www.javacodemonk.com/aws-java-sdk-2-s3-file-upload-download-spring-boot-c1a3e072
+            is = getS3Client(bro[1]).getObject(
+                GetObjectRequest.builder().bucket(bro[0]).key(bro[2]).build()); //throws SdkClientException
+        }
+
+        //Buffer it.  Recommended by https://commons.apache.org/proper/commons-compress/examples.html
+        //1MB buffer makes no difference
+        return new BufferedInputStream(is);
+    }
+
+    /**
+     * This gets a decompressed, buffered InputStream from a file or S3 URL. 
      * If the file is compressed, it is assumed to be the only file (entry) in the archive.
      * 
      * @param fullFileName The full file name. If it ends in
      *   .tgz, .tar.gz, .tar.gzip, .gz, .gzip, .zip, or .bz2,
      *   this returns a decompressed, buffered InputStream.
      * @return a decompressed, buffered InputStream from a file. 
+     * @throws Exception if trouble
      */
     public static InputStream getDecompressedBufferedInputStream(String fullFileName) throws Exception {
         String ext = getExtension(fullFileName); //if e.g., .tar.gz, this returns .gz
 
-        InputStream is = new BufferedInputStream( //recommended by https://commons.apache.org/proper/commons-compress/examples.html
-            new FileInputStream(fullFileName));  //1MB buffer makes no difference
+        InputStream is = getBufferedInputStream(fullFileName); //starting point before decompression
 
         // !!!!! IF CHANGE SUPPORTED COMPRESSION TYPES, CHANGE isDecompressible ABOVE !!!
 
@@ -1122,18 +1173,7 @@ public class File2 {
 
         InputStream in = null;
         try {
-            File file = new File(source);            
-            if (!file.isFile()) {
-                String2.log(String2.ERROR + " in File2.copy: source=" + source +
-                    " doesn't exist.");
-                return false;
-            }
-            if (last < 0) {
-                last = file.length() - 1;
-                if (reallyVerbose)
-                    String2.log("  File2.copy(first=" + first + ", last was=-1 now=" + last + ")");
-            }
-            in = new BufferedInputStream(new FileInputStream(file)); //File2.getDecompressedBufferedInputStream(). Read file as is.
+            in = getBufferedInputStream(source); //not File2.getDecompressedBufferedInputStream(). Read file as is.
             return copy(in, out, first, last);
         } catch (Exception e) {
             String2.log(MustBe.throwable(String2.ERROR + " in File2.copy.", e));
@@ -1184,7 +1224,7 @@ public class File2 {
             return true;
         } catch (Exception e) {
             String2.log(MustBe.throwable(String2.ERROR + " in File2.copy at first=" + 
-                first + ", last=" + last + ", remain=" + remain + ".", e));
+                first + ", last=" + last + ", remain=" + (last < 0? "?" : "" + remain) + ".", e));
             return false;
         }
     }

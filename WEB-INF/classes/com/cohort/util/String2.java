@@ -120,12 +120,14 @@ public class String2 {
         2014-01-09 was System.getProperty("mrj.version") != null
         https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
     public static boolean OSIsMacOSX = OSName.contains("OS X");
+
     //see https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html including Legacy Bucket names
-    //the capture groups are bucketName, regionName, prefix
+    //the capture groups are bucketName, regionName, and objectName (or perhaps it is just a prefix)
     public final static String  AWS_S3_REGEX = "https?://([\\w\\-\\._]+)\\.s3\\.([\\w\\-]+)\\.amazonaws\\.com/(.*)";
     /** If testing a "dir", url should have a trailing slash.
         Patterns are thread-safe. */
     public final static Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
+
     /** 
      * email regex used to identify likely email addresses.
      * This is intended to accept most common valid addresses and reject most invalid addresses.
@@ -6107,9 +6109,8 @@ and zoom and pan with controls in
      */
     public static String fileDigest(boolean useBase64, String algorithm, String fullFileName) 
         throws Exception {
-        MessageDigest md = MessageDigest.getInstance(algorithm);
-        //below not File2.getDecompressedBufferedInputStream() because want file digest of archive
-        InputStream fis = new BufferedInputStream(new FileInputStream(fullFileName));
+        MessageDigest md = MessageDigest.getInstance(algorithm);        
+        InputStream fis = File2.getBufferedInputStream(fullFileName); //not File2.getDecompressedBufferedInputStream() because we want file digest of archive
         try {
             byte buffer[] = new byte[8192];
             int nBytes;
@@ -6930,53 +6931,52 @@ and zoom and pan with controls in
     }
 
     /** 
-     * Given an Amazon AWS S3 URL, this returns the bucketName.
+     * Given an Amazon AWS S3 URL, this returns the bucketName, region, and objectName.
      * See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
-     * If files have file-system-like names, e.g., 
-     *   https?://(bucketName).s3.amazonaws.com/(prefix)
-     *   where the aws-region and prefix are optional,
-     *   where a prefix is usually in the form dir1/dir2/ but may be "",
-     *   where a key (objectName) is usually in the form dir1/dir2/fileName.ext
-     *   https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     * This method requires a URL in the form
+     * <br>https?://(bucketName).s3.(regionName).amazonaws.com/(key)
+     * <br>where the regionName is optional,
+     * <br>where a prefix is usually in the form dir1/dir2/ but may be "",
+     * <br>where a key (objectName) is usually in the form dir1/dir2/fileName.ext
+     * <br>https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
      *
      * @param url
-     * @return the bucketName or null if not an s3 URL
+     * @return String [bucketName, region, objectName], or null if url isn't an s3 URL.
+     *   region and objectName may be "". 
      */
-    public static String getAwsS3BucketName(String url) {
+    public static String[] parseAwsS3Url(String url) {
         if (url == null)
             return null;
         if (url.endsWith(".amazonaws.com"))
-            url = File2.addSlash(url);
+            url += "/";
         Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
-            return matcher.group(1); //bucketName
+            return new String[]{matcher.group(1), matcher.group(2), matcher.group(3)};
         return null;
     }
 
+
     /** 
-     * Given an Amazon AWS S3 URL, this returns the objectName or prefix.
-     * See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
-     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
-     * If files have file-system-like names, e.g., 
-     *   https?://(bucketName).s3.[aws-region.]amazonaws.com/(prefix)  
-     *   where the aws-region and prefix are optional,
-     *   where a prefix is usually in the form dir1/dir2/ but may be "",
-     *   where a key (objectName) is usually in the form dir1/dir2/fileName.ext
-     *   https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_NorESM1-M_209601-209912.nc
+     * Given an Amazon AWS S3 URL, this returns the bucketName.
      *
-     * @param url  The URL with directory(s). The directory(s) usually have a trailing /, but that isn't required.
-     * @return the prefix or null if not an s3 URL
+     * @param url The URL of an S2 object.
+     * @return the bucketName, or null if not an s3 URL
      */
-    public static String getAwsS3Prefix(String url) {
-        if (url == null)
-            return null;
-        if (url.endsWith(".amazonaws.com"))
-            url = File2.addSlash(url);
-        Matcher matcher = AWS_S3_PATTERN.matcher(url); 
-        if (matcher.matches()) 
-            return matcher.group(3); //prefix
-        return null;
+    public static String getAwsS3BucketName(String url) {
+        String parts[] = parseAwsS3Url(url);
+        return parts == null? null : parts[0];
+    }
+
+    /** 
+     * Given an Amazon AWS S3 URL, this returns the objectName (or prefix).
+     *
+     * @param url The URL of an S2 object.
+     * @return the objectName (may be ""), or null if not an s3 URL
+     */
+    public static String getAwsS3ObjectName(String url) {
+        String parts[] = parseAwsS3Url(url);
+        return parts == null? null : parts[2];
     }
 
     /** 
