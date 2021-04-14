@@ -69,16 +69,46 @@ those great suggestions coming!
 -->
 
 <!-- ****************************************************************************** 
+
+!!!??? fix AWS bucket private access? notify Michael Gangl 
+!!!??? read data from hdf structures? Brad Kolarov and Justin Johnson
+!!!??? after release, unblacklist the NZ wms requesters.
+
 <h2><a class="selfLink" id="changes2.12" href="#changes2.12" rel="bookmark">Changes</a> 
 in ERDDAP version 2.12 (released 202?-??-??)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>CHANGED: 
+  <li>BUG FIX: If you're on the subscription blacklist, you now can't request a list of your subscriptions. 
     <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>TO DO: NEW: system to automatically limit the ability of malicious users 
+    and overly aggressive legitimate users to make a large number of simultaneous requests 
+    which would degrade system performance for other users.
+    There are 3 new optional tags in datasets.xml which you can/should add right
+    after &lt;graphBackgroundColor&gt; : <pre>
+&lt;ipAddressMaxRequests&gt;&lt;/ipAddressMaxRequests&gt;  &lt;!-- current default=7 --&gt;
+&lt;ipAddressMaxRequestsActive&gt;&lt;/ipAddressMaxRequestsActive&gt;  &lt;!-- current default=2 --&gt;
+&lt;ipAddressUnlimited&gt;&lt;/ipAddressUnlimited&gt;  &lt;!-- default=empty --&gt;  </pre>
+    For further information, see
+    <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ipAddressMaxRequests">ipAddressMaxRequests</a>.
+     ERDDAP also now prints the "Number of unique users (since startup)" on the status.html page.
+    <br>Thanks to the person in China attacking my ERDDAP installation.
+  <br>&nbsp;
+
+  <li>CHANGED: ERDDAP can now read files from private AWS S3 buckets.
+    Thanks to Michael Gangl.
+    <br>&nbsp;
+  
+  <li>CHANGED: Now, if current memory usage plus this request is even slightly high, 
+    griddap sets nThreads for this request to 1.
+    Thus, ERDDAP conserves memory when memory are scarce.
+    Thanks to the person in China attacking my ERDDAP installation.
+    <br>&nbsp;
+
   <li>NEW system to monitor the number of open files 
     (which includes sockets and some other things, not just files) in Tomcat on Linux computers.
     If some files mistakenly never get closed, the number of open files may increase until
@@ -97,6 +127,12 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#TooManyOpenFiles"
         >Too Many Open Files</a>.
+    <br>Thanks to the person in China attacking my ERDDAP installation.
+    <br>&nbsp;
+
+  <li>NEW: I added a lot of checking for and handling of "Too many open files", so the
+    task just stops and the user sees the error message. Data files will no longer be marked as bad
+    if reading them results in a "Too many open files" error.
     <br>&nbsp;
 
   <li>NEW [bigParentDirectory]/badFilesFlag directory: 
@@ -106,20 +142,17 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     Thanks to Marco Alba.
     <br>&nbsp;
 
-  <il>CHANGED: I added a lot more checking for and handling of "Too many open files", so the
-    task just stops and the user sees the error. Data files will no longer be marked bad
-    if reading them results in a "Too many open files" error.
-    <br>&nbsp;
-
-  <li>CHANGED: At startup, if a fromFiles dataset has 0 files (e.g., it's a new dataset),
+  <li>CHANGED: At startup, if an EDDGridFrom...Files or EDDTableFrom...Files 
+    dataset initially has 0 files in its list of known valid files (e.g., it's a new dataset),
     then ERDDAP defers loading it and sets a flag so that it will be loaded
     ASAP after the major loadDatasets is finished.
     This speeds up the initial startup when there are new datasets.
     <br>&nbsp;
     
   <li>CHANGED: FileVisitorDNLS.testAWSS3() and FileVisitorSubdir.testAWSS3(); 
-    now use AWS v2 SDK.
-    So now the Git distribution no longer needs you to add the massive v1 AWS SDK jar file.
+    now use the AWS v2 (not v1) SDK.
+    So now the Git ERDDAP distribution now includes all needed files 
+    and you no longer need to manually add the massive v1 AWS SDK jar file.
     <br>&nbsp;
 
   <li>CHANGED: I switched to using Maven to detect/gather dependencies (the .jar files in /lib).
@@ -129,19 +162,22 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     which solved several problems for me.
     <br>&nbsp;
 
-  <li>CHANGED: The classpath used in GenerateDatasetXml and other small programs and 
+  <li>CHANGED: The classpath used in GenerateDatasetXml, DasDds and other small programs 
+    that come with ERDDAP, and 
     in the advice to programmers is now much simpler and shouldn't ever change again
     since it refers to the directory, not the individual files:
     <br><tt>-cp classes;C:\programs\_tomcat\lib\servlet-api.jar;lib\*</tt>
     <br>(or ':' instead of ';' for Linux and Macs).
     <br>(I should have done this years ago when it became an option.)
     <br>&nbsp;
+
   <li>NEW: GenerateDatasetsXml has a new utility option: findDuplicateTime
     which will search through a collection of gridded .nc (and related) files
     to find files with duplicate time values. See 
     <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#findDuplicateTime">findCuplicateTime</a>
     <br>&nbsp;
+
   <li>NEW: datasets.xml can now include a <palettes> tag which overrides 
       the &lt;palettes&gt; tag value from messages.xml (or reverts to the messages.xml
       value if it is empty). 
@@ -155,6 +191,7 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#palettes">palettes documentation</a>
       <br>Thanks to Jennifer Sevadjian, Melanie Abecassis, and perhaps other CoastWatch people.
     <br>&nbsp;
+
   <li>CHANGED: EDDTableFromHttpGet now doesn't try to get a lock when reading 
     the data files. The files are add-only, so there is no need for a lock.
     Thanks to Marco Alba.
@@ -167,6 +204,7 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     at 3/4 LoadDatasetsMaxMinutes so there is more time for LoadDatasets 
     to notice the interruption and exit gracefully. 
     Also there are more and better diagnostic messages for this.
+    <br>&nbsp;
   <li>CHANGED from old version of Lucene to v8.7.0. 
     <br>&nbsp;
   <li>CHANGE: Emails sent by ERDDAP now appear with a fixed width font.
@@ -174,6 +212,7 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
   <li>CHANGE: EDDGridFromFiles now gets axis values as well as attributes
     from FIRST|LAST file, as specified in &lt;metadataFrom&gt;. 
     Thanks (not) to Ken Casey, et al.
+    <br>&nbsp;
   <li>ADDED support for the invalid units "degree_North" and "degree_East" 
     which are erroneously used by the recent files (since 2020-10-01) in the 
     AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST datasets
@@ -181,7 +220,7 @@ in ERDDAP version 2.12 (released 202?-??-??)</h2>
     ERDDAP can now standardize them to valid units.
     Thanks (not) to Ken Casey, et al.
     <br>&nbsp;
-
+  
   </ul>
 </ul>
 
@@ -1686,11 +1725,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
       <br>Thanks to these people/links for ideas and sample code for 
       CSS-only image tooltips (was at https://codepen.io/electricalbah/pen/eJRLVd)
         and  
-      <a rel="help"
-        href="https://varvy.com/pagespeed/defer-images.html"
-        >deferred image loading<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>
+      deferred image loading (was at https://varvy.com/pagespeed/defer-images.html)
       (although the code was modified before use in ERDDAP).
       <br>Thanks to Cara Wilson, Matthew Austin,
         and Adam Shepherd/BCO-DMO for requests for image support.

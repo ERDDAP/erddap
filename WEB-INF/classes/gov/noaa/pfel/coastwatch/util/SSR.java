@@ -570,9 +570,8 @@ public class SSR {
                     al.add(dirNames[i]);
                 }
 
-                for (int i2 = 0; i2 < al.size(); i2++) {
-                    //below not File2.getDecompressedBufferedInputStream(). Read files as is.
-                    InputStream in = new BufferedInputStream(new FileInputStream(al.get(i2)));
+                for (int i2 = 0; i2 < al.size(); i2++) {                    
+                    InputStream in = File2.getBufferedInputStream(al.get(i2)); //not File2.getDecompressedBufferedInputStream(). Read files as is.
                     try {
                 
                         //add ZIP entry to output stream
@@ -694,9 +693,8 @@ public class SSR {
             byte[] buf = new byte[4096];
         
             //compress the files
-            for (int i = 0; i < 1; i++) { //i < dirNames.length; i++) {
-                //below not File2.getDecompressedBufferedInputStream() Read files as is.
-                InputStream in = new BufferedInputStream(new FileInputStream(dirNames[i])); 
+            for (int i = 0; i < 1; i++) { //i < dirNames.length; i++) {                
+                InputStream in = File2.getBufferedInputStream(dirNames[i]);  //not File2.getDecompressedBufferedInputStream() Read files as is.
                 try {
                     //add ZIP entry to output stream
                     String tName = includeDirectoryInfo? 
@@ -757,9 +755,8 @@ public class SSR {
 
         //if Linux, it is faster to use the zip utility
         long tTime = System.currentTimeMillis();
-        if (verbose) String2.log("Using Java's unzip on " + fullZipName);
-        //below not File2.getDecompressedBufferedInputStream(). Read file as is.
-        ZipInputStream in = new ZipInputStream(new BufferedInputStream(new FileInputStream(fullZipName))); 
+        if (verbose) String2.log("Using Java's unzip on " + fullZipName);        
+        ZipInputStream in = new ZipInputStream(File2.getBufferedInputStream(fullZipName)); //not File2.getDecompressedBufferedInputStream(). Read file as is.
         try {
             //create a buffer for reading the files
             byte[] buf = new byte[4096];
@@ -850,9 +847,8 @@ public class SSR {
                 timeOutSeconds);
         } else */ {
             //use Java's gzip procedures for all other operating systems
-            if (verbose) String2.log("Java's ungzip " + fullGzName);
-            //below not File2.getDecompressedBufferedInputStream(). Read file as is.
-            GZIPInputStream in = new GZIPInputStream(new BufferedInputStream(new FileInputStream(fullGzName))); 
+            if (verbose) String2.log("Java's ungzip " + fullGzName);            
+            GZIPInputStream in = new GZIPInputStream(File2.getBufferedInputStream(fullGzName)); //not File2.getDecompressedBufferedInputStream(). Read file as is.
             try {
                 //create a buffer for reading the files
                 byte[] buf = new byte[4096];
@@ -1502,7 +1498,7 @@ public class SSR {
      *   <br>This can be a url or a local file (with or without file://).
      * @param fullFileName the full name for the file to be created.
      *   If the directory doesn't already exist, it will be created.
-     * @param tryToUseCompression If true, the request indicates compression
+     * @param tryToUseCompression If true, the request indicates in-transit http compression
      *   is acceptable and the input stream will do the decompression.
      *   'false' is safer if the file may be already compressed (e.g., .gz or .zip)
      *   because this won't try to unzip the file.
@@ -1604,8 +1600,13 @@ public class SSR {
     /**
      * This is the low level version of getUrlConnInputStream. It has the most options.
      *
+     * @param urlString this may be an AWS S3 url or a regular url.
+     * @param requestCompression If true, this requests in-transit http compression.
+     *   This is ignored for AWS S3 URLs.
      * @param touchMode If true, this method doesn't pursue http to https redirects 
      *    and doesn't log the info from the errorStream.
+     * @return [connection, inputStream, charset]. If url is an AWS S3 url, 
+     *    connection will be null and charset will always be String2.UTF_8.
      */
     public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
             boolean requestCompression, boolean touchMode) throws Exception {
@@ -1614,6 +1615,14 @@ public class SSR {
                 requestCompression = false;
         if (reallyVerbose) 
             String2.log("getUrlConnInputStream " + urlString + " requestCompression=" + requestCompression);  
+
+        //is it an AWS S3 object?
+        String bro[] = String2.parseAwsS3Url(urlString); //[bucket, region, objectKey]
+        if (bro != null) {
+            InputStream is = File2.getBufferedInputStream(urlString);  //not File2.getDecompressedBufferedInputStream(   read as is
+            return new Object[]{null, is, String2.UTF_8}; //connection, is, charset=UTF_8 is an assumption
+        }
+
         URL turl = new URL(urlString); 
         URLConnection conn = turl.openConnection();
         if (requestCompression) 
@@ -1663,7 +1672,7 @@ public class SSR {
             }            
         }        
 
-        BufferedInputStream is = getBufferedInputStream(urlString, conn);
+        BufferedInputStream is = getBufferedInputStream(urlString, conn); //This is in SSR, not File2
         String charset = getCharset(urlString, conn); 
 
         //String2.log(">>charset=" + charset);
@@ -1682,7 +1691,7 @@ public class SSR {
     public static BufferedInputStream getBufferedInputStream(String urlString, URLConnection con) throws Exception {
         String encoding = con.getContentEncoding();
         try {
-            BufferedInputStream is = new BufferedInputStream(con.getInputStream());
+            BufferedInputStream is = new BufferedInputStream(con.getInputStream()); //this is in SSR, not File2
             //String2.log("url = " + urlString + "\n" +  //diagnostic
             //  "  headerFields=" + String2.toString(conn.getHeaderFields()));
             //    "encoding=" + encoding + "\n" +
@@ -1798,6 +1807,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
+     *   <br>If urlString is an AWS S3 url, this ASSUMES charset is UTF-8.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return a buffered Url Reader.  BufferedReaders can readLine().
@@ -2417,7 +2427,7 @@ public class SSR {
             writer.close();
         }
 
-        BufferedInputStream is = getBufferedInputStream(urlString, con);
+        BufferedInputStream is = getBufferedInputStream(urlString, con); //this is in SSR, not File2
         String charset = getCharset(urlString, con);
         return new Object[]{con, is, charset};
     } 
@@ -2515,6 +2525,10 @@ public class SSR {
                 try {
                     Object[] o3 = getUrlConnBufferedInputStream(ttUrl, 
                         20000, false, true); //timeOutMillis, requestCompression, touchMode
+                    if (o3[0] == null) { 
+                        ((InputStream)o3[1]).close();
+                        throw new IOException("The URL for SSR.testForBrokenLinks can't be an AWS S3 URL.");
+                    }
                     HttpURLConnection conn = (HttpURLConnection)(o3[0]);
                     int code = conn.getResponseCode();
                     if (code != 200) 

@@ -33,6 +33,7 @@ import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.nio.file.WatchEvent;
@@ -742,7 +743,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     t instanceof InterruptedException ||
                     reason.indexOf(Math2.TooManyOpenFiles) >= 0)
                     throw t;  //stop loading this dataset
-                if (!(t instanceof TimeoutException))
+                if (!(t instanceof TimeoutException) &&
+                    !(t instanceof FileNotFoundException))  //occurs when a RAID unmounts itself. If really gone, removing from file list is enough.                     )
                     addBadFile(badFileMap, ftDirIndex.get(i), tName, ftLastMod.get(i), reason);
             }
         }

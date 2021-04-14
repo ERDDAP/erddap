@@ -242,6 +242,11 @@ public class DConnect {
         throw new DODSException("Connection cannot be opened");
     }
 
+    if (connection == null) { //bob added this because S3 URLs aren't opened like regular URLs so there's no 'connection'
+        is.close();
+        throw new IOException("The URL for OPeNDAP can't be an AWS S3 URL.");
+    }
+
     // check headers
     String type = connection.getHeaderField("Content-Description");  //2019-03-29 HTTP name is case-insensitive. Bob has seen all 3 variants.
     if (type == null)                                            //

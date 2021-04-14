@@ -346,7 +346,7 @@ public class Test {
      *
      * @param s1
      * @param s2 
-     * @param message
+     * @param message  "" if they're non-null and equal
      */
     public static String testEqual(String s1, String s2, String message) {
         if (s1 == null && s2 == null)

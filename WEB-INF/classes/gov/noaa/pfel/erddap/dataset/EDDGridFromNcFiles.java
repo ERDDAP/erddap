@@ -1808,7 +1808,62 @@ expected =
 
     }
 
-    /** This tests generateDatasetsXml with an AWS S3 dataset and using cacheFromUrl. 
+
+    /** This tests generateDatasetsXml, specifically Structures. 
+     * @throws Throwable if touble
+     */
+    public static void testGenerateDatasetsXmlStructures() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlStructures");
+        reallyVerbose = true;
+
+        //takes a long time and no longer useful
+        //String2.pressEnterToContinue(
+        //    "\nCopy the latest file from coastwatch\n" +
+        //    "https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/ \n" + 
+        //    "to /u00/satellite/MUR41/ssta/1day on this computer.");
+
+        String results = generateDatasetsXml(
+            EDStatic.unitTestDataDir + "nc/", "SDScompound\\.h5", "", 
+            "", //group
+            "", -1, null, null) + "\n"; //dimensionsCSV, reloadMinutes, cacheFromUrl
+
+        String expected = 
+"zz      <att name=\"summary\">A merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL).</att>\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results.length=" + results.length() + " expected.length=" + expected.length() + 
+            "\nresults=\n" + results);
+
+        /* this test usually aren't worth the extra effort
+        try {
+            expected = 
+        "<att name=\"testOutOfDate\">now-3days</att>\n" +  //changes
+"        <att name=\"time_coverage_end\">2018-08-07T21:00:00Z</att>\n" +  //changes
+"        <att name=\"time_coverage_start\">2018-08-06T21:00:00Z</att>\n"; //changes
+            int po3 = results.indexOf(expected.substring(0, 25));
+            Test.ensureEqual(results.substring(po3, po3 + expected.length()), expected,
+                "results=\n" + results);
+        } catch (Throwable t3) {
+            String2.pressEnterToContinue(MustBe.throwableToString(t3) + 
+                "\nThe dates will vary (or fail because no testOutOfDate) depending " +
+                "on when a jplMURSST41 file was last download to this computer."); 
+        }
+        */
+
+
+expected = 
+        "<att name=\"uuid\">null</att>\n" +
+"zz</dataset>\n" +
+"\n\n";
+        int po = results.indexOf(expected.substring(0, 25));
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+        String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlStructures passed the test.");
+
+    }
+
+
+/** This tests generateDatasetsXml with an AWS S3 dataset and using cacheFromUrl. 
      * @throws Throwable if touble
      */
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
@@ -14344,7 +14399,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 11 : 54;
+            lastTest = interactive? 11 : 56;
         String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true; 
@@ -14384,51 +14439,52 @@ expected =
                     if (test ==  9) testGenerateDatasetsXml3();
                     if (test == 10) testGenerateDatasetsXml4();
                     if (test == 11) testGenerateDatasetsXml5(); 
-                    if (test == 12) testGenerateDatasetsXmlGroups();
-                    if (test == 13) testGenerateDatasetsXmlGroups2();
+                    if (test == 14) testGenerateDatasetsXmlGroups();
+                    if (test == 15) testGenerateDatasetsXmlGroups2();
+                    if (test == 16) testGenerateDatasetsXmlStructures(); 
 
-                    if (test == 14) testAVDVSameSource();
-                    if (test == 15) test2DVSameSource();
-                    if (test == 16) testAVDVSameDestination();
-                    if (test == 17) test2DVSameDestination();
-                    if (test == 19) testTimePrecisionMillis();
-                    if (test == 20) testSimpleTestNc();
-                    if (test == 21) testSimpleTestNc2();
-                    if (test == 22) testSpecialAxis0Time();
-                    if (test == 23) testSpecialAxis0FileNameInt();
-                    if (test == 24) testSpecialAxis0PathNameInt();
-                    if (test == 26) testFileName(true);
-                    if (test == 27) testFileName(false);
-                    if (test == 28) testReplaceFromFileName(true);
-                    if (test == 29) testReplaceFromFileName(false);
-                    if (test == 31) testDapErrors();
-                    if (test == 32) testFiles();  
-                    if (test == 33) testUInt16File();
-                    if (test == 34) testUnsignedGrid();  
+                    if (test == 20) testAVDVSameSource();
+                    if (test == 21) test2DVSameSource();
+                    if (test == 22) testAVDVSameDestination();
+                    if (test == 23) test2DVSameDestination();
+                    if (test == 24) testTimePrecisionMillis();
+                    if (test == 25) testSimpleTestNc();
+                    if (test == 26) testSimpleTestNc2();
+                    if (test == 27) testSpecialAxis0Time();
+                    if (test == 28) testSpecialAxis0FileNameInt();
+                    if (test == 29) testSpecialAxis0PathNameInt();
+                    if (test == 30) testFileName(true);
+                    if (test == 31) testFileName(false);
+                    if (test == 32) testReplaceFromFileName(true);
+                    if (test == 33) testReplaceFromFileName(false);
+                    if (test == 34) testDapErrors();
+                    if (test == 35) testFiles();  
+                    if (test == 36) testUInt16File();
+                    if (test == 37) testUnsignedGrid();  
 
-                    //unfinished: if (test == 35) testRTechHdf();
-                    if (test == 37) testUpdate();
-                    if (test == 38) testQuickRestart();
+                    //unfinished: if (test == 39) testRTechHdf();
+                    if (test == 40) testUpdate();
+                    if (test == 41) testQuickRestart();
 
-                    if (test == 40) testCacheFiles(true);  //deleteDataFiles //does require localhost erddap 
-                    if (test == 41) testCacheFiles(false);                   //does require localhost erddap
+                    if (test == 42) testCacheFiles(true);  //deleteDataFiles //does require localhost erddap 
+                    if (test == 43) testCacheFiles(false);                   //does require localhost erddap
 
                     //tests of remote sources on-the-fly
                     //NetcdfFiles.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
                     //NetcdfDatasets.openDataset("https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");
                     //from command line: curl --head https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc
-                    if (test == 42) testGenerateDatasetsXmlWithRemoteThreddsFiles();  
-                    //if (test == 43) testRemoteThreddsFiles(true); //deleteCachedInfo. Don't do this. Use <cacheFromUrl> instead
-                    if (test == 44) testMatchAxisNDigits();
-                    if (test == 45) testIgor();
-                    if (test == 46) testBadNcFile(false);  //runIncrediblySlowTest?
-                    if (test == 47) testInvalidShortenedNcFile();
+                    if (test == 45) testGenerateDatasetsXmlWithRemoteThreddsFiles();  
+                    //if (test == 46) testRemoteThreddsFiles(true); //deleteCachedInfo. Don't do this. Use <cacheFromUrl> instead
+                    if (test == 47) testMatchAxisNDigits();
+                    if (test == 48) testIgor();
+                    if (test == 49) testBadNcFile(false);  //runIncrediblySlowTest?
+                    if (test == 50) testInvalidShortenedNcFile();
 
-                    if (test == 50 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
-                    if (test == 51 && doSlowTestsToo) testNThreads(3);
-                    if (test == 52 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
-                    if (test == 53 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
-                    if (test == 54 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
+                    if (test == 52 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
+                    if (test == 53 && doSlowTestsToo) testNThreads(3);
+                    if (test == 54 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
+                    if (test == 55 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+                    if (test == 56 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
                     //NOT FINISHED
                     //none

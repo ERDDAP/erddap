@@ -199,13 +199,13 @@ public class LoadDatasets extends Thread {
                     "datasets" + (EDStatic.developmentMode? "2" : "") + ".xml";
                 String newFileName = EDStatic.bigParentDirectory + "currentDatasets.xml";
                 if (!File2.copy(oldFileName, newFileName)) 
-                    throw new RuntimeException("Unable to copy " + oldFileName + " to " + newFileName);
-                //not File2.getDecompressedBufferedInputStream(). Read file as is.
-                inputStream = new FileInputStream(newFileName);  
+                    throw new RuntimeException("Unable to copy " + oldFileName + " to " + newFileName);                
+                inputStream = File2.getBufferedInputStream(newFileName);  //not File2.getDecompressedBufferedInputStream(). Read file as is.
+            } else {
+                inputStream = new BufferedInputStream(inputStream);
             }
 
             //read datasets.xml
-            inputStream = new BufferedInputStream(inputStream);
             xmlReader = new SimpleXMLReader(inputStream, "erddapDatasets");
             //there is an enclosing try/catch that handles with closing xmlReader
             String startError = "datasets.xml error on line #";
@@ -491,7 +491,7 @@ public class LoadDatasets extends Thread {
                     if (!String2.isSomething(ts))
                         ts = EDStatic.DEFAULT_ANGULAR_DEGREE_UNITS;
                     EDStatic.angularDegreeUnitsSet =
-                        new HashSet<String>(String2.toArrayList(StringArray.fromCSV(ts).toArray())); //so canonical
+                        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
                     String2.log("angularDegreeUnits=" + String2.toCSVString(EDStatic.angularDegreeUnitsSet));
 
                 } else if (tags.equals("<erddapDatasets><angularDegreeTrueUnits>")) {
@@ -500,7 +500,7 @@ public class LoadDatasets extends Thread {
                     if (!String2.isSomething(ts))
                         ts = EDStatic.DEFAULT_ANGULAR_DEGREE_TRUE_UNITS;
                     EDStatic.angularDegreeTrueUnitsSet =
-                        new HashSet<String>(String2.toArrayList(StringArray.fromCSV(ts).toArray())); //so canonical
+                        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
                     String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
 
                 } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
@@ -560,6 +560,34 @@ public class LoadDatasets extends Thread {
                     int tnt = String2.isSomething(ts)? String2.parseInt(ts) : EDStatic.DEFAULT_graphBackgroundColorInt;
                     EDStatic.graphBackgroundColor = new Color(tnt, true); //hasAlpha
                     String2.log("graphBackgroundColor=" + String2.to0xHexString(tnt, 8));
+
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequests>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequests>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    tnt = tnt < 6 || tnt > 1000? EDStatic.DEFAULT_ipAddressMaxRequests : tnt;
+                    EDStatic.ipAddressMaxRequests = tnt;
+                    String2.log("ipAddressMaxRequests=" + tnt);
+
+                } else if (tags.equals("<erddapDatasets><ipAddressMaxRequestsActive>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressMaxRequestsActive>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    tnt = tnt < 1 || tnt > 100? EDStatic.DEFAULT_ipAddressMaxRequestsActive : tnt;
+                    EDStatic.ipAddressMaxRequestsActive = tnt;
+                    String2.log("ipAddressMaxRequestsActive=" + tnt);
+
+                } else if (tags.equals("<erddapDatasets><ipAddressUnlimited>")) {
+                } else if (tags.equals("<erddapDatasets></ipAddressUnlimited>")) {
+                    String ts = xmlReader.content();
+                    String sar[] = StringArray.fromCSVNoBlanks(ts + EDStatic.DEFAULT_ipAddressUnlimited).toArray();
+                    EDStatic.ipAddressUnlimited = new HashSet<String>(String2.toArrayList(sar)); //atomically swap into place
+                    //then remove all these from ipAddressQueue
+                    //This also offers a way to solve problem where a user has a
+                    //request permanently in the ipAddressQueue so s/he only receives
+                    //"Timeout waiting for your other requests to process.":
+                    //This clears his/her ipAddressQueue.
+                    for (int i = 0; i < sar.length; i++)
+                        EDStatic.ipAddressQueue.remove(sar[i]); 
+                    String2.log("ipAddressUnlimited=" + String2.toCSVString(EDStatic.ipAddressUnlimited));
 
                 } else if (tags.equals("<erddapDatasets><loadDatasetsMinMinutes>")) {
                 } else if (tags.equals("<erddapDatasets></loadDatasetsMinMinutes>")) {
@@ -982,8 +1010,9 @@ public class LoadDatasets extends Thread {
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
-//"Major LoadDatasets Time Series: MLD    Datasets Loaded        Requests (medianTime in seconds)         Number of Threads      Memory (MB)     Open\n" +
-//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFailed (median) memFail  tomWait inotify other  inUse highWater  Files\n");
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded            Requests (median times in ms)              Number of Threads      MB    Open\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) memFail tooMany  tomWait inotify other  inUse  Files\n" +
+//"----------------------------  -----   -----------------  ------------------------------------------------  ---------------------  -----  -----\n"
                     "  " + cDateTimeLocal +  
                     String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
                     String2.right("" + nTry, 7) + 
@@ -991,17 +1020,18 @@ public class LoadDatasets extends Thread {
                     String2.right("" + (EDStatic.nGridDatasets + EDStatic.nTableDatasets), 7) + //nTotal
                     String2.right("" + nResponseSucceeded, 10) + " (" +
                     String2.right("" + Math.min(999999, medianResponseSucceeded), 6) + ")" +
-                    String2.right("" + nResponseFailed, 8) + " (" +
+                    String2.right("" + Math.min(999999, nResponseFailed), 6) + " (" +
                     String2.right("" + Math.min(999999, medianResponseFailed), 6) + ")" +
-                    String2.right("" + Math.min(99999999, EDStatic.dangerousMemoryFailures), 8) + 
+                    String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures), 8) + 
+                    String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8) + 
                     threadCounts + 
                     String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
-                    String2.right("" + maxUsingMemory/Math2.BytesPerMB, 10) + //highWater
                     openFiles +
                     "\n");
                 
                 //reset
                 EDStatic.dangerousMemoryFailures = 0;
+                EDStatic.tooManyRequests = 0;
 
                 //email daily report?
                 GregorianCalendar reportCalendar = Calendar2.newGCalendarLocal();
@@ -1071,6 +1101,7 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Requester's IP Address (Allowed) (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last daily report)");
                     EDStatic.tally.remove("Requester's IP Address (Failed) (since last daily report)");
+                    EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last daily report)");
                     EDStatic.tally.remove("RequestReloadASAP (since last daily report)");
                     EDStatic.tally.remove("Response Failed    Time (since last daily report)");
                     EDStatic.tally.remove("Response Succeeded Time (since last daily report)");
@@ -1155,6 +1186,7 @@ public class LoadDatasets extends Thread {
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)", 50));
 
                     sb.append(threadList);
                     String2.log(sb.toString());
@@ -1179,6 +1211,7 @@ public class LoadDatasets extends Thread {
                 EDStatic.tally.remove("Requester's IP Address (Allowed) (since last Major LoadDatasets)");
                 EDStatic.tally.remove("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)");
                 EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
+                EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)");
 
                 EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
                 EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];

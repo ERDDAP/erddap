@@ -12,6 +12,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.FileSystem;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
      */
     public static boolean verbose = false; 
 
+    private BufferedOutputStream localFileBOS = null;
     private OutputStreamFromHttpResponseViaAwsS3 parent;
 
     /**
@@ -43,22 +45,20 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
 
         //make the superclass's BufferedOutputStream from a FileOutputStream
         super(new FileOutputStream(
-            tParent.cacheDir + tParent.fileName + tParent.extension));
+            tParent.cacheDir + tParent.fileName + tParent.extension));  //duplicated below
         parent = tParent;
     }
 
        
     /**
-     * This overwrites the super's close() method, closing the buffered FileOutputStream
-     * and telling the user to download it.
+     * This overwrites the super's close() method, closing the buffered FileOutputStream,
+     * copying the file to AWS, and redirecting the user to it.
      */
     public void close() throws IOException {
 
-        super.close();
+        //close the Buffered FileOutputStream
+        super.close(); 
 /*
-        //do all the things associated with committing to writing data to the outputStream
-        //setContentType(mimeType)
-        //User won't want hassle of saving file (changing fileType, ...).
 
         //get and apply the fileTypeInfo
         //2020-12-07 this is the section that was inline but now uses the static methods above
@@ -67,6 +67,27 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
         HashMap headerMap         =  (HashMap)fileTypeInfo[1];
         boolean genericCompressed = ((Boolean)fileTypeInfo[2]).booleanValue();  //true for generic compressed files, e.g., .zip
         boolean otherCompressed   = ((Boolean)fileTypeInfo[3]).booleanValue();  //true for app specific compressed (but not audio/ image/ video)
+        
+        //copy to AWS bucket
+        //see https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html
+        String localName = tParent.cacheDir + tParent.fileName + tParent.extension; //duplicated above
+        Path path = FileSystems.getDefault().getPath(localName);
+        PutObjectRequest objectRequest = PutObjectRequest.builder()
+            .bucket(EDStatic.awsS3OutputBucket)
+            .key(tParent.fileName + tParent.extension)
+            .contentLength(File2.length(localName))
+            .contentType(contentType)
+            //
+            .build();
+
+        EDStatic.awsS3OutputClient.putObject(objectRequest, localPath); 
+
+        //set "file" settings for AWS file
+        //do all the things associated with committing to writing data to the outputStream
+        //setContentType(mimeType)
+        //User won't want hassle of saving file (changing fileType, ...).
+
+
 
         response.setContentType(contentType);  
         Iterator it = headerMap.keySet().iterator();
@@ -86,73 +107,7 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
                 fileName + extension);
 
 
-        //Compress the output stream if user request says it is allowed.
-        //See http://www.websiteoptimization.com/speed/tweak/compress/  (gone?!)
-        //and https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/
-//see similar code in Browser.java
-        //This makes sending raw file (even ASCII) as efficient as sending a zipped file
-        //   and user doesn't have to unzip the file.
-        //Accept-Encoding should be a csv list of acceptable encodings.
-        //DAP 2.0 section 6.2.1 says compress, gzip, and deflate are possible.
-        //See https://httpd.apache.org/docs/1.3/mod/mod_mime.html
-        //  which says that x-gzip=gzip and x-compress=compress
-        String acceptEncoding = request.getHeader("accept-encoding"); //case-insensitive
-        acceptEncoding = acceptEncoding == null? "" : acceptEncoding.toLowerCase();
-        String tContentType = response.getContentType(); //as set above, or null
-        if (tContentType == null)
-            tContentType = "";
-
-        //responses that I won't compress
-        if (hasRangeRequest ||
-            genericCompressed || //include all genericCompressed types
-            otherCompressed ||   //include all otherCompressed types
-            //already compressed audio, image, video files
-            tContentType.indexOf("audio/") >= 0 ||
-            tContentType.indexOf("image/") >= 0 ||
-            tContentType.indexOf("video/") >= 0) {
-
-            //no compression  (since already compressed)
-            //DODSServlet says:
-            //  This should probably be set to "plain" but this works, the
-            //  C++ clients don't barf as they would if I sent "plain" AND
-            //  the C++ don't expect compressed data if I do this...
-            //But other sources say to use "identity"
-            //  e.g., https://en.wikipedia.org/wiki/HTTP_compression
-            usingCompression = "identity";
-            response.setHeader("Content-Encoding", usingCompression);
-            //Currently, never set Content-Length. But Erddap.doTransfer() sometimes does.
-            //if (!hasRangeRequest && tLength > 0) 
-            //    response.setContentLengthLong(tLength);
-            outputStream = new BufferedOutputStream(response.getOutputStream()); //after all setHeader
-
-        //ZipOutputStream too finicky.  outputStream.closeEntry() MUST be called at end or it fails
-        //} else if (acceptEncoding.indexOf("compress") >= 0) {
-        //    usingCompression = "compress";
-        //    response.setHeader("Content-Encoding", usingCompression);
-        //    outputStream = new ZipOutputStream(new BufferedOutputStream(response.getOutputStream()));
-        //    ((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(fileName + extension));
-
-        } else if (acceptEncoding.indexOf("gzip") >= 0) { 
-            usingCompression = "gzip";
-            response.setHeader("Content-Encoding", usingCompression);
-            outputStream = new GZIPOutputStream(new BufferedOutputStream(response.getOutputStream()));
-       
-        //"deflate" is troublesome. Don't support it? Apache just supports gzip. But it hasn't been trouble.
-        //see https://en.wikipedia.org/wiki/HTTP_compression
-        } else if (acceptEncoding.indexOf("deflate") >= 0) {
-            usingCompression = "deflate";
-            response.setHeader("Content-Encoding", usingCompression);
-            outputStream = new DeflaterOutputStream(new BufferedOutputStream(response.getOutputStream()));
-
-        } else { 
-            //no compression  (see DODSServlet comments above (for .gif))
-            usingCompression = "identity";
-            response.setHeader("Content-Encoding", usingCompression);
-            //Currently, never set Content-Length. But Erddap.doTransfer() sometimes does.
-            //if (tLength > 0) 
-            //    response.setContentLengthLong(tLength);
-            outputStream = new BufferedOutputStream(response.getOutputStream()); //after all setHeader
-        }
+        //redirect user to file in AWS bucket
 
         if (verbose) {
             String2.log("OutputStreamFromHttpResponse " + characterEncoding + 
@@ -164,18 +119,9 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
             //    String name = en.nextElement().toString();
             //    String2.log("  request header " + name + "=" + request.getHeader(name));
             //}
-            
         }
-
-        //Buffering:
-        //HttpServletResponse.getBufferSize() returns the buffer size.
-        //HttpServletResponse.setBufferSize() sets the buffer size.
-        //HttpServletResponse.getOutputStream() returns a buffered stream/socket.
-        //In Tomcat the socketBuffer setting specifies the default buffer size (default=9000)
-        //I'm just sticking with the default.
-        return outputStream; 
-
 */
+            
     }
 
 }

@@ -70,6 +70,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -430,7 +431,7 @@ public class Erddap extends HttpServlet {
 
         long doGetTime = System.currentTimeMillis();
         int requestNumber = totalNRequests.incrementAndGet();
-        String ipAddress = "NotSetYet"; //won't be null
+        String ipAddress = EDStatic.ipAddressNotSetYet; //won't be null
 
         try {
 
@@ -445,8 +446,80 @@ public class Erddap extends HttpServlet {
 
             String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
             String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
-            ipAddress = EDStatic.getIPAddress(request);
             //String2.log("requestURL=" + requestUrl); 
+
+            //too many simultaneous requests from this user?
+            //FUTURE? If desired, you could also add a system to monitor total number
+            //  of active requests (for all users) and limit it to MaxNRequests
+            //  and block a request from processing until the number dips below MaxNRequests.
+            //  Such a system would need good assurance that the list was valid
+            //  (not old requests filling up the system but actually processed).
+            ipAddress = EDStatic.getIPAddress(request); 
+            //then immediately test it (so no possible error in between)
+            if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
+                //always add requestNumber to ipAddressQueue for this ipAddress
+                //Important: ipAddressQueue is thread-safe so only 1 thread will succeed in creating a new IntArray for this ipAddress
+                IntArray iaq = EDStatic.ipAddressQueue.putIfAbsent(ipAddress, 
+                    new IntArray(EDStatic.ipAddressMaxRequests, false));
+                synchronized (iaq) {      
+                    //first thing
+                    iaq.add(requestNumber);
+
+                    //isOnBlacklist?
+                    if (EDStatic.isOnBlacklist(ipAddress, requestNumber, response))
+                        return;
+
+                    //too many simultaneous requests 
+                    if (iaq.size() > EDStatic.ipAddressMaxRequests) {
+                        EDStatic.tooManyRequests++;
+                        EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)", ipAddress);
+                        EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since last daily report)", ipAddress);
+                        EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since startup)", ipAddress);
+                        EDStatic.lowSendError(response, 429, //429=Too Many Requests
+                            EDStatic.oneRequestAtATime);
+                        //FUTURE? email yesterday's list to erddap admin when generating daily report
+                        // so they can consider blacklisting them?
+                        return;
+                    }
+                }
+
+                //if (debugMode) String2.log(">> requestUrl=" + requestUrl);
+                if (requestUrl.startsWith("/" + EDStatic.warName + "/download/") ||  
+                    requestUrl.startsWith("/" + EDStatic.warName + "/images/")) {  
+                    //small static content (e.g., erddap.css) is exempt from request limits
+                    //   (but still counts toward ipAddressMaxRequests above)
+                    //so don't wait
+                    //if (debugMode) String2.log(">> requestUrl=" + requestUrl + " is exempt");
+                } else {
+                    //Wait up to 2 minutes until requestNumber is in top ipAddressMaxRequestsActive slots of this user's queue.
+                    //This automatically deals with users making multiple simultaneous requests (no blacklist needed).
+                    //This is a really good approach because it disperses the burden on ERDDAP.
+                    long start = System.currentTimeMillis();
+                    boolean printMsg = reallyVerbose; //just print msg first time, if reallyVerbose
+                    TOP_N:
+                    while (true) { 
+                        synchronized (iaq) { //this takes very little time (~ 31 nanoseconds) (see IntArray.testSynchSpeed())
+                            for (int which = EDStatic.ipAddressMaxRequestsActive - 1; which >= 0; which--) 
+                                if (iaq.get(which) == requestNumber) 
+                                    break TOP_N; //fall through and respond to this request
+                        }
+                        //getting here (multiple simultaneous requests) should be rare 
+                        //but there are legit reasons, e.g., WMS client, web pages like BloomWatch
+                        //FUTURE? Do tally of these IP addresses?
+                        if (printMsg) {
+                            String2.log(ipAddress + " has exceeded ipAddressMaxRequestsActive=" + 
+                                EDStatic.ipAddressMaxRequestsActive);
+                            printMsg = false;
+                        }
+                        //this number determines how ~max requests/second/user. 
+                        // 1000ms/200ms *2maxRequestsActive = 10/second = 9000/15minutes which is a lot for 1 user
+                        Thread.sleep(200); //millis. Not Math2.sleep() because we want to allow InterruptedException
+                        if (System.currentTimeMillis() - start > 120000)  //120s * 1000 millis/s
+                            throw new TimeoutException(EDStatic.timeoutOtherRequests + " " +
+                                EDStatic.oneRequestAtATime);
+                    }
+                }
+            }
 
             //get userQuery
             String userQuery = request.getQueryString(); //may be null;  leave encoded
@@ -461,34 +534,6 @@ public class Erddap extends HttpServlet {
                 (requestUrl.endsWith("login.html") && userQuery.indexOf("nonce=") >= 0?
                     "?[CONFIDENTIAL]" : 
                     EDStatic.questionQuery(userQuery)));
-
-            //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
-            {
-                //for testing:
-                //  int tr = Math2.random(3);
-                //  ipAddress=tr==0? "101.2.34.56" : tr==1? "1:2:3:4:56:78" : "(unknownIPAddress)";
-                int periodPo1 = ipAddress.lastIndexOf('.'); //to make #.#.#.* test below for IP v4 address
-                boolean hasPeriod = periodPo1 > 0;
-                if (!hasPeriod)
-                    periodPo1 = ipAddress.lastIndexOf(':'); //to make #:#:#:#:#:#:#:* test below for IP v6 address
-                String ipAddress1 = periodPo1 <= 0? null : ipAddress.substring(0, periodPo1+1) + "*";
-                int periodPo2 = ipAddress1 == null? -1 :   ipAddress.substring(0, periodPo1).lastIndexOf(hasPeriod? '.' : ':');
-                String ipAddress2 = periodPo2 <= 0? null : ipAddress.substring(0, periodPo2+1) + (hasPeriod? "*.*" : "*:*");
-                //String2.log(">> ipAddress=" + ipAddress + " ipAddress1=" + ipAddress1 + " ipAddress2=" + ipAddress2);
-                if (EDStatic.requestBlacklist != null &&
-                    (EDStatic.requestBlacklist.contains(ipAddress) ||
-                     (ipAddress1 != null && EDStatic.requestBlacklist.contains(ipAddress1)) ||   //#.#.#.*
-                     (ipAddress2 != null && EDStatic.requestBlacklist.contains(ipAddress2)))) {  //#.#.*.*
-                    //use full ipAddress, to help id user                //odd capitilization sorts better
-                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", ipAddress);
-                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
-                    EDStatic.tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
-                    String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
-                    EDStatic.lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                        EDStatic.blacklistMsg);
-                    return;
-                }
-            }
 
             //tally ipAddress                                    //odd capitilization sorts better
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last Major LoadDatasets)", ipAddress);
@@ -619,7 +664,7 @@ public class Erddap extends HttpServlet {
             String2.distribute(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
             String2.distribute(responseTime, EDStatic.responseTimesDistribution24);
             String2.distribute(responseTime, EDStatic.responseTimesDistributionTotal);
-            if (verbose) String2.log("}}}}#" + requestNumber + " SUCCESS. TIME=" + responseTime + "ms" + 
+            if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " SUCCESS. TIME=" + responseTime + "ms" + 
                 (responseTime >= 600000? "  (>10m!)" : responseTime >= 10000? "  (>10s!)" : "") + "\n");
 
         } catch (Throwable t) {
@@ -652,10 +697,23 @@ public class Erddap extends HttpServlet {
             EDStatic.sendError(request, response, t); 
 
             long tTime = System.currentTimeMillis() - doGetTime;
-            if (verbose) String2.log("}}}}#" + requestNumber + " sendErrorCode done. Total TIME=" + 
+            if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " sendErrorCode done. Total TIME=" + 
                 tTime + "ms" + (tTime >= 600000? "  (>10m!)" : tTime >= 10000? "  (>10s!)" : "") + "\n");
-        }
 
+        } finally {
+
+            //remove requestNumber from ipAddressQueue for this ipAddress
+            if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
+                IntArray iaq = EDStatic.ipAddressQueue.get(ipAddress);
+                if (iaq != null) { //will be null if just added to ipAddressUnlimited
+                    synchronized (iaq) {
+                        int which = iaq.indexOf(requestNumber);
+                        if (which >= 0) //it should be
+                            iaq.remove(which);
+                    }
+                }
+            }
+        }
     }
 
     /** 
@@ -13118,7 +13176,7 @@ writer.write(
         String loggedInAs, String ipAddress,
         String endOfRequest, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
 
-        if (!EDStatic.subscriptionSystemActive) {
+        if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
             sendResourceNotFoundError(request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
@@ -13221,7 +13279,7 @@ writer.write(
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, 
         String userQuery) throws Throwable {
 
-        if (!EDStatic.subscriptionSystemActive) {
+        if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
             sendResourceNotFoundError(request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
@@ -13246,6 +13304,21 @@ writer.write(
 
         //validate params
         String trouble = "";
+
+        if (tEmail.length() == 0) {
+            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailUnspecified + "</span>\n";
+        } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
+            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</span>\n";
+        } else if (!String2.isEmailAddress(tEmail) ||  //tests syntax
+                   tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
+            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</span>\n";
+        } else if (EDStatic.subscriptions.testEmailValid(tEmail).length() > 0) {  //tests syntax and blacklist             
+            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailOnBlacklist + "</span>\n";
+        }
+        if (trouble.length() > 0)
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+
+
         if (tDatasetID.length() == 0) {
             trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionIDUnspecified + "</span>\n";
         } else if (tDatasetID.length() > Subscriptions.DATASETID_LENGTH) {
@@ -13274,16 +13347,6 @@ writer.write(
             }
         }
 
-        if (tEmail.length() == 0) {
-            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailUnspecified + "</span>\n";
-        } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
-            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</span>\n";
-            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        } else if (!String2.isEmailAddress(tEmail) ||
-                   tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
-            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</span>\n";
-            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        }
 
         if (tAction.length() == 0) {
             //no action is fine
@@ -13419,7 +13482,7 @@ writer.write(
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
-        if (!EDStatic.subscriptionSystemActive) {
+        if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
             sendResourceNotFoundError(request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
@@ -13439,12 +13502,14 @@ writer.write(
             trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailUnspecified + "</span>\n";
         } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
             trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</span>\n";
-            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        } else if (!String2.isEmailAddress(tEmail) ||
-                   tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
+        } else if (!String2.isEmailAddress(tEmail) ||  //tests syntax
+            tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
             trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</span>\n";
-            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (EDStatic.subscriptions.testEmailValid(tEmail).length() > 0) {  //tests syntax and blacklist             
+            trouble += "<li><span class=\"warningColor\">" + EDStatic.subscriptionEmailOnBlacklist + "</span>\n";
         }
+        if (trouble.length() > 0)
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
 
         //display start of web page
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -13538,7 +13603,7 @@ writer.write(
     public void doValidateSubscription(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
 
-        if (!EDStatic.subscriptionSystemActive) {
+        if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
             sendResourceNotFoundError(request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
@@ -13672,7 +13737,7 @@ writer.write(
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
-        if (!EDStatic.subscriptionSystemActive) {
+        if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
             sendResourceNotFoundError(request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
@@ -17966,14 +18031,14 @@ jsonp + "(" +
         Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
         Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
         Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);
-        Test.ensureTrue(results.indexOf("NDBC&#x5f;41004&#x5f;met&#x2e;nc") >= 0, "results=\n" + results);            
+        Test.ensureTrue(results.indexOf("NDBC&#x5f;41008&#x5f;met&#x2e;nc") >= 0, "results=\n" + results);  
         Test.ensureTrue(results.indexOf("directory") >= 0, "results=\n" + results);            
         Test.ensureTrue(results.indexOf("ERDDAP, Version") >= 0, "results=\n" + results);
 
-        String localName = EDStatic.fullTestCacheDirectory + "NDBC_41004_met.nc";
+        String localName = EDStatic.fullTestCacheDirectory + "NDBC_41008_met.nc";
         File2.delete(localName);
         SSR.downloadFile( //throws Exception if trouble
-            EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc",
+            EDStatic.erddapUrl + "/files/cwwcNDBCMet/nrt/NDBC_41008_met.nc",
             localName, true); //tryToUseCompression
         Test.ensureTrue(File2.isFile(localName), 
             "/files download failed. Not found: localName=" + localName);
@@ -19210,7 +19275,6 @@ expected =
                     if (test == 25) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV_1.00.html");
                     if (test == 26) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setup.html");
                     if (test == 27) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setupDatasetsXml.html");
-                    if (test == 28) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/TablesAndGrids.html");
 
                     if (test == 30) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/information.html");
                     if (test == 31) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/rest.html");

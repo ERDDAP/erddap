@@ -1765,6 +1765,12 @@ expected =
         String request = "http://localhost:8080/cwexperimental/griddap/" + datasetID + ".csvp?time";
         String results, expected;
 
+        //set badFileFlag (to delete the badFiles.nc file and reload the dataset)
+        String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
+
+        //wait 10 seconds and test that all times are present
+        String2.log("I set the badFileFlag. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(10000);
 
         //test that all times are present
         results = SSR.getUrlResponseStringUnchanged(request);

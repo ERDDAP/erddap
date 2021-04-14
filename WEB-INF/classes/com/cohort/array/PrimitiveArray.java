@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ucar.ma2.StructureData;
+
 /**
  * PrimitiveArray defines the methods to be implemented by various XxxArray classes
  * for 1D arrays of primitives with methods like ArrayLists's methods.
@@ -672,6 +674,15 @@ public abstract class PrimitiveArray {
      *    then convert that to the desired PrimitiveArray type.
      */
     abstract public void addObject(Object value);
+
+    /**
+     * This reads one value from the StrutureData and adds it to this PA.
+     *
+     * @param sd from an .nc file
+     * @param memberName
+     */
+    abstract public void add(StructureData sd, String memberName);
+
 
     /**
      * This adds PAOne's value to the array.

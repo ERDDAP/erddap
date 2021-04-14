@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.Set;
 
+import ucar.ma2.StructureData;
+
 /**
  * StringArray is a thin shell over a String[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
@@ -517,6 +519,16 @@ public class StringArray extends PrimitiveArray {
      */
     public void addObject(Object value) {
         add(value == null? "" : value.toString());
+    }
+
+    /**
+     * This reads one value from the StrutureData and adds it to this PA.
+     *
+     * @param sd from an .nc file
+     * @param memberName
+     */
+    public void add(StructureData sd, String memberName) {
+        add(sd.getScalarString(memberName));
     }
 
     /* *   //CURRENTLY NOT NEEDED and because it is tightly coupled with how this class is currently implemented.

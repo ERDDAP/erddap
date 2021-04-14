@@ -1364,21 +1364,19 @@ public class TestUtil {
         Test.ensureEqual(String2.removeLeading("b", 'a'), "b", "");
 
         //getAwsS3BucketName(String url) {
-        Test.ensureEqual(String2.getAwsS3BucketName("http://buc-k.et.s3.region.amazonaws.com"), "buc-k.et", "");
-        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.s3.region.amazonaws.com/"), "buc-k.et", "");
-        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.s3.region.amazonaws.com/prefix"), "buc-k.et", "");
-        Test.ensureEqual(String2.getAwsS3BucketName("https://bu_c-k.et.s3.region.amazonaws.com/pr.e/F-i_x/"), "bu_c-k.et", "");
+        Test.ensureEqual(String2.parseAwsS3Url("http://buc-k.et.s3.re-gion.amazonaws.com"), //http (which isn't recommended) and no trailing slash
+            new String[]{"buc-k.et", "re-gion", ""}, "");
+        String s3 = "https://buc-k.et.s3.re-gion.amazonaws.com/ob_ject/n-a.me";
+        Test.ensureEqual(String2.parseAwsS3Url(s3), 
+            new String[]{"buc-k.et", "re-gion", "ob_ject/n-a.me"}, "");
 
-        Test.ensureEqual(String2.getAwsS3BucketName("https://bu_c-k.et.s3.amazonaws.com/pr.e/F-i_x/"), null, ""); //no region
-        Test.ensureEqual(String2.getAwsS3BucketName("https://buc-k.et.amazonaws.com/pre/fix"), null, "");  //no s3
+        Test.ensureEqual(String2.getAwsS3BucketName(s3), "buc-k.et",       "");
+        Test.ensureEqual(String2.getAwsS3ObjectName(s3), "ob_ject/n-a.me", "");
 
-        Test.ensureEqual(String2.getAwsS3Prefix("http://buc-k.et.s3.region.amazonaws.com"), "", "");  
-        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.s3.region.amazonaws.com/"), "", "");
-        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.s3.region.amazonaws.com/prefix"), "prefix", "");
-        Test.ensureEqual(String2.getAwsS3Prefix("https://bu_c-k.et.s3.region.amazonaws.com/pr.e/F-i_x/"), "pr.e/F-i_x/", "");
-
-        Test.ensureEqual(String2.getAwsS3Prefix("http://buc-k.et.s3.amazonaws.com"), null, "");  //no region
-        Test.ensureEqual(String2.getAwsS3Prefix("https://buc-k.et.region.amazonaws.com/pre/fix"), null, ""); //no s3
+        s3 = "https://buc-k.et.s3.amazonaws.com/ob_ject/n-a.me";  //no region
+        Test.ensureEqual(String2.parseAwsS3Url(     s3), null, "");
+        Test.ensureEqual(String2.getAwsS3BucketName(s3), null, "");
+        Test.ensureEqual(String2.getAwsS3ObjectName(s3), null, "");
 
         //noLongLines
         s = "asdf asdf asfd asdf (b)asdflakjf(a) abc flkjf aflkjj(b) sl;kj abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlkj(b) f aflkja(b) fasl faslfkj(b) flkajf sflkj(b) adfsl;kj";

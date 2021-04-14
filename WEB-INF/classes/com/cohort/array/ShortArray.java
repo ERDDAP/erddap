@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import ucar.ma2.StructureData;
+
 /**
  * ShortArray is a thin shell over a short[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
@@ -337,6 +339,16 @@ public class ShortArray extends PrimitiveArray {
         //double is good intermediate because it has the idea of NaN
         addDouble(value != null && value instanceof Number?
             ((Number)value).doubleValue() : Double.NaN); 
+    }
+
+    /**
+     * This reads one value from the StrutureData and adds it to this PA.
+     *
+     * @param sd from an .nc file
+     * @param memberName
+     */
+    public void add(StructureData sd, String memberName) {
+        add(sd.getScalarShort(memberName));
     }
 
     /**

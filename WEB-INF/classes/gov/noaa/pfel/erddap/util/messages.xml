@@ -2704,7 +2704,7 @@ But here is a quick tutorial related to using curl with ERDDAP:
   <br>&nbsp;&nbsp;<kbd><i>erddapUrl</i></kbd> is any ERDDAP URL that requests a data or image file, and
   <br>&nbsp;&nbsp;<kbd>-o <i>fileDir/fileName.ext</i></kbd> specifies the name for the file that will be created.
   <br>For example,
-<pre>curl --compressed -g "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_41004_met.nc" -o ndbc/41004.nc</pre>
+<pre>curl --compressed -g "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_41008_met.nc" -o ndbc/41008.nc</pre>
 In curl, as in many other programs, the query part of the erddapUrl must be 
 <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"
 >percent encoded<img
@@ -2731,10 +2731,10 @@ enabled:
     them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.
 Fortunately, these are almost never in "files" filenames.
 Then, in the erddapUrl, replace a zero-padded number (for example <kbd>01</kbd>) with a 
-range of values (for example, <kbd>[01-15]</kbd> ), or replace a substring (for example <kbd>41004</kbd>) with a list of values (for example, <kbd>{41004,41009,41010}</kbd> ).
+range of values (for example, <kbd>[01-15]</kbd> ), or replace a substring (for example <kbd>41008</kbd>) with a list of values (for example, <kbd>{41008,41009,41010}</kbd> ).
 The <kbd>#1</kbd> within the output fileName causes the current value of the range or 
 list to be put into the output fileName. For example, 
-<pre>curl --compressed "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41004,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
+<pre>curl --compressed "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
 &nbsp;
 </ul>
 
@@ -3885,6 +3885,8 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noXxxItsGridded>it's a gridded dataset</noXxxItsGridded>
 <noXxxItsTabular>it's a tabular dataset</noXxxItsTabular>
 
+<oneRequestAtATime>Please make just one request at a time.</oneRequestAtATime>
+
 <optional>Optional</optional>
 <options>Options</options>
 
@@ -4392,6 +4394,7 @@ Your request to add a subscription has been submitted successfully.</strong>
 ]]></subscriptionAddSuccess>
 
 <subscriptionEmail>Get an email immediately whenever this dataset changes...</subscriptionEmail>
+<subscriptionEmailOnBlacklist>The email address you submitted is on the email blacklist.</subscriptionEmailOnBlacklist>
 <subscriptionEmailInvalid>The email address you submitted isn't valid.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>The email address you submitted is too long.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>You didn't specify your email address.</subscriptionEmailUnspecified>
@@ -5812,6 +5815,8 @@ degrees +N
 degrees_north
 
 </standardizeUdunits>
+
+<timeoutOtherRequests>Timeout waiting for your other requests to process.</timeoutOtherRequests>
 
 <!-- This is a way to override ERDDAP's UCUM to UDUNITS converter
 by providing specific conversions. 
