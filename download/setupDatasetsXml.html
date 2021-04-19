@@ -1697,7 +1697,17 @@ is an object storage system offered by AWS.
 Instead of the hierarchical system of directories and files of a traditional file system
 (like a hard drive in your PC),
 S3 offers just "buckets" which hold "objects" (we'll call them "files").
-ERDDAP, netcdf-java (which ERDDAP uses to read data from .nc, .grib, .bufr, and .hdf files),
+
+<p>For ASCII files (e.g., .csv), ERDDAP can work with the files in the buckets
+directly. The only thing you need to do is specify the &lt;fileDir&gt; for the 
+dataset using a specific format for the AWS bucket, e.g.,
+https://<i>bucketName</i>.s3.<i>aws-region</i>.amazonaws.com/<i>subdirectory</i>/ .
+You don't need to use (and shouldn't use) &lt;cacheFromUrl&gt; .
+See below for details.
+
+<p>But for binary files (e.g., .nc, .grib, .bufr, and .hdf files), you do need to use 
+the &lt;cacheFromUrl&gt; system described below.
+ERDDAP, netcdf-java (which ERDDAP uses to read data from these files),
 and other scientific data software are designed to work with 
 files in a traditional file system which offers 
 <a rel="help" href="https://en.wikipedia.org/wiki/Block-level_storage"
@@ -1807,7 +1817,7 @@ in a reasonably efficient way:
   <br>&nbsp;
 
 <li>For the most common case, where you have an ERDDAP installed on your PC
-for test/development and where the dataset has data files which are stored
+for test/development and where the dataset has binary data files which are stored
 as objects in an S3 bucket, one approach to getting the dataset in ERDDAP is:
   <ol>
   <li>Create a directory on your PC to hold a few test data files.
@@ -1881,8 +1891,6 @@ The example below assumes you are working with a publicly accessible dataset.
 <p><a class="selfLink" id="AwsS3URLFormat" href="#AwsS3URLFormat" rel="bookmark"
 ><strong>Accessing Files in an AWS S3 Bucket</strong></a>
 <br>For a private S3 data bucket, the bucket's owner must give you access to the bucket.
-If you want to access the private bucket from a computer not on the AWS network,
-the bucket's owner must take steps to make that bucket accessible via the internet.
 (See the AWS documentation.)
 
 <p>In all cases, you will need an AWS account because the AWS SDK for Java 
@@ -1922,7 +1930,7 @@ For example, <kbd>https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/</
 ERDDAP requires that you combine the bucket URL and the optional prefix into one URL
 in order to specify the &lt;cacheFromUrl&gt; (or &lt;fileDir&gt;) where the files are located.
 
-<p><a class="selfLink" id="AwsS3Test" href="#AwsS3Test" rel="bookmark">You can and should test the bucket URL</a>
+<p><a class="selfLink" id="AwsS3Test" href="#AwsS3Test" rel="bookmark">For public buckets, you can and should test the bucket URL</a>
 of the AWS S3 directory in your browser, e.g., 
 <br><a rel="help" 
   href="https://noaa-goes17.s3.us-east-1.amazonaws.com"
@@ -1988,7 +1996,7 @@ That's a pretty big job, with lots of things to learn.
 <li>Put your AWS Credentials where ERDDAP can find them.
 <br>Follow the instructions at 
 <a rel="help" 
-  href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html"
+  href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials"
        >Set up AWS Credentials and Region for Development<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -2016,7 +2024,7 @@ to make sure the file is read-only for user=tomcat.
        >https://noaa-goes17.s3.us-east-1.amazonaws.com<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> ,
-and test it in a browser to make sure it returns an XML document which has a partial 
+and (for public buckets) test it in a browser to make sure it returns an XML document which has a partial 
 listing the contents of that bucket.
 <br>&nbsp;
 
@@ -7026,8 +7034,11 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
                              >https://noaa-goes17.s3.us-east-1.amazonaws.com/<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
-      <br>However, this requires an AWS account and more setup. 
+      <br>However, this may require an AWS account and more setup. 
         <br>See <a rel="help" href="#AwsS3Files">working with S3 Buckets in ERDDAP</a>.
+      <br>Also, you usually don't need to use cacheFromUrl with files in S3 buckets if the 
+        files are ASCII files (e.g., .csv), because ERDDAP can efficiently read the data from the 
+        bucket directly via a stream.
       </ul>
 
       <p>ERDDAP will copy or cache these files in the dataset's &lt;fileDir&gt; directory. 
