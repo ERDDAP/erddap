@@ -2152,7 +2152,7 @@ public class String2 {
      *   recursively (obviously).
      *
      * @param s the main string
-     * @param oldS the string to be searched for
+     * @param oldS the string to be searched for (plain text, not a regex)
      * @param newS the string to replace oldS
      * @return a modified version of s, with newS in place of all the olds.
      * @throws RuntimeException if s is null.

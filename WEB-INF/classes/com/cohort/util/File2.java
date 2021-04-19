@@ -965,23 +965,6 @@ public class File2 {
     public static BufferedReader getDecompressedBufferedFileReader(String fullFileName, 
         String charset) throws Exception {
 
-        /* new method (no evidence it is better) */
-        if (isDecompressible(getExtension(fullFileName))) { //if e.g., .tar.gz, this returns .gz
-            InputStream is = getDecompressedBufferedInputStream(fullFileName);
-            try {
-                return new BufferedReader(new InputStreamReader(is,  
-                    String2.isSomething(charset)? charset : String2.ISO_8859_1)); //invalid charset throws exception
-            } catch (Exception e) {
-                try {if (is != null) is.close();} catch (Exception e2) {}
-                throw e;
-            }
-        } else {
-            return Files.newBufferedReader(FileSystems.getDefault().getPath(fullFileName), 
-                String2.isSomething(charset)? Charset.forName(charset) : String2.ISO_8859_1_CHARSET);
-        }
-        /* */
-
-        /* old method 
         InputStream is = getDecompressedBufferedInputStream(fullFileName);
         try {
             return new BufferedReader(new InputStreamReader(is,  
@@ -990,7 +973,6 @@ public class File2 {
             try {if (is != null) is.close();} catch (Exception e2) {}
             throw e;
         }
-        /* */
     }
 
     /**

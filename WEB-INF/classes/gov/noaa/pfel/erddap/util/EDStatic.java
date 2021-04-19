@@ -5129,9 +5129,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         String tSourceUrl, String tFileNameRegex, boolean tRecursive, String tPathRegex, 
         String tLocalDir) {
 
+        tSourceUrl = File2.addSlash(tSourceUrl);
+        tLocalDir  = File2.addSlash(tLocalDir);
+
         if (verbose) String2.log("* " + tDatasetID + " " + 
-            tClassName + ".makeCopyFileTasks from " + tSourceUrl +
-            "\npathRegex=" + tPathRegex + "  fileNameRegex=" + tFileNameRegex);
+            tClassName + ".makeCopyFileTasks  pathRegex=" + tPathRegex + "  fileNameRegex=" + tFileNameRegex + "\n" +
+            "from " + tSourceUrl + "\n" +
+            "to   " + tLocalDir);
         long startTime = System.currentTimeMillis();
         int nFilesToDownload = 0;
         int lastTask = -1;
@@ -5233,7 +5237,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     nFilesToDownload++;
                     int tTaskNumber = nFilesToDownload <= maxTasks? 
                         (lastTask = addTask(taskOA)) : -nFilesToDownload;                        
-                    if (reallyVerbose)
+                    if (reallyVerbose || (verbose && nFilesToDownload == 1))
                         String2.log( 
                             (tTaskNumber < 0? "% didn't create" : "% created") +
                             " task#" + Math.abs(tTaskNumber) + " TASK_DOWNLOAD reason=" + reason +
