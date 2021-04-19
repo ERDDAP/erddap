@@ -6359,7 +6359,179 @@ String expected =
 
         //get data from second file
         tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
-            eddTable.className() + "_TestStandadizeWhat", ".csv"); 
+            eddTable.className() + "_TestStandadizeWhat2", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,data\n" +
+"UTC,\n" +
+"2010-01-03T00:00:00Z,3\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+    }
+
+    /**
+     * This tests generateDatasetsXml and querying a dataset that is using standardizeWhat
+     * with source files in a private AWS S3 bucket. 
+     * This doesn't need or use cacheFromUrl. The directory is the AWS URL of the directory.
+     */
+    public static void testAwsS3StandardizeWhat() throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiFiles.testAwsS3StandardizeWhat\n" +
+            "This is a private bucket, so requires Bob's IAM (or similar permission).");
+
+        String tID = "testAwsS3StandardizeWhat";
+        EDD.deleteCachedDatasetInfo(tID);
+        String tName, results, expected;
+        String dir = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/";
+
+        Table table = new Table();
+        //public void readASCII(String fullFileName, String charset, 
+        //    String skipHeaderToRegex, String skipLinesRegex,
+        //    int columnNamesLine, int dataStartLine, String tColSeparator,
+        //    String testColumns[], double testMin[], double testMax[], 
+        //    String loadColumns[], boolean simplify) throws Exception {
+        table.readASCII(dir + "standardizeWhat1.csv",
+            "", "", "", 
+            0, 1, null, 
+            null, null, null,
+            null, false);
+        results = table.dataToString();
+        expected = 
+"date,data\n" +
+"20100101000000,1\n" +
+"20100102000000,2\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        table.standardize(2048);
+        results = table.dataToString();
+        expected = 
+"date,data\n" +
+"2010-01-01T00:00:00Z,1\n" +
+"2010-01-02T00:00:00Z,2\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //generateDatasetsXml doesn't suggest standardizeWhat
+        //Admin must request it.
+        results = EDDTableFromAsciiFiles.generateDatasetsXml(
+            dir, "standardizeWhat.*\\.csv", "",
+            "", 1, 2, ",", 10080, //colNamesRow, firstDataRow, colSeparator, reloadEvery
+            "", "", "", "", "",  //regex
+            "", // tSortFilesBySourceNames, 
+            "", "", "", "", 2048, "", null);  //info, institution, summary, title, standardizeWhat=2048, cacheFromUrl, atts
+        expected = 
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"s3bobsimonsdata_ced6_e700_73c3\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>0</updateEveryNMillis>\n" + //??? why not 10000?
+"    <fileDir>https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/</fileDir>\n" +
+"    <fileNameRegex>standardizeWhat.*\\.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>2048</standardizeWhat>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator>,</columnSeparator>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>2</firstDataRow>\n" +
+"    <sortedColumnSourceName>date</sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>date</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_name\">bobsimonsdata</att>\n" +
+"        <att name=\"creator_type\">group</att>\n" +
+"        <att name=\"creator_url\">https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/</att>\n" +
+"        <att name=\"infoUrl\">https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/</att>\n" +
+"        <att name=\"institution\">bobsimonsdata</att>\n" +
+"        <att name=\"keywords\">ascii, aws, bobsimonsdata, bucket, data, date, time</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(remote files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"summary\">ascii data from AWS S3 bucket bobsimonsdata</att>\n" +
+"        <att name=\"title\">ascii data from AWS S3 bucket bobsimonsdata</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>date</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ssZ</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Date</att>\n" +
+"            <att name=\"source_name\">date</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>data</sourceName>\n" +
+"        <destinationName>data</destinationName>\n" +
+"        <dataType>byte</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Data</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //das 
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, tID); 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestAwsS3StandadizeWhat", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.262304e+9, 1.2625632e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Date\";\n" +
+"    String source_name \"date\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String time_precision \"1970-01-01T00:00:00Z\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  data {\n" +
+"    Int32 _FillValue 2147483647;\n" +
+"    Int32 actual_range 1, 4;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Data\";\n" +
+"  }\n" +
+" }\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        //get data from first file
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestAwsS3StandadizeWhat", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,data\n" +
+"UTC,\n" +
+"2010-01-01T00:00:00Z,1\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //get data from second file
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_TestAwsS3StandadizeWhat2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "time,data\n" +
@@ -6734,7 +6906,7 @@ nThreads=4 time=13
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 16;
+            lastTest = interactive? -1 : 17;
         String msg = "\n^^^ EDDTableFromAsciiFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = false; //usually false, rarely true
@@ -6766,8 +6938,9 @@ nThreads=4 time=13
                     if (test == 12) testTimeRange();
                     if (test == 13) testTimeRange2();
                     if (test == 14) testStandardizeWhat();
-                    if (test == 15) testFiles();
-                    if (test == 16) testNThreads();
+                    if (test == 15) testAwsS3StandardizeWhat();
+                    if (test == 16) testFiles();
+                    if (test == 17) testNThreads();
 
                 }
 

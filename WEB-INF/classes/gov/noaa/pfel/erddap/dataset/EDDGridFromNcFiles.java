@@ -1863,7 +1863,7 @@ expected =
     }
 
 
-/** This tests generateDatasetsXml with an AWS S3 dataset and using cacheFromUrl. 
+    /** This tests generateDatasetsXml with an AWS S3 dataset and using cacheFromUrl. 
      * @throws Throwable if touble
      */
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
@@ -2072,6 +2072,291 @@ expected =
             throw new RuntimeException( 
                 "If creation_date minor variation: it varies wth sample file.\n" +
                 "Otherwise: Unexpected error: Have you updated your AWS credentials lately?\n", t); 
+        }
+    }
+
+    /** 
+     * This tests generateDatasetsXml with a private AWS S3 dataset and using cacheFromUrl. 
+     * The local dir is emptied at the beginning of this.
+     *
+     * @throws Throwable if touble
+     */
+    public static void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlPrivateAwsS3()");
+
+        try {
+        String cacheFromUrl = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day"; //intentionally left off trailing /
+        String regex = "erdQS.*\\.nc";
+        String dir = "/u00/data/points/testPrivateAwsS3/";
+        String name = ""; //with cacheFromUrl, use nothing.   Was: dir + "tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc";
+        int reload = 1000000;
+
+        //delete the cached files
+        if (deleteCachedFiles) {
+            String2.log("Emptying cache...  nRemain=" + File2.deleteAllFiles(dir, true, true)); //recursive, deleteEmptySubdirectories
+            String2.log("Deleting " + dir + "  result=" + File2.delete(dir)); //must be empty      
+        }
+
+        String results = generateDatasetsXml(dir, regex, name, 
+            "", //group
+            "", reload, cacheFromUrl, null) + "\n";  //dimensionsCSV, reloadMinutes, cacheFromUrl
+        String suggDatasetID = suggestDatasetID(dir + regex);
+
+        //GenerateDatasetsXml
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+            "EDDGridFromNcFiles", dir, regex, name, 
+            "", //group
+            "", "" + reload, cacheFromUrl}, 
+            false); //doIt loop?
+
+        results    =    results.replaceAll("2008-01-..", "2008-01-XX");
+        gdxResults = gdxResults.replaceAll("2008-01-..", "2008-01-XX");
+        results    =    results.replaceAll("<att name=\"actual_range\" type=\"doubleList\">.*E9</att>", 
+                                           "<att name=\"actual_range\" type=\"doubleList\">XXX</att>");
+        gdxResults = gdxResults.replaceAll("<att name=\"actual_range\" type=\"doubleList\">.*E9</att>", 
+                                           "<att name=\"actual_range\" type=\"doubleList\">XXX</att>");
+
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
+            gdxResults.length() + " " + results.length());
+
+        String expected = 
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"testPrivateAwsS3_0fec_4286_7dae\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1000000</reloadEveryNMinutes>\n" +
+"    <cacheFromUrl>https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day</cacheFromUrl>\n" +
+"    <fileDir>/u00/data/points/testPrivateAwsS3/</fileDir>\n" +
+"    <fileNameRegex>erdQS.*\\.nc</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"composite\">true</att>\n" +
+"        <att name=\"contributor_name\">Remote Sensing Systems, Inc</att>\n" +
+"        <att name=\"contributor_role\">Source of level 2 data.</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
+"        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
+"        <att name=\"date_created\">2008-08-29Z</att>\n" +
+"        <att name=\"date_issued\">2008-08-29Z</att>\n" +
+"        <att name=\"Easternmost_Easting\" type=\"double\">359.875</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">89.875</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">-89.875</att>\n" +
+"        <att name=\"geospatial_lat_resolution\" type=\"double\">0.25</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">359.875</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">0.125</att>\n" +
+"        <att name=\"geospatial_lon_resolution\" type=\"double\">0.25</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" +
+"        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" +
+"        <att name=\"geospatial_vertical_positive\">up</att>\n" +
+"        <att name=\"geospatial_vertical_units\">m</att>\n" +
+"        <att name=\"history\">Remote Sensing Systems, Inc\n" +
+"2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+"2009-01-07 http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"2009-01-07 http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.nc?x_wind[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],y_wind[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],mod[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)]</att>\n" +
+"        <att name=\"infoUrl\">http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html</att>\n" +
+"        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
+"        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Winds &gt; Surface Winds</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
+"        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" +
+"        <att name=\"Northernmost_Northing\" type=\"double\">89.875</att>\n" +
+"        <att name=\"origin\">Remote Sensing Systems, Inc</att>\n" +
+"        <att name=\"processing_level\">3</att>\n" +
+"        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" +
+"        <att name=\"projection\">geographic</att>\n" +
+"        <att name=\"projection_type\">mapped</att>\n" +
+"        <att name=\"references\">RSS Inc. Winds: http://www.remss.com/ .</att>\n" +
+"        <att name=\"satellite\">QuikSCAT</att>\n" +
+"        <att name=\"sensor\">SeaWinds</att>\n" +
+"        <att name=\"source\">satellite observation: QuikSCAT, SeaWinds</att>\n" +
+"        <att name=\"sourceUrl\">http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day</att>\n" +
+"        <att name=\"Southernmost_Northing\" type=\"double\">-89.875</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
+"        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n" +
+"        <att name=\"time_coverage_end\">2008-01-XXT12:00:00Z</att>\n" +
+"        <att name=\"time_coverage_start\">2008-01-XXT12:00:00Z</att>\n" +
+"        <att name=\"title\">Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</att>\n" +
+"        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"date_created\">2008-08-29</att>\n" +
+"        <att name=\"date_issued\">2008-08-29</att>\n" +
+"        <att name=\"history\">Remote Sensing Systems, Inc\n" +
+"2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+"2009-01-07 http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"2009-01-07 https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.nc?x_wind[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],y_wind[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],mod[(2008-01-XXT12:00:00Z):1:(2008-01-XXT12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)]</att>\n" +
+"        <att name=\"infoUrl\">https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html</att>\n" +
+"        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
+"        <att name=\"keywords\">altitude, atmosphere, atmospheric, coast, coastwatch, composite, data, day, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Winds &gt; Surface Winds, Earth Science &gt; Oceans &gt; Ocean Winds &gt; Surface Winds, global, latitude, longitude, meridional, mod, modulus, noaa, node, ocean, oceans, quality, quikscat, science, science quality, surface, time, wcn, west, wind, winds, x_wind, y_wind, zonal</att>\n" +
+"        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" +
+"        <att name=\"project\">CoastWatch (https://coastwatch.noaa.gov/)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Time</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">XXX</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Centered Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_origin\">01-JAN-1970 00:00:00</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>altitude</sourceName>\n" +
+"        <destinationName>altitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Height</att>\n" +
+"            <att name=\"_CoordinateZisPositive\">up</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Altitude</att>\n" +
+"            <att name=\"positive\">up</att>\n" +
+"            <att name=\"standard_name\">altitude</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>latitude</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lat</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">-89.875 89.875</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"point_spacing\">even</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>longitude</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lon</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">0.125 359.875</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"point_spacing\">even</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>x_wind</sourceName>\n" +
+"        <destinationName>x_wind</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"long_name\">Zonal Wind</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"standard_name\">x_wind</att>\n" +
+"            <att name=\"units\">m s-1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>y_wind</sourceName>\n" +
+"        <destinationName>y_wind</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"long_name\">Meridional Wind</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"standard_name\">y_wind</att>\n" +
+"            <att name=\"units\">m s-1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>mod</sourceName>\n" +
+"        <destinationName>mod</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">18.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarPalette\">WhiteRedBlack</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">1</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"long_name\">Modulus of Wind</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"units\">m s-1</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+        Test.ensureEqual(results, expected, 
+            "results.length=" + results.length() + " expected.length=" + expected.length() + 
+            "\nresults=\n" + results);
+
+        //ensure it is ready-to-use by making a dataset from it
+        String tDatasetID = suggDatasetID;
+        EDD.deleteCachedDatasetInfo(tDatasetID);
+        EDD edd = oneFromXmlFragment(null, results);
+
+        if (deleteCachedFiles) {
+            String2.log("\nWaiting 12s for download tasks to finish...\n");
+            Math2.sleep(20000); //allow tasks to finish
+            String2.log("\ntasks #1 of 1 should have finished. Now reloading the dataset (in 5 seconds)...");
+            Math2.sleep(5000); //allow tasks to finish
+            edd = oneFromXmlFragment(null, results);
+        }    
+        Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
+        Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "x_wind, y_wind, mod", "");
+
+        } catch (Throwable t) {
+            throw new RuntimeException( 
+                "If unexpected error: Have you updated your AWS credentials lately?\n", t); 
         }
     }
 
@@ -2315,6 +2600,234 @@ expected =
         SSR.displayInBrowser("file://" + tDir + tName);
 
     }
+
+    /**
+     * This tests reading NetCDF .nc files in a private AWS S3 bucket.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testPrivateAwsS3(" + deleteCachedFiles + ") *****************\n");
+
+        testVerboseOn();
+        EDStatic.reallyVerbose = true;
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDVGridAxis edvga;
+        String id = "testPrivateAwsS3";
+        String cacheDir = "/u00/data/points/testPrivateAwsS3/";
+        if (deleteCachedFiles) {
+            deleteCachedDatasetInfo(id);
+            String2.log("\nEmptying cache...  nRemain=" + File2.deleteAllFiles(cacheDir, true, true)); //recursive, deleteEmptySubdirectories
+            String2.log("Deleting " + cacheDir + "  result=" + File2.delete(cacheDir)); //must be empty      
+            String2.log("Initial creation of eddGrid will fail because 0 files (although download tasks are started)...");
+        }
+
+        EDDGrid eddGrid = null;
+        try {
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        } catch (Exception e) {
+            String2.log("\nCaught expected error (because 0 files):\n" + MustBe.throwableToString(e));
+        }
+
+        if (deleteCachedFiles) {
+            String2.log("\nWaiting 25s for download tasks to finish...\n");
+            Math2.sleep(25000); //allow tasks to finish
+            String2.log("\ntasks 2 of 2 should have finished. Now reloading the dataset. Now reloading dataset (in 5 seconds)...");
+            Math2.sleep(5000); //allow tasks to finish
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
+        }    
+
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String tDir = EDStatic.fullTestCacheDirectory;
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .nc test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_Entire", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.199448e+9, 1.1999664e+9;\n" +
+"    String axis \"T\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Centered Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -89.875, 89.875;\n" +
+"    String axis \"Y\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.125, 359.875;\n" +
+"    String axis \"X\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 2;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  x_wind {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum -15.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Zonal Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"x_wind\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  y_wind {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum -15.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Meridional Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"y_wind\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  mod {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 18.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String colorBarPalette \"WhiteRedBlack\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Modulus of Wind\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String composite \"true\";\n" +
+"    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
+"    String contributor_role \"Source of level 2 data.\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String creator_email \"erd.data@noaa.gov\";\n" +
+"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String creator_type \"institution\";\n" +
+"    String creator_url \"https://coastwatch.pfeg.noaa.gov\";\n" +
+"    String date_created \"2008-08-29\";\n" +
+"    String date_issued \"2008-08-29\";\n" +
+"    Float64 Easternmost_Easting 359.875;\n" +
+"    Float64 geospatial_lat_max 89.875;\n" +
+"    Float64 geospatial_lat_min -89.875;\n" +
+"    Float64 geospatial_lat_resolution 0.25;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 359.875;\n" +
+"    Float64 geospatial_lon_min 0.125;\n" +
+"    Float64 geospatial_lon_resolution 0.25;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"Remote Sensing Systems, Inc\n" +
+"2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+"2009-01-07 http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+"2009-01-07 https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.nc?x_wind[(2008-01-08T12:00:00Z):1:(2008-01-10T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],y_wind[(2008-01-08T12:00:00Z):1:(2008-01-10T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)],mod[(2008-01-08T12:00:00Z):1:(2008-01-10T12:00:00Z)][(0.0):1:(0.0)][(-89.875):1:(89.875)][(0.125):1:(359.875)]\n" +
+today;
+//2015-06-24T17:36:33Z (local files)
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+"    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"    String institution \"NOAA CoastWatch WCN\";\n" +
+"    String keywords \"altitude, atmosphere, atmospheric, coast, coastwatch, composite, data, day, earth, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Winds > Surface Winds, global, latitude, longitude, meridional, mod, modulus, noaa, node, ocean, oceans, quality, quikscat, science, science quality, surface, time, wcn, west, wind, winds, x_wind, y_wind, zonal\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
+"    String naming_authority \"gov.noaa.pfeg.coastwatch\";\n" +
+"    Float64 Northernmost_Northing 89.875;\n" +
+"    String origin \"Remote Sensing Systems, Inc\";\n" +
+"    String processing_level \"3\";\n" +
+"    String project \"CoastWatch (https://coastwatch.noaa.gov/)\";\n" +
+"    String projection \"geographic\";\n" +
+"    String projection_type \"mapped\";\n" +
+"    String references \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+"    String satellite \"QuikSCAT\";\n" +
+"    String sensor \"SeaWinds\";\n" +
+"    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+"    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
+"    Float64 Southernmost_Northing -89.875;\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
+"    String summary \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"    String time_coverage_end \"2008-01-10T12:00:00Z\";\n" +
+"    String time_coverage_start \"2008-01-04T12:00:00Z\";\n" +
+"    String title \"Wind, QuikSCAT, Global, Science Quality (1 Day Composite)\";\n" +
+"    Float64 Westernmost_Easting 0.125;\n" +
+"  }\n" +
+"}\n";
+        int po = results.indexOf(expected.substring(0, 40));
+        Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
+
+        //.csv  with data from one file
+        String2.log("\n*** .nc test read from one file\n");       
+        userDapQuery = "x_wind[1][0][(40):2:(41)][(200):2:(201)],y_wind[1][0][(40):2:(41)][(200):2:(201)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_privateAwsS3", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected = 
+//note that the dataset in erddap has altitude manually adjusted to be 10m.
+//2021-04-19 These numbers differ from what is currently in ERDDAP (but are sort of close).
+//  perhaps because these data files here are sample extracts made in 2008,
+//  so data may have been revised since then.
+"time,altitude,latitude,longitude,x_wind,y_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1,m s-1\n" +
+"2008-01-05T12:00:00Z,0.0,40.125,200.125,11.5365,1.21253\n" +
+"2008-01-05T12:00:00Z,0.0,40.125,200.625,11.5841,0.607097\n" +
+"2008-01-05T12:00:00Z,0.0,40.125,201.125,11.5642,0.910126\n" +
+"2008-01-05T12:00:00Z,0.0,40.625,200.125,10.311,1.35747\n" +
+"2008-01-05T12:00:00Z,0.0,40.625,200.625,11.5841,0.607097\n" +
+"2008-01-05T12:00:00Z,0.0,40.625,201.125,NaN,NaN\n" +
+"2008-01-05T12:00:00Z,0.0,41.125,200.125,NaN,NaN\n" +
+"2008-01-05T12:00:00Z,0.0,41.125,200.625,7.67056,-2.27212\n" +
+"2008-01-05T12:00:00Z,0.0,41.125,201.125,6.34683,-4.87009\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+    }
+
 
     /**
      * This tests writing .nccsvMetadata and .nccsv files with this class.
@@ -11097,7 +11610,7 @@ expected =
         String results, expected;
 
         //what does oneStep see in source?
-        String2.log("What does one step see in source?");
+        String2.log("What does oneStep see in source?");
 
         results = FileVisitorDNLS.oneStep(    //throws IOException if "Too many open files"
             tSourceUrl, tFileNameRegex, tRecursive,
@@ -11116,7 +11629,7 @@ expected =
             File2.delete(tLocalDir + "v4.1/2018/011/20180111090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc");
 
             //what does oneStep see locally?
-            String2.log("What does one step see in tLocalDir=" + tLocalDir + " ?");
+            String2.log("What does oneStep see in tLocalDir=" + tLocalDir + " ?");
             results = FileVisitorDNLS.oneStep(   //throws IOException if "Too many open files"
                 tLocalDir, tFileNameRegex, tRecursive,
                 tPathRegex, tDirectoriesToo).dataToString();
@@ -14399,7 +14912,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 11 : 56;
+            lastTest = interactive? 11 : 59;
         String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true; 
@@ -14479,12 +14992,16 @@ expected =
                     if (test == 48) testIgor();
                     if (test == 49) testBadNcFile(false);  //runIncrediblySlowTest?
                     if (test == 50) testInvalidShortenedNcFile();
+                    if (test == 51) testGenerateDatasetsXmlPrivateAwsS3(true);   //deleteCachedFiles
+                    if (test == 52) testGenerateDatasetsXmlPrivateAwsS3(false);  //deleteCachedFiles
+                    if (test == 53) testPrivateAwsS3(true);  //deleteCachedFiles
+                    if (test == 54) testPrivateAwsS3(false); //deleteCachedFiles  
 
-                    if (test == 52 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
-                    if (test == 53 && doSlowTestsToo) testNThreads(3);
-                    if (test == 54 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
-                    if (test == 55 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
-                    if (test == 56 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
+                    if (test == 55 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
+                    if (test == 56 && doSlowTestsToo) testNThreads(3);
+                    if (test == 57 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
+                    if (test == 58 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+                    if (test == 59 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
                     //NOT FINISHED
                     //none

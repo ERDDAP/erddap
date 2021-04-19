@@ -473,7 +473,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         setUpdateEveryNMillis(tUpdateEveryNMillis);
         fileTableInMemory = tFileTableInMemory;
-        fileDir = tFileDir;
+        fileDir = File2.addSlash(tFileDir);
         fileNameRegex = tFileNameRegex;
         recursive = tRecursive;
         pathRegex = tPathRegex == null || tPathRegex.length() == 0? ".*": tPathRegex;
@@ -487,6 +487,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         if (String2.isSomething(tCacheFromUrl) && !String2.isRemote(tCacheFromUrl))
             throw new IllegalArgumentException(errorInMethod + "'cacheFromUrl' must be a URL.");
+        tCacheFromUrl = File2.addSlash(tCacheFromUrl);
         cacheFromUrl = String2.isRemote(tCacheFromUrl)? tCacheFromUrl : null;
         cacheMaxSizeB = tCacheSizeGB <= 0 || tCacheSizeGB == Integer.MAX_VALUE? -1 : //<=0 = copy all
                      tCacheSizeGB * Math2.BytesPerGB;  

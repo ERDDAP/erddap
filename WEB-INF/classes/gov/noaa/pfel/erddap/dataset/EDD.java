@@ -4840,6 +4840,7 @@ public abstract class EDD {
         boolean sourceUrlIsThreddsCatalog = 
             tPublicSourceUrl.startsWith("http") &&
             tPublicSourceUrl.indexOf("/thredds/catalog/") > 0;
+        String sourceUrlIsAwsS3[] = String2.parseAwsS3Url(tPublicSourceUrl);
 
         String sourceUrlAsTitle = String2.replaceAll(
             //"extension" may be part of name with internal periods, 
@@ -5345,6 +5346,8 @@ public abstract class EDD {
                     value = File2.getDirectory(tPublicSourceUrl) + "contents.html";
                 } else if (sourceUrlIsThreddsCatalog) {  
                     value = File2.getDirectory(tPublicSourceUrl) + "catalog.html";
+                } else if (sourceUrlIsAwsS3 != null) {  
+                    value = tPublicSourceUrl; //may be private, but is the best info we have
                 } else if (tPublicSourceUrl.endsWith("/")) {  
                     value = tPublicSourceUrl;  //can't just add .html or .das
                 } else {
@@ -5592,7 +5595,16 @@ public abstract class EDD {
                 if (!String2.isSomething2(tInstitution))  tInstitution  = "CSIRO, NOAA NCEI OCL";                   
                 if (!String2.isSomething2(creator_url))   creator_url   = "https://www.nodc.noaa.gov/access/oceanclimate.html";                   
                 if (!String2.isSomething2(infoUrl))       infoUrl       = "https://www.nodc.noaa.gov/OC5/indprod.html";                   
+
+            //AWS S3
+            } else if (sourceUrlIsAwsS3 != null) {
+                if (!String2.isSomething2(creator_name))  creator_name  = sourceUrlIsAwsS3[0]; //bucket                   
+                if (!String2.isSomething2(creator_url))   creator_url   = tPublicSourceUrl; //best I have                   
+                if (!String2.isSomething2(infoUrl))       infoUrl       = tPublicSourceUrl; //best I have        
+                if (!String2.isSomething2(tInstitution))  tInstitution  = sourceUrlIsAwsS3[0]; //bucket                   
+
             }
+
             if (debugMode) String2.log(">> out specific: creator email=" + creator_email + " name=" + creator_name + " url=" + creator_url + " institution=" + tIns);
         }
 
@@ -5819,9 +5831,11 @@ public abstract class EDD {
         if (!String2.isSomething2(tSummary) || tSummary.length() < 30) {
 
             value = String2.isSomething2(tInstitution)? tInstitution + " data " : "Data ";
-            if (sourceUrlIsHyraxFile || sourceUrlIsHyraxCatalog ||
+            if (sourceUrlIsAwsS3 != null) 
+                value = File2.removeSlash(sourceUrlIsAwsS3[2]) + " data from AWS S3 bucket " + sourceUrlIsAwsS3[0];
+            else if (sourceUrlIsHyraxFile || sourceUrlIsHyraxCatalog ||
                 sourceUrlIsThreddsCatalog)  
-                 value += "from " + infoUrl;
+                value += "from " + infoUrl;
             else if (tPublicSourceUrl.startsWith("http"))
                  value += "from " + tPublicSourceUrl + ".das ."; 
             else value += "from a local source.";
@@ -6711,13 +6725,15 @@ public abstract class EDD {
         //creator_type    (not required, but useful ACDD and for ISO 19115 and FGDC)
         //creator_name may be known from above
         name = "creator_type";
-        value =    getAddOrSourceAtt(addAtts, sourceAtts, name,                           null);        
+        value = getAddOrSourceAtt(addAtts, sourceAtts, name, null);        
         //clean up
         String creator_type = String2.validateAcddContactType(value);
         if (creator_name.equals("NOAA NMFS SWFSC ERD"))
             creator_type = "institution";
         if (!String2.isSomething2(creator_type) && String2.isSomething2(creator_name)) 
             creator_type = String2.guessAcddContactType(creator_name);
+        if (!String2.isSomething2(creator_type) && sourceUrlIsAwsS3 != null) 
+            creator_type = "group";
         if (!Test.equal(value, creator_type))
             addAtts.set(name, creator_type);
 

@@ -2784,14 +2784,12 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
      * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
-     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
-     * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
+     * See https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
      */
     public static void testAWSS3() throws Throwable {
         String2.log("\n*** FileVisitorDNLS.testAWSS3");
 
         verbose = true;
-        String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
         Table table;
         long time;
         int n;
@@ -2938,6 +2936,136 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
 
         String2.log("\n*** FileVisitorDNLS.testAWSS3 finished.");
+
+    }
+
+    /** 
+     * This tests this class with Amazon AWS S3 file system. 
+     * Your S3 credentials must be in 
+     * <br> ~/.aws/credentials on Linux, OS X, or Unix
+     * <br> C:\Users\USERNAME\.aws\credentials on Windows
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
+     * See https://docs.aws.amazon.com/sdk-for-java/?id=docs_gateway#aws-sdk-for-java,-version-1 .
+     * https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html#credentials-file-format
+     */
+    public static void testPrivateAWSS3() throws Throwable {
+        String2.log("\n*** FileVisitorDNLS.testPrivateAWSS3");
+
+        verbose = true;
+        Table table;
+        long time;
+        int n;
+        String results, expected;
+        //2021-04-16 created a bucket:
+        //  log into AWS console as root (or IAM?)
+        //    Services : S3 : Create bucket: name=bobsimonsdata, region us-east-1, block all public access, versioning=disabled, encryption=false,
+        //upload files: Create folder, then Upload files
+
+        String bucket = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/";
+        String dir = bucket + "erdQSwind1day/";
+        String pathRegex = null;
+
+        //!recursive and dirToo
+        table = oneStep(bucket, ".*", false, ".*", true); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and dirToo
+        table = oneStep(dir, ".*", false, ".*", true); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1618594154000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1618594173000,10478645\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and !dirToo
+        table = oneStep(bucket, ".*", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and !dirToo
+        table = oneStep(dir, ".*", false, ".*", false); //fileNameRegex, tRecursive, pathRegex, tDirectoriesToo
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1618594154000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1618594173000,10478645\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //recursive and dirToo
+        table = oneStep(bucket, ".*\\.nc", true, pathRegex, true); 
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //recursive and !dirToo
+        table = oneStep(bucket, ".*\\.nc", true, pathRegex, false);
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and dirToo
+        table = oneStep(dir, ".*\\.nc", false, pathRegex, true);
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and !dirToo
+        table = oneStep(dir, ".*\\.nc", false, pathRegex, false);
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n";
+        if (expected.length() > results.length()) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //recursive and dirToo
+        //reallyVerbose = true;
+        //debugMode = true;
+        pathRegex = ".*"; 
+        table = oneStep(dir + "subfolder/", ".*\\.nc", true, pathRegex, true); 
+        results = table.dataToString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        String2.log("\n*** FileVisitorDNLS.testPrivateAWSS3 finished.");
 
     }
 
@@ -3647,7 +3775,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 2 : 11;
+            lastTest = interactive? 2 : 12;
         String msg = "\n^^^ FileVisitorDNLS.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -3663,16 +3791,17 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
                 } else {
                     if (test ==  0) testLocal(doSlowTestsToo); 
                     if (test ==  1) testAWSS3(); 
-                    if (test ==  2) testHyrax();
-                    if (test ==  3) testHyraxMUR();
-                    if (test ==  4) testThredds();
-                    if (test ==  5) testErddapFilesWAF();  
-                    if (test ==  6) testErddapFilesWAF2();  
-                    if (test ==  7) testGpcp();  
-                    if (test ==  8) testErsst();  
-                    if (test ==  9) testOneStepToString();
-                    if (test == 10) testPathRegex();
-                    if (test == 11) testReduceDnlsTableToOneDir();
+                    if (test ==  2) testPrivateAWSS3(); 
+                    if (test ==  3) testHyrax();
+                    if (test ==  4) testHyraxMUR();
+                    if (test ==  5) testThredds();
+                    if (test ==  6) testErddapFilesWAF();  
+                    if (test ==  7) testErddapFilesWAF2();  
+                    if (test ==  8) testGpcp();  
+                    if (test ==  9) testErsst();  
+                    if (test == 10) testOneStepToString();
+                    if (test == 11) testPathRegex();
+                    if (test == 12) testReduceDnlsTableToOneDir();
                    
                     //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
 
