@@ -366,7 +366,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         if (tSummary     != null && tSummary.length()     > 0) externalAddGlobalAttributes.add("summary",     tSummary);
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
-            "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+            "(" + (String2.isTrulyRemote(tFileDir)? "remote" : "local") + " files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
         boolean dateTimeAlreadyFound = false;

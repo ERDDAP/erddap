@@ -1475,15 +1475,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 143];\n" + //changes
+"  Float64 time[time = 149];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 143][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 149][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 143];\n" +  //changes
+"      Float64 time[time = 149];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1757,8 +1757,7 @@ expected =
      */
     public static void testBadFilesFlag() throws Throwable {
         String2.log("\n*** EDDGridLonPM180.testBadFilesFlag()\n" +
-            "This test requires erdMWchlamday_LonPM180 and test_erdMWchlamday_LonPM180 \n" +
-            "be loaded in the local ERDDAP.");
+            "This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.");
 
         String datasetID      = "test_erdPHsstamday_LonPM180";
         String childDatasetID = "test_erdPHsstamday_LonPM180Child";
@@ -1769,8 +1768,8 @@ expected =
         String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
 
         //wait 10 seconds and test that all times are present
-        String2.log("I set the badFileFlag. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(10000);
+        String2.log("I set the badFileFlag. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(20000); //sometimes computer is super slow
 
         //test that all times are present
         results = SSR.getUrlResponseStringUnchanged(request);
@@ -1793,8 +1792,8 @@ expected =
         String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
 
         //wait 10 seconds and test that that time point is gone
-        String2.log("I marked a file as bad. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(10000);
+        String2.log("I marked a file as bad. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(20000);  //sometimes computer is super slow
         results = SSR.getUrlResponseStringUnchanged(request);
         expected = 
 "time (UTC)\n" +

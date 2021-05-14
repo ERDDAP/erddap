@@ -135,7 +135,7 @@ or a batch of EML files:
 <li>localTimeZone (e.g., US/Pacific)? 
   <br>If a time variable indicates that it has local time values, this time
     zone will be assigned.
-  <br>This must a value from the
+  <br>This must be a value from the
     <a rel="help"
         href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         >TZ column list of time zone names<img 
@@ -211,7 +211,7 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   <br>&nbsp;
 
 <li><a class="selfLink" id="smallChanges" href="#smallChanges" rel="bookmark">Small Changes</a>
-  <br>ERDDAP makes a lot small changes. For example, ERDDAP uses the 
+  <br>ERDDAP makes a lot of small changes. For example, ERDDAP uses the 
   EML non-DOI <kbd>alternateIdentifier</kbd> plus a dataTable number as the 
   ERDDAP datasetID, but slightly changes <kbd>alternateIdentifier</kbd> to make 
   it a valid variable name in most computer languages,
@@ -268,10 +268,10 @@ Here are the design details of the EDDTableFromEML option in GenerateDatasetsXml
   Technically this isn't allowed. I don't think it's so bad
   under the circumstances. 
   [If necessary, units that can't be made UDUNITS compatible could be
-  moved the variable's comment attribute.]
+  moved to the variable's comment attribute.]
   <br>&nbsp;
 
-<li><a class="selfLink" id="units" href="#units" rel="bookmark">EML version 2.1.1</a>
+<li><a class="selfLink" id="EML211" href="#EML211" rel="bookmark">EML version 2.1.1</a>
   <br>This support for EML v2.1.1 files was added to GenerateDatasetsXml in 2016 with the 
   hope that there would be some uptake in the EML community. As of 2020, that has not happened.
   The ERDDAP developers would be happy to add support for more recent versions of EML, but only 
@@ -291,7 +291,7 @@ There are some issues/problems with the EML files that cause problems
   tries to interpret/process the EML files.
 <ul>
 <li>Although there are several issues listed here, they are mostly small, 
-  solveable problems. In general, EML is a great system and it has been my
+  solvable problems. In general, EML is a great system and it has been my
   pleasure to work with it.  
 <li>These are roughly sorted from worst / most common to least bad / less common.
 <li>Most are related to small problems in specific EML files 
@@ -452,12 +452,12 @@ to match the column names in the data file.
   <li>There are time units, but the time zone isn't specified.
   </ul>
   <p>Other comments:
-  <br>If there is good date+time with time zone column, 
+  <br>If there is a good date+time with time zone column, 
   that column will be named "time" in ERDDAP.
   ERDDAP requires that time column data be understandable/convertible to 
   Zulu/UTC/GMT time zone dateTimes.
   [My belief is: using local times and different date/time formats
-  (2-digit years! mm/dd/yy versus dd/mm/yy vs... ) in data files forces 
+  (2-digit years! mm/dd/yy vs dd/mm/yy vs ... ) in data files forces 
   the end user to do complicated conversions to Zulu time in order to 
   compare data from one dataset with data from another. 
   So ERDDAP standardizes all time data:
@@ -486,7 +486,7 @@ to match the column names in the data file.
       the "time" variable (with no time zone).
     <br>If there is a data column and a time column and no combined dateTime column,
       the dataset is REJECTED &mdash; but the dataset could be made usable
-      by adding a combined dateTime column (preferrably, Zulu time zone) to the datafile 
+      by adding a combined dateTime column (preferably, Zulu time zone) to the datafile 
       and adding its description in the EML file.
   <br>EXAMPLE from SBC LTER: 
   <a rel="help"
@@ -565,7 +565,7 @@ to match the column names in the data file.
 
 <li><a class="selfLink" id="differentVersionsOfEML" href="#differentVersionsOfEML" rel="bookmark">Different Versions of EML</a>
   <br>GenerateDatasetsXml is designed to work with EML 2.1.1.
-  Other versions of EML will work the extent that they
+  Other versions of EML will work to the extent that they
   match 2.1.1 or that GenerateDatasetsXml has special code to deal with it.
   This is a rare problem.
   When it occurs, the solution is to convert your files to EML 2.1.1, or
@@ -606,7 +606,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.11
+<p>ERDDAP, Version 2.12
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

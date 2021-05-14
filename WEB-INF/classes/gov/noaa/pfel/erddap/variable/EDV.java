@@ -876,6 +876,7 @@ will show NaN).
                     tName.insert(i, ' ');
                 }
             }
+            tName = String2.replaceAll(tName, '|', ' '); //STRUCTURE_MEMBER_SEPARATOR
 
             //no vowels? 
             String ucName = tName.toString().toUpperCase();

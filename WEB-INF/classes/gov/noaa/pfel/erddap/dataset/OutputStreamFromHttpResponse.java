@@ -874,7 +874,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         }
 
         if (verbose) {
-            String2.log("OutputStreamFromHttpResponse " + characterEncoding + 
+            String2.log("OutputStreamFromHttpResponse charEncoding=" + characterEncoding + 
                 ", encoding=" + usingCompression + ", " + fileName + ", " + extension);
 
             /* //log header information

@@ -185,7 +185,12 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     }
                 }
 
-                Variable var = ncFile.findVariable(sourceDataNames.get(dvi));  //null if not found
+                //if structure member, get atts for structure
+                String tName = sourceDataNames.get(dvi);
+                int spo = tName.indexOf(STRUCTURE_MEMBER_SEPARATOR);
+                if (spo >= 0) 
+                    tName = tName.substring(0, spo);
+                Variable var = ncFile.findVariable(tName);  //null if not found
                 if (var == null) {
                     String2.log("  var not in file: " + getWhat);
                 } else {
@@ -245,7 +250,11 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             //try to find 1 dataVariable in case needed below
             Variable dataVariable = null;
             for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
-                dataVariable = ncFile.findVariable(sourceDataNames.get(dvi));
+                String sdn = sourceDataNames.get(dvi);
+                int spo = sdn.indexOf(STRUCTURE_MEMBER_SEPARATOR);
+                if (spo >= 0)
+                    sdn = sdn.substring(0, spo);
+                dataVariable = ncFile.findVariable(sdn);
                 if (dataVariable != null)
                     break;
             }
@@ -256,7 +265,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 Variable var = ncFile.findVariable(avName);  //null if not found
                 //String2.log(">> " + getWhat + "  var==null?" + (var == null));
                 if (var == null) {
-                    //there is no corresponding coordinate variable; make pa of indices, 0...
+                    //if there is no corresponding coordinate variable, make pa of indices, 0...
                     Dimension dim = ncFile.findDimension(avName);
                     int dimSize1 = dim == null? 
                         dataVariable.getShape(avi) - 1 : //no dimension (in hdf)
@@ -603,57 +612,132 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 if (dimensions.size() == 1 && nUseDims == 1 &&
                     varName.equals(dimNames.get(0)))
                     continue;
-                PAType tPAType = NcHelper.getElementPAType(var);
-                int nDim = dimensions.size() - (tPAType == PAType.CHAR? 1 : 0);
-                if (nDim > 1)  //don't skip if nDim==1, since dataset might serve it.
-                    nGridsAtSource++;
-                if (nDim != nUseDims) 
-                    continue;
-                //now switch to type that will be used for PrimitiveArray
-                if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
-                else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
-                PrimitiveArray sourcePA = PrimitiveArray.factory(tPAType, 1, false);
-                boolean allMatch = true;
-                for (int avi = 0; avi < nUseDims; avi++) {
-                    if (debugMode) String2.log(">> varName=" + varName + 
-                        " dim check: " + useDims.get(avi).getName() + " == " + dimensions.get(avi).getName() + " ?");  //the short name
-                    //.equals says true for unnamed dims with same size. That's trouble
-                    //but it is better to find too many vars (which might all be desired), than to find 0
-                    if (!useDims.get(avi).equals(dimensions.get(avi))) { 
-                        allMatch = false;
-                        break;
+
+                //is this a structure? 
+                if (var instanceof Structure) {
+
+                    Structure struct = (Structure)var;
+
+                    //does this structure have the expected dimensions
+                    int nDim = dimensions.size(); //assume no Char->String in nc4 files   // - (tPAType == PAType.CHAR? 1 : 0);
+                    if (nDim > 1)  //don't skip if nDim==1, since dataset might serve it.
+                        nGridsAtSource++;
+                    if (nDim != nUseDims) 
+                        continue;
+                    boolean allMatch = true;
+                    for (int avi = 0; avi < nUseDims; avi++) {
+                        if (debugMode) String2.log(">> varName=" + varName + 
+                            " dim check: " + useDims.get(avi).getName() + " == " + dimensions.get(avi).getName() + " ?");  //the short name
+                        //.equals says true for unnamed dims with same size. That's trouble
+                        //but it is better to find too many vars (which might all be desired), than to find 0
+                        if (!useDims.get(avi).equals(dimensions.get(avi))) { 
+                            allMatch = false;
+                            break;
+                        }
                     }
+                    if (!allMatch)
+                        continue;
+
+                    //Okay. Add the members of this structure.
+
+                    //Structures (a subclass of Variable) have atts, StructureMembers don't
+                    Attributes sourceAtts = new Attributes();
+                    NcHelper.getVariableAttributes(var, sourceAtts);
+
+                    //does this var point to a pseudo-data grid_mapping variable?
+                    if (gridMappingAtts == null) 
+                        gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, sourceAtts.getString("grid_mapping"));
+
+                    //add each of the members
+                    StructureMembers sm = struct.makeStructureMembers();
+                    //System.out.println("sm=" + sm);
+                    List<StructureMembers.Member> memList = sm.getMembers();
+                    int nMembers = memList.size();
+                    for (int m = 0; m < nMembers; m++) {
+
+                        StructureMembers.Member smm = memList.get(m);
+                        String smFullName = varName + STRUCTURE_MEMBER_SEPARATOR + smm.getName();
+                        PAType tPAType = NcHelper.getElementPAType(smm.getDataType());
+
+                        //now switch to type that will be used for PrimitiveArray
+                        if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
+                        else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
+                        PrimitiveArray sourcePA = PrimitiveArray.factory(tPAType, 1, false);
+
+                        //add the dataVariable
+                        if (tUnpack) {
+                            sourcePA = sourceAtts.unpackPA(smFullName, sourcePA, 
+                                true, true); //lookForStringTime, lookForUnsigned
+                            Units2.unpackVariableAttributes(sourceAtts,   //after unpackPA
+                                smFullName, NcHelper.getElementPAType(var));
+                        }
+                        dataSourceTable.addColumn(dataSourceTable.nColumns(), smFullName, sourcePA, 
+                            sourceAtts);
+                        PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+                        Attributes destAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                            globalSourceAtts, sourceAtts, null, smFullName, 
+                            destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                            destPA.elementType() != PAType.STRING, //addColorBarMinMax
+                            false); //tryToFindLLAT
+                        dataAddTable.addColumn(dataAddTable.nColumns(), smFullName, destPA, destAtts);
+
+                        //add missing_value and/or _FillValue if needed
+                        addMvFvAttsIfNeeded(smFullName, sourcePA, sourceAtts, destAtts); //sourcePA since strongly typed
+                    }
+
+                } else { //var is a regular variable
+
+                    PAType tPAType = NcHelper.getElementPAType(var);
+                    int nDim = dimensions.size() - (tPAType == PAType.CHAR? 1 : 0);
+                    if (nDim > 1)  //don't skip if nDim==1, since dataset might serve it.
+                        nGridsAtSource++;
+                    if (nDim != nUseDims) 
+                        continue;
+                    //now switch to type that will be used for PrimitiveArray
+                    if      (tPAType == PAType.CHAR)    tPAType = PAType.STRING;
+                    else if (tPAType == PAType.BOOLEAN) tPAType = PAType.BYTE; 
+                    PrimitiveArray sourcePA = PrimitiveArray.factory(tPAType, 1, false);
+                    boolean allMatch = true;
+                    for (int avi = 0; avi < nUseDims; avi++) {
+                        if (debugMode) String2.log(">> varName=" + varName + 
+                            " dim check: " + useDims.get(avi).getName() + " == " + dimensions.get(avi).getName() + " ?");  //the short name
+                        //.equals says true for unnamed dims with same size. That's trouble
+                        //but it is better to find too many vars (which might all be desired), than to find 0
+                        if (!useDims.get(avi).equals(dimensions.get(avi))) { 
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                    if (!allMatch)
+                        continue;
+
+                    //add the dataVariable
+                    Attributes sourceAtts = new Attributes();
+                    NcHelper.getVariableAttributes(var, sourceAtts);
+
+                    //does this var point to a pseudo-data grid_mapping variable?
+                    if (gridMappingAtts == null) 
+                        gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, sourceAtts.getString("grid_mapping"));
+
+                    if (tUnpack) {
+                        sourcePA = sourceAtts.unpackPA(var.getFullName(), sourcePA, 
+                            true, true); //lookForStringTime, lookForUnsigned
+                        Units2.unpackVariableAttributes(sourceAtts,   //after unpackPA
+                            var.getFullName(), NcHelper.getElementPAType(var));
+                    }
+                    dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, 
+                        sourceAtts);
+                    PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
+                    Attributes destAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                        globalSourceAtts, sourceAtts, null, varName, 
+                        destPA.elementType() != PAType.STRING, //tryToAddStandardName
+                        destPA.elementType() != PAType.STRING, //addColorBarMinMax
+                        false); //tryToFindLLAT
+                    dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, destPA, destAtts);
+
+                    //add missing_value and/or _FillValue if needed
+                    addMvFvAttsIfNeeded(varName, sourcePA, sourceAtts, destAtts); //sourcePA since strongly typed
                 }
-                if (!allMatch)
-                    continue;
-
-                //add the dataVariable
-                Attributes sourceAtts = new Attributes();
-                NcHelper.getVariableAttributes(var, sourceAtts);
-
-                //does this var point to a pseudo-data grid_mapping variable?
-                if (gridMappingAtts == null) 
-                    gridMappingAtts = NcHelper.getGridMappingAtts(ncFile, sourceAtts.getString("grid_mapping"));
-
-                if (tUnpack) {
-                    sourcePA = sourceAtts.unpackPA(var.getFullName(), sourcePA, 
-                        true, true); //lookForStringTime, lookForUnsigned
-                    Units2.unpackVariableAttributes(sourceAtts,   //after unpackPA
-                        var.getFullName(), NcHelper.getElementPAType(var));
-                }
-                dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, sourcePA, 
-                    sourceAtts);
-                PrimitiveArray destPA = makeDestPAForGDX(sourcePA, sourceAtts);
-                Attributes destAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    globalSourceAtts, sourceAtts, null, varName, 
-                    destPA.elementType() != PAType.STRING, //tryToAddStandardName
-                    destPA.elementType() != PAType.STRING, //addColorBarMinMax
-                    false); //tryToFindLLAT
-                dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, destPA, destAtts);
-
-                //add missing_value and/or _FillValue if needed
-                addMvFvAttsIfNeeded(varName, sourcePA, sourceAtts, destAtts); //sourcePA since strongly typed
-
             }
 
             if (dataAddTable.nColumns() == 0)

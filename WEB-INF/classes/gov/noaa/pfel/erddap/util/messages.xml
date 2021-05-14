@@ -4140,6 +4140,20 @@ with <kbd>WindSpeed</kbd>.
 </ul>
 ]]></searchHintsLuceneTooltip>
 
+<searchMultipleERDDAPs>Search Multiple ERDDAPs</searchMultipleERDDAPs>
+
+<searchMultipleERDDAPsDescription><![CDATA[
+There are two unofficial ways to search multiple ERDDAPs for datasets:
+<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+>Search Multiple ERDDAPs<img 
+    src="&erddapUrl;/images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a> 
+and 
+<a rel="bookmark" href="http://erddap.com/">ERDDAP Dataset Discovery<img 
+    src="&erddapUrl;/images/external.png" alt=" (external link)" 
+    title="This link to an external website does not constitute an endorsement."></a>. 
+]]></searchMultipleERDDAPsDescription>
+
 <searchNotAvailable>Sorry.  The search system is not available right now.</searchNotAvailable>
 
 <!-- The tooltip text for the full text search's text field. -->
@@ -4945,11 +4959,7 @@ This video shows:
 <li>ERDDAP can return data in lots of <a href="#fileFormats">file formats</a>
   to enable getting data into lots of other programs.
 <li>NOAA works together: The analysis uses two free software programs from NOAA, 
-  ERDDAP and GNOME, and data served by NOAA's 
-  <a rel="bookmark" href="https://www.ncddc.noaa.gov/">NODC/NCDDC<img 
-    src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="This link to an external website does not constitute an endorsement."></a>
-  (facilitated by NOAA's UAF project).
+  ERDDAP and GNOME, and data served by NOAA's NODC/NCDDC (facilitated by NOAA's UAF project).
 <li>ERDDAP makes <a href="#scientificData">scientific data</a> more easily available 
   to help scientists (and others) do their work more efficiently.
 <li>Using ERDDAP isn't hard. (Yes, Rich Signell is really smart, but anyone can use ERDDAP.)
@@ -5591,10 +5601,7 @@ So far, four other groups have contributed code to ERDDAP:
 <ul> 
 <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGridFromMergeIRFiles.java</a> was written and contributed by
-   Jonathan Lafite and Philippe Makowski of 
-   <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
+   Jonathan Lafite and Philippe Makowski of R.Tech Engineering
    (license: copyrighted open source). Thank you, Jonathan and Philippe!
 
 <li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
@@ -5915,7 +5922,10 @@ www.esri.com/en-us/arcgis/about-arcgis/overview
 ://desktop.arcgis.com/en/arcmap/latest/manage-data/tables/adding-an-ascii-or-text-file-table.htm
 
 ://www.unidata.ucar.edu/software/thredds/current/netcdf-java/metadata/DataDiscoveryAttConvention.html
+://wiki.esipfed.org/ArchivalCopyOfVersion1
+
 ://www.unidata.ucar.edu/software/netcdf-java/v4.3/formats/DataDiscoveryAttConvention.html
+://wiki.esipfed.org/ArchivalCopyOfVersion1
 
 http://aurora.regenstrief.org/~ucum/ucum.html
 https://unitsofmeasure.org/ucum.html
@@ -6798,6 +6808,9 @@ https://www2.jpl.nasa.gov
 
 http://www.linux.org
 https://www.linux.org
+
+http://www.marine-geo.org
+https://www.marine-geo.org
 
 http://www.mathworks.com
 https://www.mathworks.com

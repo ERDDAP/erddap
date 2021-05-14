@@ -1370,13 +1370,8 @@ public class TestUtil {
         Test.ensureEqual(String2.parseAwsS3Url(s3), 
             new String[]{"buc-k.et", "re-gion", "ob_ject/n-a.me"}, "");
 
-        Test.ensureEqual(String2.getAwsS3BucketName(s3), "buc-k.et",       "");
-        Test.ensureEqual(String2.getAwsS3ObjectName(s3), "ob_ject/n-a.me", "");
-
         s3 = "https://buc-k.et.s3.amazonaws.com/ob_ject/n-a.me";  //no region
-        Test.ensureEqual(String2.parseAwsS3Url(     s3), null, "");
-        Test.ensureEqual(String2.getAwsS3BucketName(s3), null, "");
-        Test.ensureEqual(String2.getAwsS3ObjectName(s3), null, "");
+        Test.ensureEqual(String2.parseAwsS3Url(s3), null, "");
 
         //noLongLines
         s = "asdf asdf asfd asdf (b)asdflakjf(a) abc flkjf aflkjj(b) sl;kj abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlkj(b) f aflkja(b) fasl faslfkj(b) flkajf sflkj(b) adfsl;kj";

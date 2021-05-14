@@ -405,17 +405,17 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         //  Worst case: there's a partial line at end of file and readJsonlCSV will stop at that line.
 
         ////synchronized: don't read from file during a file write in insertOrDelete
-        //fullFileName = String2.canonical(fullFileName);
-        //ReentrantLock lock = String2.canonicalLock(fullFileName);
-        //if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
-        //    throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
-        //try {
+        fullFileName = String2.canonical(fullFileName);
+        ReentrantLock lock = String2.canonicalLock(fullFileName);
+        if (!lock.tryLock(String2.longTimeoutSeconds, TimeUnit.SECONDS))
+            throw new TimeoutException("Timeout waiting for lock on fullFileName in EDDTableFromHttpGet.");
+        try {
             table.readJsonlCSV(fullFileName, sourceDataNames, sourceDataTypes, false);
-        //} finally {
-        //    lock.unlock();
-        //}
-        ////String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
-        ////table.saveAsDDS(System.out, "s");
+        } finally {
+            lock.unlock();
+        }
+        //String2.log(">> table in " + fullFileName + " :\n" + table.dataToString());
+        //table.saveAsDDS(System.out, "s");
 
         //gather info about the table
         int nCols = table.nColumns();
@@ -2432,7 +2432,7 @@ expected =
 "\"stringTimestamp\":\"" + today + "\\d{2}:\\d{2}\\.\\d{3}Z\",\n" +
 "\"numericTimestamp\":1\\.\\d{10,12}+E9\n" +  //possible but unlikely that millis=0 by chance; if so, try again
 "\\}\n";
-        Test.ensureLinesMatch(results, expected, "");
+        Test.ensureLinesMatch(results, expected, ""); //sometimes fails if right at change of hour (to "today" is previous hour)
 
         tFileTable = eddTable.tryToLoadDirFileTable(datasetDir(id) + FILE_TABLE_FILENAME); 
         results = tFileTable.dataToString();

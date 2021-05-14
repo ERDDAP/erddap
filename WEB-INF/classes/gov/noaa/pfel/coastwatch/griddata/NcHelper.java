@@ -873,7 +873,7 @@ public class NcHelper  {
     }
 
     /**
-     * Get the list of variables from a netcdf file's structure or, if
+     * Get the list of variables from a netcdf file's Structure or, if
      * there is no structure, a list of variables using the largest dimension
      * (a pseudo structure).
      *

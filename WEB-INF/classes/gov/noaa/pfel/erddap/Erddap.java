@@ -930,6 +930,12 @@ public class Erddap extends HttpServlet {
                 "  </ul>\n" +
                 "\n");
 
+            //Search Multiple ERDDAPs
+            writer.write(
+                "<li><h3>" + EDStatic.searchMultipleERDDAPs + "</h3>\n" +
+                String2.replaceAll(EDStatic.searchMultipleERDDAPsDescription, "&erddapUrl;", tErddapUrl) + 
+                "\n");
+
             //end of search/protocol options list
             writer.write(
                 "\n</ul>\n" +
@@ -4802,11 +4808,12 @@ writer.write(
         String webDir = File2.getDirectory(fullRequestUrl);  //what user sees as apparent location
         String ext = File2.getExtension(nameAndExt);
 
-        if (String2.isRemote(localDir)) {
-            //remote
+        //String2.log(">> isRemote=" + String2.isRemote(localDir) + " filesInPrivateS3Bucket=" + edd.filesInPrivateS3Bucket());
+        if (String2.isRemote(localDir) && !edd.filesInPrivateS3Bucket()) {
+            //remote, including public AWS S3
             sendRedirect(response, localDir + nameAndExt);  
         } else {
-            //local
+            //local and AWS S3
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
             OutputStream outputStream = 
@@ -9343,6 +9350,7 @@ breadCrumbs + endBreadCrumbs +
 
     /** 
      * This is the lower level version of doTransfer.
+     * The file must be a true local file or a public or private AWS S3 file.
      *
      * @param localDir the actual hard disk directory (or url dir), ending in '/'
      * @param webDir the apparent directory, ending in '/' (e.g., "public/"),
@@ -9365,8 +9373,8 @@ breadCrumbs + endBreadCrumbs +
         long first = 0;
         long last = -1;
 
-        boolean isRemote = String2.isRemote(localDir + fileNameAndExt);
-        if (!isRemote) {
+        if (!String2.isTrulyRemote(localDir + fileNameAndExt)) {
+            //it's a local file or S3 (public or private)
             fileSize = File2.length(localDir + fileNameAndExt); //it checks isFile
             if (fileSize < 0) {
                 String2.log(msg);
@@ -9422,31 +9430,37 @@ breadCrumbs + endBreadCrumbs +
             if (first < 0 || 
                 first == Long.MAX_VALUE || 
                 last == Long.MAX_VALUE ||
-                (last>= 0 && first > last) ||
+                (last >= 0 && first > last) ||
                 (fileSize >= 0 && last >= fileSize)) {
                 String2.log(msg);
                 throw new SimpleException(
                     EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + //sendErrorCode looks for this 
                     "Invalid Range requested: first=" + first + ", last=" + last);
             }
+            if (last < -1) {
+                if (fileSize == -1) 
+                    throw new SimpleException(
+                        EDStatic.REQUESTED_RANGE_NOT_SATISFIABLE + //sendErrorCode looks for this 
+                        "Invalid Range requested: last byte not specified, but file size isn't known for remote files.");
+                else last = fileSize -1;
+            }
 
             //status must be set before content is sent. Assume transfer will be successful.
             response.setStatus(206); //206=SC_PARTIAL_CONTENT successfully sent
-            String value = "bytes " + first + "-";
-            if (last >= 0) {
-                value += last + "/" + (fileSize >= 0? "" + fileSize : "*");
-                response.setHeader("Content-Range", value);
-                //see https://stackoverflow.com/questions/5052635/what-is-relation-between-content-length-and-byte-ranges-in-http-1-1
-                response.setContentLengthLong(1 + last - first);         
-                //response.setHeader("Content-Length", "" + (1 + last - first));         
-            }
+            String value = "bytes " + //yes, space after 'bytes'
+                first + "-" + last + "/" + (fileSize >= 0? "" + fileSize : "*"); //but fileSize should be known
             response.setHeader("Content-Range", value);
+            //see https://stackoverflow.com/questions/5052635/what-is-relation-between-content-length-and-byte-ranges-in-http-1-1
+            response.setContentLengthLong(1 + last - first);         
+            //response.setHeader("Content-Length", "" + (1 + last - first));         
             msg += ", set Content-Range=" + value;
         } else {
-            if (rangeRequestAllowed) {
-                //offer to Accept-ranges
+            //not a range request
+
+            //offer to Accept-ranges if fileType is okay (not .nc, ...) and fileSize is known
+            if (rangeRequestAllowed && fileSize >= 0) 
                 response.setHeader("Accept-ranges", "bytes");
-            }
+
             //Only set Content-Length if usingCompression = identity
             //  Was: DON'T SET Content-Length!  
             //See comments re: hasRangeRequest in OutputStreamFromHttpResponse.
@@ -9461,7 +9475,8 @@ breadCrumbs + endBreadCrumbs +
 
         //it's good that result is boolean: for security, don't return localDir name in error message
         try {
-            boolean ok = SSR.copy(localDir + fileNameAndExt, outputStream, first, last);   //handles file or URL destination
+            //SSR.copy handles file or public or private AWS source (by routing data through ERDDAP), and file or URL destination  
+            boolean ok = SSR.copy(localDir + fileNameAndExt, outputStream, first, last, true);   //handleS3ViaSDK=true
             if (!ok) {
                 if (!verbose)
                     String2.log(msg); //if wasn't logged above
@@ -17518,6 +17533,7 @@ UTC                  m   deg_n    deg_east m s-1
         throws Exception {
         url = SSR.fixPercentEncodedUrl(url); //crude insurance for new percentEncoding requirements
         if (verbose) String2.log("redirected to " + url);
+        //String2.log(">> " + MustBe.stackTrace());
         response.sendRedirect(url);
     }
 
@@ -19226,6 +19242,17 @@ expected =
         Test.ensureTrue(results.indexOf(expected2) >= 0, "results=\n" + String2.annotatedString(results));
  */   }
 
+    /**
+     * This asks you to try accessing media files in public and private AWS S3 buckets.
+     * It was a project to get this to work.
+     */
+    public static void testAwsS3MediaFiles() {
+        String2.pressEnterToContinue("\n*** Erddap.testAwsS3MediaFiles()\n" +
+            "Try to view (and restart in the middle) the small.mp4 and other video, audio, and image files in\n" +
+            "testMediaFiles, testPrivateAwsS3MediaFiles and testPublicAwsS3MediaFiles.\n" +
+            "It was hard to get the public and private AWS S3 datasets working correctly.\n");
+    }
+
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -19250,7 +19277,7 @@ expected =
                 String2.log(msg + test);
             
                 if (interactive) {
-                    //if (test ==  0) ...;
+                    if (test ==  0) testAwsS3MediaFiles();
 
                 } else {
                     if (test ==  0) testBasic();

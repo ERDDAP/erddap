@@ -1781,6 +1781,7 @@ https://coastwatch.pfeg.noaa.gov/erddap/files/fedCalLandings/
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2018/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2019/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2020/,,,\n" +
+"https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/access/2021/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/doc/,,,\n" +
 "https://www.ncei.noaa.gov/data/global-precipitation-climatology-project-gpcp-daily/src/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -2973,7 +2974,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         expected = 
 "directory,name,lastModified,size\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //!recursive and dirToo
@@ -2982,10 +2984,10 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         expected = 
 "directory,name,lastModified,size\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1618594154000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1618594173000,10478645\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1620243280000,10478645\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -3001,10 +3003,10 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1618594154000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1618594173000,10478645\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1620243280000,10478645\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //recursive and dirToo
@@ -3015,10 +3017,11 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/,,,\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/,,,\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1620243280000,37348564\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //recursive and !dirToo
@@ -3026,9 +3029,9 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1620243280000,37348564\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //!recursive and dirToo
@@ -3037,8 +3040,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         expected = 
 "directory,name,lastModified,size\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -3047,8 +3050,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         results = table.dataToString();
         expected = 
 "directory,name,lastModified,size\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1618594153000,39102\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1618594151000,49790172\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n";
         if (expected.length() > results.length()) 
             String2.log("results=\n" + results);
         Test.ensureEqual(results, expected, "results=\n" + results);
@@ -3062,7 +3065,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         expected = 
 "directory,name,lastModified,size\n" +
 "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,,,\n" +
-"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1618594151000,37348564\n";
+"https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/subfolder/,erdQSwind1day_20080108_10.nc,1620243280000,37348564\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("\n*** FileVisitorDNLS.testPrivateAWSS3 finished.");

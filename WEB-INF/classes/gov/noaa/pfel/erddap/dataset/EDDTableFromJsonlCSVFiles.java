@@ -265,7 +265,7 @@ public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles {
         if (String2.isSomething(tSummary))     externalAddGlobalAttributes.add("summary",     tSummary);
         if (String2.isSomething(tTitle))       externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", 
-            "(" + (String2.isRemote(tFileDir)? "remote" : "local") + " files)");
+            "(" + (String2.isTrulyRemote(tFileDir)? "remote" : "local") + " files)");
 
         //tryToFindLLAT
         tryToFindLLAT(dataSourceTable, dataAddTable);
