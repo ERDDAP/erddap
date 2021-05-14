@@ -74,7 +74,7 @@ public class EDDTableFromFileNames extends EDDTable{
     public final static int fromLocalFiles = 0;
 
     /**
-     * from==fromRemoteFiles if files are on a remote URL.
+     * from==fromRemoteFiles if files are on a remote URL (including AWS S3).
      * Info is cached (DNLS info with directoriesToo=false).
      */
     public final static int fromRemoteFiles = 1;
@@ -437,6 +437,29 @@ public class EDDTableFromFileNames extends EDDTable{
                 //prepare for below
                 tCachedDNLSTable.setColumn(2, new LongArray(tCachedDNLSTable.getColumn(2))); //double -> long
                 tCachedDNLSTable.setColumn(3, new LongArray(tCachedDNLSTable.getColumn(3))); //double -> long
+
+            }
+
+            filesInS3Bucket = String2.isAwsS3Url(fileDir);
+            if (filesInS3Bucket) {
+                //find file with size >0
+                PrimitiveArray sizePA = tCachedDNLSTable.getColumn(3);
+                int row = 0; 
+                int nRows = sizePA.size();                
+                while (row < nRows) {
+                    if (sizePA.getLong(row) <= 0)
+                        row++;
+                    else break;
+                }
+                if (row < nRows) { 
+                    //an actual file was found (not just subdirs)
+                    filesInPrivateS3Bucket = SSR.awsS3FileIsPrivate(
+                        tCachedDNLSTable.getStringData(0, row) + tCachedDNLSTable.getStringData(1, row));
+                    if (verbose) String2.log("  For datasetID=" + datasetID + ", filesInPrivateS3Bucket=" + filesInPrivateS3Bucket);
+                } else {
+                    //safer to assume they it is a private bucket
+                    filesInPrivateS3Bucket = true;
+                }
             }
         }
 
@@ -579,8 +602,9 @@ public class EDDTableFromFileNames extends EDDTable{
 
         //accessibleViaFiles
         if (accessibleViaFiles) {
-            if (from == fromFiles) 
+            if (from == fromFiles) {
                 writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(3)); //may be null
+            } 
         }
 
         //make addVariablesWhereAttNames and addVariablesWhereAttValues
@@ -2548,7 +2572,7 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1617829897000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+"index.html,1620844183000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
             Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
             expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
@@ -2619,7 +2643,7 @@ String expected =
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-04-07T21:11:37Z,32357.0,.html\n" + //changes sometimes
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-05-12T18:29:43Z,32357.0,.html\n" + //changes sometimes
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
@@ -2654,7 +2678,9 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n" + //disappeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,\n" +   //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,\n" +   //appeared 2021-05-03
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n" +
@@ -2683,7 +2709,14 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" + 
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" + //appeared 2021-05-03
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" + //appeared 2021-05-03
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
@@ -2698,9 +2731,16 @@ String expected =
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +  //2021-05-03 many added below...
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +

@@ -594,12 +594,26 @@ public class ScriptString2  {
      * This returns true if the dir starts with http://, https://, ftp://, sftp://,
      * or smb://.
      * This is like isRemote, but returns false for "file://...".
+     * WARNING: AWS S3 URLs are considered remote here, but often they should be treated as local.
      * 
      * @return true if the dir is remote (e.g., a URL other than file://)
      *   If dir is null or "", this returns false.
      */
     public static boolean isRemote(String dir) {
         return String2.isRemote(dir);
+    }
+
+    /** 
+     * This returns true if the dir starts with http://, https://, ftp://, sftp://,
+     * or smb://, but not if it's an AWS S3 URL.
+     * This is like isRemote, but returns false for "file://...".
+     * NOTE: AWS S3 URLs are considered local here, but sometimes they should be treated as local.
+     * 
+     * @return true if the dir is remote (but not an AWS S3 URL) (e.g., a URL other than file://)
+     *   If dir is null or "", this returns false.
+     */
+    public static boolean isTrulyRemote(String dir) {
+        return String2.isTrulyRemote(dir);
     }
 
 

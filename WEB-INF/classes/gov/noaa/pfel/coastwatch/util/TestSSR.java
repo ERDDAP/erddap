@@ -15,8 +15,11 @@ import com.cohort.util.XML;
 import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.PixelGrabber;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -457,6 +460,112 @@ public class TestSSR {
     }
 
     /**
+     * Runs some AWS S3-related tests.
+     */
+    public static void testAwsS3() throws Exception {
+
+        String2.log("\n*** TestSSR.testAwsS3() -- THIS TEST REQUIRES testPrivateAwsS3MediaFiles in localhost erddap.");
+        String localFile20           = "/u00/data/points/testMediaFiles/ShouldWork/noaa20.gif";
+        String privateAwsSource20    = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif";
+        String privateErddapSource20 = "http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/noaa20.gif";
+        BufferedInputStream bis;
+        BufferedOutputStream bos;
+        String dest = File2.getSystemTempDirectory() + "testS3";
+        String results, expected;
+
+        //String2.isRemote() and String2.isTrulyRemote()
+        Test.ensureEqual(String2.isRemote(     localFile20),           false, ""); 
+        Test.ensureEqual(String2.isTrulyRemote(localFile20),           false, ""); 
+        Test.ensureEqual(String2.isRemote(     privateAwsSource20),    true,  ""); 
+        Test.ensureEqual(String2.isTrulyRemote(privateAwsSource20),    false, ""); 
+        Test.ensureEqual(String2.isRemote(     privateErddapSource20), true,  ""); 
+        Test.ensureEqual(String2.isTrulyRemote(privateErddapSource20), true,  ""); 
+
+        //private file length
+        Test.ensureEqual(File2.length(localFile20),        1043, ""); 
+        Test.ensureEqual(File2.length(privateAwsSource20), 1043, ""); 
+
+        //private file lastModified
+        Test.ensureEqual(File2.getLastModified(localFile20),        1302534310000L, ""); 
+        Test.ensureEqual(File2.getLastModified(privateAwsSource20), 1620243246000L, ""); //the instant I put it in S3
+
+        //a public bucket/file should allow access via a simple https request
+        boolean caughtException = false;
+        try {
+            SSR.touchUrl("https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt", 5000, false); //handleS3ViaSDK=false
+        } catch (Exception e) {
+            caughtException = true;
+        }
+        Test.ensureEqual(caughtException, false, 
+            "A public S3 file should be accessible (e.g., touchUrl) via a simple URL.");
+
+        //a private bucket/file shouldn't allow access via a simple https request
+        caughtException = false;
+        try {
+            SSR.touchUrl(privateAwsSource20, 5000, false); //handleS3ViaSDK=false
+        } catch (Exception e) {
+            caughtException = true;
+            String2.log("Expected exception:\n" + MustBe.throwableToString(e));
+        }
+        Test.ensureEqual(caughtException, true, 
+            "A private S3 file shouldn't be accessible (e.g., touchUrl) via a simple URL (even with credentials on this computer).");
+
+        //byte range private
+        Test.ensureTrue(File2.copy(privateAwsSource20, dest + "1a"), "");
+        results = File2.hexDump(dest + "1a", 96);
+        String expected1 = 
+"47 49 46 38 39 61 14 00   14 00 f7 00 00 14 3a 8c   GIF89a        :  |\n" +
+"2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n" +
+"56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n" +
+"94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n" +
+"64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n" +
+"42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
+        Test.ensureEqual(results, expected1, "results=\n" + results);        
+
+        //range request
+        Test.ensureTrue(File2.copy(privateAwsSource20, dest + "2a", 16, 95), "");
+        results = File2.hexDump(dest + "2a", 1000); //read all
+        String expected2 = //same but without 1st row (16 bytes)
+"2c a2 d4 94 d2 ec 4c 6e   a4 8c a2 c4 04 86 d4 34   ,     Ln       4 |\n" +
+"56 9c cc ea f4 6c 86 b4   64 ba e4 84 c6 e4 24 4a   V    l  d     $J |\n" +
+"94 44 aa dc 14 96 d4 e4   f6 fc ac ba d4 cc d2 e4    D               |\n" +
+"64 7e ac 44 62 9c 34 a6   dc 7c 92 bc bc ca dc 14   d~ Db 4  |       |\n" +
+"42 8c 5c 76 ac 9c ae cc   74 c2 e4 14 96 dc fc fe   B \\v    t        |\n";
+        Test.ensureEqual(results, expected2, "results=\n" + results);        
+
+        //byte range private
+        bis = (BufferedInputStream)SSR.getUrlConnBufferedInputStream(privateErddapSource20, 
+            30000, false, false, 0, -1, false)[1];
+        bos = new BufferedOutputStream(new FileOutputStream(dest + "1b"));
+        File2.copy(bis, bos, 0, -1);
+        bis.close();
+        bos.close();
+        results = File2.hexDump(dest + "1b", 96);
+        Test.ensureEqual(results, expected1, "results=\n" + results);        
+
+        //range request
+        bis = (BufferedInputStream)SSR.getUrlConnBufferedInputStream(privateErddapSource20, 
+            30000, false, false, 16, 95, false)[1];  //16 to 95
+        bos = new BufferedOutputStream(new FileOutputStream(dest + "2b"));
+        File2.copy(bis, bos, 0, -1);
+        bis.close();
+        bos.close();
+        results = File2.hexDump(dest + "2b", 1000);  //all 
+        Test.ensureEqual(results, expected2, "results=\n" + results);        
+
+        //range request
+        bis = (BufferedInputStream)SSR.getUrlConnBufferedInputStream(privateErddapSource20, 
+            30000, false, false, 16, -1, false)[1];  //16 to end
+        bos = new BufferedOutputStream(new FileOutputStream(dest + "2b2"));
+        File2.copy(bis, bos, 0, -1);
+        bis.close();
+        bos.close();
+        results = File2.hexDump(dest + "2b2", 80); 
+        Test.ensureEqual(results, expected2, "results=\n" + results);        
+    }
+
+
+    /**
      * This runs all of the interactive or not interactive tests for this class.
      *
      * @param errorSB all caught exceptions are logged to this.
@@ -470,7 +579,7 @@ public class TestSSR {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 2 : -1;
+            lastTest = interactive? 2 : 0;
         String msg = "\n^^^ TestSSR.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -486,7 +595,7 @@ public class TestSSR {
                     if (test == 1000) runUnixTests();
 
                 } else {
-                    //if (test ==  0) ...;
+                    if (test ==  0) testAwsS3();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

@@ -4403,7 +4403,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 17.037, 60.799;\n" +
+"    Float64 actual_range 17.043, 60.802;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -4443,6 +4443,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/currents\";\n" +
 "  }\n" +
 "  bin {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Bin\";\n" +
@@ -4450,6 +4452,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  direction_of_sea_water_velocity {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Float64 colorBarMaximum 0.5;\n" +
 "    Float64 colorBarMinimum -0.5;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
@@ -4487,6 +4490,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"cm/s\";\n" +
 "  }\n" +
 "  platform_orientation {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Platform Orientation\";\n" +
@@ -4494,6 +4498,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"degrees_true\";\n" +
 "  }\n" +
 "  platform_pitch_angle {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Platform Pitch Angle\";\n" +
@@ -4501,6 +4506,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"degree\";\n" +
 "  }\n" +
 "  platform_roll_angle {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Platform Roll Angle\";\n" +
@@ -4518,6 +4524,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"Cel\";\n" +
 "  }\n" +
 "  pct_good_3_beam {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Percent Good 3 Beam\";\n" +
@@ -4525,6 +4533,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"percent\";\n" +
 "  }\n" +
 "  pct_good_4_beam {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Percent Good 4 Beam\";\n" +
@@ -4532,6 +4542,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"percent\";\n" +
 "  }\n" +
 "  pct_rejected {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Percent Rejected\";\n" +
@@ -4539,6 +4551,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"percent\";\n" +
 "  }\n" +
 "  pct_bad {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Percent Bad\";\n" +
@@ -4546,6 +4560,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"percent\";\n" +
 "  }\n" +
 "  echo_intensity_beam1 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Echo Intensity Beam 1\";\n" +
@@ -4553,6 +4568,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  echo_intensity_beam2 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Echo Intensity Beam #2\";\n" +
@@ -4560,6 +4576,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  echo_intensity_beam3 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Echo Intensity Beam 3\";\n" +
@@ -4567,6 +4584,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  echo_intensity_beam4 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Echo Intensity Beam 4\";\n" +
@@ -4574,6 +4592,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  correlation_magnitude_beam1 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Correlation Magnitude Beam 1\";\n" +
@@ -4581,6 +4600,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  correlation_magnitude_beam2 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Correlation Magnitude Beam #2\";\n" +
@@ -4588,6 +4608,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  correlation_magnitude_beam3 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Correlation Magnitude Beam 3\";\n" +
@@ -4595,6 +4616,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String units \"count\";\n" +
 "  }\n" +
 "  correlation_magnitude_beam4 {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
 "    String long_name \"Correlation Magnitude Beam 4\";\n" +
@@ -4634,8 +4656,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    Float64 Easternmost_Easting -66.588;\n" +  //2019-03-19 small changes to bbox
 "    String featureType \"TimeSeriesProfile\";\n" +
-"    Float64 geospatial_lat_max 60.799;\n" +
-"    Float64 geospatial_lat_min 17.037;\n" +
+"    Float64 geospatial_lat_max 60.802;\n" +
+"    Float64 geospatial_lat_min 17.043;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max -66.588;\n" +
 "    Float64 geospatial_lon_min -172.088;\n" +
@@ -4666,9 +4688,9 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    Float64 Northernmost_Northing 60.799;\n" +
+"    Float64 Northernmost_Northing 60.802;\n" +
 "    String sourceUrl \"https://sdf.ndbc.noaa.gov/sos/server.php\";\n" +
-"    Float64 Southernmost_Northing 17.037;\n" +
+"    Float64 Southernmost_Northing 17.043;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have currents data.\n" +
@@ -4898,7 +4920,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -148.263, -60.521;\n" + //2014-08-11 was -65.927 //2012-10-10 was -151.719 //2016-09-21 was -64.763
+"    Float64 actual_range -155.828, -39.52;\n" + //2021-05-14 was -148.263, -60.521  //2014-08-11 was -65.927 //2012-10-10 was -151.719 //2016-09-21 was -64.763
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -4907,7 +4929,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range -55.0, 60.799;\n" +  //2014-08-12 was 24.843, 2010-10-10 was 17.93, 2016-09-21 was 17.86
+"    Float64 actual_range -55.0, 60.802;\n" +  //2014-08-12 was 24.843, 2010-10-10 was 17.93, 2016-09-21 was 17.86
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -4959,13 +4981,13 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
-"    Float64 Easternmost_Easting -60.521;\n" +
+"    Float64 Easternmost_Easting -39.52;\n" +
 "    String featureType \"TimeSeries\";\n" +
-"    Float64 geospatial_lat_max 60.799;\n" +
+"    Float64 geospatial_lat_max 60.802;\n" +
 "    Float64 geospatial_lat_min -55.0;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max -60.521;\n" +
-"    Float64 geospatial_lon_min -148.263;\n" +
+"    Float64 geospatial_lon_max -39.52;\n" +
+"    Float64 geospatial_lon_min -155.828;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -4993,7 +5015,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    Float64 Northernmost_Northing 60.799;\n" +
+"    Float64 Northernmost_Northing 60.802;\n" +
 "    String sourceUrl \"https://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -55.0;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
@@ -5003,7 +5025,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
 "    String time_coverage_start \"2007-11-02T00:00:00Z\";\n" +  //changes
 "    String title \"NOAA NDBC SOS, 2007-present, sea_water_practical_salinity\";\n" +
-"    Float64 Westernmost_Easting -148.263;\n" +
+"    Float64 Westernmost_Easting -155.828;\n" +
 "  }\n" +
 "}\n";
             int tPo = results.indexOf(expected.substring(0, 17));
@@ -5024,8 +5046,8 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T20:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T22:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n";
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.0,2008-08-01T20:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.0,2008-08-01T22:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             throw new RuntimeException("Small changes are common. NDBC Server is in flux.", t); 
@@ -5041,14 +5063,14 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
 "-80.534,30.042,urn:ioos:station:wmo:41012,-1.0,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:41012::ct1,35.58\n" +
-"-65.912,42.327,urn:ioos:station:wmo:44024,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44024::ct1,32.4\n" +
+"-65.909,42.325,urn:ioos:station:wmo:44024,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44024::ct1,32.4\n" + //2021-05-14 was -65.912,42.327
 "-70.566,42.523,urn:ioos:station:wmo:44029,-1.0,2010-05-27T00:00:00Z,urn:ioos:sensor:wmo:44029::ct1,30.2\n" +
 "-70.566,42.523,urn:ioos:station:wmo:44029,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44029::ct1,30.2\n" +
 "-70.426,43.179,urn:ioos:station:wmo:44030,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44030::ct1,30.5\n" +
 "-68.996,44.055,urn:ioos:station:wmo:44033,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44033::ct1,30.8\n" +
 "-68.112,44.103,urn:ioos:station:wmo:44034,-1.0,2010-05-27T00:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
 "-68.112,44.103,urn:ioos:station:wmo:44034,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
-"-148.263,60.799,urn:ioos:station:wmo:46081,-2.5,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:46081::ct1,25.24\n";
+"-148.283,60.802,urn:ioos:station:wmo:46081,-2.5,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:46081::ct1,25.24\n"; //2021-05-14 was -148.263,60.799
 //"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T00:45:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
 //"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
 //"-84.875,29.786,urn:ioos:station:wmo:apqf1,NaN,2010-05-27T00:15:00Z,urn:ioos:sensor:wmo:apqf1::ct1,2.2\n";
@@ -6341,14 +6363,18 @@ So I will make ERDDAP able to read
 //"-67.8798,43.4907\n"
 "longitude,latitude\n" +  //starting 2014-08-11
 "degrees_east,degrees_north\n" +
+"-63.4082,44.5001\n" + //2021-05-14 added
 "-69.9877,43.7628\n" +
 "-69.3541278839111,43.7149534225464\n" + //2020-10-05 was -69.3578,43.7148, 2015-07-31 was -69.3550033569336,43.7163009643555\n" + //2014-09-22 was -69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
 "-68.9982,44.0555\n" +
 "-68.8249619164502,44.3871537467378\n" + //2020-10-05 was -68.82308,44.3878  2020-05-06 was "-68.8249619164502,44.3871537467378\n" +
 "-68.1087,44.1058\n" + //2020-10-05 was -68.1121,44.1028 2015-07-31 was -68.1084442138672,44.1057103474935\n" +
-"-67.8798,43.4907\n" +
-"-65.907,42.3303\n"; //2014-09-22 was -65.9061666666667,42.3336666666667\n";
+"-67.8758443196615,43.498483022054\n" + //2021-05-14 was "-67.8798,43.4907\n" +
+"-65.9088432312012,42.3246746063232\n" + //2021-05-14 was -65.907,42.3303 //2014-09-22 was -65.9061666666667,42.3336666666667\n";
+"-54.688,46.9813\n" +
+"-54.1317,47.3255\n" +
+"-54.0488,47.7893\n";
 //"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
@@ -6395,7 +6421,8 @@ So I will make ERDDAP able to read
 "-69.9878833333333,43.7617166666667\n" +
 "-69.3563516790217,43.7138879949396\n" +
 "-68.9979781363549,44.0556086654547\n" +
-"-68.1087458631928,44.1053852961787\n";
+"-68.1087458631928,44.1053852961787\n" +
+"-67.0122575759888,44.8892910480499\n"; //2021-05-14 added
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
         } catch (Throwable t) {
             throw new RuntimeException("Small changes are common. Oostethys Server is in flux.", t); 

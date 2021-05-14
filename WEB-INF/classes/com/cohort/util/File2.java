@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.FileSystems;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -33,6 +34,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -133,8 +135,11 @@ public class File2 {
 
     private static String tempDirectory; //lazy creation by getSystemTempDirectory
 
+    private static ConcurrentHashMap<String, S3Client> s3ClientMap = new ConcurrentHashMap();
+
     /**
-     * This indicates if the named file is indeed an existing file.
+     * This indicates if the named file is indeed an existing local file.
+     * AWS S3 files don't count as local here.
      * If dir="", it just says it isn't a file.
      *
      * @param fullName the full name of the file
@@ -592,10 +597,17 @@ public class File2 {
      */
     public static long length(String fullName) {
         try {
-            //String2.log("File2.isFile: " + fullName);
-            File file = new File(fullName);
-            if (!file.isFile()) return -1;
-            return file.length();
+            String bro[] = String2.parseAwsS3Url(fullName);
+            if (bro == null) {
+                //String2.log("File2.isFile: " + fullName);
+                File file = new File(fullName);
+                if (!file.isFile()) return -1;
+                return file.length();
+            } else {
+                //isAwsS3Url
+                return getS3Client(bro[1]).headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
+                    .contentLength().longValue();
+            }
         } catch (Exception e) {
             if (verbose) String2.log(MustBe.throwable("File2.length(" + fullName + ")", e));
             return -1;
@@ -613,8 +625,16 @@ public class File2 {
      */
     public static long getLastModified(String fullName) {
         try {
-            File file = new File(fullName);
-            return file.lastModified();
+            String bro[] = String2.parseAwsS3Url(fullName);
+            if (bro == null) {
+                File file = new File(fullName);
+                return file.lastModified();
+            } else {
+                //isAwsS3Url
+                return getS3Client(bro[1]).headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
+                    .lastModified().toEpochMilli();
+            }
+
         } catch (Exception e) {
             //pause and try again
             try {
@@ -813,6 +833,7 @@ public class File2 {
                  ext.equals(".bz2")));
     }
 
+
     /**
      * This gets a new S3Client for the specified region.
      *
@@ -822,24 +843,47 @@ public class File2 {
     public static S3Client getS3Client(String region) {
         //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
         //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
-//FUTURE??? should I have a static concurrentHashmap with region:S3Client to reuse S3Clients?
-//  I saw no encouragement for this in the AWS documentation.
-        return S3Client.builder()
-            //was .credentials(ProfileCredentialsProvider.create()) //now it uses default credentials
-            .region(Region.of(region))  
-            .build();               
+        //Yes, S3Client is thread safe and reuse is encouraged.
+        //  Notably, the same ssl connection is reused if requests close together in time (so more efficient).
+        //  see https://github.com/aws/aws-sdk-cpp/issues/266
+        S3Client s3Client = s3ClientMap.get(region);
+        if (s3Client == null) {
+            //I'm not being super careful with concurrency here because 2 initial 
+            //  simultaneous calls for the same region are unlikely and it doesn't 
+            //  matter if 2 are made initially (and only 1 kept ultimately).
+            //Presumably, this throws exceptions if trouble (eg unknown/invalid region).
+            //Presumably, the s3Client is smart enough to fix itself if there is trouble 
+            //  (or there's nothing to fix since it's just a specification).
+            s3Client = S3Client.builder()
+                //was .credentials(ProfileCredentialsProvider.create()) //now it uses default credentials
+                .region(Region.of(region))  
+                .build();               
+            s3ClientMap.put(region, s3Client);
+        }
+        return s3Client;
     }
 
 
+    /**
+     * This is a variant of getBufferedInputStream that gets the entire file (firstByte=0 and lastByte=-1).
+     */
+    public static BufferedInputStream getBufferedInputStream(String fullFileName) throws Exception {
+        return getBufferedInputStream(fullFileName, 0, -1);
+    }
+    
     /**
      * This gets a (not decompressed), buffered InputStream from a file or S3 URL. 
      * If the file is compressed, it is assumed to be the only file (entry) in the archive.
      * 
      * @param fullFileName The full file name or S3 URL. 
-     * @return a buffered InputStream from a file or S3 URL. 
+     * @param firstByte usually 0, but &gt;=0 for a byte range request
+     * @param lastByte usually -1 (last available), but a specific number (inclusive)
+     *   for a byte range request.
+     * @return a buffered InputStream from a file or S3 URL, ready to read firstByte. 
      * @throws Exception if trouble
      */
-    public static BufferedInputStream getBufferedInputStream(String fullFileName) throws Exception {
+    public static BufferedInputStream getBufferedInputStream(String fullFileName, 
+        long firstByte, long lastByte) throws Exception {
         String ext = getExtension(fullFileName); //if e.g., .tar.gz, this returns .gz
 
         //is it an AWS S3 object?
@@ -848,12 +892,18 @@ public class File2 {
         if (bro == null) {
             //no, it's a regular file
             is = new FileInputStream(fullFileName); 
+            skipFully(is, firstByte);
         } else { 
             //yes, it's an AWS S3 object. Get it.
             //example: https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#download-object
             //example: https://www.javacodemonk.com/aws-java-sdk-2-s3-file-upload-download-spring-boot-c1a3e072
-            is = getS3Client(bro[1]).getObject(
-                GetObjectRequest.builder().bucket(bro[0]).key(bro[2]).build()); //throws SdkClientException
+            //This code may throw SdkClientException.
+            GetObjectRequest.Builder builder = 
+                GetObjectRequest.builder().bucket(bro[0]).key(bro[2]); 
+            if (firstByte > 0 || lastByte != -1)
+                //yes 'bytes=', not space. see https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.35
+                builder.range("bytes=" + firstByte + "-" + (lastByte < 0? "" : "" + lastByte));
+            is = getS3Client(bro[1]).getObject(builder.build());
         }
 
         //Buffer it.  Recommended by https://commons.apache.org/proper/commons-compress/examples.html
@@ -1316,10 +1366,10 @@ public class File2 {
      *
      * @param dir with or without a slash at the end.
      * @return dir with a slash (matching the other slashes) at the end.
-     *    If dir is "", this does nothing.
+     *    If dir is null or "", this does nothing.
      */
     public static String addSlash(String dir) {
-        if (dir.length() == 0 ||
+        if (dir == null|| dir.length() == 0 ||
             "\\/".indexOf(dir.charAt(dir.length() - 1)) >= 0)
             return dir;
         int po = dir.indexOf('\\');

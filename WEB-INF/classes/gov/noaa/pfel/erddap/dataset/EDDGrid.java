@@ -9633,9 +9633,13 @@ Attributes {
             //erddapy
             "  <p><a rel=\"bookmark\" href=\"https://github.com/ioos/erddapy#--erddapy\">erddapy" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python)</a>\n" +
-            "    is a Python library that \"takes advantage of ERDDAP’s RESTful web services and creates the\n" +
+            "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python, by Filipe Pires Alvarenga Fernandes)</a> and\n" +
+            "  <br><a rel=\"bookmark\" href=\"https://github.com/hmedrano/erddap-python\">erddap-python" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> (by Favio Medrano)\n" +
+            "  <br>are Python libraries that \"take advantage of ERDDAP’s RESTful web services and create the\n" +
             "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n" +
+            "    They have somewhat different programming styles and slightly different feature sets,\n" +
+            "    so it might be good to experiment with both to see which you prefer.\n" +
             //
             //Python/Jupyter Notebook
             "  <p>\"<a rel=\"bookmark\" href=\"https://jupyter.org/\">Jupyter Notebook" +
