@@ -1296,13 +1296,13 @@ public class LoadDatasets extends Thread {
                                 //e.g., https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
                                 String trDatasetID = String2.extractCaptureGroup(tAction, "datasetID=(.+?)&", 1);
                                 if (trDatasetID == null)
-                                    SSR.touchUrl(tAction, 60000); //fall back; just do it
+                                    SSR.touchUrl(tAction, 60000, true); //fall back; just do it  //handleS3ViaSDK=true
                                 else EDD.requestReloadASAP(trDatasetID);
 
                             } else {
                                 //but don't get the input stream! I don't need to, 
                                 //and it is a big security risk.
-                                SSR.touchUrl(tAction, 60000);
+                                SSR.touchUrl(tAction, 60000, true);  //handleS3ViaSDK=true
                             }
                         } else if (tAction.startsWith("mailto:")) {
                             String tEmail = tAction.substring("mailto:".length());

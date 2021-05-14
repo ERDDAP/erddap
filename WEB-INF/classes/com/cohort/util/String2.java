@@ -1763,13 +1763,30 @@ public class String2 {
      * This returns true if the dir starts with http://, https://, ftp://, sftp://,
      * or smb://.
      * This is like isRemote, but returns false for "file://...".
+     * WARNING: AWS S3 URLs are considered remote here, but often they should be treated as local.
      * 
-     * @return true if the dir is remote (e.g., a URL other than file://)
+     * @return true if the dir is remote (but not an AWS S3 URL) (e.g., a URL other than file://)
      *   If dir is null or "", this returns false.
      */
     public static boolean isRemote(String dir) {
         if (isUrl(dir))
             return dir.startsWith("file://")? false : true;
+        return false;
+    }
+
+    /** 
+     * This returns true if the dir starts with http://, https://, ftp://, sftp://,
+     * or smb://, but not if it's an AWS S3 URL.
+     * This is like isRemote, but returns false for "file://...".
+     * NOTE: AWS S3 URLs are considered local here, but sometimes they should be treated as local.
+     * 
+     * @return true if the dir is remote (e.g., a URL other than file://)
+     *   If dir is null or "", this returns false.
+     */
+    public static boolean isTrulyRemote(String dir) {
+        if (isUrl(dir))
+            return dir.startsWith("file://")? false : 
+                   isAwsS3Url(dir)? false : true;
         return false;
     }
 
@@ -6930,6 +6947,22 @@ and zoom and pan with controls in
         else a.append(isSomething(b)? b.trim() : "");
     }
 
+
+    /** 
+     * This indicates if the URL is an AWS S3 URL.
+     *
+     * @param url the URL
+     * @return true if the URL is an AWS S3 URL.
+     */
+    public static boolean isAwsS3Url(String url) {
+        if (url == null)
+            return false;
+        if (url.endsWith(".amazonaws.com"))
+            url += "/";
+        Matcher matcher = AWS_S3_PATTERN.matcher(url); 
+        return matcher.matches();
+    }
+
     /** 
      * Given an Amazon AWS S3 URL, this returns the bucketName, region, and objectName.
      * See http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketGET.html
@@ -6954,29 +6987,6 @@ and zoom and pan with controls in
         if (matcher.matches()) 
             return new String[]{matcher.group(1), matcher.group(2), matcher.group(3)};
         return null;
-    }
-
-
-    /** 
-     * Given an Amazon AWS S3 URL, this returns the bucketName.
-     *
-     * @param url The URL of an S2 object.
-     * @return the bucketName, or null if not an s3 URL
-     */
-    public static String getAwsS3BucketName(String url) {
-        String parts[] = parseAwsS3Url(url);
-        return parts == null? null : parts[0];
-    }
-
-    /** 
-     * Given an Amazon AWS S3 URL, this returns the objectName (or prefix).
-     *
-     * @param url The URL of an S2 object.
-     * @return the objectName (may be ""), or null if not an s3 URL
-     */
-    public static String getAwsS3ObjectName(String url) {
-        String parts[] = parseAwsS3Url(url);
-        return parts == null? null : parts[2];
     }
 
     /** 

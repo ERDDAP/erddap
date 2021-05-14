@@ -3300,7 +3300,7 @@ public class Table  {
      */
     public void readNccsv(String fullName, boolean readData) throws Exception {
         BufferedReader bufferedReader = String2.isRemote(fullName)?
-            SSR.getBufferedUrlReader(fullName) :
+            SSR.getBufferedUrlReader(fullName) : //handles AWS S3
             new BufferedReader(new FileReader(fullName));      
         try {
             lowReadNccsv(fullName, readData, bufferedReader);
@@ -31098,6 +31098,7 @@ String2.log(table.dataToString());
         //    "\n  userQuery=" + userQuery + 
         //    "\n  iconUrlDir=" + iconUrlDir +
         //    "\n  nDirNames=" + dirNames.size() + " table.nRows=" + nRows());
+        //but this doesn't matter: localDir is no longer used below
         if (localDir != null) {
             if (!File2.isDirectory(localDir)) {
                 String2.log("Warning: directoryListing localDir=" + localDir + " isn't a directory.");

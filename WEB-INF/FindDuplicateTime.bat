@@ -5,4 +5,4 @@ rem Parameters: directory fileNameRegex timeVarName
 rem This is recursive.
 rem Written by Bob Simons  original 2021-01-20
 
-C:\programs\jdk8u265-b01\bin\java.exe -cp classes;../../../lib/servlet-api.jar;lib/* -Xms1300M -Xmx1300M -verbose:gc gov.noaa.pfel.erddap.dataset.FindDuplicateTime %*
+C:\programs\jdk8u292-b10\bin\java.exe -cp classes;../../../lib/servlet-api.jar;lib/* -Xms1300M -Xmx1300M -verbose:gc gov.noaa.pfel.erddap.dataset.FindDuplicateTime %*

@@ -495,7 +495,7 @@ causing a loss of precision for very large values
 In NetCDF-3 .nc files, ubyte, ushort, and uint variables appear as
 byte, short, and int with the <kbd>_Unsigned=true</kbd> metadata attribute.
 In NetCDF-3 .nc files, ubyte, ushort, and uint attributes appear as
-byte, short, and int attributes containing the corresponding two's-compliment value
+byte, short, and int attributes containing the corresponding two's-complement value
 (e.g., 255ub appears as -1b). This is obviously trouble, so signed
 data types should be used instead of unsigned data types whenever possible.
 
@@ -882,10 +882,10 @@ To import an NCCSV file into Google Sheets:
   or the spreadsheet program will not check that you followed these
   conventions correctly. It is up to you to follow these conventions correctly.
 <li>The conversion of a spreadsheet following this convention 
-  into a csv file (thus, a NCCSV file) will lead to extra commas
+  into a csv file (thus, an NCCSV file) will lead to extra commas
   at the end of all the rows other than the CSV data rows. 
   Ignore them.
-  The software the converts NCCSV files into .nc files will ignore them.
+  The software then converts NCCSV files into .nc files will ignore them.
 <li>If an NCCSV file has excess commas at the end of rows, 
   you can remove them by converting the NCCSV file into a NetCDF file 
   and then converting the NetCDF file back into a NCCSV file.
@@ -930,7 +930,7 @@ Questions, comments, suggestions?  Please send an email to
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.11
+<p>ERDDAP, Version 2.12
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 </div>

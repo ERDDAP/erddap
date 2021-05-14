@@ -27,6 +27,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 
 import gov.noaa.pfel.erddap.Erddap;
@@ -72,7 +73,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public final static String MF_FIRST = "first", MF_LAST = "last";
     public static int suggestedUpdateEveryNMillis = 10000;
     public static int suggestUpdateEveryNMillis(String tFileDir) {
-        return String2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
+        return String2.isTrulyRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
     }
 
     /** Don't set this to true here.  Some test methods set this to true temporarily. */
@@ -496,7 +497,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         if (!String2.isSomething(fileDir))
             throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
-        filesAreLocal = !String2.isRemote(fileDir);
+        filesAreLocal = !String2.isTrulyRemote(fileDir);
         if (filesAreLocal)
             fileDir = File2.addSlash(fileDir);
         if (fileNameRegex == null || fileNameRegex.length() == 0) 
@@ -1149,9 +1150,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
              " last=" + Calendar2.millisToIsoStringTZ(ftLastMod.get(nMinMaxIndex[2])));
         boolean tHave = haveValidSourceInfo; //ensure getSourceMetadata actually reads the file
         haveValidSourceInfo = false;        
-        getSourceMetadata(
-            dirList.get(ftDirIndex.get(tFileI)),
-            ftFileList.get(tFileI),
+        String mdFromDir  = dirList.get(ftDirIndex.get(tFileI));
+        String mdFromName = ftFileList.get(tFileI);
+        getSourceMetadata(mdFromDir, mdFromName,
             sourceAxisNames, sourceDataNames, sourceDataTypes,
             sourceGlobalAttributes, sourceAxisAttributes, sourceDataAttributes);
         //2020-03-09 added this so source axis values from FIRST|LAST too
@@ -1160,6 +1161,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             ftFileList.get(tFileI),
             sourceAxisNames, sourceDataNames);
         haveValidSourceInfo = tHave;
+
+        //if accessibleViaFiles=true and filesInS3Bucket, test if files are in a private bucket
+        //and thus /files/ access must be handles by ERDDAP acting as go between 
+        //(not just redirect, which works for public bucket)
+        filesInS3Bucket = String2.isAwsS3Url(mdFromDir);
+        if (accessibleViaFiles && filesInS3Bucket) {
+            filesInPrivateS3Bucket = SSR.awsS3FileIsPrivate(mdFromDir + mdFromName);
+            if (verbose) String2.log("  For datasetID=" + datasetID + ", filesInPrivateS3Bucket=" + filesInPrivateS3Bucket);
+        }
 
         //make combinedGlobalAttributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important

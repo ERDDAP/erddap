@@ -9,6 +9,7 @@ import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
+import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -2201,6 +2202,28 @@ sb.append(twoClickMap[2]);
         debugMode = oDebugMode;
     }
 
+    public static void testPublicAwsS3MediaFiles() {
+        String2.log("\n*** HtmlWidgets.testPublicAwsS3MediaFiles()\n" +
+            "Try viewing the images and videos to test range requests with public S3 buckets/files.");
+
+         
+        SSR.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+
+        String2.pressEnterToContinue();      
+    }
+
+    public static void testPrivateAwsS3MediaFiles() {
+        String2.log("\n*** HtmlWidgets.testPrivateAwsS3MediaFiles()\n" +
+            "Try viewing the images and videos to test range requests with private S3 buckets/files.");
+
+         
+        SSR.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+
+        String2.pressEnterToContinue();      
+    }
+
+
+
     /**
      * This runs all of the interactive or not interactive tests for this class.
      *
@@ -2215,7 +2238,7 @@ sb.append(twoClickMap[2]);
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 0 : -1;
+            lastTest = interactive? 2 : -1;
         String msg = "\n^^^ HtmlWidgets.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -2225,6 +2248,8 @@ sb.append(twoClickMap[2]);
             
                 if (interactive) {
                     if (test ==  0) basicTest();
+                    if (test ==  1) testPublicAwsS3MediaFiles();
+                    if (test ==  2) testPrivateAwsS3MediaFiles();
 
                 } else {
                     //if (test ==  0) ...;

@@ -69,7 +69,7 @@ runs in a web application server
 who want to set up their own ERDDAP installation at their own website.
 
 <h2><a class="selfLink" id="why" href="#why" rel="bookmark">Why use ERDDAP to distribute your data?</a></h2>
-Because the small effort to setup ERDDAP brings many benefits.
+Because the small effort to set up ERDDAP brings many benefits.
 <ul>
 <li>If you already have a web service for distributing your data, 
   <br>you can set up ERDDAP to access your data via the existing service.
@@ -92,7 +92,7 @@ You can <a rel="help" href="#customize">customize</a> your ERDDAP's appearance
 so ERDDAP reflects your organization and fits in with the rest of your website.
 
 <h2><a class="selfLink" id="organizations" href="#organizations" rel="bookmark">ERDDAP 
- has been installed by over 85 organizations in at least 14 countries</a></h2>
+ has been installed by over 90 organizations in at least 14 countries</a></h2>
  (Australia, Belgium, Canada, China, France, India, Ireland, 
  Italy, New Zealand, South Africa, Spain, Thailand, UK, USA),
  including:
@@ -120,7 +120,7 @@ at the University of Hawaii (UH)
   <!-- 2021-03-18 email Darren Wright -->
 <li>CSIRO and IMOS
   (Australia's Commonwealth Scientific and Industrial Research Organisation and the Integrated Marine Observing System)
-  <!-- 2015-06-28 email Jonathan Hodge  was http://rs-data1-mel.csiro.au/erddap/index.html-->
+  <!-- 2015-06-28 email Jonathan Hodge  was http://rs-data1-mel.csiro.au/erddap/index.html -->
 <li><a rel="bookmark" href="https://pub-data.diver.orr.noaa.gov/erddap/index.html">DIVER (NOAA ORR)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
@@ -256,7 +256,7 @@ Joint Research Centre of the European Commission)
   (National Centers for Environmental Information) 
   <!-- 2019-08-13 I assumed public. Tim Boyer?  was Charles Carleton  -->
   <!-- 2020-11-25 gone?   <li><a rel="bookmark" href="https://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI</a> 
-  (National Centers for Environmental Information) / NCDDC 
+  (National Centers for Environmental Information) / NCDDC -->
   <!-- 2015-03-17 (was NCDDC) Glenn Rutledge, Charles Carleton -->
 <li>NOAA NGDC STP (National Geophysical Data Center, Solar -- Terrestrial Physics)
   <!-- 2015-03-23 Dominic Fuller-Rowell -->
@@ -432,7 +432,7 @@ or Mac server instead.
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
-    <br><kbd>/usr/local/jdk8u265-b01/jre/bin/java -version</kbd> <!-- javaVersion -->
+    <br><kbd>/usr/local/jdk8u292-b10/jre/bin/java -version</kbd> <!-- javaVersion -->
 
     <p>ERDDAP works with Java from other sources, but we recommend AdoptOpenJDK because it is the 
     main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
@@ -623,7 +623,7 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<kbd>
-      <br>export JAVA_HOME=/usr/local/jdk8u265-b01/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk8u292-b10/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
       <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>9.0.39</i>         <!-- tomcatVersion -->
       <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
@@ -636,7 +636,7 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<kbd>
-      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u265-b01\jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u292-b10\jre"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
       <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"         <!-- tomcatVersion -->
       <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"</kbd>  <!-- tomcatVersion -->
@@ -731,7 +731,7 @@ or Mac server instead.
         <li>On Linux:
           <ul>
           <li>With Linux AdoptOpenJDK Java distributions: DejaVu fonts are built in,
-            so you don't have to do separately install them.
+            so you don't have to separately install them.
           <li>With other Java distributions: 
            As the Tomcat user, copy the font files into <i>JAVA_HOME</i>/lib/fonts 
            so Java can find the fonts.
@@ -1473,7 +1473,7 @@ Our plan to avoid problems is:
     <br>You may know the user involved (e.g., because they emailed you), or not.
     <br>You may have other clues, or not.
     <br>Since all of these situations and all of the possible causes of the problems
-      blur together, the advice below tries to deal will all possible 
+      blur together, the advice below tries to deal with all possible 
       starting points and all possible problems related to slow responses.
 
 
@@ -1814,7 +1814,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
 
   <p>My experience is that ERDDAP can run for months without needing a restart.
   You should only need to restart it if you want
-  to apply some changes to you made to ERDDAP's setup.xml
+  to apply some changes you made to ERDDAP's setup.xml
   or when you need to install new versions 
   of ERDDAP, Java, Tomcat, or the operating system.
   If you need to restart ERDDAP frequently, something is wrong. 
@@ -1872,7 +1872,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       Although it is annoying to get an error, the error forces you to deal with the problem.
       Our thinking is that it is better to throw an error, than to have ERDDAP hobble along, 
       working in a way you didn't expect.
-    <li>The word "warning" is used when something went wrong, but the procedure was able to complete. 
+    <li>The word "warning" is used when something went wrong, but the procedure was able to be completed. 
       These are pretty rare.
     <li>Anything else is just an informative message. 
       You can control how much information is logged with 
@@ -1919,7 +1919,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
 
   <p>For efficiency reasons, ERDDAP only writes information to log.txt 
   after a large chunk of information has accumulated. 
-  So if you visit log.txt right after an error has occured, information 
+  So if you visit log.txt right after an error has occurred, information 
   related to the error may not yet have been written to log.txt.
   In order to get perfectly up-to-date information from log.txt,
   visit your ERDDAP's 
@@ -1963,7 +1963,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
   but search the web to find the right tool for your purposes.
 
   <p>Note that the log files only identify users as IP addresses.
-  There are web sites to help you get information related to a given IP address, e.g., 
+  There are websites to help you get information related to a given IP address, e.g., 
   <a class="N" rel="help"
   href="https://whatismyipaddress.com/ip-lookup">WhatIsMyIPAddress<img 
   src="../images/external.png" alt=" (external link)" 
@@ -1987,9 +1987,9 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
   by giving Google full access to their activity on your site
   which Google (and others?) can keep forever and use for any purpose 
   (perhaps not technically, but probably in practice). 
-  Your users haven't consented to this and probably aren't be aware
+  Your users haven't consented to this and probably aren't aware
   that they will be tracked on your website, just as they probably aren't aware
-  of the extent they are being tracked on almost all web sites.  
+  of the extent they are being tracked on almost all websites.  
   These days, many users are very concerned that everything they do on the web is being
   monitored by these big companies (Google, Facebook, etc.) and by the government,
   and find this an unwarranted intrusion into their lives (as in the book, 1984).
@@ -2225,7 +2225,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
          the dataset is removed if <kbd>active="false"</kbd> 
          or (re)loaded if <kbd>active="true"</kbd> (regardless of the dataset's age).
        <li>If the dataset's dataset.xml chunk has <kbd>active="false"</kbd>
-         and the dataset is currently loaded (active), is is unloaded (removed).       
+         and the dataset is currently loaded (active), it is unloaded (removed).       
        <li>If the dataset has <kbd>active="true"</kbd> and the dataset isn't already loaded,
          it is loaded.
        <li>If the dataset has <kbd>active="true"</kbd> and the dataset is already loaded,
@@ -2255,7 +2255,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
        for each dataset for which there was a flag file:
        <ul>
        <li>If the dataset's dataset.xml chunk has <kbd>active="false"</kbd>
-         and the dataset is currently loaded (active), is is unloaded (removed).
+         and the dataset is currently loaded (active), it is unloaded (removed).
        <li>If the dataset has <kbd>active="true"</kbd>, the dataset is (re)loaded,
          regardless of its age.
        </ul>
@@ -2456,7 +2456,7 @@ If we assume that each file uses 300 bytes, then 1,000,000 files would only take
 But datasets with a huge number of data files cause other problems for ERDDAP,
 notably, it takes a long time for ERDDAP to open all those data files
 when responding to a user request for data. 
-In this case, the solution may be to aggregate the files to that there are fewer data files.
+In this case, the solution may be to aggregate the files so that there are fewer data files.
 For tabular datasets, it is often great if you save the data from the current dataset in
 <a rel="bookmark" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries (DSG)<img 
@@ -2513,7 +2513,7 @@ but sometimes you just need more memory.
     <li>When ERDDAP generates that information at the end of each major dataset reload,
       it will print to the log.txt file: 
       <br><kbd>&nbsp;&nbsp;openFileCount=<i>current</i> of max=<i>max</i> %=<i>percent</i></kbd>
-    <li>If the percentage is &gt;50%, an email is sent to the ERDDAP adminstrator
+    <li>If the percentage is &gt;50%, an email is sent to the ERDDAP administrator
       and the emailEverythingTo email addresses.
     </ul>
     If the percentage is 100%, ERDDAP is in terrible trouble. Don't let this happen.
@@ -3107,7 +3107,7 @@ So you are freed from that responsibility.
     <br><kbd>&lt;authentication&gt;email&lt;/authentication&gt;</kbd>
       <br>&nbsp;
 
-  <li>In your setup.xml, make sure the email system is setup via all of the
+  <li>In your setup.xml, make sure the email system is set up via all of the
     <kbd>&lt;email...&gt;</kbd> tags, so that ERDDAP can send out emails.
     If possible, set this up to use a secure connection (SSL / TLS) to the email server.
       <br>&nbsp;
@@ -3312,7 +3312,7 @@ So you are freed from that responsibility.
     <li>Copy and paste the ORCID APP Client ID (which will start with "APP-")
          into setup.xml in the &lt;orcidClientID&gt; tag, e.g.,
          <pre>&lt;orcidClientID&gt;APP-<i>ALPHANUMERICCHARACTERS</i>&lt;/orcidClientID&gt;</pre>
-    <li>Copy and paste the ORCID Client Secret (lower case alpha-numeric characters
+    <li>Copy and paste the ORCID Client Secret (lowercase alpha-numeric characters
          with dashes) into setup.xml in the &lt;orcidClientSecret&gt; tag, e.g.,
          <pre>&lt;orcidClientSecret&gt;<i>alpha-numeric-characters-with-dashes</i>&lt;/orcidClientSecret&gt;</pre>
 
@@ -3388,7 +3388,7 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
      where it is accessible to ERDDAP but not to the public.
   <br>&nbsp;
 <li>The data source can be on a public website, but require a login to get the data.
-  The two types of dataset that ERDDAP can log on to access is 
+  The two types of dataset that ERDDAP can log on to access are 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase"
       >EDDTableFromDatabase</a> and
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromCassandra"
@@ -3544,7 +3544,7 @@ These are details that you don't need to know until a need arises.
 
 
 <li><strong><a class="selfLink" id="SSD" href="#SSD" rel="bookmark"
->Solid State Drives (SSD's) are great!</a></strong>  
+>Solid State Drives (SSDs) are great!</a></strong>  
   <br>The quickest, easiest, and cheapest way to speed up ERDDAP's
     access to tabular data is to put the data files on a Solid State Drive (SSD).
     Most tabular datasets are relatively small, so a 1 or 2 TB SSD is probably
@@ -4478,10 +4478,11 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     If you want to modify the source code (and possibly have the changes incorporated
     into the standard ERDDAP distribution), this is the recommended approach.
 
-    <p>Before the 2020-12-22 GitHub release, one file was missing from the GitHub version</strong>
+    <p><strong>Before the 2020-12-22 GitHub release, one file was missing from the GitHub version</strong>
     of the code because it was too big: the AWS SDK for Java v1.11 jar file. 
     With the 2020-12-22 release, we switched to v2 of the AWS SDK which 
     uses numerous small .jar files (which are in the /lib directory) instead of one huge .jar file. 
+    Thus, the GitHub version now includes all ERDDAP files.
 
   </ul>
 
@@ -4554,7 +4555,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     The ERDDAP pom.xml file for Maven is included in the GitHub ERDDAP distribution.
   <li>We use a batch file which deletes all of the .class files in the source tree
     to ensure that we have a clean compile (with javac).
-  <li>We currently use AdoptOpenJDK's javac jdk8u265-b01 <!-- javaVersion --> 
+  <li>We currently use AdoptOpenJDK's javac jdk8u292-b10 <!-- javaVersion --> 
      to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
      and run the tests.       
@@ -4576,9 +4577,9 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
        If compiling TestAll succeeds but doesn't compile some class, that class isn't needed.
        (There are some unfinished/unused classes.)
      </ul>
-  <li>In a few cases, we use 3rd party source code instead of .jar files (notably for Dods)
+  <li>In a few cases, we use 3rd party source code instead of .jar files (notably for DODS)
      and have modified them slightly to avoid problems compiling with Java 8 (1.8). <!-- javaVersion -->
-     We have often made other slight modifications (notably to Dods) for other reasons.
+     We have often made other slight modifications (notably to DODS) for other reasons.
   <li>Most classes have test methods. We run lots of tests via TestAll. 
      Unfortunately, many of the tests are specific to our set up.  
      (Sorry. We're working to move all test files to the erddapTest and erddapTestBig directories
@@ -4595,7 +4596,7 @@ at the source code and try to figure out how ERDDAP works, please do.
   <li>The Erddap class has the highest level methods.  It extends HttpServlet.
   <li>Erddap passes requests to instances of subclasses of EDDGrid or EDDTable, 
     which represent individual datasets.
-  <li>EDStatic has a most of the static information and settings (e.g., from
+  <li>EDStatic has most of the static information and settings (e.g., from
     the setup.xml and messages.xml files) and offers static services
     (e.g., sending emails).
   <li>EDDGrid and EDDTable subclasses parse the request, get data from subclass-specific methods, 
@@ -4688,7 +4689,7 @@ at the source code and try to figure out how ERDDAP works, please do.
 
   <li>Compile via TestAll.
     <br>Since the standard way to compile ERDDAP is to compile TestAll.java, 
-    compiling TestAll must compile all of classes for your code. 
+    compiling TestAll must compile all of the classes for your code. 
     If it doesn't, simply add the hidden classes to the "Force compilation" 
     section of TestAll.java so that it does.
     <br>&nbsp;
@@ -4706,7 +4707,7 @@ at the source code and try to figure out how ERDDAP works, please do.
     <br>&nbsp;
 
   <li>Use descriptive class, method and variable names.
-    <br>That makes the code easier for other to read.
+    <br>That makes the code easier for others to read.
     <br>&nbsp;
 
   <li>Avoid fancy code. 
@@ -4739,7 +4740,7 @@ at the source code and try to figure out how ERDDAP works, please do.
       title="This link to an external website does not constitute an endorsement."></a> problem.
     Of course, we should still communicate. It would be great to periodically see 
     your work in progress to make sure the project is on track. 
-    But the more you can work indepenently
+    But the more you can work independently
     (after we agree on the task at hand and the general approach),
     the better.
     <br>&nbsp;
@@ -4767,7 +4768,7 @@ at the source code and try to figure out how ERDDAP works, please do.
   <li>Make it easy for me to understand and accept the changes in your pull request.
     <br>Part of that is writing a unit test method(s).
     Part of that is limiting your changes to one section of code (or one class) if possible. 
-    I won't accept any pull request with a hundreds of changes throughout the code.
+    I won't accept any pull request with hundreds of changes throughout the code.
     I tell the IT security people that I take responsibility for the security 
     and integrity of the code. 
     If there are too many changes or they are too hard to figure out,
@@ -5313,7 +5314,7 @@ add the project below and give credit where credit is due.]
       sdk-core-xxx.jar (Apache),
       utils-xxx.jar (?).
       To see the actual licenses, search for the .jar name in the 
-      <a rel="bookmark" href="https://mvnrepository.com/">Maven Repostitory<img 
+      <a rel="bookmark" href="https://mvnrepository.com/">Maven Repository<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
       and then rummage around in the project's files to find the license.
@@ -5442,7 +5443,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.11
+<p>ERDDAP, Version 2.12
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

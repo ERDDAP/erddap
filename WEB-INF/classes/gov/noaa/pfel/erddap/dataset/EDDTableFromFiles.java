@@ -77,7 +77,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
     public final static String MF_FIRST = "first", MF_LAST = "last";
     public static int suggestedUpdateEveryNMillis = 10000;
     public static int suggestUpdateEveryNMillis(String tFileDir) {
-        return String2.isRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
+        return String2.isTrulyRemote(tFileDir)? 0 : suggestedUpdateEveryNMillis;
     }
     /** Don't set this to true here.  Some test methods set this to true temporarily. */
     protected static boolean testQuickRestart = false;
@@ -974,7 +974,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         if (!String2.isSomething(fileDir))
             throw new IllegalArgumentException(errorInMethod + "fileDir wasn't specified.");
-        filesAreLocal = !String2.isRemote(fileDir);
+        filesAreLocal = !String2.isTrulyRemote(fileDir);
         if (filesAreLocal)
             fileDir = File2.addSlash(fileDir);
         if (fileNameRegex == null || fileNameRegex.length() == 0) 
@@ -1679,6 +1679,15 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //String2.log(">> EDDTableFromFiles get source metadata table header (nCols=" + 
         //    tTable.nColumns() + " nRows=" + tTable.nRows() + "):\n" + tTable.getNCHeader("row"));
 
+        //if accessibleViaFiles=true and filesInS3Bucket, test if files are in a private bucket
+        //and thus /files/ access must be handles by ERDDAP acting as go between 
+        //(not just redirect, which works for public bucket)
+        filesInS3Bucket = String2.isAwsS3Url(mdFromDir);
+        if (accessibleViaFiles && filesInS3Bucket) {
+            filesInPrivateS3Bucket = SSR.awsS3FileIsPrivate(mdFromDir + mdFromName);
+            if (verbose) String2.log("  For datasetID=" + datasetID + ", filesInPrivateS3Bucket=" + filesInPrivateS3Bucket);
+        }
+
         //remove e.g., global geospatial_lon_min  and column actual_max, actual_min, 
         //  actual_range, data_min, data_max
         tTable.unsetActualRangeAndBoundingBox();
@@ -1940,6 +1949,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      */
     public String fileDir()       {return fileDir; }
     public String fileNameRegex() {return fileNameRegex; }
+
 
     /**
      * If using temporary cache system, this ensure file is in cache or throws Exception.

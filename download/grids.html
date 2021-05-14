@@ -114,7 +114,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      happen.) So the more memory in the server the better.  
      On a 32-bit server, 4+ GB is really good, 2 GB is okay,
      less is not recommended. 
-     On a 64-bit server, you can almost entirely avoid the problem but getting
+     On a 64-bit server, you can almost entirely avoid the problem by getting
      lots of memory.
      See the 
      <a rel="help" 
@@ -251,7 +251,7 @@ Best of all, after the initial ERDDAP at the originating organization, all of th
 other ERDDAPs can be set up quickly (a few hours work), with minimal resources
 (one server that doesn't need any RAIDs for data storage since it stores no data locally),
 and thus at truly minimal cost. 
-Compare that to the cost of setting up and maintaing a centralized data center with a data lake
+Compare that to the cost of setting up and maintaining a centralized data center with a data lake
 and the need for a truly massive, truly expensive, Internet connection), 
 plus the attendant problem of the centralized data center being a single point of failure.
 To me, ERDDAPs decentralized, federated approach is far, far superior.
@@ -309,7 +309,7 @@ with the added benefit that you have removed the risk from a single point of fai
       title="This link to an external website does not constitute an endorsement."></a> 
     is different from efficiency (how quickly a task can be done &mdash; efficiency    
     of the parts).  Scalability allows the system to grow to handle any level of demand.
-    <strong>Efficiency</strong> (of scaling and of the parts) determines how may servers, etc., will be needed
+    <strong>Efficiency</strong> (of scaling and of the parts) determines how many servers, etc., will be needed
     to meet a given level of demand. Efficiency is very important, but always has limits.
     Scalability is the only practical solution to building a system that can handle <strong>very</strong>
     heavy use. Ideally, the system will be scalable and efficient.
@@ -331,7 +331,7 @@ with the added benefit that you have removed the risk from a single point of fai
     (The time required to copy a large datasets will always limit 
     the system's ability to deal
     with sudden increases in the demand for a specific dataset.)
-  <li>(If possible) To make an architecture that isn't tied any specific 
+  <li>(If possible) To make an architecture that isn't tied to any specific 
       <a rel="help" href="#cloudComputing">cloud computing</a> service 
     or other external services (because it doesn't need them).
   </ul>  
@@ -538,7 +538,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       to avoid these problems.
       If one of the composite ERDDAPs goes down, the front end system can 
       redirect that ERDDAP's users to another ERDDAP that is up.
-      However, if it is a capacity problem that cause the first composite ERDDAP to fail
+      However, if it is a capacity problem that causes the first composite ERDDAP to fail
         (an overzealous user? a 
         <a rel="help" href="https://en.wikipedia.org/wiki/Denial-of-service_attack"
         >denial-of-service attack<img 
@@ -1077,7 +1077,7 @@ collection of files on a source computer in sync on a user's remote computer.
 The way it works is: 
 <ol>
 <li>some event (e.g., an ERDDAP subscription system event) triggers running rsync,
-  <br>(or, a cron job runs rsync at specific times every day on the user's computer) 
+  <br>(or, a cron job runs rsync at specific times everyday on the user's computer) 
 <li>which contacts rsync on the source computer,
 <li>which calculates a series of hashes for chunks of each file and
   transmits those hashes to the user's rsync, 
@@ -1156,7 +1156,7 @@ Basically, an ERDDAP administrator can run ArchiveADataset
 that they want to extract (perhaps in multiple files) and package in a .zip or .tgz file,
 so that you can send the file to interested people or groups (e.g., NCEI for archiving)
 or make it available for downloading.
-For example, you could run ArchiveADataset every day a 12:10 am and have it
+For example, you could run ArchiveADataset everyday at 12:10 am and have it
 make a .zip of all the data from 12:00 am the previous day until 12:00 am today.
 (Or, do this weekly, monthly, or yearly, as needed.)
 Because the packaged file is generated offline, there is no danger of a timeout
@@ -1184,7 +1184,7 @@ by making more frequent requests for smaller time periods.
 another solution. The underlying files maintained by this type of dataset
 are essentially log files that record
 changes to the dataset. It should be possible to build a system that maintains
-a local dataset by periodically (or based on a trigger) requests all the 
+a local dataset by periodically (or based on a trigger) requesting all of the 
 changes that have been made to the remote dataset since that last request.
 That should be as efficient (or more) than rsync and would handle many difficult scenarios,
 but would only work if the remote and local datasets are EDDTableFromHttpGet datasets.
@@ -1227,7 +1227,7 @@ then consider the other solutions discussed above.
 <br>&nbsp;
 </ul>
 
-While there is no single, simple solution which perfectly solves all the problem
+While there is no single, simple solution which perfectly solves all the problems
 in all scenarios (as rsync and Distributed Data almost are), hopefully there
 are sufficient tools and options so that you can find an acceptable
 solution for your particular situation. 
@@ -1248,7 +1248,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.11
+<p>ERDDAP, Version 2.12
 <br><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

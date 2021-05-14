@@ -77,6 +77,10 @@ import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 
+//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.S3Client;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate 
@@ -1444,12 +1448,15 @@ public class SSR {
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @param timeOutMillis
+     * @param handleS3ViaSDK If true (usually), this method handles
+     *   AWS S3 URLs specially, via the Java S3 SDK. If false, this handles 
+     *   them like any other URL (which will only work for public buckets).
      * @throws Exception if trouble
      */
-    public static void touchUrl(String urlString, int timeOutMillis) throws Exception {
+    public static void touchUrl(String urlString, int timeOutMillis, boolean handleS3ViaSDK) throws Exception {
         //tests show that getting the inputStream IS necessary (but reading it is not)
         Object[] oar = getUrlConnBufferedInputStream(urlString, timeOutMillis, 
-            false, false);  //requestCompression, touchMode
+            false, false, 0, -1, handleS3ViaSDK);  //requestCompression, touchMode
         InputStream in = (InputStream)oar[1];
         //it doesn't seem necessary to read even 1 byte (if available)
         in.close();
@@ -1558,10 +1565,10 @@ public class SSR {
             } catch (Exception e2) {
             }
             File2.delete(fullFileName + random);
-            String2.log(String2.ERROR + " in " + attributeTo + " while downloading from " + 
-                urlString + " to " + fullFileName);
-            throw new IOException(String2.ERROR + " in " + attributeTo + " while downloading from " + urlString,
-                e);
+            String2.log(String2.ERROR + " in " + attributeTo + 
+                " while downloading from " + urlString + " to " + fullFileName);
+            throw new IOException(String2.ERROR + " in " + attributeTo + 
+                " while downloading from " + urlString, e);
         }
     }
 
@@ -1573,6 +1580,8 @@ public class SSR {
      * For info on compressed responses, see: 
      * http://www.websiteoptimization.com/speed/tweak/compress/ 
      * and the related test site: http://www.webperformance.org/compression/ .
+     * This variant assumes requestCompression=true, touchMode=false, firstByte=0,
+     * lastByte=-1, and handleS3ViaSDK=true.
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
@@ -1584,48 +1593,76 @@ public class SSR {
      * @throws Exception if trouble
      */
     public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis) throws Exception {
-        return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, true, false);
+        return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, 
+            true, false, 0, -1, true);
     }
 
     /** 
      * This is a variant of getUrlConnInputStream where touchMode=false.
+     * This variant assumes touchMode=false, firstByte=0, lastByte=-1, and handleS3ViaSDK=true.
      */
     public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
             boolean requestCompression) throws Exception {
         return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, 
-            requestCompression, false);
+            requestCompression, false, 0, -1, true);
     }
 
+    /**
+     * This variant assumes firstByte=0, lastByte=-1, and handleS3ViaSDK=true.
+     */
+    public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
+            boolean requestCompression, boolean touchMode) throws Exception {
+        return getUrlConnBufferedInputStream(urlString, connectTimeOutMillis, 
+            requestCompression, touchMode, 0, -1, true);
+    }
 
     /**
      * This is the low level version of getUrlConnInputStream. It has the most options.
      *
      * @param urlString this may be an AWS S3 url or a regular url.
      * @param requestCompression If true, this requests in-transit http compression.
-     *   This is ignored for AWS S3 URLs.
+     *   This is ignored for AWS S3 URLs or if this is a byte range request 
+     *   (which might work -- I just didn't test it, so this plays it safe).
      * @param touchMode If true, this method doesn't pursue http to https redirects 
      *    and doesn't log the info from the errorStream.
+     * @param firstByte usually 0, but &gt;=0 for a byte range request
+     * @param lastByte usually -1 (last available), but a specific number (inclusive)
+     *   for a byte range request.
+     * @param handleS3ViaSDK If true (usually), this method handles
+     *   AWS S3 URLs specially, via the Java S3 SDK. If false, this handles 
+     *   them like any other URL (which will only work for public buckets).
      * @return [connection, inputStream, charset]. If url is an AWS S3 url, 
      *    connection will be null and charset will always be String2.UTF_8.
+     *    If requestCompression=true, this will be a decompressed inputStream
      */
     public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
-            boolean requestCompression, boolean touchMode) throws Exception {
+            boolean requestCompression, boolean touchMode, long firstByte, long lastByte,
+            boolean handleS3ViaSDK) throws Exception {
         if (requestCompression && urlString.indexOf('?') < 0 && //no parameters
             File2.isCompressedExtension(File2.getExtension(urlString)))
                 requestCompression = false;
         if (reallyVerbose) 
-            String2.log("getUrlConnInputStream " + urlString + " requestCompression=" + requestCompression);  
+            String2.log("getUrlConnInputStream " + urlString + "\n  requestCompression=" + requestCompression + 
+                " first=" + firstByte + " last=" + lastByte + " handleS3ViaSDK=" + handleS3ViaSDK);  
 
         //is it an AWS S3 object?
-        String bro[] = String2.parseAwsS3Url(urlString); //[bucket, region, objectKey]
-        if (bro != null) {
-            InputStream is = File2.getBufferedInputStream(urlString);  //not File2.getDecompressedBufferedInputStream(   read as is
-            return new Object[]{null, is, String2.UTF_8}; //connection, is, charset=UTF_8 is an assumption
+        if (handleS3ViaSDK) {
+            if (reallyVerbose) 
+                String2.log("  handle via S3 SDK"); 
+            String bro[] = String2.parseAwsS3Url(urlString); //[bucket, region, objectKey]
+            if (bro != null) {
+                //not File2.getDecompressedBufferedInputStream(). Read as is.
+                InputStream is = File2.getBufferedInputStream(urlString, firstByte, lastByte); 
+                return new Object[]{null, is, String2.UTF_8}; //connection, is, charset=UTF_8 is an assumption
+            }
         }
 
         URL turl = new URL(urlString); 
         URLConnection conn = turl.openConnection();
-        if (requestCompression) 
+        if (firstByte > 0 || lastByte != -1) 
+            //this will cause failure if server doesn't allow byte range requests
+            conn.setRequestProperty("Range", "bytes=" + firstByte + "-" + (lastByte == -1? "" : "" + lastByte));
+        else if (requestCompression) 
             conn.setRequestProperty("Accept-Encoding", 
                 "gzip, deflate"); //compress, x-compress, x-gzip
         conn.setRequestProperty("User-Agent", "Mozilla/5.0 ERDDAP/" + erddapVersion);
@@ -1646,15 +1683,19 @@ public class SSR {
                 String2.log(
                     (reallyVerbose? "" : //info was shown above, else show now ...
                         "getUrlConnInputStream " + urlString + " requestCompression=" + requestCompression + "\n") +  
-                    "  Warning: HTTP status code=" + code);
+                    "  Warning: HTTP status code=" + code + 
+                    (code == 206? " (Partial Content: a response to a byte-range request)" : ""));
             if (code >= 301 && code <= 308 && code != 304) {  //HTTP_MOVED_TEMP HTTP_MOVED_PERM HTTP_SEE_OTHER  (304 Not Modified)
                 String location = conn.getHeaderField("location");
                 if (String2.isSomething(location)) {
                     String2.log("  redirect to " + location);
                     turl = new URL(location); 
                     conn = turl.openConnection();
-                    conn.setRequestProperty("Accept-Encoding", 
-                        "gzip, deflate"); //compress, x-compress, x-gzip
+                    if (firstByte > 0 || lastByte != -1) 
+                        conn.setRequestProperty("Range", "bytes=" + firstByte + "-" + (lastByte == -1? "" : "" + lastByte));
+                    else if (requestCompression) 
+                        conn.setRequestProperty("Accept-Encoding", 
+                            "gzip, deflate"); //compress, x-compress, x-gzip
                     conn.setRequestProperty("User-Agent", "Mozilla/5.0 ERDDAP/" + erddapVersion);
                     //String2.log("request: " + String2.toString(conn.getRequestProperties()));
                     conn.setConnectTimeout(connectTimeOutMillis);
@@ -1672,11 +1713,28 @@ public class SSR {
             }            
         }        
 
-        BufferedInputStream is = getBufferedInputStream(urlString, conn); //This is in SSR, not File2
+        BufferedInputStream is = getBufferedInputStream(urlString, conn); //This is in SSR, not File2. This deals with compressed content.
         String charset = getCharset(urlString, conn); 
 
         //String2.log(">>charset=" + charset);
         return new Object[]{conn, is, charset};
+    }
+
+    /**
+     * Given an awsS3FileUrl, this tests if the file is private.
+     *
+     * @param awsS3FileUrl
+     * @return true if the file is private
+     */
+    public static boolean awsS3FileIsPrivate(String awsS3FileUrl) {
+        boolean isPrivate = false;
+        try {
+            //try to touchUrl as plain https (should fail for private file)
+            SSR.touchUrl(awsS3FileUrl, 15000, isPrivate);
+        } catch (Exception e) {
+            isPrivate = true;
+        }
+        return isPrivate;
     }
 
 
@@ -2455,28 +2513,27 @@ public class SSR {
     /**
      * Copy from source to outputStream.
      *
-     * @param source May be local fileName or a URL.
+     * @param source May be local fileName or a URL (including an AWS S3 URL).
      * @param out Best if buffered. At the end, out is flushed, but not closed
-     * @param first The first byte to be transferred (0..).
-     * @param last The last byte to be transferred, inclusive.
-     *   Use -1 to transfer from first to the end.
+     * @param firstByte The first byte to be transferred (0..).
+     * @param lastByte The last byte to be transferred, inclusive.
+     *   Use -1 to transfer to the end of the file.
      * @return true if successful
      */
-    public static boolean copy(String source, OutputStream out, long first, long last) {
+    public static boolean copy(String source, OutputStream out, long firstByte, long lastByte, 
+        boolean handleS3ViaSDK) {
         if (source.startsWith("http://") ||
-            source.startsWith("https://") ||  //untested.
+            source.startsWith("https://") ||  
             source.startsWith("ftp://")) {    //untested. presumably anonymous
             //URL
             BufferedInputStream in = null;
             try {
-                in = (BufferedInputStream)(getUrlConnBufferedInputStream(source, 
-                    120000)[1]); //timeOutMillis. throws Exception
-                if (first > 0) {
-                    File2.skipFully(in, first);
-                    first = 0;
-                    if (last >= 0) last -= first;
-                }
-                return File2.copy(in, out, 0, last);
+                in = (BufferedInputStream)(getUrlConnBufferedInputStream(source,   //throws Exception   //handles AWS S3
+                    120000, true, false, firstByte, lastByte, handleS3ViaSDK))[1]; //timeOutMillis, requestCompression, touchMode, ...
+
+                //adjust firstByte,lastByte
+                long newLastByte = lastByte - (firstByte > 0 && lastByte >= 0? firstByte : 0); 
+                return File2.copy(in, out, 0, newLastByte);   //the adjusted range
             } catch (Exception e) {
                 String2.log(String2.ERROR + " in SSR.copy(source=" + source + ")\n" +
                     MustBe.throwableToString(e));
@@ -2487,7 +2544,7 @@ public class SSR {
 
         } else {
             //presumably a file
-            return File2.copy(source, out, first, last);
+            return File2.copy(source, out, firstByte, lastByte);
         }
     }
 

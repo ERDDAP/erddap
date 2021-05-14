@@ -1809,13 +1809,16 @@ expected =
     }
 
 
-    /** This tests generateDatasetsXml, specifically Structures. 
+    /** 
+     * This tests generateDatasetsXml, specifically Structures. 
      * @throws Throwable if touble
      */
     public static void testGenerateDatasetsXmlStructures() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlStructures");
         reallyVerbose = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
 
         //takes a long time and no longer useful
         //String2.pressEnterToContinue(
@@ -1826,40 +1829,124 @@ expected =
         String results = generateDatasetsXml(
             EDStatic.unitTestDataDir + "nc/", "SDScompound\\.h5", "", 
             "", //group
-            "", -1, null, null) + "\n"; //dimensionsCSV, reloadMinutes, cacheFromUrl
+            "", -1, null, null); //dimensionsCSV, reloadMinutes, cacheFromUrl
 
         String expected = 
-"zz      <att name=\"summary\">A merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL).</att>\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, 
-            "results.length=" + results.length() + " expected.length=" + expected.length() + 
-            "\nresults=\n" + results);
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"nc_abb6_59f0_eed8\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>/erddapTest/nc/</fileDir>\n" +
+"    <fileNameRegex>SDScompound\\.h5</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <matchAxisNDigits>20</matchAxisNDigits>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"institution\">???</att>\n" +
+"        <att name=\"keywords\">array, ArrayOfStructures|a_name, ArrayOfStructures|b_name, ArrayOfStructures|c_name, axis0, data, local, name, source, structures</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"summary\">Data from a local source.</att>\n" +
+"        <att name=\"title\">Data from a local source.</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>axis0</sourceName>\n" +
+"        <destinationName>axis0</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Axis0</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ArrayOfStructures|a_name</sourceName>\n" +
+"        <destinationName>ArrayOfStructures_a_name</destinationName>\n" +
+"        <dataType>int</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Array Of Structures A Name</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ArrayOfStructures|c_name</sourceName>\n" +
+"        <destinationName>ArrayOfStructures_c_name</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Array Of Structures C Name</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>ArrayOfStructures|b_name</sourceName>\n" +
+"        <destinationName>ArrayOfStructures_b_name</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Array Of Structures B Name</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n";
+        String2.log(results);
+        Test.ensureEqual(results, expected, "");
 
-        /* this test usually aren't worth the extra effort
-        try {
-            expected = 
-        "<att name=\"testOutOfDate\">now-3days</att>\n" +  //changes
-"        <att name=\"time_coverage_end\">2018-08-07T21:00:00Z</att>\n" +  //changes
-"        <att name=\"time_coverage_start\">2018-08-06T21:00:00Z</att>\n"; //changes
-            int po3 = results.indexOf(expected.substring(0, 25));
-            Test.ensureEqual(results.substring(po3, po3 + expected.length()), expected,
-                "results=\n" + results);
-        } catch (Throwable t3) {
-            String2.pressEnterToContinue(MustBe.throwableToString(t3) + 
-                "\nThe dates will vary (or fail because no testOutOfDate) depending " +
-                "on when a jplMURSST41 file was last download to this computer."); 
+        //test specifying axis0   (better if it included the size, e.g., axis0_10)
+        //This (reasonably) fails: "ERROR: dimension=axis0 not found in the file!"
+        if (false) {  //so don't do this test
+            results = generateDatasetsXml(
+                EDStatic.unitTestDataDir + "nc/", "SDScompound\\.h5", "", 
+                "", //group
+                "axis0", -1, null, null); //dimensionsCSV, reloadMinutes, cacheFromUrl
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
         }
-        */
-
-
-expected = 
-        "<att name=\"uuid\">null</att>\n" +
-"zz</dataset>\n" +
-"\n\n";
-        int po = results.indexOf(expected.substring(0, 25));
-        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
         String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXmlStructures passed the test.");
+        debugMode = oDebug;
 
+    }
+
+
+    /** 
+     * This tests generateDatasetsXml, specifically Structures, with a private file. 
+     * @throws Throwable if touble
+     */
+    public static void testGenerateDatasetsXmlStructuresPrivate() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlStructuresPrivate");
+        reallyVerbose = true;
+        boolean oDebug = debugMode;
+        debugMode = true;
+        String dir = "/data/justin/";
+        String fileRegex = "test\\.h5";  //sample_file.h5 has 128bit int so null pointer in netcdf-java
+
+        String2.log(generateDatasetsXml(dir, fileRegex, "", 
+            "", //group
+            "", -1, null, null)); //dimensionsCSV, reloadMinutes, cacheFromUrl
+        String2.pressEnterToContinue(
+            "EDDGridFromNcFiles.testGenerateDatasetsXmlStructuresPrivate()\n" +
+            "NOTE: This just catches 2 regular vars because they have more dimensions.\n" +
+            "ALSO: If structures, I think this doesn't check that dimension sizes are the same.\n" +
+            "But at least this doesn't throw exception when it sees a structure.\n" +
+            "Okay?");
+
+        //that output became datasetID="testStructurePrivate" in datasets2.xml
+        //see testStructurePrivate below
+
+        debugMode = oDebug;
     }
 
 
@@ -13072,7 +13159,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 3.675888e+8, 3.681072e+8;\n" +
+"    Float64 actual_range 3.675888e+8, 1.609416e+9;\n" +
 "    String axis \"T\";\n" +
 "    String comment \"This is the centered, reference time.\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -13082,9 +13169,11 @@ expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  latitude {\n" +
+"    Int32 _ChunkSizes 4320;\n" + 
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -89.97916, 89.97917;\n" +
+"    Float32 actual_range -89.979, 89.979;\n" +
 "    String axis \"Y\";\n" +
+"    String grids \"uniform grids from 90.0 to -90.0 by 0.04\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
 "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n" +
@@ -13094,9 +13183,11 @@ expected =
 "    Float32 valid_min -90.0;\n" +
 "  }\n" +
 "  longitude {\n" +
+"    Int32 _ChunkSizes 8640;\n" + 
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range -179.9792, 179.9792;\n" +
+"    Float32 actual_range -179.979, 179.979;\n" +
 "    String axis \"X\";\n" +
+"    String grids \"uniform grids from -180 to 180 by 0.04\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String reference_datum \"Geographical coordinates, WGS84 datum\";\n" +
@@ -13115,8 +13206,8 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"NOAA Climate Data Record of sea surface skin temperature\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String standard_name \"sea_surface_skin_temperature\";\n" +
 "    String units \"degree_C\";\n" +
 "    Float64 valid_max 45.0;\n" +
@@ -13131,7 +13222,7 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Statistics\";\n" +
 "    String long_name \"deviation from last SST analysis\";\n" +
-"    String platform \"NOAA-7\";\n" +
+"    String platform \"NOAA-19\";\n" +
 "    String references \"AVHRR_OI, with inland values populated from AVHRR_Pathfinder daily climatological SST. For more information on this reference field see https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:0071180.\";\n" +
 "    String source \"NOAA Daily 25km Global Optimally Interpolated Sea Surface Temperature (OISST)\";\n" +
 "    String units \"degree_C\";\n" +
@@ -13139,7 +13230,6 @@ expected =
 "    Float64 valid_min -12.700000000000001;\n" +
 "  }\n" +
 "  wind_speed {\n" +
-"    Byte _FillValue -128;\n" +
 "    String _Unsigned \"false\";\n" +
 "    Float64 colorBarMaximum 15.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -13149,9 +13239,9 @@ expected =
 "    String height \"10 m\";\n" +
 "    String ioos_category \"Wind\";\n" +
 "    String long_name \"10m wind speed\";\n" +
-"    String source \"NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.1981.nc, v_wind.10m.gauss.1981.nc\";\n" +
+"    String source \"NCEP/DOE AMIP-II Reanalysis (Reanalysis-2): u_wind.10m.gauss.2020.nc, v_wind.10m.gauss.2020.nc\";\n" +
 "    String standard_name \"wind_speed\";\n" +
-"    Float64 time_offset 2.0946;\n" +
+"    Float64 time_offset 3.1036;\n" +
 "    String units \"m s-1\";\n" +
 "    Byte valid_max 127;\n" +
 "    Byte valid_min -127;\n" +
@@ -13166,7 +13256,7 @@ expected =
 "    String ioos_category \"Ice Distribution\";\n" +
 "    String long_name \"sea ice fraction\";\n" +
 "    String references \"Reynolds, et al.(2006) Daily High-resolution Blended Analyses. Available at http://doi.org/10.7289/V5SQ8XB5\";\n" +
-"    String source \"NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 19810901-NCDC-L4LRblend-GLOB-v01-fv02_0-AVHRR_OI.nc.gz\";\n" +
+"    String source \"NOAA/NESDIS/NCDC Daily optimum interpolation(OI) SST on 1/4-degree grid: 20201231120000-NCEI-L4_GHRSST-SSTblend-AVHRR_OI-GLOB-v02.0-fv02.1.nc.gz\";\n" +
 "    String standard_name \"sea_ice_area_fraction\";\n" +
 "    Float64 time_offset 2.0;\n" +
 "    String units \"percent\";\n" +
@@ -13195,8 +13285,8 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"quality level of SST pixel\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Byte valid_max 5;\n" +
 "    Byte valid_min 1;\n" +
@@ -13215,8 +13305,8 @@ expected =
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"Pathfinder SST quality flag\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Byte valid_max 7;\n" +
 "    Byte valid_min 0;\n" +
@@ -13224,20 +13314,21 @@ expected =
 "  l2p_flags {\n" +
 "    Float64 colorBarMaximum 300.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1. Bits six (6) indicates the daytime unrealistic SST values (>39.8°C) that remain in pf_quality_level 4 to 7. Users are recommended to avoid these values.\";\n" +
+"    String comment \"Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50% or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund's Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50% or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50% or more covered by river has bit four (4) set to 1.\";\n" +
 "    String coverage_content_type \"auxiliaryInformation\";\n" +
 "    Int16 flag_masks 1, 2, 4, 8, 16, 32, 64, 128, 256;\n" +
-"    String flag_meanings \"microwave land ice lake river reserved_for_future_use extreme_sst unused_currently unused_currently\";\n" +
+"    String flag_meanings \"microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently\";\n" +
 "    String grid_mapping \"crs\";\n" +
 "    String ioos_category \"Quality\";\n" +
 "    String long_name \"L2P flags\";\n" +
-"    String platform \"NOAA-7\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String platform \"NOAA-19\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String units \"1\";\n" +
 "    Int16 valid_max 256;\n" +
 "    Int16 valid_min 0;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
+"    String _NCProperties \"version=2,netcdf=4.7.4,hdf5=1.10.5\";\n" +
 "    String acknowledgement \"Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the NOAA National Centers for Environmental Information (NCEI). This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String cdr_id \"gov.noaa.ncdc:C00983\";\n" +
@@ -13252,24 +13343,24 @@ expected =
 "    String creator_name \"Kenneth S. Casey\";\n" +
 "    String creator_type \"person\";\n" +
 "    String creator_url \"https://pathfinder.nodc.noaa.gov\";\n" +
-"    String date_created \"2016-05-12T14:51:42Z\";\n" +
+"    String date_created \"2021-01-15T20:58:10Z\";\n" +
 "    String date_issued \"2016-03-01T00:00:00Z\";\n" +
 "    String date_metadata_modified \"2016-01-25T00:00:00Z\";\n" +
-"    String date_modified \"2016-05-12T14:51:42Z\";\n" +
+"    String date_modified \"2021-01-15T20:58:10Z\";\n" +
 "    String day_or_night \"Day\";\n" +
-"    Float64 Easternmost_Easting 179.9792;\n" +
+"    Float64 Easternmost_Easting 179.979;\n" +
 "    String gds_version_id \"2.0\";\n" +
 "    String geospatial_bounds \"-180.0000 -90.0000, 180.0000 90.0000\";\n" +
 "    String geospatial_bounds_crs \"EPSG:4326\";\n" +
-"    Float64 geospatial_lat_max 89.97917;\n" +
-"    Float64 geospatial_lat_min -89.97916;\n" +
-"    Float64 geospatial_lat_resolution 0.04166666589488307;\n" +
+"    Float64 geospatial_lat_max 89.979;\n" +
+"    Float64 geospatial_lat_min -89.979;\n" +
+"    Float64 geospatial_lat_resolution 0.04166658948830748;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 179.9792;\n" +
-"    Float64 geospatial_lon_min -179.9792;\n" +
-"    Float64 geospatial_lon_resolution 0.041666674383609215;\n" +
+"    Float64 geospatial_lon_max 179.979;\n" +
+"    Float64 geospatial_lon_min -179.979;\n" +
+"    Float64 geospatial_lon_resolution 0.041666628081953934;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"smigen_both ifile=1981243.b4kd3-pf53ap-n07-sst.hdf ofile=1981243.i4kd3-pf53ap-n07-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; /srv/disk_v1t/PFV5.3CONV/bin/Converter/hdf2nc_PFV53_L3C.x -v /srv/disk_v1t/PFV5.3CONV/Data_PFV53/PFV53_HDF_L3C/1981/1981243.i4kd3-pf53ap-n07-sst.hdf";
+"    String history \"smigen_both ifile=2020366.b4kd3-pf53ap-n19-sst.hdf ofile=2020366.i4kd3-pf53ap-n19-sst.hdf prod=sst datamin=-3.0 datamax=40.0 precision=I projection=RECT resolution=4km gap_fill=2 ; /data/ncei1/ncei.home/ksaha/PFv53_main/Converters/bin/Converter/hdf2nc_PFV53_L3C.x -v /data/ncei1/ncei.home/ksaha/PFv53_main/Converters/Data_PFV53/PFV53_HD";
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
     
@@ -13277,7 +13368,7 @@ expected =
    "String id \"AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String infoUrl \"https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String institution \"NCEI\";\n" +
-"    String instrument \"AVHRR-2\";\n" +
+"    String instrument \"AVHRR-3\";\n" +
 "    String instrument_vocabulary \"NASA Global Change Master Directory (GCMD) Science Keywords v8.4\";\n" +
 "    String keywords \"10m, advanced, aerosol, aerosol_dynamic_indicator, analysis, area, atmosphere, atmospheric, avhrr, bias, centers, climate, collated, cryosphere, data, deviation, difference, distribution, dt_analysis, dynamic, Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Cryosphere > Sea Ice > Ice Extent, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, Earth Science > Oceans > Sea Ice > Ice Extent, environmental, error, estimate, extent, flag, flags, fraction, ghrsst, global, high, high-resolution, ice, ice distribution, indicator, information, l2p, l2p_flags, l3-collated, l3c, level, national, ncei, noaa, ocean, oceans, optical, optical properties, pathfinder, pathfinder_quality_level, pixel, properties, quality, quality_level, radiometer, record, reference, resolution, sea, sea_ice_area_fraction, sea_ice_fraction, sea_surface_skin_temperature, sea_surface_temperature, sensor, single, skin, speed, sses, sses_bias, sses_standard_deviation, sst, sst_dtime, standard, statistics, surface, temperature, time, version, very, vhrr, wind, wind_speed, winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
@@ -13292,9 +13383,9 @@ expected =
 "    String metadata_link \"https://data.nodc.noaa.gov/cgi-bin/iso?id=gov.noaa.nodc:AVHRR_Pathfinder-NCEI-L3C-v5.3\";\n" +
 "    String naming_authority \"org.ghrsst\";\n" +
 "    String ncei_template_version \"NCEI_NetCDF_Grid_Template_v2.0\";\n" +
-"    Float64 Northernmost_Northing 89.97917;\n" +
+"    Float64 Northernmost_Northing 89.979;\n" +
 "    String orbit_node \"Ascending\";\n" +
-"    String platform \"NOAA-7\";\n" +
+"    String platform \"NOAA-19\";\n" +
 "    String platform_vocabulary \"NASA Global Change Master Directory (GCMD) Science Keywords v8.4\";\n" +
 "    String processing_level \"L3C\";\n" +
 "    String product_version \"PFV5.3\";\n" +
@@ -13306,19 +13397,19 @@ expected =
 "    String publisher_url \"https://www.ghrsst.org\";\n" +
 "    String references \"https://pathfinder.nodc.noaa.gov and Casey, K.S., T.B. Brandon, P. Cornillon, and R. Evans: The Past, Present and Future of the AVHRR Pathfinder SST Program, in Oceanography from Space: Revisited, eds. V. Barale, J.F.R. Gower, and L. Alberotanza, Springer, 2010. DOI: 10.1007/978-90-481-8681-5_16.\";\n" +
 "    String sea_name \"World-Wide Distribution\";\n" +
-"    String sensor \"AVHRR-2\";\n" +
-"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_07-v1\";\n" +
+"    String sensor \"AVHRR-3\";\n" +
+"    String source \"AVHRR_GAC-CLASS-L1B-NOAA_19-v1\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    Float64 Southernmost_Northing -89.97916;\n" +
+"    Float64 Southernmost_Northing -89.979;\n" +
 "    String spatial_resolution \"0.0416667 degree\";\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"Advanced Very High Resolution Radiometer (AVHRR) Pathfinder Version 5.3 L3-Collated (L3C) sea surface temperature. This netCDF-4 file contains sea surface temperature (SST) data produced as part of the AVHRR Pathfinder SST Project. These data were created using Version 5.3 of the Pathfinder algorithm and the file is nearly but not completely compliant with the Global High-Resolution Sea Surface Temperature (GHRSST) Data Specifications V2.0 (GDS2). The sses_bias and sses_standard_deviation variables are empty. Full compliance with GDS2 specifications will be achieved in the future Pathfinder Version 6. These data were created by the NOAA National Centers for Environmental Information (NCEI).\";\n" +
 "    String time_coverage_duration \"P1D\";\n" +
-"    String time_coverage_end \"1981-08-31T12:00:00Z\";\n" +
+"    String time_coverage_end \"2020-12-31T12:00:00Z\";\n" +
 "    String time_coverage_resolution \"P1D\";\n" +
 "    String time_coverage_start \"1981-08-25T12:00:00Z\";\n" +
 "    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)\";\n" +
-"    Float64 Westernmost_Easting -179.9792;\n" +
+"    Float64 Westernmost_Easting -179.979;\n" +
 "  }\n" +
 "}\n";
         int tPo = results.indexOf(expected.substring(0, 17));
@@ -13334,62 +13425,62 @@ expected =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 7];\n" +
+"  Float64 time[time = 8];\n" +
 "  Float32 latitude[latitude = 4320];\n" +
 "  Float32 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 sea_surface_temperature[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 sea_surface_temperature[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } sea_surface_temperature;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 dt_analysis[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 dt_analysis[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } dt_analysis;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte wind_speed[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte wind_speed[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } wind_speed;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float64 sea_ice_fraction[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Float64 sea_ice_fraction[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } sea_ice_fraction;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte quality_level[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte quality_level[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } quality_level;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Byte pathfinder_quality_level[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Byte pathfinder_quality_level[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } pathfinder_quality_level;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Int16 l2p_flags[time = 7][latitude = 4320][longitude = 8640];\n" +
+"      Int16 l2p_flags[time = 8][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 7];\n" +
+"      Float64 time[time = 8];\n" +
 "      Float32 latitude[latitude = 4320];\n" +
 "      Float32 longitude[longitude = 8640];\n" +
 "  } l2p_flags;\n" +
@@ -13414,7 +13505,8 @@ expected =
 "1981-08-28T12:00:00Z\n" +
 "1981-08-29T12:00:00Z\n" +
 "1981-08-30T12:00:00Z\n" +
-"1981-08-31T12:00:00Z\n";
+"1981-08-31T12:00:00Z\n" +
+"2020-12-31T12:00:00Z\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -13425,7 +13517,26 @@ expected =
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
-"time,latitude,longitude,sea_surface_temperature\n" +
+"time,latitude,longitude,sea_surface_temperature\n" + 
+"UTC,degrees_north,degrees_east,degree_C\n" +
+"1981-08-25T12:00:00Z,23.312456,-179.56233,1.35\n" +
+"1981-08-25T12:00:00Z,23.27079,-179.56233,-0.58\n" +
+"1981-08-26T12:00:00Z,23.312456,-179.56233,19.0\n" +
+"1981-08-26T12:00:00Z,23.27079,-179.56233,22.580000000000002\n" +
+"1981-08-27T12:00:00Z,23.312456,-179.56233,27.22\n" +
+"1981-08-27T12:00:00Z,23.27079,-179.56233,26.48\n" +
+"1981-08-28T12:00:00Z,23.312456,-179.56233,28.98\n" +
+"1981-08-28T12:00:00Z,23.27079,-179.56233,28.93\n" +
+"1981-08-29T12:00:00Z,23.312456,-179.56233,28.150000000000002\n" +
+"1981-08-29T12:00:00Z,23.27079,-179.56233,27.68\n" +
+"1981-08-30T12:00:00Z,23.312456,-179.56233,28.36\n" +
+"1981-08-30T12:00:00Z,23.27079,-179.56233,28.51\n" +
+"1981-08-31T12:00:00Z,23.312456,-179.56233,-3.0\n" +
+"1981-08-31T12:00:00Z,23.27079,-179.56233,-3.0\n" +
+"2020-12-31T12:00:00Z,23.312456,-179.56233,NaN\n" +
+"2020-12-31T12:00:00Z,23.27079,-179.56233,NaN\n";
+/* 2021-05-11 was
+"time,latitude,longitude,sea_surface_temperature\n" + 
 "UTC,degrees_north,degrees_east,degree_C\n" +
 "1981-08-25T12:00:00Z,23.312502,-179.5625,1.35\n" +
 "1981-08-25T12:00:00Z,23.270836,-179.5625,-0.58\n" +
@@ -13440,7 +13551,7 @@ expected =
 "1981-08-30T12:00:00Z,23.312502,-179.5625,28.36\n" +
 "1981-08-30T12:00:00Z,23.270836,-179.5625,28.51\n" +
 "1981-08-31T12:00:00Z,23.312502,-179.5625,-3.0\n" +
-"1981-08-31T12:00:00Z,23.270836,-179.5625,-3.0\n";
+"1981-08-31T12:00:00Z,23.270836,-179.5625,-3.0\n"; */
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDGridFromNcFiles.testMinimalReadSource() finished successfully.");
@@ -13802,6 +13913,7 @@ expected =
 "    <matchAxisNDigits>20</matchAxisNDigits>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
+"        <att name=\"_NCProperties\">version=1|netcdflibversion=4.6.1|hdf5libversion=1.8.13</att>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
 "        <att name=\"forcing_data_source\">Met Office; Global UM</att>\n";
         //proprietary
@@ -13809,6 +13921,7 @@ expected =
 
 expected = 
     "<addAttributes>\n" +
+"        <att name=\"_NCProperties\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"grid_mapping_inverse_flattening\" type=\"float\">298.25723</att>\n" +
@@ -14654,6 +14767,192 @@ expected =
     }
 
     /**
+     * This tests reading data from a file with a structure.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testStructure() throws Throwable {
+        String2.log("\n*** EDDGridFromNcFiles.testStructure()");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected;
+        String error = "";
+        int po;
+        EDV edv;        
+        String id = "testStructure";  
+        EDD.deleteCachedDatasetInfo(id);
+        EDD edd = oneFromDatasetsXml(null, id); 
+        String dapQuery = ""; 
+
+        //.csv
+        tName = edd.makeNewFileForDapQuery(null, null, 
+            dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructure", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"axis0,ArrayOfStructures_a_name,ArrayOfStructures_c_name,ArrayOfStructures_b_name\n" +
+"count,,,\n" +
+"0,0,1.0,0.0\n" +
+"1,1,0.5,1.0\n" +
+"2,2,0.3333333333333333,4.0\n" +
+"3,3,0.25,9.0\n" +
+"4,4,0.2,16.0\n" +
+"5,5,0.16666666666666666,25.0\n" +
+"6,6,0.14285714285714285,36.0\n" +
+"7,7,0.125,49.0\n" +
+"8,8,0.1111111111111111,64.0\n" +
+"9,9,0.1,81.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.csv subset
+        tName = edd.makeNewFileForDapQuery(null, null, "ArrayOfStructures_b_name[4:2:8]", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructure_b", ".csv"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"axis0,ArrayOfStructures_b_name\n" +
+"count,\n" +
+"4,16.0\n" +
+"6,36.0\n" +
+"8,64.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.das
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructure", ".das"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z ", "[TODAY] ");
+        expected = 
+"Attributes {\n" +
+"  axis0 {\n" +
+"    Int32 actual_range 0, 9;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Axis0\";\n" +
+"    String units \"count\";\n" +
+"  }\n" +
+"  ArrayOfStructures_a_name {\n" +
+"    Int32 _FillValue 2147483647;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Array Of Structures A Name\";\n" +
+"  }\n" +
+"  ArrayOfStructures_c_name {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Array Of Structures C Name\";\n" +
+"  }\n" +
+"  ArrayOfStructures_b_name {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Array Of Structures B Name\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"    String history \"[TODAY] (local files)\n" +
+"[TODAY] http://localhost:8080/cwexperimental/griddap/testStructure.das\";\n" +
+"    String infoUrl \"???\";\n" +
+"    String institution \"???\";\n" +
+"    String keywords \"array, ArrayOfStructures|a_name, ArrayOfStructures|b_name, ArrayOfStructures|c_name, axis0, data, local, name, source, structures\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
+"    String summary \"Data from a local source.\";\n" +
+"    String title \"Data from a local source.\";\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+
+        //.dds
+        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructure", ".dds"); 
+        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"Dataset {\n" +
+"  Int32 axis0[axis0 = 10];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int32 ArrayOfStructures_a_name[axis0 = 10];\n" +
+"    MAPS:\n" +
+"      Int32 axis0[axis0 = 10];\n" +
+"  } ArrayOfStructures_a_name;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float64 ArrayOfStructures_c_name[axis0 = 10];\n" +
+"    MAPS:\n" +
+"      Int32 axis0[axis0 = 10];\n" +
+"  } ArrayOfStructures_c_name;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 ArrayOfStructures_b_name[axis0 = 10];\n" +
+"    MAPS:\n" +
+"      Int32 axis0[axis0 = 10];\n" +
+"  } ArrayOfStructures_b_name;\n" +
+"} testStructure;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);        
+    }
+
+    /**
+     * This tests reading data from a private file (can't include results below) with a structure.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testStructurePrivate() throws Throwable {
+        String2.log("\n*** EDDGridFromNcFiles.testStructurePrivate()");
+        testVerboseOn();
+
+        String name, tName, results, tResults, expected;
+        String error = "";
+        int po;
+        EDV edv;        
+
+        String dir = "/data/justin/";
+        String fileName = "test.h5";  //sample_file.h5 has 128bit int so null pointer in netcdf-java
+        String2.log("contents of " + dir + fileName + "\n" +
+            NcHelper.ncdump(dir + fileName, "-h"));
+
+        String id = "testStructurePrivate";  
+        EDD.deleteCachedDatasetInfo(id);
+        EDD edd = oneFromDatasetsXml(null, id); 
+
+        //.das
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructurePrivate", ".das"); 
+        String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+        String2.pressEnterToContinue(
+            "EDDGridFromNcFiles.testStructurePrivate()\n" +
+            "Okay?");
+
+        //.dds
+        tName = edd.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructurePrivate", ".dds"); 
+        String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+        String2.pressEnterToContinue(
+            "EDDGridFromNcFiles.testStructurePrivate()\n" +
+            "Okay?");
+
+        //.csv subset
+        tName = edd.makeNewFileForDapQuery(null, null, 
+            "Yaw[0:500:3500],latitude[0:500:3500],longitude[0:500:3500]", 
+            EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_testStructurePrivate", ".csv"); 
+        String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+        String2.pressEnterToContinue(
+            "EDDGridFromNcFiles.testStructurePrivate()\n" +
+            "Okay?");
+
+    }
+
+
+    /**
      * This tests the /files/ "files" system.
      * This requires nceiPH53sstn1day in the local ERDDAP.
      *
@@ -14912,7 +15211,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 11 : 59;
+            lastTest = interactive? 14 : 59;
         String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true; 
@@ -14935,6 +15234,8 @@ expected =
                     if (test ==  9) testLogAxis(-1); //-1=all
                     if (test == 10) testCopyFiles(true);  //deleteDataFiles  //does require localhost erddap
                     if (test == 11) testCopyFiles(false); //uses cachePartialPathRegex  //doesn't require localhost erddap
+                    if (test == 12) testGenerateDatasetsXmlStructuresPrivate();
+                    if (test == 14) testStructurePrivate();
 
                     //not usually run
                     //if (test == 1000) testQuickRestart2();
@@ -14974,6 +15275,7 @@ expected =
                     if (test == 35) testFiles();  
                     if (test == 36) testUInt16File();
                     if (test == 37) testUnsignedGrid();  
+                    if (test == 38) testStructure();  
 
                     //unfinished: if (test == 39) testRTechHdf();
                     if (test == 40) testUpdate();

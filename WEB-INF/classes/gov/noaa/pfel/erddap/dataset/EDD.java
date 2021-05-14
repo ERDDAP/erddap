@@ -269,6 +269,8 @@ public abstract class EDD {
     public final static int WMS_MAX_HEIGHT = 4096; //arbitrary
     public final static char WMS_SEPARATOR = ':'; //separates datasetID and variable name (not a valid interior char)
 
+    public final static String STRUCTURE_MEMBER_SEPARATOR = "|";
+
     public final static String STANDARDIZEWHAT = "standardizeWhat"; 
 
     public final static String ONE_WORD_CF_STANDARD_NAMES[] = {
@@ -371,6 +373,28 @@ public abstract class EDD {
     protected int updateEveryNMillis = 0; // <=0 means incremental update not active
     protected ReentrantLock updateLock = null;  //setUpdateEveryNMillis creates this if needed
     protected long cumulativeUpdateTime = 0, updateCount = 0; 
+
+    /* The source of data is files in an S3 bucket. */
+    protected boolean filesInS3Bucket = false; 
+    /* This source of data is files in a private S3 bucket. 
+       Such files should be handled via the S3 SDK. */
+    protected boolean filesInPrivateS3Bucket = false;
+
+
+    /**
+     * This indicates if the files are in an S3 bucket.
+     */
+    public boolean filesInS3Bucket() {
+        return filesInS3Bucket;
+    }
+
+    /**
+     * This indicates if the files are in a private S3 bucket and thus need to be 
+     * dealt with via the AWS SDK.
+     */
+    public boolean filesInPrivateS3Bucket() {
+        return filesInPrivateS3Bucket;
+    }
 
     /**
      * This constructs an EDDXxx based on the information in an .xml file.
@@ -1101,7 +1125,7 @@ public abstract class EDD {
                     "&email=" + SSR.minimalPercentEncode(EDStatic.emailSubscriptionsFrom) +
                     "&emailIfAlreadyValid=false" + 
                     "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                SSR.touchUrl(subscriptionUrl, 60000);  
+                SSR.touchUrl(subscriptionUrl, 60000, true);  //handleS3ViaSDK=true
                 String2.log(datasetID + " sent a subscription request to the remote ERDDAP dataset.");
                 //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
             }
@@ -1165,7 +1189,7 @@ public abstract class EDD {
                     "&action=" + SSR.minimalPercentEncode(tFlagUrl); // %encode deals with & within flagUrl
                 if (verbose) String2.log("  " + datasetID + 
                     " is subscribing to underlying fromErddap dataset:\n  " + subscriptionUrl);
-                SSR.touchUrl(subscriptionUrl, 60000);  //may throw exception
+                SSR.touchUrl(subscriptionUrl, 60000, true);  //may throw exception  //handleS3ViaSDK=true
                 return; //success
 
             }
@@ -9675,8 +9699,9 @@ public abstract class EDD {
 
         //extract from tPublicSourceUrl
         //is it an Amazon AWS S3 URL?
-        String dsi = String2.getAwsS3BucketName(tPublicSourceUrl);
-        if (dsi == null) {
+        String bro[] = String2.parseAwsS3Url(tPublicSourceUrl);
+        String dsi;
+        if (bro == null) {
             //regular url
             String dir = tPublicSourceUrl.indexOf('/' ) >= 0 ||
                          tPublicSourceUrl.indexOf('\\') >= 0?
@@ -9685,7 +9710,7 @@ public abstract class EDD {
             dsi = String2.toSVString(suggestInstitutionParts(dir), "_", true);
         } else {
             //AWS S3 url
-            dsi = "s3" + dsi + "_";
+            dsi = "s3" + bro[0] + "_";
         }
         dsi = String2.modifyToBeFileNameSafe(dsi);
         dsi = String2.replaceAll(dsi, '-', '_');
