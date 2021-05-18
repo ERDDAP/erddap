@@ -3731,7 +3731,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This tests if the ipAddress is on the blacklist (and calls sendLowError if it is).
      *
      * @param ipAddress the requester's ipAddress
-     * @param requestNumber for the diagnostic message
+     * @param requestNumber The requestNumber assigned to this request by doGet().
      * @param response so the response can be sent the error
      * @return true if user is on the blacklist.
      */
@@ -3759,7 +3759,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             tally.add("Requester's IP Address (Blacklisted) (since last daily report)", ipAddress);
             tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
             String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
-            lowSendError(response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
+            lowSendError(requestNumber, response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
                 blacklistMsg);
             return true;
         }
@@ -4051,6 +4051,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * call this to send Http UNAUTHORIZED error.
      * (was: redirectToLogin: redirect him to the login page).
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetID  or use "" for general login.
      * @param graphsAccessibleToPublic From edd.graphsAccessibleToPublic(). 
@@ -4059,7 +4060,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *   allows graphics|metadata requests from the public.
      * @throws Throwable (notably ClientAbortException)
      */
-    public static void sendHttpUnauthorizedError(String loggedInAs, 
+    public static void sendHttpUnauthorizedError(int requestNumber, String loggedInAs, 
         HttpServletResponse response, String datasetID, 
         boolean graphsAccessibleToPublic) throws Throwable {
 
@@ -4077,11 +4078,11 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
                     datasetID);
 
-            lowSendError(response, HttpServletResponse.SC_UNAUTHORIZED, message);
+            lowSendError(requestNumber, response, HttpServletResponse.SC_UNAUTHORIZED, message);
 
         } catch (Throwable t2) {
             EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
-            String2.log("Error in sendHttpUnauthorizedError:\n" + 
+            String2.log("Error in sendHttpUnauthorizedError for request #" + requestNumber + ":\n" + 
                 (message == null? "" : message + "\n") +
                 MustBe.throwableToString(t2));
         }
@@ -5353,8 +5354,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     /**
      * Given a throwable t, this sends an appropriate HTTP error code and a DAP-formatted dods-error response message.
      * Most users will call return in their method after calling this since the response is committed and closed.
+     *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      */
-    public static void sendError(HttpServletRequest request, 
+    public static void sendError(int requestNumber, HttpServletRequest request, 
         HttpServletResponse response, Throwable t) throws ServletException {
 
         //defaults
@@ -5363,7 +5368,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         try {
             if (isClientAbortException(t)) {
-                String2.log("*** sendError caught " + String2.ERROR + "=ClientAbortException");
+                String2.log("*** sendError for request #" + requestNumber + " caught " + String2.ERROR + "=ClientAbortException");
                 return; //do nothing
             }
 
@@ -5438,10 +5443,11 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             }
 
             String2.log(
-                "*** sendErrorCode " + errorNo + " for " + tRequest + //not decoded
-                "\n" + MustBe.throwableToString(t).trim());  //always log full stack trace
+                "*** sendErrorCode " + errorNo + " for request #" + requestNumber + ":\n" + 
+                tRequest + "\n" + //not decoded
+                MustBe.throwableToString(t).trim());  //always log full stack trace
 
-            lowSendError(response, errorNo, tError);
+            lowSendError(requestNumber, response, errorNo, tError);
 
         } catch (Throwable t2) {
             //an exception occurs if response is committed
@@ -5454,13 +5460,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This is the lower level version of sendError. Use this if the http errorNo
      * is known.
      *
-     * @param response
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param response The response to be written to.
      * @param errorNo  the HTTP status code / error number.
      *   Note that DAP 2.0 says error code is 1 digit, but doesn't provide
      *   a list of codes and meanings. I use HTTP status codes (3 digits).
      * @param msg suitable for the user (not the full diagnostic information).
      */
-    public static void lowSendError(HttpServletResponse response, int errorNo, String msg) {
+    public static void lowSendError(int requestNumber, HttpServletResponse response, int errorNo, String msg) {
         try {
             msg = String2.isSomething(msg)? msg.trim() : "(no details)";
 
@@ -5499,7 +5506,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "    message=" + String2.toJson(msg, 65536, false) + ";\n" +
                 "}\n";
             if (msg.indexOf(blacklistMsg) < 0)
-                String2.log("*** lowSendError: isCommitted=" + (response == null || response.isCommitted()) + 
+                String2.log("*** lowSendError for request #" + requestNumber + 
+                    ": isCommitted=" + (response == null || response.isCommitted()) + 
                     " fullMessage=\n" +
                     fullMsg); // + MustBe.getStackTrace());
 
@@ -5529,12 +5537,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 }                
             }
         } catch (Throwable t) {
-            String2.log(String2.ERROR + " in lowSendError: " + MustBe.throwableToString(t));
+            String2.log(String2.ERROR + " in lowSendError for request #" + requestNumber + ":\n" + 
+                MustBe.throwableToString(t));
         } finally {
             //last thing, try hard to close the outputstream
             try {
                 //was if (!response.isCommitted()) 
-                    response.getOutputStream().close();
+                response.getOutputStream().close();
             } catch (Exception e2) {}
         }
     }

@@ -189,7 +189,7 @@ in ERDDAP version 2.12 (released 2021-05-14)</h2>
     which will search through a collection of gridded .nc (and related) files
     to find files with duplicate time values. See 
     <a rel="help"
-        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#findDuplicateTime">findCuplicateTime</a>
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#findDuplicateTime">findDuplicateTime</a>
     <br>&nbsp;
 
   <li>NEW: datasets.xml can now include a &lt;palettes&gt; tag which overrides 
@@ -204,11 +204,6 @@ in ERDDAP version 2.12 (released 2021-05-14)</h2>
       See the <a rel="help"
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#palettes">palettes documentation</a>
       <br>Thanks to Jennifer Sevadjian, Melanie Abecassis, and perhaps other CoastWatch people.
-    <br>&nbsp;
-
-  <li>CHANGED: EDDTableFromHttpGet now doesn't try to get a lock when reading 
-    the data files. The files are add-only, so there is no need for a lock.
-    Thanks to Marco Alba.
     <br>&nbsp;
 
   <li>CHANGED: <a rel="help"
