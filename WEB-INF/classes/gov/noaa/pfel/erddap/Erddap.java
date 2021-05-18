@@ -448,6 +448,11 @@ public class Erddap extends HttpServlet {
             String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
             //String2.log("requestURL=" + requestUrl); 
 
+            //get userQuery
+            String userQuery = request.getQueryString(); //may be null;  leave encoded
+            if (userQuery == null)
+                userQuery = "";
+
             //too many simultaneous requests from this user?
             //FUTURE? If desired, you could also add a system to monitor total number
             //  of active requests (for all users) and limit it to MaxNRequests
@@ -455,12 +460,26 @@ public class Erddap extends HttpServlet {
             //  Such a system would need good assurance that the list was valid
             //  (not old requests filling up the system but actually processed).
             ipAddress = EDStatic.getIPAddress(request); 
-            //then immediately test it (so no possible error in between)
+
+            //always log request as soon as all info known (even if request will soon be rejected)
+            String2.log("{{{{#" + requestNumber + " " +
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + " " + 
+                (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
+                ipAddress + " " +
+                request.getMethod() + " " + 
+                requestUrl + 
+                (requestUrl.endsWith("login.html") && userQuery.indexOf("nonce=") >= 0?
+                    "?[CONFIDENTIAL]" : 
+                    EDStatic.questionQuery(userQuery)));
+
+            //then immediately test ipAddress (so little possible error in between)
             if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
                 //always add requestNumber to ipAddressQueue for this ipAddress
                 //Important: ipAddressQueue is thread-safe so only 1 thread will succeed in creating a new IntArray for this ipAddress
                 IntArray iaq = EDStatic.ipAddressQueue.putIfAbsent(ipAddress, 
                     new IntArray(EDStatic.ipAddressMaxRequests, false));
+                if (iaq == null)
+                    iaq = EDStatic.ipAddressQueue.get(ipAddress);
                 synchronized (iaq) {      
                     //first thing
                     iaq.add(requestNumber);
@@ -475,7 +494,7 @@ public class Erddap extends HttpServlet {
                         EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)", ipAddress);
                         EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since last daily report)", ipAddress);
                         EDStatic.tally.add("Requester's IP Address (Too Many Requests) (since startup)", ipAddress);
-                        EDStatic.lowSendError(response, 429, //429=Too Many Requests
+                        EDStatic.lowSendError(requestNumber, response, 429, //429=Too Many Requests
                             EDStatic.oneRequestAtATime);
                         //FUTURE? email yesterday's list to erddap admin when generating daily report
                         // so they can consider blacklisting them?
@@ -499,7 +518,7 @@ public class Erddap extends HttpServlet {
                     TOP_N:
                     while (true) { 
                         synchronized (iaq) { //this takes very little time (~ 31 nanoseconds) (see IntArray.testSynchSpeed())
-                            for (int which = EDStatic.ipAddressMaxRequestsActive - 1; which >= 0; which--) 
+                            for (int which = Math.min(iaq.size()-1, EDStatic.ipAddressMaxRequestsActive-1); which >= 0; which--) 
                                 if (iaq.get(which) == requestNumber) 
                                     break TOP_N; //fall through and respond to this request
                         }
@@ -520,20 +539,6 @@ public class Erddap extends HttpServlet {
                     }
                 }
             }
-
-            //get userQuery
-            String userQuery = request.getQueryString(); //may be null;  leave encoded
-            if (userQuery == null)
-                userQuery = "";
-            String2.log("{{{{#" + requestNumber + " " +
-                Calendar2.getCurrentISODateTimeStringLocalTZ() + " " + 
-                (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
-                ipAddress + " " +
-                request.getMethod() + " " + 
-                requestUrl + 
-                (requestUrl.endsWith("login.html") && userQuery.indexOf("nonce=") >= 0?
-                    "?[CONFIDENTIAL]" : 
-                    EDStatic.questionQuery(userQuery)));
 
             //tally ipAddress                                    //odd capitilization sorts better
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last Major LoadDatasets)", ipAddress);
@@ -561,41 +566,41 @@ public class Erddap extends HttpServlet {
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
             if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
-                doDap(request, response, ipAddress, loggedInAs, protocol, protocolEnd + 1, userQuery);
+                doDap(requestNumber, request, response, ipAddress, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("files")) {
-                doFiles(request, response, loggedInAs, protocolEnd + 1, userQuery);
+                doFiles(requestNumber, request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (protocol.equals("sos")) {
-                doSos(request, response, ipAddress, loggedInAs, protocolEnd + 1, userQuery); 
+                doSos(requestNumber, request, response, ipAddress, loggedInAs, protocolEnd + 1, userQuery); 
             //} else if (protocol.equals("wcs")) {
             //    doWcs(request, response, ipAddress, loggedInAs, protocolEnd + 1, userQuery); 
             } else if (protocol.equals("wms")) {
-                doWms(request, response, loggedInAs, protocolEnd + 1, userQuery);
+                doWms(requestNumber, request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
                 sendRedirect(response, tErddapUrl + "/index.html");
             } else if (protocol.startsWith("index.")) {
-                doIndex(request, response, loggedInAs);
+                doIndex(requestNumber, request, response, loggedInAs);
 
             } else if (protocol.equals("download") ||
                        protocol.equals("images") ||
                        protocol.equals("public")) {
-                doTransfer(request, response, protocol, protocolEnd + 1);
+                doTransfer(requestNumber, request, response, protocol, protocolEnd + 1);
             } else if (protocol.equals("metadata")) {
-                doMetadata(request, response, loggedInAs, endOfRequest, userQuery);
+                doMetadata(requestNumber, request, response, loggedInAs, endOfRequest, userQuery);
             } else if (protocol.equals("rss")) {
-                doRss(request, response, loggedInAs, protocol, protocolEnd + 1);
+                doRss(requestNumber, request, response, loggedInAs, protocol, protocolEnd + 1);
             } else if (endOfRequest.startsWith("search/advanced.")) {  //before test for "search"
-                doAdvancedSearch(request, response, loggedInAs, protocolEnd + 1, userQuery);
+                doAdvancedSearch(requestNumber, request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (endOfRequest.startsWith("search/index.")) {
-                doSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);            
+                doSearch(requestNumber, request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);            
             } else if (endOfRequest.equals("search/") ||
                        endOfRequest.equals("search")) {
                 sendRedirect(response, tErddapUrl + "/search/index.html?" + EDStatic.defaultPIppQuery);
             } else if (protocol.equals("opensearch1.1")) {
                 doOpenSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("categorize")) {
-                doCategorize(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
+                doCategorize(requestNumber, request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("info")) {
-                doInfo(request, response, loggedInAs, protocol, protocolEnd + 1);
+                doInfo(requestNumber, request, response, loggedInAs, protocol, protocolEnd + 1);
             } else if (endOfRequest.equals("information.html")) {
                 doInformationHtml(request, response, loggedInAs);
             } else if (endOfRequest.equals("legal.html")) {
@@ -613,18 +618,18 @@ public class Erddap extends HttpServlet {
             } else if (endOfRequest.equals("rest.html")) {
                 doRestHtml(request, response, loggedInAs);
             } else if (protocol.equals("rest")) {  
-                doGeoServicesRest(request, response, loggedInAs, endOfRequest, userQuery);
+                doGeoServicesRest(requestNumber, request, response, loggedInAs, endOfRequest, userQuery);
             } else if (endOfRequest.equals("setDatasetFlag.txt")) {
                 doSetDatasetFlag(ipAddress, request, response, userQuery);
             } else if (endOfRequest.equals("sitemap.xml")) {
                 doSitemap(request, response);
             } else if (endOfRequest.equals("slidesorter.html")) {
-                doSlideSorter(request, response, loggedInAs, userQuery);
+                doSlideSorter(requestNumber, request, response, loggedInAs, userQuery);
             } else if (endOfRequest.equals("status.html")) {
                 doStatus(request, response, loggedInAs);
             } else if (endOfRequest.startsWith("dataProviderForm")) {
                 if (!EDStatic.dataProviderFormActive) 
-                    sendResourceNotFoundError(request, response, 
+                    sendResourceNotFoundError(requestNumber, request, response, 
                         MessageFormat.format(EDStatic.disabled, "Data Provider Form"));
                 else if (endOfRequest.equals("dataProviderForm.html")) 
                     doDataProviderForm(request, response, loggedInAs);
@@ -638,22 +643,24 @@ public class Erddap extends HttpServlet {
                     doDataProviderForm4(request, response, loggedInAs, ipAddress);
                 else if (endOfRequest.equals("dataProviderFormDone.html")) 
                     doDataProviderFormDone(request, response, loggedInAs);
-                else sendResourceNotFoundError(request, response, "The first subdirectory or file in the request URL doesn't exist.");
+                else sendResourceNotFoundError(requestNumber, request, response, 
+                    "The first subdirectory or file in the request URL doesn't exist.");
 
             } else if (protocol.equals("subscriptions")) {
-                doSubscriptions(request, response, loggedInAs, ipAddress, endOfRequest, 
+                doSubscriptions(requestNumber, request, response, loggedInAs, ipAddress, endOfRequest, 
                     protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("convert")) {
-                doConvert(request, response, loggedInAs, endOfRequest, 
+                doConvert(requestNumber, request, response, loggedInAs, endOfRequest, 
                     protocolEnd + 1, userQuery);
             } else if (endOfRequest.startsWith("outOfDateDatasets.")) {
-                doOutOfDateDatasets(request, response, loggedInAs, endOfRequest, userQuery);
+                doOutOfDateDatasets(requestNumber, request, response, loggedInAs, endOfRequest, userQuery);
             } else if (endOfRequest.equals("version")) {
                 doVersion(request, response);
             } else if (endOfRequest.equals("version_string")) {
                 doVersionString(request, response);
             } else {
-                sendResourceNotFoundError(request, response, "The first subdirectory or file in the request URL doesn't exist.");
+                sendResourceNotFoundError(requestNumber, request, response, 
+                    "The first subdirectory or file in the request URL doesn't exist.");
             }
             
             //tally
@@ -694,7 +701,7 @@ public class Erddap extends HttpServlet {
             }
 
             //if sendErrorCode fails because response.isCommitted(), it throws ServletException
-            EDStatic.sendError(request, response, t); 
+            EDStatic.sendError(requestNumber, request, response, t); 
 
             long tTime = System.currentTimeMillis() - doGetTime;
             if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " sendErrorCode done. Total TIME=" + 
@@ -703,15 +710,19 @@ public class Erddap extends HttpServlet {
         } finally {
 
             //remove requestNumber from ipAddressQueue for this ipAddress
-            if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
-                IntArray iaq = EDStatic.ipAddressQueue.get(ipAddress);
-                if (iaq != null) { //will be null if just added to ipAddressUnlimited
-                    synchronized (iaq) {
-                        int which = iaq.indexOf(requestNumber);
-                        if (which >= 0) //it should be
-                            iaq.remove(which);
+            try {
+                if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
+                    IntArray iaq = EDStatic.ipAddressQueue.get(ipAddress);
+                    if (iaq != null) { //will be null if just added to ipAddressUnlimited
+                        synchronized (iaq) {
+                            int which = iaq.indexOf(requestNumber);
+                            if (which >= 0) //it should be
+                                iaq.remove(which);
+                        }
                     }
                 }
+            } catch (Throwable t2) {
+                String2.log("Caught: " + MustBe.throwableToString(t2));
             }
         }
     }
@@ -719,12 +730,13 @@ public class Erddap extends HttpServlet {
     /** 
      * This responds to an /erddap/index.xxx request
      *
-     * @param request
-     * @param response
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @throws ServletException, IOException
      */
-    public void doIndex(HttpServletRequest request, HttpServletResponse response, 
+    public void doIndex(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -755,14 +767,14 @@ public class Erddap extends HttpServlet {
                         "?" + EDStatic.defaultPIppQuery +
                         (resources.get(r).equals("search")? "&searchFor=" : ""));
                 }
-                sendPlainTable(loggedInAs, request, response, table, "Resources", fileTypeName);
+                sendPlainTable(requestNumber, loggedInAs, request, response, table, "Resources", fileTypeName);
                 return;
             }
         }
 
         //only thing left should be erddap/index.html request
         if (!requestUrl.equals("/" + EDStatic.warName + "/index.html")) {
-            sendResourceNotFoundError(request, response, "index.html expected");
+            sendResourceNotFoundError(requestNumber, request, response, "index.html expected");
             return;
         }
 
@@ -1805,7 +1817,7 @@ public class Erddap extends HttpServlet {
         } 
 
         //*** Other
-        //alternative: lowSendError(response, HttpServletResponse.SC_UNAUTHORIZED, 
+        //alternative: lowSendError(requestNumber, response, HttpServletResponse.SC_UNAUTHORIZED, 
         //    EDStatic.loginCanNot);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
         Writer writer = getHtmlWriterUtf8(loggedInAs, EDStatic.LogIn, out);
@@ -4111,7 +4123,8 @@ writer.write(
     /**
      * Process a grid or table OPeNDAP DAP-style request.
      *
-     * @param request The request from the user.
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
      * @param response The response to be written to.
      * @param ipAddress The ipAddress of the user (for statistics).
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
@@ -4119,7 +4132,7 @@ writer.write(
      *    ("griddap" or "tabledap") in the requestUrl
      * @param userDapQuery  post "?".  Still percentEncoded.  May be "".  May not be null.
      */
-    public void doDap(HttpServletRequest request, HttpServletResponse response,
+    public void doDap(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String ipAddress, String loggedInAs,
         String protocol, int datasetIDStartsAt, String userDapQuery) throws Throwable {
 
@@ -4250,7 +4263,7 @@ writer.write(
             endOfRequestUrl = endOfRequestUrl.substring(0, slashPoNP);
 
             //currently no nextPath options
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 "No options after '/' in request URL.");
             return;
         }
@@ -4279,7 +4292,7 @@ writer.write(
         //respond to xxx/index request
         //show list of 'protocol'-supported datasets in .html file
         if (id.equals("index") && nextPath.length() == 0) {
-            sendDatasetList(request, response, loggedInAs, protocol, fileTypeName);
+            sendDatasetList(requestNumber, request, response, loggedInAs, protocol, fileTypeName);
             return;
         }
 
@@ -4288,7 +4301,7 @@ writer.write(
                       protocol.equals("tabledap")? tableDatasetHashMap.get(id):
                       null;
         if (dataset == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, id));
             return;
         }
@@ -4298,20 +4311,20 @@ writer.write(
                 if (dataset.graphsAccessibleTo_fileTypeNamesContains(fileTypeName)) {
                     //fall through to get graphics
                 } else {
-                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, true);
+                    EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, id, true);
                     return;
                 }
             } else {
-                EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, false);
+                EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, id, false);
                 return;
             }
         }
         if (fileTypeName.equals(".graph") && dataset.accessibleViaMAG().length() > 0) {
-            sendResourceNotFoundError(request, response, dataset.accessibleViaMAG());
+            sendResourceNotFoundError(requestNumber, request, response, dataset.accessibleViaMAG());
             return;
         }
         if (fileTypeName.equals(".subset") && dataset.accessibleViaSubset().length() > 0) {
-            sendResourceNotFoundError(request, response, dataset.accessibleViaSubset());
+            sendResourceNotFoundError(requestNumber, request, response, dataset.accessibleViaSubset());
             return;
         }
 
@@ -4479,12 +4492,15 @@ writer.write(
     /**
      * Process a /files/ request for an accessibleViaFiles dataset.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("griddap" or "tabledap") in the requestUrl
      * @param userDapQuery  post "?".  Still percentEncoded.  May be "".  May not be null.
      */
-    public void doFiles(HttpServletRequest request, HttpServletResponse response,
+    public void doFiles(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userDapQuery) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);       
@@ -4530,7 +4546,7 @@ writer.write(
         String nameAndExt = null;
         int slashPoNP = endOfRequestUrl.indexOf('/');
         if (slashPoNP == 0) {  //e.g. files//something  
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, "\"\""));
             return;
             
@@ -4631,7 +4647,7 @@ writer.write(
                 table.moveRows(oNRows, table.nRows(), 0);
 
                 //return results as justExtension fileType
-                sendPlainTable(loggedInAs, request, response, table, "files", justExtension);
+                sendPlainTable(requestNumber, loggedInAs, request, response, table, "files", justExtension);
 
                 return;
             }
@@ -4675,7 +4691,7 @@ writer.write(
         if (edd == null)
             edd = tableDatasetHashMap.get(id);
         if (edd == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, id));
             return;
         }
@@ -4687,13 +4703,13 @@ writer.write(
         if (!edd.isAccessibleTo(roles)) { //check this first
             // /files/ access: all requests are data requests
             //listPrivateDatasets and graphsAccessibleToPublic don't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, id, 
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, id, 
                 edd.graphsAccessibleToPublic());
             return;
         }
         if (!edd.accessibleViaFiles()) {
             if (verbose) String2.log(EDStatic.resourceNotFound + "accessibleViaFilesDir=\"\"");
-            sendResourceNotFoundError(request, response, "This dataset is not accessible via /files/ .");
+            sendResourceNotFoundError(requestNumber, request, response, "This dataset is not accessible via /files/ .");
             return;
         }
 
@@ -4713,7 +4729,7 @@ writer.write(
             //  [2] is the local directory corresponding to this (or null, if not a local dir)
             Object o2[] = edd.accessibleViaFilesFileTable(nextPath);
             if (o2 == null || o2.length != 3 || o2[0] == null || o2[1] == null) { //shouldn't happen.  o2[2] may be null
-                sendResourceNotFoundError(request, response, 
+                sendResourceNotFoundError(requestNumber, request, response, 
                     EDStatic.resourceNotFound + "directory=" + nextPath);
                 return;
             }
@@ -4722,7 +4738,7 @@ writer.write(
             String localDir = (String)o2[2];
             int fileTableNRows = fileTable.nRows();
             if (fileTableNRows == 0 && subDirs.size() == 0) {
-                sendResourceNotFoundError(request, response, 
+                sendResourceNotFoundError(requestNumber, request, response, 
                     EDStatic.resourceNotFound + "directory=" + nextPath);
                 return;
             }
@@ -4741,7 +4757,7 @@ writer.write(
                 fileTable.moveRows(oNRows, fileTable.nRows(), 0);
 
                 //return results as justExtension fileType
-                sendPlainTable(loggedInAs, request, response, fileTable, id + " Files", justExtension);
+                sendPlainTable(requestNumber, loggedInAs, request, response, fileTable, id + " Files", justExtension);
 
                 return;
             }
@@ -4799,7 +4815,7 @@ writer.write(
                 //  (hence RESTful request for filenames)
         String localFullName = edd.accessibleViaFilesGetLocal(nextPath + nameAndExt);
         if (localFullName == null) {//for any reason
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.errorFileNotFound, nameAndExt)); 
             return;
         }
@@ -4818,7 +4834,7 @@ writer.write(
                 request, response, File2.getNameNoExtension(nameAndExt), ext, ext); 
             OutputStream outputStream = 
                 outSource.outputStream("", File2.length(localFullName));
-            doTransfer(request, response, localDir, webDir, nameAndExt, 
+            doTransfer(requestNumber, request, response, localDir, webDir, nameAndExt, 
                 outputStream, outSource.usingCompression());
         }
 
@@ -4832,14 +4848,15 @@ writer.write(
     /**
      * This sends the list of griddap, tabledap, sos, wcs, or wms datasets
      *
-     * @param request
-     * @param response
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param protocol   must be "griddap", "tabledap", "sos", "wcs", or "wms"
      * @param fileTypeName e.g., .html or .json
      * throws Throwable if trouble
      */
-    public void sendDatasetList(HttpServletRequest request, HttpServletResponse response,
+    public void sendDatasetList(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String protocol, String fileTypeName) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -4848,7 +4865,7 @@ writer.write(
         //ensure valid fileTypeName
         int pft = String2.indexOf(plainFileTypes, fileTypeName);
         if (pft < 0 && !fileTypeName.equals(".html")) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
             return;
         }
@@ -4949,7 +4966,7 @@ writer.write(
             }
             description = EDStatic.wmsDescriptionHtml;
         } else {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownProtocol, protocol));
             return;
         }
@@ -5017,7 +5034,7 @@ writer.write(
 
             //make the plain table with the dataset list
             table = makePlainDatasetTable(loggedInAs, ids, sortByTitle, fileTypeName);  
-            sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
+            sendPlainTable(requestNumber, loggedInAs, request, response, table, protocol, fileTypeName);
             return;
         }
 
@@ -5108,6 +5125,9 @@ writer.write(
      *
      * <p>This assumes request was for /erddap/sos.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param ipAddress The user's IP address (for statistics).
      * @param loggedInAs The name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt This is the position right after the / at the end of the protocol
@@ -5116,11 +5136,11 @@ writer.write(
      *   This has name=value pairs. The name is case-insensitive. The value is case-sensitive.
      *   This must include service="SOS", request=[aValidValue like GetCapabilities].
      */
-    public void doSos(HttpServletRequest request, HttpServletResponse response,
+    public void doSos(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String ipAddress, String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.sosActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "SOS"));
         }
 /*
@@ -5143,13 +5163,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //list the SOS datasets
         if (endOfRequestUrl.startsWith("index.")) {
-            sendDatasetList(request, response, loggedInAs, "sos", endOfRequestUrl.substring(5)); 
+            sendDatasetList(requestNumber, request, response, loggedInAs, "sos", endOfRequestUrl.substring(5)); 
             return;
         }        
 
         //SOS documentation web page
         if (endOfRequestUrl.equals("documentation.html")) {
-            doSosDocumentation(request, response, loggedInAs);
+            doSosDocumentation(requestNumber, request, response, loggedInAs);
             return;
         }       
 
@@ -5159,7 +5179,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         String part1 = urlEndParts.length > 1? urlEndParts[1] : "";
         EDDTable eddTable = tableDatasetHashMap.get(tDatasetID);
         if (eddTable == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
@@ -5179,14 +5199,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         if (!eddTable.isAccessibleTo(roles)) { 
             //SOS access: all requests are data requests
             //listPrivateDatasets and graphAccessibleToPublic don't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID, 
                 eddTable.graphsAccessibleToPublic());
             return;
         }
 
         //check accessibleViaSOS
         if (eddTable.accessibleViaSOS().length() > 0) {
-            sendResourceNotFoundError(request, response, eddTable.accessibleViaSOS());
+            sendResourceNotFoundError(requestNumber, request, response, eddTable.accessibleViaSOS());
             return;
         }
 
@@ -5229,7 +5249,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //ensure it is a SOS server request
         if (!part1.equals(EDDTable.sosServer) && urlEndParts.length == 2) {
-            sendResourceNotFoundError(request, response, "not a SOS request");
+            sendResourceNotFoundError(requestNumber, request, response, "not a SOS request");
             return;
         }
 
@@ -5456,13 +5476,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     /**
      * This responds by sending out ERDDAP's "SOS Documentation" Html page.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      */
-    public void doSosDocumentation(HttpServletRequest request, HttpServletResponse response,
+    public void doSosDocumentation(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
 
         if (!EDStatic.sosActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "SOS"));
             return;
         }
@@ -5514,17 +5537,20 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      *
      * <p>This assumes request was for /erddap/wcs.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param ipAddress The ip address of the user (for statistics).
      * @param loggedInAs  The name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("wcs") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doWcs(HttpServletRequest request, HttpServletResponse response,
+    public void doWcs(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String ipAddress, String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.wcsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WCS"));
             return;
         }
@@ -5543,13 +5569,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //list the WCS datasets
         if (endOfRequestUrl.startsWith("index.")) {
-            sendDatasetList(request, response, loggedInAs, "wcs", endOfRequestUrl.substring(5)); 
+            sendDatasetList(requestNumber, request, response, loggedInAs, "wcs", endOfRequestUrl.substring(5)); 
             return;
         }        
 
         //WCS documentation web page
         if (endOfRequestUrl.equals("documentation.html")) {
-            doWcsDocumentation(request, response, loggedInAs);
+            doWcsDocumentation(requestNumber, request, response, loggedInAs);
             return;
         }       
 
@@ -5559,7 +5585,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         String part1 = urlEndParts.length > 1? urlEndParts[1] : "";
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
@@ -5569,14 +5595,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         if (!eddGrid.isAccessibleTo(roles)) {
             //WCS access: all requests are data requests
             //listPrivateDatasets and graphsAccessibleToPublic don't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID, 
                 eddGrid.graphsAccessibleToPublic());
             return;
         }
 
         //check accessibleViaWCS
         if (eddGrid.accessibleViaWCS().length() >  0) {
-            sendResourceNotFoundError(request, response, eddGrid.accessibleViaWCS());
+            sendResourceNotFoundError(requestNumber, request, response, eddGrid.accessibleViaWCS());
             return;
         }
 
@@ -5613,7 +5639,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //ensure it is a SOS server request
         if (!part1.equals(EDDGrid.wcsServer) && urlEndParts.length == 2) {
-            sendResourceNotFoundError(request, response, "not a WCS request");
+            sendResourceNotFoundError(requestNumber, request, response, "not a WCS request");
             return;
         }
 
@@ -5758,13 +5784,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     /**
      * This responds by sending out "ERDDAP's WCS Documentation" Html page.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      */
-    public void doWcsDocumentation(HttpServletRequest request, HttpServletResponse response,
+    public void doWcsDocumentation(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
 
         if (!EDStatic.wcsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WCS"));
             return;
         }
@@ -5814,16 +5843,19 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      *
      * <p>This assumes request was for /erddap/wms
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("wms") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doWms(HttpServletRequest request, HttpServletResponse response,
+    public void doWms(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -5845,25 +5877,25 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             return;
         }
         if (endEnd.length() == 0 && endOfRequestUrl.startsWith("index.")) {
-            sendDatasetList(request, response, loggedInAs, "wms", endOfRequestUrl.substring(5)); 
+            sendDatasetList(requestNumber, request, response, loggedInAs, "wms", endOfRequestUrl.substring(5)); 
             return;
         }
         if (endOfRequestUrl.equals("documentation.html")) {
-            doWmsDocumentation(request, response, loggedInAs);
+            doWmsDocumentation(requestNumber, request, response, loggedInAs);
             return;
         }
 
 //these 3 are demos.  Remove them (and links to them)?  add update()?
         if (endOfRequestUrl.equals("demo110.html")) { 
-            doWmsDemo(request, response, loggedInAs, "1.1.0", EDStatic.wmsSampleDatasetID);
+            doWmsDemo(requestNumber, request, response, loggedInAs, "1.1.0", EDStatic.wmsSampleDatasetID);
             return;
         }
         if (endOfRequestUrl.equals("demo111.html")) { 
-            doWmsDemo(request, response, loggedInAs, "1.1.1", EDStatic.wmsSampleDatasetID);
+            doWmsDemo(requestNumber, request, response, loggedInAs, "1.1.1", EDStatic.wmsSampleDatasetID);
             return;
         }
         if (endOfRequestUrl.equals("demo130.html")) { 
-            doWmsDemo(request, response, loggedInAs, "1.3.0", EDStatic.wmsSampleDatasetID);
+            doWmsDemo(requestNumber, request, response, loggedInAs, "1.3.0", EDStatic.wmsSampleDatasetID);
             return;
         }
 
@@ -5875,7 +5907,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         //for a specific dataset
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
@@ -5884,8 +5916,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             !eddGrid.graphsAccessibleToPublic()) { 
             //WMS access: all requests are graphics requests
             //listPrivateDatasets doesn't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, 
-                false);
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response,
+                tDatasetID, false);
             return;
         }
 
@@ -5907,7 +5939,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         }
 
         if (endEnd.equals("index.html")) {
-            doWmsDemo(request, response, loggedInAs, "1.3.0", tDatasetID);
+            doWmsDemo(requestNumber, request, response, loggedInAs, "1.3.0", tDatasetID);
             return;
         }
 
@@ -5939,7 +5971,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 }
             }
 
-            doWmsRequest(request, response, loggedInAs, tDatasetID, userQuery); 
+            doWmsRequest(requestNumber, request, response, loggedInAs, tDatasetID, userQuery); 
             return;
         }
 
@@ -5951,15 +5983,18 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     /**
      * This handles a request for the /wms/request or /wms/datasetID/request -- a real WMS service request.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param tDatasetID   an EDDGrid datasetID 
      * @param userQuery post '?', still percentEncoded, may be null.
      */
-    public void doWmsRequest(HttpServletRequest request, HttpServletResponse response,
+    public void doWmsRequest(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tDatasetID, String userQuery) throws Throwable {
 
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -5981,12 +6016,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //e.g., ?service=WMS&request=GetCapabilities
             if (tRequest.equals("GetCapabilities")) {
-                doWmsGetCapabilities(request, response, loggedInAs, tDatasetID, queryMap); 
+                doWmsGetCapabilities(requestNumber, request, response, loggedInAs, tDatasetID, queryMap); 
                 return;
             }
             
             if (tRequest.equals("GetMap")) {
-                doWmsGetMap(request, response, loggedInAs, queryMap); 
+                doWmsGetMap(requestNumber, request, response, loggedInAs, queryMap); 
                 return;
             }
 
@@ -6037,13 +6072,17 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
     /**
      * This responds by sending out the WMS html documentation page (long description).
+     *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      */
-    public void doWmsDocumentation(HttpServletRequest request, HttpServletResponse response,
+    public void doWmsDocumentation(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
        
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -6523,15 +6562,18 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      *   (Which is good, because dataset's cache is emptied when dataset reloaded.)
      *   Otherwise, it uses EDStatic.fullWmsCacheDirectory.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param queryMap has name=value from the url query string.
      *    names are toLowerCase. values are original values.
      */
-    public void doWmsGetMap(HttpServletRequest request, HttpServletResponse response,
+    public void doWmsGetMap(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, HashMap<String, String> queryMap) throws Throwable {
 
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -6563,7 +6605,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                            !eddGrid.graphsAccessibleToPublic()) { 
                     //WMS: all requests are graphics requests
                     //listPrivateDatasets doesn't apply
-                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, mainDatasetID,
+                    EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, mainDatasetID,
                         false);
                     return;
                 } else if (eddGrid instanceof EDDGridFromErddap) {
@@ -6806,7 +6848,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 outputStreamSource = new OutputStreamFromHttpResponse(request, response, 
                     fileName, fileTypeName, extension);
                 outputStream = outputStreamSource.outputStream("");
-                doTransfer(request, response, cacheDir, "_wms/", 
+                doTransfer(requestNumber, request, response, cacheDir, "_wms/", 
                     fileName + extension, 
                     outputStream, outputStreamSource.usingCompression()); 
                 return;
@@ -6869,7 +6911,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     !eddGrid.graphsAccessibleToPublic()) {
                     //WMS: all requests are graphics requests
                     //listPrivateDatasets doesn't apply
-                    EDStatic.sendHttpUnauthorizedError(loggedInAs, response, datasetID,
+                    EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, datasetID,
                         false);
                     return;
                 }
@@ -7018,7 +7060,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             outputStreamSource = new OutputStreamFromHttpResponse(request, response, 
                 fileName, fileTypeName, extension);
             outputStream = outputStreamSource.outputStream("");
-            doTransfer(request, response, cacheDir, "_wms/", 
+            doTransfer(requestNumber, request, response, cacheDir, "_wms/", 
                 fileName + extension, 
                 outputStream, outputStreamSource.usingCompression()); 
 
@@ -7100,15 +7142,18 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      * Respond to WMS GetCapabilities request for doWms.
      * To become a Layer, a grid variable must use evenly-spaced longitude and latitude variables.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param tDatasetID  a specific dataset
      * @param queryMap should have lowercase'd names
      */
-    public void doWmsGetCapabilities(HttpServletRequest request, HttpServletResponse response,
+    public void doWmsGetCapabilities(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tDatasetID, HashMap<String, String> queryMap) throws Throwable {
 
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -7137,19 +7182,19 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         String roles[] = EDStatic.getRoles(loggedInAs);
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.notAvailable, tDatasetID));
             return;
         }
         if (!eddGrid.isAccessibleTo(roles) &&
             !eddGrid.graphsAccessibleToPublic()) {
             //WMS: all requests are graphics requests
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID,
                 false);
             return;
         }
         if (eddGrid.accessibleViaWMS().length() > 0) {
-            sendResourceNotFoundError(request, response, eddGrid.accessibleViaWMS());
+            sendResourceNotFoundError(requestNumber, request, response, eddGrid.accessibleViaWMS());
             return;
         }
         int loni = eddGrid.lonIndex();
@@ -7676,15 +7721,18 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      * This responds by sending out the /wms/datasetID/index.html (or 111 or 130) page
      * which uses Leaflet as the WMS client.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param tVersion the WMS version to use: "1.1.0", "1.1.1" or "1.3.0"
      * @param tDatasetID  currently must be an EDDGrid datasetID, e.g., erdBAssta5day   
      */
-    public void doWmsDemo(HttpServletRequest request, HttpServletResponse response,
+    public void doWmsDemo(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tVersion, String tDatasetID) throws Throwable {
 
         if (!EDStatic.wmsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "WMS"));
             return;
         }
@@ -7708,7 +7756,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         EDDGrid eddGrid = gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 "datasetID=" + tDatasetID + " is currently unavailable.");
             return;
         }
@@ -7716,7 +7764,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             !eddGrid.graphsAccessibleToPublic()) { 
             //WMS: all requests are graphics requests
             //listPrivateDatasets doesn't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID,
                 false);
             return;
         }
@@ -8087,11 +8135,14 @@ scripts.append(
      * Deal with /metadata/fgdc/xml/datasetID_fgdc.xml requests (or iso19115) 
      * (or shorter requests).
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequest  starting with "metadata"
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doMetadata(HttpServletRequest request, HttpServletResponse response,
+    public void doMetadata(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String endOfRequest, String userQuery) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -8130,7 +8181,7 @@ scripts.append(
             EDStatic.tally.add(startTallySinceStartup,     reason);
             EDStatic.tally.add(startTallySinceDailyReport, reason);
             if (verbose) String2.log(EDStatic.resourceNotFound + reason);
-            sendResourceNotFoundError(request, response, reason);
+            sendResourceNotFoundError(requestNumber, request, response, reason);
             return;
         }
 
@@ -8179,7 +8230,7 @@ scripts.append(
             EDStatic.tally.add(startTallySinceStartup,     reason);
             EDStatic.tally.add(startTallySinceDailyReport, reason);
             if (verbose) String2.log(EDStatic.resourceNotFound + reason);
-            sendResourceNotFoundError(request, response, reason);
+            sendResourceNotFoundError(requestNumber, request, response, reason);
             return;
         }
         boolean isFgdc = urlParts[1].equals("fgdc");
@@ -8227,7 +8278,7 @@ scripts.append(
             EDStatic.tally.add(startTallySinceStartup,     reason);
             EDStatic.tally.add(startTallySinceDailyReport, reason);
             if (verbose) String2.log(EDStatic.resourceNotFound + reason);
-            sendResourceNotFoundError(request, response, reason);
+            sendResourceNotFoundError(requestNumber, request, response, reason);
             return;
         }
 
@@ -8314,7 +8365,7 @@ scripts.append(
                         (isFgdc? ".fgdc" : ".iso19115"), ".xml");
                     OutputStream outputStream = 
                         outSource.outputStream(String2.UTF_8, File2.length(tDir + fileName));
-                    doTransfer(request, response, tDir, 
+                    doTransfer(requestNumber, request, response, tDir, 
                         tErddapUrl + "/" + File2.getDirectory(endOfRequest), fileName,
                         outputStream, outSource.usingCompression()); 
                     return;
@@ -8328,7 +8379,7 @@ scripts.append(
             EDStatic.tally.add(startTallySinceStartup,     reason);
             EDStatic.tally.add(startTallySinceDailyReport, reason);
             if (verbose) String2.log(EDStatic.resourceNotFound + reason);
-            sendResourceNotFoundError(request, response, reason);
+            sendResourceNotFoundError(requestNumber, request, response, reason);
             return;
         }
 
@@ -8338,13 +8389,17 @@ scripts.append(
         EDStatic.tally.add(startTallySinceStartup,     reason);
         EDStatic.tally.add(startTallySinceDailyReport, reason);
         if (verbose) String2.log(EDStatic.resourceNotFound + reason);
-        sendResourceNotFoundError(request, response, reason);
+        sendResourceNotFoundError(requestNumber, request, response, reason);
     }
 
     /**
      * This sends an error message for doGeoServicesRest.
+     *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      */
-    public void sendGeoServicesRestError(HttpServletRequest request, 
+    public void sendGeoServicesRestError(int requestNumber, HttpServletRequest request, 
         HttpServletResponse response, boolean fParamIsJson, int httpErrorNumber, 
         String message, String details) throws Throwable {
 
@@ -8370,12 +8425,12 @@ scripts.append(
 
         //sendResourceNotFoundError
         if (httpErrorNumber == HttpServletResponse.SC_NOT_FOUND) {  //404
-            sendResourceNotFoundError(request, response, message + " (" + details + ")");
+            sendResourceNotFoundError(requestNumber, request, response, message + " (" + details + ")");
             return;
         }
 
         //send http error
-        EDStatic.lowSendError(response, httpErrorNumber, message + " (" + details + ")");
+        EDStatic.lowSendError(requestNumber, response, httpErrorNumber, message + " (" + details + ")");
     }
 
     /**
@@ -8395,15 +8450,18 @@ scripts.append(
      * may freely implement and reuse the licensed specification without seeking 
      * further permission."
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequest  starting with "rest"
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doGeoServicesRest(HttpServletRequest request, HttpServletResponse response,
+    public void doGeoServicesRest(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String endOfRequest, String userQuery) throws Throwable {
 
         if (!EDStatic.geoServicesRestActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "GeoServices REST"));
             return;
         }
@@ -8451,14 +8509,14 @@ scripts.append(
         //ensure urlParts[0]="rest"
         if (nUrlParts < 1 || !"rest".equals(urlParts[0])) {
             //this shouldn't happen because this method should only be called if protocol=rest
-            sendResourceNotFoundError(request, response, "/rest/services was expected.");
+            sendResourceNotFoundError(requestNumber, request, response, "/rest/services was expected.");
             return;
         }
 
         //just "/rest"
         if (nUrlParts == 1) {
             if (fParamIsJson) //sampleserver is strict for json
-                sendGeoServicesRestError(request, response, 
+                sendGeoServicesRestError(requestNumber, request, response, 
                     fParamIsJson, HttpServletResponse.SC_NOT_FOUND, 
                     UnableToCompleteOperation, InvalidURL);
             else //sampleserver redirects to /rest/services
@@ -8472,7 +8530,7 @@ scripts.append(
         //ensure urlParts[1]="services"
         if (!"services".equals(urlParts[1])) {
             if (fParamIsJson) //sampleserver is strict for json
-                sendGeoServicesRestError(request, response, 
+                sendGeoServicesRestError(requestNumber, request, response, 
                     fParamIsJson, HttpServletResponse.SC_NOT_FOUND, 
                     UnableToCompleteOperation, InvalidURL);
             else //sampleserver redirects to /rest/services
@@ -8572,7 +8630,7 @@ breadCrumbs + endBreadCrumbs +
                 }
 
             } else {
-                sendGeoServicesRestError(request, response, 
+                sendGeoServicesRestError(requestNumber, request, response, 
                     fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                     UnsupportedMediaType, InvalidFParam);
             }
@@ -8585,17 +8643,17 @@ breadCrumbs + endBreadCrumbs +
         String tDatasetID = urlParts[2];
         EDDGrid tEddGrid = gridDatasetHashMap.get(tDatasetID);
         if (tEddGrid == null) {
-            sendResourceNotFoundError(request, response, "no such dataset");
+            sendResourceNotFoundError(requestNumber, request, response, "no such dataset");
             return;
         }
         if (!tEddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //authorization (very important)
             //ESRI REST: all requests are data requests
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID,
                 tEddGrid.graphsAccessibleToPublic());
             return;
         }
         if (tEddGrid.accessibleViaGeoServicesRest().length() > 0) {
-            sendResourceNotFoundError(request, response, tEddGrid.accessibleViaGeoServicesRest());
+            sendResourceNotFoundError(requestNumber, request, response, tEddGrid.accessibleViaGeoServicesRest());
             return;
         }
 
@@ -8670,7 +8728,7 @@ breadCrumbs + endBreadCrumbs +
                 }
 
             } else {
-                sendGeoServicesRestError(request, response, 
+                sendGeoServicesRestError(requestNumber, request, response, 
                     fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                     UnsupportedMediaType, InvalidFParam);
             }
@@ -8684,7 +8742,7 @@ breadCrumbs + endBreadCrumbs +
         int tDvi = String2.indexOf(tEddGrid.dataVariableDestinationNames(), tDestName);
         if (tDvi < 0 ||
             !tDataVariables[tDvi].hasColorBarMinMax()) { //must have colorBarMin/Max
-            sendResourceNotFoundError(request, response, "This variable doesn't have predefined colorBarMin/Max.");
+            sendResourceNotFoundError(requestNumber, request, response, "This variable doesn't have predefined colorBarMin/Max.");
             return;
         }
         EDV tEdv = tDataVariables[tDvi];
@@ -8692,7 +8750,7 @@ breadCrumbs + endBreadCrumbs +
         //just "/rest/services/[tDatasetID]/[tDestName]"
         if (nUrlParts == 4) {
             if (verbose) String2.log(EDStatic.resourceNotFound + "nParts=" + nUrlParts + " !=4");
-            sendResourceNotFoundError(request, response, "nQueryParts!=4");
+            sendResourceNotFoundError(requestNumber, request, response, "nQueryParts!=4");
             return;
         }
 
@@ -8702,7 +8760,7 @@ breadCrumbs + endBreadCrumbs +
         //ensure urlParts[4]=ImageServer
         if (!urlParts[4].equals("ImageServer")) {
             if (verbose) String2.log(EDStatic.resourceNotFound + "ImageServer expected");
-            sendResourceNotFoundError(request, response, "ImageServer expected");
+            sendResourceNotFoundError(requestNumber, request, response, "ImageServer expected");
             return;
         }
 
@@ -8978,7 +9036,7 @@ breadCrumbs + endBreadCrumbs +
                 }
 
             } else {
-                sendGeoServicesRestError(request, response, 
+                sendGeoServicesRestError(requestNumber, request, response, 
                     fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                     UnsupportedMediaType, InvalidFParam);
             }
@@ -9004,7 +9062,7 @@ breadCrumbs + endBreadCrumbs +
                     //use specified bbox and ensure all valid
                     String bboxParts[] = String2.split(bboxParam, ',');
                     if (bboxParts.length != 4) {
-                        sendGeoServicesRestError(request, response, 
+                        sendGeoServicesRestError(requestNumber, request, response, 
                             fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                             InvalidParam, "bbox must be bbox=<xmin>,<ymin>,<xmax>,<ymax>");
                         return;
@@ -9016,7 +9074,7 @@ breadCrumbs + endBreadCrumbs +
                     if (!Double.isFinite(xMin) || !Double.isFinite(yMin) || 
                         !Double.isFinite(xMax) || !Double.isFinite(yMax) || 
                         xMin >= xMax || yMin >= yMax) { //allow "=" ? 
-                        sendGeoServicesRestError(request, response, 
+                        sendGeoServicesRestError(requestNumber, request, response, 
                             fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                             InvalidParam, "Invalid bbox value(s)");
                         return;
@@ -9031,7 +9089,7 @@ breadCrumbs + endBreadCrumbs +
                     //use specified size and ensure all valid
                     String sizeParts[] = String2.split(sizeParam, ',');
                     if (sizeParts.length != 2) {
-                        sendGeoServicesRestError(request, response, 
+                        sendGeoServicesRestError(requestNumber, request, response, 
                             fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                             InvalidParam, "size must be size=<width>,<height>");
                         return;
@@ -9040,7 +9098,7 @@ breadCrumbs + endBreadCrumbs +
                     ySize = String2.parseInt(sizeParts[1]);
                     if (xSize == Integer.MAX_VALUE || ySize == Integer.MAX_VALUE || 
                         xSize <= 0 || ySize <= 0) { 
-                        sendGeoServicesRestError(request, response, 
+                        sendGeoServicesRestError(requestNumber, request, response, 
                             fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                             InvalidParam, "Invalid size value(s)");
                         return;
@@ -9071,7 +9129,7 @@ breadCrumbs + endBreadCrumbs +
                                 tMaxTime = tEdvTime.destinationMaxDouble();
                             tEpochSeconds = (tMinTime + tMaxTime) / 2000.0; //2 to average
                         } else {
-                            sendGeoServicesRestError(request, response, 
+                            sendGeoServicesRestError(requestNumber, request, response, 
                                 fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                                 InvalidParam, "time must be time=<timeInstant> or time=<startTime>,<endTime>");
                             return;
@@ -9079,7 +9137,7 @@ breadCrumbs + endBreadCrumbs +
                         if (!Double.isFinite(tEpochSeconds) || 
                             tEpochSeconds <= tEdvTime.destinationCoarseMin() ||
                             tEpochSeconds >= tEdvTime.destinationCoarseMax()) { 
-                            sendGeoServicesRestError(request, response, 
+                            sendGeoServicesRestError(requestNumber, request, response, 
                                 fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                                 InvalidParam, "Invalid time value(s)");
                             return;
@@ -9105,13 +9163,13 @@ breadCrumbs + endBreadCrumbs +
 
                     //ERDDAP geotif requirement: lon must be all below or all above 180
                     if (xMin < 180 && xMax > 180) {
-                        sendGeoServicesRestError(request, response, 
+                        sendGeoServicesRestError(requestNumber, request, response, 
                             fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                             InvalidParam, "For format=tiff, the bbox longitude min and max can't span longitude=180.");
                         return;
                     }
                 } else {
-                    sendGeoServicesRestError(request, response, 
+                    sendGeoServicesRestError(requestNumber, request, response, 
                         fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                         InvalidParam, "Format must be format=(jpgpng|png|png8|png24|jpg|bmp|gif|tiff)");
                     return;
@@ -9129,7 +9187,7 @@ breadCrumbs + endBreadCrumbs +
                 String bandIdsParam = queryMap.get("bandIds");  
                 if (bandIdsParam != null && !bandIdsParam.equals("0")) {
                     //ERDDAP is set up for 1 band per dataset/destName, so only "0" is valid request
-                    sendGeoServicesRestError(request, response, 
+                    sendGeoServicesRestError(requestNumber, request, response, 
                         fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
                         InvalidParam, "BandIds must be bandIds=0");
                     return;
@@ -9184,7 +9242,7 @@ breadCrumbs + endBreadCrumbs +
                                 actualDir, virtualFileName, oss, fileTypeName); 
                             out.close(); 
                         } catch (Throwable t) {
-                            sendGeoServicesRestError(request, response, 
+                            sendGeoServicesRestError(requestNumber, request, response, 
                                 fParamIsJson, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
                                 UnableToCompleteOperation, t.toString());
                             return;
@@ -9220,7 +9278,7 @@ breadCrumbs + endBreadCrumbs +
                         request, response, 
                         virtualFileName, fileTypeName, fileExtension);
                     OutputStream out = outSource.outputStream("");
-                    doTransfer(request, response, actualDir, relativeUrl, 
+                    doTransfer(requestNumber, request, response, actualDir, relativeUrl, 
                         virtualFileName + fileExtension, 
                         out, outSource.usingCompression());
 
@@ -9228,7 +9286,7 @@ breadCrumbs + endBreadCrumbs +
                 //    ...
 
                 } else {
-                    sendGeoServicesRestError(request, response, 
+                    sendGeoServicesRestError(requestNumber, request, response, 
                         fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                         UnsupportedMediaType, InvalidFParam);
                 }            
@@ -9248,13 +9306,13 @@ breadCrumbs + endBreadCrumbs +
                         request, response, 
                         File2.getNameNoExtension(tFileName), fileTypeName, fileExtension);
                     OutputStream out = outSource.outputStream("");
-                    doTransfer(request, response, actualDir, relativeUrl, 
+                    doTransfer(requestNumber, request, response, actualDir, relativeUrl, 
                         tFileName, out, outSource.usingCompression());
 
                 } else {
                     if (verbose) String2.log(EDStatic.resourceNotFound + 
                         "!isFile " + actualDir + tFileName);
-                    sendResourceNotFoundError(request, response, "file doesn't exist");
+                    sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
                     return;
                 }
                 return;
@@ -9262,7 +9320,7 @@ breadCrumbs + endBreadCrumbs +
             } else {
                 if (verbose) String2.log(EDStatic.resourceNotFound + 
                     "nParts=" + nUrlParts + " !=7");
-                sendResourceNotFoundError(request, response, "incorrect nParts");
+                sendResourceNotFoundError(requestNumber, request, response, "incorrect nParts");
                 return;
             } 
             //end of /exportImage[/fileName]
@@ -9278,7 +9336,7 @@ breadCrumbs + endBreadCrumbs +
         } else { //unsupported parts[5]
             if (verbose) String2.log(EDStatic.resourceNotFound + 
                 "unknown [5]=" + urlParts[5]);
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(requestNumber, request, response, "");
             return;
         }
 
@@ -9292,13 +9350,16 @@ breadCrumbs + endBreadCrumbs +
      * to this servlet. There is no way to allow requests for files in e.g. /images
      * to be handled by Tomcat. So handle them here by doing a simple file transfer.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param protocol here is 'download', 'images', or 'public'
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (e.g., "images") in the requestUrl
      * @throws Throwable if trouble
      */
-    public static void doTransfer(HttpServletRequest request, HttpServletResponse response,
-        String protocol, int datasetIDStartsAt) throws Throwable {
+    public static void doTransfer(int requestNumber, HttpServletRequest request, 
+        HttpServletResponse response, String protocol, int datasetIDStartsAt) throws Throwable {
 
         String requestUrl = request.getRequestURI();  // e.g., /erddap/images/QuestionMark.jpg
         //be extra certain to avoid the security problem Local File Inclusion
@@ -9344,7 +9405,7 @@ breadCrumbs + endBreadCrumbs +
          
         OutputStream outputStream = outSource.outputStream(charEncoding, 
             File2.length(dir + fileNameAndExt));
-        doTransfer(request, response, dir, protocol + "/", fileNameAndExt, 
+        doTransfer(requestNumber, request, response, dir, protocol + "/", fileNameAndExt, 
             outputStream, outSource.usingCompression());
     }
 
@@ -9352,6 +9413,9 @@ breadCrumbs + endBreadCrumbs +
      * This is the lower level version of doTransfer.
      * The file must be a true local file or a public or private AWS S3 file.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param localDir the actual hard disk directory (or url dir), ending in '/'
      * @param webDir the apparent directory, ending in '/' (e.g., "public/"),
      *    for error message only
@@ -9362,7 +9426,7 @@ breadCrumbs + endBreadCrumbs +
      *  (gzip, deflate) or "identity" if no compression.
      * @throws Throwable if trouble
      */
-    public static void doTransfer(HttpServletRequest request, HttpServletResponse response,
+    public static void doTransfer(int requestNumber, HttpServletRequest request, HttpServletResponse response,
             String localDir, String webDir, String fileNameAndExt, 
             OutputStream outputStream, String usingCompression) throws Throwable {
 
@@ -9378,7 +9442,7 @@ breadCrumbs + endBreadCrumbs +
             fileSize = File2.length(localDir + fileNameAndExt); //it checks isFile
             if (fileSize < 0) {
                 String2.log(msg);
-                sendResourceNotFoundError(request, response, "file doesn't exist");
+                sendResourceNotFoundError(requestNumber, request, response, "file doesn't exist");
                 return;
             } else {
                 last = fileSize - 1;
@@ -9493,18 +9557,22 @@ breadCrumbs + endBreadCrumbs +
      * This responds to a user's requst for an rss feed.
      * Now (Dec 2017, v1.81), this does check that the user has access to the dataset.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param protocol here is always 'rss'
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *   in the requestUrl
      */
-    public void doRss(HttpServletRequest request, HttpServletResponse response,
+    public void doRss(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String protocol, int datasetIDStartsAt) throws Throwable {
 
         String requestUrl = request.getRequestURI();  // /erddap/images/QuestionMark.jpg
         String nameAndExt = requestUrl.length() <= datasetIDStartsAt? "" : 
             requestUrl.substring(datasetIDStartsAt); //should be <datasetID>.rss
         if (!nameAndExt.endsWith(".rss")) {
-            sendResourceNotFoundError(request, response, "Invalid name. Extension must be .rss.");
+            sendResourceNotFoundError(requestNumber, request, response, 
+                "Invalid name. Extension must be .rss.");
             return;
         }
         String tDatasetID = nameAndExt.substring(0, nameAndExt.length() - 4);
@@ -9520,7 +9588,7 @@ breadCrumbs + endBreadCrumbs +
                 //But without edd, I can't tell if it is a private dataset.
                 //so just send resourceNotFound
                 //Not good: if edd is private, anyone can find out when it isn't available.
-                sendResourceNotFoundError(request, response, EDStatic.rssNo);
+                sendResourceNotFoundError(requestNumber, request, response, EDStatic.rssNo);
             return;
             }
         }
@@ -9531,14 +9599,14 @@ breadCrumbs + endBreadCrumbs +
         if (gatp || edd.isAccessibleTo(roles)) {
             //okay
         } else {
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID, gatp);
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID, gatp);
             return;
         }
 
         //get rss content
         byte rssAr[] = tDatasetID.length() == 0? null : rssHashMap.get(tDatasetID);
         if (tDatasetID.equals(EDDTableFromAllDatasets.DATASET_ID) || rssAr == null) {
-            sendResourceNotFoundError(request, response, EDStatic.rssNo);
+            sendResourceNotFoundError(requestNumber, request, response, EDStatic.rssNo);
             return;
         }
 
@@ -9668,15 +9736,18 @@ breadCrumbs + endBreadCrumbs +
     /**
      * This responds to a outOfDateDatasets.fileType request.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doOutOfDateDatasets(HttpServletRequest request, HttpServletResponse response,
+    public void doOutOfDateDatasets(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String endOfRequest, String userQuery) throws Throwable {
 
         if (!EDStatic.outOfDateDatasetsActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "Out-Of-Date Datasets"));
             return;
         }
@@ -9735,7 +9806,7 @@ breadCrumbs + endBreadCrumbs +
         if (isPlainType) {
             if (table.nRows() == 0)
                 throw new SimpleException(MustBe.THERE_IS_NO_DATA);
-            sendPlainTable(loggedInAs, request, response, table, "outOfDateDatasets", fileType);
+            sendPlainTable(requestNumber, loggedInAs, request, response, table, "outOfDateDatasets", fileType);
             return;
         } 
 
@@ -9845,16 +9916,19 @@ breadCrumbs + endBreadCrumbs +
     /**
      * This responds to a slidesorter.html request.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doSlideSorter(HttpServletRequest request, HttpServletResponse response,
+    public void doSlideSorter(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.slideSorterActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "SlideSorter"));
             return;
         }
@@ -10261,12 +10335,15 @@ breadCrumbs + endBreadCrumbs +
     /**
      * This responds to a full text search request.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (always "search") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doSearch(HttpServletRequest request, HttpServletResponse response,
+    public void doSearch(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
         
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -10301,7 +10378,7 @@ breadCrumbs + endBreadCrumbs +
                 endsWithPlainFileType(endOfRequestUrl, "index")) {
                 //fall through
             } else {
-                sendResourceNotFoundError(request, response, "unsupported endOfRequestUrl");
+                sendResourceNotFoundError(requestNumber, request, response, "unsupported endOfRequestUrl");
                 return;
             }
 
@@ -10337,13 +10414,13 @@ breadCrumbs + endBreadCrumbs +
                 //else handle just below here
             } else if (endsWithPlainFileType(endOfRequestUrl, "index")) {
                 if (searchFor.length() == 0) {
-                    sendResourceNotFoundError(request, response, //or SC_NO_CONTENT error?
+                    sendResourceNotFoundError(requestNumber, request, response, //or SC_NO_CONTENT error?
                         MessageFormat.format(EDStatic.searchWithQuery, fileTypeName));
                     return;
                 }
                 //else handle just below here
             } else { //usually unsupported fileType
-                sendResourceNotFoundError(request, response, "unsupported endOfRequestUrl");
+                sendResourceNotFoundError(requestNumber, request, response, "unsupported endOfRequestUrl");
                 return;
             }
 
@@ -10463,7 +10540,7 @@ breadCrumbs + endBreadCrumbs +
                 throw new SimpleException(EDStatic.resourceNotFound + error[0] + " " + error[1]);
 
             Table table = makePlainDatasetTable(loggedInAs, datasetIDs, sortByTitle, fileTypeName);
-            sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
+            sendPlainTable(requestNumber, loggedInAs, request, response, table, protocol, fileTypeName);
             return;
 
         } catch (Throwable t) {
@@ -10928,12 +11005,15 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
      * This responds to a advanced search request: erddap/search/advanced.html, 
      * and other extensions.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (always "search") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      */
-    public void doAdvancedSearch(HttpServletRequest request, HttpServletResponse response,
+    public void doAdvancedSearch(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
         
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -10954,7 +11034,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             !endsWithPlainFileType(endOfRequestUrl, "advanced")) {
             //unsupported fileType
             if (verbose) String2.log(EDStatic.resourceNotFound + "!advanced");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(requestNumber, request, response, "");
             return;
         }
 
@@ -11594,7 +11674,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (endsWithPlainFileType(endOfRequestUrl, "advanced")) {
             if (searchPerformed) {
                 //show the results in other file types
-                sendPlainTable(loggedInAs, request, response, resultsTable, 
+                sendPlainTable(requestNumber, loggedInAs, request, response, resultsTable, 
                     "AdvancedSearch", fileTypeName);
                 return;
             } else {
@@ -12003,13 +12083,16 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
      * Process a categorize request:    erddap/categorize/{attribute}/{categoryName}/index.html
      * e.g., erddap/categorize/ioos_category/temperature/index.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (here always "categorize") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doCategorize(HttpServletRequest request, HttpServletResponse response,
+    public void doCategorize(int requestNumber, HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
         
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -12100,10 +12183,10 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     //respond to categorize/index.xxx
                     //display list of categoryAttributes in plainFileType file
                     Table table = categorizeOptionsTable(request, tErddapUrl, fileTypeName);
-                    sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
+                    sendPlainTable(requestNumber, loggedInAs, request, response, table, protocol, fileTypeName);
                 } else {
                     if (verbose) String2.log(EDStatic.resourceNotFound + "not index" + fileTypeName);
-                    sendResourceNotFoundError(request, response, "");
+                    sendResourceNotFoundError(requestNumber, request, response, "");
                     return;
                 }
             } else { 
@@ -12174,11 +12257,11 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 if (categoryName.equals("index" + fileTypeName)) {
                     //respond to categorize/attribute/index.xxx
                     //display list of categoryNames in plainFileType file
-                    sendCategoryPftOptionsTable(request, response, loggedInAs, 
+                    sendCategoryPftOptionsTable(requestNumber, request, response, loggedInAs, 
                         attribute, attributeInURL, fileTypeName);
                 } else {
                     if (verbose) String2.log(EDStatic.resourceNotFound + "unknown categoryName=" + categoryName);
-                    sendResourceNotFoundError(request, response, "");
+                    sendResourceNotFoundError(requestNumber, request, response, "");
                     return;
                 }
             } else { 
@@ -12276,7 +12359,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (endsWithPlainFileType(part2, "index")) {
             //show the results as plain file type
             Table table = makePlainDatasetTable(loggedInAs, catDats, sortByTitle, fileTypeName);
-            sendPlainTable(loggedInAs, request, response, table, 
+            sendPlainTable(requestNumber, loggedInAs, request, response, table, 
                 attributeInURL + "_" + categoryName, fileTypeName);
             return;
         }
@@ -12365,18 +12448,21 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         }
 
         if (verbose) String2.log(EDStatic.resourceNotFound + "end of doCategorize");
-        sendResourceNotFoundError(request, response, "");
+        sendResourceNotFoundError(requestNumber, request, response, "");
     }
 
     /**
      * Process an info request: erddap/info/[{datasetID}/index.xxx]
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (always "info") in the requestUrl
      * @throws Throwable if trouble
      */
-    public void doInfo(HttpServletRequest request, HttpServletResponse response, 
+    public void doInfo(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String protocol, int datasetIDStartsAt) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -12405,7 +12491,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         fileTypeName = File2.getExtension(endOfRequestUrl);        
         boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index");
         if (!endsWithPlainFileType && !fileTypeName.equals(".html")) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
             return;
         }
@@ -12572,12 +12658,12 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     throw new SimpleException(EDStatic.resourceNotFound + error[0] + " " + error[1]);
 
                 Table table = makePlainDatasetTable(loggedInAs, tIDs, sortByTitle, fileTypeName);
-                sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
+                sendPlainTable(requestNumber, loggedInAs, request, response, table, protocol, fileTypeName);
             }
             return;
         }
         if (nParts > 2) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.infoRequestForm, EDStatic.warName));
             return;
         }
@@ -12586,7 +12672,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (edd == null)
             edd = tableDatasetHashMap.get(tID);
         if (edd == null) { 
-            sendResourceNotFoundError(request, response,
+            sendResourceNotFoundError(requestNumber, request, response,
                 MessageFormat.format(EDStatic.unknownDatasetID, tID));
             return;
         }
@@ -12594,7 +12680,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             !edd.graphsAccessibleToPublic()) { 
             // /info/ request: all requests are graphics|metadata requests
             //listPrivateDatasets doesn't apply
-            EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tID, 
+            EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tID, 
                 false);
             return;
         }
@@ -12700,7 +12786,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         //write the file
         if (endsWithPlainFileType) {
-            sendPlainTable(loggedInAs, request, response, table, parts[0] + "_info", fileTypeName);
+            sendPlainTable(requestNumber, loggedInAs, request, response, table, parts[0] + "_info", fileTypeName);
             return;
         }
 
@@ -12814,7 +12900,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         }
 
         if (verbose) String2.log(EDStatic.resourceNotFound + "end of doInfo");
-        sendResourceNotFoundError(request, response, "");
+        sendResourceNotFoundError(requestNumber, request, response, "");
     }
 
     /**
@@ -13178,6 +13264,9 @@ writer.write(
     /**
      * Process erddap/subscriptions/index.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param ipAddress the requestor's ipAddress
      * @param endOfRequest e.g., subscriptions/add.html
@@ -13187,12 +13276,12 @@ writer.write(
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doSubscriptions(HttpServletRequest request, HttpServletResponse response, 
+    public void doSubscriptions(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String ipAddress,
         String endOfRequest, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
         }
@@ -13214,20 +13303,20 @@ writer.write(
         if (endOfRequest.equals(Subscriptions.INDEX_HTML)) {
             //fall through
         } else if (endOfRequest.equals(Subscriptions.ADD_HTML)) {
-            doAddSubscription(request, response, loggedInAs, ipAddress, protocol, datasetIDStartsAt, userQuery);
+            doAddSubscription(requestNumber, request, response, loggedInAs, ipAddress, protocol, datasetIDStartsAt, userQuery);
             return;
         } else if (endOfRequest.equals(Subscriptions.LIST_HTML)) {
-            doListSubscriptions(request, response, loggedInAs, ipAddress, protocol, datasetIDStartsAt, userQuery);
+            doListSubscriptions(requestNumber, request, response, loggedInAs, ipAddress, protocol, datasetIDStartsAt, userQuery);
             return;
         } else if (endOfRequest.equals(Subscriptions.REMOVE_HTML)) {
-            doRemoveSubscription(request, response, loggedInAs, protocol, datasetIDStartsAt, userQuery);
+            doRemoveSubscription(requestNumber, request, response, loggedInAs, protocol, datasetIDStartsAt, userQuery);
             return;
         } else if (endOfRequest.equals(Subscriptions.VALIDATE_HTML)) {
-            doValidateSubscription(request, response, loggedInAs, protocol, datasetIDStartsAt, userQuery);
+            doValidateSubscription(requestNumber, request, response, loggedInAs, protocol, datasetIDStartsAt, userQuery);
             return;
         } else {
             if (verbose) String2.log(EDStatic.resourceNotFound + "end of Subscriptions");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(requestNumber, request, response, "");
             return;
         }
 
@@ -13282,6 +13371,9 @@ writer.write(
     /**
      * Process erddap/subscriptions/add.html.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param ipAddress the requestor's ip address
      * @param protocol is always subscriptions
@@ -13290,12 +13382,12 @@ writer.write(
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doAddSubscription(HttpServletRequest request, HttpServletResponse response, 
+    public void doAddSubscription(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, 
         String userQuery) throws Throwable {
 
         if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
         }
@@ -13356,7 +13448,7 @@ writer.write(
                        !edd.graphsAccessibleToPublic()) { 
                 //subscription: all requests are graphics|metadata requests
                 //listPrivateDatasets doesn't apply
-                EDStatic.sendHttpUnauthorizedError(loggedInAs, response, tDatasetID,
+                EDStatic.sendHttpUnauthorizedError(requestNumber, loggedInAs, response, tDatasetID,
                     false);
                 return;
             }
@@ -13485,6 +13577,9 @@ writer.write(
     /**
      * Process erddap/subscriptions/list.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param ipAddress the requestor's ip address
      * @param protocol is always subscriptions
@@ -13493,12 +13588,12 @@ writer.write(
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doListSubscriptions(HttpServletRequest request, HttpServletResponse response, 
+    public void doListSubscriptions(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
         if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
         }
@@ -13609,17 +13704,20 @@ writer.write(
     /**
      * Process erddap/subscriptions/validate.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param protocol is always subscriptions
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    (always "info") in the requestUrl
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doValidateSubscription(HttpServletRequest request, HttpServletResponse response, 
+    public void doValidateSubscription(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
         }
@@ -13741,6 +13839,9 @@ writer.write(
     /**
      * Process erddap/subscriptions/remove.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param protocol is always subscriptions
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
@@ -13748,12 +13849,12 @@ writer.write(
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doRemoveSubscription(HttpServletRequest request, HttpServletResponse response, 
+    public void doRemoveSubscription(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
         if (!EDStatic.subscriptionSystemActive || EDStatic.subscriptions == null) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "subscriptions"));
             return;
         }
@@ -13873,6 +13974,9 @@ writer.write(
     /**
      * Process erddap/convert/index.html
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequest e.g., convert/time.html
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
@@ -13880,13 +13984,13 @@ writer.write(
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvert(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvert(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, 
         String endOfRequest, int datasetIDStartsAt, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -13913,11 +14017,11 @@ writer.write(
         //FIPS County
         } else if (endOfRequestUrl.equals("fipscounty.html") ||
                    endOfRequestUrl.equals("fipscounty.txt")) {
-            doConvertFipsCounty(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertFipsCounty(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.startsWith("fipscounty.") && pft >= 0) {
             try {
-                sendPlainTable(loggedInAs, request, response, 
+                sendPlainTable(requestNumber, loggedInAs, request, response, 
                     EDStatic.fipsCountyTable(), "FipsCountyCodes", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -13929,17 +14033,17 @@ writer.write(
         //interpolate
         } else if (endOfRequestUrl.equals("interpolate.html") ||
                    (pft >= 0 && endOfRequestUrl.equals("interpolate" + plainFileTypes[pft]))) {
-            doConvertInterpolate(request, response, loggedInAs, endOfRequestUrl, userQuery, pft);
+            doConvertInterpolate(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery, pft);
             return;
 
         //OceanicAtmospheric Acronyms
         } else if (endOfRequestUrl.equals("oceanicAtmosphericAcronyms.html") ||
                    endOfRequestUrl.equals("oceanicAtmosphericAcronyms.txt")) {
-            doConvertOceanicAtmosphericAcronyms(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertOceanicAtmosphericAcronyms(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.startsWith("oceanicAtmosphericAcronyms.") && pft >= 0) {
             try {
-                sendPlainTable(loggedInAs, request, response, 
+                sendPlainTable(requestNumber, loggedInAs, request, response, 
                     EDStatic.oceanicAtmosphericAcronymsTable(), "OceanicAtmosphericAcronyms", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -13951,11 +14055,11 @@ writer.write(
         //OceanicAtmospheric VariableNames
         } else if (endOfRequestUrl.equals("oceanicAtmosphericVariableNames.html") ||
                    endOfRequestUrl.equals("oceanicAtmosphericVariableNames.txt")) {
-            doConvertOceanicAtmosphericVariableNames(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertOceanicAtmosphericVariableNames(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.startsWith("oceanicAtmosphericVariableNames.") && pft >= 0) {
             try {
-                sendPlainTable(loggedInAs, request, response, 
+                sendPlainTable(requestNumber, loggedInAs, request, response, 
                     EDStatic.oceanicAtmosphericVariableNamesTable(), "OceanicAtmosphericVariableNames", fileTypeName);
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -13966,35 +14070,35 @@ writer.write(
 
         } else if (endOfRequestUrl.equals("keywords.html") ||
                    endOfRequestUrl.equals("keywords.txt")) {
-            doConvertKeywords(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertKeywords(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.startsWith("keywordsCf.") && pft >= 0) {
-            sendPlainTable(loggedInAs, request, response, 
+            sendPlainTable(requestNumber, loggedInAs, request, response, 
                 EDStatic.keywordsCfTable(), "keywordsCf", fileTypeName);
             return;
         } else if (endOfRequestUrl.startsWith("keywordsCfToGcmd.") && pft >= 0) {
-            sendPlainTable(loggedInAs, request, response, 
+            sendPlainTable(requestNumber, loggedInAs, request, response, 
                 EDStatic.keywordsCfToGcmdTable(), "keywordsCfToGcmd", fileTypeName);
             return;
         } else if (endOfRequestUrl.startsWith("keywordsGcmd.") && pft >= 0) {
-            sendPlainTable(loggedInAs, request, response, 
+            sendPlainTable(requestNumber, loggedInAs, request, response, 
                 EDStatic.keywordsGcmdTable(), "keywordsGcmd", fileTypeName);
             return;
         } else if (endOfRequestUrl.equals("time.html") ||
                    endOfRequestUrl.equals("time.txt")) {
-            doConvertTime(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertTime(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.equals("units.html") ||
                    endOfRequestUrl.equals("units.txt")) {
-            doConvertUnits(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertUnits(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else if (endOfRequestUrl.equals("urls.html") ||
                    endOfRequestUrl.equals("urls.txt")) {
-            doConvertURLs(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            doConvertURLs(requestNumber, request, response, loggedInAs, endOfRequestUrl, userQuery);
             return;
         } else {
             if (verbose) String2.log(EDStatic.resourceNotFound + "end of convert");
-            sendResourceNotFoundError(request, response, "");
+            sendResourceNotFoundError(requestNumber, request, response, "");
             return;
         }
 
@@ -14041,17 +14145,20 @@ writer.write(
     /**
      * Process erddap/convert/fipscounty.html and fipscounty.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   fipscounty.html or fipscounty.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertFipsCounty(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertFipsCounty(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -14249,17 +14356,21 @@ writer.write(
     /**
      * Process erddap/convert/oceanicAtmosphericAcronyms.html and oceanicAtmosphericAcronyms.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   oceanicAtmosphericAcronyms.html or oceanicAtmosphericAcronyms.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertOceanicAtmosphericAcronyms(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertOceanicAtmosphericAcronyms(int requestNumber, 
+        HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -14463,17 +14574,21 @@ writer.write(
     /**
      * Process erddap/convert/oceanicAtmosphericVariableNames.html and oceanicAtmosphericVariableNames.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   oceanicAtmosphericVariableNames.html or oceanicAtmosphericVariableNames.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertOceanicAtmosphericVariableNames(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertOceanicAtmosphericVariableNames(int requestNumber, 
+        HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -14676,17 +14791,20 @@ writer.write(
     /**
      * Process erddap/convert/keywords.html [and ???.txt].
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   keywords.html or keywords.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertKeywords(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertKeywords(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -14900,18 +15018,21 @@ writer.write(
     /**
      * Process erddap/convert/interpolate.html and interpolate.plainFileTypes.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   urls.html or urls.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @param pft the plainFileType or -1 if not matched
      * @throws Throwable if trouble
      */
-    public void doConvertInterpolate(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertInterpolate(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery, int pft) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -14937,7 +15058,8 @@ writer.write(
             Table resultsTable = interpolate(gridDatasetHashMap, tTLLTable, tRequestCSV);  //throws exception if trouble
 
             //respond to a valid request
-            sendPlainTable(loggedInAs, request, response, resultsTable, "convertInterpolate", tFileType);
+            sendPlainTable(requestNumber, loggedInAs, request, response, resultsTable, 
+                "convertInterpolate", tFileType);
             return;
         }
 
@@ -16008,17 +16130,20 @@ UTC                  m   deg_n    deg_east m s-1
     /**
      * Process erddap/convert/time.html and time.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   time.html or time.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertTime(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertTime(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -16375,17 +16500,20 @@ UTC                  m   deg_n    deg_east m s-1
     /**
      * Process erddap/convert/units.html and units.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   units.html or units.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertUnits(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertUnits(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -16587,17 +16715,20 @@ UTC                  m   deg_n    deg_east m s-1
     /**
      * Process erddap/convert/urls.html and urls.txt.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param endOfRequestUrl   urls.html or urls.txt
      * @param userQuery  post "?", still percentEncoded, may be null.
      * @throws Throwable if trouble
      */
-    public void doConvertURLs(HttpServletRequest request, HttpServletResponse response, 
+    public void doConvertURLs(int requestNumber, HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
         //first thing
         if (!EDStatic.convertersActive) {
-            sendResourceNotFoundError(request, response, 
+            sendResourceNotFoundError(requestNumber, request, response, 
                 MessageFormat.format(EDStatic.disabled, "convert"));
             return;
         }
@@ -16849,12 +16980,15 @@ UTC                  m   deg_n    deg_east m s-1
      * This sends the HTTP resource NOT_FOUND error.
      * This always also sends the error to String2.log.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param message  use "" if nothing specific.
      */
-    public static void sendResourceNotFoundError(HttpServletRequest request, 
+    public static void sendResourceNotFoundError(int requestNumber, HttpServletRequest request, 
         HttpServletResponse response, String message) {
 
-        EDStatic.lowSendError(response, HttpServletResponse.SC_NOT_FOUND, message);
+        EDStatic.lowSendError(requestNumber, response, HttpServletResponse.SC_NOT_FOUND, message);
     }
 
 
@@ -17044,15 +17178,16 @@ UTC                  m   deg_n    deg_east m s-1
     /** 
      * This sends a response: a table with two columns (Category, URL).
      *
-     * @param request
-     * @param response
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param loggedInAs  the name of the logged-in user (or null if not logged-in)
      * @param attribute must be valid  (e.g., ioos_category)
      * @param attributeInURL must be valid  (e.g., ioos_category)
      * @param fileTypeName a plainFileType, e.g., .htmlTable
      * @throws Throwable if trouble
      */
-    public void sendCategoryPftOptionsTable(HttpServletRequest request, 
+    public void sendCategoryPftOptionsTable(int requestNumber, HttpServletRequest request, 
         HttpServletResponse response, String loggedInAs, String attribute, 
         String attributeInURL, String fileTypeName) throws Throwable {
 
@@ -17075,7 +17210,7 @@ UTC                  m   deg_n    deg_east m s-1
         }
 
         //send it  
-        sendPlainTable(loggedInAs, request, response, table, attributeInURL, fileTypeName);
+        sendPlainTable(requestNumber, loggedInAs, request, response, table, attributeInURL, fileTypeName);
     }
 
 
@@ -17411,10 +17546,14 @@ UTC                  m   deg_n    deg_east m s-1
     /**
      * This writes the plain (non-html) table as a plainFileType response.
      *
+     * @param requestNumber The requestNumber assigned to this request by doGet().
+     * @param loggedInAs
+     * @param request The user's request.
+     * @param response The response to be written to.
      * @param fileName e.g., Time
      * @param fileTypeName e.g., .htmlTable
      */
-    void sendPlainTable(String loggedInAs, HttpServletRequest request, HttpServletResponse response, 
+    void sendPlainTable(int requestNumber, String loggedInAs, HttpServletRequest request, HttpServletResponse response, 
         Table table, String fileName, String fileTypeName) throws Throwable {
 
         //handle in-common json stuff
@@ -17498,7 +17637,7 @@ UTC                  m   deg_n    deg_east m s-1
             table.saveAsFlatNc(EDStatic.fullPlainFileNcCacheDirectory + ncFileName, 
                 "row", false); //convertToFakeMissingValues          
             OutputStream out = outSource.outputStream("");
-            doTransfer(request, response, EDStatic.fullPlainFileNcCacheDirectory, 
+            doTransfer(requestNumber, request, response, EDStatic.fullPlainFileNcCacheDirectory, 
                 "_plainFileNc/", //dir that appears to users (but it doesn't normally)
                 ncFileName, out, outSource.usingCompression()); 
             //if simpleDelete fails, cache cleaning will delete it later
