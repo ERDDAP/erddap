@@ -1896,28 +1896,29 @@ String expected2 =
     // to   https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.xml
     //2017-11-08 redone
     //0=entire "clean catalog" http://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html 
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalog.html",
+    //2020-05-20 was ferret.pmel.noaa.gov
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalog.html",
     //1
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/oceanNomads/catalog_aggs.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/regclim/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/woa13/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oceanwatch.pfeg.noaa.gov/thredds/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/oceanNomads/catalog_aggs.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.ngdc.noaa.gov/thredds/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/regclim/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.nodc.noaa.gov/thredds/catalog/ncml/woa13/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oceanwatch.pfeg.noaa.gov/thredds/catalog.html",
     //6
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/carbontracker.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data1.gfdl.noaa.gov/thredds/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/edac-dap3.northerngulfinstitute.org/thredds/catalog/ncom_fukushima_agg/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/www.esrl.noaa.gov/psd/thredds/catalog/Datasets/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.pmel.noaa.gov/pmel/thredds/carbontracker.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data1.gfdl.noaa.gov/thredds/catalog.html",
     //11
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/osmc.noaa.gov/thredds/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ferret.pmel.noaa.gov/pmel/thredds/uaf.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.marine.rutgers.edu/thredds/roms/espresso/2013_da/catalog.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/atm_mod.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/osmc.noaa.gov/thredds/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/data.pmel.noaa.gov/pmel/thredds/uaf.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.marine.rutgers.edu/thredds/roms/espresso/2013_da/catalog.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/ocn_mod.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/oos.soest.hawaii.edu/thredds/idd/atm_mod.html",
     //16
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/nowcast/glcfs_nowcast_all.html",
-    "https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/glcfs_forecast.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/nowcast/glcfs_nowcast_all.html",
+    "https://data.pmel.noaa.gov/uaf/thredds/CleanCatalogs/tds.glos.us/thredds/glcfs/glcfs_forecast.html",
 
     //motherlode isn't part of UAF
     "https://motherlode.ucar.edu/thredds/catalog.xml"
@@ -1925,8 +1926,8 @@ String expected2 =
 
     /** 
      * Bob uses this for testing in individual GEO IDE UAF Thredds catalog.
-     * See original catalog https://ferret.pmel.noaa.gov/thredds/geoideCatalog.html
-     * See the clean catalog at https://ferret.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
+     * See original catalog https://data.pmel.noaa.gov/thredds/geoideCatalog.html
+     * See the clean catalog at https://data.pmel.noaa.gov/uaf/thredds/geoIDECleanCatalog.html
      */
     public static void testUAFSubThreddsCatalog(int which) throws Throwable {
 
@@ -5099,7 +5100,7 @@ String expected1 =
      *   and adding resolution to title. 
      * Another good/better test of suggestReloadEveryNMinutes is
      *  EDDGridFromDap.testUAFSubThreddsCatalog(1);  //test one sub catalog
-     *  https://ferret.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
+     *  https://data.pmel.noaa.gov/uaf/thredds/catalog/CleanCatalogs/cwcgom.aoml.noaa.gov/thredds/catalog.xml
      *  because it has a good mix of NRT and delayed datasets.
      */
     public static void testGenerateDatasetsXml2() throws Throwable {

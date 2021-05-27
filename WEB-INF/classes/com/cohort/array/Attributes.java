@@ -746,14 +746,14 @@ public class Attributes {
 
     /**
      * This generates a String with 
-     * "[prefix][name]=[value][suffix]" on each line.
+     * "[prefix][name] = [value][suffix]" on each line.
      *
      * <p>This nc-style version is used to print netcdf header attributes. 
      * It uses String2.toJson for String attributes. 
      *
-     * @param prefix The text to be precede "[name]=[value]" on each line,
+     * @param prefix The text to be precede "[name] = [value]" on each line,
      *   perhaps "".
-     * @param suffix The text to follow "[name]=[value]" on each line,
+     * @param suffix The text to follow "[name] = [value]" on each line,
      *   perhaps "".
      * @return the desired string representation
      */
@@ -1072,6 +1072,21 @@ public class Attributes {
                 tValue.toNccsvAttString()           + "\n"); 
         }
         return sb.toString();        
+    }
+
+    /**
+     * This throws a RuntimeException if any attribute name is !String2.isVariableNameSafe(attName).
+     * 
+     * @param sourceDescripton e.g., "In the combined attributes for the variable with destinationName="sst"".
+     *   This is just used in the error message.
+     */
+    public void ensureNamesAreVariableNameSafe(String sourceDescription) {
+        String names[] = getNames();
+        for (int ni = 0; ni < names.length; ni++) { 
+            if (!String2.isVariableNameSafe(names[ni])) 
+                throw new RuntimeException(sourceDescription + ", attributeName=" + String2.toJson(names[ni]) + 
+                    " isn't variableNameSafe. It must start with iso8859Letter|_ and contain only iso8859Letter|_|0-9 .");
+        }
     }
 
     /**

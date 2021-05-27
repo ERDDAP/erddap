@@ -231,7 +231,7 @@ public class TestAll  {
 //           2018-04-16 try again  
 //           2018-07-12 new catalog
 //           2018-08-24 esrl changed a lot
-//           2021-04-29 
+//           2021-05-20 
 //      0) 2017-11-14 UAF clean catalog STILL refers to http:// urls when it could 
 //         refer to https:// urls, e.g., 
 //         https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog/ncom/ncom_reg1_agg/catalog.html?dataset=ncom.ncom_reg1_agg.NCOM_Region_1_Aggregation_best.ncd
@@ -1056,7 +1056,7 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-/* for releases, this line should have open/close comment */
+/* for releases, this line should have open/close comment 
 // and all tests should be "0, -1" 
 
         //*** All of the unit tests for CWBrowsers and ERDDAP. 
