@@ -68,6 +68,42 @@ those great suggestions coming!
 
 -->
 
+<!-- ****************************************************************************** 
+
+
+<h2><a class="selfLink" id="changes2.13" href="#changes2.13" rel="bookmark">Changes</a> 
+in ERDDAP version 2.13 (released 2021-0?-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>
+    <br>&nbsp;
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>NEW: ERDDAP administrators can override any value in setup.xml
+      via an environment variable named ERDDAP_<i>valueName</i> before running ERDDAP.
+      For example, use ERDDAP_baseUrl overrides the &lt;baseUrl&gt; value.
+     This can be handy when deploying ERDDAP with a container, as you can
+     put standard settings in setup.xml and then supply special settings
+     via environment variables.
+     If you supply secret information to ERDDAP via this method, be sure 
+     to check that the information will remain secret.
+      ERDDAP only reads the environment variables once per startup, in the first second of startup,
+      so one way to use this is: set the environment variables, start ERDDAP, 
+      wait until ERDDAP is started, then unset the environment variables.
+     Thanks to Marc Portier.
+    <br>&nbsp;
+
+  <li>FIX: After a year of trouble, I finally successfully installed Cassandra (v2) again
+    and so was able to rerun the tests with Cassandra v2. So now I can more confidently
+    state that ERDDAP works with Cassandra v2 and v3.
+    Thanks to ONC.
+    <br>&nbsp;
+  </ul>
+
+-->
+
 <!-- ****************************************************************************** -->
 
 

@@ -802,6 +802,9 @@ public abstract class EDD {
                     combinedGlobalAttributes.set(name, tValue);
             }
         }
+        //last with combinedGlobalAttributes
+        combinedGlobalAttributes.ensureNamesAreVariableNameSafe(
+            "In the combined global attributes");
 
 
         //ensure these are set in the constructor (they may be "")

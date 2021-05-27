@@ -761,6 +761,9 @@ will show NaN).
         //Admin can't control source. addAttributes may overwrite offending characters.
         Test.ensureSomethingUnicode(addAttributes, errorInMethod + "addAttributes");
         EDStatic.updateUrls(null, combinedAttributes);
+        combinedAttributes.ensureNamesAreVariableNameSafe(
+            "In the combined attributes for the variable with destinationName=" + 
+            String2.toJson(destinationName));
         Test.ensureSomethingUnicode(combinedAttributes,  
             errorInMethod + "combinedAttributes (but probably caused by the source attributes)");
         if (scaleAddOffset && destinationDataPAType == PAType.STRING)

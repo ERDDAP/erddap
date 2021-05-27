@@ -1853,7 +1853,7 @@ public class String2 {
      * <li>first character must be (iso8859Letter|_).
      * <li>optional subsequent characters must be (iso8859Letter|_|0-9).
      * </ul>
-     * Note that Java allows Unicode characters, but this does not.
+     * Note that Java Character.isLetter() allows Unicode characters, but this does not.
      *
      * @param s a possible variable name
      * @return true if s is a valid variableName.
@@ -1878,58 +1878,6 @@ public class String2 {
         }
         return true;
     }
-
-    /**
-     * This tests if s is a valid jsonp function name.
-     * The functionName MUST be a series of 1 or more (period-separated) words.
-     * For each word:
-     * <ul>
-     * <li>The first character must be (iso8859Letter|_).
-     * <li>The optional subsequent characters must be (iso8859Letter|_|0-9).
-     * <li>s must not be longer than 255 characters.
-     * </ul>
-     * Note that JavaScript allows Unicode characters, but this does not.
-     *
-     * @param s a possible jsonp function name
-     * @return true if s is a valid jsonp function name.
-     */
-    public static boolean isJsonpNameSafe(String s) {
-        if (s == null)
-            return false;
-        int n = s.length();
-        if (n == 0 || n > 255)
-            return false;
-
-        //last (or only) character can't be .
-        if (s.charAt(n - 1) == '.')
-            return false;
-
-        ArrayList<String> al = splitToArrayList(s, '.', false); //trim=false
-        int nal = al.size();
-
-        //test each word
-        for (int part = 0; part < nal; part++) {
-            String ts = al.get(part);
-            int tn = ts.length();
-            if (tn == 0)
-                return false;
-
-            //first character must be (iso8859Letter|_)
-            char ch = ts.charAt(0);
-            if (isLetter(ch) || ch == '_') ;
-            else return false;
-
-            //subsequent characters must be (iso8859Letter|_|0-9)
-            for (int i = 1; i < tn; i++) {
-                ch = ts.charAt(i);
-                if (isDigitLetter(ch) || ch == '_') ;
-                else return false;    
-            }
-        }
-
-        return true;
-    }
-
 
     /**
      * This is like modifyToBeFileNameSafe, but restricts the name to:
@@ -1980,6 +1928,58 @@ public class String2 {
             sb.setLength(sb.length() - 1);
 
         return sb.toString();
+    }
+
+
+    /**
+     * This tests if s is a valid jsonp function name.
+     * The functionName MUST be a series of 1 or more (period-separated) words.
+     * For each word:
+     * <ul>
+     * <li>The first character must be (iso8859Letter|_).
+     * <li>The optional subsequent characters must be (iso8859Letter|_|0-9).
+     * <li>s must not be longer than 255 characters.
+     * </ul>
+     * Note that JavaScript allows Unicode characters, but this does not.
+     *
+     * @param s a possible jsonp function name
+     * @return true if s is a valid jsonp function name.
+     */
+    public static boolean isJsonpNameSafe(String s) {
+        if (s == null)
+            return false;
+        int n = s.length();
+        if (n == 0 || n > 255)
+            return false;
+
+        //last (or only) character can't be .
+        if (s.charAt(n - 1) == '.')
+            return false;
+
+        ArrayList<String> al = splitToArrayList(s, '.', false); //trim=false
+        int nal = al.size();
+
+        //test each word
+        for (int part = 0; part < nal; part++) {
+            String ts = al.get(part);
+            int tn = ts.length();
+            if (tn == 0)
+                return false;
+
+            //first character must be (iso8859Letter|_)
+            char ch = ts.charAt(0);
+            if (isLetter(ch) || ch == '_') ;
+            else return false;
+
+            //subsequent characters must be (iso8859Letter|_|0-9)
+            for (int i = 1; i < tn; i++) {
+                ch = ts.charAt(i);
+                if (isDigitLetter(ch) || ch == '_') ;
+                else return false;    
+            }
+        }
+
+        return true;
     }
 
 
