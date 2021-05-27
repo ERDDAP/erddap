@@ -817,19 +817,21 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: md5 erddapContent1.82.zip -->
+     <!-- Use: \content\bat\md5 erddapContent2.12.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddapContent.zip">erddapContent.zip</a>
-    (version 2.11, 19,765 bytes, MD5=8EAE38587180C97279A59EFBE28045A5, dated 2020-12-04)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddapContent.zip">erddapContent.zip</a>
+    (version 2.12, 19,826 bytes, MD5=D0942715DD11A036A6941D1C5C1BB1E3, dated 2021-05-14)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
-  <p>Other Directory: For Red Hat Enterprise Linux (RHEL) or for other situations where
-    you want/need to put the ERDDAP content directory in some other location, 
-    unzip erddapContent.zip into ~tomcat (or some other directory to which only tomcat has access)
-    and set the system property 
-    <kbd>erddapContentDirectory=~tomcat/content/erddap</kbd>
-    in ~tomcat/conf/tomcat9.conf <!-- tomcatVersion --> so ERDDAP can find the content directory.
-    
+  <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
+    >Other Directory:</a> For Red Hat Enterprise Linux (RHEL) or for other situations where
+    you aren't allowed to modify the Tomcat directory 
+    or where you want/need to put the ERDDAP content directory in some other location for some other reason, 
+    unzip erddapContent.zip into the desired directory (to which only tomcat has access)
+    and set the erddapContentDirectory system property 
+    (e.g., <kbd>erddapContentDirectory=~tomcat/content/erddap</kbd>)
+    so ERDDAP can find this new content directory.
+
   <p>[Some previous versions are also available:  
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddapContent.zip">1.78</a>
@@ -852,6 +854,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddapContent.zip">2.10</a>
     (19,731 bytes, MD5=D9B2987E1349F7FC40D7FC2E4C49E856, dated 2020-11-05)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddapContent.zip">2.11</a>
+    (19,765 bytes, MD5=8EAE38587180C97279A59EFBE28045A5, dated 2020-12-04)
     ]
 
   <p>Then,
@@ -883,40 +888,58 @@ or Mac server instead.
           and files with information about private datasets.
       </ul>
 
+    <p><a class="selfLink" id="setupEnvironmentVariables" href="#setupEnvironmentVariables" rel="bookmark"
+    >Environment Variables</a> - Starting with ERDDAP v2.13, 
+      ERDDAP administrators can override any value in setup.xml
+      by specifying an environment variable named ERDDAP_<i>valueName</i>
+      before running ERDDAP. 
+      For example, use ERDDAP_baseUrl overrides the &lt;baseUrl&gt; value.
+     This can be handy when deploying ERDDAP with a container, as you can
+     put standard settings in setup.xml and then supply special settings
+     via environment variables.
+     If you supply secret information to ERDDAP via this method, be sure 
+     to check that the information will remain secret.
+      ERDDAP only reads environment variables once per startup, in the first second of startup,
+      so one way to use this is: set the environment variables, start ERDDAP, 
+      wait until ERDDAP is started, then unset the environment variables.
+    
+
   <li><a class="selfLink" id="datasets.xml" href="#datasets.xml" rel="bookmark">Read the comments in</a> 
-      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><strong>Working with the datasets.xml File</strong></a>, then modify the XML in 
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><strong>Working with the datasets.xml File</strong></a>.
+     Later, after you get ERDDAP running for the first time (usually with just the default datasets),
+     you will modify the XML in 
     <i>tomcat</i>/content/erddap/<strong>datasets.xml</strong> to specify all of the datasets 
       you want your ERDDAP to serve.
+    This is where you will you spend the bulk of your time while setting up ERDDAP
+    and later while maintaining your ERDDAP.
+    <br>&nbsp;
+
   <li>(Unlikely) Now or (slightly more likely) in the future, 
     if you want to modify erddap's CSS file,
     make a copy of <i>tomcat</i>/content/erddap/images/erddapStart2.css called erddap2.css 
     and then make changes to it.    
     Changes to erddap2.css only take effect when ERDDAP is restarted 
     and often also require the user to clear the browser's cached files.
+    <br>&nbsp;
   </ul>
-  After you edit the .xml files, it is a good idea to verify that the result is well-formed XML
+
+  ERDDAP will not work correctly if the setup.xml or datasets.xml file isn't a well-formed XML file.
+  So, after you edit these files, it is a good idea to verify that the result is well-formed XML
   by pasting the XML text into an XML checker like
     <a rel="help" href="https://www.xmlvalidation.com/">xmlvalidation<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-
-  <p>In the unusual situation where you aren't allowed to modify the Tomcat directory,
-  you can put the ERDDAP content directory somewhere else (e.g., /usr/local/erddap). 
-  To let ERDDAP know where it is,
-  set the system property erddapContentDirectory=/usr/local/erddap/content/erddap/
-  (or wherever it is).
-  If you aren't allowed to set this property in startup.sh, 
-  perhaps you can set it in Tomcat's context.xml.
+  <br>&nbsp;
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: c:\content\bat\md5.bat erddap1.80.war  
+    <!-- use: \content\bat\md5.bat erddap2.12.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.11, 664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated
-    <span class="N">2020-12-04</span>)
+    <br>(version 2.12, 516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated
+    <span class="N">2021-05-14</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -942,6 +965,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.10/erddap.war">2.10</a>
     (664,551,930 bytes, MD5=C6AAAB2E8437C47DC7080193A790FD1F, dated 2020-11-05)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">2.11</a>
+    (664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated 2020-12-04)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1128,10 +1154,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.11, 664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated
-    <span class="N">2020-12-04</span>)
+    <br>(version 2.12, 516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated
+    <span class="N">2021-05-14</span>)
 
   <br>&nbsp;
 

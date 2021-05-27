@@ -191,7 +191,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.12"; //see comment above
+    public static String erddapVersion = "2.13"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -1544,29 +1544,30 @@ public static boolean developmentMode = false;
             "setup" + (developmentMode? "2" : "") + ".xml";
         errorInMethod = "ERROR while reading " + setupFileName + ": ";
         ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
+        Map<String,String> ev = System.getenv();
 
         //logLevel may be: warning, info(default), all
-        setLogLevel(setup.getString("logLevel", DEFAULT_logLevel));
-        bigParentDirectory = setup.getNotNothingString("bigParentDirectory", ""); 
+        setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
+        bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", ""); 
         bigParentDirectory = File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-        unitTestDataDir    = setup.getString("unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
-        unitTestBigDataDir = setup.getString("unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
+        unitTestDataDir    = getSetupEVString(setup, ev, "unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
+        unitTestBigDataDir = getSetupEVString(setup, ev, "unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
         unitTestDataDir    = File2.addSlash(unitTestDataDir);
         unitTestBigDataDir = File2.addSlash(unitTestBigDataDir);
         String2.unitTestDataDir    = unitTestDataDir;
         String2.unitTestBigDataDir = unitTestBigDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
-        emailSmtpHost          = setup.getString("emailSmtpHost",  null);
-        emailSmtpPort          = setup.getInt(   "emailSmtpPort",  25);
-        emailUserName          = setup.getString("emailUserName",  null);
-        emailPassword          = setup.getString("emailPassword",  null);
-        emailProperties        = setup.getString("emailProperties",  null);
-        emailFromAddress       = setup.getString("emailFromAddress", null);
-        emailEverythingToCsv   = setup.getString("emailEverythingTo", "");  //won't be null
-        emailDailyReportToCsv  = setup.getString("emailDailyReportTo", ""); //won't be null
+        emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  null);
+        emailSmtpPort          = getSetupEVInt(   setup, ev, "emailSmtpPort",  25);
+        emailUserName          = getSetupEVString(setup, ev, "emailUserName",  null);
+        emailPassword          = getSetupEVString(setup, ev, "emailPassword",  null);
+        emailProperties        = getSetupEVString(setup, ev, "emailProperties",  null);
+        emailFromAddress       = getSetupEVString(setup, ev, "emailFromAddress", null);
+        emailEverythingToCsv   = getSetupEVString(setup, ev, "emailEverythingTo", "");  //won't be null
+        emailDailyReportToCsv  = getSetupEVString(setup, ev, "emailDailyReportTo", ""); //won't be null
 
         String tsar[] = String2.split(emailEverythingToCsv, ',');
         if (emailEverythingToCsv.length() > 0)
@@ -1585,8 +1586,6 @@ public static boolean developmentMode = false;
 
         //test of email
         //Test.error("This is a test of emailing an error in Erddap constructor.");
-
-        //2014-09-03 deleting all cache and public files was moved from here to ERDDAP constructor
 
         //*** set up directories  //all with slashes at end
         //before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
@@ -1692,9 +1691,9 @@ public static boolean developmentMode = false;
 
         //get other info from setup.xml
         errorInMethod = "ERROR while reading " + setupFileName + ": ";
-        baseUrl                    = setup.getNotNothingString("baseUrl",                    errorInMethod);
-        baseHttpsUrl               = setup.getString(          "baseHttpsUrl",               "(not specified)"); //not "" (to avoid relative urls)
-        categoryAttributes         = String2.split(setup.getNotNothingString("categoryAttributes", ""), ',');
+        baseUrl                    = getSetupEVNotNothingString(setup, ev, "baseUrl",                    errorInMethod);
+        baseHttpsUrl               = getSetupEVString(          setup, ev, "baseHttpsUrl",               "(not specified)"); //not "" (to avoid relative urls)
+        categoryAttributes         = String2.split(getSetupEVNotNothingString(setup, ev, "categoryAttributes", ""), ',');
         int nCat = categoryAttributes.length;
         categoryAttributesInURLs = new String[nCat];
         categoryIsGlobal = new boolean[nCat]; //initially all false
@@ -1712,25 +1711,25 @@ public static boolean developmentMode = false;
         variableNameCategoryAttributeIndex =
             String2.indexOf(categoryAttributes, "variableName");
 
-        String wmsActiveString     = setup.getString("wmsActive",                  ""); 
+        String wmsActiveString     = getSetupEVString(setup, ev, "wmsActive",                  ""); 
         wmsActive                  = String2.isSomething(wmsActiveString)? String2.parseBoolean(wmsActiveString) : true;
-        wmsSampleDatasetID         = setup.getString("wmsSampleDatasetID",         wmsSampleDatasetID);
-        wmsSampleVariable          = setup.getString("wmsSampleVariable",          wmsSampleVariable);
-        wmsSampleBBox110           = setup.getString("wmsSampleBBox110",           wmsSampleBBox110);
-        wmsSampleBBox130           = setup.getString("wmsSampleBBox130",           wmsSampleBBox130);
-        wmsSampleTime              = setup.getString("wmsSampleTime",              wmsSampleTime);
+        wmsSampleDatasetID         = getSetupEVString(setup, ev, "wmsSampleDatasetID",         wmsSampleDatasetID);
+        wmsSampleVariable          = getSetupEVString(setup, ev, "wmsSampleVariable",          wmsSampleVariable);
+        wmsSampleBBox110           = getSetupEVString(setup, ev, "wmsSampleBBox110",           wmsSampleBBox110);
+        wmsSampleBBox130           = getSetupEVString(setup, ev, "wmsSampleBBox130",           wmsSampleBBox130);
+        wmsSampleTime              = getSetupEVString(setup, ev, "wmsSampleTime",              wmsSampleTime);
 
-        adminInstitution           = setup.getNotNothingString("adminInstitution",           errorInMethod);
-        adminInstitutionUrl        = setup.getNotNothingString("adminInstitutionUrl",        errorInMethod);
-        adminIndividualName        = setup.getNotNothingString("adminIndividualName",        errorInMethod);
-        adminPosition              = setup.getNotNothingString("adminPosition",              errorInMethod);
-        adminPhone                 = setup.getNotNothingString("adminPhone",                 errorInMethod); 
-        adminAddress               = setup.getNotNothingString("adminAddress",               errorInMethod);
-        adminCity                  = setup.getNotNothingString("adminCity",                  errorInMethod);
-        adminStateOrProvince       = setup.getNotNothingString("adminStateOrProvince",       errorInMethod); 
-        adminPostalCode            = setup.getNotNothingString("adminPostalCode",            errorInMethod);
-        adminCountry               = setup.getNotNothingString("adminCountry",               errorInMethod);
-        adminEmail                 = setup.getNotNothingString("adminEmail",                 errorInMethod);
+        adminInstitution           = getSetupEVNotNothingString(setup, ev, "adminInstitution",           errorInMethod);
+        adminInstitutionUrl        = getSetupEVNotNothingString(setup, ev, "adminInstitutionUrl",        errorInMethod);
+        adminIndividualName        = getSetupEVNotNothingString(setup, ev, "adminIndividualName",        errorInMethod);
+        adminPosition              = getSetupEVNotNothingString(setup, ev, "adminPosition",              errorInMethod);
+        adminPhone                 = getSetupEVNotNothingString(setup, ev, "adminPhone",                 errorInMethod); 
+        adminAddress               = getSetupEVNotNothingString(setup, ev, "adminAddress",               errorInMethod);
+        adminCity                  = getSetupEVNotNothingString(setup, ev, "adminCity",                  errorInMethod);
+        adminStateOrProvince       = getSetupEVNotNothingString(setup, ev, "adminStateOrProvince",       errorInMethod); 
+        adminPostalCode            = getSetupEVNotNothingString(setup, ev, "adminPostalCode",            errorInMethod);
+        adminCountry               = getSetupEVNotNothingString(setup, ev, "adminCountry",               errorInMethod);
+        adminEmail                 = getSetupEVNotNothingString(setup, ev, "adminEmail",                 errorInMethod);
 
         if (adminInstitution.startsWith("Your"))
             throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
@@ -1755,12 +1754,12 @@ public static boolean developmentMode = false;
         if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
             throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
 
-        accessConstraints          = setup.getNotNothingString("accessConstraints",          errorInMethod); 
-        accessRequiresAuthorization= setup.getNotNothingString("accessRequiresAuthorization",errorInMethod); 
-        fees                       = setup.getNotNothingString("fees",                       errorInMethod);
-        keywords                   = setup.getNotNothingString("keywords",                   errorInMethod);
+        accessConstraints          = getSetupEVNotNothingString(setup, ev, "accessConstraints",          errorInMethod); 
+        accessRequiresAuthorization= getSetupEVNotNothingString(setup, ev, "accessRequiresAuthorization",errorInMethod); 
+        fees                       = getSetupEVNotNothingString(setup, ev, "fees",                       errorInMethod);
+        keywords                   = getSetupEVNotNothingString(setup, ev, "keywords",                   errorInMethod);
 
-        awsS3OutputBucketUrl       = setup.getString(          "awsS3OutputBucketUrl",       null);
+        awsS3OutputBucketUrl       = getSetupEVString(          setup, ev, "awsS3OutputBucketUrl",       null);
         if (!String2.isSomething(awsS3OutputBucketUrl))
             awsS3OutputBucketUrl = null;
         if (awsS3OutputBucketUrl != null) {
@@ -1795,28 +1794,28 @@ public static boolean developmentMode = false;
             //So make my own system
         }
 
-        units_standard             = setup.getString(          "units_standard",             "UDUNITS");
+        units_standard             = getSetupEVString( setup, ev,          "units_standard",             "UDUNITS");
 
-        fgdcActive                 = setup.getBoolean(         "fgdcActive",                 true); 
-        iso19115Active             = setup.getBoolean(         "iso19115Active",             true); 
-        jsonldActive               = setup.getBoolean(         "jsonldActive",               true); 
+        fgdcActive                 = getSetupEVBoolean(setup, ev,          "fgdcActive",                 true); 
+        iso19115Active             = getSetupEVBoolean(setup, ev,          "iso19115Active",             true); 
+        jsonldActive               = getSetupEVBoolean(setup, ev,          "jsonldActive",               true); 
 //until geoServicesRest is finished, it is always inactive
-geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
-        filesActive                = setup.getBoolean(         "filesActive",                true); 
-        defaultAccessibleViaFiles  = setup.getBoolean(         "defaultAccessibleViaFiles",  false); //false matches historical behavior 
-        dataProviderFormActive     = setup.getBoolean(         "dataProviderFormActive",     true); 
-        outOfDateDatasetsActive    = setup.getBoolean(         "outOfDateDatasetsActive",    true); 
-        politicalBoundariesActive  = setup.getBoolean(         "politicalBoundariesActive",  true); 
-        wmsClientActive            = setup.getBoolean(         "wmsClientActive",            true); 
+geoServicesRestActive      = false; //getSetupEVBoolean(setup, ev,          "geoServicesRestActive",      false); 
+        filesActive                = getSetupEVBoolean(setup, ev,          "filesActive",                true); 
+        defaultAccessibleViaFiles  = getSetupEVBoolean(setup, ev,          "defaultAccessibleViaFiles",  false); //false matches historical behavior 
+        dataProviderFormActive     = getSetupEVBoolean(setup, ev,          "dataProviderFormActive",     true); 
+        outOfDateDatasetsActive    = getSetupEVBoolean(setup, ev,          "outOfDateDatasetsActive",    true); 
+        politicalBoundariesActive  = getSetupEVBoolean(setup, ev,          "politicalBoundariesActive",  true); 
+        wmsClientActive            = getSetupEVBoolean(setup, ev,          "wmsClientActive",            true); 
         SgtMap.drawPoliticalBoundaries = politicalBoundariesActive;
 
 
 //until SOS is finished, it is always inactive
-sosActive = false;//        sosActive                  = setup.getBoolean(         "sosActive",                  false); 
+sosActive = false;//        sosActive                  = getSetupEVBoolean(setup, ev,          "sosActive",                  false); 
         if (sosActive) {
-            sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       errorInMethod);
-            sosStandardNamePrefix  = setup.getNotNothingString("sosStandardNamePrefix",      errorInMethod);
-            sosUrnBase             = setup.getNotNothingString("sosUrnBase",                 errorInMethod);
+            sosFeatureOfInterest   = getSetupEVNotNothingString(setup, ev, "sosFeatureOfInterest",       errorInMethod);
+            sosStandardNamePrefix  = getSetupEVNotNothingString(setup, ev, "sosStandardNamePrefix",      errorInMethod);
+            sosUrnBase             = getSetupEVNotNothingString(setup, ev, "sosUrnBase",                 errorInMethod);
 
             //make the sosGmlName, e.g., https://coastwatch.pfeg.noaa.gov -> gov.noaa.pfeg.coastwatch
             sosBaseGmlName = baseUrl; 
@@ -1832,17 +1831,17 @@ sosActive = false;//        sosActive                  = setup.getBoolean(      
         }
 
 //until it is finished, it is always inactive
-wcsActive = false; //setup.getBoolean(         "wcsActive",                  false); 
+wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",                  false); 
 
-        authentication             = setup.getString(          "authentication",             "");
-        datasetsRegex              = setup.getString(          "datasetsRegex",              ".*");
-        drawLandMask               = setup.getString(          "drawLandMask",               null);    //new name
+        authentication             = getSetupEVString(setup, ev,           "authentication",             "");
+        datasetsRegex              = getSetupEVString(setup, ev,           "datasetsRegex",              ".*");
+        drawLandMask               = getSetupEVString(setup, ev,           "drawLandMask",               null);    //new name
         if (drawLandMask == null) //2014-08-28 changed defaults below to "under". It will be in v1.48
-            drawLandMask           = setup.getString(          "drawLand",                   DEFAULT_drawLandMask); //old name. DEFAULT...="under"
+            drawLandMask           = getSetupEVString(setup, ev,           "drawLand",                   DEFAULT_drawLandMask); //old name. DEFAULT...="under"
         int tdlm = String2.indexOf(SgtMap.drawLandMask_OPTIONS, drawLandMask);
         if (tdlm < 1)
             drawLandMask = DEFAULT_drawLandMask; //"under"
-        flagKeyKey                 = setup.getNotNothingString("flagKeyKey",                 errorInMethod);
+        flagKeyKey                 = getSetupEVNotNothingString(setup, ev, "flagKeyKey",                 errorInMethod);
         if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
               //really old default: "A stitch in time saves nine. CHANGE THIS!!!"  
               //current default:    "CHANGE THIS TO YOUR FAVORITE QUOTE"
@@ -1850,37 +1849,37 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
             String2.ERROR + ": You must change the <flagKeyKey> in setup.xml to a new, unique, non-default value. " +
             "NOTE that this will cause the flagKeys used by your datasets to change. " +
             "Any subscriptions using the old flagKeys will need to be redone.");
-        fontFamily                 = setup.getString(          "fontFamily",                 "DejaVu Sans");
+        fontFamily                 = getSetupEVString(setup, ev,           "fontFamily",                 "DejaVu Sans");
         graphBackgroundColor = new Color(String2.parseInt(
-                                     setup.getString(          "graphBackgroundColor",       "" + DEFAULT_graphBackgroundColorInt)), true); //hasAlpha
-        googleClientID             = setup.getString(          "googleClientID",             null);
-        orcidClientID              = setup.getString(          "orcidClientID",              null);
-        orcidClientSecret          = setup.getString(          "orcidClientSecret",          null);
-        googleEarthLogoFile        = setup.getNotNothingString("googleEarthLogoFile",        errorInMethod);
-        highResLogoImageFile       = setup.getNotNothingString("highResLogoImageFile",       errorInMethod);
-        listPrivateDatasets        = setup.getBoolean(         "listPrivateDatasets",        false);
-        logMaxSizeMB               = Math2.minMax(1, 2000, setup.getInt("logMaxSizeMB", 20));  //2048MB=2GB
+                                     getSetupEVString(setup, ev,           "graphBackgroundColor",       "" + DEFAULT_graphBackgroundColorInt)), true); //hasAlpha
+        googleClientID             = getSetupEVString(setup, ev,           "googleClientID",             null);
+        orcidClientID              = getSetupEVString(setup, ev,           "orcidClientID",              null);
+        orcidClientSecret          = getSetupEVString(setup, ev,           "orcidClientSecret",          null);
+        googleEarthLogoFile        = getSetupEVNotNothingString(setup, ev, "googleEarthLogoFile",        errorInMethod);
+        highResLogoImageFile       = getSetupEVNotNothingString(setup, ev, "highResLogoImageFile",       errorInMethod);
+        listPrivateDatasets        = getSetupEVBoolean(setup, ev,          "listPrivateDatasets",        false);
+        logMaxSizeMB               = Math2.minMax(1, 2000, getSetupEVInt(setup, ev, "logMaxSizeMB", 20));  //2048MB=2GB
 
         //v2.00: these are now also in datasets.xml
-        cacheMillis                = setup.getInt(             "cacheMinutes",               DEFAULT_cacheMinutes)            * 60000L; 
-        loadDatasetsMinMillis      = Math.max(1,setup.getInt(  "loadDatasetsMinMinutes",     DEFAULT_loadDatasetsMinMinutes)) * 60000L;
-        loadDatasetsMaxMillis      = setup.getInt(             "loadDatasetsMaxMinutes",     DEFAULT_loadDatasetsMaxMinutes)  * 60000L;
+        cacheMillis                = getSetupEVInt(setup, ev,              "cacheMinutes",               DEFAULT_cacheMinutes)            * 60000L; 
+        loadDatasetsMinMillis      = Math.max(1,getSetupEVInt(setup, ev,   "loadDatasetsMinMinutes",     DEFAULT_loadDatasetsMinMinutes)) * 60000L;
+        loadDatasetsMaxMillis      = getSetupEVInt(setup, ev,              "loadDatasetsMaxMinutes",     DEFAULT_loadDatasetsMaxMinutes)  * 60000L;
         loadDatasetsMaxMillis      = Math.max(loadDatasetsMinMillis * 2, loadDatasetsMaxMillis);
-        partialRequestMaxBytes     = setup.getInt(             "partialRequestMaxBytes",     DEFAULT_partialRequestMaxBytes);
-        partialRequestMaxCells     = setup.getInt(             "partialRequestMaxCells",     DEFAULT_partialRequestMaxCells);
-        unusualActivity            = setup.getInt(             "unusualActivity",            DEFAULT_unusualActivity);
+        partialRequestMaxBytes     = getSetupEVInt(setup, ev,              "partialRequestMaxBytes",     DEFAULT_partialRequestMaxBytes);
+        partialRequestMaxCells     = getSetupEVInt(setup, ev,              "partialRequestMaxCells",     DEFAULT_partialRequestMaxCells);
+        unusualActivity            = getSetupEVInt(setup, ev,              "unusualActivity",            DEFAULT_unusualActivity);
 
-        lowResLogoImageFile        = setup.getNotNothingString("lowResLogoImageFile",        errorInMethod);
-        quickRestart               = setup.getBoolean(         "quickRestart",               true);      
-        passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPSHA256");
-        searchEngine               = setup.getString(          "searchEngine",               "original");
+        lowResLogoImageFile        = getSetupEVNotNothingString(setup, ev, "lowResLogoImageFile",        errorInMethod);
+        quickRestart               = getSetupEVBoolean(setup, ev,          "quickRestart",               true);      
+        passwordEncoding           = getSetupEVString(setup, ev,           "passwordEncoding",           "UEPSHA256");
+        searchEngine               = getSetupEVString(setup, ev,           "searchEngine",               "original");
 
-        subscribeToRemoteErddapDataset = setup.getBoolean(     "subscribeToRemoteErddapDataset", true);
-        subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",       true);
-        convertersActive           = setup.getBoolean(         "convertersActive",               true);
-        slideSorterActive          = setup.getBoolean(         "slideSorterActive",              true);
-        variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory",  true);
-        warName                    = setup.getString(          "warName",                        "erddap");
+        subscribeToRemoteErddapDataset = getSetupEVBoolean(setup, ev,      "subscribeToRemoteErddapDataset", true);
+        subscriptionSystemActive   = getSetupEVBoolean(setup, ev,          "subscriptionSystemActive",       true);
+        convertersActive           = getSetupEVBoolean(setup, ev,          "convertersActive",               true);
+        slideSorterActive          = getSetupEVBoolean(setup, ev,          "slideSorterActive",              true);
+        variablesMustHaveIoosCategory = getSetupEVBoolean(setup, ev,       "variablesMustHaveIoosCategory",  true);
+        warName                    = getSetupEVString(setup, ev,           "warName",                        "erddap");
 
         //use Lucence?
         if (searchEngine.equals("lucene")) {
@@ -1897,15 +1896,15 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
 
         //ensure erddapVersion is okay
         int upo = erddapVersion.indexOf('_');
-        double ev = String2.parseDouble(upo >= 0? erddapVersion.substring(0, upo) :
+        double eVer = String2.parseDouble(upo >= 0? erddapVersion.substring(0, upo) :
             erddapVersion);
-        if (upo == -1 && erddapVersion.length() == 4 && ev > 1.8 && ev < 10) {} //it's just a number
+        if (upo == -1 && erddapVersion.length() == 4 && eVer > 1.8 && eVer < 10) {} //it's just a number
         else if ((upo != -1 && upo != 4) ||
-            ev <= 1.8 || ev >=10 || Double.isNaN(ev) || 
+            eVer <= 1.8 || eVer >=10 || Double.isNaN(eVer) || 
             erddapVersion.indexOf(' ') >= 0 ||
             !String2.isAsciiPrintable(erddapVersion))
             throw new SimpleException(
-                "The format of EDStatic.erddapVersion must be d.dd[_someAsciiText]. (ev=" + ev + ")");            
+                "The format of EDStatic.erddapVersion must be d.dd[_someAsciiText]. (eVer=" + eVer + ")");            
 
         //ensure authentication setup is okay
         errorInMethod = "ERROR while checking authentication setup: ";
@@ -2092,7 +2091,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         advancedSearchMaxTime      = messages.getNotNothingString("advancedSearchMaxTime",      errorInMethod);
         advancedSearchClear        = messages.getNotNothingString("advancedSearchClear",        errorInMethod);
         advancedSearchClearHelp    = messages.getNotNothingString("advancedSearchClearHelp",    errorInMethod);
-        advancedSearchCategoryTooltip = messages.getNotNothingString("advancedSearchCategoryTooltip", errorInMethod);
+        advancedSearchCategoryTooltip=messages.getNotNothingString("advancedSearchCategoryTooltip", errorInMethod);
         advancedSearchRangeTooltip = messages.getNotNothingString("advancedSearchRangeTooltip", errorInMethod);
         advancedSearchMapTooltip   = messages.getNotNothingString("advancedSearchMapTooltip",   errorInMethod);
         advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   errorInMethod);
@@ -2275,8 +2274,8 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDGridEven                = messages.getNotNothingString("EDDGridEven",                errorInMethod);
         EDDGridUneven              = messages.getNotNothingString("EDDGridUneven",              errorInMethod);
         EDDGridDimensionTooltip    = messages.getNotNothingString("EDDGridDimensionTooltip",    errorInMethod);
-        EDDGridDimensionFirstTooltip = messages.getNotNothingString("EDDGridDimensionFirstTooltip", errorInMethod);
-        EDDGridDimensionLastTooltip  = messages.getNotNothingString("EDDGridDimensionLastTooltip",  errorInMethod);
+        EDDGridDimensionFirstTooltip=messages.getNotNothingString("EDDGridDimensionFirstTooltip", errorInMethod);
+        EDDGridDimensionLastTooltip =messages.getNotNothingString("EDDGridDimensionLastTooltip",  errorInMethod);
         EDDGridVarHasDimTooltip    = messages.getNotNothingString("EDDGridVarHasDimTooltip",    errorInMethod);
         EDDGridSSSTooltip          = messages.getNotNothingString("EDDGridSSSTooltip",          errorInMethod);
         EDDGridStartTooltip        = messages.getNotNothingString("EDDGridStartTooltip",        errorInMethod);
@@ -2299,17 +2298,17 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDGridMatlabPlotExample   = messages.getNotNothingString("EDDGridMatlabPlotExample",   errorInMethod);
 
         //admin provides EDDGrid...Example
-        EDDGridErddapUrlExample    = setup.getString("EDDGridErddapUrlExample",    EDDGridErddapUrlExample);
-        EDDGridIdExample           = setup.getString("EDDGridIdExample",           EDDGridIdExample);
-        EDDGridDimensionExample    = setup.getString("EDDGridDimensionExample",    EDDGridDimensionExample);
-        EDDGridNoHyperExample      = setup.getString("EDDGridNoHyperExample",      EDDGridNoHyperExample);
-        EDDGridDimNamesExample     = setup.getString("EDDGridDimNamesExample",     EDDGridDimNamesExample);
-        EDDGridDataIndexExample    = setup.getString("EDDGridDataIndexExample",    EDDGridDataIndexExample);
-        EDDGridDataValueExample    = setup.getString("EDDGridDataValueExample",    EDDGridDataValueExample);
-        EDDGridDataTimeExample     = setup.getString("EDDGridDataTimeExample",     EDDGridDataTimeExample);
-        EDDGridGraphExample        = setup.getString("EDDGridGraphExample",        EDDGridGraphExample);
-        EDDGridMapExample          = setup.getString("EDDGridMapExample",          EDDGridMapExample);
-        EDDGridMatlabPlotExample   = setup.getString("EDDGridMatlabPlotExample",   EDDGridMatlabPlotExample);
+        EDDGridErddapUrlExample    = getSetupEVString(setup, ev, "EDDGridErddapUrlExample",    EDDGridErddapUrlExample);
+        EDDGridIdExample           = getSetupEVString(setup, ev, "EDDGridIdExample",           EDDGridIdExample);
+        EDDGridDimensionExample    = getSetupEVString(setup, ev, "EDDGridDimensionExample",    EDDGridDimensionExample);
+        EDDGridNoHyperExample      = getSetupEVString(setup, ev, "EDDGridNoHyperExample",      EDDGridNoHyperExample);
+        EDDGridDimNamesExample     = getSetupEVString(setup, ev, "EDDGridDimNamesExample",     EDDGridDimNamesExample);
+        EDDGridDataIndexExample    = getSetupEVString(setup, ev, "EDDGridDataIndexExample",    EDDGridDataIndexExample);
+        EDDGridDataValueExample    = getSetupEVString(setup, ev, "EDDGridDataValueExample",    EDDGridDataValueExample);
+        EDDGridDataTimeExample     = getSetupEVString(setup, ev, "EDDGridDataTimeExample",     EDDGridDataTimeExample);
+        EDDGridGraphExample        = getSetupEVString(setup, ev, "EDDGridGraphExample",        EDDGridGraphExample);
+        EDDGridMapExample          = getSetupEVString(setup, ev, "EDDGridMapExample",          EDDGridMapExample);
+        EDDGridMatlabPlotExample   = getSetupEVString(setup, ev, "EDDGridMatlabPlotExample",   EDDGridMatlabPlotExample);
 
         //variants encoded to be Html Examples
         EDDGridDimensionExampleHE  = XML.encodeAsHTML(EDDGridDimensionExample);
@@ -2368,15 +2367,15 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         EDDTableFromHttpGetTimestampDescription = messages.getNotNothingString("EDDTableFromHttpGetTimestampDescription", errorInMethod);
 
         //admin provides EDDGrid...Example
-        EDDTableErddapUrlExample   = setup.getString("EDDTableErddapUrlExample",   EDDTableErddapUrlExample);
-        EDDTableIdExample          = setup.getString("EDDTableIdExample",          EDDTableIdExample);
-        EDDTableVariablesExample   = setup.getString("EDDTableVariablesExample",   EDDTableVariablesExample);
-        EDDTableConstraintsExample = setup.getString("EDDTableConstraintsExample", EDDTableConstraintsExample);
-        EDDTableDataValueExample   = setup.getString("EDDTableDataValueExample",   EDDTableDataValueExample);
-        EDDTableDataTimeExample    = setup.getString("EDDTableDataTimeExample",    EDDTableDataTimeExample);
-        EDDTableGraphExample       = setup.getString("EDDTableGraphExample",       EDDTableGraphExample);
-        EDDTableMapExample         = setup.getString("EDDTableMapExample",         EDDTableMapExample);
-        EDDTableMatlabPlotExample  = setup.getString("EDDTableMatlabPlotExample",  EDDTableMatlabPlotExample);
+        EDDTableErddapUrlExample   = getSetupEVString(setup, ev, "EDDTableErddapUrlExample",   EDDTableErddapUrlExample);
+        EDDTableIdExample          = getSetupEVString(setup, ev, "EDDTableIdExample",          EDDTableIdExample);
+        EDDTableVariablesExample   = getSetupEVString(setup, ev, "EDDTableVariablesExample",   EDDTableVariablesExample);
+        EDDTableConstraintsExample = getSetupEVString(setup, ev, "EDDTableConstraintsExample", EDDTableConstraintsExample);
+        EDDTableDataValueExample   = getSetupEVString(setup, ev, "EDDTableDataValueExample",   EDDTableDataValueExample);
+        EDDTableDataTimeExample    = getSetupEVString(setup, ev, "EDDTableDataTimeExample",    EDDTableDataTimeExample);
+        EDDTableGraphExample       = getSetupEVString(setup, ev, "EDDTableGraphExample",       EDDTableGraphExample);
+        EDDTableMapExample         = getSetupEVString(setup, ev, "EDDTableMapExample",         EDDTableMapExample);
+        EDDTableMatlabPlotExample  = getSetupEVString(setup, ev, "EDDTableMatlabPlotExample",  EDDTableMatlabPlotExample);
 
         //variants encoded to be Html Examples
         EDDTableConstraintsExampleHE = XML.encodeAsHTML(EDDTableConstraintsExample);
@@ -2526,11 +2525,11 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
         justGenerateAndViewGraphUrlTooltip = messages.getNotNothingString("justGenerateAndViewGraphUrlTooltip", errorInMethod);
         legal                      = messages.getNotNothingString("legal",                      errorInMethod);
-        legal                      =    setup.getString(          "legal",                      legal); //optionally in setup.xml
+        legal                      =   getSetupEVString(setup, ev,"legal",                      legal); //optionally in setup.xml
         legendTitle1               = messages.getString(          "legendTitle1",               "");
-        legendTitle1               =    setup.getString(          "legendTitle1",               legendTitle1); //optionally in setup.xml
+        legendTitle1               =   getSetupEVString(setup, ev,"legendTitle1",               legendTitle1); //optionally in setup.xml
         legendTitle2               = messages.getString(          "legendTitle2",               "");
-        legendTitle2               =    setup.getString(          "legendTitle2",               legendTitle2); //optionally in setup.xml
+        legendTitle2               =   getSetupEVString(setup, ev,"legendTitle2",               legendTitle2); //optionally in setup.xml
 
         license                    = messages.getNotNothingString("license",                    errorInMethod);
         listAll                    = messages.getNotNothingString("listAll",                    errorInMethod);
@@ -2787,7 +2786,7 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
         queryErrorLastPMInvalid    = messages.getNotNothingString("queryErrorLastPMInvalid",    errorInMethod);
         queryErrorLastPMInteger    = messages.getNotNothingString("queryErrorLastPMInteger",    errorInMethod);        
         questionMarkImageFile      = messages.getNotNothingString("questionMarkImageFile",      errorInMethod);
-        questionMarkImageFile      =    setup.getString(          "questionMarkImageFile",      questionMarkImageFile); //optional
+        questionMarkImageFile      =   getSetupEVString(setup, ev,"questionMarkImageFile",      questionMarkImageFile); //optional
         rangesFromTo               = messages.getNotNothingString("rangesFromTo",               errorInMethod);
         requestFormatExamplesHtml  = messages.getNotNothingString("requestFormatExamplesHtml",  errorInMethod);
         resetTheForm               = messages.getNotNothingString("resetTheForm",               errorInMethod);
@@ -2963,32 +2962,32 @@ wcsActive = false; //setup.getBoolean(         "wcsActive",                  fal
                                              messages.getNotNothingString("DEFAULT_commonStandardNames",errorInMethod)));
                 commonStandardNames        = DEFAULT_commonStandardNames;
         DEFAULT_standardLicense            = messages.getNotNothingString("standardLicense",            errorInMethod);
-                standardLicense            = setup.getString(             "standardLicense",            DEFAULT_standardLicense);
+                standardLicense            = getSetupEVString(setup, ev,  "standardLicense",            DEFAULT_standardLicense);
         DEFAULT_standardContact            = messages.getNotNothingString("standardContact",            errorInMethod);
-                standardContact            = setup.getString(             "standardContact",            DEFAULT_standardContact);
+                standardContact            = getSetupEVString(setup, ev,  "standardContact",            DEFAULT_standardContact);
                 standardContact            = String2.replaceAll(standardContact, "&adminEmail;", SSR.getSafeEmailAddress(adminEmail));
         DEFAULT_standardDataLicenses       = messages.getNotNothingString("standardDataLicenses",       errorInMethod);
-                standardDataLicenses       = setup.getString(             "standardDataLicenses",       DEFAULT_standardDataLicenses);
+                standardDataLicenses       = getSetupEVString(setup, ev,  "standardDataLicenses",       DEFAULT_standardDataLicenses);
         DEFAULT_standardDisclaimerOfExternalLinks=messages.getNotNothingString("standardDisclaimerOfExternalLinks", errorInMethod);
-                standardDisclaimerOfExternalLinks=setup.getString(             "standardDisclaimerOfExternalLinks", DEFAULT_standardDisclaimerOfExternalLinks);
+                standardDisclaimerOfExternalLinks=getSetupEVString(setup, ev,  "standardDisclaimerOfExternalLinks", DEFAULT_standardDisclaimerOfExternalLinks);
         DEFAULT_standardDisclaimerOfEndorsement  =messages.getNotNothingString("standardDisclaimerOfEndorsement",   errorInMethod);
-                standardDisclaimerOfEndorsement  =setup.getString(             "standardDisclaimerOfEndorsement",   DEFAULT_standardDisclaimerOfEndorsement);
+                standardDisclaimerOfEndorsement  =getSetupEVString(setup, ev,  "standardDisclaimerOfEndorsement",   DEFAULT_standardDisclaimerOfEndorsement);
         DEFAULT_standardGeneralDisclaimer  = messages.getNotNothingString("standardGeneralDisclaimer",  errorInMethod);
-                standardGeneralDisclaimer  = setup.getString(             "standardGeneralDisclaimer",  DEFAULT_standardGeneralDisclaimer);
+                standardGeneralDisclaimer  = getSetupEVString(setup, ev,  "standardGeneralDisclaimer",  DEFAULT_standardGeneralDisclaimer);
         DEFAULT_standardPrivacyPolicy      = messages.getNotNothingString("standardPrivacyPolicy",      errorInMethod);
-                standardPrivacyPolicy      = setup.getString(             "standardPrivacyPolicy",      DEFAULT_standardPrivacyPolicy);
+                standardPrivacyPolicy      = getSetupEVString(setup, ev,  "standardPrivacyPolicy",      DEFAULT_standardPrivacyPolicy);
 
         DEFAULT_startHeadHtml              = messages.getNotNothingString("startHeadHtml5",           errorInMethod);
-                startHeadHtml              = setup.getString(             "startHeadHtml5",           DEFAULT_startHeadHtml);
+                startHeadHtml              = getSetupEVString(setup, ev,  "startHeadHtml5",           DEFAULT_startHeadHtml);
         DEFAULT_startBodyHtml              = messages.getNotNothingString("startBodyHtml5",           errorInMethod);
-                startBodyHtml              = setup.getString(             "startBodyHtml5",           DEFAULT_startBodyHtml);
+                startBodyHtml              = getSetupEVString(setup, ev,  "startBodyHtml5",           DEFAULT_startBodyHtml);
         ampLoginInfoPo = startBodyHtml.indexOf(ampLoginInfo); 
         DEFAULT_theShortDescriptionHtml    = messages.getNotNothingString("theShortDescriptionHtml",  errorInMethod);
-                theShortDescriptionHtml    = setup.getString(             "theShortDescriptionHtml",  DEFAULT_theShortDescriptionHtml);
+                theShortDescriptionHtml    = getSetupEVString(setup, ev,  "theShortDescriptionHtml",  DEFAULT_theShortDescriptionHtml);
                 theShortDescriptionHtml    = String2.replaceAll(theShortDescriptionHtml, "[standardShortDescriptionHtml]", standardShortDescriptionHtml);
                 theShortDescriptionHtml    = String2.replaceAll(theShortDescriptionHtml, "&requestFormatExamplesHtml;",    requestFormatExamplesHtml);
         DEFAULT_endBodyHtml                = messages.getNotNothingString("endBodyHtml5",             errorInMethod);
-                endBodyHtml                = setup.getString(             "endBodyHtml5",             DEFAULT_endBodyHtml);
+                endBodyHtml                = getSetupEVString(setup, ev,  "endBodyHtml5",             DEFAULT_endBodyHtml);
                 endBodyHtml                = String2.replaceAll(endBodyHtml, "&erddapVersion;", erddapVersion);
         //ensure HTML5
         Test.ensureTrue(startHeadHtml.startsWith("<!DOCTYPE html>"),
@@ -3163,7 +3162,88 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     }
-  
+
+    /**
+     * This gets a string from setup.xml or environmentalVariables (preferred).
+     * 
+     * @param setup from setup.xml
+     * @param ev from System.getenv()
+     * @param paramName  If present in ev, it will be ERDDAP_paramName.
+     * @param tDefault the default value
+     * @return the desired value (or the default if it isn't defined anywhere)
+     */
+    private static String getSetupEVString(ResourceBundle2 setup, Map<String,String>ev, 
+        String paramName, String tDefault) {
+        String value = ev.get("ERDDAP_" + paramName);
+        if (String2.isSomething(value)) {
+            String2.log("got " + paramName + " from ERDDAP_" + paramName);
+            return value;
+        }
+        return setup.getString(paramName, tDefault);
+    }
+
+    /**
+     * This gets a boolean from setup.xml or environmentalVariables (preferred).
+     * 
+     * @param setup from setup.xml
+     * @param ev from System.getenv()
+     * @param paramName  If present in ev, it will be ERDDAP_paramName.
+     * @param tDefault the default value
+     * @return the desired value (or the default if it isn't defined anywhere)
+     */
+    private static boolean getSetupEVBoolean(ResourceBundle2 setup, Map<String,String>ev, 
+        String paramName, boolean tDefault) {
+        String value = ev.get(paramName);
+        if (value != null) {
+            String2.log("got " + paramName + " from ERDDAP_" + paramName);
+            return String2.parseBoolean(value);
+        }
+        return setup.getBoolean(paramName, tDefault);
+    }
+
+    /**
+     * This gets an int from setup.xml or environmentalVariables (preferred).
+     * 
+     * @param setup from setup.xml
+     * @param ev from System.getenv()
+     * @param paramName  If present in ev, it will be ERDDAP_paramName.
+     * @param tDefault the default value
+     * @return the desired value (or the default if it isn't defined anywhere)
+     */
+    private static int getSetupEVInt(ResourceBundle2 setup, Map<String,String>ev, 
+        String paramName, int tDefault) {
+        String value = ev.get(paramName);
+        if (value != null) {
+            int valuei = String2.parseInt(value);
+            if (valuei < Integer.MAX_VALUE) {
+                String2.log("got " + paramName + " from ERDDAP_" + paramName);
+                return valuei;
+            }
+        }
+        return setup.getInt(paramName, tDefault);
+    }
+
+    /**
+     * This gets a string from setup.xml or environmentalVariables (preferred).
+     * 
+     * @param setup from setup.xml
+     * @param ev from System.getenv()
+     * @param paramName  If present in ev, it will be ERDDAP_paramName.
+     * @param errorInMethod the start of an Error message
+     * @return the desired value
+     * @throws RuntimeException if there is no value for key
+     */
+    private static String getSetupEVNotNothingString(ResourceBundle2 setup, Map<String,String>ev, 
+        String paramName, String errorInMethod) {
+        String value = ev.get("ERDDAP_" + paramName);
+        if (String2.isSomething(value)) {
+            String2.log("got " + paramName + " from ERDDAP_" + paramName);
+            return value;
+        }
+        return setup.getNotNothingString(paramName, errorInMethod);
+    }
+
+
     /** 
      * 'logLevel' determines how many diagnostic messages are sent to the log.txt file.
      * It can be set to "warning" (the fewest messages), "info" (the default), or "all" (the most messages). 
@@ -4865,7 +4945,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @return the .jsonp=[functionName] part of the request (percent encoded) or "".
      *   If not "", it will have "&" at the end.
      *   If the query has a syntax error, this returns "".
-     *   If the !String2.isVariableNameSafe(functionName), this throws a SimpleException.
+     *   If the !String2.isJsonpNameSafe(functionName), this throws a SimpleException.
      */
     public static String passThroughJsonpQuery(HttpServletRequest request) {
         String jsonp = "";

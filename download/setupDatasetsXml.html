@@ -2693,7 +2693,7 @@ currently recommend
         aggregates data from 
         <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">NCCSV</a>
         ASCII .csv files.
-      <li><a rel="help" href="#EDDTableFromNOS">EDDTableFromNOS</a>
+      <li><a rel="help" href="#EDDTableFromNOS">EDDTableFromNOS</a> (DEPRECATED)
         handles tabular data from NOS XML servers.
       <li><a rel="help" href="#EDDTableFromOBIS">EDDTableFromOBIS</a> 
         handles tabular data from OBIS servers.
@@ -2707,7 +2707,7 @@ currently recommend
           >THREDDS OPeNDAP server<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
-      <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> 
+      <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> (DEPRECATED)
         makes a local copy of all of the data from an ArcGIS MapServer WFS server
         so the data can then be re-served quickly to ERDDAP users.
       <li><a rel="help" href="#EDDTableAggregateRows">EDDTableAggregateRows</a>
@@ -4929,12 +4929,18 @@ Cassandra is a NoSQL database.
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>. -->
 <ul>
-<li>As of Aug 2019, for us using Cassandra on Windows 10, Cassandra works well with 
-  64-bit versions of Oracle's Java 8
-  (<a rel="help" href="https://java.com/en/download/manual.jsp">downloads available here<img 
-    src="../images/external.png" alt=" (external link)" 
-    title="This link to an external website does not constitute an endorsement."></a>),
-  but not with AdoptOpenJdk 8 (where it throws an EXCEPTION_ACCESS_VIOLATION). YMMV
+<li>ERDDAP can work with Cassandra v2 and v3 with no changes or differences in setup.
+  We have tested with 
+  <a rel="help" 
+    href="https://cassandra.apache.org/download/">Cassandra v2 and v3 from Apache<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+  It is likely that ERDDAP can also work with Cassandra downloaded from DataStax.
+  <br>&nbsp;
+
+<li>For Aug 2019 - May 2021, we had trouble getting Cassandra to work with AdoptOpenJdk Java v8.
+  It threw an EXCEPTION_ACCESS_VIOLATION). But now (May 2021), that problem is gone: we
+  can successfully use Cassandra v2.1.22 and AdoptOpenJdk jdk8u292-b10. 
   <br>&nbsp;
 
 <li><a class="selfLink" id="CassandraOneTable" href="#CassandraOneTable" rel="bookmark">One Table</a> -- 
@@ -6828,7 +6834,7 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
     >THREDDS OPeNDAP server<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
-  <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> 
+  <li><a rel="help" href="#EDDTableFromWFSFiles">EDDTableFromWFSFiles</a> (DEPRECATED)
     makes a local copy of all of the data from an ArcGIS MapServer WFS server
     so the data can then be re-served quickly to ERDDAP users.
   </ul>
@@ -9717,7 +9723,7 @@ variables:
   </ul>
 
 
-<p><a class="selfLink" id="EDDTableFromNOS" href="#EDDTableFromNOS" rel="bookmark"><strong>EDDTableFromNOS</strong></a> handles data from a NOAA 
+<p><a class="selfLink" id="EDDTableFromNOS" href="#EDDTableFromNOS" rel="bookmark"><strong>EDDTableFromNOS</strong></a> (DEPRECATED) handles data from a NOAA 
 <a rel="help" href="https://opendap.co-ops.nos.noaa.gov/axis/">NOS<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> source,
@@ -9992,7 +9998,7 @@ Sensor Observation Service
 
 
 <p><a class="selfLink" id="EDDTableFromWFSFiles" href="#EDDTableFromWFSFiles" rel="bookmark"><strong>EDDTableFromWFSFiles</strong></a> 
-  makes a local copy of all of the data from an ArcGIS MapServer WFS server
+   (DEPRECATED) makes a local copy of all of the data from an ArcGIS MapServer WFS server
   so the data can then be re-served quickly to ERDDAP users.
 <ul>
 <li>You need to specify a specially formatted <kbd>sourceUrl</kbd> global attribute to tell
@@ -11782,8 +11788,10 @@ while processing each request.
       your custom palette options on the ERDDAP Make A Graph web pages, but
       if the user tries to use them, they'll get a graph with the default (usually Rainbow)
       palette. This is because the image is made by the remote ERDDAP which 
-      doesn't have the custom palette. The only solution now is to ask the
-      remote ERDDAP administrator to add your custom palettes to his/her ERDDAP.
+      doesn't have the custom palette. The only solutions now are to 
+      email the remote ERDDAP administrator to add your custom palettes to his/her ERDDAP
+      or email Bob.Simons at noaa.gov to ask that the palettes be added to the standard
+      ERDDAP distribution.
 
 
 <li><a class="selfLink" id="onChange" href="#onChange" rel="bookmark"><kbd><strong>&lt;onChange&gt;</strong></kbd></a>

@@ -4,65 +4,52 @@
  * 
  * <p>Original 2013(?): Working with C*: 
  * http://www.datastax.com/documentation/cassandra/2.0/cassandra/gettingStartedCassandraIntro.html
- * and
+ * and later
  * http://www.datastax.com/documentation/cql/3.1/cql/cql_using/start_cql_win_t.html
- * Bob's C* bin dir: cd "C:\Program Files\DataStax Community\apache-cassandra\bin"
- * Startup cqlsh: cqlsh          
- * For Bob, Cassandra is at localhost:9160
+ * 2021-05-24 When I entered data into new 2.1.22 installation, I had trouble and
+ *   accidentally changed some text values from "ascii#" to just the "#".
+ *   Also, I had trouble entering mv/NaN for some int columns so I used -99.
 
-INSTALL CASSANDRA on Lenovo in 2018:
-* get Cassandra from https://cassandra.apache.org/
+INSTALL CASSANDRA on Lenovo in 2021:
+* get Cassandra from https://cassandra.apache.org/download/
+  2021-05-21 got 2.1.22 from https://cassandra.apache.org/download/ because that's what ONC uses/recommends
+    decompressed into \programs\apache-cassandra-2.1.22    
   2019-05-15: got 3.11.4 (released 2019-02-11)
     decompressed into \programs\apache-cassandra-3.11.4      
   2018: downloaded apache-cassandra-3.11.3-bin.tar.gz
     decompressed into \programs\apache-cassandra-3.11.3
+* Run Cassandra 
+    cd \programs\apache-cassandra-2.1.22\bin\
+    cassandra.bat -f
+  For Bob, Cassandra is at localhost:9160
 * Make a snapshot of Dell M4700 data: 
-  cd c:\Program Files\DataStax-DDC\apache-cassandra...\bin\
+  cd \programs\apache-cassandra-2.1.22\bin\
   run: cqlsh.bat
     DESCRIBE KEYSPACE bobKeyspace          //copy and paste that into text document
-    COPY bobkeyspace.statictest TO 'c:\backup\cassandra_statictest.txt';
-    COPY bobkeyspace.bobtable TO 'c:\backup\cassandra_bobtable.txt';
+    COPY bobkeyspace.statictest TO '/erddapTest/cassandra/cassandra_statictest2021.txt';
+    COPY bobkeyspace.bobtable TO '/erddapTest/cassandra/cassandra_bobtable2021.txt';
+  If you screw up data entry and want to start over, you can delete all rows via e.g.
+    TRUNCATE bobkeyspace.bobtable;
+* See http://wiki.apache.org/cassandra/GettingStarted
 * Recreate the keyspace and data
   cd C:\programs\apache-cassandra-3.11.8\bin
     was cd c:\Program Files\DataStax-DDC\apache-cassandra\bin\
-  run: cqlsh.bat
-    1) copy and paste c:\backup\cassandra_bobKeyspace.txt into shell
-    2) COPY bobkeyspace.statictest FROM 'c:\backup\cassandra_statictest.txt';
-    3) COPY bobkeyspace.bobtable FROM 'c:\backup\cassandra_bobtable.txt';
+  run: cqlsh.bat, then 
+    1) copy and paste /erddapTest/cassandra/cassandra_bobKeyspace.txt into shell
+    2) copy and paste /erddapTest/cassandra/cassandra_statictest.txt
+    3) copy and paste /erddapTest/cassandra/cassandra_bobtable.txt
 
-RUN CASSANDRA on Lenovo in 2020:
-* Start it up: cd \programs\apache-cassandra-3.11.4\bin
+RUN CASSANDRA on Lenovo in 2021:
+* Start it up: cd \programs\apache-cassandra-2.1.22\bin
   For Java version changes: change JAVA_HOME in cassandra.bat, e.g., 
-    set "JAVA_HOME=C:\programs\jdk8u242-b08_KeepForCassandra\"
+    set JAVA_HOME=C:\programs\jdk8u295-b10
   type: cassandra.bat -f
 * Shut it down: ^C
   There is still something running in the background. Restart computer?
-* CQL Shell (3.4.0): same directory, run or double click on cqlsh.bat
+* CQL Shell (2.1.22): same directory, run or double click on cqlsh.bat
 (It requires Python 2, so I installed it 
-  and changed 2 instances of "python" in cqlsh.bat to "C:\Python2710\python".)
+  and changed 2 instances of "python" in cqlsh.bat to "/Python27/python".)
 
-UPDATE CASSANDRA on DELL M4700:
-2016:
-* http://cassandra.apache.org/download/
-  2016 update: I got apache-cassandra-3.3-bin.tar.gz 
-  decompressed it
-  and moved the contents (bin, conf, ...)
-  into /Program Files/DataStax-DDC/apache-cassandra/  (previous location)
-    after deleting the previous contents 
-    (FUTURE: leave /data and see instructructions to update)
-  So it isn't a Windows installed program with registry keys. It's just a bunch of files.
-* http://wiki.apache.org/cassandra/GettingStarted
-
-RUN CASSANDRA on DELL M4700:
-2016:
-* Start it up: cd /Program Files/DataStax-DDC/apache-cassandra/bin
-  type: cassandra.bat -f
-  For Java version changes: change JAVA_HOME in cassandra.bat
-* Shut it down: ^C
-  There is still something running in the background. Restart computer?
-* CQL Shell (3.4.0): same directory, run or double click on cqlsh.bat
-(It requires Python 2, so I installed it 
-  and changed "python" in cqlsh.bat to "C:\Python2710\python".)
 
 TEST TABLES:
 2016: 
@@ -1964,9 +1951,10 @@ public class EDDTableFromCassandra extends EDDTable{
     /**
      * This tests generateDatasetsXml.
      * 
+     * @param version to identify Cassandra v2 or v3
      * @throws Throwable if trouble
      */
-    public static void testGenerateDatasetsXml() throws Throwable {
+    public static void testGenerateDatasetsXml(int version) throws Throwable {
 
         String2.log("\n*** EDDTableFromCassandra.testGenerateDatasetsXml");
         testVerboseOn();
@@ -1984,11 +1972,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
         try {
         //get the list of keyspaces
-//Cassandra not running?
-//As of 2016-04-06, I start Cassandra manually and leave it running in foreground:
-//Start it up: cd /Program Files/DataStax-DDC/apache-cassandra/bin
-//  type: cassandra.bat -f
-//Shut it down: ^C
+//Cassandra not running? see directions up top of this file
         results = generateDatasetsXml(url, props, LIST, "", 
             tReloadEveryNMinutes, tInfoUrl, tInstitution, 
             tSummary, tTitle, new Attributes());
@@ -1996,9 +1980,10 @@ expected =
 "CREATE KEYSPACE bobkeyspace WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE system_traces WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '2' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE system WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.LocalStrategy' } AND DURABLE_WRITES = true;\n" +
+(version== 2? "" : 
 "CREATE KEYSPACE system_distributed WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '3' } AND DURABLE_WRITES = true;\n" +
 "CREATE KEYSPACE system_schema WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.LocalStrategy' } AND DURABLE_WRITES = true;\n" +
-"CREATE KEYSPACE system_auth WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1' } AND DURABLE_WRITES = true;\n";
+"CREATE KEYSPACE system_auth WITH REPLICATION = { 'class' : 'org.apache.cassandra.locator.SimpleStrategy', 'replication_factor': '1' } AND DURABLE_WRITES = true;\n");
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get the metadata for all tables in a keyspace
@@ -2038,14 +2023,19 @@ expected =
 "    AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
 "    AND comment = ''\n" +
 "    AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
-"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+(version == 2? 
+"    AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" :
+"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n") +
 "    AND default_time_to_live = 0\n" +
-"    AND speculative_retry = '99PERCENTILE'\n" +
+(version == 2? 
+"    AND speculative_retry = '99.0PERCENTILE'\n" :
+"    AND speculative_retry = '99PERCENTILE'\n") +
 "    AND min_index_interval = 128\n" +
 "    AND max_index_interval = 2048\n" +
+(version == 2? "" : 
 "    AND crc_check_chance = 1.0\n" + 
-"    AND cdc = false\n" +                      //added this 2018-08-10 with move to Lenovo
-"    AND memtable_flush_period_in_ms = 0;\n" + //added this 2018-08-30 with move to Lenovo
+"    AND cdc = false\n") +                      
+"    AND memtable_flush_period_in_ms = 0;\n" + 
 "\n" +
 "CREATE INDEX ctext_index ON bobkeyspace.bobtable (ctext);\n" +
 "\n" +
@@ -2067,14 +2057,19 @@ expected =
 "    AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }\n" +
 "    AND comment = ''\n" +
 "    AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold' : 32, 'min_threshold' : 4 }\n" +
-"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" +
+(version == 2? 
+"    AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n" : 
+"    AND compression = { 'chunk_length_in_kb' : 64, 'class' : 'org.apache.cassandra.io.compress.LZ4Compressor' }\n") +
 "    AND default_time_to_live = 0\n" +
-"    AND speculative_retry = '99PERCENTILE'\n" +
+(version == 2? 
+"    AND speculative_retry = '99.0PERCENTILE'\n" :
+"    AND speculative_retry = '99PERCENTILE'\n") +
 "    AND min_index_interval = 128\n" +
 "    AND max_index_interval = 2048\n" +
+(version == 2? "" : 
 "    AND crc_check_chance = 1.0\n" +
-"    AND cdc = false\n" +                     //added this 2018-08-10 with move to Lenovo 
-"    AND memtable_flush_period_in_ms = 0;\n"; //added this 2018-08-30 with move to Lenovo 
+"    AND cdc = false\n") +                    
+"    AND memtable_flush_period_in_ms = 0;\n"; 
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //generate the datasets.xml for one table
@@ -2110,7 +2105,7 @@ expected =
 "        <att name=\"keywords\">bob, bobtable, canada, cascii, cassandra, cboolean, cbyte, cdecimal, cdouble, cfloat, cint, clong, cmap, cset, cshort, ctext, currents, cvarchar, data, date, depth, deviceid, networks, ocean, sampletime, test, time, title, u, v, velocity, vertical, w</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, time</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">The Title for Bob&#39;s Cassandra Test Data (bobTable)</att>\n" +
@@ -2122,6 +2117,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Deviceid</att>\n" +
 "        </addAttributes>\n" +
@@ -2171,6 +2167,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cboolean</att>\n" +
 "        </addAttributes>\n" +
@@ -2182,6 +2179,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cbyte</att>\n" +
 "        </addAttributes>\n" +
@@ -2226,6 +2224,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cint</att>\n" +
 "        </addAttributes>\n" +
@@ -2237,6 +2236,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Clong</att>\n" +
 "        </addAttributes>\n" +
@@ -2270,6 +2270,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Cshort</att>\n" +
 "        </addAttributes>\n" +
@@ -2385,7 +2386,7 @@ expected =
 "        <att name=\"keywords\">canada, cassandra, data, date, depth, deviceid, latitude, longitude, networks, ocean, sampletime, static, test, time, u, v</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
-"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v55</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, time, latitude, longitude</att>\n" +
 "        <att name=\"summary\">The summary for Bob&#39;s great Cassandra test data.</att>\n" +
 "        <att name=\"title\">Cassandra Static Test</att>\n" +
@@ -2397,6 +2398,7 @@ expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">Deviceid</att>\n" +
 "        </addAttributes>\n" +
@@ -2570,6 +2572,7 @@ expected =
 "Attributes {\n" +
 " s {\n" +
 "  deviceid {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    Int32 actual_range 1001, 1009;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Deviceid\";\n" +
@@ -2592,10 +2595,13 @@ expected =
 "    String long_name \"Cascii\";\n" +
 "  }\n" +
 "  cboolean {\n" +
+"    Byte _FillValue 127;\n" +
+"    String _Unsigned \"false\";\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Cboolean\";\n" +
 "  }\n" +
 "  cbyte {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Cbyte\";\n" +
 "  }\n" +
@@ -2612,10 +2618,12 @@ expected =
 "    String long_name \"Cfloat\";\n" +
 "  }\n" +
 "  cint {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Cint\";\n" +
 "  }\n" +
 "  clong {\n" +
+"    Float64 _FillValue 9223372036854775807;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Clong\";\n" +
 "  }\n" +
@@ -2628,6 +2636,7 @@ expected =
 "    String long_name \"Cset\";\n" +
 "  }\n" +
 "  cshort {\n" +
+"    Int32 _FillValue 2147483647;\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Cshort\";\n" +
 "  }\n" +
@@ -2690,7 +2699,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -2707,30 +2716,29 @@ expected =
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
-",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,10.2,-2.11,-2.12,-2.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,2.11,2.12,2.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,10.3,-3.11,-3.12,-3.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,20.3,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,30.3,3.11,3.12,3.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-//2018-08-10 disappeared with move to Lenovo:
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,10.7,-7.11,-7.12,-7.13\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,20.7,0.0,NaN,0.0\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,30.7,7.11,7.12,7.13\n" +
-"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,cvarchar8,10.8,-8.11,-8.12,-8.13\n" +
-"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,cvarchar8,20.8,0.0,NaN,0.0\n" +
-"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,cvarchar8,30.8,8.11,8.12,8.13\n" +
-"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +  
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,10.1,-0.11,-0.12,-0.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,20.1,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,30.1,0.11,0.12,0.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,10.2,-2.11,-2.12,-2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,30.2,2.11,2.12,2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,10.3,-3.11,-3.12,-3.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,20.3,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,30.3,3.11,3.12,3.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,10.1,-0.11,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,20.1,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,30.1,0.11,0.12,0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,-99.0,0.11,0.12,-99.0\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,10.7,-7.11,-7.12,-7.13\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,20.7,0.0,NaN,0.0\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,30.7,7.11,7.12,7.13\n" +
+"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,varchar8,10.8,-8.11,-8.12,-8.13\n" +
+"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,varchar8,20.8,0.0,NaN,0.0\n" +
+"1008,2014-11-08T00:00:00Z,2014-11-08T01:02:03Z,ascii8,0,8,8.00001,8.001,8.1,8000000,8000000000000,\"{map81=8.1, map82=8.2, map83=8.3, map84=8.4}\",\"[set81, set82, set83, set84, set85]\",8000,text8,varchar8,30.8,8.11,8.12,8.13\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,-99,NaN,NaN,NaN,-99,-99,,,-99,,,NaN,NaN,NaN,NaN\n"; 
 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
@@ -2748,9 +2756,8 @@ expected =
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\"\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n"; 
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
+"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2766,9 +2773,8 @@ expected =
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
+"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2822,8 +2828,7 @@ expected =
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,\n" +
+"1001,\n" +
 "1001,ascii1\n" +
 "1001,ascii2\n" +
 "1001,ascii3\n"; 
@@ -2842,8 +2847,7 @@ expected =
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\n" +
+"1001,2014-11-02T02:02:03Z,\n" +
 "1001,2014-11-01T01:02:03Z,ascii1\n" +
 "1001,2014-11-02T01:02:03Z,ascii1\n" +
 "1001,2014-11-01T02:02:03Z,ascii2\n" +
@@ -2893,19 +2897,18 @@ expected =
                     "query=" + query + "\n" +
                     "Paused to allow you to check the stats."); 
 
-            //subset cint=NaN
-            query = "&cint=NaN";
+            //subset cint=-99
+            query = "&cint=-99";
             tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "_intNaN", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
-"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,-99.0,0.11,0.12,-99.0\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,-99,NaN,NaN,NaN,-99,-99,,,-99,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2920,11 +2923,10 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
-"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,-99.0,0.11,0.12,-99.0\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,-99,NaN,NaN,NaN,-99,-99,,,-99,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2939,7 +2941,7 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,-99,NaN,NaN,NaN,-99,-99,,,-99,,,NaN,NaN,NaN,NaN\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -2948,21 +2950,20 @@ expected =
 
             //subset cboolean=1     
             query = "&cboolean=1";
-//            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
-//                tedd.className() + "_boolean1", ".csv"); 
-//            results = String2.directReadFrom88591File(dir + tName);
-//            expected =  
-//2018-08-10 disappeared with move to Lenovo
-//"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
-//",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
-//            Test.ensureEqual(results, expected, "\nresults=\n" + results);
-//            if (pauseBetweenTests)
-//                String2.pressEnterToContinue(
-//                    "\nTest query=" + query + "\n" +
-//                    "Paused to allow you to check the stats."); 
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_boolean1", ".csv"); 
+            results = String2.directReadFrom88591File(dir + tName);
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,-99.0,0.11,0.12,-99.0\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.pressEnterToContinue(
+                    "\nTest query=" + query + "\n" +
+                    "Paused to allow you to check the stats."); 
 
             //subset regex on set
             query = "&cset=~\".*set73.*\"";
@@ -2972,9 +2973,9 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,10.7,-7.11,-7.12,-7.13\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,20.7,0.0,NaN,0.0\n" +
-"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,30.7,7.11,7.12,7.13\n"; 
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,10.7,-7.11,-7.12,-7.13\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,20.7,0.0,NaN,0.0\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,varchar7,30.7,7.11,7.12,7.13\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3136,9 +3137,8 @@ expected =
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,ascii3\n" +
-"1001,2014-11-02T01:02:03Z,ascii1\n";
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\n"; 
+"1001,2014-11-02T01:02:03Z,ascii1\n" +
+"1001,2014-11-02T02:02:03Z,\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3242,6 +3242,7 @@ expected =
 "    String long_name \"Cascii\";\n" +
 "  }\n" +
 "  cboolean {\n" +
+"    String _Unsigned \"false\";\n" +
 "    String ioos_category \"Unknown\";\n" +
 "    String long_name \"Cboolean\";\n" +
 "  }\n" +
@@ -3340,7 +3341,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Bob's Cassandra Test Data\";\n" +
@@ -3358,22 +3359,21 @@ expected =
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,10.2,-2.11,-2.12,-2.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,20.2,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,cvarchar2,30.2,2.11,2.12,2.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,10.3,-3.11,-3.12,-3.13\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,20.3,0.0,0.0,0.0\n" +
-"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,cvarchar3,30.3,3.11,3.12,3.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,10.1,-0.11,-0.12,-0.13\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,20.1,0.0,0.0,0.0\n" +
-"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,cvarchar1,30.1,0.11,0.12,0.13\n";
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-99.0,-0.12,-0.13\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,0.0,0.0,0.0\n" +
-//"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,10.1,-0.11,-0.12,-0.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,20.1,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,30.1,0.11,0.12,0.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,10.2,-2.11,-2.12,-2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T02:02:03Z,ascii2,0,2,2.00001,2.001,2.1,2000000,2000000000000,\"{map21=2.1, map22=2.2, map23=2.3, map24=2.4}\",\"[set21, set22, set23, set24, set25]\",2000,text2,varchar2,30.2,2.11,2.12,2.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,10.3,-3.11,-3.12,-3.13\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,20.3,0.0,0.0,0.0\n" +
+"1001,2014-11-01T00:00:00Z,2014-11-01T03:02:03Z,ascii3,0,3,3.00001,3.001,3.1,3000000,3000000000000,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\",\"[set31, set32, set33, set34, set35]\",3000,text3,varchar3,30.3,3.11,3.12,3.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,10.1,-0.11,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,20.1,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T01:02:03Z,ascii1,0,1,1.00001,1.001,1.1,1000000,1000000000000,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\",\"[set11, set12, set13, set14, set15]\",1000,text1,varchar1,30.1,0.11,0.12,0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,10.2,-99.0,-0.12,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,20.2,0.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,-99,NaN,NaN,NaN,-99,-99,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",-99,,,-99.0,0.11,0.12,-99.0\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3390,9 +3390,8 @@ expected =
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
 "1001,2014-11-01T03:02:03Z,\"{map31=3.1, map32=3.2, map33=3.3, map34=3.4}\"\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
+"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3408,9 +3407,8 @@ expected =
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
-"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n";
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
+"1001,2014-11-02T01:02:03Z,\"{map11=1.1, map12=1.2, map13=1.3, map14=1.4}\"\n" +
+"1001,2014-11-02T02:02:03Z,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\"\n"; 
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             if (pauseBetweenTests)
                 String2.pressEnterToContinue(
@@ -3426,8 +3424,7 @@ expected =
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,\n" +
+"1001,\n" +
 "1001,ascii1\n" +
 "1001,ascii2\n" +
 "1001,ascii3\n"; 
@@ -3446,8 +3443,7 @@ expected =
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
-//2018-08-10 disappeared with move to Lenovo
-//"1001,2014-11-02T02:02:03Z,\n" +
+"1001,2014-11-02T02:02:03Z,\n" +
 "1001,2014-11-01T01:02:03Z,ascii1\n" +
 "1001,2014-11-02T01:02:03Z,ascii1\n" +
 "1001,2014-11-01T02:02:03Z,ascii2\n" +
@@ -3703,7 +3699,7 @@ expected =
 "    Float64 Northernmost_Northing 34.0;\n" +
 "    String sourceUrl \"(Cassandra)\";\n" +
 "    Float64 Southernmost_Northing 33.0;\n" +
-"    String standard_name_vocabulary \"CF Standard Name Table v55\";\n" +
+"    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String subsetVariables \"deviceid, date, latitude, longitude\";\n" +
 "    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Cassandra Static Test\";\n" +
@@ -3838,8 +3834,8 @@ expected =
                     //if (test ==  0) ...;
 
                 } else {
-                    if (test ==  0) testGenerateDatasetsXml();
-                    if (test ==  1) testBasic(false); //pauseBetweenTests
+                    if (test ==  0) testGenerateDatasetsXml(2); //version
+                    if (test ==  1) testBasic(false); //version, pauseBetweenTests
                     if (test ==  2) testMaxRequestFraction(false);  //pauseBetweenTests
                     if (test ==  3) testCass1Device(false); //pauseBetweenTests
                     if (test ==  4) testStatic(false); //pauseBetweenTests
