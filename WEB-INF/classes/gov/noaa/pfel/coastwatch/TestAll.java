@@ -124,7 +124,7 @@ public class TestAll  {
 //      String tFileName = "/data/kevin/NetCDF_Example_blue sharks_Level1.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"testGridFromErddap", "-verbose"});
+//      DasDds.main(new String[]{"test_erdVHNchlamday_Lon0360", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
 //        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -1056,7 +1056,8 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-/* for releases, this line should have open/close comment 
+
+/* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
 
         //*** All of the unit tests for CWBrowsers and ERDDAP. 
@@ -1180,6 +1181,7 @@ WaitThenTryAgainException wttae;
         EDDGridCopy.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridSideBySide.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //the best grid graphics tests are here
         EDDGridLonPM180.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
+        EDDGridLon0360.test(             errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll

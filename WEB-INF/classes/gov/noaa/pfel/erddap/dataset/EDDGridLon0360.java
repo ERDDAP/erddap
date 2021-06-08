@@ -1,5 +1,5 @@
 /* 
- * EDDGridLonPM180 Copyright 2015, NOAA.
+ * EDDGridLon0360 Copyright 2021, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -34,13 +34,13 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 
 /** 
- * This class creates an EDDGrid with longitude values in the range -180 to 180
+ * This class creates an EDDGrid with longitude values in the range 0 to 360
  * from the enclosed dataset with ascending longitude values, at least some
- * of which are &gt; 180.
+ * of which are &lt; 0.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2015-08-05
+ * @author Bob Simons (bob.simons@noaa.gov) 2021-05-28
  */
-public class EDDGridLonPM180 extends EDDGrid { 
+public class EDDGridLon0360 extends EDDGrid { 
 
     private EDDGrid childDataset;
     //If childDataset is a fromErddap dataset from this ERDDAP, 
@@ -49,32 +49,32 @@ public class EDDGridLonPM180 extends EDDGrid {
     private Erddap erddap; 
     private String localChildDatasetID;
 
-    private int sloni0, sloni179, sloni180, sloni359; //source lon indices
+    private int slonim180, slonim1, sloni0, sloni179; //source lon indices
     //corresponding destination lon indices, after the 2 parts are reordered
     //i.e., where are sloni in the destination lon array?
     //If dloni0/179 are -1, there are no values in that range in this dataset.
-    private int dloni0, dloni179, dloni180, dloni359;
+    private int dlonim180, dlonim1, dloni0, dloni179;
 
-    //dInsert359/0 are used if there is a big gap between lon359 and lon0 (e.g., 300/-120...120)
+    //dInsert179/180 are used if there is a big gap between lon179 and lon180 (e.g., 120...-120(->240))
     //!!! Need to insert lots of missing values (at average spacing)
     //!!! so if user requests stride >1, user will always get a reasonable set of lon values
     //!!! and an appropriate string of missing values in the lon gap.
     //If the 'i'ndex values are -1, the system is not active for this dataset.
-    private int insert359i = -1, insert0i = -1; 
+    private int insert179i = -1, insert180i = -1; 
 
     /**
-     * This constructs an EDDGridLonPM180 based on the information in an .xml file.
+     * This constructs an EDDGridLon0360 based on the information in an .xml file.
      * 
      * @param erddap if known in this context, else null
-     * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridLonPM180"&gt; 
+     * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridLon0360"&gt; 
      *    having just been read.  
-     * @return an EDDGridLonPM180.
+     * @return an EDDGridLon0360.
      *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
      * @throws Throwable if trouble
      */
-    public static EDDGridLonPM180 fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
+    public static EDDGridLon0360 fromXml(Erddap erddap, SimpleXMLReader xmlReader) throws Throwable {
 
-        if (verbose) String2.log("\n*** constructing EDDGridLonPM180(xmlReader)...");
+        if (verbose) String2.log("\n*** constructing EDDGridLon0360(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
 
         //data to be obtained while reading xml
@@ -126,12 +126,12 @@ public class EDDGridLonPM180 extends EDDGrid {
                         } else {
                             throw new RuntimeException("Datasets.xml error: " +
                                 "The dataset defined in an " +
-                                "EDDGridLonPM180 must be a subclass of EDDGrid.");
+                                "EDDGridLon0360 must be a subclass of EDDGrid.");
                         }
                     } else {
                         throw new RuntimeException("Datasets.xml error: " +
                             "There can be only one <dataset> defined within an " +
-                            "EDDGridLonPM180 <dataset>.");
+                            "EDDGridLon0360 <dataset>.");
                     }
                 }
 
@@ -167,7 +167,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         }
 
         //make the main dataset based on the information gathered
-        return new EDDGridLonPM180(erddap, tDatasetID, 
+        return new EDDGridLon0360(erddap, tDatasetID, 
             tAccessibleTo, tGraphsAccessibleTo, tAccessibleViaWMS, tAccessibleViaFiles,
             tOnChange, tFgdcFile, tIso19115File, tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes, tUpdateEveryNMillis,
@@ -196,7 +196,7 @@ public class EDDGridLonPM180 extends EDDGrid {
      * @param tChildDataset
      * @throws Throwable if trouble
      */
-    public EDDGridLonPM180(Erddap tErddap, String tDatasetID, 
+    public EDDGridLon0360(Erddap tErddap, String tDatasetID, 
         String tAccessibleTo, String tGraphsAccessibleTo, 
         boolean tAccessibleViaWMS, boolean tAccessibleViaFiles,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
@@ -205,13 +205,13 @@ public class EDDGridLonPM180 extends EDDGrid {
         EDDGrid oChildDataset, int tnThreads, boolean tDimensionValuesInMemory) throws Throwable {
 
         if (verbose) String2.log(
-            "\n*** constructing EDDGridLonPM180 " + tDatasetID); 
+            "\n*** constructing EDDGridLon0360 " + tDatasetID); 
         long constructionStartMillis = System.currentTimeMillis();
-        String errorInMethod = "Error in EDDGridLonPM180(" + 
+        String errorInMethod = "Error in EDDGridLon0360(" + 
             tDatasetID + ") constructor:\n";
             
         //save some of the parameters
-        className = "EDDGridLonPM180"; 
+        className = "EDDGridLon0360"; 
         datasetID = tDatasetID;
         Test.ensureFileNameSafe(datasetID, "datasetID");
         setAccessibleTo(tAccessibleTo);
@@ -280,7 +280,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         addGlobalAttributes      = (Attributes)tChildDataset.addGlobalAttributes().clone();
         combinedGlobalAttributes = (Attributes)tChildDataset.combinedGlobalAttributes().clone();
         combinedGlobalAttributes.set("title", 
-             combinedGlobalAttributes.getString("title") + ", Lon+/-180");
+             combinedGlobalAttributes.getString("title") + ", Lon0360");
 
         //make/copy the local axisVariables
         int nAv = tChildDataset.axisVariables.length;
@@ -311,75 +311,86 @@ public class EDDGridLonPM180 extends EDDGrid {
         if (!childLon.isAscending())
             throw new RuntimeException(errorInMethod + 
                 "The child longitude axis has descending values!");
-        if (childLon.destinationMaxDouble() <= 180)
+        if (childLon.destinationMinDouble() >= 0)
             throw new RuntimeException(errorInMethod + 
-                "The child longitude axis has no values >180 (max=" + 
-                childLon.destinationMaxDouble() + ")!");
+                "The child longitude axis has no values <0 (min=" + 
+                childLon.destinationMinDouble() + ")!");
         PrimitiveArray childLonValues = childLon.destinationValues();
         int nChildLonValues = childLonValues.size();
 
-// old:           || sloni0, sloni179 || sloni180,  sloni359           ||
-// old: [ignored] ||      0,  90, 179 ||      180, 270,  359           || [ignored]
-// new:                                      -180, -90,   -1 insert359 || insert0,  0, 90, 179 
+// source            slonim180,  slonim1  ||   sloni0,   sloni179  ||
+// old: [ignored] ||      -180,       -1  ||        0, 90,    179  || [ignored]
+// new:                   -180, -90,  -1  ||        0, 90,    179 
+// dest:                                       dloni0,   dloni179  || dlonim180  dlonim1
         //all of the searches use EXACT math 
         PAOne clvPAOne = new PAOne(childLonValues);
-        if (childLon.destinationMinDouble() < 180) {
-            sloni0   = childLonValues.binaryFindFirstGE(0,     nChildLonValues - 1, clvPAOne.setDouble(  0)); //first index >=0
-            sloni179 = childLonValues.binaryFindLastLE(sloni0, nChildLonValues - 1, clvPAOne.setDouble(180)); //last index <180
-            if (childLonValues.getDouble(sloni179) == 180)
-                sloni179--;
+
+        if (childLonValues.getDouble(0) >= 0 )
+            throw new RuntimeException(errorInMethod + 
+                "The child dataset is not suitable for EDDGridLon0360, because the longitude axis has no values <0 (min=" + 
+                childLonValues.getDouble(0) + "!");
+        slonim180 = childLonValues.binaryFindFirstGE(0,        nChildLonValues - 1, clvPAOne.setDouble(-180)); //first index >=-180
+        slonim1   = childLonValues.binaryFindLastLE(slonim180, nChildLonValues - 1, clvPAOne.setDouble(0));    //last index <=0
+
+        if (childLonValues.getDouble(nChildLonValues - 1) > 0) {
+            sloni0   = childLonValues.binaryFindFirstGE(slonim1, nChildLonValues - 1, clvPAOne.setDouble(  0)); //first index >=0
+            sloni179 = childLonValues.binaryFindLastLE( sloni0,  nChildLonValues - 1, clvPAOne.setDouble(180)); //last index <=180
         } else {
-            sloni0   = -1; //no values <180
+            sloni0   = -1; //no values >=0
             sloni179 = -1;
         }        
-        sloni180 = sloni179 + 1;  //first index >=180
-        if (childLonValues.getDouble(sloni180) > 360)
-            throw new RuntimeException(errorInMethod + 
-                "There are no child longitude values in the range 180 to 360!");
-        sloni359 = childLonValues.binaryFindLastLE(sloni180, nChildLonValues - 1, clvPAOne.setDouble(360)); //last index <=360
-        if (childLonValues.getDouble(sloni359) == 360 && //there is a value=360
-            sloni359 > sloni180 &&  //and it isn't the only value in the range 180 to 360...
-            sloni0 >= 0 &&                         //and if there is a sloni0
-            childLonValues.getDouble(sloni0) == 0) //with value == 0
-            sloni359--;  //360 is a duplicate of 0, so ignore it        
-        PrimitiveArray newLonValues = childLonValues.subset(sloni180, 1, sloni359); //always a new backing array
-        newLonValues.addOffsetScale(-360, 1);  //180 ... 359 -> -180 ... -1
+        //if [slonim1]=[sloni0]=0, then slonim1--, so dataset has [0]=0 (rather than [n-1]=360)
+        if (slonim1 == sloni0) 
+            slonim1--;
+        if (childLonValues.getDouble(slonim180) == -180 && //there is a value=-180
+            sloni179 >= 0 &&                               //and if there is a sloni179
+            childLonValues.getDouble(sloni179) == 180)     //with value == 180
+            sloni179--;  //-180 is a duplicate of 180, so ignore it        
+
+        //start making newLonValues
+        PrimitiveArray newLonValues = sloni0 == -1? 
+            childLonValues.subset(0, 1, -1) : //size=0           
+            childLonValues.subset(sloni0, 1, sloni179); //always a new backing array
 
         //set dloni: where are sloni after source values are rearranged to dest values
-        dloni180 = 0;
-        dloni359 = sloni359 - sloni180;
+        dloni0   = sloni0 == -1? -1 : 0;
+        dloni179 = sloni0 == -1? -1 : sloni179 - sloni0;
 
         if (sloni0 >= 0) {
             //create dInsert if there's a big gap
             double spacing = childLon.averageSpacing(); //avg is more reliable than any single value
-            double lon359 = newLonValues.getDouble(newLonValues.size() - 1);
-            double lon0   = childLonValues.getDouble(0);
+            double lon179 = newLonValues.getDouble(newLonValues.size() - 1);
+            double lon180 = childLonValues.getDouble(0);
             //e.g., gap of 2.1*spacing --floor--> 2 -> insert 1 value
-            int insertN = Math2.roundToInt(Math.floor((lon0 - lon359) / spacing)) - 1;
+            int insertN = Math2.roundToInt(Math.floor((lon180 - lon179) / spacing)) - 1;
             if (insertN >= 1) {  //enough space to insert 1+ regularly spaced lon values
 
-                insert359i = newLonValues.size();
+                throw new RuntimeException(
+                    "This dataset needs to have missing values inserted near lon=180, but the code to do that is untested.\n" +
+                    "Please email a sample file from this dataset to bob.simons@noaa.gov so he run the tests.");
+
+                /* 
+                insert179i = newLonValues.size();
                 for (int i = 1; i <= insertN; i++) {
-                    double td = Math2.niceDouble(lon359 + i * spacing, 12);
-                    if (Math.abs(td) < 1e-8)  //be extra careful to catch 0
-                        td = 0;
+                    double td = Math2.niceDouble(lon179 + i * spacing, 12);
+                    if (Math.abs(180 - td) < 1e-8)  //be extra careful to catch 180
+                        td = 180;
                     newLonValues.addDouble(td);
                 }
-                insert0i = newLonValues.size() - 1;
+                insert180i = newLonValues.size() - 1;
                 if (verbose) String2.log(
-                    "  'insert' is active: lon[" + insert359i + "]=" + newLonValues.getDouble(insert359i) +
-                                         " lon[" + insert0i   + "]=" + newLonValues.getDouble(insert0i));
+                    "  'insert' is active: lon[" + insert179i + "]=" + newLonValues.getDouble(insert179i) +
+                                         " lon[" + insert180i + "]=" + newLonValues.getDouble(insert180i));
+                */
             }
-            
-            //append the 0 ... 179 lon values
-            dloni0   = newLonValues.size();
-            newLonValues.append(childLonValues.subset(sloni0, 1, sloni179));
-            dloni179 = newLonValues.size() - 1;
-
-        } else {
-            dloni0   = -1; //no values <180
-            dloni179 = -1;
         }
+
+        //finish making newLonValues: append the m180 ... m1 lon values
+        dlonim180 = newLonValues.size();
+        PrimitiveArray tLonValues = childLonValues.subset(slonim180, 1, slonim1); //always a new backing array
+        tLonValues.addOffsetScale(360, 1);  //-180 ... -1 -> 180 ... 359
+        newLonValues.append(tLonValues);
+        dlonim1 = newLonValues.size() - 1;
 
         //make the new lon axis
         EDVLonGridAxis newEDVLon = new EDVLonGridAxis(tDatasetID, EDV.LON_NAME,
@@ -399,11 +410,13 @@ public class EDDGridLonPM180 extends EDDGrid {
         long cTime = System.currentTimeMillis() - constructionStartMillis;
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() +
-                 "dloni180=" + dloni180 + " dloni359=" + dloni359 + 
-                " insert359i=" + insert359i + " insert0i=" + insert0i + 
+                 "slonim180=" + slonim180 + " slonim1=" + slonim1 + 
+                " sloni0=" + sloni0 + " sloni179=" + sloni179 + "\n" + 
+                 "dlonim180=" + dlonim180 + " dlonim1=" + dlonim1 + 
+                " insert179i=" + insert179i + " insert180i=" + insert180i + 
                 " dloni0=" + dloni0 + " dloni179=" + dloni179 + "\n": "") + 
             "localChildDatasetID=" + localChildDatasetID + "\n" +
-            "\n*** EDDGridLonPM180 " + datasetID + " constructor finished. TIME=" + 
+            "\n*** EDDGridLon0360 " + datasetID + " constructor finished. TIME=" + 
             cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
 
         //very last thing: saveDimensionValuesInFile
@@ -454,7 +467,7 @@ public class EDDGridLonPM180 extends EDDGrid {
     public EDDGrid sibling(String tLocalSourceUrl, int firstAxisToMatch, 
         int matchAxisNDigits, boolean shareInfo) throws Throwable {
         throw new SimpleException( 
-            "Error: EDDGridLonPM180 doesn't support method=\"sibling\".");
+            "Error: EDDGridLon0360 doesn't support method=\"sibling\".");
     }
 
     /** 
@@ -576,113 +589,117 @@ public class EDDGridLonPM180 extends EDDGrid {
         rStop -= (rStop - rStart) % rStride;
 
         //map:
-        //dest is: dloni180...dloni359, [insert359...insert0,] [dloni0...dloni179]
-        //becomes      -180...-1,       [insert359...insert0,] [     0...     179]
+        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
 
-        //really easy: all the requested lons are from the new right: >=dloni0
-        if (dloni0 != -1 && rStart >= dloni0) {
+        //really easy: all the requested lons are from the new left: <=dloni179
+        if (dloni0 != -1 && rStop <= dloni179) {
             //1 request, and lon values are already correct
+            if (debugMode) String2.log(">> getSourceData: all from new left: " + rStart + ":" + rStride + ":" + rStop);
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
-            newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0));
+            newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0)); 
             newConstraints.set(li3 + 2, rStop  - (dloni0 - sloni0));            
             return tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
         }
 
-        //easy: all the requested lons are from the left: <=dloni359
-        if (rStop <= dloni359) {
+        //easy: all the requested lons are from the new right: >=dlonim180
+        if (rStart >= dlonim180) {
             //1 request, but need to adjust lon values
+            if (debugMode) String2.log(">> getSourceData: all from new right: " + rStart + ":" + rStride + ":" + rStop);
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
-            newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
-            newConstraints.set(li3 + 2, rStop  + sloni180); // (sloni180 - dloni180), but dloni180 is 0
+            newConstraints.set(li3 + 0, rStart - (dlonim180 - slonim180));   
+            newConstraints.set(li3 + 2, rStop  - (dlonim180 - slonim180)); 
             PrimitiveArray results[] = tChildDataset.getSourceData(tDirTable, tFileTable, 
                 tDataVariables, newConstraints);
             results[lonIndex] = (PrimitiveArray)results[lonIndex].clone();
-            results[lonIndex].addOffsetScale(-360, 1);
+            results[lonIndex].addOffsetScale(360, 1);
             return results;
         }
 
         //map:
-        //dest is: dloni180...dloni359, [insert359i...insert0i,]  [dloni0...dloni179]
-        //becomes      -180...-1,       [insert359i...insert0i,]  [     0...     179]
+        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
 
-        //Harder: need to make 2 requests and merge them.
+        //Hard: need to make 2 requests and merge them.
         //If this is a big request, this takes a lot of memory for the *short* time 
         //  when merging in memory.
-        if (debugMode) String2.log(">> lon request= " + rStart + ":" + rStride + ":" + rStop); 
+        if (debugMode) String2.log(">> getSourceData: request from left and right: " + rStart + ":" + rStride + ":" + rStop); 
 
-        //find request for lon 180-359: <=dloni359
+        //find request for new left half
         IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
-        PrimitiveArray results180[] = null;
-        if (rStart <= dloni359) {
-            //some values are from source loni180 to loni359
-            newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
-            newConstraints.set(li3 + 2, sloni359);
-            results180 = tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
-            results180[lonIndex] = (PrimitiveArray)results180[lonIndex].clone();
-            results180[lonIndex].addOffsetScale(-360, 1);
-            if (debugMode) String2.log(">> got results180 from source lon[" + 
-                (rStart + sloni180) + ":" + rStride + ":" + sloni359 + "]");
+        PrimitiveArray newLeftResults[] = null;
+        if (rStart <= dloni179) {
+            //some values are from sloni0 to sloni179
+            newConstraints.set(li3 + 0, rStart + sloni0); 
+            newConstraints.set(li3 + 2, sloni179);
+            newLeftResults = tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
+            newLeftResults[lonIndex] = (PrimitiveArray)newLeftResults[lonIndex].clone();
+            newLeftResults[lonIndex].addOffsetScale(-360, 1);
+            if (debugMode) String2.log(">> got newLeftResults from source lon[" + 
+                (rStart + slonim180) + ":" + rStride + ":" + slonim1 + "]");
         }
 
+        int insertNLon = 0;
+        /*
         //find out if 'insert' is active and relevant (i.e., some values are requested)
-        boolean insertActive = insert359i >= 0; //basic system is active
-        if (insertActive && (rStop < insert359i || rStart > insert0i))
+        boolean insertActive = insert179i >= 0; //basic system is active
+        if (insertActive && (rStop < insert179i || rStart > insert180i))
             insertActive = false;  //shouldn't happen because should have been dealt with above
         int firstInserti = -1;
         if (insertActive) {
-            //Find first loni >= insert359i which is among actually requested lon values (given rStride).
-            firstInserti = Math.max(insert359i, rStart); 
+            //Find first loni >= insert179i which is among actually requested lon values (given rStride).
+            firstInserti = Math.max(insert179i, rStart); 
             if (rStride > 1) {
                 int mod = (firstInserti - rStart) % rStride;
                 if (mod > 0)
                     firstInserti += rStride - mod;
             }
-            if (firstInserti > insert0i) {
+            if (firstInserti > insert180i) {
                 firstInserti = -1;
                 insertActive = false; //stride walks over (skips) all inserted lons
             }
         }
         int lastInserti = -1;
-        int insertNLon = 0;
         if (insertActive) {
-            lastInserti = Math.min(rStop, insert0i);
+            lastInserti = Math.min(rStop, insert180i);
             lastInserti -= (lastInserti - rStart) % rStride; //perhaps last=first
             insertNLon = OpendapHelper.calculateNValues(firstInserti, rStride, lastInserti);
             if (debugMode) String2.log(">> will insert lon[" + 
                 firstInserti + ":" + rStride + ":" + lastInserti + "]");
         }
+        */
 
-        //find request for lon 0-179: >=dloni0
-        PrimitiveArray results0[] = null;
-        if (rStop >= dloni0) {
-            //Find first loni >=dloni0 which is among actually requested lon values (given rStride).
-            int floni = dloni0; 
+        //find request for new right half 
+        PrimitiveArray newRightResults[] = null;
+        if (rStop >= dlonim180) {
+            //Find first loni >=dlonim180 which is among actually requested lon values (given rStride).
+            int floni = dlonim180; 
             if (rStride > 1) {
                 int mod = (floni - rStart) % rStride;
                 if (mod > 0)
                     floni += rStride - mod;
             }
 
-            //some values are from source loni0 to loni179
-            int tStart = floni - (dloni0 - sloni0);
-            int tStop  = rStop - (dloni0 - sloni0);
+            //some values are from source lonim180 to lonim1
+            int tStart = floni - (dlonim180 - slonim180);
+            int tStop  = rStop - (dlonim180 - slonim180);
             newConstraints.set(li3 + 0, tStart); 
             newConstraints.set(li3 + 2, tStop);            
-            results0 = tChildDataset.getSourceData(tDirTable, tFileTable, 
+            newRightResults = tChildDataset.getSourceData(tDirTable, tFileTable, 
                 tDataVariables, newConstraints);
-            if (debugMode) String2.log(">> got results0 from source lon[" + 
+            if (debugMode) String2.log(">> got newRightResults from source lon[" + 
                 tStart + ":" + rStride + ":" + tStop + "]");
         }
 
         //map:
-        //dest is: dloni180...dloni359, [insert359i...insert0i,]  [dloni0...dloni179]
-        //becomes      -180...-1,       [insert359i...insert0i,]  [     0...     179]
+        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
 
         //now build results[] by reading chunks alternately from the 3 sources 
-        //what is chunk size from 180 request, from insert, and from 0 request?
-        int chunk180    = results180 == null? 0 : 1;
+        //what is chunk size from left request, from insert, and from right request?
+        int chunkLeft   = newLeftResults == null? 0 : 1;
         int chunkInsert = insertNLon <= 0?    0 : 1;
-        int chunk0      = results0   == null? 0 : 1;
+        int chunkRight  = newRightResults   == null? 0 : 1;
         //what is total nValues for dataVariables
         int nValues = 1;
         PrimitiveArray results[] = new PrimitiveArray[nAV + tnDV];
@@ -697,14 +714,14 @@ public class EDDGridLonPM180 extends EDDGrid {
             int avN = results[avi].size();
 
             if (avi > lonIndex) {
-                chunk180    *= avN;
+                chunkLeft   *= avN;
                 chunkInsert *= avN;
-                chunk0      *= avN; 
+                chunkRight  *= avN; 
             }
             if (avi == lonIndex) {
-                if (results180 != null) chunk180    *= results180[avi].size();
-                if (insertNLon >  0)    chunkInsert *= insertNLon;
-                if (results0   != null) chunk0      *= results0[avi].size();
+                if (newLeftResults != null)    chunkLeft   *= newLeftResults[avi].size();
+                if (insertNLon >  0)           chunkInsert *= insertNLon;
+                if (newRightResults   != null) chunkRight  *= newRightResults[avi].size();
             }
             //all axes:
             nValues *= avN;
@@ -715,32 +732,32 @@ public class EDDGridLonPM180 extends EDDGrid {
             results[nAV + tdv] = PrimitiveArray.factory(
                 tDataVariables[tdv].sourceDataPAType(), nValues, false);
 
-        //dest is: dloni180...dloni359, [insert359i...insert0i,]  [dloni0...dloni179]
-        //becomes      -180...-1,       [insert359i...insert0i,]  [     0...     179]
+        //dest is: dlonim180...dlonim1, [insert179i...insert180i,]  [dloni0...dloni179]
+        //becomes      -180...-1,       [insert179i...insert180i,]  [     0...     179]
 
         //copy the dataVariables values into place
-        int po180 = 0;
-        int po0 = 0;
+        int poLeft = 0;
+        int poRight = 0;
         int nextDest = 0;
         while (nextDest < nValues) {
             for (int tdv = 0; tdv < tnDV; tdv++) {
-                if (results180  != null) 
-                    results[nAV + tdv].addFromPA(results180[nAV + tdv], po180, chunk180);
-                if (chunkInsert >  0)    
+                if (newLeftResults != null) 
+                    results[nAV + tdv].addFromPA(newLeftResults[nAV + tdv], poLeft, chunkLeft);
+                if (chunkInsert > 0)    
                     results[nAV + tdv].addNDoubles(chunkInsert, 
                         tDataVariables[tdv].safeDestinationMissingValue());
-                if (results0    != null) 
-                    results[nAV + tdv].addFromPA(results0[  nAV + tdv], po0,   chunk0);
+                if (newRightResults != null) 
+                    results[nAV + tdv].addFromPA(newRightResults[  nAV + tdv], poRight, chunkRight);
             }
-            po180 += chunk180;  //may be 0
-            po0   += chunk0;    //may be 0
-            nextDest += chunk180 + chunkInsert + chunk0;
+            poLeft   += chunkLeft;   //may be 0
+            poRight  += chunkRight;  //may be 0
+            nextDest += chunkLeft + chunkInsert + chunkRight;
 
             if (debugMode && nextDest >= nValues) {
-                if (results180 != null) 
-                    Test.ensureEqual(results180[nAV].size(), po180, "po180");
-                if (results0   != null)    
-                    Test.ensureEqual(results0[nAV].size(),   po0,   "po0");
+                if (newLeftResults != null) 
+                    Test.ensureEqual(newLeftResults[nAV].size(),  poLeft,  "poLeft");
+                if (newRightResults   != null)    
+                    Test.ensureEqual(newRightResults[nAV].size(), poRight, "poRight");
                 Test.ensureEqual(results[nAV].size(), nValues, "nValues");
             }
         }
@@ -758,19 +775,19 @@ public class EDDGridLonPM180 extends EDDGrid {
     public static String generateDatasetsXmlFromErddapCatalog( 
         String oPublicSourceUrl, String datasetIDRegex) throws Throwable {
 
-        String2.log("*** EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(" +
+        String2.log("*** EDDGridLon0360.generateDatasetsXmlFromErddapCatalog(" +
             oPublicSourceUrl + ")");
 
         if (oPublicSourceUrl == null)
-            throw new RuntimeException(String2.ERROR + ": 'sourceUrl' is null.");
+            throw new RuntimeException(String2.ERROR + ": sourceUrl is null.");
         if (!oPublicSourceUrl.endsWith("/erddap/"))
-            throw new RuntimeException(String2.ERROR + ": 'sourceUrl' doesn't end with '/erddap/'.");
+            throw new RuntimeException(String2.ERROR + ": sourceUrl doesn't end with '/erddap/'.");
 
         //get table with datasetID minLon, maxLon
         String query = oPublicSourceUrl + "tabledap/allDatasets.csv" + 
             "?datasetID,title,griddap,minLongitude,maxLongitude" +
             "&dataStructure=" + SSR.minimalPercentEncode("\"grid\"") + 
-            "&maxLongitude%3E180" +
+            "&minLongitude%3C0" +
             (String2.isSomething(datasetIDRegex)? 
                 "&datasetID=" + SSR.minimalPercentEncode("~\"" + datasetIDRegex + "\""): "") +
             "&orderBy(%22datasetID%22)";
@@ -780,7 +797,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         } catch (Throwable t) {
             if (t.toString().indexOf("no data") >= 0)
                 return "<!-- No griddap datasets at that ERDDAP match that regex\n" +
-                       "     and have longitude values &gt;180. -->\n";
+                       "     and have minLongitude values &lt;0. -->\n";
             throw t;
         }
         Table table = new Table();
@@ -797,10 +814,10 @@ public class EDDGridLonPM180 extends EDDGrid {
             if (datasetIDPA.getString(row).equals("etopo360"))
                 continue;
 sb.append(
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_LonPM180\" active=\"true\">\n" +
+"<dataset type=\"EDDGridLon0360\" datasetID=\"" + 
+    datasetIDPA.getString(row) + "_Lon0360\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_LonPM180Child\">\n" +
+    datasetIDPA.getString(row) + "_Lon0360Child\">\n" +
 "        <!-- " + XML.encodeAsXML(titlePA.getString(row)) + "\n" +
 "             minLon=" + minLonPA.getString(row) + " maxLon=" + maxLonPA.getString(row) + " -->\n" +
 //set updateEveryNMillis?  frequent if local ERDDAP, less frequent if remote?
@@ -819,45 +836,30 @@ sb.append(
      */
     public static void testGenerateDatasetsXmlFromErddapCatalog() throws Throwable {
 
-        String2.log("\n*** EDDGridLonPM180.testGenerateDatasetsXmlFromErddapCatalog() ***\n");
+        String2.log("\n*** EDDGridLon0360.testGenerateDatasetsXmlFromErddapCatalog() ***\n");
         testVerboseOn();
         String url = "http://coastwatch.pfeg.noaa.gov/erddap/"; //purposefully http:// to test if ERDDAP will promote to https://
-        //erdMH1chlamday is -179 to 179, so nothing to do, so won't be in results
-        //others are good, different test cases
-        String regex = "(erdMH1chlamday|erdMWchlamday|erdMHsstnmday|erdMBsstdmday|erdRWdhws1day)";
+        //erdMH1's are -179 to 179, so will be in results
+        //others are ~0 to 360 so won't be in results
+        //               -180 to 180    -180.0 to -110
+        String regex = "(erdMH1chlamday|erdVHNchlamday|erdMWchlamday|erdMHsstnmday)";
 
         String results = generateDatasetsXmlFromErddapCatalog(url, regex) + "\n"; 
 
         String expected =
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMBsstdmday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_LonPM180Child\">\n" +
-"        <!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime, 2006-present (Monthly Composite)\n" +
-"             minLon=120.0 maxLon=320.0 -->\n" +
-"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday</sourceUrl>\n" +
+"<dataset type=\"EDDGridLon0360\" datasetID=\"erdMH1chlamday_Lon0360\" active=\"true\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMH1chlamday_Lon0360Child\">\n" +
+"        <!-- Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)\n" +
+"             minLon=-179.9792 maxLon=179.9792 -->\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMH1chlamday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n" +
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMHsstnmday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMHsstnmday_LonPM180Child\">\n" +
-"        <!-- SST, Aqua MODIS, NPP, Nighttime (11 microns), 2002-2013, DEPRECATED OLDER VERSION (Monthly Composite)\n" +
-"             minLon=0.0 maxLon=360.0 -->\n" +
-"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday</sourceUrl>\n" +
-"    </dataset>\n" +
-"</dataset>\n" +
-"\n" +
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMWchlamday_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
-"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xb0;, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
-"             minLon=205.0 maxLon=255.0 -->\n" +
-"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
-"    </dataset>\n" +
-"</dataset>\n" +
-"\n" +
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"erdRWdhws1day_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdRWdhws1day_LonPM180Child\">\n" +
-"        <!-- Coral Reef Watch, Degree Heating Weeks, 50 km, 2000-2011\n" +
-"             minLon=0.25 maxLon=359.75 -->\n" +
-"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdRWdhws1day</sourceUrl>\n" +
+"<dataset type=\"EDDGridLon0360\" datasetID=\"erdVHNchlamday_Lon0360\" active=\"true\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdVHNchlamday_Lon0360Child\">\n" +
+"        <!-- Chlorophyll a, North Pacific, NOAA VIIRS, 750m resolution, 2015-present (Monthly Composite)\n" +
+"             minLon=-180.03375 maxLon=-110.00625 -->\n" +
+"        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n\n";
@@ -865,7 +867,7 @@ sb.append(
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-            "EDDGridLonPM180FromErddapCatalog", url, regex}, 
+            "EDDGridLon0360FromErddapCatalog", url, regex}, 
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, 
             "Unexpected results from GenerateDatasetsXml.doIt. results=\n" + results);
@@ -873,13 +875,13 @@ sb.append(
     }
 
     /**
-     * This tests a dataset that is initially all GT180.
+     * This tests a dataset that is initially all LT0.
      *
      * @throws Throwable if trouble
      */
-    public static void testGT180() throws Throwable {
+    public static void testLT0() throws Throwable {
 
-        String2.log("\n****************** EDDGridLonPM180.testGT180() *****************\n");
+        String2.log("\n****************** EDDGridLon0360.testLT0() *****************\n");
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
         int po;
@@ -887,39 +889,45 @@ sb.append(
 
       try {
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMWchlamday_LonPM180");       
+        EDDGrid eddGrid;
+        try {
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
+        } catch (Throwable t) {
+            String2.pressEnterToContinue(
+                "\n" + MustBe.throwableToString(t));
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
+        }
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_GT180_Entire", ".dds"); 
+            eddGrid.className() + "_LT0_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 2];\n" +
+"  Float64 time[time = 68];\n" +
 "  Float64 altitude[altitude = 1];\n" +
-"  Float64 latitude[latitude = 2321];\n" +
-"  Float64 longitude[longitude = 4001];\n" +
+"  Float64 latitude[latitude = 11985];\n" +
+"  Float64 longitude[longitude = 9333];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 2][altitude = 1][latitude = 2321][longitude = 4001];\n" +
+"      Float32 chla[time = 68][altitude = 1][latitude = 11985][longitude = 9333];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 2];\n" +
+"      Float64 time[time = 68];\n" +
 "      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 2321];\n" +
-"      Float64 longitude[longitude = 4001];\n" +
-"  } chlorophyll;\n" +
-"} test_erdMWchlamday_LonPM180;\n";
+"      Float64 latitude[latitude = 11985];\n" +
+"      Float64 longitude[longitude = 9333];\n" +
+"  } chla;\n" +
+"} test_erdVHNchlamday_Lon0360;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_GT180_Entire", ".das"); 
+            eddGrid.className() + "_LT0_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
-"  longitude {\n" +
+"longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -155.0, -105.0;\n" +
+"    Float64 actual_range 180.00375, 249.99375;\n" +
 "    String axis \"X\";\n" +
 "    String coordsys \"geographic\";\n" +
-"    Int32 fraction_digits 4;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String point_spacing \"even\";\n" +
@@ -931,16 +939,16 @@ sb.append(
             "results=\n" + results);
 
 expected =
-"    Float64 geospatial_lon_max -105.0;\n" +
-"    Float64 geospatial_lon_min -155.0;\n" +
-"    Float64 geospatial_lon_resolution 0.0125;\n" +
+"    Float64 geospatial_lon_max 249.99375;\n" +
+"    Float64 geospatial_lon_min 180.00375;\n" +
+"    Float64 geospatial_lon_resolution 0.007500000000000001;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";
         po = results.indexOf(expected.substring(0, 30));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
 expected = 
-"    Float64 Westernmost_Easting -155.0;\n" +
+"    Float64 Westernmost_Easting 180.00375;\n" +
 "  }\n" +
 "}\n";
         po = results.indexOf(expected.substring(0, 30));
@@ -948,145 +956,126 @@ expected =
             "results=\n" + results);
 
         //lon values
-        userDapQuery = "longitude[(-155):400:(-105)]";
+        userDapQuery = "longitude[0:1000:9332]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_GT180_lon", ".csv"); 
+            eddGrid.className() + "_LT0_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
-"longitude, degrees_east, -155.0, -150.0, -145.0, -140.0, -135.0, -130.0, -125.0, -120.0, -115.0, -110.0, -105.0, ";
+"longitude, degrees_east, 180.00375, 187.50375, 195.00375, 202.50375, 210.00375, 217.50375, 225.00375, 232.50375, 240.00375, 247.50375, ";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //entire lon range
-        userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][(35):80:(36)][(-155):400:(-105)]";
+        userDapQuery = "chla[(2015-03-16)][][(89.77152):5500:(-0.10875)][(180.00375):4500:(249.99375)]"; //[-179.99625:4500:-110.00625]
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_GT180_1", ".csv"); 
+            eddGrid.className() + "_LT0_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-//from same request from coastwatch erddap: erdMWchlamday  lon=205 to 255
-// but I subtracted 360 from the lon values to get the values below
-"time,altitude,latitude,longitude,chlorophyll\n" +
-"UTC,m,degrees_north,degrees_east,mg m-3\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-155.0,0.06277778\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-150.0,0.091307685\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-145.0,0.06966666\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-140.0,0.0655\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-135.0,0.056166667\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-130.0,0.080142856\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-125.0,0.12250001\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-120.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-115.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-110.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-105.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-155.0,0.0695\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-150.0,0.09836364\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-145.0,0.07525001\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-140.0,0.072000004\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-135.0,0.08716667\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-130.0,0.07828571\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-125.0,0.1932857\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-120.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-115.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-110.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-105.0,NaN\n";
+//from same request from cw erddap: erdVHNchlamday  
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday.htmlTable?chla%5B(2015-03-16):1:(2015-03-16)%5D%5B(0.0):1:(0.0)%5D%5B(89.77125):5500:(-0.10875)%5D%5B(-179.99625):4500:(-110.00625)%5D
+// but add 360 to the lon values to get the values below
+"time,altitude,latitude,longitude,chla\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2015-03-16T00:00:00Z,0.0,89.77125,180.00375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,89.77125,213.75375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,89.77125,247.50375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,48.52125,180.00375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,48.52125,213.75375,0.29340988\n" +
+"2015-03-16T00:00:00Z,0.0,48.52125,247.50375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,7.27125,180.00375,NaN\n" +
+"2015-03-16T00:00:00Z,0.0,7.27125,213.75375,0.08209898\n" +
+"2015-03-16T00:00:00Z,0.0,7.27125,247.50375,0.12582141\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //lon subset   (-119 will be rolled back to -120)
-        userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][(35):80:(36)][(-145):400:(-119)]";
+        //lon subset  
+        userDapQuery = "chla[(2015-03-16)][][(10):500:(0)][(200):2000:(240)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_GT180_2", ".csv"); 
+            eddGrid.className() + "_LT0_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-//from same request from coastwatch erddap: erdMWchlamday  lon=205 to 255
-// but I subtracted 360 from the lon values to get the values below
-"time,altitude,latitude,longitude,chlorophyll\n" +
-"UTC,m,degrees_north,degrees_east,mg m-3\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-145.0,0.06966666\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-140.0,0.0655\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-135.0,0.056166667\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-130.0,0.080142856\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-125.0,0.12250001\n" +
-"2002-08-16T12:00:00Z,0.0,35.0,-120.0,NaN\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-145.0,0.07525001\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-140.0,0.072000004\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-135.0,0.08716667\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-130.0,0.07828571\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-125.0,0.1932857\n" +
-"2002-08-16T12:00:00Z,0.0,36.0,-120.0,NaN\n";
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday.htmlTable?chla%5B(2015-03-16):1:(2015-03-16)%5D%5B(0.0):1:(0.0)%5D%5B(10):500:(0)%5D%5B(-160):2000:(-120)%5D
+//but add 360 to get lon values below
+"time,altitude,latitude,longitude,chla\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2015-03-16T00:00:00Z,0.0,10.00125,199.99875,0.03348998\n" +
+"2015-03-16T00:00:00Z,0.0,10.00125,214.99875,0.06315609\n" +
+"2015-03-16T00:00:00Z,0.0,10.00125,229.99875,0.06712352\n" +
+"2015-03-16T00:00:00Z,0.0,6.25125,199.99875,0.089674756\n" +
+"2015-03-16T00:00:00Z,0.0,6.25125,214.99875,0.12793668\n" +
+"2015-03-16T00:00:00Z,0.0,6.25125,229.99875,0.15159287\n" +
+"2015-03-16T00:00:00Z,0.0,2.50125,199.99875,0.16047283\n" +
+"2015-03-16T00:00:00Z,0.0,2.50125,214.99875,0.15874723\n" +
+"2015-03-16T00:00:00Z,0.0,2.50125,229.99875,0.12635218\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test image
-        userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][][]&.land=under";
+        userDapQuery = "chla[(2015-03-16)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddGrid.className() + "_GT180", ".png"); 
+            dir, eddGrid.className() + "_NEPacificNowLon0360", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //test of /files/ system for fromErddap in local host dataset
-        String2.log("\n* Test getting /files/ from local host erddap...");
         results = SSR.getUrlResponseStringUnchanged(
-            "http://localhost:8080/cwexperimental/files/test_erdMWchlamday_LonPM180/");
-        expected = "MW2002182&#x5f;2002212&#x5f;chla&#x2e;nc"; //"MW2002182_2002212_chla.nc";
+            "http://localhost:8080/cwexperimental/files/test_erdVHNchlamday_Lon0360/");
+        expected = "VHN2015060&#x5f;2015090&#x5f;chla&#x2e;nc"; 
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
-        String2.log("\n*** EDDGridLonPM180.testGT180() finished.");
+        String2.log("\n*** EDDGridLon0360.testLT0() finished.");
       } catch (Throwable t) {
-          throw new RuntimeException(
-              "\n!!! EDDGridLonPM180.testGT180() requires erdMWchlamday and test_erdMWchlamday_LonPM180 in the localhost ERDDAP.", t);
+          String2.pressEnterToContinue("\n" +
+              MustBe.throwableToString(t));
       }
     }
 
     /**
-     * This tests a dataset that is initially 1to359.
+     * This tests a dataset that is initially -180.018 to 180.018 (min and max beyond bounds are dropped by this dataset)
      *
      * @throws Throwable if trouble
      */
-    public static void test1to359() throws Throwable {
+    public static void testPM181() throws Throwable {
 
-        String2.log("\n****************** EDDGridLonPM180.test1to359() *****************\n");
+        String2.log("\n****************** EDDGridLon0360.testPM181() *****************\n");
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdRWdhws1day_LonPM180");       
- 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_nesdisVHNchlaWeekly_Lon0360");       
+ /* */
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_1to359_Entire", ".dds"); 
+            eddGrid.className() + "_PM181_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 1065];\n" +
+"  Float64 time[time = 371];\n" +
 "  Float64 altitude[altitude = 1];\n" +
-"  Float64 latitude[latitude = 332];\n" +
-"  Float64 longitude[longitude = 720];\n" +
+"  Float64 latitude[latitude = 4788];\n" +
+"  Float64 longitude[longitude = 9600];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 dhw[time = 1065][altitude = 1][latitude = 332][longitude = 720];\n" +
+"      Float32 chlor_a[time = 371][altitude = 1][latitude = 4788][longitude = 9600];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 1065];\n" +
+"      Float64 time[time = 371];\n" +
 "      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 332];\n" +
-"      Float64 longitude[longitude = 720];\n" +
-"  } dhw;\n" +
-"} erdRWdhws1day_LonPM180;\n";
+"      Float64 latitude[latitude = 4788];\n" +
+"      Float64 longitude[longitude = 9600];\n" +
+"  } chlor_a;\n" +
+"} test_nesdisVHNchlaWeekly_Lon0360;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_1to359_Entire", ".das"); 
+            eddGrid.className() + "_PM181_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -179.75, 179.75;\n" +
+"    Float64 actual_range 0.018749999999981976, 359.98125;\n" +
 "    String axis \"X\";\n" +
-"    String coordsys \"geographic\";\n" +
-"    Int32 fraction_digits 1;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
-"    String point_spacing \"even\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n";
@@ -1095,16 +1084,16 @@ expected =
             "results=\n" + results);
 
 expected =
-"    Float64 geospatial_lon_max 179.75;\n" +
-"    Float64 geospatial_lon_min -179.75;\n" +
-"    Float64 geospatial_lon_resolution 0.5;\n" +
+"    Float64 geospatial_lon_max 359.98125;\n" +
+"    Float64 geospatial_lon_min 0.018749999999981976;\n" +
+"    Float64 geospatial_lon_resolution 0.037500000000000006;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";
         po = results.indexOf(expected.substring(0, 30));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
 expected = 
-"    Float64 Westernmost_Easting -179.75;\n" +
+"    Float64 Westernmost_Easting 0.018749999999981976;\n" +
 "  }\n" +
 "}\n";
         po = results.indexOf(expected.substring(0, 30));
@@ -1112,328 +1101,368 @@ expected =
             "results=\n" + results);
 
         //lon values
-        //this tests correct jump across lon 0
-        userDapQuery = "longitude[(-179.75):100:(179.75)]";
+        //this tests entire range
+        userDapQuery = "longitude[(0.01875):1000:(359.98125)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_lon", ".csv"); 
+            eddGrid.className() + "_PM181_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
-"longitude, degrees_east, -179.75, -129.75, -79.75, -29.75, 20.25, 70.25, 120.25, 170.25, ";
+"longitude, degrees_east, 0.018749999999981976, 37.51874999999998, 75.01874999999998, 112.51874999999998, 150.01874999999998, 187.51874999999998, 225.01874999999998, 262.51874999999995, 300.01874999999995, 337.51874999999995, ";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //lon values near 0
-        userDapQuery = "longitude[(-.75):1:(.75)]";
+        //lon values near 180
+        userDapQuery = "longitude[(179.93):1:(180.07)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_lonNear0", ".csv"); 
+            eddGrid.className() + "_PM181_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
-"longitude, degrees_east, -0.75, -0.25, 0.25, 0.75, ";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //almost entire new lon range
-        userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-179.75):100:(179.75)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,dhw\n" +
-"UTC,m,degrees_north,degrees_east,weeks\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-179.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-129.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-79.75,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-29.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,20.25,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,70.25,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,120.25,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,170.25,0.5\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //left and right, smaller range
-        userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-108):100:(120)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_1s", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,dhw\n" +
-"UTC,m,degrees_north,degrees_east,weeks\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-107.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-57.75,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-7.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,42.25,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,92.25,0.0\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //subset of that, just <0  (ask for into positive, but it will roll back)
-        userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-179.97):100:(10)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-//verified in browser from coastwatch nodcPH2sstd1day  lon 180.02 to 323.99
-"time,altitude,latitude,longitude,dhw\n" +
-"UTC,m,degrees_north,degrees_east,weeks\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-179.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-129.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-79.75,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,-29.75,0.0\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //subset of that, just > 0 
-        userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(35.97):100:(179.97)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_1to359_3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-//verified in browser from coastwatch erdRWdhws1day lon 35.97 to 179.93
-"time,altitude,latitude,longitude,dhw\n" +
-"UTC,m,degrees_north,degrees_east,weeks\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,35.75,NaN\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,85.75,0.0\n" +
-"2001-10-16T12:00:00Z,0.0,0.25,135.75,0.0\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //test image
-        userDapQuery = "dhw[(2001-10-16T12:00:00Z)][][][]&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddGrid.className() + "_1to359", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
-
-//THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files available
-        //test of /files/ system for fromErddap in local host dataset
-//        String2.log("\n* Test getting /files/ from local host erddap...");
-//        results = SSR.getUrlResponseStringUnchanged(
-//            "http://localhost:8080/cwexperimental/files/erdRWdhws1day_LonPM180/");
-//        expected = "PH2001244&#x5f;2001273&#x5f;dhw&#x2e;nc"; //"PH2001244_2001273_dhw.nc";
-//        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
-
-        String2.log("\n*** EDDGridLonPM180.test1to359 finished.");
-
-
-    }
-
-
-    /**
-     * This tests a dataset that is initially 0to360.
-     *
-     * @throws Throwable if trouble
-     */
-    public static void test0to360() throws Throwable {
-
-        String2.log("\n****************** EDDGridLonPM180.test0to360() *****************\n");
-        testVerboseOn();
-        String name, tName, userDapQuery, results, expected, error;
-        int po;
-        String dir = EDStatic.fullTestCacheDirectory;
-
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMHsstnmday_LonPM180");       
-
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_0to360_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        expected = 
-"Dataset {\n" +
-"  Float64 time[time = 133];\n" +
-"  Float64 altitude[altitude = 1];\n" +
-"  Float64 latitude[latitude = 4320];\n" +
-"  Float64 longitude[longitude = 8639];\n" +
-"  GRID {\n" +
-"    ARRAY:\n" +
-"      Float32 sst[time = 133][altitude = 1][latitude = 4320][longitude = 8639];\n" +
-"    MAPS:\n" +
-"      Float64 time[time = 133];\n" +
-"      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 4320];\n" +
-"      Float64 longitude[longitude = 8639];\n" +
-"  } sst;\n" +
-"} test_erdMHsstnmday_LonPM180;\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_0to360_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        String2.log(results);
-        expected = 
-"  longitude {\n" +
-"    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -179.97916425512213, 179.97916425512213;\n" +
-"    String axis \"X\";\n" +
-"    String coordsys \"geographic\";\n" +
-"    Int32 fraction_digits 3;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Longitude\";\n" +
-"    String point_spacing \"even\";\n" +
-"    String standard_name \"longitude\";\n" +
-"    String units \"degrees_east\";\n" +
-"  }\n";
-        po = results.indexOf(expected.substring(0, 30));
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
-
-expected =
-"    Float64 geospatial_lon_max 179.97916425512213;\n" +
-"    Float64 geospatial_lon_min -179.97916425512213;\n" +
-"    Float64 geospatial_lon_resolution 0.04167148975575877;\n" +
-"    String geospatial_lon_units \"degrees_east\";\n";
-        po = results.indexOf(expected.substring(0, 30));
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
-
-expected = 
-"    Float64 Westernmost_Easting -179.97916425512213;\n" +
-"  }\n" +
-"}\n";
-        po = results.indexOf(expected.substring(0, 30));
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
-
-        //lon values
-        //this tests correct jump across lon 0
-        userDapQuery = "longitude[(-179.98):1234:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_lon", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        results = String2.replaceAll(results, "\n", ", ");
-        expected = 
-"longitude, degrees_east, -179.97916425512213, -128.55654589651581, -77.13392753790947, -25.711309179303157, 25.71130917930316, 77.13392753790947, 128.5565458965158, 179.97916425512213, ";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //lon values near 0
-        userDapQuery = "longitude[(-.125):1:(.125)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_lonNear0", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        results = String2.replaceAll(results, "\n", ", ");
-        expected = 
-//verified in browser with longitude[(359.88):1:(360)] and longitude[(0):1:(.125)]
-"longitude, degrees_east, -0.12501446926728477, -0.08334297951154213, -0.04167148975574264, 0.0, 0.04167148975575877, 0.08334297951151753, 0.1250144692672763, ";
+"longitude, degrees_east, 179.94374999999997, 179.98125, 180.01874999999998, 180.05624999999998, ";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //entire new lon range
-        userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-179.98):1234:(179.98)]";
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_1", ".csv"); 
+            eddGrid.className() + "_PM181_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-179.97916425512213,28.06726\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-128.55654589651581,22.61092\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-77.13392753790947,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-25.711309179303157,25.09381\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,25.71130917930316,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,77.13392753790947,29.521\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,128.5565458965158,27.90518\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,179.97916425512213,27.96184\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-179.97916425512213,28.14974\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-128.55654589651581,22.72137\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-77.13392753790947,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-25.711309179303157,25.48109\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,25.71130917930316,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,77.13392753790947,29.48155\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,128.5565458965158,27.58245\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,179.97916425512213,28.20998\n";
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.25625):1900:(-0.98)%5D
+        expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
+"time,altitude,latitude,longitude,chlor_a\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
+
+"2021-03-05T12:00:00Z,0.0,27.01875,214.74374999999998,0.087049656\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,285.99375,0.062160246\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+
+"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n" +
+
+"2021-03-05T12:00:00Z,0.0,26.98125,214.74374999999998,0.08402522\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,285.99375,0.0637603\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //subset of that, just <0  (ask for into positive, but it will roll back)
-        userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-179.98):1234:(10)]";
+        //0-180 subset
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_2", ".csv"); 
+            eddGrid.className() + "_PM181_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        expected = 
-//verified in browser from coastwatch erdMHsstnmday  lon 180.02 to 334.3
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-179.97916425512213,28.06726\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-128.55654589651581,22.61092\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-77.13392753790947,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-25.711309179303157,25.09381\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-179.97916425512213,28.14974\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-128.55654589651581,22.72137\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-77.13392753790947,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-25.711309179303157,25.48109\n";
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
+        expected =    
+"time,altitude,latitude,longitude,chlor_a\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //subset of that, just > 0 
-        userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(25.7):1234:(179.98)]";
+        //0-181 subset with not relevant spillover  //yes, it is correctly handled by "all from new left"
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_3", ".csv"); 
+            eddGrid.className() + "_PM181_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        expected = 
-//verified in browser from coastwatch erdMHsstnmday lon 25.7 to 179.98
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,25.71130917930316,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,77.13392753790947,29.521\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,128.5565458965158,27.90518\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,179.97916425512213,27.96184\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,25.71130917930316,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,77.13392753790947,29.48155\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,128.5565458965158,27.58245\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,179.97916425512213,28.20998\n";
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
+        expected =    
+"time,altitude,latitude,longitude,chlor_a\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //values near 0 
-        userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-.125):1:(.125)]";
+
+        //180-360 subset
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_0to360_4", ".csv"); 
+            eddGrid.className() + "_PM181_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        expected = 
-//This is an important test of no duplicate lon values (from lon 0 and 360)
-//verified in browser from coastwatch erdMHsstnmday lon 359.875 to 360, and 0 to 0.125
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-0.12501446926728477,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-0.08334297951154213,24.58318\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,-0.04167148975574264,25.307896\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,0.0,25.46173\n" +   //360 has NaN, 0 has 25.46173!
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,0.04167148975575877,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,0.08334297951151753,25.25877\n" +
-"2007-08-16T12:00:00Z,0.0,0.020838156980772737,0.1250144692672763,25.175934\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-0.12501446926728477,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-0.08334297951154213,25.42515\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,-0.04167148975574264,25.410454\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,0.0,25.75864\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,0.04167148975575877,NaN\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,0.08334297951151753,25.90351\n" +
-"2007-08-16T12:00:00Z,0.0,0.9793933780967734,0.1250144692672763,25.788765\n";
-//In this dataset, lon=360 has all NaNs!  Kooky!
-//So it is really good that EDDGridLonPM180 uses values from 0, not values from 360!
-//see sst[(2007-08-16):1:(2007-08-16)][(0.0):1:(0.0)][(-90):1:(90)][(360):1:(360)]
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.26):1900:(-0.98)%5D
+        expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
+"time,altitude,latitude,longitude,chlor_a\n" +
+"UTC,m,degrees_north,degrees_east,mg m^-3\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,214.74374999999998,0.087049656\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,285.99375,0.062160246\n" +
+"2021-03-05T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,214.74374999999998,0.08402522\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,285.99375,0.0637603\n" +
+"2021-03-05T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //test image
-        userDapQuery = "sst[(2007-08-16T12:00:00Z)][][][]&.land=under";
+        //test image entire world
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddGrid.className() + "_0to360", ".png"); 
+            dir, eddGrid.className() + "_entireWorld_PM181", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
-//!!!??? what's with that gap near lon=0? It's from the source.
-//The source has odd gaps at lon 358 to 360, see
-//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHsstnmday.graph?sst[(2013-09-16T00:00:00Z)][(0.0)][(-2.479741):(-0.479278)][(357.999768):(360)]&.draw=surface&.vars=longitude|latitude|sst&.colorBar=|||||
-//2015-11-25 I notified Roy, but these are deprecated datasets so probably won't be fixed
 
-        String2.log("\n*** EDDGridLonPM180.test0to360 finished.");
+        //test image subset near 180
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(71):(-61)][(120):(245)]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_subsetNear180_PM181", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+        //test image just new left
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(41):(-61)][(10):(175)]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_justNewLeft_PM181", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+        //test image just new right
+        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(41):(-61)][(190):(355)]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_justNewRight_PM181", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+//SOURCE is ultimately a remote THREDDS so no source files
+//        String2.log("\n* Test getting /files/ from local host erddap...");
+//        results = SSR.getUrlResponseStringUnchanged(
+//            "http://localhost:8080/cwexperimental/files/erdRWdhws1day_Lon0360/");
+//        expected = "PH2001244&#x5f;2001273&#x5f;dhw&#x2e;nc"; //"PH2001244_2001273_dhw.nc";
+//        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+        /*  */
+        String2.log("\n*** EDDGridLon0360.testPM181 finished.");
+    }
+
+
+    /**
+     * This tests a dataset that is initially -180 to 180.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testPM180() throws Throwable {
+
+        String2.log("\n****************** EDDGridLon0360.testPM180() *****************\n");
+        testVerboseOn();
+        String name, tName, userDapQuery, results, expected, error;
+        int po;
+        String dir = EDStatic.fullTestCacheDirectory;
+
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_etopo180_Lon0360");       
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+            eddGrid.className() + "_PM180_Entire", ".dds"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"Dataset {\n" +
+"  Float64 latitude[latitude = 10801];\n" +
+"  Float64 longitude[longitude = 21600];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Int16 altitude[latitude = 10801][longitude = 21600];\n" +
+"    MAPS:\n" +
+"      Float64 latitude[latitude = 10801];\n" +
+"      Float64 longitude[longitude = 21600];\n" +
+"  } altitude;\n" +
+"} test_etopo180_Lon0360;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+            eddGrid.className() + "_PM180_Entire", ".das"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log(results);
+        expected = 
+" longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.0, 359.98333333333335;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n";
+        po = results.indexOf(expected.substring(0, 30));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+expected =
+"    Float64 geospatial_lon_max 359.98333333333335;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    Float64 geospatial_lon_resolution 0.016666666666666666;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n";
+        po = results.indexOf(expected.substring(0, 30));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+expected = 
+"    Float64 Westernmost_Easting 0.0;\n" +
+"  }\n" +
+"}\n";
+        po = results.indexOf(expected.substring(0, 30));
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+            "results=\n" + results);
+
+        //all lon values near 0
+        userDapQuery = "longitude[(179.94):(180.06)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_lonNear0", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 179.93333333333334, 179.95, 179.96666666666664, 179.98333333333335, 180.0, 180.01666666666668, 180.03333333333333, 180.05, 180.06666666666666, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //this tests correct jump across lon 180
+        userDapQuery = "longitude[(179.95):3:(180.05)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_lon_jumpa", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 179.95, 180.0, 180.05, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //this tests correct jump across lon 180
+        userDapQuery = "longitude[(179.966):3:(180.03)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_lon_jumpb", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 179.96666666666664, 180.01666666666668, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //this tests correct jump across lon 180
+        userDapQuery = "longitude[(179.983):3:(180.04)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180__jumpc", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 179.98333333333335, 180.03333333333333, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //this tests correct jump across lon 180
+        userDapQuery = "longitude[(179.999):3:(180.05)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180__jumpd", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 180.0, 180.05, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //entire new lon range
+        userDapQuery = "altitude[(40):60:(41)][(0):6600:(359.99)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):6600:(180.0)%5D
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(-140):6600:(0)%5D
+"latitude,longitude,altitude\n" +
+"degrees_north,degrees_east,m\n" +
+"40.0,0.0,1\n" +
+"40.0,110.0,1374\n" +
+"40.0,220.0,-4514\n" +
+"40.0,330.0,-1486\n" +
+"41.0,0.0,521\n" +
+"41.0,110.0,1310\n" +
+"41.0,220.0,-4518\n" +
+"41.0,330.0,-1998\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //subset of that, just <180
+        userDapQuery = "altitude[(40):60:(41)][(0):6600:(120)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):6600:(180.0)%5D
+"latitude,longitude,altitude\n" +
+"degrees_north,degrees_east,m\n" +
+"40.0,0.0,1\n" +
+"40.0,110.0,1374\n" +
+"41.0,0.0,521\n" +
+"41.0,110.0,1310\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //subset of that, just > 180 
+        userDapQuery = "altitude[(40):60:(41)][(220):6600:(359.99)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(-140):6600:(0)%5D
+"latitude,longitude,altitude\n" +
+"degrees_north,degrees_east,m\n" +
+"40.0,220.0,-4514\n" +
+"40.0,330.0,-1486\n" +
+"41.0,220.0,-4518\n" +
+"41.0,330.0,-1998\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //bang on 180 
+        userDapQuery = "altitude[(40):60:(41)][(0):5400:(359.99)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM180_1", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        //String2.log(results);
+        expected = 
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):5400:(180.0)%5D
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(-180):5400:(0)%5D
+"latitude,longitude,altitude\n" +
+"degrees_north,degrees_east,m\n" +
+"40.0,0.0,1\n" +
+"40.0,90.0,795\n" +
+"40.0,180.0,-5241\n" +
+"40.0,270.0,183\n" +
+"41.0,0.0,521\n" +
+"41.0,90.0,1177\n" +
+"41.0,180.0,-5644\n" +
+"41.0,270.0,215\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test full image
+        userDapQuery = "altitude[][]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_PM180", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+        //test new left image
+        userDapQuery = "altitude[][(0):(170)]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_PM180left", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+        //test new image
+        userDapQuery = "altitude[][(190):(359.99)]&.land=under";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            dir, eddGrid.className() + "_PM180right", ".png"); 
+        SSR.displayInBrowser("file://" + dir + tName);
+
+
+
+        String2.log("\n*** EDDGridLon0360.testPM180 finished.");
 
     }
 
     /**
-     * This tests a dataset that is initially 120to320.
+     * This tests a dataset that is initially Insert.
      *
      * @throws Throwable if trouble
      */
-    public static void test120to320() throws Throwable {
+    public static void testInsert() throws Throwable {
 
-        String2.log("\n****************** EDDGridLonPM180.test120to320() *****************\n");
+        String2.log("\n****************** EDDGridLon0360.testInsert() *****************\n");
         testVerboseOn();
         boolean oDebugMode = debugMode;
         debugMode = true;
@@ -1444,53 +1473,47 @@ expected =
 
         //test notApplicable (dataset maxLon already <180)
         try {
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "notApplicable_LonPM180");       
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "notApplicable_Lon0360");       
             throw new RuntimeException("shouldn't get here");
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            if (msg.indexOf("Error in EDDGridLonPM180(notApplicable_LonPM180) constructor:\n" +
-                "The child longitude axis has no values >180 (max=179.9792)!") < 0)
+            if (msg.indexOf("Error in EDDGridLon0360(notApplicable_Lon0360) constructor:\n" +
+                "The child longitude axis has no values <0 (min=90.0)!") < 0)
                 throw t;
         }
 
-        //test120 to 320
-        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMBsstdmday_LonPM180");       
+        //testInsert
+        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_insert_Lon0360");       
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_120to320_Entire", ".dds"); 
+            eddGrid.className() + "_Insert_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 150];\n" + //changes
-"  Float64 altitude[altitude = 1];\n" +
-"  Float64 latitude[latitude = 4401];\n" +
-"  Float64 longitude[longitude = 14400];\n" +
+"  Float64 time[time = 2656];\n" +  //changes
+"  Float32 latitude[latitude = 90];\n" +
+"  Float32 longitude[longitude = 180];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 150][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 air[time = 2656][latitude = 90][longitude = 180];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 150];\n" +  //changes
-"      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 4401];\n" +
-"      Float64 longitude[longitude = 14400];\n" +
-"  } sst;\n" +
-"} erdMBsstdmday_LonPM180;\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+"      Float64 time[time = 2656];\n" +
+"      Float32 latitude[latitude = 90];\n" +
+"      Float32 longitude[longitude = 180];\n" +
+"  } air;\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
-            eddGrid.className() + "_120to320_Entire", ".das"); 
+            eddGrid.className() + "_Insert_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -180.0, 179.975;\n" +
+"    Float32 actual_range 1.0, 359.0;\n" +
 "    String axis \"X\";\n" +
-"    String coordsys \"geographic\";\n" +
-"    Int32 fraction_digits 3;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
-"    String point_spacing \"even\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n";
@@ -1519,7 +1542,7 @@ expected =
         //this tests correct jump across lon 0
         userDapQuery = "longitude[(-180):2057:(179.975)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_lon", ".csv"); 
+            eddGrid.className() + "_Insert_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
@@ -1529,7 +1552,7 @@ expected =
         //lon values near 0
         userDapQuery = "longitude[(-.075):1:(.075)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_lonNear0", ".csv"); 
+            eddGrid.className() + "_Insert_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
@@ -1539,7 +1562,7 @@ expected =
         //entire new lon range
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(179.975)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1", ".csv"); 
+            eddGrid.className() + "_Insert_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1569,7 +1592,7 @@ expected =
         //subset of that, left+insert+right sections 
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(135)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_4", ".csv"); 
+            eddGrid.className() + "_Insert_4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1592,7 +1615,7 @@ expected =
         //subset: just left
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-70)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1L", ".csv"); 
+            eddGrid.className() + "_Insert_1L", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1607,7 +1630,7 @@ expected =
         //subset: just left, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-120)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1Lb", ".csv"); 
+            eddGrid.className() + "_Insert_1Lb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1620,7 +1643,7 @@ expected =
         //subset: just insert   //insert values are between -40 and 120
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(27)]"; 
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1I", ".csv"); 
+            eddGrid.className() + "_Insert_1I", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1635,7 +1658,7 @@ expected =
         //subset: just insert, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(-20)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1Ib", ".csv"); 
+            eddGrid.className() + "_Insert_1Ib", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1648,7 +1671,7 @@ expected =
         //subset: just right
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(179.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1R", ".csv"); 
+            eddGrid.className() + "_Insert_1R", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1663,7 +1686,7 @@ expected =
         //subset: just right, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(135)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_1Rb", ".csv"); 
+            eddGrid.className() + "_Insert_1Rb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1676,7 +1699,7 @@ expected =
         //subset of that, left + insert
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(27)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_2", ".csv"); 
+            eddGrid.className() + "_Insert_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1697,7 +1720,7 @@ expected =
         //subset of that, insert + right
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(25.7):2057:(179.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_3", ".csv"); 
+            eddGrid.className() + "_Insert_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1716,7 +1739,7 @@ expected =
         //subset of that, left + right  (jump over insert)
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):" + (2057*5) + ":(179.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_3", ".csv"); 
+            eddGrid.className() + "_Insert_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -1731,10 +1754,10 @@ expected =
         //test image
         userDapQuery = "sst[(2008-04-16T00:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-            dir, eddGrid.className() + "_120to320", ".png"); 
+            dir, eddGrid.className() + "_Insert", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
-        String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
+        String2.log("\n*** EDDGridLon0360.testInsert finished.");
         debugMode = oDebugMode;
     }
 
@@ -1742,11 +1765,11 @@ expected =
     /** This tests badFilesFlag.
      */
     public static void testBadFilesFlag() throws Throwable {
-        String2.log("\n*** EDDGridLonPM180.testBadFilesFlag()\n" +
-            "This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.");
-        try {
-        String datasetID      = "test_erdPHsstamday_LonPM180";
-        String childDatasetID = "test_erdPHsstamday_LonPM180Child";
+        String2.log("\n*** EDDGridLon0360.testBadFilesFlag()\n" +
+            "This test requires that test_erdPHsstamday_Lon0360 be loaded in the local ERDDAP.");
+
+        String datasetID      = "test_erdPHsstamday_Lon0360";
+        String childDatasetID = "test_erdPHsstamday_Lon0360Child";
         String request = "http://localhost:8080/cwexperimental/griddap/" + datasetID + ".csvp?time";
         String results, expected;
 
@@ -1766,13 +1789,13 @@ expected =
         Test.ensureEqual(results, fullExpected, "results=\n" + results);
         
         //mark a file bad
-        EDDGridLonPM180 edd = (EDDGridLonPM180)oneFromDatasetsXml(null, datasetID); 
+        EDDGridLon0360 edd = (EDDGridLon0360)oneFromDatasetsXml(null, datasetID); 
         EDDGridFromFiles childEdd = (EDDGridFromFiles)edd.getChildDataset(); 
         Table fileTable = childEdd.getFileTable(); // throws Throwable
         int dirIndex    = fileTable.getColumn(EDDGridFromFiles.FT_DIR_INDEX_COL).getInt(0);
         String fileName = fileTable.getColumn(EDDGridFromFiles.FT_FILE_LIST_COL).getString(0);
         long lastMod    = fileTable.getColumn(EDDGridFromFiles.FT_LAST_MOD_COL ).getLong(0);
-        childEdd.addBadFileToTableOnDisk(dirIndex, fileName, lastMod, "for EDDGridLonPM180.testBadFilesFlag()");
+        childEdd.addBadFileToTableOnDisk(dirIndex, fileName, lastMod, "for EDDGridLon0360.testBadFilesFlag()");
 
         //set regular flag
         String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
@@ -1794,24 +1817,20 @@ expected =
         Math2.sleep(10000);
         results = SSR.getUrlResponseStringUnchanged(request);
         Test.ensureEqual(results, fullExpected, "results=\n" + results);
-        } catch (Exception e) {
-            throw new RuntimeException("\n!!! This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.", e);
-        }
     }
 
     /** This tests hardFlag.
      */
     public static void testHardFlag() throws Throwable {
-        String2.log("\n*** EDDGridLonPM180.testHardFlag()\n" +
-            "This test requires hawaii_d90f_20ee_c4cb and hawaii_d90f_20ee_c4cb_LonPM180\n" +
+        String2.log("\n*** EDDGridLon0360.testHardFlag()\n" +
+            "This test requires hawaii_d90f_20ee_c4cb and hawaii_d90f_20ee_c4cb_Lon0360\n" +
             "be loaded in the local ERDDAP.");
-        try {
 
         //set hardFlag
         String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
         Math2.sleep(1000);
-        String2.writeToFile(EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_LonPM180", "test");
-        String2.log("I just set a hardFlag for hawaii_d90f_20ee_c4cb_LonPM180.\n" +
+        String2.writeToFile(EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_Lon0360", "test");
+        String2.log("I just set a hardFlag for hawaii_d90f_20ee_c4cb_Lon0360.\n" +
             "Now I'm waiting 10 seconds.");
         Math2.sleep(10000);
         //flush the log file
@@ -1820,15 +1839,15 @@ expected =
         //read the log file
         String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
         String expected = // ***
-          "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n" +
-"\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
-"\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+          "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_Lon0360Child\n" +
+"\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_Lon0360\n" +
+"\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_Lon0360\n" +
 "\n" +
 "\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n" +
 "\n" +
 "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
 "LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
-"  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
+"  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_Lon0360\\) inputStream=null majorLoad=false";
         
         int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 77)));
         int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
@@ -1845,30 +1864,25 @@ expected =
 
         //test that child was successfully constructed after that
         int po4 = tLog.indexOf(
-            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_LonPM180Child constructor finished. TIME=",
+            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_Lon0360Child constructor finished. TIME=",
             po);
         Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
 
         //test that parent was successfully constructed after that
         int po5 = tLog.indexOf(
-            "*** EDDGridLonPM180 hawaii_d90f_20ee_c4cb_LonPM180 constructor finished. TIME=",
+            "*** EDDGridLon0360 hawaii_d90f_20ee_c4cb_Lon0360 constructor finished. TIME=",
             po4);
         Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
-        } catch (Exception e) {
-            throw new RuntimeException(
-                "\n!!! This test requires hawaii_d90f_20ee_c4cb and hawaii_d90f_20ee_c4cb_LonPM180 " +
-                "be loaded in the local ERDDAP.", e);
-        }
     }
 
    
     /**
      * This tests the /files/ "files" system.
-     * This requires local_erdMWchlamday_LonPM180 in the localhost ERDDAP.
+     * This requires local_erdVHNchlamday_Lon0360 in the localhost ERDDAP.
      */
     public static void testFiles() throws Throwable {
 
-        String2.log("\n*** EDDGridLonPM180.testFiles()\n");
+        String2.log("\n*** EDDGridLon0360.testFiles()\n");
         String tDir = EDStatic.fullTestCacheDirectory;
         String dapQuery, tName, start, query, results, expected;
         int po;
@@ -1876,26 +1890,26 @@ expected =
         try {
             //get /files/datasetID/.csv
             results = SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/.csv");
+                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/.csv");
             expected = 
 "Name,Last modified,Size,Description\n" +
-"MW2002182_2002212_chla.nc.gz,1332025888000,17339003,\n" +
-"MW2002213_2002243_chla.nc.gz,1332026460000,18217295,\n";
+"VHN2002182_2002212_chla.nc.gz,1332025888000,17339003,\n" +
+"VHN2002213_2002243_chla.nc.gz,1332026460000,18217295,\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //get /files/datasetID/
             results = SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/");
-            Test.ensureTrue(results.indexOf("MW2002182&#x5f;2002212&#x5f;chla&#x2e;nc") > 0, "results=\n" + results);
+                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/");
+            Test.ensureTrue(results.indexOf("VHN2002182&#x5f;2002212&#x5f;chla&#x2e;nc") > 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">17339003<")                               > 0, "results=\n" + results);
 
             //get /files/datasetID/subdir/.csv
 
             //download a file in root
             results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/MW2002182_2002212_chla.nc.gz").substring(0, 50));
+                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/VHN2002182_2002212_chla.nc.gz").substring(0, 50));
             expected = 
-"[31][139][8][8] [26]eO[0][3]MW2002182_2002212_chla.nc[0][228][216][127][140]#[231]][199]q[223][229][238]r?[end]"; 
+"[31][139][8][8] [26]eO[0][3]VHN2002182_2002212_chla.nc[0][228][216][127][140]#[231]][199]q[223][229][238]r?[end]"; 
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //download a file in subdir
@@ -1918,12 +1932,12 @@ expected =
             //try to download a non-existent directory
             try {
                 results = SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish/");
+                    "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish/");
             } catch (Exception e) { 
                 results = e.toString();
             }
             expected = 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish/\n" +
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish/\n" +
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
@@ -1933,12 +1947,12 @@ expected =
             //try to download a non-existent file
             try {
                 results = SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish.csv");
+                    "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish.csv");
             } catch (Exception e) { 
                 results = e.toString();
             }
             expected = 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdMWchlamday_LonPM180/gibberish.csv\n" +
+"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish.csv\n" +
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: File not found: gibberish.csv .\";\n" +
@@ -1950,8 +1964,7 @@ expected =
  
 
         } catch (Throwable t) {
-            throw new RuntimeException(
-                "\nUnexpected error. This test requires local_erdMWchlamday_LonPM180 in the localhost ERDDAP.", t); 
+            throw new RuntimeException("Unexpected error. This test requires local_erdVHNchlamday_Lon0360 in the localhost ERDDAP.", t); 
         } 
     }
 
@@ -1971,8 +1984,8 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 7;
-        String msg = "\n^^^ EDDGridLonPM180.test(" + interactive + ") test=";
+            lastTest = interactive? -1 : 3;
+        String msg = "\n^^^ EDDGridLon0360.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
             try {
@@ -1983,13 +1996,13 @@ expected =
 
                 } else {
                     if (test ==  0) testGenerateDatasetsXmlFromErddapCatalog(); 
-                    if (test ==  1) testGT180();  //this also tests /files/ working for fromErddap localhost dataset
-                    if (test ==  2) test1to359(); //NEEDS UPDATE.   this also tests /files/ working for fromNcFiles dataset
-                    if (test ==  3) test0to360();
-                    if (test ==  4) test120to320(); //if fails, try again
-                    if (test ==  5) testHardFlag(); //if fails, try again
-                    if (test ==  6) testBadFilesFlag(); 
-                    if (test ==  7) testFiles();
+                    if (test ==  1) testLT0();  //this also tests /files/ working for fromErddap cw ERDDAP dataset
+                    if (test ==  2) testPM181();
+                    if (test ==  3) testPM180();
+                    //if (test ==  4) testInsert(); //needs a test dataset
+                    //if (test ==  5) testHardFlag(); //if fails, try again
+                    //if (test ==  6) testBadFilesFlag(); 
+                    //if (test ==  7) testFiles();
 
                     //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
                     //so there is a test for that in the constructor, 
