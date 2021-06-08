@@ -428,6 +428,7 @@ public abstract class EDD {
             if (type.equals("EDDGridFromNcFiles"))      return EDDGridFromNcFiles.fromXml(erddap, xmlReader);
             if (type.equals("EDDGridFromNcFilesUnpacked")) return EDDGridFromNcFilesUnpacked.fromXml(erddap, xmlReader);
             if (type.equals("EDDGridLonPM180"))         return EDDGridLonPM180.fromXml(erddap, xmlReader);
+            if (type.equals("EDDGridLon0360"))          return EDDGridLon0360.fromXml(erddap, xmlReader);
             if (type.equals("EDDGridSideBySide"))       return EDDGridSideBySide.fromXml(erddap, xmlReader);
 
             if (type.equals("EDDTableAggregateRows"))   return EDDTableAggregateRows.fromXml(erddap, xmlReader);
@@ -1110,7 +1111,8 @@ public abstract class EDD {
                     " Subscribing to the remote ERDDAP dataset failed because\n" +
                     "emailEverythingTo wasn't specified in this ERDDAP's setup.xml.\n" +
                     keepUpToDate);
-            } else if (datasetID.endsWith("_LonPM180Child") || //if hidden EDDGridLomPM180 child dataset, subscribing will always fail, so don't try
+            } else if (datasetID.endsWith("_Lon0360Child")  || //if hidden EDDGridLon0360  child dataset, subscribing will always fail, so don't try
+                       datasetID.endsWith("_LonPM180Child") || //if hidden EDDGridLonPM180 child dataset, subscribing will always fail, so don't try
                        datasetID.endsWith("_LonPM180Low")) {   // name used for child in v1.66 only
                 String2.log("Note: This dataset didn't try to subscribe to the source dataset\n" +
                     "because this dataset isn't publicly accessible.");
@@ -12309,7 +12311,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
      * @return the version of the remote ERDDAP, or 1.22 if trouble.
      */
     public static double getRemoteErddapVersion(String localSourceUrl) {
-        String find = "/erddap/";
+        String find = "/erddap/";    //EDStatic.warName, but developmentMode is irrelevant/trouble here
         int po = localSourceUrl.indexOf(find);            
         if (po < 0) {
             find = "/cwexperimental/";
@@ -12317,7 +12319,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         }
         if (po < 0) {
             String2.log(String2.ERROR + " in getRemoteErddapVersion(" + localSourceUrl + 
-                "): \"/erddap/\" not found.");
+                "): \"/erddap/\" not found in URL.");
             return 1.22;
         }
         String vUrl = localSourceUrl.substring(0, po + find.length()) + "version";

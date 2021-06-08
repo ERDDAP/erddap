@@ -81,6 +81,11 @@ in ERDDAP version 2.13 (released 2021-0?-??)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>NEW: EDDGridLon0360 which makes a gridded dataset with longitude values >=0 and <=360
+    from a gridded dataset with longitude values >=-180 and <=180.
+    Thanks to Dale Robinson.
+    <br>&nbsp;
+
   <li>NEW: ERDDAP administrators can override any value in setup.xml
       via an environment variable named ERDDAP_<i>valueName</i> before running ERDDAP.
       For example, use ERDDAP_baseUrl overrides the &lt;baseUrl&gt; value.
@@ -143,7 +148,7 @@ in ERDDAP version 2.12 (released 2021-05-14)</h2>
   
   <li>BUG FIX: ERDDAP now also handles private AWS S3 files correctly. 
     There were other related improvements to the handling of AWS S3 files.
-    Thanks to Michael Gangl.
+    Thanks to Michael Gangl and Dylan Pugh.
     <br>&nbsp;
   
   <li>NEW: EDDGridFromNcFiles and EDDGridFromNcFilesUnpacked

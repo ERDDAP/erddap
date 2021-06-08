@@ -400,27 +400,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //ensure the setup is valid
         ensureValid();  //this ensures many things are set, e.g., sourceUrl
 
-        //try to get sourceErddapVersion
-        byte versionBytes[] = new byte[]{(byte)32};
-        try {
-            String lookFor = "/" + EDStatic.warName + "/";
-            int po = localSourceUrl.indexOf(lookFor);
-            String vUrl = localSourceUrl.substring(0, po + lookFor.length()) + "version";
-            versionBytes = quickRestartAttributes == null?
-                SSR.getUrlResponseBytes(vUrl) : //has timeout and descriptive error 
-                ((ByteArray)quickRestartAttributes.get("versionBytes")).toArray();
-            String response[] = String2.split(new String(versionBytes, String2.UTF_8), '\n');
-            if (response[0].startsWith("ERDDAP_version=")) {
-                sourceErddapVersion = String2.parseDouble(response[0].substring(15));
-                if (Double.isNaN(sourceErddapVersion))
-                    sourceErddapVersion = 1.22;
-            }
-        } catch (Throwable t) {
-            //leave as default: 1.22
-            //String2.log("Caught:\n" + MustBe.throwableToString(t));
-        }
 
         //finalize accessibleViaFiles
+        sourceErddapVersion = getRemoteErddapVersion(localSourceUrl);
         if (accessibleViaFiles) {
             if (sourceErddapVersion < 2.10) {
                 accessibleViaFiles = false;
@@ -449,7 +431,6 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 quickRestartAttributes = new Attributes();
                 quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
                 quickRestartAttributes.set("sourceInfoBytes", new ByteArray(sourceInfoBytes));
-                quickRestartAttributes.set("versionBytes",    new ByteArray(versionBytes));
                 for (int av = 0; av < axisVariables.length; av++) {
                     quickRestartAttributes.set(
                         "sourceValues_" + 

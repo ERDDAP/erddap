@@ -161,6 +161,7 @@ public class GenerateDatasetsXml {
                 "EDDGridFromNcFilesUnpacked",
                 "EDDGridFromThreddsCatalog",
                 "EDDGridLonPM180FromErddapCatalog",
+                "EDDGridLon0360FromErddapCatalog",
                 "EDDTableFromAsciiFiles",
                 "EDDTableFromAudioFiles",
                 "EDDTableFromAwsXmlFiles",
@@ -340,6 +341,13 @@ public class GenerateDatasetsXml {
                         s2  = get(args,  2,  s2, "Dataset name regex (usually \".*\")");  
                         String2.log("working...");
                         printToBoth(EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(
+                            s1, s2));
+
+                    } else if (eddType.equals("EDDGridLon0360FromErddapCatalog")) {
+                        s1  = get(args,  1,  s1, "ERDDAP URL (ending in \"/erddap/\")");         
+                        s2  = get(args,  2,  s2, "Dataset name regex (usually \".*\")");  
+                        String2.log("working...");
+                        printToBoth(EDDGridLon0360.generateDatasetsXmlFromErddapCatalog(
                             s1, s2));
 
                     //EDDTable
