@@ -360,16 +360,15 @@ public class EDDGridLon0360 extends EDDGrid {
             //create dInsert if there's a big gap
             double spacing = childLon.averageSpacing(); //avg is more reliable than any single value
             double lon179 = newLonValues.getDouble(newLonValues.size() - 1);
-            double lon180 = childLonValues.getDouble(0);
+            double lon180 = childLonValues.getDouble(slonim180) + 360;
             //e.g., gap of 2.1*spacing --floor--> 2 -> insert 1 value
             int insertN = Math2.roundToInt(Math.floor((lon180 - lon179) / spacing)) - 1;
             if (insertN >= 1) {  //enough space to insert 1+ regularly spaced lon values
 
-                throw new RuntimeException(
-                    "This dataset needs to have missing values inserted near lon=180, but the code to do that is untested.\n" +
-                    "Please email a sample file from this dataset to bob.simons@noaa.gov so he run the tests.");
+                //throw new RuntimeException(
+                //    "This dataset needs to have missing values inserted near lon=180, but the code to do that is untested.\n" +
+                //    "Please email a sample file from this dataset to bob.simons@noaa.gov so he run the tests.");
 
-                /* 
                 insert179i = newLonValues.size();
                 for (int i = 1; i <= insertN; i++) {
                     double td = Math2.niceDouble(lon179 + i * spacing, 12);
@@ -381,7 +380,6 @@ public class EDDGridLon0360 extends EDDGrid {
                 if (verbose) String2.log(
                     "  'insert' is active: lon[" + insert179i + "]=" + newLonValues.getDouble(insert179i) +
                                          " lon[" + insert180i + "]=" + newLonValues.getDouble(insert180i));
-                */
             }
         }
 
@@ -589,8 +587,8 @@ public class EDDGridLon0360 extends EDDGrid {
         rStop -= (rStop - rStart) % rStride;
 
         //map:
-        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
+        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
 
         //really easy: all the requested lons are from the new left: <=dloni179
         if (dloni0 != -1 && rStop <= dloni179) {
@@ -617,8 +615,8 @@ public class EDDGridLon0360 extends EDDGrid {
         }
 
         //map:
-        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
+        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
 
         //Hard: need to make 2 requests and merge them.
         //If this is a big request, this takes a lot of memory for the *short* time 
@@ -640,7 +638,6 @@ public class EDDGridLon0360 extends EDDGrid {
         }
 
         int insertNLon = 0;
-        /*
         //find out if 'insert' is active and relevant (i.e., some values are requested)
         boolean insertActive = insert179i >= 0; //basic system is active
         if (insertActive && (rStop < insert179i || rStart > insert180i))
@@ -667,7 +664,6 @@ public class EDDGridLon0360 extends EDDGrid {
             if (debugMode) String2.log(">> will insert lon[" + 
                 firstInserti + ":" + rStride + ":" + lastInserti + "]");
         }
-        */
 
         //find request for new right half 
         PrimitiveArray newRightResults[] = null;
@@ -692,8 +688,8 @@ public class EDDGridLon0360 extends EDDGrid {
         }
 
         //map:
-        //dest is: [dloni0...dloni179] [insert179...insert0,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert0,]       180...359,       
+        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
+        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
 
         //now build results[] by reading chunks alternately from the 3 sources 
         //what is chunk size from left request, from insert, and from right request?
@@ -1483,24 +1479,25 @@ expected =
         }
 
         //testInsert
-        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_insert_Lon0360");       
+        eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testLon0360Insert");       
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
             eddGrid.className() + "_Insert_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 2656];\n" +  //changes
-"  Float32 latitude[latitude = 90];\n" +
-"  Float32 longitude[longitude = 180];\n" +
+"  Float64 time[time = 1];\n" +
+"  Float32 latitude[latitude = 61];\n" +
+"  Float32 longitude[longitude = 360];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 air[time = 2656][latitude = 90][longitude = 180];\n" +
+"      Float32 sst[time = 1][latitude = 61][longitude = 360];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 2656];\n" +
-"      Float32 latitude[latitude = 90];\n" +
-"      Float32 longitude[longitude = 180];\n" +
-"  } air;\n";
+"      Float64 time[time = 1];\n" +
+"      Float32 latitude[latitude = 61];\n" +
+"      Float32 longitude[longitude = 360];\n" +
+"  } sst;\n" +
+"} testLon0360Insert;\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
@@ -1510,7 +1507,7 @@ expected =
         expected = 
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range 1.0, 359.0;\n" +
+"    Float32 actual_range 0.5, 359.5;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -1522,237 +1519,201 @@ expected =
             "results=\n" + results);
 
 expected =
-"    Float64 geospatial_lon_max 179.975;\n" +
-"    Float64 geospatial_lon_min -180.0;\n" +
-"    Float64 geospatial_lon_resolution 0.025;\n" +
+"    Float64 geospatial_lon_max 359.5;\n" +
+"    Float64 geospatial_lon_min 0.5;\n" +            
+"    Float64 geospatial_lon_resolution 1.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";
         po = results.indexOf(expected.substring(0, 30));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
 expected = 
-"    Float64 Westernmost_Easting -180.0;\n" +
-"  }\n" +
-"}\n";
-        po = results.indexOf(expected.substring(0, 30));
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
+"    Float64 Westernmost_Easting 0.5;\n";
+        Test.ensureTrue(results.indexOf(expected) > 0, "results=\n" + results);
 
-        //lon values
-        //this tests correct jump across lon 0
-        userDapQuery = "longitude[(-180):2057:(179.975)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_Insert_lon", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        results = String2.replaceAll(results, "\n", ", ");
-        expected = 
-"longitude, degrees_east, -180.0, -128.575, -77.14999999999998, -25.725, 25.7, 77.125, 128.55, 179.975, ";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //lon values near 0
-        userDapQuery = "longitude[(-.075):1:(.075)]";
+        //lon values near 25
+        userDapQuery = "longitude[(22.5):1:(27.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
-"longitude, degrees_east, -0.075, -0.05, -0.025, 0.0, 0.025, 0.05, 0.075, ";
+"longitude, degrees_east, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //lon values near 330
+        userDapQuery = "longitude[(327.5):1:(332.5)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            eddGrid.className() + "_Insert_lonNear0", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 327.5, 328.5, 329.5, 330.5, 331.5, 332.5, ";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //entire new lon range
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(179.975)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(359.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-//erdMBsstdmday natively 120...320(-40)
-//verified by cw erddap  lon (128.55):2057:(180)  and (180):2057:(320)
-//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday.htmlTable?sst[(2008-04-15):1:(2008-04-15)][(0.0):1:(0.0)][(0):1:(0)][(128.55):2057:(180)]
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-180.0,26.41\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-180.0,26.4708\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //subset of that, left+insert+right sections 
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(135)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_Insert_4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
+//verified by cw erddap 
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdHadISST.htmlTable?sst[(2020-12-16T12)][(-33.5):1:(-34.5)][(0.5):20:(20.5)]
+//https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdHadISST.htmlTable?sst[(2020-12-16T12)][(-33.5):1:(-34.5)][(-19.5):20:(-19.5)]
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,0.5,19.392572\n" +
+"2020-12-16T12:00:00Z,-33.5,20.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,40.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,60.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,80.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,100.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,120.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,140.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,160.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,180.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,200.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,220.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,240.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,260.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,280.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,300.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,320.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,340.5,20.45493\n" +
+"2020-12-16T12:00:00Z,-34.5,0.5,18.77771\n" +
+"2020-12-16T12:00:00Z,-34.5,20.5,19.726223\n" +
+"2020-12-16T12:00:00Z,-34.5,40.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,60.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,80.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,100.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,120.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,140.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,160.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,180.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,200.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,220.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,240.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,260.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,280.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,300.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,320.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,340.5,19.598171\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just left
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-70)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(20.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1L", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,0.5,19.392572\n" +
+"2020-12-16T12:00:00Z,-33.5,20.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,0.5,18.77771\n" +
+"2020-12-16T12:00:00Z,-34.5,20.5,19.726223\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //subset: just left, 1 point
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-120)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_Insert_1Lb", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //subset: just insert   //insert values are between -40 and 120
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(27)]"; 
+        //subset: just insert  
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(160.5):20:(200.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1I", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,160.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,180.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,200.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,160.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,180.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,200.5,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //subset: just insert, 1 point
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(-20)]";
+        //subset: just left part of insert
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(140.5):20:(160.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1Ib", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,140.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,160.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,140.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,160.5,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset: just right
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(179.98)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(340.5):10:(350.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1R", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //subset: just right, 1 point
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(135)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_Insert_1Rb", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
-        //String2.log(results);
-        expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,340.5,20.45493\n" +
+"2020-12-16T12:00:00Z,-33.5,350.5,20.543941\n" +
+"2020-12-16T12:00:00Z,-34.5,340.5,19.598171\n" +
+"2020-12-16T12:00:00Z,-34.5,350.5,19.714016\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, left + insert
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(27)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(60.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-180.0,26.41\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-180.0,26.4708\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-77.14999999999998,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-25.725,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,0.5,19.392572\n" +
+"2020-12-16T12:00:00Z,-33.5,20.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,40.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,60.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,0.5,18.77771\n" +
+"2020-12-16T12:00:00Z,-34.5,20.5,19.726223\n" +
+"2020-12-16T12:00:00Z,-34.5,40.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,60.5,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, insert + right
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(25.7):2057:(179.98)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(320.5):20:(340.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,179.975,26.31\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,25.7,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,77.125,NaN\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,179.975,26.515\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,320.5,NaN\n" +
+"2020-12-16T12:00:00Z,-33.5,340.5,20.45493\n" +
+"2020-12-16T12:00:00Z,-34.5,320.5,NaN\n" +
+"2020-12-16T12:00:00Z,-34.5,340.5,19.598171\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //subset of that, left + right  (jump over insert)
-        userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):" + (2057*5) + ":(179.98)]";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):340:(340.5)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_Insert_3", ".csv"); 
+            eddGrid.className() + "_Insert_3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
-"time,altitude,latitude,longitude,sst\n" +
-"UTC,m,degrees_north,degrees_east,degree_C\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,-128.575,26.8195\n" +
-"2008-04-16T00:00:00Z,0.0,0.0,128.55,30.61\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,-128.575,26.7495\n" +
-"2008-04-16T00:00:00Z,0.0,0.100000000000001,128.55,30.36\n";
+"time,latitude,longitude,sst\n" +
+"UTC,degrees_north,degrees_east,C\n" +
+"2020-12-16T12:00:00Z,-33.5,0.5,19.392572\n" +
+"2020-12-16T12:00:00Z,-33.5,340.5,20.45493\n" +
+"2020-12-16T12:00:00Z,-34.5,0.5,18.77771\n" +
+"2020-12-16T12:00:00Z,-34.5,340.5,19.598171\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test image
-        userDapQuery = "sst[(2008-04-16T00:00:00Z)][][][]&.land=under";
+        userDapQuery = "sst[(2020-12-16T12:00:00Z)][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
             dir, eddGrid.className() + "_Insert", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
@@ -1762,213 +1723,7 @@ expected =
     }
 
 
-    /** This tests badFilesFlag.
-     */
-    public static void testBadFilesFlag() throws Throwable {
-        String2.log("\n*** EDDGridLon0360.testBadFilesFlag()\n" +
-            "This test requires that test_erdPHsstamday_Lon0360 be loaded in the local ERDDAP.");
-
-        String datasetID      = "test_erdPHsstamday_Lon0360";
-        String childDatasetID = "test_erdPHsstamday_Lon0360Child";
-        String request = "http://localhost:8080/cwexperimental/griddap/" + datasetID + ".csvp?time";
-        String results, expected;
-
-        //set badFileFlag (to delete the badFiles.nc file and reload the dataset)
-        String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
-
-        //wait 10 seconds and test that all times are present
-        String2.log("I set the badFileFlag. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(20000); //sometimes computer is super slow
-
-        //test that all times are present
-        results = SSR.getUrlResponseStringUnchanged(request);
-        String fullExpected = 
-"time (UTC)\n" +
-"1981-09-16T00:00:00Z\n" +
-"1981-10-16T12:00:00Z\n";
-        Test.ensureEqual(results, fullExpected, "results=\n" + results);
-        
-        //mark a file bad
-        EDDGridLon0360 edd = (EDDGridLon0360)oneFromDatasetsXml(null, datasetID); 
-        EDDGridFromFiles childEdd = (EDDGridFromFiles)edd.getChildDataset(); 
-        Table fileTable = childEdd.getFileTable(); // throws Throwable
-        int dirIndex    = fileTable.getColumn(EDDGridFromFiles.FT_DIR_INDEX_COL).getInt(0);
-        String fileName = fileTable.getColumn(EDDGridFromFiles.FT_FILE_LIST_COL).getString(0);
-        long lastMod    = fileTable.getColumn(EDDGridFromFiles.FT_LAST_MOD_COL ).getLong(0);
-        childEdd.addBadFileToTableOnDisk(dirIndex, fileName, lastMod, "for EDDGridLon0360.testBadFilesFlag()");
-
-        //set regular flag
-        String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
-
-        //wait 10 seconds and test that that time point is gone
-        String2.log("I marked a file as bad. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(20000);  //sometimes computer is super slow
-        results = SSR.getUrlResponseStringUnchanged(request);
-        expected = 
-"time (UTC)\n" +
-"1981-10-16T12:00:00Z\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
-
-        //set badFileFlag (to delete the badFiles.nc file and reload the dataset)
-        String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
-
-        //wait 10 seconds and test that all times are present
-        String2.log("I set the badFileFlag. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(10000);
-        results = SSR.getUrlResponseStringUnchanged(request);
-        Test.ensureEqual(results, fullExpected, "results=\n" + results);
-    }
-
-    /** This tests hardFlag.
-     */
-    public static void testHardFlag() throws Throwable {
-        String2.log("\n*** EDDGridLon0360.testHardFlag()\n" +
-            "This test requires hawaii_d90f_20ee_c4cb and hawaii_d90f_20ee_c4cb_Lon0360\n" +
-            "be loaded in the local ERDDAP.");
-
-        //set hardFlag
-        String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-        Math2.sleep(1000);
-        String2.writeToFile(EDStatic.fullHardFlagDirectory + "hawaii_d90f_20ee_c4cb_Lon0360", "test");
-        String2.log("I just set a hardFlag for hawaii_d90f_20ee_c4cb_Lon0360.\n" +
-            "Now I'm waiting 10 seconds.");
-        Math2.sleep(10000);
-        //flush the log file
-        String tIndex = SSR.getUrlResponseStringUnchanged("http://localhost:8080/cwexperimental/status.html");
-        Math2.sleep(2000);
-        //read the log file
-        String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
-        String expected = // ***
-          "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_Lon0360Child\n" +
-"\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_Lon0360\n" +
-"\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_Lon0360\n" +
-"\n" +
-"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n" +
-"\n" +
-"\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
-"LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
-"  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_Lon0360\\) inputStream=null majorLoad=false";
-        
-        int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 77)));
-        int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
-        String tResults = tLog.substring(po, po + expected.length());
-        String2.log("tResults=\"\n" + tResults + "\n\"\n");
-        Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
-        
-        //so far so good, tResults matches expected
-        int po3 = tResults.indexOf("thread at ");
-        String reloadTime = tResults.substring(po3 + 10, po3 + 35);
-        String2.log(" startTime=" + startTime + "\n" +
-                    "reloadTime=" + reloadTime);
-        Test.ensureTrue(startTime.compareTo(reloadTime) < 0, "startTime is after reloadTime?!");
-
-        //test that child was successfully constructed after that
-        int po4 = tLog.indexOf(
-            "*** EDDGridFromErddap hawaii_d90f_20ee_c4cb_Lon0360Child constructor finished. TIME=",
-            po);
-        Test.ensureTrue(po4 > po, "po4=" + po4 + " isn't greater than po=" + po + " !");
-
-        //test that parent was successfully constructed after that
-        int po5 = tLog.indexOf(
-            "*** EDDGridLon0360 hawaii_d90f_20ee_c4cb_Lon0360 constructor finished. TIME=",
-            po4);
-        Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
-    }
-
    
-    /**
-     * This tests the /files/ "files" system.
-     * This requires local_erdVHNchlamday_Lon0360 in the localhost ERDDAP.
-     */
-    public static void testFiles() throws Throwable {
-
-        String2.log("\n*** EDDGridLon0360.testFiles()\n");
-        String tDir = EDStatic.fullTestCacheDirectory;
-        String dapQuery, tName, start, query, results, expected;
-        int po;
-
-        try {
-            //get /files/datasetID/.csv
-            results = SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/.csv");
-            expected = 
-"Name,Last modified,Size,Description\n" +
-"VHN2002182_2002212_chla.nc.gz,1332025888000,17339003,\n" +
-"VHN2002213_2002243_chla.nc.gz,1332026460000,18217295,\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //get /files/datasetID/
-            results = SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/");
-            Test.ensureTrue(results.indexOf("VHN2002182&#x5f;2002212&#x5f;chla&#x2e;nc") > 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">17339003<")                               > 0, "results=\n" + results);
-
-            //get /files/datasetID/subdir/.csv
-
-            //download a file in root
-            results = String2.annotatedString(SSR.getUrlResponseStringNewline(
-                "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/VHN2002182_2002212_chla.nc.gz").substring(0, 50));
-            expected = 
-"[31][139][8][8] [26]eO[0][3]VHN2002182_2002212_chla.nc[0][228][216][127][140]#[231]][199]q[223][229][238]r?[end]"; 
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //download a file in subdir
-
-            //try to download a non-existent dataset
-            try {
-                results = SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/gibberish/");
-            } catch (Exception e) { 
-                results = e.toString();
-            }
-            expected = 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/gibberish/\n" +
-"(Error {\n" +
-"    code=404;\n" +
-"    message=\"Not Found: Currently unknown datasetID=gibberish\";\n" +
-"})";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //try to download a non-existent directory
-            try {
-                results = SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish/");
-            } catch (Exception e) { 
-                results = e.toString();
-            }
-            expected = 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish/\n" +
-"(Error {\n" +
-"    code=404;\n" +
-"    message=\"Not Found: Resource not found: directory=gibberish/\";\n" +
-"})";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //try to download a non-existent file
-            try {
-                results = SSR.getUrlResponseStringNewline(
-                    "http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish.csv");
-            } catch (Exception e) { 
-                results = e.toString();
-            }
-            expected = 
-"java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: http://localhost:8080/cwexperimental/files/local_erdVHNchlamday_Lon0360/gibberish.csv\n" +
-"(Error {\n" +
-"    code=404;\n" +
-"    message=\"Not Found: File not found: gibberish.csv .\";\n" +
-"})";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-
-            //try to download a non-existent file in existant subdir
-
- 
-
-        } catch (Throwable t) {
-            throw new RuntimeException("Unexpected error. This test requires local_erdVHNchlamday_Lon0360 in the localhost ERDDAP.", t); 
-        } 
-    }
-
-
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -1984,7 +1739,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 3;
+            lastTest = interactive? -1 : 4;
         String msg = "\n^^^ EDDGridLon0360.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -1999,10 +1754,7 @@ expected =
                     if (test ==  1) testLT0();  //this also tests /files/ working for fromErddap cw ERDDAP dataset
                     if (test ==  2) testPM181();
                     if (test ==  3) testPM180();
-                    //if (test ==  4) testInsert(); //needs a test dataset
-                    //if (test ==  5) testHardFlag(); //if fails, try again
-                    //if (test ==  6) testBadFilesFlag(); 
-                    //if (test ==  7) testFiles();
+                    if (test ==  4) testInsert(); 
 
                     //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
                     //so there is a test for that in the constructor, 

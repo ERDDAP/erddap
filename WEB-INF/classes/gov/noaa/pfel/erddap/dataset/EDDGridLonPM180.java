@@ -353,7 +353,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             //create dInsert if there's a big gap
             double spacing = childLon.averageSpacing(); //avg is more reliable than any single value
             double lon359 = newLonValues.getDouble(newLonValues.size() - 1);
-            double lon0   = childLonValues.getDouble(0);
+            double lon0   = childLonValues.getDouble(sloni0);
             //e.g., gap of 2.1*spacing --floor--> 2 -> insert 1 value
             int insertN = Math2.roundToInt(Math.floor((lon0 - lon359) / spacing)) - 1;
             if (insertN >= 1) {  //enough space to insert 1+ regularly spaced lon values
@@ -1716,7 +1716,7 @@ expected =
         //subset of that, left + right  (jump over insert)
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):" + (2057*5) + ":(179.98)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
-            eddGrid.className() + "_120to320_3", ".csv"); 
+            eddGrid.className() + "_120to320_3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
