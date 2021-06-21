@@ -772,8 +772,7 @@ public static boolean developmentMode = false;
         autoRefresh,
         blacklistMsg,
         categoryTitleHtml,
-        category1Html,
-        category2Html,
+        categoryHtml,
         category3Html,
         categoryPickAttribute,
         categorySearchHtml,
@@ -860,8 +859,7 @@ public static boolean developmentMode = false;
         dtAccessibleNo,
         dtAccessibleLogIn,
         dtLogIn,
-        dtDAF1,
-        dtDAF2,
+        dtDAF,
         dtFiles,
         dtMAG,
         dtSOS,
@@ -1080,6 +1078,7 @@ public static boolean developmentMode = false;
         infoTableTitleHtml,
         infoRequestForm,
         inotifyFix,
+        inotifyFixCommands,
         justGenerateAndView,
         justGenerateAndViewTooltip,
         justGenerateAndViewUrl,
@@ -2117,8 +2116,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         PrimitiveArray.ArraySubsetStart    = messages.getNotNothingString("ArraySubsetStart",   errorInMethod);
         PrimitiveArray.ArraySubsetStride   = messages.getNotNothingString("ArraySubsetStride",  errorInMethod);
         categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          errorInMethod);
-        category1Html              = messages.getNotNothingString("category1Html",              errorInMethod);
-        category2Html              = messages.getNotNothingString("category2Html",              errorInMethod);
+        categoryHtml               = messages.getNotNothingString("categoryHtml",               errorInMethod);
         category3Html              = messages.getNotNothingString("category3Html",              errorInMethod);
         categoryPickAttribute      = messages.getNotNothingString("categoryPickAttribute",      errorInMethod);
         categorySearchHtml         = messages.getNotNothingString("categorySearchHtml",         errorInMethod);
@@ -2209,8 +2207,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dtAccessibleNo             = messages.getNotNothingString("dtAccessibleNo",             errorInMethod);
         dtAccessibleLogIn          = messages.getNotNothingString("dtAccessibleLogIn",          errorInMethod);
         dtLogIn                    = messages.getNotNothingString("dtLogIn",                    errorInMethod);
-        dtDAF1                     = messages.getNotNothingString("dtDAF1",                     errorInMethod);
-        dtDAF2                     = messages.getNotNothingString("dtDAF2",                     errorInMethod);
+        dtDAF                      = messages.getNotNothingString("dtDAF",                      errorInMethod);
         dtFiles                    = messages.getNotNothingString("dtFiles",                    errorInMethod);
         dtMAG                      = messages.getNotNothingString("dtMAG",                      errorInMethod);
         dtSOS                      = messages.getNotNothingString("dtSOS",                      errorInMethod);
@@ -2480,8 +2477,10 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         filesWarning               = messages.getNotNothingString("filesWarning",               errorInMethod);
         functions                  = messages.getNotNothingString("functions",                  errorInMethod);
         functionTooltip            = messages.getNotNothingString("functionTooltip",            errorInMethod);
+        functionTooltip            = MessageFormat.format(functionTooltip, "distinct()");
         functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      errorInMethod);
         functionDistinctTooltip    = messages.getNotNothingString("functionDistinctTooltip",    errorInMethod);
+        functionDistinctTooltip    = MessageFormat.format(functionDistinctTooltip, "distinct()");
         functionOrderByExtra       = messages.getNotNothingString("functionOrderByExtra",       errorInMethod);
         functionOrderByTooltip     = messages.getNotNothingString("functionOrderByTooltip",     errorInMethod);
         functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        errorInMethod);
@@ -2520,6 +2519,8 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         errorInMethod);
         infoRequestForm            = messages.getNotNothingString("infoRequestForm",            errorInMethod);
         inotifyFix                 = messages.getNotNothingString("inotifyFix",                 errorInMethod);
+        inotifyFixCommands         = messages.getNotNothingString("inotifyFixCommands",         errorInMethod);
+        inotifyFix                 = MessageFormat.format(inotifyFix, inotifyFixCommands);
         justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
         justGenerateAndViewTooltip = messages.getNotNothingString("justGenerateAndViewTooltip", errorInMethod);
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
@@ -2823,6 +2824,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         Attributes.signedToUnsignedAttNames = StringArray.arrayFromCSV(
                                      messages.getNotNothingString("signedToUnsignedAttNames",   errorInMethod));
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
+        seeProtocolDocumentation   = MessageFormat.format(seeProtocolDocumentation, "documentation.html"); //so it isn't translated
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
         sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod); 
         sparqlP01toP02pre          = messages.getNotNothingString("sparqlP01toP02pre",          errorInMethod); 

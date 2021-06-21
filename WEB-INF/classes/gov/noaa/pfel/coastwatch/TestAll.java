@@ -126,8 +126,8 @@ public class TestAll  {
 
 //      DasDds.main(new String[]{"test_erdVHNchlamday_Lon0360", "-verbose"});
 
-//      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("/data/biddle/", "684362_v1_PRS_bacteria_identification.tsv", 
-//        "", "", 1, 2, "\t", 10080, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
+//      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
+//        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
 //          0, "", null));
 //      GenerateDatasetsXml.main(new String[0]); //interactive 
 
@@ -231,7 +231,6 @@ public class TestAll  {
 //           2018-04-16 try again  
 //           2018-07-12 new catalog
 //           2018-08-24 esrl changed a lot
-//           2021-05-20 
 //      0) 2017-11-14 UAF clean catalog STILL refers to http:// urls when it could 
 //         refer to https:// urls, e.g., 
 //         https://ferret.pmel.noaa.gov/uaf/thredds/CleanCatalogs/ecowatch.ncddc.noaa.gov/thredds/catalog/ncom/ncom_reg1_agg/catalog.html?dataset=ncom.ncom_reg1_agg.NCOM_Region_1_Aggregation_best.ncd
@@ -239,6 +238,7 @@ public class TestAll  {
 //         notify him again.
 //         GenerateDatasetsXml converts to https when possible via EDD.updateUrls.
 //      1) run:
+//           EDD.verbose = true;
 //           EDDGridFromDap.testUAFSubThreddsCatalog(0); //0= entire official clean catalog  ~16hrs
 //      2) Results file is /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml          
 //         Log file is     /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml.log.txt
@@ -559,7 +559,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 2, 2021, 4, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 2, 2021, 5, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -592,7 +592,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 2, 2021, 4); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 2, 2021, 5); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -760,6 +760,9 @@ public class TestAll  {
 //        "https://coastwatch.pfeg.noaa.gov/erddap/");
 //        "https://upwell.pfeg.noaa.gov/erddap/");
 //        "http://75.101.155.155/erddap/");
+
+//    Projects.splitOBIS("S:\\occurrence.csv", "S:\\obis\\");
+
 
 //    SSR.displayInBrowser("file://" + tName);
 //    SSR.downloadFile("",

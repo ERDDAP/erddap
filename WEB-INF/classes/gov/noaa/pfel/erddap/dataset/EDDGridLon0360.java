@@ -318,10 +318,9 @@ public class EDDGridLon0360 extends EDDGrid {
         PrimitiveArray childLonValues = childLon.destinationValues();
         int nChildLonValues = childLonValues.size();
 
-// source            slonim180,  slonim1  ||   sloni0,   sloni179  ||
-// old: [ignored] ||      -180,       -1  ||        0, 90,    179  || [ignored]
-// new:                   -180, -90,  -1  ||        0, 90,    179 
-// dest:                                       dloni0,   dloni179  || dlonim180  dlonim1
+// source [ignored] ||      -180,       -1  ||  [     0,        179] ||            180                             359
+// source [ignored] || slonim180,  slonim1  ||  [sloni0,   sloni179] || [ignored]
+// dest:                                        [dloni0,   dloni179] || [insert179 insert180] || dlonim180  dlonim1
         //all of the searches use EXACT math 
         PAOne clvPAOne = new PAOne(childLonValues);
 
@@ -586,9 +585,9 @@ public class EDDGridLon0360 extends EDDGrid {
         //find exact stop (so tests below are true tests)
         rStop -= (rStop - rStart) % rStride;
 
-        //map:
-        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
+        // source [ignored] ||      -180,       -1  ||  [     0,        179] ||            180                             359
+        // source [ignored] || slonim180,  slonim1  ||  [sloni0,   sloni179] || [ignored]
+        // dest:                                        [dloni0,   dloni179] || [insert179 insert180] || dlonim180  dlonim1
 
         //really easy: all the requested lons are from the new left: <=dloni179
         if (dloni0 != -1 && rStop <= dloni179) {
@@ -614,9 +613,9 @@ public class EDDGridLon0360 extends EDDGrid {
             return results;
         }
 
-        //map:
-        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
+        // source [ignored] ||      -180,       -1  ||  [     0,        179] ||            180                             359
+        // source [ignored] || slonim180,  slonim1  ||  [sloni0,   sloni179] || [ignored]
+        // dest:                                        [dloni0,   dloni179] || [insert179 insert180] || dlonim180  dlonim1
 
         //Hard: need to make 2 requests and merge them.
         //If this is a big request, this takes a lot of memory for the *short* time 
@@ -687,9 +686,9 @@ public class EDDGridLon0360 extends EDDGrid {
                 tStart + ":" + rStride + ":" + tStop + "]");
         }
 
-        //map:
-        //dest is: [dloni0...dloni179] [insert179...insert180,] dlonim180...dlonim1,  
-        //becomes  [     0...     179] [insert179...insert180,]       180...359,       
+        // source [ignored] ||      -180,       -1  ||  [     0,        179] ||            180                             359
+        // source [ignored] || slonim180,  slonim1  ||  [sloni0,   sloni179] || [ignored]
+        // dest:                                        [dloni0,   dloni179] || [insert179 insert180] || dlonim180  dlonim1
 
         //now build results[] by reading chunks alternately from the 3 sources 
         //what is chunk size from left request, from insert, and from right request?
@@ -728,8 +727,9 @@ public class EDDGridLon0360 extends EDDGrid {
             results[nAV + tdv] = PrimitiveArray.factory(
                 tDataVariables[tdv].sourceDataPAType(), nValues, false);
 
-        //dest is: dlonim180...dlonim1, [insert179i...insert180i,]  [dloni0...dloni179]
-        //becomes      -180...-1,       [insert179i...insert180i,]  [     0...     179]
+        // source [ignored] ||      -180,       -1  ||  [     0,        179] ||            180                             359
+        // source [ignored] || slonim180,  slonim1  ||  [sloni0,   sloni179] || [ignored]
+        // dest:                                        [dloni0,   dloni179] || [insert179 insert180] || dlonim180  dlonim1
 
         //copy the dataVariables values into place
         int poLeft = 0;

@@ -95,8 +95,8 @@ Optional: If you specify an attribute value here,
 <advl_minLatitude>Minimum Latitude</advl_minLatitude>
 <advl_maxLatitude>Maximum Latitude</advl_maxLatitude>
 <advl_latitudeSpacing>Average Grid Latitude Spacing</advl_latitudeSpacing>
-<advl_minAltitude>Minimum Altitude or -Depth</advl_minAltitude>
-<advl_maxAltitude>Maximum Altitude or -Depth</advl_maxAltitude>
+<advl_minAltitude>Minimum Altitude (or negative Depth)</advl_minAltitude>
+<advl_maxAltitude>Maximum Altitude (or negative Depth)</advl_maxAltitude>
 <advl_minTime>Minimum Time</advl_minTime>
 <advc_maxTime>If dataStructure=table and minTime is specified and maxTime isn't, then this is a near-real-time dataset.</advc_maxTime>
 <advl_maxTime>Maximum Time</advl_maxTime>
@@ -269,10 +269,9 @@ If you are ready to avoid these problems, please email {0} to request to be take
 
 <!-- These messages are related to Search by Category. -->
 <categoryTitleHtml>Search for Datasets by Category</categoryTitleHtml>
-<category1Html><![CDATA[
+<categoryHtml><![CDATA[
 Datasets can be categorized in different ways by the values of various metadata attributes.
-<br>Click on an attribute ]]></category1Html>
-<category2Html><![CDATA[to see a list of categories (values) for that attribute.]]></category2Html>
+<br>Click on an attribute {0} to see a list of categories (values) for that attribute.]]></categoryHtml>
 <category3Html><![CDATA[Then, you can click on a category to see a list of relevant datasets.]]></category3Html>
 <categoryPickAttribute>Pick an attribute:</categoryPickAttribute>
 <categorySearchHtml><![CDATA[Pick a(n) <kbd>{0}</kbd>]]></categorySearchHtml>
@@ -2103,8 +2102,7 @@ But some things you might not have considered are:
 <dtAccessibleLogIn><![CDATA[<br>"log in" = Currently, no. It may become accessible if you log in.]]></dtAccessibleLogIn>
 <dtAccessibleGraphs><![CDATA[<br>"graphs" = You have access to graphs and metadata, but not the actual data.]]></dtAccessibleGraphs>
 <dtLogIn>Click to log in and try to make this dataset accessible.</dtLogIn>
-<dtDAF1>Click to see a</dtDAF1>
-<dtDAF2>Data Access Form for this dataset so that you can request data.</dtDAF2>
+<dtDAF>Click to see a {0} Data Access Form for this dataset so that you can request data.</dtDAF>
 <dtFiles>Click to browse and download the source data files for this dataset.</dtFiles>
 <dtMAG>Click to see Make A Graph for this dataset.</dtMAG>
 <dtSOS>Click to find out about getting data and/or maps via this dataset's Sensor Observation Service.</dtSOS>
@@ -3060,10 +3058,11 @@ Instead:
 
 <functions>Server-side Functions</functions>
 
+<!-- {0}=distinct() so it isn't translated -->
 <functionTooltip><![CDATA[
 TableDAP supports some server-side functions that modify the data
 results table. They are <strong>optional</strong>.
-Other than 'distinct()', they are <strong>rarely needed</strong>.
+Other than "{0}", they are <strong>rarely needed</strong>.
 <p>Currently, each of the functions takes the results table as input and
 returns the table with the same columns in the same order, but the
 order of the rows, the number of rows, or data on the rows, is altered.
@@ -3073,8 +3072,9 @@ that they appear in the request.
 
 <functionDistinctCheck>Check this if you want to use the distinct() function.</functionDistinctCheck>
 
+<!-- {0}=distinct() so it isn't translated -->
 <functionDistinctTooltip><![CDATA[
-Checking 'distinct()' tells ERDDAP to sort the results table by all of the
+Checking "{0}" tells ERDDAP to sort the results table by all of the
 variables selected above (with the top/first variable selected above
 being the most important and other selected variables only being used
 to break ties) and to remove all duplicate rows from the response table.
@@ -3238,10 +3238,10 @@ can search for datasets via</indexDevelopersSearch>
 <indexAllDatasetsSearch>ERDDAP's allDatasets tabular dataset that has a row of information for each dataset</indexAllDatasetsSearch>
 <indexOpenSearch>ERDDAP's OpenSearch 1.1 Service</indexOpenSearch>
 <indexMetadata>Metadata</indexMetadata>
-<!-- {0} is a link to just one of FGDC or ISO 19115 WAF -->
-<indexWAF1>ERDDAP has an {0} metadata files for all of the geospatial datasets in this ERDDAP.</indexWAF1>
+<!-- {0} {1} is a link to just one of FGDC or ISO 19115 WAF -->
+<indexWAF1>ERDDAP has an {0} with {1} metadata files for all of the geospatial datasets in this ERDDAP.</indexWAF1>
 <!-- links to both FGDC and ISO 19115 WAFs -->
-<indexWAF2>ERDDAP has an {0} metadata files and an {1} metadata files for all of the geospatial datasets in this ERDDAP.</indexWAF2>
+<indexWAF2>ERDDAP has an {0} with {1} metadata files and an {2} with {3} metadata files for all of the geospatial datasets in this ERDDAP.</indexWAF2>
 <indexConverters>Converters</indexConverters>
 <indexDescribeConverters>In addition to serving data, ERDDAP has some handy converters:</indexDescribeConverters>
 <indexServices>RESTful Web Services</indexServices>
@@ -3258,11 +3258,15 @@ and even from web pages (via HTML image tags or JavaScript).
 <infoRequestForm>{0}/info requests must be in the form {0}/info/[datasetID]/index[fileType] .</infoRequestForm>
 
 <inotifyFix>This may be the problem that is solvable in Linux by calling (as root):
+{0}
+Or, use higher numbers if the problem persists.
+The default for watches is 8192. The default for instances is 128.</inotifyFix>
+<!-- do not translate -->
+<inotifyFixCommands>
   echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
   echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
   sysctl -p
-Or, use higher numbers if the problem persists.
-The default for watches is 8192. The default for instances is 128.</inotifyFix>
+</inotifyFixCommands>
 
 
 <!-- The justGenerateAndView messages are used for the justGenerateAndView button
@@ -4078,8 +4082,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
     title="This link to an external website does not constitute an endorsement."></a>)
 ]]></resultsFormatExamplesHtml>
 
-<!-- The searched-for text appears after this label. -->
-<resultsOfSearchFor>The results of the search for</resultsOfSearchFor>
+<resultsOfSearchFor>The results of the search for {0}</resultsOfSearchFor>
 
 <restfulInformationFormats>The information in the table above is also available in other file formats</restfulInformationFormats>
 <restfulViaService>via a RESTful web service</restfulViaService>
@@ -4157,17 +4160,17 @@ and
 <searchNotAvailable>Sorry.  The search system is not available right now.</searchNotAvailable>
 
 <!-- The tooltip text for the full text search's text field. -->
-<searchTip>Like Google search, enter space-separated word(s), for example, &quot;noaa wind&quot;.</searchTip>
+<searchTip>Like Google search, enter space-separated word(s), for example, &quot;{0}&quot;.</searchTip>
 
 <searchSpelling>Check the spelling of the word(s) you searched for.</searchSpelling>
 <searchFewerWords>Try using fewer search words.</searchFewerWords>
-<!-- {0}=plainFileType of a search query. -->
-<searchWithQuery>A {0} search request must include a query, for example, "?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature".</searchWithQuery>
+<!-- {0}=plainFileType of a search query, {1}=the sample query. -->
+<searchWithQuery>A {0} search request must include a query, for example, "{1}".</searchWithQuery>
 
-<!-- Yes, '' is correct.  {0}=erddapUrl {1}=lowercaseProtocol {2}=uppercaseProtocol -->
+<!-- Yes, '' is correct.  {0}=erddapUrl {1}=lowercaseProtocol {2}=documentation.html (so it isn't translated) {3}=uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 For details, see
-<a rel="help" href="{0}/{1}/documentation.html"> ERDDAP''s&nbsp;{2}&nbsp;Documentation</a>.
+<a rel="help" href="{0}/{1}/{2}"> ERDDAP''s&nbsp;{3}&nbsp;Documentation</a>.
 ]]></seeProtocolDocumentation>
 
 <selectNext>Select the next item.</selectNext>
