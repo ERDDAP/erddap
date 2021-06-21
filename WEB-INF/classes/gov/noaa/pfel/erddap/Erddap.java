@@ -984,25 +984,28 @@ public class Erddap extends HttpServlet {
                 writer.write(
                     "<p><strong><a class=\"selfLink\" id=\"metadata\" href=\"#metadata\" rel=\"bookmark\">" + EDStatic.indexMetadata + "</a></strong>\n" +
                     "<br>");
-                String fgdcLink = //&#8209; is a non-breaking hyphen
+                String fgdcLink1 = 
                     "<br><a rel=\"bookmark\" " + 
                     "href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
-                    "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n" +
-                    "with <a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n" +
+                    "\">FGDC&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+                String fgdcLink2 = //&#8209; is a non-breaking hyphen
+                    "<a rel=\"help\" href=\"https://www.fgdc.gov/standards/projects/FGDC-standards-projects/metadata/base-metadata/index_html\"\n" +
                     ">FGDC&#8209;STD&#8209;001&#8209;1998" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>";
-                String isoLink  =
+                String isoLink1  =
                     "<br><a rel=\"bookmark\" " + 
                     "href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
-                    "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n" +
-                    "with <a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n" +
+                    "\">ISO&nbsp;19115&nbsp;Web&nbsp;Accessible&nbsp;Folder&nbsp;(WAF)</a>\n";
+                String isoLink2  = //&#8209; is a non-breaking hyphen
+                    "<a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Geospatial_metadata\"\n" +
                     ">ISO&nbsp;19115&#8209;2/19139" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>";
                 if (EDStatic.fgdcActive && EDStatic.iso19115Active)
                     writer.write(MessageFormat.format(EDStatic.indexWAF2, 
-                        fgdcLink, isoLink));
-                else writer.write(MessageFormat.format(EDStatic.indexWAF1, 
-                    EDStatic.fgdcActive? fgdcLink : isoLink));
+                        fgdcLink1, fgdcLink2, isoLink1, isoLink2));
+                else if (EDStatic.fgdcActive)
+                     writer.write(MessageFormat.format(EDStatic.indexWAF1, fgdcLink1, fgdcLink2));
+                else writer.write(MessageFormat.format(EDStatic.indexWAF1, isoLink1,  isoLink2));
                  writer.write("\n\n");
             }
 
@@ -4729,6 +4732,10 @@ writer.write(
             //  [2] is the local directory corresponding to this (or null, if not a local dir)
             Object o2[] = edd.accessibleViaFilesFileTable(nextPath);
             if (o2 == null || o2.length != 3 || o2[0] == null || o2[1] == null) { //shouldn't happen.  o2[2] may be null
+                if (o2 == null)        
+                                         String2.log("ERROR: o2 is null.");
+                else if (o2.length != 3) String2.log("ERROR: o2.length=" + o2.length);
+                else                     String2.log("ERROR: o2[0]=" + o2[0] + " [1]=" + o2[1] + " [2]=" + o2[2]);  
                 sendResourceNotFoundError(requestNumber, request, response, 
                     EDStatic.resourceNotFound + "directory=" + nextPath);
                 return;
@@ -4738,6 +4745,7 @@ writer.write(
             String localDir = (String)o2[2];
             int fileTableNRows = fileTable.nRows();
             if (fileTableNRows == 0 && subDirs.size() == 0) {
+                String2.log("ERROR: fileTableNRows=0 and subDirs.size()=0.");
                 sendResourceNotFoundError(requestNumber, request, response, 
                     EDStatic.resourceNotFound + "directory=" + nextPath);
                 return;
@@ -10415,7 +10423,7 @@ breadCrumbs + endBreadCrumbs +
             } else if (endsWithPlainFileType(endOfRequestUrl, "index")) {
                 if (searchFor.length() == 0) {
                     sendResourceNotFoundError(requestNumber, request, response, //or SC_NO_CONTENT error?
-                        MessageFormat.format(EDStatic.searchWithQuery, fileTypeName));
+                        MessageFormat.format(EDStatic.searchWithQuery, fileTypeName, "?page=1&itemsPerPage=1000&searchFor=wind+temperature"));
                     return;
                 }
                 //else handle just below here
@@ -10478,13 +10486,6 @@ breadCrumbs + endBreadCrumbs +
                         "<br>");
 
                     //display datasets
-//                    writer.write(
-//                        "<br>&nbsp;\n" +
-//                        "<h2>" + EDStatic.resultsOfSearchFor + " <kbd>" + 
-                        //encodeAsHTML(searchFor) is essential -- to prevent Cross-site-scripting security vulnerability
-                        //(which allows hacker to insert his javascript into pages returned by server)
-                        //See Tomcat (Definitive Guide) pg 147
-//                        XML.encodeAsHTML(searchFor) + "</kbd></h2>\n");  
                     if (error == null) {
 
                         Table table = makeHtmlDatasetTable(loggedInAs, datasetIDs, sortByTitle);
@@ -11248,7 +11249,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     "<p><strong>" + EDStatic.searchFullTextHtml + "</strong>\n" + 
                     EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsTooltip) + "\n" +
                     "<br>" +
-                    widgets.textField("searchFor", EDStatic.searchTip, 70, 255, searchFor, "") + "\n");
+                    widgets.textField("searchFor", 
+                        MessageFormat.format(EDStatic.searchTip, "noaa wind"),
+                        70, 255, searchFor, "") + "\n");
 
                 //categorize      
                 //a table with a row for each attribute
@@ -12405,9 +12408,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     EDStatic.questionQuery(userQuery));
 
                 //display datasets
-                writer.write("<h3>3) " + EDStatic.resultsOfSearchFor + "\n" +
-                    "<span class=\"N\"><kbd>" + attributeInURL + 
-                    " = " + categoryName + "</kbd></span>" + 
+                writer.write("<h3>3) " + 
+                    MessageFormat.format(EDStatic.resultsOfSearchFor, 
+                        "\n<span class=\"N\"><kbd>" + attributeInURL + " = " + categoryName + "</kbd></span>") + 
                     "</h3>\n" +
                     nMatchingHtml + "\n" +
                     //"<br>&nbsp;\n" +
@@ -17017,7 +17020,9 @@ UTC                  m   deg_n    deg_east m s-1
         if (searchFor == null)
             searchFor = "";
         widgets.htmlTooltips = false;
-        sb.append(widgets.textField("searchFor", EDStatic.searchTip, 40, 255, searchFor, ""));
+        sb.append(widgets.textField("searchFor", 
+            MessageFormat.format(EDStatic.searchTip, "noaa wind"),
+            40, 255, searchFor, ""));
         widgets.htmlTooltips = true;
         sb.append(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsTooltip));
         widgets.htmlTooltips = false;
@@ -17106,23 +17111,25 @@ UTC                  m   deg_n    deg_east m s-1
         if (homePage) {
             Table table = categorizeOptionsTable(request, tErddapUrl, ".html");
             int n = table.nRows();
+            StringBuilder sb = new StringBuilder("\n(");
+            for (int row = 0; row < n; row++) 
+                sb.append(table.getStringData(0, row) + (row < n - 1? ", \n" : ""));
+            sb.append(")\n");
+            String tCategoryHtml = String2.replaceAll(EDStatic.categoryHtml, "<br>", "");
             writer.write(
                 "<h3>" + EDStatic.categoryTitleHtml + "</h3>\n" +
-                String2.replaceAll(EDStatic.category1Html, "<br>", "") + 
-                "\n(");
-            for (int row = 0; row < n; row++) 
-                writer.write(table.getStringData(0, row) + (row < n - 1? ", \n" : ""));
-            writer.write(") " + EDStatic.category2Html + "\n" +
+                MessageFormat.format(tCategoryHtml, sb.toString()) + "\n" +
                 EDStatic.category3Html + "\n");
             return;
         }
 
         //categorize page
+        String tCategoryHtml = String2.replaceAll(
+            MessageFormat.format(EDStatic.categoryHtml, ""), "  ", " "); //{0}="" leads to 2 adjacent spaces 
         writer.write(
             //"<h3>" + EDStatic.categoryTitleHtml + "</h3>\n" +
             "<h3>1) " + EDStatic.categoryPickAttribute + "&nbsp;" + 
-            EDStatic.htmlTooltipImage(loggedInAs, 
-                EDStatic.category1Html + " " + EDStatic.category2Html) +
+            EDStatic.htmlTooltipImage(loggedInAs, tCategoryHtml) +
             "</h3>\n");
         String attsInURLs[] = EDStatic.categoryAttributesInURLs;
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -17420,7 +17427,7 @@ UTC                  m   deg_n    deg_east m s-1
             //just show things (URLs, info) user has access to
             String daps = "&nbsp;<a rel=\"chapter\" " +
                 "href=\"" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tId + ".html\" " +
-                "title=\"" + EDStatic.dtDAF1 + " " + edd.dapProtocol() + " " + EDStatic.dtDAF2 + "\" " +
+                "title=\"" + MessageFormat.format(EDStatic.dtDAF, edd.dapProtocol()) + "\" " +
                 ">data</a>&nbsp;"; 
             gdCol.add(isAccessible && edd instanceof EDDGrid?  daps : "&nbsp;"); 
             subCol.add(isAccessible && edd.accessibleViaSubset().length() == 0? 
