@@ -1543,7 +1543,7 @@ public class EDDGridFromDap extends EDDGrid {
      * @throws Exception
      */
     public static StringArray getUrlsFromThreddsCatalog(String startUrl, 
-        String datasetNameRegex, String pathRegex, String negativePathRegex) {
+        String datasetNameRegex, String pathRegex, String negativePathRegex) throws Exception{
 
         return crawlThreddsCatalog(startUrl, datasetNameRegex, 
             pathRegex, negativePathRegex, null);
@@ -11458,12 +11458,12 @@ String expected =
      *   then if a path matches this regex, the catalog will be ignored. 
      * @param writer if not null, this calls generateDatasetsXml and writes results to writer.
      * @return a StringArray with the base DAP URLs.
-     * @throws RuntimeException if trouble at high level.
+     * @throws Exception if trouble at high level.
      *   Low level errors are logged to String2.log.
      */
     public static StringArray crawlThreddsCatalog(String catalogXmlUrl,
         String datasetNameRegex, String pathRegex, String negativePathRegex,
-        Writer writer) {
+        Writer writer) throws Exception{
 
         catalogXmlUrl = File2.forceExtension(catalogXmlUrl, ".xml");
         String2.log("\n*** crawlThreddsCatalog(" + catalogXmlUrl + ")");
@@ -11486,13 +11486,14 @@ String expected =
         //        ": Invalid Thredds catalog at " + catalogXmlUrl + "\n" + errorSB.toString());
         //errorSB = null;
         //2020-01-17 with netcdf-java 5.2 is (thanks to Roland Schweitzer)
-        Catalog catalog = (new CatalogBuilder()).buildFromLocation(catalogXmlUrl, null);
+        Catalog catalog = (new CatalogBuilder()).buildFromURI(new java.net.URI(catalogXmlUrl));
 
         //process the catalog's datasets
 //???getDatasets or getDatasetsLogical()?
-        List<Dataset> datasets = catalog.getDatasetsLogical(); //2020-01-17 for netcdfJava 4.6, was getDatasets(). Difference is for catalogRef's.
+        List<Dataset> datasets = catalog.getDatasetsLogical();
         HashSet<String> set = new HashSet();
         if (datasets != null) {
+            if (verbose) String2.log("crawlThreddsCatalog will process " + datasets.size() + " datasets");
             for (int i = 0; i < datasets.size(); i++) //usually just 1
                 processThreddsDataset(datasets.get(i), set, 
                     datasetNameRegex, pathRegex, negativePathRegex, writer, summary,
@@ -11542,8 +11543,7 @@ String expected =
         String catUrl = null;
         try {
             //if (debugMode) 
-                String2.log("{{ processThreddsDataset set.size=" + set.size() + 
-                    "  " + dataset.toString());
+                String2.log("{{ processThreddsDataset set.size=" + set.size());
 
             //does catUrl match pathRegex?
             catUrl = dataset.getCatalogUrl();
@@ -11565,17 +11565,16 @@ String expected =
                             " because it matches negativePathRegex=" + negativePathRegex);
                     return;
                 }
-                String2.log("  " + catUrl);
+                String2.log("  catUrl=" + catUrl);
             }
 
             //has opendap service?
             Access access = dataset.getAccess(ServiceType.OPENDAP);
             if (access != null) {
                 String baseUrl = access.getStandardUrlName();
+                if (verbose) 
+                    String2.log("  found opendap baseUrl=" + baseUrl);
                 if (File2.getNameAndExtension(baseUrl).matches(datasetNameRegex)) {
-                    if (reallyVerbose) 
-                        String2.log("  found  " + baseUrl);
-
                     //is there a port number in the url that can be removed?
                     String port = String2.extractRegex(baseUrl, ":\\d{4}/", 0);
                     if (port != null) {
@@ -11749,15 +11748,17 @@ String expected =
                             datasetSuccessTimes, datasetFailureTimes);
                     }
                 } else {
-                    if (reallyVerbose) 
-                        String2.log("  reject " + baseUrl + 
+                    if (verbose) 
+                        String2.log("  reject opendap baseUrl=" + baseUrl + 
                             " because it doesn't match " + datasetNameRegex);
                 }
             }
 
             //has nested datasets?
-            List<Dataset> datasets = dataset.getDatasets();
+            List<Dataset> datasets = dataset.getDatasetsLogical();
             if (datasets != null) {
+                if (reallyVerbose) 
+                    String2.log("  processing " + datasets.size() + " nested datasets...");
                 for (int i = 0; i < datasets.size(); i++) {
                     processThreddsDataset(datasets.get(i), set, 
                         datasetNameRegex, pathRegex, negativePathRegex, writer, summary,
