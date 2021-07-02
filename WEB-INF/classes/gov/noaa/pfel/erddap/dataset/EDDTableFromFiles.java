@@ -1155,8 +1155,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             desiredOrder.add("size");
             desiredOrder.add("sortedSpacing");
             for (int dv = 0; dv < ndv; dv++) {
-                desiredOrder.add(safeSourceDataNames.get(dv) + "_min_");
-                desiredOrder.add(safeSourceDataNames.get(dv) + "_max_");
+                desiredOrder.add(safeSourceDataNames.get(dv) + MIN_SUFFIX);
+                desiredOrder.add(safeSourceDataNames.get(dv) + MAX_SUFFIX);
                 desiredOrder.add(safeSourceDataNames.get(dv) + "_hasNaN_");
             }
             //reorder and ensure all are present
@@ -1211,9 +1211,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             fileTable.addColumn("sortedSpacing", new DoubleArray()); //col 4=FT_SORTED_SPACING_COL
             for (int dv = 0; dv < ndv; dv++) {
                 String sdt = sourceDataTypes[dv]; //booleans handled correctly below
-                fileTable.addColumn(safeSourceDataNames.get(dv) + "_min_", 
+                fileTable.addColumn(safeSourceDataNames.get(dv) + MIN_SUFFIX, 
                     PrimitiveArray.factory(PAType.fromCohortString(sdt), 8, false));
-                fileTable.addColumn(safeSourceDataNames.get(dv) + "_max_", 
+                fileTable.addColumn(safeSourceDataNames.get(dv) + MAX_SUFFIX, 
                     PrimitiveArray.factory(PAType.fromCohortString(sdt), 8, false));
                 fileTable.addColumn(safeSourceDataNames.get(dv) + "_hasNaN_", 
                     PrimitiveArray.factory(PAType.BYTE, 8, false));
@@ -1640,11 +1640,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             //end !doQuickRestart
         }
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished file loop");
 
         //make combined minMaxTable    one col per dv; row0=min, row1=max, row2=hasNaN
         //it holds raw source values -- scale_factor and add_offset haven't been applied
         Table tMinMaxTable = makeMinMaxTable(dirList, fileTable);
-
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished makeMinMaxTable");
+         
         //if !quickRestart, save dirTable, fileTable, badFileMap
         if (!doQuickRestart) 
             saveDirTableFileTableBadFiles(standardizeWhat, dirTable, fileTable, badFileMap); //throws Throwable
@@ -1663,6 +1665,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod + "Bad Files", 
                 emailSB.toString());
         }
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished sending email with bad file info");
 
         //try to open metadataFrom FIRST|LAST file (based on lastModifiedTime) to get source metadata
         int nMinMaxIndex[] = ftLastMod.getNMinMaxIndex();
@@ -1676,7 +1679,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Table tTable = getSourceDataFromFile(mdFromDir, mdFromName,
             sourceDataNames, sourceDataTypes, -1, Double.NaN, Double.NaN, 
             null, null, null, true, false);  //getMetadata, mustGetData   //throws Exception if trouble
-        //String2.log(">> EDDTableFromFiles get source metadata table header (nCols=" + 
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished open metadataFrom FIRST|LAST");
+        //String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " get source metadata table header (nCols=" + 
         //    tTable.nColumns() + " nRows=" + tTable.nRows() + "):\n" + tTable.getNCHeader("row"));
 
         //if accessibleViaFiles=true and filesInS3Bucket, test if files are in a private bucket
@@ -1700,6 +1704,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("\"null\"");
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished making combineGlobalAtts");
 
         //make the dataVariables[]
         dataVariables = new EDV[ndv];
@@ -1794,6 +1799,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //String2.pressEnterToContinue("!!!sourceName=" + dataVariables[dv].sourceName() + 
             //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMinDouble());
         }
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished making variables");
 
         //more class-specific things (after variables have been created)
         if (className.equals("EDDTableFromHttpGet")) {
@@ -1907,9 +1913,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //make addVariablesWhereAttNames and addVariablesWhereAttValues
         makeAddVariablesWhereAttNamesAndValues(tAddVariablesWhere);
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished makeAddVariablesWhere...");
 
         //ensure the setup is valid
         ensureValid();
+        //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished ensureValid");
 
         //if cacheFromUrl is remote ERDDAP /files/, subscribe to the dataset
         //This is like code in EDDTableFromFiles but "/tabledap/"

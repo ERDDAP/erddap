@@ -870,10 +870,10 @@ expected =
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808,0,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n" + //2021-06-25 added quotes around \\u00fc
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n" + //2021-06-25 added quotes around \\t
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",NaN,NaN,NaN,NaN,NaN\n" + //int mv -> NaN???
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,NaN,NaN,NaN,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",NaN,NaN,NaN,NaN,NaN\n" + //2021-06-25 added quotes around \\u00fc
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -900,10 +900,10 @@ expected =
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808,0,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",NaN,NaN,NaN,NaN,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,NaN,NaN,NaN,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",NaN,NaN,NaN,NaN,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -916,7 +916,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on easy long constraint
@@ -928,7 +928,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on harder long constraint
@@ -952,7 +952,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.nccsvMetadata        
@@ -1373,10 +1373,10 @@ expected =
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
 ",UTC,degrees_north,degrees_east,,1,1,1,1,degree_C\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808,0,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n" + //2021-05-25 now special chars are in "'s, eg \\u20ac
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",NaN,NaN,NaN,NaN,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,NaN,NaN,NaN,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",NaN,NaN,NaN,NaN,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);        
 //ship is " a\t~\u00fc,\n'z""\u20AC"
@@ -1392,10 +1392,10 @@ expected =
         expected = 
 "ship,time (UTC),latitude (degrees_north),longitude (degrees_east),status,testByte (1),testUByte (1),testLong (1),testULong (1),sst (degree_C)\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808,0,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",NaN,NaN,NaN,NaN,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,NaN,NaN,NaN,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",NaN,NaN,NaN,NaN,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN,NaN,NaN,NaN\n";
        Test.ensureEqual(results, expected, "results=\n" + results);        
 //ship is " a\t~\u00fc,\n'z""\u20AC"
@@ -1410,10 +1410,10 @@ expected =
         //String2.log(results);
         expected = 
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808,0,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992,9223372036854775807,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806,18446744073709551614,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",0,127,-9007199254740992,9223372036854775807,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",126,254,9223372036854775806,18446744073709551614,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",NaN,NaN,NaN,NaN,NaN\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,NaN,NaN,NaN,NaN,NaN\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",NaN,NaN,NaN,NaN,NaN\n" +
 "\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,NaN,NaN,NaN,NaN,NaN\n";
 //ship is " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -2887,7 +2887,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -2929,12 +2929,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         expected = 
 "ship[9]time[9]latitude[9]longitude[9]status[9]testByte[9]testUByte[9]testLong[9]testULong[9]sst[10]\n" +
 "[9]UTC[9]degrees_north[9]degrees_east[9][9]1[9]1[9]1[9]1[9]degree_C[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-128[9]0[9]-9223372036854775808[9]0[9]10.9[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]0[9]127[9]-9007199254740992[9]9223372036854775807[9]10.0[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]126[9]254[9]9223372036854775806[9]18446744073709551614[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-128[9]0[9]-9223372036854775808[9]0[9]10.9[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\"\\u20ac\"[9]0[9]127[9]-9007199254740992[9]9223372036854775807[9]10.0[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\"\\t\"[9]126[9]254[9]9223372036854775806[9]18446744073709551614[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\"\\\"\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\"\\u00fc\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -2947,12 +2947,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         //String2.log(results);
         expected = 
 "ship[9]time (UTC)[9]latitude (degrees_north)[9]longitude (degrees_east)[9]status[9]testByte (1)[9]testUByte (1)[9]testLong (1)[9]testULong (1)[9]sst (degree_C)[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-128[9]0[9]-9223372036854775808[9]0[9]10.9[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\\u20ac[9]0[9]127[9]-9007199254740992[9]9223372036854775807[9]10.0[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\\t[9]126[9]254[9]9223372036854775806[9]18446744073709551614[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\\\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\\u00fc[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
-" a\\t~\\u00fc,\\n'z\\\"\\u20ac[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T00:45:00Z[9]28.0002[9]-130.2576[9]A[9]-128[9]0[9]-9223372036854775808[9]0[9]10.9[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T01:45:00Z[9]28.0003[9]-130.3472[9]\"\\u20ac\"[9]0[9]127[9]-9007199254740992[9]9223372036854775807[9]10.0[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T02:45:00Z[9]28.0001[9]-130.4305[9]\"\\t\"[9]126[9]254[9]9223372036854775806[9]18446744073709551614[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T12:45:00Z[9]27.9998[9]-131.5578[9]\"\\\"\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T21:45:00Z[9]28.0003[9]-132.0014[9]\"\\u00fc\"[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
+"\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\"[9]2017-03-23T23:45:00Z[9]28.0002[9]-132.1591[9]?[9]NaN[9]NaN[9]NaN[9]NaN[9]NaN[10]\n" +
 "[end]";
 //ship is an encoding of " a\t~\u00fc,\n'z""\u20AC"
 //source status chars are A\u20AC\t"\u00fc\uFFFF
@@ -3131,7 +3131,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2021-04-29 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2021-06-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3146,7 +3146,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-04-28T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-06-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3186,7 +3186,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2021-04-28T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2021-06-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -3284,7 +3284,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2021-04-29 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2021-06-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
@@ -3303,7 +3303,7 @@ expected2 =
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-04-28T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-06-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +

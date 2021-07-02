@@ -1180,7 +1180,9 @@ String expected =
 
         String2.log("\n*** EDDTableFromWFSFiles.testBasic");
 
-        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "kgsBoreTempWVTRUE"); //should work
+        //2021-06-25 server is gone. Initial query url is
+// https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format="text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0"
+        EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "kgsBoreTempWVTRUE"); 
         String tName, error, results, tResults, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
@@ -1653,7 +1655,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 1;
+            lastTest = interactive? -1 : 0;
         String msg = "\n^^^ EDDTableFromWFSFiles.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -1666,7 +1668,7 @@ expected =
 
                 } else {
                     if (test ==  0) testGenerateDatasetsXml(true);  //developmentMode (read from local file)
-                    if (test ==  1) testBasic();
+                    //if (test ==  1) testBasic();  //2021-06-25 server is gone
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

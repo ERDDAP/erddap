@@ -1287,15 +1287,9 @@ extends java.lang.Object</pre>
  capitalized).</div>
 </td>
 </tr>
-<tr id="i169" class="rowColor">
-<td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href=".#toTSVString-java.lang.Object:A-">toTSVString</a></span>(java.lang.Object[]&nbsp;ar)</code>
-<div class="block">Generates a tab-separated-value string.</div>
-</td>
-</tr>
 <tr id="i170" class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href=".#toTsvString-java.lang.String-">toTsvString</a></span>(java.lang.String&nbsp;s)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href=".#toTsvString-java.lang.String-">toSVString</a></span>(java.lang.String&nbsp;s)</code>
 <div class="block">This encodes special characters in s if needed so that 
  s can be stored as an item in a tsv string.</div>
 </td>
@@ -2862,15 +2856,15 @@ extends java.lang.Object</pre>
  only if necessary.</div>
 </li>
 </ul>
-<a id="toTsvString-java.lang.String-">
+<a id="toSVString-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>toTsvString</h4>
-<pre>public static&nbsp;java.lang.String&nbsp;toTsvString(java.lang.String&nbsp;s)</pre>
+<h4>toSVString</h4>
+<pre>public static&nbsp;java.lang.String&nbsp;toSVString(java.lang.String&nbsp;s)</pre>
 <div class="block">This encodes special characters in s if needed so that 
- s can be stored as an item in a tsv string.</div>
+ s can be stored as an item in a csv or tsv string.</div>
 </li>
 </ul>
 <a id="substitute-java.lang.String-java.lang.String-java.lang.String-java.lang.String-">
@@ -2946,28 +2940,6 @@ extends java.lang.Object</pre>
     (for an ArrayList or Vector, use o.toArray())</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a SSV String with the values with " " after
-    all but the last value.
-    Returns null if ar is null.
-    null elements are represented as "[null]".</dd>
-</dl>
-</li>
-</ul>
-<a id="toTSVString-java.lang.Object:A-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>toTSVString</h4>
-<pre>public static&nbsp;java.lang.String&nbsp;toTSVString(java.lang.Object[]&nbsp;ar)</pre>
-<div class="block">Generates a tab-separated-value string.  
- <p>WARNING: This is simplistic. It doesn't do anything special for 
-   strings with internal tabs.</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>ar</code> - an array of objects
-    (for an ArrayList or Vector, use o.toArray())</dd>
-<dt><span class="returnLabel">Returns:</span></dt>
-<dd>a TSV String with the values with "\t" after
     all but the last value.
     Returns null if ar is null.
     null elements are represented as "[null]".</dd>

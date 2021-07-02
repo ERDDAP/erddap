@@ -272,9 +272,9 @@ public abstract class EDDTable extends EDD {
         "http://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://en.wikipedia.org/wiki/Faceted_search",  //subset
-        "http://jkorpela.fi/TSV.html",  //tsv
-        "http://jkorpela.fi/TSV.html",  //tsv
-        "http://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
         "https://en.wikipedia.org/wiki/WAV", //wav
         "https://www.w3schools.com/html/html_tables.asp"}; //xhtml
 

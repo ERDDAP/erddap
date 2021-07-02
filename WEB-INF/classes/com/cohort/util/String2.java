@@ -1421,6 +1421,17 @@ public class String2 {
     }
 
     /**
+     * 0..7.
+     * Non-Latin numeric characters are not included (see Java Lang Spec pg 14).
+     *
+     * @param c a char
+     * @return true if c is an octal digit
+     */
+    public static final boolean isOctalDigit(int c) {
+        return (c >= '0') && (c <= '7');
+    }
+
+    /**
      * 0..9.
      * Non-Latin numeric characters are not included (see Java Lang Spec pg 14).
      *
@@ -2467,6 +2478,32 @@ public class String2 {
     }
 
     /** 
+     * For writing to a CSV or TSV string, this returns a json version of s if there is a character &lt; 32
+     * or &gt;= firstUEncodedChar, or if there is [,\\\"] or if the first or last char is whitespace.
+     * 
+     * @param s the String version of the item to be formatted
+     * @param firstUEncodedChar usually 127 to avoid trouble
+     * @return an encoding of the string (like jsonIfNeeded) suitable for a CSSV or TSV string. s=null returns "".
+     */
+    public static String toSVString(String s, int firstUEncodedChar) {
+        if (s == null)
+            return EMPTY_STRING;
+        int slen = s.length();
+        for (int po = 0; po < slen; po++) {
+            char ch = s.charAt(po);
+            if (ch < 32 || //notably  \n \f \t
+                ch == ','  ||  //because of csv
+                ch == '\\' ||
+                ch == '\"' ||
+                ch >= firstUEncodedChar) 
+                return toJson(s);
+        }
+        if (slen > 0 && (s.charAt(0) == ' ' || s.charAt(slen-1) == ' '))
+            return toJson(s);
+        return s;
+    }
+
+    /** 
      * This is a variant of toJson that lets you encode newlines or not. 
      * 
      * @param s The String to be encoded.
@@ -2588,7 +2625,7 @@ public class String2 {
                 else if (ch == '\'') sb.append('\'');
                 else if (ch == 'a' || ch == 'b' || ch == 'v') {
                     //delete a=bell, b=backspace, v=vertTab
-                } else if (isDigit(ch) && po + 2 < sLength) { 
+                } else if (isOctalDigit(ch) && po + 2 < sLength && isOctalDigit(s.charAt(po+1)) && isOctalDigit(s.charAt(po+2))) { 
                     //  \\ooo octal
                     String os = s.substring(po, po + 3);
                     try {
@@ -2598,10 +2635,12 @@ public class String2 {
                         sb.append((char)Integer.parseInt(os, 8));
                     } catch (Exception e) {      
                         log("ERROR in fromJson: invalid escape sequence \\" + os);
-                        //falls through
+                        //just add the raw characters
+                        sb.append("\\" + os);
+                        //then fall through
                     }
                     
-                } else if (ch == 'x' && po + 2 < sLength) { 
+                } else if (ch == 'x' && po + 2 < sLength && isHexDigit(s.charAt(po+1)) && isHexDigit(s.charAt(po+2))) { 
                     //  \\xhh hex
                     String os = s.substring(po + 1, po + 3);
                     try {
@@ -2611,10 +2650,14 @@ public class String2 {
                         sb.append((char)Integer.parseInt(os, 16));
                     } catch (Exception e) {      
                         log("ERROR in fromJson: invalid escape sequence \\x" + os);
+                        //just add the raw characters
+                        sb.append("\\x" + os);
                         //falls through
                     }
                     
-                } else if (ch == 'u' && po + 4 < sLength) { 
+                } else if (ch == 'u' && po + 4 < sLength && 
+                    isHexDigit(s.charAt(po+1)) && isHexDigit(s.charAt(po+2)) && 
+                    isHexDigit(s.charAt(po+3)) && isHexDigit(s.charAt(po+4))) { 
                     //  \\uhhhh unicode 
                     String os = s.substring(po + 1, po + 5);
                     try {
@@ -2624,12 +2667,15 @@ public class String2 {
                         sb.append((char)Integer.parseInt(os, 16));
                     } catch (Exception e) {      
                         log("ERROR in fromJson: invalid escape sequence \\u" + os);
+                        //just add the raw characters
+                        sb.append("\\u" + os);
                         //falls through
                     }                    
                    
                 } else { 
                     //this shouldn't happen, but be forgiving
-                    //before 2009-02-27, this tossed the \    is this the best solution?
+                    //before 2009-02-27, this tossed the \  
+                    //Is new system the best solution? yes  good when source didn't intend json-like string
                     log("ERROR in fromJson: invalid escape sequence \\" + ch);
                     sb.append('\\'); 
                     sb.append(ch); 
@@ -2678,11 +2724,17 @@ public class String2 {
         //If s starts with ", this will quickly (and correctly) go to full effort.
         //This is significant time savings for Table.readASCII().
         int sLength = s.length();
-        for (int i = 0; i < sLength; i++) {
-            char ch = s.charAt(i);
-            if (ch == '\"' || ch == '\\')
-                return replaceAll(fromJson(s), "\"\"", "\"");  //do the full conversion
+        if (sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"') {
+            s = s.substring(1, sLength - 1); //remove surrounding "
+            s = replaceAll(s, "\"\"", "\""); //then convert "" to \" 
+            return fromJson(s);
         }
+
+        s = replaceAll(s, "\"\"", "\""); //convert "" to \" 
+
+        //there may be a \ escaped char
+        if (s.indexOf('\\') >= 0)
+            return fromJson(s); 
         return s;
 
         //return replaceAll(fromJson(s), "\"\"", "\"");
@@ -2759,16 +2811,6 @@ public class String2 {
         dos.write(bar, 0, bar.length);
     }
 */
-    /**
-     * This encodes special characters in s if needed so that 
-     * s can be stored as an item in a tsv string.
-     */
-    public static String toTsvString(String s) {
-        if (s == null || s.length() == 0)
-            return "";  //json would return "null"
-        s = toJson(s);
-        return s.substring(1, s.length() - 1); //remove enclosing quotes
-    }
 
     /**
      * This takes a multi-line string (with \\r, \\n, \\r\\n line separators)
@@ -2998,22 +3040,6 @@ public class String2 {
      */
     public static String toSSVString(Object ar[]) {
         return toSVString(ar, " ", false);
-    }
-
-    /**
-     * Generates a tab-separated-value string.  
-     * <p>WARNING: This is simplistic. It doesn't do anything special for 
-     *   strings with internal tabs.
-     *
-     * @param ar an array of objects
-     *    (for an ArrayList or Vector, use o.toArray())
-     * @return a TSV String with the values with "\t" after
-     *    all but the last value.
-     *    Returns null if ar is null.
-     *    null elements are represented as "[null]".
-     */
-    public static String toTSVString(Object ar[]) {
-        return toSVString(ar, "\t", false);
     }
 
     /**

@@ -945,18 +945,17 @@ public class CharArray extends PrimitiveArray {
 
     /**
      * Return a value from the array as a String suitable for the data section 
-     * of an ASCII tsv file, e.g., z \t \u0000 , \".
+     * of an ASCII csv or tsv string, e.g., z "\t" "\u0000" , "\"".
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
      *   CharArray and StringArray overwrite this.
      */
-    public String getTsvString(int index) {
+    public String getSVString(int index) {
         char ch = get(index);
         if (ch == '\uFFFF')
             return "";
-        String s = String2.toJson("" + ch);
-        return s.substring(1, s.length() - 1); //remove enclosing quotes
+        return String2.toSVString("" + ch, 127);
     }
 
     /**

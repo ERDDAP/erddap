@@ -34,7 +34,7 @@ public class TableWriterSeparatedValue extends TableWriter {
 
     //set by constructor
     protected String separator;
-    protected boolean quoted, writeColumnNames;
+    protected boolean twoQuotes, writeColumnNames;
     protected char writeUnits;
     protected String nanString; 
 
@@ -53,9 +53,7 @@ public class TableWriterSeparatedValue extends TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      * @param tSeparator  usually a tab or a comma (without space.  space causes problems with Excel)
-     * @param tQuoted if true, if a String value starts or ends with a space or has a double quote or comma, 
-     *    the value will be written in double quotes
-     *    and internal double quotes become two double quotes.
+     * @param tTwoQuotes if true, internal double quotes become two double quotes.
      * @param tWriteColumnNames if false, data starts on line 0.
      * @param tWriteUnits  '0'=no, 
      *    '('=on the first line as "variableName (units)" (if present),
@@ -66,12 +64,12 @@ public class TableWriterSeparatedValue extends TableWriter {
      */
     public TableWriterSeparatedValue(EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource,
-        String tSeparator, boolean tQuoted, boolean tWriteColumnNames, 
+        String tSeparator, boolean tTwoQuotes, boolean tWriteColumnNames, 
         char tWriteUnits, String tNanString) {
 
         super(tEdd, tNewHistory, tOutputStreamSource);
         separator = tSeparator;
-        quoted = tQuoted;
+        twoQuotes = tTwoQuotes;
         writeColumnNames = tWriteColumnNames;
         writeUnits = tWriteUnits;
         nanString = tNanString;
@@ -152,10 +150,10 @@ public class TableWriterSeparatedValue extends TableWriter {
                     }
 
                     //convert troublesome chars to \\encoding
-                    String s = table.getColumnName(col) + units;
-                    writer.write(quoted? String2.toNccsvDataString(s) :
-                                         String2.toTsvString(s));
-                    writer.write(col == nColumns - 1? "\n" : separator);
+                    String s = String2.toSVString(table.getColumnName(col) + units, 127);
+                    if (twoQuotes)
+                        s = String2.replaceAll(s, "\\\"", "\"\"");
+                    writer.write(s + (col == nColumns - 1? "\n" : separator));
                 }
             }
 
@@ -166,9 +164,10 @@ public class TableWriterSeparatedValue extends TableWriter {
                     if (units == null) units = "";
                     if (isTimeStamp[col])
                         units = "UTC"; //no longer true: "seconds since 1970-01-01..."
-                    writer.write(quoted? String2.toNccsvDataString(units) :
-                                         String2.toTsvString(units));
-                    writer.write(col == nColumns - 1? "\n" : separator);
+                    String s = String2.toSVString(units, 127);
+                    if (twoQuotes)
+                        s = String2.replaceAll(s, "\\\"", "\"\"");
+                    writer.write(s + (col == nColumns - 1? "\n" : separator));
                 }
             }
         }
@@ -189,8 +188,10 @@ public class TableWriterSeparatedValue extends TableWriter {
                     writer.write(Calendar2.epochSecondsToLimitedIsoStringT(
                         time_precision[col], pas[col].getDouble(row), ""));
                 } else if (isStringOrChar[col]) {
-                    writer.write(quoted? pas[col].getNccsvDataString(row) :
-                                         pas[col].getTsvString(row));
+                    String s = pas[col].getSVString(row);
+                    if (twoQuotes)
+                        s = String2.replaceAll(s, "\\\"", "\"\"");
+                    writer.write(s);
                 } else {
                     String s = pas[col].getString(row);
                     writer.write(s.length() == 0? nanString : s); 
@@ -234,11 +235,11 @@ public class TableWriterSeparatedValue extends TableWriter {
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
     public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
-        OutputStreamSource tOutputStreamSource, String tSeparator, boolean tQuoted, 
+        OutputStreamSource tOutputStreamSource, String tSeparator, boolean tTwoQuotes, 
         boolean tWriteColumnNames, char tWriteUnits, String tNanString) throws Throwable {
 
         TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(tEdd, 
-            tNewHistory, tOutputStreamSource, tSeparator,tQuoted, 
+            tNewHistory, tOutputStreamSource, tSeparator,tTwoQuotes, 
             tWriteColumnNames, tWriteUnits, tNanString);
         twsv.writeAllAndFinish(table);
     }

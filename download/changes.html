@@ -68,25 +68,28 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
-<h2><a class="selfLink" id="changes2.13" href="#changes2.13" rel="bookmark">Changes</a> 
-in ERDDAP version 2.13 (released 2021-0?-??)</h2>
+<h2><a class="selfLink" id="changes2.14" href="#changes2.14" rel="bookmark">Changes</a> 
+in ERDDAP version 2.14 (released 2021-07-02)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>
+  <li>(none)
     <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
-  <li>NEW: EDDGridLon0360 which makes a gridded dataset with longitude values >=0 and <=360
-    from a gridded dataset with longitude values >=-180 and <=180.
+  <li>NEW: EDDGridLon0360 which makes a gridded dataset with longitude values &gt;=0 and &lt;=360
+    from a gridded dataset with longitude values &gt;=-180 and &lt;=180.
+    See the <a rel="help" 
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridLon0360"
+        >EDDGridLon0360 documentation</a>.
     Thanks to Dale Robinson.
     <br>&nbsp;
 
-  <li>NEW: ERDDAP administrators can override any value in setup.xml
+  <li>NEW: ERDDAP administrators can now override any value in setup.xml
       via an environment variable named ERDDAP_<i>valueName</i> before running ERDDAP.
       For example, use ERDDAP_baseUrl overrides the &lt;baseUrl&gt; value.
      This can be handy when deploying ERDDAP with a container, as you can
@@ -100,14 +103,26 @@ in ERDDAP version 2.13 (released 2021-0?-??)</h2>
      Thanks to Marc Portier.
     <br>&nbsp;
 
-  <li>FIX: After a year of trouble, I finally successfully installed Cassandra (v2) again
+  <li>IMPROVED: Now, if some files in an EDDTableFrom...Files dataset with a lot of files 
+    have some very long String values,
+    the dataset will load much faster and respond to requests much faster. 
+    Previously, ERDDAP would allocate a lot of space for the min and max String values in the 
+    files which are stored with file information for such datasets. 
+    The resulting file was huge, causing it to be written and read slowly.
+    Thanks to OBIS.
+    <br>&nbsp;
+
+  <li>IMPROVED: Now, ERDDAP does a better job of interpreting unusual and invalid character sequences in CSV files.
+    Thanks to OBIS.
+    <br>&nbsp;
+
+  <li>FIX: After a year of trouble with Cassandra, I finally successfully installed Cassandra (v2) again
     and so was able to rerun the tests with Cassandra v2. So now I can more confidently
     state that ERDDAP works with Cassandra v2 and v3.
     Thanks to ONC.
     <br>&nbsp;
   </ul>
 
--->
 
 <!-- ****************************************************************************** -->
 
@@ -2803,7 +2818,7 @@ in ERDDAP version 1.74 (released 2016-10-07)</h2>
   give users more direct access to the wealth of KNB and LTER data 
   and help those projects meet the US government's 
   <a rel="help" 
-    href="https://www.whitehouse.gov/blog/2013/02/22/expanding-public-access-results-federally-funded-research"
+    href="https://nosc.noaa.gov/EDMC/PD.DSP.php"
     >Public Access to Research Results (PARR) requirements</a>
   by making the data available via a web service.
   <br>See 

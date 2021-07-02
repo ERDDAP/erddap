@@ -207,10 +207,11 @@ public class ScriptRow  {
         try {
             results = jscript.execute(jcontext).toString();
         } catch (Exception e) {
-            results = e.toString();
+            results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results, 
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
+            "Caught: java.lang.NullPointerException",
+            //2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 
 
@@ -264,11 +265,11 @@ public class ScriptRow  {
             o = jscript.execute(jcontext);
             results = o.getClass().getSimpleName();
         } catch (Exception e) {
-            results = e.toString();
+            results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results,
-            "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:37 unsolvable function/method 'getProperty'",
+            "Caught: java.lang.NullPointerException",
+            //2021-07-02 was  "org.apache.commons.jexl3.JexlException$Method: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:37 unsolvable function/method 'getProperty'",
             "");
 
         //test a user can instantiate any class: now it fails (as desired)
@@ -283,7 +284,7 @@ public class ScriptRow  {
         }
         Test.ensureEqual(results,
             "org.apache.commons.jexl3.JexlException$Method: " +
-            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 unsolvable function/method 'java.lang.StringBuilder'",
+            "gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest:278 unsolvable function/method 'java.lang.StringBuilder(String)'",
             "");
 
         //work with static functions  by making a shell class (ScriptMath) that can be instantiated
@@ -334,7 +335,7 @@ public class ScriptRow  {
             results = e.toString();
         }
         Test.ensureEqual(results,
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:34 undefined variable String",
+            "org.apache.commons.jexl3.JexlException: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest:328 JEXL error : + error caused by null operand",
             "");
 
         //String static methods are accessible if String in MapContext
@@ -352,10 +353,11 @@ public class ScriptRow  {
         try {
             results = jscript.execute(jcontext).toString();
         } catch (Exception e) {
-            results = e.toString();
+            results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results, 
-            "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
+            "Caught: java.lang.NullPointerException",
+            //2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 
         //but succeeds when added to context
