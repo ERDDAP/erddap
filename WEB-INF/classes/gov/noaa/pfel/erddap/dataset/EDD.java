@@ -259,6 +259,8 @@ public abstract class EDD {
     public final static String BADFILE_TABLE_FILENAME    = "badFiles.nc";
     public final static String QUICK_RESTART_FILENAME    = "quickRestart.nc";
     public final static String DIMENSION_VALUES_FILENAME = "dimensionValues.nc";
+    public final static String MIN_SUFFIX = "_min_";  //for min columns in fileTable
+    public final static String MAX_SUFFIX = "_max_";  //for max columns in fileTable
     public final static String pngInfoSuffix = "_info.json";
     public final static String fgdcSuffix     = "_fgdc";
     public final static String iso19115Suffix = "_iso19115";
@@ -10545,6 +10547,30 @@ public abstract class EDD {
         int random = Math2.random(Integer.MAX_VALUE);
 
         try {
+            if (this instanceof EDDTableFromFiles) {
+                //if fileTable has superlong min or max strings, shorten them so nc file isn't crazy huge
+                //(because strings are stored as fixed length char arrays)
+                int nCol = fileTable.nColumns();
+                int nRow = fileTable.nRows();
+                for (int col = EDDTableFromFiles.dv0; col < nCol; col++) {
+                    PrimitiveArray pa = fileTable.getColumn(col);
+                    boolean isMin = fileTable.getColumnName(col).endsWith(MIN_SUFFIX);
+                    boolean isMax = fileTable.getColumnName(col).endsWith(MAX_SUFFIX);
+                    if (pa instanceof StringArray && (isMin || isMax)) {
+                        for (int row = 0; row < nRow; row++) {
+                            String s = pa.getString(row);
+                            if (s.length() > 80) //arbitrary
+                                //min string now ends with tab  (which sorts before whatever the true string is)
+                                //max string now ends with FFFE (which sorts after  whatever the true string is)
+                                //The big downside is: now a file with just 1 long value doesn't have min=max in the fileTable.
+                                //  I don't know if this causes trouble (e.g., when trying to do a quick search for matching file),
+                                //  but it will only affect queries for columns with a string longer than 80 char.
+                                pa.setString(row, s.substring(0, 80) + (isMin? "\t" : "\uFFFE"));
+                        }
+                    }
+                }
+            }
+
             //*** It is important that the 3 files are swapped into place as atomically as possible
             //So save all first, then rename all.
             if (tStandardizeWhat >= 0 && tStandardizeWhat < Integer.MAX_VALUE) {

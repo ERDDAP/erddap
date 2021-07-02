@@ -1126,13 +1126,13 @@ public abstract class PrimitiveArray {
 
     /**
      * Return a value from the array as a String suitable for the data section 
-     * of an ASCII tsv file. This is close to a json string.
+     * of an ASCII csv or tsv string. This is close to a json string.
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
      *   CharArray and StringArray overwrite this.
      */
-    public String getTsvString(int index) {
+    public String getSVString(int index) {
         return getString(index);
     }
 

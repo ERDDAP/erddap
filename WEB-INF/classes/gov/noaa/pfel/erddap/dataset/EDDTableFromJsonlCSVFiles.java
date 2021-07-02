@@ -711,10 +711,10 @@ expected =
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,,degree_C\n" +
 "Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-9223372036854775808,10.9\n" +
-"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n" +
-"Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,0,10.7\n" +
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",-1234567890123456,NaN\n" +
+"Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\"\\t\",0,10.7\n" +
 "Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",1234567890123456,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n" +
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",9223372036854775806,10.0\n" +
 ",,NaN,NaN,,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -740,7 +740,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,,degree_C\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,9223372036854775806,10.0\n";
+"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\"\\u00fc\",9223372036854775806,10.0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on char constraint
@@ -752,7 +752,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,,degree_C\n" +
-"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",-1234567890123456,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on long constraint
@@ -764,7 +764,7 @@ expected =
         expected = 
 "ship,time,latitude,longitude,status,testLong,sst\n" +
 ",UTC,degrees_north,degrees_east,,,degree_C\n" +
-"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,-1234567890123456,NaN\n";
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\"\\u20ac\",-1234567890123456,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv   subset based on harder long constraint

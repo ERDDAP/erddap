@@ -3668,8 +3668,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-04-16\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2021-04-16\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2021-06-17\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2021-06-17\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4913,8 +4913,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-04-16\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2021-04-16\";\n" +  // ""
+"  :date_created = \"2021-06-17\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2021-06-17\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -10137,7 +10137,7 @@ expected =
 "      :units = \"PSU\";\n" +
 "\n" +
 "  // global attributes:\n" +
-"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" +
+"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" + // \\( because in regex
 "  :cdm_altitude_proxy = \"depth\";\n" +
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
@@ -10147,7 +10147,7 @@ expected =
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=10\\|5\";\n" +  // \\( and \\| because in regex
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -10568,7 +10568,7 @@ expected =
 "      :units = \"PSU\";\n" +
 "\n" +
 "  // global attributes:\n" +
-"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" +
+"  :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 20.{8} from https://www.nodc.noaa.gov/GTSPP/.\";\n" + // \\( because in regex
 "  :cdm_altitude_proxy = \"depth\";\n" +
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
@@ -10578,7 +10578,7 @@ expected =
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
 "  :crs = \"EPSG:4326\";\n" +
-"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=1\\|5\";\n" +
+"  :defaultGraphQuery = \"longitude,latitude,station_id&time%3E=max\\(time\\)-7days&time%3C=max\\(time\\)&.draw=markers&.marker=10\\|5\";\n" + // \\( and \\| because in regex
 "  :Easternmost_Easting = 176.64f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :file_source = \"The GTSPP Continuously Managed Data Base\";\n" +
@@ -14132,7 +14132,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2021-04-29 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2021-06-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14463,7 +14463,7 @@ So the changes seem good. */
 "//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14533,7 +14533,7 @@ So the changes seem good. */
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14586,7 +14586,7 @@ So the changes seem good. */
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14669,7 +14669,7 @@ So the changes seem good. */
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -15653,7 +15653,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16151,7 +16151,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.12</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.14</Software>[10]\n" +
 "//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +

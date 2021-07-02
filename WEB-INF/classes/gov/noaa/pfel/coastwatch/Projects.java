@@ -10231,13 +10231,14 @@ XML.encodeAsXML(
         }
 
     /**
-     * This splits the one, huge, OBIS occurrences.csv file into numerous CSV files, one per scientificname.
+     * This splits the one, huge, OBIS occurrence.csv file into numerous CSV files, one per scientificname.
      * The first 3 lines of occurrences.csv are <pre>
 id,dataset_id,decimallongitude,decimallatitude,date_start,date_mid,date_end,date_year,scientificname,originalscientificname,minimumdepthinmeters,maximumdepthinmeters,coordinateuncertaintyinmeters,flags,dropped,absence,shoredistance,bathymetry,sst,sss,marine,brackish,freshwater,terrestrial,taxonrank,aphiaid,redlist_category,superdomain,domain,kingdom,subkingdom,infrakingdom,phylum,phylum_division,subphylum_subdivision,subphylum,infraphylum,superclass,class,subclass,infraclass,subterclass,superorder,order,suborder,infraorder,parvorder,superfamily,family,subfamily,supertribe,tribe,subtribe,genus,subgenus,section,subsection,series,species,subspecies,natio,variety,subvariety,forma,subforma,type,modified,language,license,rightsholder,accessrights,bibliographiccitation,references,institutionid,collectionid,datasetid,institutioncode,collectioncode,datasetname,ownerinstitutioncode,basisofrecord,informationwithheld,datageneralizations,dynamicproperties,materialsampleid,occurrenceid,catalognumber,occurrenceremarks,recordnumber,recordedby,recordedbyid,individualcount,organismquantity,organismquantitytype,sex,lifestage,reproductivecondition,behavior,establishmentmeans,occurrencestatus,preparations,disposition,othercatalognumbers,associatedmedia,associatedreferences,associatedsequences,associatedtaxa,organismid,organismname,organismscope,associatedoccurrences,associatedorganisms,previousidentifications,organismremarks,eventid,parenteventid,samplingprotocol,samplesizevalue,samplesizeunit,samplingeffort,eventdate,eventtime,startdayofyear,enddayofyear,year,month,day,verbatimeventdate,habitat,fieldnumber,fieldnotes,eventremarks,locationid,highergeographyid,highergeography,continent,waterbody,islandgroup,island,country,countrycode,stateprovince,county,municipality,locality,verbatimlocality,verbatimelevation,minimumelevationinmeters,maximumelevationinmeters,verbatimdepth,minimumdistanceabovesurfaceinmeters,maximumdistanceabovesurfaceinmeters,locationaccordingto,locationremarks,verbatimcoordinates,verbatimlatitude,verbatimlongitude,verbatimcoordinatesystem,verbatimsrs,geodeticdatum,coordinateprecision,pointradiusspatialfit,footprintwkt,footprintsrs,footprintspatialfit,georeferencedby,georeferenceddate,georeferenceprotocol,georeferencesources,georeferenceverificationstatus,georeferenceremarks,geologicalcontextid,earliesteonorlowesteonothem,latesteonorhighesteonothem,earliesteraorlowesterathem,latesteraorhighesterathem,earliestperiodorlowestsystem,latestperiodorhighestsystem,earliestepochorlowestseries,latestepochorhighestseries,earliestageorloweststage,latestageorhigheststage,lowestbiostratigraphiczone,highestbiostratigraphiczone,lithostratigraphicterms,group,formation,member,bed,identificationid,identifiedby,identifiedbyid,dateidentified,identificationreferences,identificationremarks,identificationqualifier,identificationverificationstatus,typestatus,taxonid,scientificnameid,acceptednameusageid,parentnameusageid,originalnameusageid,nameaccordingtoid,namepublishedinid,taxonconceptid,acceptednameusage,parentnameusage,originalnameusage,nameaccordingto,namepublishedin,namepublishedinyear,higherclassification,specificepithet,infraspecificepithet,verbatimtaxonrank,scientificnameauthorship,vernacularname,nomenclaturalcode,taxonomicstatus,nomenclaturalstatus,taxonremarks
 f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938,50.73743,1158019200000,1158019200000,1158019200000,2006,Spiophanes bombyx,Spiophanes bombyx,23.1,23.1,,,f,f,12831,16,12.63,33.92,1,0,0,0,Species,131187,,Biota,,Animalia,,,Annelida,,,,,,Polychaeta,Sedentaria,Canalipalpata,,,Spionida,Spioniformia,,,,Spionidae,,,,,Spiophanes,,,,,Spiophanes bombyx,,,,,,,,2018-04-09 15:18:52,en,,,,,,,,IMIS:dasid:5922,CEFAS,,RSMP Baseline Dataset,,Occurrence,,,,,RSMP_MAL0270906_003A_337587,RSMP_MAL0270906_003A_337587,,,,,,,,,,,,,present,,,,,,,,,,,,,,,MAL0270906_003A,,,,,,2006-09-12,,,,2006,9,12,,,,,sample,,,,,,,,,,,,,,,,,,,,,,,,,,,,EPSG:4326,,,,EPSG:4326,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,urn:lsid:marinespecies.org:taxname:131187,,,,,,,,,,,,,,,,,,,,,,
 3defa8a9-5c4e-4185-9779-1246b720082c,5b9d8c82-3fdf-4aa3-8eaf-5399902a84ef,-61.8325,47.425,,,,,Gonyaulax spinifera,Gonyaulax spinifera,0,0,,,f,f,1064,2,7.28,28.49,1,1,1,0,Species,110041,,Biota,,Chromista,Harosa,Alveolata,Myzozoa,,,Dinozoa,Dinoflagellata,,Dinophyceae,,,,,Gonyaulacales,,,,,Gonyaulacaceae,,,,,Gonyaulax,,,,,Gonyaulax spinifera,,,,,,,,2014-09-04T15:06:34Z,En,http://data.gc.ca/eng/open-government-licence-canada & http://www.canadensys.net/norms,"Her Majesty the Queen in right of Canada, as represented by the Minister of Fisheries and Oceans",,,,,,BioChem_AZMP_Quebec_P,DFO-ISDM,"BONNEAU,ESTHER",Atlantic Zone Monitoring Program (AZMP) DFO Quebec region phytoplankton,,HumanObservation,,,Sample size = Number per cubic metre; Classification=WoRMS; Verbatim name=Gonyaulax spinifera,,BioChem_AZMP_Quebec_P_20000002080159,20000002080159,,,"BONNEAU,ESTHER",,20000,,,,,,,,,,,,,,,,,,,,,,,,,bucket,,,,,17.5,,,1999,6,8,,,1999200245_1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,urn:lsid:marinespecies.org:taxname:110041,,,,,,,,,,,,,,spinifera,,,,,,,,
         </pre>
-     *  Bob Simons made this from the "Full OBIS export 2021-05-18" from https://obis.org/manual/access/
+     *  Bob Simons made this from the "Full OBIS export 2021-05-18" occurrence.csv file from https://obis.org/manual/access/
+     *  After using this, gzip all the resulting .csv files.
      *
      * @param sourceFileName
      * @param destDirectory the parent directory. If nonexistent, it will be created.
@@ -10245,8 +10246,11 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
      * @throws Exception if trouble
      */
     public static void splitOBIS(String sourceFileName, String destDirectory) throws Exception {
-//FUTURE: faster if make hashmap<fileName, StringBuilder> and only flush when sb.length()>15KB
-//  and flush all at the end.
+//FUTURE: faster if make hashmap<fileName, StringBuilder> and only flush when sb.length()>5KB
+//  and flush all at the end.  But will that use too much memory?
+// 5000x200000sppx2bytes/char = 2gb
+//OR: Read n lines (a million?) into a table. Sort. Flush that to individual files.
+
         destDirectory = File2.addSlash(destDirectory);
         String2.log("*** Projects.splitOBIS(" + sourceFileName + ", " + destDirectory + ")");
         File2.makeDirectory(destDirectory);
@@ -10269,7 +10273,7 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
             String pendingSN = "zz"; 
             while (true) {
                 String line = in.readLine();
-                                nLines++;
+                nLines++;
                 if (nLines % 100000 == 0) 
                     String2.log("" + nLines);
                 if (line == null) {
@@ -10283,6 +10287,8 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
                     break;  
                 } 
                 line = String2.replaceAll(line, "\\\"\"", "\\\"");
+                //if (line.endsWith("\\\"") && line.startsWith("\""))  //4 tags have this, not lines
+                //    line = line.substring(0, line.length() - 2) + "\"";
 
                 String parts[] = StringArray.arrayFromCSV(line);
                 if (parts.length != nCol) {

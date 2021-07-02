@@ -761,7 +761,7 @@ public class TestAll  {
 //        "https://upwell.pfeg.noaa.gov/erddap/");
 //        "http://75.101.155.155/erddap/");
 
-//    Projects.splitOBIS("S:\\occurrence.csv", "S:\\obis\\");
+//    Projects.splitOBIS("S:\\occurrence.csv.zip", "S:\\obis\\"); //try using .zip directly
 
 
 //    SSR.displayInBrowser("file://" + tName);
@@ -1056,7 +1056,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = false;
+        boolean interactive = true;
         boolean doSlowTestsToo = false;
 
 /* for releases, this line should have open/close comment */
@@ -1201,7 +1201,6 @@ WaitThenTryAgainException wttae;
                                          errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromAwsXmlFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromThreddsFiles.test(   errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromWFSFiles.test(       errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromInvalidCRAFiles.test(errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromJsonlCSVFiles.test(  errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromAudioFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -1220,6 +1219,7 @@ WaitThenTryAgainException wttae;
         EDDTableFromAllDatasets.test(    errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTable.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);  //mostly currently-inactive SOS server tests
 
+        //EDDTableFromWFSFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE 2021-06-25 because test server is gone
         //EDDTableFromMWFS.test(         errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE as of 2009-01-14 
         //EDDTableFromNOS.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE as of 2010-09-08
         //EDDTableFromNWISDV.test(       errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE as of 2011-12-16
@@ -1344,7 +1344,7 @@ WaitThenTryAgainException wttae;
         //and the smaller version
         //MakeErdJavaZip.makeConvertTableJar("C:/pmelsvn/WebContent/WEB-INF/lib/"); //only do when working on LAS stuff
 
-        //INACTIVE: make EMA.war
+        //INACTIVE because not needed, but works: make EMA.war
         MakeEmaWar.main(null);
 
         String2.log(

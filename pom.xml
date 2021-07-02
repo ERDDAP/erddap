@@ -11,6 +11,9 @@ since this is impossible for AWS S3 dependencies without Maven.
   cd \programs\mavenERDDAP
   mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
 
+* Update ERDDAP version number below in ...
+   <version>2.14-SNAPSHOT</version>
+
 * Update the version numbers starting with <dependencyManagement> section.
   Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
 
@@ -22,11 +25,11 @@ since this is impossible for AWS S3 dependencies without Maven.
       cd /c/content/bat
       ./synchToMaven.sh
 
-  From Bash or DOS command line (after synchToMaven.sh has copied source files to Maven dir):
+  From DOS command line (or Bash) (after synchToMaven.sh has copied source files to Maven dir):
       //mvn -help 
       //add -e for full error messages
       //add -X for debug messages
-      cd /c/programs/mavenERDDAP/ERDDAP   //pom.xml is there
+      cd /programs/mavenERDDAP/ERDDAP   //pom.xml is there
       mvn clean               //removes previously generated .class files and ...
       mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
       mvn dependency:analyze  //Identifies excess or missing dependencies/.jars.
@@ -41,7 +44,7 @@ since this is impossible for AWS S3 dependencies without Maven.
     to   tomcat/webapps/cwexperimental/WEB-INF/lib
     The vast majority of .jars are from the AWS S3 dependency.
 
-* If passes all tests, delete temporary libYYYYMMDD directory.
+* Run TestAll. If passes all tests, delete temporary libYYYYMMDD directory.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -50,7 +53,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.12-SNAPSHOT</version>
+    <version>2.14-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -184,7 +187,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.16.52</version>
+              <version>2.16.94</version>
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -257,7 +260,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>8.8.2</version>
+            <version>8.9.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -265,7 +268,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>8.8.2</version>
+            <version>8.9.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -355,7 +358,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jexl3</artifactId>
-            <version>3.1</version>
+            <version>3.2.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql 
@@ -363,7 +366,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.20</version>
+            <version>42.2.22</version>
         </dependency>
 
 
@@ -398,7 +401,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.1.21</version>
+            <version>4.1.24</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -406,7 +409,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.63.Final</version>
+            <version>4.1.65.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -438,7 +441,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.16.52</version>
+          <version>2.16.94</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -446,7 +449,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.16.52</version>
+            <version>2.16.94</version>
         </dependency>
 
     </dependencies>

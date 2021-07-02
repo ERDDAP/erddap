@@ -3595,7 +3595,7 @@ writer.write(
                     "(<a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.tsv - a tab-separated ASCII text table.\n" +
-                    "(<a rel=\"help\" href=\"http://jkorpela.fi/TSV.html\">more&nbsp;info" +
+                    "(<a rel=\"help\" href=\"https://jkorpela.fi/TSV.html\">more&nbsp;info" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>)\n" +
                 "<li>.xhtml - an XHTML (XML) file with the data in a table.\n" +
                     "(<a rel=\"help\" href=\"https://www.w3schools.com/html/html_tables.asp\">more&nbsp;info" +
@@ -17941,7 +17941,7 @@ UTC                  m   deg_n    deg_east m s-1
 
         results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/search/index.tsv?" +
             EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
-        Test.ensureTrue(results.indexOf("\tTAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\t") > 0,
+        Test.ensureTrue(results.indexOf("\t\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\t") > 0,
             "results=\n" + results);
 
 

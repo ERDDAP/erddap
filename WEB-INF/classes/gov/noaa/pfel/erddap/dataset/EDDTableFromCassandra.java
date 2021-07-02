@@ -21,6 +21,8 @@ INSTALL CASSANDRA on Lenovo in 2021:
 * Run Cassandra 
     cd \programs\apache-cassandra-2.1.22\bin\
     cassandra.bat -f
+  To stop:
+    ^C
   For Bob, Cassandra is at localhost:9160
 * Make a snapshot of Dell M4700 data: 
   cd \programs\apache-cassandra-2.1.22\bin\

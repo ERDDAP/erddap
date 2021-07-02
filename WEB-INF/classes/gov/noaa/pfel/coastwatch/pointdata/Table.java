@@ -2529,7 +2529,7 @@ public class Table  {
             try {
                 //break the lines into items
                 if (colSeparator == ',')
-                    items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases
+                    items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases, but leaves them quoted
                 else if (colSeparator == ' ')
                     items = StringArray.wordsAndQuotedPhrases(oneLine).toArray();
                 else if (colSeparator == '\u0000')
@@ -29985,22 +29985,25 @@ String2.log(table.dataToString());
         BufferedWriter writer = String2.getBufferedOutputStreamWriter(outputStream, charset);
 
         //write the column names   
-        boolean tabMode = separator.equals("\t");
+        boolean csvMode = separator.equals(",");
         int nColumns = nColumns();
+
         if (columnNames != null && columnNames.size() == nColumns) { //isn't this always true???
             for (int col = 0; col < nColumns; col++) {
-                writer.write(tabMode? columnNames.getTsvString(col) :
-                                      columnNames.getNccsvDataString(col));
-                writer.write(col == nColumns -1? "\n" : separator);
+                String s = columnNames.getSVString(col);
+                if (csvMode)
+                        s = String2.replaceAll(s, "\\\"", "\"\"");
+                writer.write(s + (col == nColumns -1? "\n" : separator));
             }
         }
 
         //write the units
         for (int col = 0; col < nColumns; col++) {
             String s = columnAttributes(col).getString("units");
-            writer.write(tabMode? String2.toTsvString(s) :
-                                  String2.toNccsvDataString(s));
-            writer.write(col == nColumns -1? "\n" : separator);
+            s = String2.toSVString(s, 127);
+            if (csvMode)
+                s = String2.replaceAll(s, "\\\"", "\"\"");
+            writer.write(s + (col == nColumns -1? "\n" : separator));
         }
 
         //get columnTypes
@@ -30013,9 +30016,10 @@ String2.log(table.dataToString());
         int nRows = nRows();
         for (int row = 0; row < nRows; row++) {
             for (int col = 0; col < nColumns; col++) {
-                writer.write(tabMode? getColumn(col).getTsvString(row) :
-                                      getColumn(col).getNccsvDataString(row));
-                writer.write(col == nColumns -1? "\n" : separator);
+                String s = getColumn(col).getSVString(row);
+                if (csvMode)
+                    s = String2.replaceAll(s, "\\\"", "\"\"");
+                writer.write(s + (col == nColumns -1? "\n" : separator));
             }
         }
 
@@ -32127,7 +32131,7 @@ String2.log(table.dataToString());
 
         //are they the same (but column types may be different)?
         Test.ensureTrue(table1.equals(table2, false), 
-            "\ntable=" + table.toString() + "\ntable2=" + table2.toString());
+            "\ntable1=" + table1.toString() + "\ntable2=" + table2.toString());
 
         //test simplification: see if column types are the same as original table
         int n = table.nColumns();
