@@ -1605,14 +1605,21 @@ public class TestUtil {
         Test.ensureEqual(String2.fromJson(b), a, "");
         Test.ensureEqual(String2.fromJson("\\?\\'"), "?'", "");
         Test.ensureEqual(String2.fromJson("\\a\\b\\v"), "", "");
-        Test.ensureEqual(String2.fromJson("\\101"), "A", "");
-        Test.ensureEqual(String2.fromJson("\\x41"), "A", "");
-        Test.ensureEqual(String2.fromJson("\\u0041"), "A", "");
-        String2.log("Intentional errors:");
-        Test.ensureEqual(String2.fromJson("\\z"), "\\z", "");
-        Test.ensureEqual(String2.fromJson("\\108"), "", "");
-        Test.ensureEqual(String2.fromJson("\\x6m"), "", "");
-        Test.ensureEqual(String2.fromJson("\\u006m"), "", "");
+        Test.ensureEqual(String2.fromJson("\\101"), "A", ""); //octal
+        Test.ensureEqual(String2.fromJson("\\x4f"), "O", ""); //'OH'
+        Test.ensureEqual(String2.fromJson("\\x4F"), "O", "");
+        Test.ensureEqual(String2.fromJson("\\u004f"), "O", "");
+        Test.ensureEqual(String2.fromJson("\\u004F"), "O", "");
+        String2.log("Intentional errors:"); //source just passes through, assume source didn't want json-like
+        Test.ensureEqual(String2.fromJson("\\z"), "\\z", "");         //not a standard \\char
+        Test.ensureEqual(String2.fromJson("\\108"), "\\108", "");     //not quite octal
+        Test.ensureEqual(String2.fromJson("\\x6m"), "\\x6m", "");     //not quite hex
+        Test.ensureEqual(String2.fromJson("\\u006m"), "\\u006m", ""); //not quite unicode
+        Test.ensureEqual(String2.fromJson("a\\"), "a\\", "");         //missing subsequent char
+        Test.ensureEqual(String2.fromJson("\\1"), "\\1", "");         //not octal
+        Test.ensureEqual(String2.fromJson("\\x"), "\\x", "");         //not hex
+        Test.ensureEqual(String2.fromJson("\\u"), "\\u", "");         //not unicode
+
 
         Test.ensureEqual(String2.fromJson("null"),        "null", "");
         Test.ensureEqual(String2.fromJson(null),           null, "");
@@ -2185,12 +2192,6 @@ public class TestUtil {
         Test.ensureEqual(String2.toSSVString(new String[]{}), "", "a");
         Test.ensureEqual(String2.toSSVString(new String[]{"a", null, "ccc"}), "a [null] ccc", "b");
         Test.ensureEqual(String2.toSSVString(al.toArray()), "1 [null] 333", "c");
-        
-        //toSSVString
-        String2.log("test toTSVString");
-        Test.ensureEqual(String2.toTSVString(new String[]{}), "", "a");
-        Test.ensureEqual(String2.toTSVString(new String[]{"a", null, "ccc"}), "a\t[null]\tccc", "b");
-        Test.ensureEqual(String2.toTSVString(al.toArray()), "1\t[null]\t333", "c");
         
         //toNewlineString
         String2.log("test toNewlineString");

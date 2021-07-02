@@ -1005,14 +1005,6 @@ public class ScriptString2  {
     }
 
     /**
-     * This encodes special characters in s if needed so that 
-     * s can be stored as an item in a tsv string.
-     */
-    public static String toTsvString(String s) {
-        return String2.toTsvString(s); 
-    }
-
-    /**
      * This replaces "{0}", "{1}", and "{2}" in msg with s0, s1, s2.
      *
      * @param msg a string which may contain "{0}", "{1}", and/or "{2}".
@@ -1067,22 +1059,6 @@ public class ScriptString2  {
      */
     public static String toSSVString(Object ar[]) {
         return String2.toSSVString(ar);
-    }
-
-    /**
-     * Generates a tab-separated-value string.  
-     * <p>WARNING: This is simplistic. It doesn't do anything special for 
-     *   strings with internal tabs.
-     *
-     * @param ar an array of objects
-     *    (for an ArrayList or Vector, use o.toArray())
-     * @return a TSV String with the values with "\t" after
-     *    all but the last value.
-     *    Returns null if ar is null.
-     *    null elements are represented as "[null]".
-     */
-    public static String toTSVString(Object ar[]) {
-        return String2.toTSVString(ar);
     }
 
     /**

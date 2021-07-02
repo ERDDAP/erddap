@@ -885,29 +885,22 @@ sb.append(
 
       try {
 
-        EDDGrid eddGrid;
-        try {
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                "\n" + MustBe.throwableToString(t));
-            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
-        }
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
 
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
             eddGrid.className() + "_LT0_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 68];\n" +
+"  Float64 time[time = 69];\n" +
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 11985];\n" +
 "  Float64 longitude[longitude = 9333];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chla[time = 68][altitude = 1][latitude = 11985][longitude = 9333];\n" +
+"      Float32 chla[time = 69][altitude = 1][latitude = 11985][longitude = 9333];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 68];\n" +
+"      Float64 time[time = 69];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 11985];\n" +
 "      Float64 longitude[longitude = 9333];\n" +

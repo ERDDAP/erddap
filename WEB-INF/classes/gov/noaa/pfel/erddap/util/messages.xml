@@ -8,7 +8,7 @@ VERY IMPORTANT:
 
 One line?
 If the English message appears as one long line (with no newlines), please make the 
-translation one line line also.
+translation one line also.
 
 HTML or Not?
 If the English message has HTML tags, then it is safe to use HTML tags; otherwise, it isn't.
@@ -281,9 +281,6 @@ Datasets can be categorized in different ways by the values of various metadata 
 
 <caughtInterrupted>caught currentThread().isInterrupted().</caughtInterrupted>
 
-<cfStandardNamesOneWord>
-
-</cfStandardNamesOneWord>
 
 <!-- This message is used as a tooltip for the "access" links on HTML pages
 whenever a table of datasets is displayed (e.g., when you do a full text search for datasets).
@@ -4071,7 +4068,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
   <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">.csv<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
-  <a rel="help" href="http://jkorpela.fi/TSV.html">.tsv<img 
+  <a rel="help" href="https://jkorpela.fi/TSV.html">.tsv<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>,
   <a rel="help" href="https://www.json.org/">.json<img 
@@ -6065,6 +6062,9 @@ https://mvco.whoi.edu/
 http://myroms.org
 https://www.myroms.org
 
+www.noaa.gov/big-data-project
+www.noaa.gov/information-technology/big-data
+
 www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html
 linux.die.net/man/1/ncdump
 
@@ -6794,6 +6794,9 @@ https://www.iso.org
 http://www.isotc211.org
 https://www.isotc211.org
 
+http://jkorpela.fi/
+https://jkorpela.fi/
+
 http://www.jma.go.jp
 https://www.jma.go.jp
 
@@ -7009,7 +7012,6 @@ https://fgdcxml.sourceforge.net
 https://hadobs.metoffice.com
 https://hudson.dl.stevens-tech.edu/maritimeforecast/
 https://hydromet-thredds.princeton.edu/erddap/index.html  (http uses :8000)
-https://jkorpela.fi
 https://lab.usgin.org
 https://mapserver.refractions.net
 https://meteora.ucsd.edu

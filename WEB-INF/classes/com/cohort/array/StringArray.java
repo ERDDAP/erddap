@@ -1202,18 +1202,17 @@ public class StringArray extends PrimitiveArray {
 
     /**
      * Return a value from the array as a String suitable for the data section 
-     * of an ASCII tsv file, e.g., z \t \u0000 , \".
+     * of an ASCII csv or tsv string, e.g., z \t \u0000 , \".
      * 
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
      *   CharArray and StringArray overwrite this.
      */
-    public String getTsvString(int index) {
+    public String getSVString(int index) {
         String s = get(index);
-        if (s == null)
+        if (s == null || s.length() == 0)
             return String2.EMPTY_STRING;
-        s = String2.toJson(s);
-        return s.substring(1, s.length() - 1); //remove enclosing quotes
+        return String2.toSVString(s, 127);
     }
 
     /**
@@ -2919,6 +2918,16 @@ public class StringArray extends PrimitiveArray {
         //test reorder
         anArray.reverse();
         Test.ensureEqual(anArray.toArray(), new String[]{"4","1","3","2","0"}, "");
+
+        //test getSVString
+        anArray = new StringArray(new String[]{"", "test", ","," something", "\n\t", "he \"said\"", "a\\b"});
+        Test.ensureEqual(anArray.getSVString(0), "", "");
+        Test.ensureEqual(anArray.getSVString(1), "test", "");
+        Test.ensureEqual(anArray.getSVString(2), "\",\"", "");
+        Test.ensureEqual(anArray.getSVString(3), "\" something\"", "");
+        Test.ensureEqual(anArray.getSVString(4), "\"\\n\\t\"", "");
+        Test.ensureEqual(anArray.getSVString(5), "\"he \\\"said\\\"\"", "");
+        Test.ensureEqual(anArray.getSVString(6), "\"a\\\\b\"", "");
 
 
         //move does nothing, but is allowed

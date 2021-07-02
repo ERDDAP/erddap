@@ -223,9 +223,9 @@ public abstract class EDDGrid extends EDD {
         "http://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps",  //.timeGaps
-        "http://jkorpela.fi/TSV.html",  //tsv
-        "http://jkorpela.fi/TSV.html",  //tsv
-        "http://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
+        "https://jkorpela.fi/TSV.html",  //tsv
         "https://en.wikipedia.org/wiki/WAV", //wav
         "https://www.w3schools.com/html/html_tables.asp" //xhtml
     };
@@ -8520,7 +8520,7 @@ Attributes {
         OutputStreamSource outputStreamSource, boolean writeColumnNames, char writeUnits) 
         throws Throwable {
 
-        saveAsSeparatedAscii(requestUrl, userDapQuery, outputStreamSource, ",", true,  //true=quoted
+        saveAsSeparatedAscii(requestUrl, userDapQuery, outputStreamSource, ",", true,  //true=twoQuotes
             writeColumnNames, writeUnits);
     }
 
@@ -8545,7 +8545,7 @@ Attributes {
         OutputStreamSource outputStreamSource, boolean writeColumnNames, char writeUnits) 
         throws Throwable {
 
-        saveAsSeparatedAscii(requestUrl, userDapQuery, outputStreamSource, "\t", false, //false = !quoted
+        saveAsSeparatedAscii(requestUrl, userDapQuery, outputStreamSource, "\t", false, //false = !twoQuotes
             writeColumnNames, writeUnits);
     }
 
@@ -8561,8 +8561,7 @@ Attributes {
      *   buffered) to receive the results.
      *   At the end of this method the outputStream is flushed, not closed.
      * @param separator  e.g., tab or comma (without space)
-     * @param quoted if true, String values are enclosed in double quotes
-     *   and internal double quotes are converted to 2 double quotes.
+     * @param twoQuotes if true, internal double quotes are converted to 2 double quotes.
      * @param writeColumnNames
      * @param writeUnits  '0'=no, 
      *    '('=on the first line as "variableName (units)" (if present),
@@ -8571,7 +8570,7 @@ Attributes {
      */
     public void saveAsSeparatedAscii(String requestUrl, String userDapQuery, 
         OutputStreamSource outputStreamSource,
-        String separator, boolean quoted, boolean writeColumnNames, char writeUnits) throws Throwable {
+        String separator, boolean twoQuotes, boolean writeColumnNames, char writeUnits) throws Throwable {
 
         if (reallyVerbose) String2.log("  EDDGrid.saveAsSeparatedAscii separator=\"" + 
             String2.annotatedString(separator) + "\""); 
@@ -8590,7 +8589,7 @@ Attributes {
         TableWriter tw = new TableWriterSeparatedValue(this, 
             getNewHistory(requestUrl, userDapQuery),
             outputStreamSource, 
-            separator, quoted, writeColumnNames, writeUnits, "NaN");
+            separator, twoQuotes, writeColumnNames, writeUnits, "NaN");
         if (isAxisDapQuery) {
             saveAsTableWriter(ada, tw);
         } else { 

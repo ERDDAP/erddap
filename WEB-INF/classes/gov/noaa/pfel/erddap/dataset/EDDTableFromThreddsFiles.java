@@ -1841,7 +1841,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String Data_modification_date \".{19} E.T\";\n" + //changes
 "    String data_provider \"Andrea Stoneman\";\n" +
 "    String defaultDataQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"\";\n" +
-"    String defaultGraphQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"&\\.marker=1\\|5\";\n" +
+"    String defaultGraphQuery \"&time>=max\\(time\\)-7days&time<=max\\(time\\)&flag=~\\\\\"ZZZ\\.\\*\\\\\"&\\.marker=10\\|5\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
 "    String featureType \"Trajectory\";\n" +
