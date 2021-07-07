@@ -4,3 +4,7 @@ images/gadgets
 images/post
 *.class
 Thumbs.db
+.vscode
+.settings
+.classpath
+.project
