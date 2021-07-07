@@ -36,6 +36,7 @@ public class SimpleXMLReader {
     private boolean itsOwnEndTag = false;
     private StringBuilder allTags = new StringBuilder();
     private StringBuilder contentBuffer = new StringBuilder();
+    private String rawContent = "";
     private String content = "";
     private String endWhiteSpace = "";
     private StringBuilder tagBuffer = new StringBuilder();
@@ -186,7 +187,24 @@ public class SimpleXMLReader {
     public String allTags() {
         return allTags.toString();
     }
-        
+    
+    /**
+     * This returns if the current tag is an end tag
+     * @return if the current tag is an end tag
+     */
+    public boolean isEndTag() {
+        if (topTag() == null) {
+            return false;
+        }
+        return topTag().charAt(0) == '/';
+    }
+    /**
+     * Get the rawContent that occured before the last tag, i.e. keep CDATA and comment syntax
+     * @return the rawContent of a tag
+     */
+    public String rawContent() {
+        return rawContent;
+    }
 
     /**
      * This returns the trim'd content which occurred right before that last tag.
@@ -279,7 +297,7 @@ public class SimpleXMLReader {
         }
         return sb.toString();
     }
-     
+    
 
     /**
      * This reads to the next tag and adds the tag to the stack of tags.
@@ -302,7 +320,8 @@ public class SimpleXMLReader {
         //clear things that are always cleared
         attributeNames.clear();
         attributeValues.clear();
-        contentBuffer.setLength(0); 
+        contentBuffer.setLength(0);
+        rawContent = "";
 
         //was previous tag itsOwnEndTag?
         if (itsOwnEndTag) {
@@ -364,9 +383,11 @@ public class SimpleXMLReader {
                         tagBuffer.substring(0, 3).equals("!--")) { //it is a comment
                         if (tagBuffer.substring(tagBuffer.length() - 2, tagBuffer.length()).equals("--")) {
                             //end of comment
+                            rawContent += "<" + tagBuffer.toString() + ">\n";
                             tagBuffer.setLength(0); //throw away the content
                         } else {
                             //It's the end of a tag within the comment. Not yet end of comment.
+                            tagBuffer.append(">");
                             done = false; 
                         }
                     }
@@ -377,6 +398,7 @@ public class SimpleXMLReader {
                         if (tagBuffer.substring(tagBuffer.length() - 2).equals("]]")) {
                             //end of CDATA, transfer to contentBuffer
                             //don't include "![CDATA[" start or "]]" end
+                            rawContent = "<" + tagBuffer.toString() + ">";
                             tagBuffer.delete(0, 8);
                             tagBuffer.setLength(tagBuffer.length() - 2);
                             //defeat character decode below by encoding & as &amp; here
@@ -423,6 +445,7 @@ public class SimpleXMLReader {
         //<?xml-stylesheet type="text/xsl" href="../../style/eml/eml-2.0.0.xsl"?>
         //String2.log("tag #" + tagNumber + " tagBuffer=" + tagBuffer);
         if (tagNumber == 1 && String2.startsWith(tagBuffer, "?xml")) {
+            rawContent = "<" + tagBuffer.toString() + ">";
             tagNumber--;
             nextTag();
             return;
@@ -524,6 +547,7 @@ public class SimpleXMLReader {
             allTags.append("<" + tagString + ">");
             stack.add(tagString);
         }
+
         //trim then decode, not the other way around 
         //(decode converts nbsp to ' ', and trim would remove the spaces at beginning or end)
         int wi = contentBuffer.length();
@@ -531,6 +555,10 @@ public class SimpleXMLReader {
             wi--;
         endWhiteSpace = contentBuffer.substring(wi);
         String2.trim(contentBuffer);
+        //determine if rawContent is a comment or a CDATA
+        if (rawContent.length() == 0) {
+            rawContent = contentBuffer.toString();
+        }
         content = XML.decodeEntities(contentBuffer.toString());
     }
 
