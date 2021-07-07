@@ -62,44 +62,44 @@ public class translate {
     private static TranslateTextGlossaryConfig glossaryConfig =
             TranslateTextGlossaryConfig.newBuilder().setGlossary(glossaryName.toString()).build();
 
+    private static final String utilFolderPath = translate.class.getResource("").getPath().toString();
+    private static final String translatedFolderPath = utilFolderPath + "translatedMessages/";
     // path to message.xml
-    private static final String translatePath = translate.class.getClassLoader().getName();
-    private static final String messagePath = "C:/Users/tczqz/Desktop/New folder/apache-tomcat-9.0.46/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml";
-    private static final String oldMessagePath = "C:/Users/tczqz/Desktop/New folder/apache-tomcat-9.0.46/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages-Copy.xml";
-
+    private static final String messagePath = utilFolderPath + "messages.xml";
+    private static final String oldMessagePath = translatedFolderPath + "messages-Copy.xml";
     
     private static final String[] languageCodeList = {"zh-cn"};
     private static HashSet<String> doNotTranslateSet = new HashSet<String>(Arrays.asList(
-        //* all tags that match the regular expression:  <EDDGrid.*Example> ,
+        //* all tags that match the regular expresion:  <EDDGrid.*Example> ,
         "/EDDGridErddapUrlExample", "/EDDGridIdExample", "/EDDGridDimensionExample", "/EDDGridNoHyperExample", "/EDDGridDimNamesExample", "/EDDGridDataTimeExample", "/EDDGridDataValueExample",
         "/EDDGridDataIndexExample", "/EDDGridGraphExample", "/EDDGridMapExample", "/EDDGridMatlabPlotExample",
         //* all tags that match the regular expression:  <EDDTable.*Example> ,
         "/EDDTableErddapUrlExample", "/EDDTableIdExample", "/EDDTableVariablesExample", "/EDDTableConstraintsExample", "/EDDTableDataTimeExample", "/EDDTableDataValueExample",
         "/EDDTableGraphExample", "/EDDTableMapExample", "/EDDTableMatlabPlotExample",
-        //URL and standard names
+        //URL, HTML, and standard names
         "/DEFAULT_commonStandardNames", "/palettes", "/pdfWidths", "/pdfHeights", "/questionMarkImageFile", "/signedToUnsignedAttNames", "/sparqlP01toP02pre", "/sparqlP01toP02post",
         "/startHeadHtml5", "/startBodyHtml5", "/endBodyHtml5", "/standardizeUdunits", "/ucumToUdunits", "/udunitsToUcum", "/updateUrls",
-        "/advr_dataStructure", "/advr_cdm_data_type", "/advr_class", "/inotifyFixCommands",
+        "/advr_dataStructure", "/advr_cdm_data_type", "/advr_class", "/inotifyFixCommands", 
         //abreviations
         "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
         // others
         "/legal", "/imageWidths", "/imageHeights"
     ));
-    private static String[] messageFormatEntities = {"{0}", "{1}","''"};
+    private static String[] messageFormatEntities = {"{0}", "{1}","{2}","''"};
     private static int translationCounter = 0;
 
 
     private String[] watchlist = {"<convertKeywordsIntro> <doWithGraphs> <ConvertTimeNotes> </convertOceanicAtmosphericAcronymsService>",
     "/convertOceanicAtmosphericAcronymsService /convertInterpolateNotes /convertUnitsComparison /convertTimeNotes /theLongDescriptionHtml /filesDocumentation"};
     public static void main(String[] args) {
-        System.out.println(translatePath);
-        Translate translator = TranslateOptions.getDefaultInstance().getService();
+        
+        //Translate translator = TranslateOptions.getDefaultInstance().getService();
         //"<fileHelpGrid_esriAscii>Download an ISO-8859-1 ESRI ASCII file (lat lon data only; lon must be all below or all above 180).</fileHelpGrid_esriAscii>", false));
 
-        String[] HTMLEntities = {"&lt;", "&gt;", "&reg;", "&quot;", "&amp;", "$nbsp;"};
+        String[] HTMLEntities = {"&lt;", "&gt;", "&reg;", "&quot;", "&amp;", "$nbsp;", "</a>"};
         System.out.println("main() Working Directory = " + System.getProperty("user.dir"));
+        System.out.println(translate.class.getResource("").getPath().toString());
         
-
         //deleteGlossary(ERDDAPprojectId, ERDDAPglossaryId);
         //createGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
         
@@ -108,46 +108,38 @@ public class translate {
         // Currently not needed because I have found all tags following the pattern (as 6/23/21) and hard coded them to the set
         // addDoNotTranslateSet();
         
-        /*
-        try {
-            HashMap<String, String> original = getXMLTagMap("CDATATest-Original.xml");
-            HashMap<String, String> chineseMessages = getXMLTagMap("new-messages-zh-cn.xml");
-            HashMap<String, String> messages = getXMLTagMap(messagePath);
-            //FileWriter f = new FileWriter("translated.xml");
-            //String value =  messages.get("/convertOceanicAtmosphericAcronymsService").substring(9, messages.get("/convertOceanicAtmosphericAcronymsService").length() - 3);
-            //f.write(translsadsadateTextV2(translator, "en", "zh-cn", modifyRawContent(value), true));
-            //f.write(translateTexasdasdtV2(translator, "en", "zh-cn", modifyRawContent(value), true));
-            //f.close();
-
-            //updateGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
-            String s = "<li>任何人都可以使用 ERDDAP 的<a rel=\"help\" href=\"&erddapUrl;/slide&amp;sorter.html\">Slide Sorter</a>";
-            
-            
-            String temp = rewriteHStr(translateTextV3("en", "zh-cn", s, true), false);
-            System.out.println(temp);
-            //deleteGlossary(ERDDAPprojectId, ERDDAPglossaryId);
-            //createGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
         
+        try {
+            //HashMap<String, String> original = getXMLTagMap("CDATATest-Original.xml");
             
-            //System.out.println(translatasdasdeTextV2(translator, "en", "zh-cn", "&curlPlaceholder;", true));
-
+            HashMap<String, String> chineseMessages = getXMLTagMap(translatedFolderPath + "messages-zh-cn.xml");
+            HashMap<String, String> messages = getXMLTagMap(messagePath);
+            String s = chineseMessages.get("/subsetViewCheck1") + "'import'";
+            //updateGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
+            s = modifyRawContent(s);
+            System.out.println(s);
+            //s = translateTextV3("en", "zh-cn", s, true);
+            System.out.println(s);
+            System.out.println(rewriteHStr(s, false, s));
+            
+            //updateGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
+        
         } catch (Exception e) {
             e.printStackTrace();
         }
-        */
-        //deleteGlossary(ERDDAPprojectId, ERDDAPglossaryId);
-        //createGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
+        
+        
         /*
         try {
             updateGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
             SimpleXMLReader xmlReader = getSimpleXMLReader(messagePath);
             //myWriter is a reader used solely for testing purposes
-            FileWriter myWriter = new FileWriter("messageTesting.xml");
+            FileWriter myWriter = new FileWriter(translatedFolderPath + "messageTesting.xml");
             HashMap<String, String> previousMessageMap = getXMLTagMap(oldMessagePath);            
             HashMap<String, String>[] translatedTagMaps = (HashMap<String,String>[]) new HashMap[languageCodeList.length];
 
             for (int j = 0; j < languageCodeList.length; j++) {
-                translatedTagMaps[j] = getXMLTagMap("messages-" + languageCodeList[j] + ".xml");
+                translatedTagMaps[j] = getXMLTagMap(translatedFolderPath + "messages-" + languageCodeList[j] + ".xml");
             }
 
             // add xml description
@@ -156,18 +148,15 @@ public class translate {
             FileWriter[] fileWriters = new FileWriter[languageCodeList.length];
             for (int i = 0; i < languageCodeList.length; i++) {
                 //2
-                fileWriters[i] = new FileWriter("new-messages-" + languageCodeList[i] + "2.xml");
+                fileWriters[i] = new FileWriter(translatedFolderPath + "new-messages-" + languageCodeList[i] + ".xml");
                 fileWriters[i].write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); 
             }
-            //1101 + 100
-            for (int i = 0; i < 1401; i++) {
+            while (true) {
                 //testing what is in xmlReader
                 xmlReader.nextTag();
-            }
-            
-            for (int i = 0; i < 100; i++) {
-                //testing what is in xmlReader
-                xmlReader.nextTag();
+                if (xmlReader.allTags().length() == 0) {
+                    break;
+                }
                 String toTranslate = xmlReader.rawContent();
                 String tagName = xmlReader.topTag();
 
@@ -188,6 +177,8 @@ public class translate {
                 } else {
                     boolean modified = !previousMessageMap.getOrDefault(tagName, "DNE").equals(xmlReader.rawContent());
                     boolean[] translated = new boolean[languageCodeList.length];
+                    boolean html = Arrays.stream(HTMLEntities).anyMatch(toTranslate::contains);
+                    boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(toTranslate::contains);
                     for (int j = 0; j < translated.length; j++) {
                         translated[j] = !translatedTagMaps[j].getOrDefault(tagName, "DNE").equals("DNE");
                     }
@@ -202,15 +193,23 @@ public class translate {
                             //if this tag has not been modified
                         for (int j = 0; j < languageCodeList.length; j++) {
                             if (!modified && translated[j]) {
-                                //if we have the a non-null map with a translated message with same tag
+                                //if there are no changes to the content, and the content has been translated, we reuse the tranlation
                                 fileWriters[j].write("\n" + translatedTagMaps[j].get(tagName) + "\n"); 
                             } else {
                                 while (commentStart != 3) {
                                     comment = toTranslate.substring(commentStart, commentEnd);
-                                    String res = "\n<!--"
-                                        + translateTextV3("en", languageCodeList[j], comment, false) 
-                                        + "-->"; 
-                                    res = rewriteHStr(res, false);
+                                    String res;
+                                    if (html) {
+                                        res = modifyRawContent(comment);
+                                        res = "\n<!--"
+                                        + translateTextV3("en", languageCodeList[j], res, html) 
+                                        + "-->";
+                                        res = rewriteHStr(res, false, comment);
+                                    } else {
+                                        res = "\n<!--"
+                                        + translateTextV3("en", languageCodeList[j], comment, html) 
+                                        + "-->";
+                                    }
                                     fileWriters[j].write(res);
                                     commentStart = toTranslate.indexOf("<!--", commentEnd) + 4;
                                     commentEnd = toTranslate.indexOf("-->", commentStart);
@@ -222,10 +221,11 @@ public class translate {
                     } else if (toTranslate.startsWith("<![CDATA[")) {
                         //CDATA tag    
                         myWriter.write(toTranslate);
-                        toTranslate = modifyRawContent(toTranslate);
                         toTranslate = toTranslate.substring(9, toTranslate.length() - 3);
+                        String res = modifyRawContent(toTranslate);
+                        
 
-                        boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(toTranslate::contains);
+                        
 
                         for (int j = 0; j < languageCodeList.length; j++) {
                             if (!modified && translated[j]) {
@@ -234,8 +234,8 @@ public class translate {
                                     translatedTagMaps[j].get(tagName)
                                     );
                             } else {
-                                String res = translateTextV3("en", languageCodeList[j], toTranslate, true);
-                                res = rewriteHStr(res, messageFormat);
+                                res = translateTextV3("en", languageCodeList[j], res, true);
+                                res = rewriteHStr(res, messageFormat, toTranslate);
                                 if (tagName.equals("/convertOceanicAtmosphericAcronymsService")) {
                                     res = convertOceanicAtmosphericAcronymsService(res);
                                 }
@@ -247,10 +247,6 @@ public class translate {
                         // modification might be needed on converting html entities
 
                         myWriter.write(toTranslate);
-
-                        boolean html = Arrays.stream(HTMLEntities).anyMatch(toTranslate::contains);
-                        boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(toTranslate::contains);
-
                         for (int j = 0; j < languageCodeList.length; j++) {
                             if (!modified && translated[j]) {
                                 fileWriters[j].write(
@@ -259,9 +255,9 @@ public class translate {
                             } else {
                                 String res;
                                 if (html) {
-                                    toTranslate = modifyRawContent(toTranslate);
-                                    res = translateTextV3("en", languageCodeList[j], toTranslate, true);
-                                    res = rewriteHStr(res, false);
+                                    res = modifyRawContent(toTranslate);
+                                    res = translateTextV3("en", languageCodeList[j], res, true);
+                                    res = rewriteHStr(res, false, toTranslate);
                                 } else {
                                     res = translateTextV3("en", languageCodeList[j], toTranslate, false);
                                 }
@@ -514,7 +510,7 @@ public class translate {
      * @param messageFormat if the original string uses message format
      * @return the text ready to be written in the xml file
      */
-    private static String rewriteHStr(String s, boolean messageFormat) {
+    private static String rewriteHStr(String s, boolean messageFormat, String original) {
         String res = XML.decodeEntities(s);
         //revert the changes madein modifyRawContent
         res = res.replaceAll("<br />", "&nbsp;");
@@ -525,29 +521,28 @@ public class translate {
 
         //prevent the &amp; from being decoded in URLs of <a> tags
         // needs modification
-        int currIndex = res.indexOf("href", 0);
-        int leftQuote;
-        int righttQuote;
-        while (currIndex != -1) {
-            leftQuote = res.indexOf('"', currIndex);
-            righttQuote = res.indexOf('"', leftQuote + 1);
+        StringBuffer sb = new StringBuffer(res);
+        int originalAmpIndex = original.indexOf("&");
+        int currAmpIndex = sb.indexOf("&", 0);
+        while (originalAmpIndex != -1 && currAmpIndex != -1) {
             //address1 is the original
-            String address1 = res.substring(leftQuote, righttQuote);
-            StringBuffer address2 = new StringBuffer(address1);
-            if (address1.contains("&") && !address1.contains("&amp;")) {
-                int ampIndex = address2.indexOf("&");
-                while (ampIndex != -1) {
-                    if (!address2.substring(ampIndex, ampIndex + 7).equals("&erddap")) {
-                        address2 = address2.replace(ampIndex, ampIndex + 1, "&amp;");
-                        System.out.println("replaced in " + s);
-                    }
-                    ampIndex = address2.indexOf("&", ampIndex + 1);
+            try {
+                if (
+                    !sb.substring(currAmpIndex, currAmpIndex + 5).equals("&amp;")
+                    && original.substring(originalAmpIndex, originalAmpIndex + 5).equals("&amp;")
+                ) {
+                    sb.replace(currAmpIndex, currAmpIndex + 1, "&amp;");
                 }
+            } catch (Exception e) {
+                System.out.println("errors on " + original);
+                e.printStackTrace();
+                break;
             }
-            res = res.replace(address1, address2.toString());
-            currIndex = res.indexOf("href", righttQuote);
+            currAmpIndex = sb.indexOf("&", currAmpIndex + 1);
+            originalAmpIndex = original.indexOf("&", originalAmpIndex + 1);
         }
         //deal with message format issues
+        res = sb.toString();
         if (messageFormat) {
             res = res.replaceAll("''", "doubleSingleQuotePlaceholder");
             res = res.replaceAll("'", "''");
@@ -556,7 +551,6 @@ public class translate {
 
         // Sometimes the translator returns something like <img <a herf = ""> src =""> ...
         // This ensures that <img ...> has proper syntax
-        StringBuffer sb = new StringBuffer(res);
 
         // currIndex = sb.indexOf("<img");
         // int ltIndex = sb.indexOf("<", currIndex + 2);
@@ -572,25 +566,8 @@ public class translate {
 
         // Sometimes the translator returns something like <a href=""> </a> <img src =""></a> ...
         // This lopp ensures that the extra </a> between <a> and <img> is removed
-        int currAIndex = sb.indexOf("<a ");
-        int nextAIndex = sb.indexOf("<a ", currAIndex + 2);
-        int aEndTagIndex = sb.indexOf("</a>", currAIndex);
-        int imgIndex = sb.indexOf("<img", currAIndex);
-        // while (currAIndex != -1) {
-        //     //System.out.printf("currIndex: %d, nextAIndex: %d, aEndTagIndex: %d, imgIndex: %d\n", currAIndex,nextAIndex,aEndTagIndex,imgIndex);
-        //     if (imgIndex < nextAIndex) {
-        //         // the current a tag contains an image
-        //         if (aEndTagIndex < imgIndex) {
-        //             sb.replace(aEndTagIndex, aEndTagIndex + 4, "");
-        //             System.out.println("</a> removed at " + sb.substring(aEndTagIndex, aEndTagIndex + 20));
-        //         }
-        //     }
-        //     currAIndex = sb.indexOf("<a ", currAIndex + 3);
-        //     nextAIndex = sb.indexOf("<a ", currAIndex + 1);
-        //     aEndTagIndex = sb.indexOf("</a>", currAIndex);
-        //     imgIndex = sb.indexOf("<img", currAIndex);
-        // }
-        res = sb.toString();
+        //res = sb.toString();
+
         return res;
     }
     /**
