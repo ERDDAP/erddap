@@ -340,10 +340,10 @@ Die Einschränkungen in der URL müssen
 <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">Prozent kodiert <img 
     src="../images/external.png" alt=" (external link)" 
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> :
-alle Zeichen außer A-Za-z0-9_-!.~''()* (außer dem anfänglichen ''&amp;amp;'' und dem Haupt-''='', falls vorhanden)
+alle Zeichen außer A-Za-z0-9_-!.~''()* (außer dem anfänglichen ''&amp;'' und dem Haupt-''='', falls vorhanden)
 muss als %HH codiert werden, wobei HH der 2-stellige Hexadezimalwert des Zeichens ist.
 Normalerweise müssen Sie nur einige der Satzzeichen umwandeln: % in %25,
-&amp;amp;Ampere; in %26, &quot; in %22, &lt; in %3C, = in %3D, &gt; in %3E, + in %2B,
+&amp;Ampere; in %26, &quot; in %22, &lt; in %3C, = in %3D, &gt; in %3E, + in %2B,
 | in %7C, [ in %5B, ] in %5D, Leerzeichen in %20 zu konvertieren, und alle Zeichen oben
 # 127 in die UTF-8 - Form und dann codieren Prozent jedes Byte der UTF-8 - Form in
 , das% HH - Format (einen Programmierer um Hilfe bitten)
