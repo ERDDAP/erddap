@@ -1,0 +1,185 @@
+en,zh-cn,de
+UDUNITS,UDUNITS,UDUNITS
+Ardour,Ardour,Ardour
+Audacity,Audacity,Audacity
+&newLinePlaceHolder;,&newLinePlaceHolder;,&newLinePlaceHolder;
+curl,curl,curl
+bob dot simons at noaa dot gov,bob dot simons at noaa dot gov,bob dot simons at noaa dot gov
+bob.simons at noaa.gov,bob.simons at noaa.gov,bob.simons at noaa.gov
+&ssUse;,&ssUse;,&ssUse;
+now-,now-,now-
+now-7days,now-7days,now-7days
+National Oceanic and Atmospheric Administration,National Oceanic and Atmospheric Administration,National Oceanic and Atmospheric Administration
+ESPRESSO,ESPRESSO,ESPRESSO
+ESPreSSO,ESPreSSO,ESPreSSO
+Sea Surface Temperature,Sea Surface Temperature,Sea Surface Temperature
+Surface Skin Temperature,Surface Skin Temperature,Surface Skin Temperature
+kbdalgorithm,<kbd>algorithm</kbd>,<kbd>algorithm</kbd>
+kbdmean,<kbd>mean</kbd>,<kbd>mean</kbd>
+kbdnearest,<kbd>Nearest</kbd>,<kbd>Nearest</kbd>
+kbdnearby,<kbd>nearby</kbd>,<kbd>nearby</kbd>
+kbdblinear,<kbd>Bilinear</kbd>,<kbd>Bilinear</kbd>
+kbdmedian,<kbd>Median</kbd>,<kbd>Median</kbd>
+kbdscaled,<kbd>Scaled</kbd>,<kbd>Scaled</kbd>
+kbdSD,<kbd>SD</kbd>,<kbd>SD</kbd>
+algorithm=Nearest,algorithm=Nearest,algorithm=Nearest
+datasetID/variable/algorithm/nearby,datasetID/variable/algorithm/nearby,datasetID/variable/algorithm/nearby
+"(Davis, 1986, eq 5.67, page 367)","(Davis, 1986, eq 5.67, page 367)","(Davis, 1986, eq 5.67, page 367)"
+InverseDistance,InverseDistance,InverseDistance
+"Davis, J.C. 1986. Statistics and Data Analysis in Geology, 2nd Ed. John Wiley and Sons. New York, New York.","Davis, J.C. 1986. Statistics and Data Analysis in Geology, 2nd Ed. John Wiley and Sons. New York, New York.","Davis, J.C. 1986. Statistics and Data Analysis in Geology, 2nd Ed. John Wiley and Sons. New York, New York."
+datasetID,datasetID,datasetID
+Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Atmospheric Pressure Measurements,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Atmospheric Pressure Measurements
+Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Sea Level Pressure,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Sea Level Pressure
+Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Static Pressure,Earth Science &amp;gt; Atmosphere &amp;gt; Atmospheric Pressure &amp;gt; Static Pressure
+kbdkeywords,<kbd>keywords</kbd>,<kbd>keywords</kbd>
+"Nearest, Bilinear, Scaled","Nearest, Bilinear, Scaled","Nearest, Bilinear, Scaled"
+datasets.xml,datasets.xml,datasets.xml
+Zulu,Zulu,Zulu
+"2452952 ""days since -4712-01-01""","2452952 ""days since -4712-01-01""","2452952 ""days since -4712-01-01"""
+1230768000 seconds since 1970-01-01T00:00:00Z,1230768000 seconds since 1970-01-01T00:00:00Z,1230768000 seconds since 1970-01-01T00:00:00Z
+"""comment""","""comment""","""comment"""
+beginTime,beginTime,beginTime
+endTime,endTime,endTime
+centeredTime,centeredTime,centeredTime
+"""&amp;units=...","""&amp;amp;units=...","""&amp;amp;units=..."
+"""time""","""time""","""time"""
+""" since """,""" since """,""" since """
+"""since""","""since""","""since"""
+"""seconds since 1970-01-01T00:00:00Z""","""seconds since 1970-01-01T00:00:00Z""","""seconds since 1970-01-01T00:00:00Z"""
+"""seconds since 1970-01-01""","""seconds since 1970-01-01""","""seconds since 1970-01-01"""
+"ms, msec, msecs, millis, millisecond, milliseconds,","ms, msec, msecs, millis, millisecond, milliseconds,","ms, msec, msecs, millis, millisecond, milliseconds,"
+"s, sec, secs, second, seconds,","s, sec, secs, second, seconds,","s, sec, secs, second, seconds,"
+"m, min, mins, minute, minutes,","m, min, mins, minute, minutes","m, min, mins, minute, minutes"
+"h, hr, hrs, hour, hours,","h, hr, hrs, hour, hours,","h, hr, hrs, hour, hours,"
+"d, day, days,","d, day, days,","d, day, days,"
+"week, weeks,","week, weeks,","week, weeks,"
+"mon, mons, month, months,","mon, mons, month, months,","mon, mons, month, months,"
+"yr, yrs, year, or years","yr, yrs, year, or years","yr, yrs, year, or years"
+"""hours since 0001-01-01""","""hours since 0001-01-01""","""hours since 0001-01-01"""
+"""years since""","""years since""","""years since"""
+"""months since""","""months since""","""months since"""
+"""months since 1970-01-01""","""months since 1970-01-01""","""months since 1970-01-01"""
+Todd,Todd,Todd
+"""s{since 1970-01-01T00:00:00Z}""","""s{since 1970-01-01T00:00:00Z}""","""s{since 1970-01-01T00:00:00Z}"""
+"""gram""","""gram""","""gram"""
+"""farad""","""farad""","""farad"""
+"&amp;units(""UDUNITS"")","&amp;amp;units(""UDUNITS"")","&amp;amp;units(""UDUNITS"")"
+"""joules""","""joules""","""joules"""
+"""joule""","""joule""","""joule"""
+"""J""","""J""","""J"""
+"""SOS""","""SOS""","""SOS"""
+SOS,SOS,SOS
+"""sos""","""sos""","""sos"""
+"""Cel""","""Cel""","""Cel"""
+Synthetic Aperture Focusing,Synthetic Aperture Focusing,Synthetic Aperture Focusing
+Satellite Application Facility,Satellite Application Facility,Satellite Application Facility
+OPeNDAP,OPeNDAP,OPeNDAP
+tabledap,tabledap,tabledap
+Google Visualization,Google Visualization,Google Visualization
+Google Charts,Google Charts,Google Charts
+stationID,stationID,stationID
+"""files""","""files""","""files"""
+&adminEmail;,&adminEmail;,&adminEmail;
+&amp;#37;,&amp;#37;,&amp;#37;
+FileInfo.com,FileInfo.com,FileInfo.com
+"NASA's Panoply","NASA's Panoply","NASA's Panoply"
+Gimp,Gimp,Gimp
+IrfanView,IrfanView,IrfanView
+Ncview,Ncview,Ncview
+NCO,NCO,NCO
+Ferret,Ferret,Ferret
+"""Range""","""Range""","""Range"""
+"(OPeN)DAP","(OPeN)DAP","(OPeN)DAP"
+wget,wget,wget
+orderBy,orderBy,orderBy
+orderByClosest,orderByClosest,orderByClosest
+orderByCount,orderByCount,orderByCount
+orderByLimit,orderByLimit,orderByLimit
+orderByMax,orderByMax,orderByMax
+orderByMinMax,orderByMinMax,orderByMinMax
+orderByMean,orderByMean,orderByMean
+"orderBy(""stationID, time"")","orderBy(""stationID, time"")","orderBy(""stationID, time"")"
+"orderByClosest(""stationID, time/2hours"")","orderByClosest(""stationID, time/2hours"")","orderByClosest(""stationID, time/2hours"")"
+"orderByCount(""stationID, time/1day"")","orderByCount(""stationID, time/1day"")","orderByCount(""stationID, time/1day"")"
+"orderByMax(""stationID, time/1day, 10"")","orderByMax(""stationID, time/1day, 10"")","orderByMax(""stationID, time/1day, 10"")"
+"orderByMax(""stationID, time/1day, temperature"")","orderByMax(""stationID, time/1day, temperature"")","orderByMax(""stationID, time/1day, temperature"")"
+"orderByMinMax(""stationID, time/1day, temperature"")","orderByMinMax(""stationID, time/1day, temperature"")","orderByMinMax(""stationID, time/1day, temperature"")"
+"orderByMax(""stationID, time/1day"")","orderByMax(""stationID, time/1day"")","orderByMax(""stationID, time/1day"")"
+ArcGIS for Server,ArcGIS for Server,ArcGIS for Server
+ESRI GeoServices REST,ESRI GeoServices REST,ESRI GeoServices REST
+ArcGIS,ArcGIS,ArcGIS
+"[standardDisclaimerOfEndorsement]","[standardDisclaimerOfEndorsement]","[standardDisclaimerOfEndorsement]"
+"[standardDisclaimerOfExternalLinks]","[standardDisclaimerOfExternalLinks]","[standardDisclaimerOfExternalLinks]"
+"[standardPrivacyPolicy]","[standardPrivacyPolicy]","[standardPrivacyPolicy]"
+"[standardDataLicenses]","[standardDataLicenses]","[standardDataLicenses]"
+"[standardContact]","[standardContact]","[standardContact]"
+Oracle,Oracle,Oracle
+OpenID,OpenID,OpenID
+httpsStrong,http<strong>s</strong>,http<strong>s</strong>
+StickX,StickX,StickX
+StickY,StickY,StickY
+&second;,&second;,&second;
+&lt;,&amp;lt;,&amp;lt;
+&gt;,&amp;gt;,&amp;gt;
+&rarr;,&amp;rarr;,&amp;rarr;
+&erddapUrl,&amp;erddapUrl,&amp;erddapUrl
+&quot;,&amp;quot;,&amp;quot;
+"""Linear""","""Linear""","""Linear"""
+"""Log""","""Log""","""Log"""
+"""log""","""log""","""log"""
+strongLines,"<strong>lines</strong>","<strong>lines</strong>"
+strongLinesAndMarkers,"<strong>linesAndMarkers</strong>","<strong>linesAndMarkers</strong>"
+strongMarkers,"<strong>markers</strong>","<strong>markers</strong>"
+strongSticks,"<strong>sticks</strong>","<strong>sticks</strong>"
+strongSurface,"<strong>surface</strong>","<strong>surface</strong>"
+strongVectors,"<strong>vector</strong>","<strong>vector</strong>"
+subsetVariables,subsetVariables,subsetVariables
+"""last""","""last""","""last"""
+fileType={0},fileType={0},fileType={0}
+position={1},position={1},position={1}
+"""stationID,time/1day,10""","""stationID,time/1day,10""","""stationID,time/1day,10"""
+HTTP GET,HTTP GET,HTTP GET
+SOAP+XML,SOAP+XML,SOAP+XML
+ESRI .asc,ESRI .asc,ESRI .asc
+.mat,.mat,.mat
+.kml,.kml,.kml
+.nc,.nc,.nc
+ODV .txt,ODV .txt,ODV .txt
+WCS,WCS,WCS
+WFS,WFS,WFS
+excludedWord,excludedWord,excludedWord
+protocol=griddap,protocol=griddap,protocol=griddap
+protocol=tabledap,protocol=tabledap,protocol=tabledap
+kbdExcludedWord,"<kbd>-<i>excludedWord</i></kbd>","<kbd>-<i>excludedWord</i></kbd>"
+kbdquoteExcludedPhrase,"<kbd>-&quot;<i>excluded phrase</i>&quot;</kbd>","<kbd>-&quot;<i>excluded phrase</i>&quot;</kbd>"
+kbdAND,"<kbd>AND</kbd>","<kbd>AND</kbd>"
+kbdQuoteDatasetIDERD,"<kbd>&quot;datasetID=<i>erd</i>&quot;</kbd>","<kbd>&quot;datasetID=<i>erd</i>&quot;</kbd>"
+kbdSpee,"<kbd>spee</kbd>","<kbd>spee</kbd>"
+kbdSpeed,"<kbd>speed</kbd>","<kbd>speed</kbd>"
+kbdWindSpeed,"<kbd>WindSpeed</kbd>","<kbd>WindSpeed</kbd>"
+searchEngine=lucene,searchEngine=lucene,searchEngine=lucene
+OGC,OGC,OGC
+IOOS DIF SOS,IOOS DIF SOS,IOOS DIF SOS
+OOSTethys,OOSTethys,OOSTethys
+kbdQuoteWindSpeed,"<kbd>&quot;wind speed&quot;</kbd>","<kbd>&quot;wind speed&quot;</kbd>"
+RSS,RSS,RSS
+"""days since Jan 1, 1900""","""days since Jan 1, 1900""","""days since Jan 1, 1900"""
+ERDDAP,ERDDAP,ERDDAP
+'import','import','import'
+"""{1}""","""{1}""","""{1}"""
+DAP,DAP,DAP
+DODS,DODS,
+GNOME,GNOME,GNOME
+Unidata,Unidata,Unidata
+COARDS,COARDS,COARDS
+NetCDF,NetCDF,NetCDF
+WMS,WMS,WMS
+deflate,deflate,deflate
+REST,REST,REST
+ROA,ROA,ROA
+Push,Push,Push
+Pull,Pull,Pull
+Hyrax,Hyrax,Hyrax
+"""institution""","""institution""","""institution"""
+"""title""","""title""","""title"""
+Leaflet,Leaflet,Leaflet
