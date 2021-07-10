@@ -3305,6 +3305,7 @@ For more information on forming the URLs, click on the <kbd>Bypass this form</kb
 to see the &protocolName; documentation.
 ]]></justGenerateAndViewGraphUrlTooltip>
 
+<langCode>en-US</langCode>
 <!-- This appears on the erddap/legal.html web page after the General Disclaimer. 
 You can replace any of the [standardParts] with your own HTML. 
 [standardContact] references the adminEmail. -->
@@ -4634,7 +4635,7 @@ information.
 -->
 <startHeadHtml5><![CDATA[
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="&langCode;">
 <head>
 <meta charset="UTF-8">
 <title>ERDDAP</title>
