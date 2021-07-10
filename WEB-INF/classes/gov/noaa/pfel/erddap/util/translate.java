@@ -78,7 +78,7 @@ public class translate {
         "/EDDTableGraphExample", "/EDDTableMapExample", "/EDDTableMatlabPlotExample",
         //URL, HTML, and standard names
         "/DEFAULT_commonStandardNames", "/palettes", "/pdfWidths", "/pdfHeights", "/questionMarkImageFile", "/signedToUnsignedAttNames", "/sparqlP01toP02pre", "/sparqlP01toP02post",
-        "/startHeadHtml5", "/startBodyHtml5", "/endBodyHtml5", "/standardizeUdunits", "/ucumToUdunits", "/udunitsToUcum", "/updateUrls",
+        "/startHeadHtml5", "/startBodyHtml5", "/standardizeUdunits", "/ucumToUdunits", "/udunitsToUcum", "/updateUrls",
         "/advr_dataStructure", "/advr_cdm_data_type", "/advr_class", "/inotifyFixCommands", 
         //abreviations
         "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
@@ -91,7 +91,7 @@ public class translate {
     // watchlist: <convertKeywordsIntro> <doWithGraphs> <ConvertTimeNotes> </convertOceanicAtmosphericAcronymsService>
     // <convertOceanicAtmosphericAcronymsService> <convertInterpolateNotes> <convertUnitsComparison> </convertTimeNotes/ </theLongDescriptionHtml> </filesDocumentation>
     public static void main(String[] args) {
-        String[] HTMLEntities = {"&lt;", "&gt;", "&reg;", "&quot;", "&amp;", "$nbsp;", "</a>"};
+        String[] HTMLEntities = {"&lt;", "&gt;", "&quot;", "&amp;", "<p>", "<br>", "</a>"};
         //System.out.println("main() Working Directory = " + System.getProperty("user.dir"));
         //System.out.println(translate.class.getResource("").getPath().toString());
         
@@ -101,7 +101,7 @@ public class translate {
         // addDoNotTranslateSet();
 
         // uncomment the try-catch statement below to begin the translation
-        /*    
+        /*
         try {
             //preferablly the languageCodeList should be used as the 3rd parameter of updateGlossray(), but right now 
             //I'm testing the languages one by one, so languageCodeList contains few items, thus the parameter in updateGlossray() is hard-coded
@@ -162,106 +162,20 @@ public class translate {
                     boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(toTranslate::contains);
                     for (int j = 0; j < translated.length; j++) {
                         translated[j] = !translatedTagMaps[j].getOrDefault(tagName, "DNE").equals("DNE");
-                    }
-                    if (toTranslate.startsWith("<!--")) {
-                        //if it's a comment, we need to remove the comment syntax and insert a new line character before the tag
-                        //also consider the possibility of multiple comments before one tag
-                        int commentStart = toTranslate.indexOf("<!--") + 4;
-                        int commentEnd = toTranslate.indexOf("-->");
-                        String comment = toTranslate.substring(commentStart, commentEnd);
-                        // "\n<!--" + translatedText + "-->\n" will be the full translated comment
-                        //myWriter.write("\n<!--" + comment + "-->\n");
-                            //if this tag has not been modified
-                        for (int j = 0; j < languageCodeList.length; j++) {
-                            if (!modified && translated[j]) {
-                                //if there are no changes to the content, and the content has been translated, we reuse the tranlation
-                                fileWriters[j].write("\n" + translatedTagMaps[j].get(tagName) + "\n"); 
-                            } else {
-                                while (commentStart != 3) {
-                                    comment = toTranslate.substring(commentStart, commentEnd);
-                                    String res;
-                                    if (html) {
-                                        res = modifyRawContent(comment);
-                                        res = "\n<!--"
-                                        + translateTextV3("en", languageCodeList[j], res, html) 
-                                        + "-->";
-                                        res = rewriteHStr(res, false, comment);
-                                    } else {
-                                        res = "\n<!--"
-                                        + translateTextV3("en", languageCodeList[j], comment, html) 
-                                        + "-->";
-                                    }
-                                    fileWriters[j].write(res);
-                                    commentStart = toTranslate.indexOf("<!--", commentEnd) + 4;
-                                    commentEnd = toTranslate.indexOf("-->", commentStart);
-                                }
-                                //newline before next tag
-                                fileWriters[j].write("\n");
-                            }
-                        }    
-                    } else if (toTranslate.startsWith("<![CDATA[")) {
-                        //CDATA tag    
-                        //myWriter.write(toTranslate);
-                        toTranslate = toTranslate.substring(9, toTranslate.length() - 3);
-                        String res = modifyRawContent(toTranslate);
-                        
-
-                        for (int j = 0; j < languageCodeList.length; j++) {
-                            if (!modified && translated[j]) {
-                                //if this tag has not been modified but already translated
-                                fileWriters[j].write(
-                                    translatedTagMaps[j].get(tagName)
-                                    );
-                            } else {
-                                res = translateTextV3("en", languageCodeList[j], res, true);
-                                res = rewriteHStr(res, messageFormat, toTranslate);
-                                fileWriters[j].write("<![CDATA[" + res + "]]>");
-                            }
+                        if (!modified && translated[j]) {
+                            fileWriters[j].write(previousMessageMap.get(tagName));
+                        } else {
+                            fileWriters[j].write(translateTag(toTranslate, languageCodeList[j], html, messageFormat));
                         }
-                    } else {
-                        // normal non CDATA tag
-                        // modification might be needed on converting html entities
-
-                        //myWriter.write(toTranslate);
-                        for (int j = 0; j < languageCodeList.length; j++) {
-                            if (!modified && translated[j]) {
-                                fileWriters[j].write(
-                                    translatedTagMaps[j].get(tagName)
-                                    ); 
-                            } else {
-                                String res;
-                                if (html) {
-                                    res = modifyRawContent(toTranslate);
-                                    res = translateTextV3("en", languageCodeList[j], res, true);
-                                    res = rewriteHStr(res, false, toTranslate);
-                                } else {
-                                    res = translateTextV3("en", languageCodeList[j], toTranslate, false);
-                                }
-                                
-                                if (messageFormat) {
-                                    res = res.replaceAll("''", "doubleQuotePlaceholder");
-                                    res = res.replaceAll("'", "''");
-                                    res = res.replaceAll("doubleQuotePlaceholder", "''");
-                                }
-                                fileWriters[j].write(res);
-                            }
-                        }   
+                        //after writing the translated content, we write the <tag>
+                        fileWriters[j].write("<" + tagName + ">");
+                        if (xmlReader.isEndTag()) {
+                            // if the tag is an end tag, we add a new line charcater at the end of the tag
+                            //myWriter.write("\n");
+                            fileWriters[j].write("\n"); 
+                        }
                     }
-                }
-
-                //after writing the translated content, we write the <tag>
-                //myWriter.write("<"+ tagName + ">");                    
-                for (int j = 0; j < languageCodeList.length; j++) {
-                    fileWriters[j].write("<" + tagName + ">"); 
-                }
-
-                if (xmlReader.isEndTag()) {
-                    // if the tag is an end tag, we add a new line charcater at the end of the tag
-                    //myWriter.write("\n");
-                    for (int j = 0; j < languageCodeList.length; j++) {
-                        fileWriters[j].write("\n"); 
-                    }
-                }
+                }   
                 // breaks the loop at the end of xml file
                 if (xmlReader.allTags().length() == 0) {
                     break;
@@ -273,12 +187,12 @@ public class translate {
                 fileWriters[j].close();
             }
             //myWriter.close();
-            
         } catch (Exception e) {
            System.out.println("An error occurred in main()");
            e.printStackTrace();
         }
         */
+        
         System.out.println("translator called " + translationCounter + " times.");
     }
     /**
@@ -356,11 +270,6 @@ public class translate {
             xmlReader.nextTag();
             while (true) {
                 xmlReader.nextTag();
-                /*
-                if (doNotTranslateSet.contains(xmlReader.topTag())) {
-                    System.out.println("tag: " + xmlReader.topTag());
-                }
-                */
                 if (xmlReader.allTags().length() == 0) {
                     break;
                 }
@@ -522,6 +431,7 @@ public class translate {
      * @return the translated text
      * @throws IOException potential exception if something is wrong
      */
+    @Deprecated
     private static String translateTextBudgetVer(String langFrom, String langTo, String text) throws IOException {
         String urlStr = "https://script.google.com/macros/s/AKfycbyoLoNhi3R9QD-yIrdjXMYN_ltP1ctX1vhC_UQioQOMexfXlL3NQr4NUeLIzlPWTyil/exec" +
                 "?q=" + URLEncoder.encode(text, "UTF-8") +
@@ -722,5 +632,85 @@ public class translate {
         deleteGlossary(projectId, glossaryId);
         createGlossary(projectId, glossaryId, languageCodes);
         glossaryConfig = TranslateTextGlossaryConfig.newBuilder().setGlossary(glossaryName.toString()).build();
+    }
+
+    
+    /**
+     * Translate the given tag. Only use this method when it's needed, i.e. tags not in doNotTranslateSet, or can be trimmed to be ""
+     * @param rawContent rawContent of the given tag. Include CDATA and comment syntax.
+     * @param tagName the name of the tag, without "<" and ">"
+     * @param languageCode the languageCode of the targeted language
+     * @param html if the tag contains HTML
+     * @param messageFormat if the tag uses messageFormat
+     * @return a translated string to write in place of the rawContent
+     */
+    private static String translateTag(String rawContent, String languageCode, boolean html, boolean messageFormat) {
+        if (rawContent.startsWith("<!--")) {
+            String toWrite = "";
+            //if it's a comment, we need to remove the comment syntax and insert a new line character before the tag
+            //also consider the possibility of multiple comments before one tag
+            int commentStart = rawContent.indexOf("<!--") + 4;
+            int commentEnd = rawContent.indexOf("-->");
+            String comment = rawContent.substring(commentStart, commentEnd);
+            // "\n<!--" + translatedText + "-->\n" will be the full translated comment
+            //myWriter.write("\n<!--" + comment + "-->\n");
+            while (commentStart != 3) {
+                comment = rawContent.substring(commentStart, commentEnd);
+                String res;
+                if (html) {
+                    res = modifyRawContent(comment);
+                    res = "\n<!--"
+                    + translateTextV3("en", languageCode, res, html) 
+                    + "-->";
+                    res = rewriteHStr(res, false, comment);
+                } else {
+                    res = "\n<!--"
+                    + translateTextV3("en", languageCode, comment, html) 
+                    + "-->";
+                }
+                /* we do not need deal with messageFormat in comments.
+                if (messageFormat) {
+                    res = res.replaceAll("''", "doubleQuotePlaceholder");
+                    res = res.replaceAll("'", "''");
+                    res = res.replaceAll("doubleQuotePlaceholder", "''");
+                }
+                */
+                toWrite += res;
+                commentStart = rawContent.indexOf("<!--", commentEnd) + 4;
+                commentEnd = rawContent.indexOf("-->", commentStart);
+            }
+            //newline before next tag
+            toWrite += "\n";
+            return toWrite;
+        } else if (rawContent.startsWith("<![CDATA[")) {
+            //CDATA tag    
+            //myWriter.write(toTranslate);
+            String res = rawContent.substring(9, rawContent.length() - 3);
+            res = modifyRawContent(res);
+            res = translateTextV3("en", languageCode, res, true);
+            res = rewriteHStr(res, messageFormat, rawContent);
+
+            if (messageFormat) {
+                res = res.replaceAll("''", "doubleQuotePlaceholder");
+                res = res.replaceAll("'", "''");
+                res = res.replaceAll("doubleQuotePlaceholder", "''");
+            }
+            return "<![CDATA[" + res + "]]>";
+        } else {
+            String res;
+            if (html) {
+                res = modifyRawContent(rawContent);
+                res = translateTextV3("en", languageCode, res, true);
+                res = rewriteHStr(res, false, rawContent);
+            } else {
+                res = translateTextV3("en", languageCode, rawContent, false);
+            }
+            if (messageFormat) {
+                res = res.replaceAll("''", "doubleQuotePlaceholder");
+                res = res.replaceAll("'", "''");
+                res = res.replaceAll("doubleQuotePlaceholder", "''");
+            }
+            return res;
+        }
     }
 }
