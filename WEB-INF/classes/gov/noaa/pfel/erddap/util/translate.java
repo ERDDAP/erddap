@@ -83,7 +83,7 @@ public class translate {
         //abreviations
         "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
         // others
-        "/legal", "/imageWidths", "/imageHeights"
+        "/legal", "/imageWidths", "/imageHeights", "/langCode"
     ));
     private static String[] messageFormatEntities = {"{0}", "{1}","''"};
     private static int translationCounter = 0;
@@ -91,9 +91,6 @@ public class translate {
     // watchlist: <convertKeywordsIntro> <doWithGraphs> <ConvertTimeNotes> </convertOceanicAtmosphericAcronymsService>
     // <convertOceanicAtmosphericAcronymsService> <convertInterpolateNotes> <convertUnitsComparison> </convertTimeNotes/ </theLongDescriptionHtml> </filesDocumentation>
     public static void main(String[] args) {
-        
-        
-
         String[] HTMLEntities = {"&lt;", "&gt;", "&reg;", "&quot;", "&amp;", "$nbsp;", "</a>"};
         //System.out.println("main() Working Directory = " + System.getProperty("user.dir"));
         //System.out.println(translate.class.getResource("").getPath().toString());
@@ -102,9 +99,9 @@ public class translate {
         // and add the tags to the doNotTranslateSet
         // Currently not needed because I have found all tags following the pattern (as 6/23/21) and hard coded them to the set
         // addDoNotTranslateSet();
-        
+
         // uncomment the try-catch statement below to begin the translation
-        /*
+        /*    
         try {
             //preferablly the languageCodeList should be used as the 3rd parameter of updateGlossray(), but right now 
             //I'm testing the languages one by one, so languageCodeList contains few items, thus the parameter in updateGlossray() is hard-coded
@@ -151,7 +148,12 @@ public class translate {
                     System.out.println(tagName + " is designed to not be translated");
                     //myWriter.write(toTranslate);
                     for (int j = 0; j < languageCodeList.length; j++) {
-                        fileWriters[j].write(xmlReader.rawContent()); 
+                        if (tagName.equals("/langCode")) {
+                            //langCode is determined individually
+                            fileWriters[j].write(languageCodeList[j]);
+                        } else {
+                            fileWriters[j].write(xmlReader.rawContent()); 
+                        }
                     }
                 } else {
                     boolean modified = !previousMessageMap.getOrDefault(tagName, "DNE").equals(xmlReader.rawContent());
@@ -240,13 +242,6 @@ public class translate {
                                     res = res.replaceAll("''", "doubleQuotePlaceholder");
                                     res = res.replaceAll("'", "''");
                                     res = res.replaceAll("doubleQuotePlaceholder", "''");
-                                }
-                                // htmlTableMaxMessage is a normal tag with HTML encoding, so the line breaks are removed
-                                if (tagName.equals("/htmlTableMaxMessage")) {
-                                    int breakPoint = res.indexOf("&gt;");
-                                    res = res.substring(0, breakPoint + 4) + "\n" + res.substring(breakPoint + 4, res.length());
-                                    breakPoint = res.indexOf("&gt;", breakPoint + 5);
-                                    res = res.substring(0, breakPoint + 4) + "\n" + res.substring(breakPoint + 4, res.length());
                                 }
                                 fileWriters[j].write(res);
                             }
@@ -478,6 +473,14 @@ public class translate {
         res = res.replaceAll(" &newLinePlaceHolder;", "&newLinePlaceHolder;");
         res = res.replaceAll("&newLinePlaceHolder; ", "&newLinePlaceHolder;");
         res = res.replaceAll("&newLinePlaceHolder;", "\n");
+
+        //remove an extra whitespace after <p>, <li>, <strong>, <br>, and before <img...
+        res = res.replaceAll("<p> ", "<p>");
+        res = res.replaceAll("<br> ", "<br>");
+        res = res.replaceAll("<li> ", "<li>");
+        res = res.replaceAll("<strong> ", "<strong>");
+        res = res.replaceAll(" <img", "<img");
+        
 
 
         //prevent the &amp; from being decoded in URLs of <a> tags
