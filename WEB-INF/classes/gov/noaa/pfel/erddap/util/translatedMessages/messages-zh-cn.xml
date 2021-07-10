@@ -64,7 +64,7 @@ ERDDAP 不提供存储在压缩（例如，.zip 或 .gzip）文件中的结果�
 <addVarWhereAttValue>可选：指定属性值。</addVarWhereAttValue>
 <addVarWhere><![CDATA[
 可选：如果您在此处指定属性值，
-<br> <kbd>&addVariablesWhere(" <i>attName</i> "," <i>attValue</i> ")</kbd>
+<br><kbd>&addVariablesWhere(" <i>attName</i> "," <i>attValue</i> ")</kbd>
 <br>将被添加到请求中。然后，ERDDAP 将添加所有
 <br>数据集中的变量，其中<kbd><i>attName=attValue</i></kbd>
 <br>到请求的变量列表。
@@ -185,7 +185,7 @@ ERDDAP 不提供存储在压缩（例如，.zip 或 .gzip）文件中的结果�
 这是可选的。
 <br>您可以通过在文本字段
 输入文本来指定经度和纬度范围。<br>或者您可以通过单击两个对角线在地图上指定一个矩形。
-<br> （要更改矩形，请单击新角。）
+<br>（要更改矩形，请单击新角。）
 <br>在地图上绘制矩形会自动将值放入经度和
 <br>纬度文本字段。
 <br>经度和纬度文本字段中的值才是真正重要的。
@@ -195,7 +195,7 @@ ERDDAP 不提供存储在压缩（例如，.zip 或 .gzip）文件中的结果�
 <advancedSearchLonTooltip><![CDATA[
 <p>一些数据集的经度值在 -180 到 180 之间，其他数据集使用 0 到 360。
 <br>如果您在 -180 到 180（或 0 到 360）之间指定最小和最大经度，
-<br> ERDDAP 只会找到与您指定的值匹配的数据集。
+<br>ERDDAP 只会找到与您指定的值匹配的数据集。
 <br>考虑进行一次搜索：经度 -180 到 360，
 <br>或两次搜索：经度 -180 到 180，以及 0 到 360。
 ]]></advancedSearchLonTooltip>
@@ -345,12 +345,12 @@ ESPRESSO和ESPreSSO）。
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li>将首字母缩写词转换为全名的示例是
-<br> <a 
+<br><a 
   href="{0}/convert/oceanicAtmosphericAcronyms.txt?acronym=NOAA"
        >{0}/convert/oceanicAtmosphericAcronyms.txt?acronym=NOAA</a>
 <br>&nbsp;
 <li>将全名转换为首字母缩写词的示例是
-<br> <a
+<br><a
 href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20and%20Atmospheric%20Administration"
      >{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20and%20Atmospheric%20Administration</a>
 </ul>
@@ -423,12 +423,12 @@ URL 中的约束必须正确地
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li>一个将变量名转换为全名的例子是
-<br> <a 
+<br><a 
   href="{0}/convert/oceanicAtmosphericVariableNames.txt?variableName=sst"
        >{0}/convert/oceanicAtmosphericVariableNames.txt?variableName=sst</a>
 <br>&nbsp;
 <li>将全名转换为变量名的示例是
-<br> <a
+<br><a
 href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20Temperature"
      >{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20Temperature</a>
 </ul>
@@ -483,7 +483,7 @@ NIST 的联邦信息处理标准 (FIPS) 6-4 分配了
        https://www.census.gov/geographies/reference-files/2018/demo/popest/2018-fips.html
        e.g., names there are in a different format. -->
 <a class="N" rel="help" href="http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html"
-  >http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html <img 
+  >http://www.datypic.com/sc/niem31/t-fips_6-4_USCountyCodeSimpleType.html<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 <br>&nbsp;
@@ -492,7 +492,7 @@ NIST 的联邦信息处理标准 (FIPS) 6-4 分配了
 县名，或使用不同的大小写（大写或小写），将导致错误
 错误信息。
 <br>&nbsp;
-<li> <a class="selfLink" id="digits" href="#digits" rel="help">5 位代码</a>-
+<li><a class="selfLink" id="digits" href="#digits" rel="help">5 位代码</a>-
 此服务适用于 FIPS 县代码的 5 位数版本。
 前两位数字是 FIPS 州代码。最后三位数字是 FIPS
 该州或属地内的县代码。
@@ -512,15 +512,15 @@ NIST 的联邦信息处理标准 (FIPS) 6-4 分配了
 附录 A 和 B 中的美国保护国和自由联合国；<!-- the sources we referenced no longer have the original document -->
 FIPS&nbsp;列表。
 州级实体是：
-<br> 60000=AS=美洲萨摩亚
-<br> 64000=FM=
-<br> 66000=GU=GUAM
-<br> 68000=MH=马歇尔群岛
-<br> 69000=MP=北马里亚纳群岛
-<br> 70000=PW=PALAU
-<br> 72000=PR=波多黎各
-<br> 74000=UM=美国小离岛
-<br> 78000=VI=美国的维尔京群岛
+<br>60000=AS=美洲萨摩亚
+<br>64000=FM=
+<br>66000=GU=GUAM
+<br>68000=MH=马歇尔群岛
+<br>69000=MP=北马里亚纳群岛
+<br>70000=PW=PALAU
+<br>72000=PR=波多黎各
+<br>74000=UM=美国小离岛
+<br>78000=VI=美国的维尔京群岛
 <br>&nbsp;
 </ul>
 ]]></convertFipsCountyNotes>
@@ -534,12 +534,12 @@ FIPS&nbsp;列表。
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li>将 FIPS 县代码转换为县名的示例是
-<br> <a 
+<br><a 
   href="{0}/convert/fipscounty.txt?code=06053"
        >{0}/convert/fipscounty.txt?code=06053</a>
 <br>&nbsp;
 <li>将县名转换为 FIPS 县代码的示例是
-<br> <a
+<br><a
 href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
      >{0}/convert/fipscounty.txt?county=CA%2C%20Monterey</a>
 </ul>
@@ -608,9 +608,9 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 或者如果算法或附近的值无效，
 这将返回一条错误消息。
 <br>&nbsp;
-<li> <kbd>algorithm</kbd>选项是：
+<li><kbd>algorithm</kbd>选项是：
 <ul>
-<li> <kbd>Nearest</kbd>
+<li><kbd>Nearest</kbd>
 <br>这会查看<kbd>附近</kbd>的 n 个数据集点和
 返回
 <a rel="help" href="https://en.wikipedia.org/wiki/Multivariate_interpolation">最近的<img 
@@ -620,7 +620,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 如果 >1 个数据集值同样接近源点，
 此方法将返回其中之一（未指定）。
 
-<li> kbdbilinear (默认)
+<li>kbdbilinear (默认)
 <br>这会查看 4 个<kbd>附近的</kbd>数据集点
 在纬度经度平面中并返回
 <a rel="help" href="https://en.wikipedia.org/wiki/Multivariate_interpolation">双线性插值<img 
@@ -630,19 +630,19 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 对于这个算法，<kbd>附近</kbd>的唯一允许值是 4。
 这个算法是默认的。如果您不指定算法，将使用<kbd>Bilinear/4</kbd> 。
 
-<li> <kbd>mean</kbd>
+<li><kbd>mean</kbd>
 <br>这将返回非 NaN<kbd>附近</kbd>数据集值的平均值。
 无论变量的数据类型如何，这都会使用双精度进行计算并返回双精度。
 此选项的默认<kbd>附近</kbd>设置为 4。
-<li> <kbd>SD</kbd>
+<li><kbd>SD</kbd>
 <br>这将返回非 NaN<kbd>附近</kbd>数据集值的标准偏差。
 无论变量的数据类型如何，这都会使用双精度进行计算并返回双精度。
 此选项的默认<kbd>附近</kbd>设置为 4。
-<li> <kbd>Median</kbd>
+<li><kbd>Median</kbd>
 <br>这将返回非 NaN<kbd>附近</kbd>数据集值的中值。
 此选项的默认<kbd>附近</kbd>设置为 4。
 无论变量的数据集类型如何，这都会使用双精度进行计算并返回双精度。
-<li> <kbd>Scaled</kbd>
+<li><kbd>Scaled</kbd>
 <br>这将返回缩放后的反距离平方插值
 非 NaN<kbd>附近的</kbd>数据集值 (Y)。
 <br>每个附近数据集值的权重为 w = (1 - D/Dmax) <sup>2</sup> / (D/Dmax)
@@ -652,7 +652,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <br>如果附近的数据集点的距离为 0，则该点的值将用作内插值。
 <br>无论变量的数据类型如何，这都会使用双精度进行计算并返回双精度。
 此选项的默认<kbd>附近</kbd>设置为 4。
-<li> <kbd>InverseDistance</kbd>
+<li><kbd>InverseDistance</kbd>
 <br>这将返回反距离插值
 非 NaN<kbd>附近的</kbd>数据值 (Y)。
 <br>每个附近数据值的权重为 w = 1/D
@@ -661,14 +661,14 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <br>如果附近的数据集点的距离为 0，则该点的值将用作内插值。
 <br>无论变量的数据类型如何，这都会使用双精度进行计算并返回双精度。
 此选项的默认<kbd>附近</kbd>设置为 4。
-<li> <kbd>InverseDistance2</kbd>
+<li><kbd>InverseDistance2</kbd>
 <br>这就像InverseDistance，但每个附近数据值的权重是
 w = 1/D <sup>2</sup> 。
-<li> <kbd>InverseDistance4</kbd>
+<li><kbd>InverseDistance4</kbd>
 <br>这就像InverseDistance，但是
 每个附近数据值的权重是
 w = 1/D <sup>4</sup> 。
-<li> <kbd>InverseDistance6</kbd>
+<li><kbd>InverseDistance6</kbd>
 <br>这就像InverseDistance，但是
 每个附近数据值的权重是
 w = 1/D <sup>6</sup> 。
@@ -752,7 +752,7 @@ Davis, JC 1986。地质统计和数据分析，第 2 版。约翰威利父子。
 从纬度和
 减去一半的单元格间距可能是合适的。您提供给此转换器的经度值。
 <br>&nbsp;
-<li> <a class="selfLink" id="NotWhatYouWant" href="#NotWhatYouWant" rel="help"
+<li><a class="selfLink" id="NotWhatYouWant" href="#NotWhatYouWant" rel="help"
   >不是你想要的？</a>
 <br>如果此转换器提供的方法或选项不适合
 为了您的目的或其他不是您想要的，请不要使用它们。
@@ -761,7 +761,7 @@ Davis, JC 1986。地质统计和数据分析，第 2 版。约翰威利父子。
 要请求将其他插值算法添加到此转换器，
 请给<kbd>bob dot simons at noaa dot gov</kbd>发电子邮件。
 <br>&nbsp;
-<li> ERDDAP 管理员：
+<li>ERDDAP 管理员：
 <br>您可以通过
 更改默认的请求 CSV 。通过在
 添加/编辑&lt;convertInterpolateRequestCSVExample&gt;标签；datasets.xml。
@@ -797,7 +797,7 @@ time%2Clatitude%2Clongitude%0A
 </pre>
 （为了便于阅读，插入了换行符，但实际上只有一行很长。）
 
-<p> <a class="selfLink" id="URLLength" href="#URLLength" rel="help"
+<p><a class="selfLink" id="URLLength" href="#URLLength" rel="help"
 >URL Length</a> - 注意随着 TimeLatLonTable 中数据量的增加，请求 URL
 变得很长。因为 Tomcat 对每个请求 URL 的默认限制是 4096 个字符，
 此转换器限制为 100 行输入 -- 100 行是您所能
@@ -806,7 +806,7 @@ time%2Clatitude%2Clongitude%0A
 发出单独的请求更高效。值，因为批量请求的网络开销是网络开销的 1/100，而且还获取数据
 从源数据集更有效地（通常效率高近 100 倍）。
 
-<p> <a class="selfLink" id="PercentEncoding" href="#PercentEncoding" rel="help"
+<p><a class="selfLink" id="PercentEncoding" href="#PercentEncoding" rel="help"
 >百分比编码</a>- URL 中的 TimeLatLonTable 和 requestCSV 参数值必须正确
 <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding"
   >编码百分比<img 
@@ -851,8 +851,8 @@ Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure。<
 ]]></convertKeywordsIntro>
 <convertKeywordsCfTooltip><![CDATA[
 选择 CF 标准名称。
-<p> CF 标准名称没有对应的
-<br> GCMD 科学关键字不在此列表中。
+<p>CF 标准名称没有对应的
+<br>GCMD 科学关键字不在此列表中。
 ]]></convertKeywordsCfTooltip>
 <convertKeywordsGcmdTooltip><![CDATA[
 选择一个 GCMD 科学关键字。
@@ -886,7 +886,7 @@ Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure。<
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li>将 CF 标准名称转换为相关GCMD科学关键字的示例是
-<br> <a 
+<br><a 
   href="{0}/convert/keywords.txt?cf=air_pressure"
        >{0}/convert/keywords.txt?cf=air_pressure</a>
 <br>&nbsp;
@@ -980,7 +980,7 @@ ERDDAP 中的时间值始终使用Zulu（UTC、GMT）时区，用“Z”表示�
 而在欧洲大部分地区，这通常是日期/月/年。
 在这种特殊情况下，ERDDAP 将值解释为月/日/年。
 <br>&nbsp;
-<li> <a class="selfLink" id="units" href="#units" rel="help">UDUNITS时间单位</a>- {1}
+<li><a class="selfLink" id="units" href="#units" rel="help">UDUNITS时间单位</a>- {1}
 
 <li><a class="selfLink" id="converterPrecision" href="#converterPrecision" rel="help">转换器精度</a>-
 当用数字表示时间时，这个转换器总是
@@ -996,7 +996,7 @@ ERDDAP 尝试处理格式不正确的输入。
 <br>&nbsp;
 </ul>
 
-<p> <a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAP 如何处理时间</strong></a>
+<p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAP 如何处理时间</strong></a>
 <ul>
 <li><a class="selfLink" id="difficult" href="#difficult" rel="help">时间是一个困难、复杂、混乱的问题。</a>
 <br>&nbsp;
@@ -1048,7 +1048,7 @@ day-of-month，它被假定为 1）。
 对于所有数据集，可以轻松比较来自不同数据集的时间。
 秒是
 <a rel="help" href="https://en.wikipedia.org/wiki/International_System_of_Units"
->国际单位制 (SI) <img 
+>国际单位制 (SI)<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 基本时间单位。
@@ -1065,7 +1065,7 @@ day-of-month，它被假定为 1）。
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 以及<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"
->气候和预测元数据公约 (CF) <img 
+>气候和预测元数据公约 (CF)<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 它使用UDUNITS作为单位定义。
@@ -1079,7 +1079,7 @@ day-of-month，它被假定为 1）。
     title="此指向外部网站的链接不构成认可。"></a> ,
 截断到第二个
 （例如，2011-04-26T14:07:12Z）。 （相关幽默：
-<a href="https://xkcd.com/1179/">https://xkcd.com/1179/ <img 
+<a href="https://xkcd.com/1179/">https://xkcd.com/1179/<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> )
 ERDDAP 管理员可以配置一个给定的变量来显示时间数据值
@@ -1091,7 +1091,7 @@ ERDDAP 管理员可以配置一个给定的变量来显示时间数据值
 （例如，2011-04-26T14:07:12.059Z）或逗号分隔符（例如，2011-04-26T14:07:12,059Z）。
 目前，在编写 ISO 8601 次 ERDDAP 时总是使用句点分隔符。
 
-<li> <a class="selfLink" id="gregorianCalendar" href="#gregorianCalendar" rel="help"
+<li><a class="selfLink" id="gregorianCalendar" href="#gregorianCalendar" rel="help"
 >公历</a>-
 ERDDAP 在
 之后的时间使用公历。 1582 年的不连续性和不连续性之前的儒略历。
@@ -1138,7 +1138,7 @@ ERDDAP 在解析日期/时间字符串时是“宽松的”。这意味着
 消息。）
 <br>&nbsp;
 
-<li> <a class="selfLink" id="BCE" href="#BCE" rel="help">BCE</a> <a class="selfLink" id="BC" href="#BC" rel="help">(BC)</a>年和天文年编号 -
+<li><a class="selfLink" id="BCE" href="#BCE" rel="help">BCE</a> <a class="selfLink" id="BC" href="#BC" rel="help">(BC)</a>年和天文年编号 -
 按照 ISO 8601:2004 标准的规定，ERDDAP 只使用通用的
 Era (CE, AD) 用于年份编号，而不是 BCE。在公元 1 年前，历史学家
 使用 BCE 或 BC 指定并且没有年份 0，因此它们的年份序列靠近
@@ -1178,17 +1178,17 @@ AstronomicalYear = 1 - BCEYear（你自己看看：
 因此，在datasets.xml
 在 ERDDAP 中设置 SeaDataNet 数据集，在
 的&lt;addAttributes&gt;部分；所有时间变量，都需要添加
-<br> <kbd>&lt;att name="units"&gt;days since -4712-01-01T00:00:00Z&lt;/att&gt;</kbd>
+<br><kbd>&lt;att name="units"&gt;days since -4712-01-01T00:00:00Z&lt;/att&gt;</kbd>
 <br>因此公元前 4713 年被表示为天文年数 -4712。
 作为检查，请注意按时间顺序排列的儒略日编号 2,452,952
 的开始。 （或者，
 <a href="{0}/convert/time.html?n=2452952&amp;units=days%20since%20-4712-01-01"
     >2452952 "days since -4712-01-01"</a> ）是 2003-11-08T00:00:00Z。
 
-<li> <a class="selfLink" id="UTC" href="#UTC" rel="help">UTC</a> -
+<li><a class="selfLink" id="UTC" href="#UTC" rel="help">UTC</a> -
 ERDDAP 与 Unix 时间和UDUNITS一样实用，使用
 <a rel="help" href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time"
->协调世界时 (UTC) <img 
+>协调世界时 (UTC)<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 时间系统。 UTC 是 GMT 的现代版本
@@ -1196,7 +1196,7 @@ ERDDAP 与 Unix 时间和UDUNITS一样实用，使用
 时间（TAI）。 GPS 设备在内部使用 GPS 时间（不使用闰秒），
 但向用户显示UTC时间。 （见
 <a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 或其他
@@ -1226,17 +1226,17 @@ ERDDAP 与 Unix 时间和UDUNITS一样实用，使用
 
 <a rel="bookmark"
     href="https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html#time-zone-leap-seconds"
-    >MySQL <img 
+    >MySQL<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 （可能还有 MariaDB），
 <a rel="bookmark" href="https://dba.stackexchange.com/questions/105514/leap-second-in-database-system-postgresql-and-sql-server"
-      >PostgreSQL <img 
+      >PostgreSQL<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 和像
 这样的语言<a rel="bookmark" href="https://www.pcreview.co.uk/threads/datetime-accounts-for-leap-seconds.1357623/"
->C＃ <img 
+>C＃<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 也基本上尝试忽略闰秒。
@@ -1260,7 +1260,7 @@ ERDDAP 与 Unix 时间和UDUNITS一样实用，使用
     title="此指向外部网站的链接不构成认可。"></a> .
 <br>&nbsp;
 
-<li> <a class="selfLink" id="lowResolutionTimes" href="#lowResolutionTimes" rel="help"
+<li><a class="selfLink" id="lowResolutionTimes" href="#lowResolutionTimes" rel="help"
 >低分辨率时间和时间跨度（时间范围）</a> -
 如果时间数据被记录到
 较低的分辨率（例如，分钟、小时、日、月或年）或表示时间
@@ -1300,20 +1300,20 @@ ERDDAP 与 Unix 时间和UDUNITS一样实用，使用
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li><strong>将字符串时间转换为数字时间的示例是：</strong>
-<br> <a
+<br><a
 href="{0}/convert/time.txt?stringTime=1985-01-02T00:00:00Z&amp;units=seconds%20since%201970-01-01T00:00:00Z"
 >{0}/convert/time.txt?stringTime=1985-01-02T00:00:00Z&units=seconds%20since%201970-01-01T00:00:00Z</a>
 <br>或者，您可以使用其他格式，例如
-<br> <a
+<br><a
 href="{0}/convert/time.txt?stringTime=Jan%202%2c%201985&amp;units=seconds%20since%20Jan%201%2c%201970"
 >{0}/convert/time.txt?stringTime=Jan%202,%201985&units=seconds%20since%20Jan%201,%201970</a>
 <br>&nbsp;
 <li><strong>将数字时间转换为字符串时间的示例是：</strong>
-<br> <a 
+<br><a 
   href="{0}/convert/time.txt?n=473472000&amp;units=seconds%20since%201970-01-01T00:00:00Z"
        >{0}/convert/time.txt?n=473472000&units=seconds%20since%201970-01-01T00:00:00Z</a>
 <br>单位中的基准时间的推荐格式是 ISO 8601 格式，但您可以使用任何常用格式指定基准时间，例如
-<br> <a 
+<br><a 
   href="{0}/convert/time.txt?n=473472000&amp;units=seconds%20since%201/1/1970"
        >{0}/convert/time.txt?n=473472000&units=seconds%20since%201/1/1970</a>
 <br>请注意，“斜线”格式被解释为美国方式（如月/日/年）
@@ -1322,14 +1322,14 @@ href="{0}/convert/time.txt?stringTime=Jan%202%2c%201985&amp;units=seconds%20sinc
 <li><strong>在 ERDDAP 的一些早期版本中，</strong>
 字符串到数字转换器需要一个 ISO 8601 格式的
 字符串并使用参数名称 isoTime。你仍然可以使用它，例如，
-<br> <a
+<br><a
 href="{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&amp;units=seconds%20since%201970-01-01T00:00:00Z"
 >{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&units=seconds%20since%201970-01-01T00:00:00Z</a>
 <br>如果指定 isoTime，则"&amp;units=...”参数是可选的。默认值为"seconds since 1970-01-01T00:00:00Z"。
 <br>&nbsp;
 <li><strong>将任何常见字符串时间转换为 ISO 8601
 字符串时间为：</strong>
-<br> <a 
+<br><a 
   href="{0}/convert/time.txt?stringTime=1/2/1985"
        >{0}/convert/time.txt?stringTime=1/2/1985</a>
 <br>您必须指定日期部分。时间部分是可选的。
@@ -1341,7 +1341,7 @@ href="{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&amp;units=seconds%20sinc
 <br>&nbsp;
 <li><strong>将单位字符串转换为带有
 的单位字符串的示例； ISO 字符串时间为：</strong>
-<br> <a
+<br><a
 href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 >{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985</a>
 </ul>
@@ -1375,7 +1375,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 ]]></convertTimeStringTimeTooltip>
 <convertTimeUnitsTooltip><![CDATA[
 UDUNITS兼容的时间单位字符串。例如，
-<br> "seconds since 1970-01-01T00:00:00Z"。
+<br>"seconds since 1970-01-01T00:00:00Z"。
 您还可以为基准时间使用其他常用格式。
 年份值必须是 4 位数字 - 如果需要，使用 0-padding。
 请注意，#/#/# 被解释为月/日/年，而不是日期/月/年。
@@ -1394,7 +1394,7 @@ UDUNITS兼容的时间单位字符串。例如，
 <br>&nbsp;&nbsp;week, weeks,
 <br>&nbsp;&nbsp; mon, mons, month, months,
 <br>&nbsp;&nbsp;yr, yrs, year, or years
-<p> "since"是必需的。
+<p>"since"是必需的。
 <p>所以另一个例子是"hours since 0001-01-01"。
 <p>时间字符串可以是任何格式。日期部分是必需的。时间部分是可选的。 ERDDAP 将尽最大努力阅读您提供的格式。
 推荐的格式是 ISO 8601:2004 “扩展”格式 yyyy-MM-ddTHH:mm:ss.SSSZ,
@@ -1421,7 +1421,7 @@ UDUNITS兼容的时间单位字符串。例如，
 <th style="width:23%;"> <a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a></th>
-<th style="width:23%;"> <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
+<th style="width:23%;"> <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a></th>
 <th style="width:23%;"> UDUNITS → UCUM 转换器</th>
@@ -1455,7 +1455,7 @@ UDUNITS兼容的时间单位字符串。例如，
 
 <tr>
 <td>公制前缀
-<br> （例如，“kilo”和“k”表示“乘以 1000”；“µ”和“u”表示“乘以 10^-6”）</td>
+<br>（例如，“kilo”和“k”表示“乘以 1000”；“µ”和“u”表示“乘以 10^-6”）</td>
 <td>支持（参见UDUNITS udunits2-prefixes.xml）</td>
 <td>支持（参见
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">前缀符号表</a>的 c/s 列<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes"><img 
@@ -1551,7 +1551,7 @@ UDUNITS兼容的时间单位字符串。例如，
 <th style="width:23%;"> <a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a></th>
-<th style="width:23%;"> <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
+<th style="width:23%;"> <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a></th>
 <th style="width:23%;"> UDUNITS → UCUM 转换器</th>
@@ -1569,10 +1569,10 @@ UDUNITS兼容的时间单位字符串。例如，
 <td> UDUNITS处理 degF, degC, degK, degree_north, degree_east, degree_west,
 degree_true，并将它们的别名作为单独的单位。
 一些标准（例如，
-<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
+<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>和
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> )，使用
 degree_east 和 degree_north 用于标识经度和纬度变量
@@ -1591,15 +1591,15 @@ degree_east 和 degree_north 用于标识经度和纬度变量
 <tr>
 <td>具体时间</td>
 <td> UDUNITS有一个系统将特定时间指定为
-<br> ，
+<br>，
 “因为<i>ISO8601Time</i><i>单位</i>”;<br>例如， "seconds since 1970-01-01T00:00:00Z"。
 <td> UCUM 似乎没有系统来指定特定时间。
 <td>转换器转换，例如，
-<br> "seconds since 1970-01-01T00:00:00Z"
+<br>"seconds since 1970-01-01T00:00:00Z"
 <br>到"s{since 1970-01-01T00:00:00Z}"。
 <td>转换器转换例如
-<br> "s{since 1970-01-01T00:00:00Z}"到
-<br> "seconds since 1970-01-01T00:00:00Z"。</td>
+<br>"s{since 1970-01-01T00:00:00Z}"到
+<br>"seconds since 1970-01-01T00:00:00Z"。</td>
 </tr>
 <tr>
 <td> C</td>
@@ -1673,8 +1673,8 @@ degree_east 和 degree_north 用于标识经度和纬度变量
 无效和无法识别的UDUNITS （或 UCUM）名称将原封不动地传递。
 重点放在保留信息而不是清理或验证
 单位字符串。
-<li> UDUNITS到 UCUM 转换器可以转换所有UDUNITS-1 单位字符串和大部分UDUNITS-2。
-<li> UCUM 到UDUNITS转换器可以转换几乎所有区分大小写的 UCUM 单位字符串。
+<li>UDUNITS到 UCUM 转换器可以转换所有UDUNITS-1 单位字符串和大部分UDUNITS-2。
+<li>UCUM 到UDUNITS转换器可以转换几乎所有区分大小写的 UCUM 单位字符串。
 <li>对于任一方向的转换，
 在
 的意义上，结果将被标准化。别名和输入语法的细微变化将导致
@@ -1684,7 +1684,7 @@ UDUNITS="米每秒"、"米/秒"、"ms^-1" 和 "m s-1" 都将
 关于标准化输出的特定别名或语法
 与其他别名或语法相比，除了类似于
 UDUNITS软件返回的“规范”形式。
-<li> “标准化UDUNITS”选项适用于有效的UDUNITS字符串
+<li>“标准化UDUNITS”选项适用于有效的UDUNITS字符串
 并且对于非标准/无效的UDUNITS字符串相当好。
 注意这是一个简单的标准化
 （例如， "joule"、 "joules"和"J"都返回"J"）
@@ -1706,7 +1706,7 @@ UDUNITS软件返回的“规范”形式。
 <convertUnitsIntro><![CDATA[
 书写度量单位的两个常见标准是：
 <ul>
-<li> <a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 - 来自
@@ -1714,30 +1714,30 @@ UDUNITS软件返回的“规范”形式。
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 用于
-<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
+<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> , 和
-<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">网络CDF <img 
+<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">网络CDF<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 数据文件。例如，
 UDUNITS有很多关于摄氏度的选项，包括“degree_C”和“degC”。
 <br>&nbsp;
-<li> <a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
+<li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 - 计量单位统一代码。
-<a rel="bookmark" href="https://www.ogc.org/">OGC <img 
+<a rel="bookmark" href="https://www.ogc.org/">OGC<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 服务，例如
 <a rel="help" href="https://www.ogc.org/standards/sos">求救<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
+<a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> , 和
 <a rel="help" href="https://www.ogc.org/standards/wms">仓储管理系统<img 
@@ -1757,15 +1757,15 @@ UDUNITS有很多关于摄氏度的选项，包括“degree_C”和“degC”。
 ERDDAP 将仅以文本结果进行响应。
 <ul>
 <li>将UDUNITS转换为 UCUM 的示例是
-<br> <a href="{0}/convert/units.txt?UDUNITS=degC%20meter-1"
+<br><a href="{0}/convert/units.txt?UDUNITS=degC%20meter-1"
   >{0}/convert/units.txt? UDUNITS=degC%20meter-1</a>
 <br>&nbsp;
 <li>将 UCUM 转换为UDUNITS是
-<br> <a href="{0}/convert/units.txt?UCUM=Cel.m-1"
+<br><a href="{0}/convert/units.txt?UCUM=Cel.m-1"
   >{0}/convert/units.txt?UCUM=Cel.m-1</a>
 <br>&nbsp;
 <li>标准化UDUNITS 的一个例子是
-<br> <a href="{0}/convert/units.txt?STANDARDIZE_UDUNITS=degC/meter"
+<br><a href="{0}/convert/units.txt?STANDARDIZE_UDUNITS=degC/meter"
   >{0}/convert/units.txt?STANDARDIZE_UDUNITS=degC/meter</a>
 </ul>
 百分比编码 - URL 中的参数值（''='' 符号后面的部分）必须正确
@@ -1801,7 +1801,7 @@ ERDDAP 将仅以文本结果进行响应。
 <li>如果你认为转换器
 或者没有更新它应该拥有的 URL，
 请将详细信息通过电子邮件发送给<kbd>bob dot simons at noaa dot gov</kbd> 。
-<li> ERDDAP 管理员：您可以通过编辑
+<li>ERDDAP 管理员：您可以通过编辑
 来更改转换规则。 &lt;updateUrls&gt;在 messages.xml 中。如果你这样做了，
 请将详细信息通过电子邮件发送至<kbd>bob dot simons at noaa dot gov</kbd>
 因此可以将更改合并到标准 ERDDAP 发行版中。
@@ -1820,7 +1820,7 @@ ERDDAP 将仅以文本结果进行响应。
 <span class="nowrap"><kbd>text= <i>some%20percent-encoded%20text</i></kbd> ,</span>
 ERDDAP 将仅以文本结果作为响应，但已修改为具有更新的 URL。
 <p>一个例子是
-<br> <a href="{0}/convert/urls.txt?text=For%20more%20information,%20see%20ftp%3A%2F%2Feclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf"
+<br><a href="{0}/convert/urls.txt?text=For%20more%20information,%20see%20ftp%3A%2F%2Feclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf"
   >{0}/convert/urls.txt?text=</a>对于%20more% <a href="{0}/convert/urls.txt?text=For%20more%20information,%20see%20ftp%3A%2F%2Feclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf"
   >20</a>信息，%20see%20ftp%3A%2F% <a href="{0}/convert/urls.txt?text=For%20more%20information,%20see%20ftp%3A%2F%2Feclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf"
   >2Feclipse.ncdc.noaa.gov</a> /pub/OI- <a href="{0}/convert/urls.txt?text=For%20more%20information,%20see%20ftp%3A%2F%2Feclipse.ncdc.noaa.gov/pub/OI-daily/daily-sst.pdf"
@@ -2053,7 +2053,7 @@ y_wind
 <!-- 数据集表（例如，数据集列表）-->
 
 <dtAccessible><![CDATA[<strong>您可以访问此数据集吗？</strong>
-<br> “公开”= 是。任何人（登录或未登录）都可以访问它。]]></dtAccessible>
+<br>“公开”= 是。任何人（登录或未登录）都可以访问它。]]></dtAccessible>
 <dtAccessibleYes><![CDATA[<br>“是” = 您已登录并具有适当的角色。]]></dtAccessibleYes>
 <dtAccessibleNo><![CDATA[<br>"no" = 您已登录但没有合适的角色。]]></dtAccessibleNo>
 <dtAccessibleLogIn><![CDATA[<br>“登录” = 目前，没有。如果您登录，它可能会变得可访问。]]></dtAccessibleLogIn>
@@ -2122,29 +2122,29 @@ y_wind
 <strong>griddap</strong>允许您从
 请求数据子集、图形或地图。网格化数据集（例如，海面
 来自卫星的温度数据），通过特殊格式的 URL。 griddap 使用
-<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+<a rel="bookmark" href="https://www.opendap.org">OPeNDAP<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>
-<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP) <img 
+<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>和它的
 <a rel="help"  href="https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions">投影约束<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a> .
-<p> <strong>URL 指定了您想要的内容：</strong>数据集、描述
+<p><strong>URL 指定了您想要的内容：</strong>数据集、描述
 图或数据的子集，以及响应的文件类型。
 <ul>
-<li> （简单）您可以通过使用数据集的<strong>Data Access Form</strong>来获取数据。它为您生成 URL。
-<li> （简单）您可以使用数据集的
+<li>（简单）您可以通过使用数据集的<strong>Data Access Form</strong>来获取数据。它为您生成 URL。
+<li>（简单）您可以使用数据集的
 制作图形或地图。<strong>制作图表</strong>表格。它为您生成 URL。
-<li> （不难）您可以绕过表单并获取数据或制作图形或地图
+<li>（不难）您可以绕过表单并获取数据或制作图形或地图
 通过手动或使用计算机程序或脚本生成 URL。
 </ul>
 ]]></EDDGridDapLongDescription>
 <EDDGridDownloadDataTooltip><![CDATA[
 <strong>下载网格数据：</strong><ol>
 <li>选择（勾选）您要下载的一个或多个网格变量。
-<br> （或者，要仅下载维度数据，请选择一个或多个维度变量。）
+<br>（或者，要仅下载维度数据，请选择一个或多个维度变量。）
 <li>通过指定维度子集 ( <kbd>Start:Stride:Stop</kbd> ) 来指定所需的数据子集。
 <li>对于<kbd>文件类型</kbd>，选择一种非图像文件类型（除 .geotif、.kml、.pdf 或 .png 之外的任何类型）。
 ]]></EDDGridDownloadDataTooltip>
@@ -2180,8 +2180,8 @@ y_wind
 <EDDGridDimensionFirstTooltip><![CDATA[供您参考：这是维度的第一个值。]]></EDDGridDimensionFirstTooltip>
 <EDDGridDimensionLastTooltip><![CDATA[供您参考：这是维度的最后一个值。]]></EDDGridDimensionLastTooltip>
 <EDDGridDownloadTooltip><![CDATA[选择要下载的变量：
-<br> * 仅下载维度数据：只需选择一个或多个维度（轴）。
-<br> * 下载网格数据：选择一个或多个网格变量。]]></EDDGridDownloadTooltip>
+<br>* 仅下载维度数据：只需选择一个或多个维度（轴）。
+<br>* 下载网格数据：选择一个或多个网格变量。]]></EDDGridDownloadTooltip>
 <EDDGridGridVariableHtml><![CDATA[<strong>网格变量</strong>
 （它总是也下载所有的维度变量）]]></EDDGridGridVariableHtml>
 
@@ -2279,24 +2279,24 @@ set(gca, 'YDir', 'normal')
 <strong>tabledap</strong>允许您从
 请求数据子集、图形或地图。一个表格数据集（例如，浮标数据），
 通过特殊格式的 URL。 tabledap使用
-<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+<a rel="bookmark" href="https://www.opendap.org">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
-<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP) <img 
+<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>和它的
 <a rel="help" href="https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions"
     >选择约束<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> .
-<p> <strong>URL 指定了您想要的内容：</strong>数据集、描述
+<p><strong>URL 指定了您想要的内容：</strong>数据集、描述
 图或数据的子集，以及响应的文件类型。
 <ul>
-<li> (easy) 可以通过使用数据集的<strong>Data Access Form</strong>
+<li>(easy) 可以通过使用数据集的<strong>Data Access Form</strong>
 来获取数据。或<strong>子集</strong>形式。他们为您制作网址。
-<li> （简单）您可以使用数据集的
+<li>（简单）您可以使用数据集的
 制作图形或地图。<strong>制作图表</strong>表格。它为您生成 URL。
-<li> （不难）您可以绕过表单并获取数据或制作图形或地图
+<li>（不难）您可以绕过表单并获取数据或制作图形或地图
 通过手动或使用计算机程序或脚本生成 URL。
 </ul>
 ]]></EDDTableDapLongDescription>
@@ -2525,7 +2525,7 @@ set(gca, 'YDir', 'normal')
   一起使用。最喜欢的网络浏览器，或者，如果您愿意，也可以从命令行程序（如
   <a rel="help" href="#curl">curl</a>。
   
-  <p> ERDDAP 的设计理念是大多数数据集都是巨大的，因此大多数用户
+  <p>ERDDAP 的设计理念是大多数数据集都是巨大的，因此大多数用户
   只需要或想要他们感兴趣的数据集的子集
   （例如，较小的地理区域、较小的时间范围或并非所有数据变量）。
   但是我们
@@ -2545,7 +2545,7 @@ set(gca, 'YDir', 'normal')
   <li><a rel="help" href="#notFtp">不是 FTP</a>
   <li><a rel="help" href="#curl">使用curl</a>
   <a rel="help" href="#curl">命令行下载</a><li><a rel="help" href="#ViewMediaFiles">查看媒体文件</a>
-  <li> <a rel="help" href="#HowCanIWorkWithTheseFiles">“我如何处理这些文件？”</a>
+  <li><a rel="help" href="#HowCanIWorkWithTheseFiles">“我如何处理这些文件？”</a>
   <li><a rel="help" href="#byteRanges">字节范围请求</a>
   </ul>
   
@@ -2568,11 +2568,11 @@ set(gca, 'YDir', 'normal')
   返回目录列表。通过附加以下任何文件扩展名来格式化文件：
   .csv、.htmlTable、.itx、.json、.jsonlCSV1、.jsonlCSV、.jsonlKVP、
   .mat、.nc、.nccsv、.tsv 或 .xhtml。例如，代替这个网页：
-  <br> <a rel="help"
+  <br><a rel="help"
       href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/"
            >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/</a>
   <br>您可以请求将目录列表作为 .csv 文件：
-  <br> <a rel="help"
+  <br><a rel="help"
       href="https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv"
            >https://coastwatch.pfeg.noaa.gov/erddap/files/jplMURSST41/.csv</a>
   <br>&nbsp;
@@ -2602,7 +2602,7 @@ set(gca, 'YDir', 'normal')
   或 Cassandra，或来自远程 THREDDS、HYRAX 或 GRADS 数据服务器）。
   <li>直接源文件是 .ncml 文件，指定如何修改
   实时的实际数据文件。
-  <li> ERDDAP 管理员选择不提供源数据文件。
+  <li>ERDDAP 管理员选择不提供源数据文件。
   </ul>
   如果您想要的数据集的源文件不可用，您可以通过电子邮件发送
   此 ERDDAP 的管理员， &adminEmail;,
@@ -2656,7 +2656,7 @@ set(gca, 'YDir', 'normal')
   但这里有一个关于在 ERDDAP 中使用curl的快速教程：
   <ul>
   <li>要下载并保存一个文件，请使用
-  <br> <kbd>curl --compressed -g " <i>erddapUrl</i> " -o <i>fileDir/fileName.ext</i></kbd>
+  <br><kbd>curl --compressed -g " <i>erddapUrl</i> " -o <i>fileDir/fileName.ext</i></kbd>
   <br>其中<kbd>--compressed</kbd>告诉curl请求压缩响应并自动解压缩它，
   <br>&nbsp;&nbsp; <kbd>-g</kbd>禁用 curl 的通配功能，
   <br>&nbsp;&nbsp; <kbd><i>erddapUrl</i></kbd>是任何请求数据或图像文件的 ERDDAP URL，以及
@@ -2681,7 +2681,7 @@ set(gca, 'YDir', 'normal')
   <br>&nbsp;
   <li>要下载并保存在一个步骤，使用具有curl的通配符功能
   许多文件;启用：
-  <br> <kbd>curl --compressed " <i>erddapUrl</i> " -o <i>fileDir/fileName#1.ext</i></kbd>
+  <br><kbd>curl --compressed " <i>erddapUrl</i> " -o <i>fileDir/fileName#1.ext</i></kbd>
   <br>由于通配功能将字符 [、]、{ 和 } 视为特殊字符，因此您还必须
   <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">百分比编码<img
       src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
@@ -2756,8 +2756,8 @@ set(gca, 'YDir', 'normal')
   <p>如果你想用这些文件做其他事情，
   有许多程序可以播放和编辑音频文件，包括：
   <ul>
-  <li> Windows Media Player 随 Windows 一起提供（查看 Window 的开始列表）。
-  <li> Apple 的 iTunes 音频播放器随 Mac OS X 一起提供（在应用程序文件夹中查看）
+  <li>Windows Media Player 随 Windows 一起提供（查看 Window 的开始列表）。
+  <li>Apple 的 iTunes 音频播放器随 Mac OS X 一起提供（在应用程序文件夹中查看）
   并且是 Windows 的免费下载。
   <li><a rel="help" href="https://ardour.org/">Ardour<img
       src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
@@ -2781,30 +2781,30 @@ set(gca, 'YDir', 'normal')
   <br>&nbsp;
   </ul>
   
-  <li> <a class="selfLink" id="hdfFiles" href="#hdfFiles" rel="help">HDF 文件 (.hdf)</a>
-  <br> <a rel="help" href="https://en.wikipedia.org/wiki/Hierarchical_Data_Format">HDF文件<img
+  <li><a class="selfLink" id="hdfFiles" href="#hdfFiles" rel="help">HDF 文件 (.hdf)</a>
+  <br><a rel="help" href="https://en.wikipedia.org/wiki/Hierarchical_Data_Format">HDF文件<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   是一种常见的二进制数据文件类型。
   有一些软件包可以处理 .hdf 文件，包括：
   <ul>
-  <li> <a rel="help" href="https://www.giss.nasa.gov/tools/panoply/download/">NASA's Panoply<img
+  <li><a rel="help" href="https://www.giss.nasa.gov/tools/panoply/download/">NASA's Panoply<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   是免费的常用软件，可从 .hdf 文件制作图形和地图。
-  <li> <a rel="help" href="https://www.hdfgroup.org/downloads/">HDF5 库<img
+  <li><a rel="help" href="https://www.hdfgroup.org/downloads/">HDF5 库<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   是 HDF Group 的官方库，用于读取和写入所有 .hdf 文件。
   <li>一些分析程序如
-  <a rel="help" href="https://www.mathworks.com/products/matlab.html">MATLAB <img
+  <a rel="help" href="https://www.mathworks.com/products/matlab.html">MATLAB<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a> , 和
   <a rel="help" href="https://www.r-project.org/">R语言<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   可以通过附加库读取 .hdf 文件。
-  <li> <a rel="help" href="#ncFiles">.nc 文件的</a>许多<a rel="help" href="#ncFiles">工具</a>
+  <li><a rel="help" href="#ncFiles">.nc 文件的</a>许多<a rel="help" href="#ncFiles">工具</a>
   也适用于 .hdf 文件。
   <br>&nbsp;
   </ul>
@@ -2826,18 +2826,18 @@ set(gca, 'YDir', 'normal')
   <p>如果你想对图像文件做其他事情，
   有许多图像查看和编辑程序，包括：
   <ul>
-  <li> Paint 随 Windows 一起提供（在 Windows 附件下的 Window 开始列表中查找）。
-  <li> Mac OS X 附带了不同的 Paint（查看应用程序文件夹）。
+  <li>Paint 随 Windows 一起提供（在 Windows 附件下的 Window 开始列表中查找）。
+  <li>Mac OS X 附带了不同的 Paint（查看应用程序文件夹）。
   <li><a rel="help" href="https://www.gimp.org/">Gimp<img
       src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
       title="此指向外部网站的链接不构成认可。"></a> ,
   适用于所有操作系统的开源程序。
-  <li> <a rel="help" href="https://www.irfanview.com/">IrfanView <img
+  <li><a rel="help" href="https://www.irfanview.com/">IrfanView<img
       src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
       title="此指向外部网站的链接不构成认可。"></a> ,
   适用于 Windows 的免费图像编辑器。
   <li>来自 Adobe 的各种软件，包括
-  <a rel="help" href="https://www.adobe.com/products/photoshopfamily.html">Photoshop <img
+  <a rel="help" href="https://www.adobe.com/products/photoshopfamily.html">Photoshop<img
       src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
       title="此指向外部网站的链接不构成认可。"></a> .
   <li>参见
@@ -2849,13 +2849,13 @@ set(gca, 'YDir', 'normal')
   <br>&nbsp;
   </ul>
   
-  <li> <a class="selfLink" id="ncFiles" href="#ncFiles" rel="help">NetCDF 文件 (.nc)</a>
-  <br><a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/docs/">网络CDF <img
+  <li><a class="selfLink" id="ncFiles" href="#ncFiles" rel="help">NetCDF 文件 (.nc)</a>
+  <br><a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/docs/">网络CDF<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   是一种常见的二进制数据文件类型。
   
-  <p> .nc 文件有两个子类别：第 3 版文件（仍在广泛使用）和第 4 版文件
+  <p>.nc 文件有两个子类别：第 3 版文件（仍在广泛使用）和第 4 版文件
   （实际上是<a rel="help" href="#hdfFiles">.hdf 文件</a>，有一些变化）。
   两个版本的文件都有扩展名 .nc，可以被读取 .nc 文件的程序读取。
   
@@ -2873,9 +2873,9 @@ set(gca, 'YDir', 'normal')
   <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a> ）。
-  <li> <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a> ,
+  <li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a> ,
   一个强大的命令行工具，用于永久修改 .nc 文件。
-  <li> <a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF-C 和 NetCDF-Java <img
+  <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF-C 和 NetCDF-Java<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a> ,
   用于 C、C++、Fortran 或 Java 读取和写入 .nc 文件的主要软件库。
@@ -2883,7 +2883,7 @@ set(gca, 'YDir', 'normal')
   <a rel="help" href="https://ferret.pmel.noaa.gov/Ferret/">Ferret<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a> ,
-  <a rel="help" href="https://www.mathworks.com/products/matlab.html">MATLAB <img
+  <a rel="help" href="https://www.mathworks.com/products/matlab.html">MATLAB<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a> , 和
   <a rel="help" href="https://www.r-project.org/">R语言<img
@@ -2913,13 +2913,13 @@ set(gca, 'YDir', 'normal')
   所以一定要使用编辑器的功能，使选项卡可见（作为特殊符号）
   以便您可以维护值之间的选项卡。
   
-  <p> <a rel="help" href="#xmlFiles">.xml 文件</a>在技术上是文本文件，但是
+  <p><a rel="help" href="#xmlFiles">.xml 文件</a>在技术上是文本文件，但是
   有一些优点。使用单独的 XML 编辑器来处理它们。
   
   <p>每个操作系统都有几十个文本编辑器程序，包括：
   <ul>
   <li>记事本随 Windows 一起提供（在 Windows 附件下的 Window 开始列表中查找）。
-  <li> TextEdit 随 Mac OS X 一起提供（查看 Applications 文件夹）。
+  <li>TextEdit 随 Mac OS X 一起提供（查看 Applications 文件夹）。
   <li>大多数 Linux 变体都带有一些文本编辑器，其中之一是默认的
   （您可以更改）。
   如果您使用的是 Linux，那么您可能已经有一个最喜欢的了。
@@ -2948,10 +2948,10 @@ set(gca, 'YDir', 'normal')
   <p>如果你想对视频文件做其他事情，
   有许多视频播放和编辑程序，包括：
   <ul>
-  <li> Windows Media Player 随 Windows 一起提供（查看 Window 的开始列表）。
-  <li> Windows 视频编辑器随 Windows 一起提供（查看 Window 的开始列表）。
-  <li> Mac OS X 附带 QuickTime Player（查看器）（查看应用程序文件夹）。
-  <li> iMovie（编辑器）随 Mac OS X 一起提供（查看应用程序文件夹）。
+  <li>Windows Media Player 随 Windows 一起提供（查看 Window 的开始列表）。
+  <li>Windows 视频编辑器随 Windows 一起提供（查看 Window 的开始列表）。
+  <li>Mac OS X 附带 QuickTime Player（查看器）（查看应用程序文件夹）。
+  <li>iMovie（编辑器）随 Mac OS X 一起提供（查看应用程序文件夹）。
   <li>不同的 Linux 发行版带有不同的视频播放器。
   有许多可用于 Linux 的开源和商业视频播放器和编辑器。
   使用您最喜欢的搜索引擎搜索您想要的内容。
@@ -2969,8 +2969,8 @@ set(gca, 'YDir', 'normal')
   <br>&nbsp;
   </ul>
   
-  <li> <a class="selfLink" id="xmlFiles" href="#xmlFiles" rel="help">XML 文件</a>（例如，.xml）
-  <br> <a rel="help" href="https://en.wikipedia.org/wiki/XML">XML 文件<img
+  <li><a class="selfLink" id="xmlFiles" href="#xmlFiles" rel="help">XML 文件</a>（例如，.xml）
+  <br><a rel="help" href="https://en.wikipedia.org/wiki/XML">XML 文件<img
          src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
          title="此指向外部网站的链接不构成认可。"></a>
   是结构化的文本文件。您可以在浏览器或文本编辑器中查看它们，
@@ -3000,7 +3000,7 @@ set(gca, 'YDir', 'normal')
   但是您需要访问文件的次数越多，
   的效率就越高。只需下载文件，然后使用本地文件即可。
   
-  <p> ERDDAP 的 /files/ 系统拒绝对 .nc 和 .hdf 文件的所有字节范围请求，
+  <p>ERDDAP 的 /files/ 系统拒绝对 .nc 和 .hdf 文件的所有字节范围请求，
   所以甚至不要尝试使用 Netcdf-java/c、ncview、 Ferret或其他软件工具连接到
   .nc 或 .hdf 文件由 ERDDAP 的 /files/ 系统提供，就好像它们是本地文件一样。
   这些请求被阻止，因为这种方法效率极低
@@ -3050,11 +3050,11 @@ orderBy... 函数对结果表的行进行排序，有时对
 要不使用任何orderBy... 函数，请选择左侧的第一个选项 ("")。
 orderBy... 函数是：
 
-<p> <strong>orderBy</strong>按指定的变量对结果表的行进行排序。
+<p><strong>orderBy</strong>按指定的变量对结果表的行进行排序。
 例如，orderBy("stationID, time")进行排序主要由的stationID和
 结果;其次是时间。
 
-<p> <strong>orderByClosest</strong>按指定的变量对结果表的行进行排序。
+<p><strong>orderByClosest</strong>按指定的变量对结果表的行进行排序。
 最后一个变量必须是一个带除数的数值变量。
 只保留最接近除数间隔的行。
 例如， orderByClosest("stationID, time/2hours")/ 2hours ")
@@ -3062,28 +3062,28 @@ orderBy... 函数是：
 但只返回每个stationID的行，其中最后一个orderBy列（时间）
 最接近 2 小时的间隔。
 
-<p> <strong>orderByCount</strong>将结果表的行排序成组，只返回
+<p><strong>orderByCount</strong>将结果表的行排序成组，只返回
 每个组的非缺失值数量的计数。
 例如，orderByCount("stationID, time/1day")将排序的stationID和返回一行
 对于每个的stationID每天，与
 非缺失值的数量的计数;每个其他变量。
 
-<p> <strong>orderByLimit</strong>将结果表的行排序为组
+<p><strong>orderByLimit</strong>将结果表的行排序为组
 并且只返回前 nRows（由最后一个orderByLimit值指定）
 每个组内。
 例如，orderByMax("stationID, time/1day, 10")将排序的stationID和时间，
 但每天只返回每个stationID的前 10 行。
 
-<p> <strong>orderByMax</strong>将结果表的行排序为组
+<p><strong>orderByMax</strong>将结果表的行排序为组
 并只返回每个组中具有
 最大值的行。请求中的最后一个orderByMax变量。
 例如，orderByMax("stationID, time/1day, temperature")将组的行通过的stationID和每一天，
 但只返回每个stationID每天的最高温度值的行。
 
-<p> <strong>orderByMin</strong>与orderByMax类似，但只保留带有
+<p><strong>orderByMin</strong>与orderByMax类似，但只保留带有
 的行。最后一个 orderByMin 变量的最小值。
 
-<p> <strong>orderByMinMax</strong>就像 orderByMin 加上orderByMax。
+<p><strong>orderByMinMax</strong>就像 orderByMin 加上orderByMax。
 在每个排序组中，只有带有
 的行。最后一个orderByMinMax
 的最小值和最大值的行变量将被保留。
@@ -3091,7 +3091,7 @@ orderBy... 函数是：
 的行。最低温度值和最高温度值的行
 对于每天的每个stationID 。
 
-<p> <strong>orderByMean</strong>将结果表的行排序为组
+<p><strong>orderByMean</strong>将结果表的行排序为组
 并且只为每组返回一行。该行将具有每个其他变量的平均值。
 例如， orderByMax("stationID, time/1day")将为每个
 创建一个组。每天的stationID ，并将计算并返回其他变量的平均值。
@@ -3107,7 +3107,7 @@ orderBy... 函数是：
 <generatedAt>此网页是在 {0} 生成的。</generatedAt>
 <geoServicesDescription><![CDATA[
 为了让ArcGIS用户更容易访问这个ERDDAP的数据，ERDDAP的这部分模仿了
-的一部分。<br> <a rel="bookmark" href="https://www.esri.com/software/arcgis/arcgisserver">ArcGIS for Server <img 
+的一部分。<br><a rel="bookmark" href="https://www.esri.com/software/arcgis/arcgisserver">ArcGIS for Server<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 通过遵循
@@ -3223,7 +3223,7 @@ justGenerateAndViewHtml 消息可以包含 &protocolName; .
 <justGenerateAndView>只需生成网址：</justGenerateAndView>
 <justGenerateAndViewTooltip><![CDATA[
 <strong>可选：绕过此表单</strong>
-<br> &protocolName;允许您通过向服务器发送特殊格式的 URL 来请求数据。
+<br>&protocolName;允许您通过向服务器发送特殊格式的 URL 来请求数据。
 URL 标识数据集，响应所需的文件类型，
 以及您要接收的数据子集。
 这个Data Access Form简化了这个任务：当你点击<kbd>提交</kbd>
@@ -3240,7 +3240,7 @@ URL 生成并发送到服务器。
 <justGenerateAndViewUrl>由上述规范生成的 URL。</justGenerateAndViewUrl>
 <justGenerateAndViewGraphUrlTooltip><![CDATA[
 <strong>绕过此表单</strong>
-<br> &protocolName;允许您通过发送一个特殊
+<br>&protocolName;允许您通过发送一个特殊
 请求图形或数据。服务器的 URL。
 URL 标识数据集，响应所需的文件类型，
 您要查看的数据子集以及其他图形规范。
@@ -3322,7 +3322,7 @@ URL 生成并发送到服务器。
 但是这个 ERDDAP 的管理员决定谁可以访问其他数据集。
 ]]></loginDescribeOauth2>
 <loginDescribeOpenID><![CDATA[
-<p><a rel="help" href="https://openid.net/">OpenID <img 
+<p><a rel="help" href="https://openid.net/">OpenID<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 是一种开放标准，允许您在一个网站上使用密码登录
@@ -3361,48 +3361,48 @@ URL 生成并发送到服务器。
 ]]></loginBack>
 <loginProblemExact><![CDATA[<li>确保您使用完全相同的 &info; 登录。您提供给 ERDDAP 管理员的信息。
 大写字母和小写字母是不同的。大写的“哦”和“零”是不同的。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemExact>
 <loginProblemExpire><![CDATA[<li>如果您等待的时间超过 &offerValidMinutes; ERDDAP 向您发送邀请电子邮件后几分钟，
 邀请将过期。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemExpire>
 <loginProblemGoogleAgain><![CDATA[<li>如果 Google 按钮显示您“已登录”，
 但是单击“登录 ERDDAP”不会让您登录 ERDDAP，
 等待 10 秒钟，然后再次单击“登录 ERDDAP”。
 如果这不起作用，请再等 10 秒钟，然后重试。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemGoogleAgain>
 <loginProblemOrcidAgain><![CDATA[<li>如果您以错误的 ORCID 用户 (!) 登录，
 转到 ORCID 站点并注销该用户
 然后在此处注销，然后再次尝试通过 ORCID 登录到 ERDDAP。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemOrcidAgain>
 <loginProblemOauth2Again><![CDATA[<li>如果 Google 说您“已登录”，
 但是单击“登录 ERDDAP”不会让您登录 ERDDAP，
 等待 10 秒钟，然后再次单击“登录 ERDDAP”。
 如果这不起作用，请再等 10 秒钟，然后重试。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemOauth2Again>
 <loginProblemSameBrowser><![CDATA[<li>确保您使用相同的浏览器请求登录邀请电子邮件
 并访问电子邮件中的验证 URL。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblemSameBrowser>
 <loginProblem3Times><![CDATA[<li>如果您连续登录 3 次失败，您将被锁定。等待 10 分钟，然后重试。
-<br> &nbsp;
+<br>&nbsp;
 ]]></loginProblem3Times>
 <loginProblems><![CDATA[
-<p> &nbsp;<hr><p><strong>问题？</strong>
+<p>&nbsp;<hr><p><strong>问题？</strong>
 <p>如果您在登录时遇到问题：
 <ul>
 &initialHelp;
-<li> &cookiesHelp;
-<br> &nbsp;
+<li>&cookiesHelp;
+<br>&nbsp;
 <li>联系此 ERDDAP 的管理员：&adminContact;。
 </ul>
 ]]></loginProblems>
 <loginProblemsAfter><![CDATA[
-<p> &nbsp;<hr>
+<p>&nbsp;<hr>
 <p><strong>如果您遇到登录问题，例如，</strong>
 <ul>
 <li>您刚刚登录，但 ERDDAP 中的私有数据集仍然不可见。
@@ -3419,18 +3419,18 @@ URL 生成并发送到服务器。
 如果您使用https，将会是。
 因此，如果您认为自己已登录，而 ERDDAP 却表现得好像您没有登录，
 确保您使用的是 https（而不是 http） URL。
-<br> &nbsp;
+<br>&nbsp;
 <li>单击浏览器的重新加载按钮。
 在您登录之前，您的浏览器可能已经缓存了网页。
-<br> &nbsp;
+<br>&nbsp;
 <li>在一段时间不活动后，如果 ERDDAP 说你没有登录，
 你必须重新登录。
-<br> &nbsp;
+<br>&nbsp;
 <li>如果您有多个帐户，请确保您使用适当的
 登录。名称以查看所需的数据集。
-<br> &nbsp;
+<br>&nbsp;
 <li>尝试注销，然后重新登录。
-<br> &nbsp;
+<br>&nbsp;
 &second;
 <li>联系此 ERDDAP 的管理员：&adminContact;。
 可能某些数据集当前不可用或者您没有
@@ -3507,18 +3507,18 @@ URL 生成并发送到服务器。
 <!-- 不要翻译 graphType 名称-->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>图表类型</strong>
-<br> <strong>lines</strong>在图表上画线，其中 X=a 维
+<br><strong>lines</strong>在图表上画线，其中 X=a 维
 Y=一个数据变量。
-<p> <strong>linesAndMarkers</strong>在图形上绘制线条和标记
+<p><strong>linesAndMarkers</strong>在图形上绘制线条和标记
 其中 X=一个维度，Y=一个数据变量。
 如果指定了 Color 变量，则标记是彩色的。
-<p> <strong>markers</strong>在图表上绘制标记，其中 X=a 维
+<p><strong>markers</strong>在图表上绘制标记，其中 X=a 维
 Y=一个数据变量。
 如果指定了 Color 变量，则标记是彩色的。
-<p> <strong>sticks</strong>通常用于在 x 轴上绘制时间，
+<p><strong>sticks</strong>通常用于在 x 轴上绘制时间，
 从 x 组件和 y 组件中绘制木棍
 的电流或风数据。
-<p> <strong>surface</strong>将数据的经度/纬度网格绘制为
+<p><strong>surface</strong>将数据的经度/纬度网格绘制为
 地图上的彩色表面。
 <p><strong>向量</strong>在地图上绘制向量。
 目前，这要求 X=longitude 和 Y=latitude。
@@ -3529,13 +3529,13 @@ Y=一个数据变量。
 ]]></magGraphTypeTooltipGrid>
 <magGraphTypeTooltipTable><![CDATA[
 <strong>图表类型</strong>
-<br> <strong>lines</strong>在图形上画线。
+<br><strong>lines</strong>在图形上画线。
 如果 X=longitude 和 Y=latitude，你会得到一张地图。
-<p> <strong>linesAndMarkers</strong>，可选的 Color 变量可以为标记着色。
+<p><strong>linesAndMarkers</strong>，可选的 Color 变量可以为标记着色。
 如果 X=longitude 和 Y=latitude，你会得到一张地图。
-<p> <strong>markers</strong>，可选的 Color 变量可以为标记着色。
+<p><strong>markers</strong>，可选的 Color 变量可以为标记着色。
 如果 X=longitude 和 Y=latitude，你会得到一张地图。
-<p> <strong>sticks</strong>通常用于在 X 轴上绘制时间，
+<p><strong>sticks</strong>通常用于在 X 轴上绘制时间，
 并且从 x 组件和 y 组件中绘制木棍
 的电流或风数据。
 <p><strong>向量</strong>要求 X=经度和 Y=纬度。
@@ -3564,28 +3564,28 @@ Y=一个数据变量。
 <magGSNSectionsTooltip><![CDATA[
 指定颜色条的节数
 <br>以及颜色条下方的标签数量（减去 1）
-<br> （或为默认值留空）。
+<br>（或为默认值留空）。
 ]]></magGSNSectionsTooltip>
 <magGSLandMask>绘制土地掩膜</magGSLandMask>
 <magGSLandMaskTooltipGrid><![CDATA[
 指定是否应在数据“下方”或“上方”绘制焊盘掩膜，或者不绘制（“关闭”）。
-<br> （有些数据已经应用了焊盘掩膜，因此这无关紧要。）
-<br> （或将此留空以使用默认值。）
+<br>（有些数据已经应用了焊盘掩膜，因此这无关紧要。）
+<br>（或将此留空以使用默认值。）
 ]]></magGSLandMaskTooltipGrid>
 <magGSLandMaskTooltipTable><![CDATA[
 指定是否应在
-下绘制土地掩膜。<br> （显示地形）或“超过”（只显示测深）数据，
+下绘制土地掩膜。<br>（显示地形）或“超过”（只显示测深）数据，
 <br>或未绘制（“关闭”）。或者将默认值留空。
 ]]></magGSLandMaskTooltipTable>
 <magGSVectorStandard>矢量标准</magGSVectorStandard>
 <magGSVectorStandardTooltip><![CDATA[
 指定数据向量长度（以数据单位为单位）为
 <br>缩放到图例中样本向量的大小
-<br> （或为默认值留空）。
+<br>（或为默认值留空）。
 ]]></magGSVectorStandardTooltip>
 <magGSYAscendingTooltip><![CDATA[
 对于图形（不是地图），Y 轴值可以升序
-<br> （正常顺序）或降序（即翻转或反转）。
+<br>（正常顺序）或降序（即翻转或反转）。
 ]]></magGSYAscendingTooltip>
 <magGSYAxisMin>Y 轴最小值</magGSYAxisMin>
 <magGSYAxisMax>最大</magGSYAxisMax>
@@ -3609,8 +3609,8 @@ Y=一个数据变量。
 <magGSYScaleTooltip><![CDATA[
 首选的 Y 轴刻度可以是&quot; &quot; （默认的，依赖的
 <br>在 y 变量的 colorBarScale 属性上）、 "Linear"或
-<br> "Log"。对于地图，或者如果 y 轴是时间轴，或者如果
-<br> Y 轴最小值&lt;= 0，将忽略对"log"的请求。
+<br>"Log"。对于地图，或者如果 y 轴是时间轴，或者如果
+<br>Y 轴最小值&lt;= 0，将忽略对"log"的请求。
 ]]></magGSYScaleTooltip>
 <magItemFirst>选择第一项并重新绘制图形。</magItemFirst>
 <magItemPrevious>选择上一项并重新绘制图形。</magItemPrevious>
@@ -3645,8 +3645,8 @@ Y=一个数据变量。
 单击地图以指定新的中心点。
 <br>或者，在地图外单击以查看相邻区域的地图。
 <p>您可以通过交替快速放大：
-<br> * 点击一个新的中心点。
-<br> * 按<kbd>8 倍</kbd>。
+<br>* 点击一个新的中心点。
+<br>* 按<kbd>8 倍</kbd>。
 <p>如果单击未更改中心点，或者缩放按钮具有
 <br>没有效果，请重新加载此网页并重试。
 ]]></magZoomCenterTooltip>
@@ -3861,19 +3861,19 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <resourceNotFound>找不到资源：</resourceNotFound>
 <requestFormatExamplesHtml><![CDATA[
 （例如，
-<a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET <img 
+<a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.xml.com/pub/a/98/10/guide0.html">XML <img 
+<a rel="help" href="https://www.xml.com/pub/a/98/10/guide0.html">XML<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.w3schools.com/xml/xml_soap.asp">SOAP+XML <img 
+<a rel="help" href="https://www.w3schools.com/xml/xml_soap.asp">SOAP+XML<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP <img 
+<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
+<a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 <a rel="help" href="https://www.ogc.org/standards/wfs">WFS<img 
@@ -3889,31 +3889,31 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <a rel="help" href="https://www.w3schools.com/html/html_tables.asp">.html 表<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://en.wikipedia.org/wiki/Esri_grid">ESRI.asc <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Esri_grid">ESRI.asc<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://developers.google.com/kml/">谷歌地球.kml <img 
+<a rel="help" href="https://developers.google.com/kml/">谷歌地球.kml<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 <a rel="help" href="https://www.mathworks.com/">.mat<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">.nc <img 
+<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">.nc<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://odv.awi.de/en/documentation/">ODV .txt <img 
+<a rel="help" href="https://odv.awi.de/en/documentation/">ODV .txt<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">.csv <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">.csv<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="http://jkorpela.fi/TSV.html">.tsv <img 
+<a rel="help" href="http://jkorpela.fi/TSV.html">.tsv<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.json.org/">.json <img 
+<a rel="help" href="https://www.json.org/">.json<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.w3schools.com/html/html_xhtml.asp">.xhtml <img 
+<a rel="help" href="https://www.w3schools.com/html/html_xhtml.asp">.xhtml<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> )
 ]]></resultsFormatExamplesHtml>
@@ -3973,7 +3973,7 @@ ERDDAP 将单独搜索单词，而不是作为短语搜索。
 <searchMultipleERDDAPsDescription><![CDATA[
 有两种非官方的方法可以在多个 ERDDAP 中搜索数据集：
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
->搜索多个 ERDDAP <img 
+>搜索多个 ERDDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 和
@@ -4013,21 +4013,21 @@ ERDDAP 的传感器观测服务 (SOS) 允许您通过SOS协议请求数据。
 <p><a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>
-是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC) <img 
+是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC)<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>
 标准，&quot;提供了管理部署
 <br>传感器和检索传感器数据，特别是“观察”数据。是否来自原位传感器
-<br> （例如，水监测）或动态传感器（例如，卫星成像），由传感器
+<br>（例如，水监测）或动态传感器（例如，卫星成像），由传感器
 的测量。<br>系统贡献了当今地理空间系统中使用的大部分地理空间数据。 &quot;
 
-<p> SOS规范故意不完整。某些部分必须单独指定。
-<br> ERDDAP 的SOS服务旨在与
+<p>SOS规范故意不完整。某些部分必须单独指定。
+<br>ERDDAP 的SOS服务旨在与
 兼容。 <a rel="bookmark" href="https://sdf.ndbc.noaa.gov/sos/">IOOS DIF SOS服务器<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>
 （使用
-<br> <a rel="bookmark" href="https://ioos.github.io/sos-dif/dif/welcome.html">IOOS DIF SOS模式<img 
+<br><a rel="bookmark" href="https://ioos.github.io/sos-dif/dif/welcome.html">IOOS DIF SOS模式<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a> )
 和<!-- was http://www.oostethys.org -->OOSTethys SOS服务器。
@@ -4172,16 +4172,16 @@ ERDDAP 有一个电子邮件/URL 订阅系统，以便您可以在
 <subscription2Html><![CDATA[
 <p><strong>重要信息：</strong>
 <ul>
-<li> ERDDAP 将存储您提供的信息，包括您的电子邮件地址。
-<li> ERDDAP 会将您提供的信息视为机密信息，不会将其发布给
+<li>ERDDAP 将存储您提供的信息，包括您的电子邮件地址。
+<li>ERDDAP 会将您提供的信息视为机密信息，不会将其发布给
 还有谁。
 <li>这些订阅与获取实际数据无关（请参阅
 <a class="N" rel="start" href="{0}/index.html">ERDDAP 的主页</a>）。
-<li> ERDDAP 非常擅长检测网格数据集的变化，因为它可以检测何时
+<li>ERDDAP 非常擅长检测网格数据集的变化，因为它可以检测何时
 轴值（例如，时间值）发生变化。
-<li> ERDDAP 不太擅长检测表格数据集的变化，因为通常有
+<li>ERDDAP 不太擅长检测表格数据集的变化，因为通常有
 添加新数据时，元数据不会发生变化。
-<li> ERDDAP 将检测数据集是否变得不可用（但可能不会立即）。
+<li>ERDDAP 将检测数据集是否变得不可用（但可能不会立即）。
 ERDDAP 将立即检测该数据集何时再次可用。
 <li>与此 ERDDAP 相关的任何人和组织都没有对
 做出任何承诺。此服务的适用性、可靠性或正确性
@@ -4205,7 +4205,7 @@ ERDDAP 将立即检测该数据集何时再次可用。
 ]]></subscriptionAddHtml>
 <subscriptionAdd2>然后，ERDDAP 将向您发送一封电子邮件，其中包含一个链接以验证您的请求。</subscriptionAdd2>
 <subscriptionAddSuccess><![CDATA[
-<p> <span class="successColor"><strong>
+<p><span class="successColor"><strong>
 您添加订阅的请求已成功提交。</strong>
 <br>您应该很快会收到一封电子邮件，其中包含验证订阅的说明。</span>
 ]]></subscriptionAddSuccess>
@@ -4228,7 +4228,7 @@ ERDDAP 将立即检测该数据集何时再次可用。
 <p><strong>要请求包含您的订阅列表的电子邮件，请填写此表格：</strong>
 ]]></subscriptionListHtml>
 <subscriptionListSuccess><![CDATA[
-<p> <span class="successColor"><strong>
+<p><span class="successColor"><strong>
 您对包含订阅列表的电子邮件的请求已成功提交。</strong>
 <br>您应该很快会收到一封包含该列表的电子邮件。</span>
 ]]></subscriptionListSuccess>
@@ -4259,7 +4259,7 @@ ERDDAP 将立即检测该数据集何时再次可用。
 <br>如果您确实提供了一个 URL，ERDDAP 将只联系该 URL 并忽略响应。
 <br>因此，这可用于触发其他 Web 服务的某些操作。
 <br>要使用此功能，请输入百分比编码的 URL，例如
-<br> <kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>
+<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>
 ]]></subscriptionUrlHtml>
 <subscriptionUrlInvalid><![CDATA[
 URL/操作无效。它必须以&quot; http:// &quot;或&quot; https:// &quot;开头，百分比编码，
@@ -4305,10 +4305,10 @@ ERDDAP 主页的左侧。
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
 make it easier for you to get scientific data.-->
 
-<p> <strong>ERDDAP 统一了不同类型的数据服务器
+<p><strong>ERDDAP 统一了不同类型的数据服务器
 这样您就可以以一致的方式以所需的格式获取所需的数据。</strong>
 <ul>
-<li> ERDDAP 充当您和各种远程数据服务器之间的中间人。
+<li>ERDDAP 充当您和各种远程数据服务器之间的中间人。
 当您从 ERDDAP 请求数据时，
 ERDDAP 将请求重新格式化为远程服务器所需的格式，
 向远程服务器发送请求，获取数据，将数据重新格式化为
@@ -4316,20 +4316,20 @@ ERDDAP 将请求重新格式化为远程服务器所需的格式，
 您不再需要去不同的数据服务器才能从不同的数据集中获取数据。
 <br>&nbsp;
 
-<li> ERDDAP 提供了一种易于使用、一致的数据请求方式：通过OPeNDAP标准。
+<li>ERDDAP 提供了一种易于使用、一致的数据请求方式：通过OPeNDAP标准。
 &wmsManyDatasets;
 <br>&nbsp;
 
-<li> ERDDAP 以您选择的通用文件格式返回数据。
+<li>ERDDAP 以您选择的通用文件格式返回数据。
 ERDDAP 以 .html 表格、 ESRI .asc和 .csv、Google Earth .kml、
 的形式提供所有数据。 OPeNDAP二进制文件、 .mat、 .nc、 ODV .txt 、.csv、.tsv、 .nc和 .xhtml。
 因此，您不再需要浪费时间和精力重新格式化数据。
 <br>&nbsp;
 
-<li> ERDDAP 还可以返回带有自定义图形或地图的 .png 或 .pdf 图像。
+<li>ERDDAP 还可以返回带有自定义图形或地图的 .png 或 .pdf 图像。
 <br>&nbsp;
 
-<li> ERDDAP 将结果中的日期+时间标准化。
+<li>ERDDAP 将结果中的日期+时间标准化。
 来自其他数据服务器的数据很难比较
 因为日期+时间通常以不同的格式表示
 （例如， &quot; 2018 年 1 月 2 日&quot;、02-JAN-2018、1/2 /18、2/ 1/18、
@@ -4342,7 +4342,7 @@ ERDDAP 总是使用Zulu(UTC, GMT) 时区来消除困难
 &convertTimeReference;
 <br>&nbsp;
 
-<li> ERDDAP 有网页（对于有浏览器的人）和
+<li>ERDDAP 有网页（对于有浏览器的人）和
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;网络&nbsp;服务</a>
 （用于计算机程序）。
 您可以绕过 ERDDAP 的网页并使用 ERDDAP 的 RESTful 网络服务
@@ -4351,7 +4351,7 @@ ERDDAP 总是使用Zulu(UTC, GMT) 时区来消除困难
 甚至来自网页（通过 HTML 图像标签或 JavaScript）。
 您还可以在 ERDDAP 的网络服务
 之上构建其他有用和有趣的东西。 — 参见
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">了不起的ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">了不起的ERDDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 很棒的 ERDDAP 相关项目列表。
@@ -4626,40 +4626,40 @@ ERDDAP是一个数据服务器，它为您提供了一种简单、一致的方�
 
 <h2>目录</h2>
 <ul>
-<li> <a rel="bookmark" href="#problems">ERDDAP试图解决的问题</a>
-<li> <a rel="bookmark" href="#solutions">ERDDAP 的解决方案</a>
+<li><a rel="bookmark" href="#problems">ERDDAP试图解决的问题</a>
+<li><a rel="bookmark" href="#solutions">ERDDAP 的解决方案</a>
 <ul>
 <li><a rel="bookmark" href="#video">要快速了解ERDDAP，请观看本
 的前半部分。<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
 视频</a>。
 （5 分钟）
-<li> <a rel="bookmark" href="#localAndRemote">ERDDAP可以从本地（在服务器的硬盘上）和
+<li><a rel="bookmark" href="#localAndRemote">ERDDAP可以从本地（在服务器的硬盘上）和
 获取数据。远程（通过网络访问）数据源。</a>
-<li> <a rel="bookmark" href="#scientificData">ERDDAP可以提供多种类型的科学数据，而不仅仅是海洋数据。</a>
-<li> <a rel="bookmark" href="#search">ERDDAP提供了多种搜索有趣数据集的方法。</a>
-<li> <a rel="bookmark" href="#standardizedRequests">ERDDAP允许您以标准化方式请求数据。</a>
+<li><a rel="bookmark" href="#scientificData">ERDDAP可以提供多种类型的科学数据，而不仅仅是海洋数据。</a>
+<li><a rel="bookmark" href="#search">ERDDAP提供了多种搜索有趣数据集的方法。</a>
+<li><a rel="bookmark" href="#standardizedRequests">ERDDAP允许您以标准化方式请求数据。</a>
 <li><a rel="bookmark" href="#userUnits">网格数据的请求可以以用户为单位进行。</a>
-<li> <a rel="bookmark" href="#fileFormats">ERDDAP以通用数据文件格式发送结果。</a>
-<li> <a rel="bookmark" href="#LLAT">ERDDAP标准化了经度、纬度、
+<li><a rel="bookmark" href="#fileFormats">ERDDAP以通用数据文件格式发送结果。</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP标准化了经度、纬度、
 的变量名称和单位。结果中的高度和时间。</a>
-<li> <a rel="bookmark" href="#metadata">ERDDAP可以添加或修改元数据。</a>
-<li> <a rel="bookmark" href="#images">ERDDAP允许您请求带有图形和地图的 .png 和 .pdf 图像文件。</a>
+<li><a rel="bookmark" href="#metadata">ERDDAP可以添加或修改元数据。</a>
+<li><a rel="bookmark" href="#images">ERDDAP允许您请求带有图形和地图的 .png 和 .pdf 图像文件。</a>
 <li><a rel="bookmark" href="#compression">请求压缩文件</a>
-<li> <a rel="bookmark" href="#interoperable">ERDDAP制作不同类型的数据服务器
+<li><a rel="bookmark" href="#interoperable">ERDDAP制作不同类型的数据服务器
 （OPeNDAP、OBIS、 SOS、 WMS等）可互操作。</a>
-<li> <a rel="bookmark" href="#dataStructures">ERDDAP仅使用两种基本数据结构来保存数据。</a>
-<li> <a rel="bookmark" href="#subscriptions">ERDDAP提供电子邮件/URL 和RSS订阅服务。</a>
-<li> <a rel="bookmark" href="#diverseSources">ERDDAP是一个 Web 应用程序和一个 Web 服务。</a>
-<li> <a rel="bookmark" href="#rest">ERDDAP具有REST和ROA风格的链接，使其服务可用于
+<li><a rel="bookmark" href="#dataStructures">ERDDAP仅使用两种基本数据结构来保存数据。</a>
+<li><a rel="bookmark" href="#subscriptions">ERDDAP提供电子邮件/URL 和RSS订阅服务。</a>
+<li><a rel="bookmark" href="#diverseSources">ERDDAP是一个 Web 应用程序和一个 Web 服务。</a>
+<li><a rel="bookmark" href="#rest">ERDDAP具有REST和ROA风格的链接，使其服务可用于
 电脑程序。</a>
 <li><a rel="bookmark" href="#security">安全</a>
-<li> <a rel="bookmark" href="#chunks">ERDDAP以块的形式处理数据。</a>
-<li> <a rel="bookmark" href="#modular">ERDDAP具有模块化结构。</a>
+<li><a rel="bookmark" href="#chunks">ERDDAP以块的形式处理数据。</a>
+<li><a rel="bookmark" href="#modular">ERDDAP具有模块化结构。</a>
 <li><a rel="bookmark" href="#pushPull">数据发布/数据分配网络：<Push>技术</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP？OPeNDAP？DODS？ERDDAP？有什么不同？</a>
-<li> <a rel="bookmark" href="#sweetSpot">ERDDAP是不是解决了大家的数据分发/数据访问问题？</a>
-<li> <a rel="bookmark" href="#sustainable">ERDDAP项目的可持续性如何？</a>
+<li><a rel="bookmark" href="#sweetSpot">ERDDAP是不是解决了大家的数据分发/数据访问问题？</a>
+<li><a rel="bookmark" href="#sustainable">ERDDAP项目的可持续性如何？</a>
 <li><a rel="bookmark" href="#citeDataset">如何在论文中引用数据集</a>
 <li><a rel="bookmark" href="#cite">如何在论文中引用ERDDAP</a>
 <li><a rel="bookmark" href="#acronym">缩写&quot; ERDDAP &quot;代表什么？</a>
@@ -4706,16 +4706,16 @@ ERDDAP是一个数据服务器，它为您提供了一种简单、一致的方�
 <li>使用ERDDAP，您可以轻松<a href="#search">搜索数据集</a>，
 <a href="#images">可视化数据</a>，
 并<a href="#fileFormats">下载数据</a>。
-<li> ERDDAP可以从<a href="#localAndRemote">本地和远程数据源</a>获取数据
+<li>ERDDAP可以从<a href="#localAndRemote">本地和远程数据源</a>获取数据
 通过<a href="#standardizedRequests">标准化请求</a>。
-<li> ERDDAP提供<a href="#rest">RESTful 服务</a>。 URL 指定整个请求。
-<li> ERDDAP可以制作<a href="#images">地图和图表</a>。
-<li> ERDDAP提供<a href="#fileFormats">数据</a>（不仅仅是地图和图表）。
-<li> ERDDAP可以返回多种<a href="#fileFormats">文件格式的</a>数据
+<li>ERDDAP提供<a href="#rest">RESTful 服务</a>。 URL 指定整个请求。
+<li>ERDDAP可以制作<a href="#images">地图和图表</a>。
+<li>ERDDAP提供<a href="#fileFormats">数据</a>（不仅仅是地图和图表）。
+<li>ERDDAP可以返回多种<a href="#fileFormats">文件格式的</a>数据
 使数据能够进入许多其他程序。
-<li> NOAA 协同工作：分析使用来自 NOAA 的两个免费软件程序，
+<li>NOAA 协同工作：分析使用来自 NOAA 的两个免费软件程序，
 ERDDAP和GNOME，以及由 NOAA 的 NODC/NCDDC（由 NOAA 的 UAF 项目推动）提供的数据。
-<li> ERDDAP使<a href="#scientificData">科学数据</a>更容易获得
+<li>ERDDAP使<a href="#scientificData">科学数据</a>更容易获得
 帮助科学家（和其他人）更有效地开展工作。
 <li>使用ERDDAP并不难。 （是的，Rich Signell 非常聪明，但任何人都可以使用ERDDAP。）
 </ul>
@@ -4725,7 +4725,7 @@ ERDDAP和GNOME，以及由 NOAA 的 NODC/NCDDC（由 NOAA 的 UAF 项目推动�
 <br>&nbsp;
 
 
-<li> <strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP
+<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP
 可以从本地（在服务器的硬盘上）和
 获取数据。远程（通过网络访问）数据源。</a></strong>
 <br>参见
@@ -4734,9 +4734,9 @@ ERDDAP和GNOME，以及由 NOAA 的 NODC/NCDDC（由 NOAA 的 UAF 项目推动�
 ERDDAP可以访问。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP
+<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP
 可以提供多种类型的科学数据，而不仅仅是海洋数据。</a></strong>
-<br> ERDDAP是一个写在
+<br>ERDDAP是一个写在
 的数据服务器。 <a title="国家海洋和大气管理局" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="国家海洋渔业局" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="西南水产科学中心" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
@@ -4745,7 +4745,7 @@ ERD 的ERDDAP服务器提供海洋数据，
 但ERDDAP （程序）可以访问和提供任何网格或表格数据。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP
+<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP
 提供了几种搜索有趣数据集的方法。</a></strong>
 <br>例如，
 <a href="&erddapUrl;/search/index.html">全文搜索</a>，
@@ -4757,14 +4757,14 @@ ERD 的ERDDAP服务器提供海洋数据，
 因此您可以同时根据许多不同的条件搜索数据集。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP允许您以标准化的方式请求数据，</a></strong>
+<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP允许您以标准化的方式请求数据，</a></strong>
 <br>无论数据源的请求协议如何。
 <ul>
-<li> ERDDAP通过 griddap
+<li>ERDDAP通过 griddap
 使网格化数据可用。 （ERDDAP 对
 <a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP</a> hyperslab<a rel="help" href="&erddapUrl;/griddap/index.html">协议的实现</a>）
 和<a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> 。
-<li> ERDDAP通过tabledap
+<li>ERDDAP通过tabledap
 使表格数据可用。 （ERDDAP 的
 <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP约束协议的实现</a>）。
 <!--and
@@ -4773,10 +4773,10 @@ ERD 的ERDDAP服务器提供海洋数据，
     title="This link to an external website does not constitute an endorsement."></a>. -->
 </ul>
 ERDDAP还提供数据访问表单（网页），帮助人类创建OPeNDAP
-要求。 <a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+要求。 <a rel="bookmark" href="https://www.opendap.org">OPeNDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
-<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">数据访问协议 (DAP) <img 
+<a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">数据访问协议 (DAP)<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 是
@@ -4800,7 +4800,7 @@ ERDDAP将您的请求从OPeNDAP、 WMS或SOS格式转换为数据源的
 和
 的列表<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap文件类型</a>。
 用于请求数据的其他协议（例如，
-<a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
+<a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> )
 将来可能会添加。
@@ -4816,7 +4816,7 @@ ERDDAP是为这些添加而构建的，似乎没有任何障碍。
 不是指数。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP以通用数据文件格式发送结果。</a></strong>
+<li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP以通用数据文件格式发送结果。</a></strong>
 <br>结果可以以几种常见数据文件格式中的任何一种返回
 &resultsFormatExamplesHtml;,
 而不仅仅是原始格式或OPeNDAP传输格式（没有
@@ -4827,7 +4827,7 @@ ERDDAP是为这些添加而构建的，似乎没有任何障碍。
 和<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">表文件类型</a>。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP标准化了经度、纬度、高度、
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP标准化了经度、纬度、高度、
 的变量名称和单位。结果中的深度和时间。</a></strong>
 <br>为了便于比较来自不同数据集的数据， ERDDAP
 的请求和结果。使用标准化的空间/时间轴单位：
@@ -4875,7 +4875,7 @@ ERDDAP了解每个数据集的地理/时间特征。
 
 <p>书写度量单位的两个常见标准是：
 <ul>
-<li> <a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 - 来自
@@ -4883,30 +4883,30 @@ ERDDAP了解每个数据集的地理/时间特征。
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> ,
 用于
-<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
+<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> , 和
-<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
+<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 数据文件。例如，
 UDUNITS有很多关于摄氏度的选项，包括&quot; degree_C &quot;和&quot; degC &quot;。
 <br>&nbsp;
-<li> <a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
+<li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 - 计量单位统一代码。
-<a rel="bookmark" href="https://www.ogc.org/">OGC <img 
+<a rel="bookmark" href="https://www.ogc.org/">OGC<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 服务，例如
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> ,
-<a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
+<a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> , 和
 <a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
@@ -4928,7 +4928,7 @@ UDUNITS有很多关于摄氏度的选项，包括&quot; degree_C &quot;和&quot;
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">更多信息</a>
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP可以添加或修改元数据。</a></strong>
+<li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP可以添加或修改元数据。</a></strong>
 <br>许多数据源很少或没有
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元数据<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4946,7 +4946,7 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">管理员说明</a>。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="images" href="#images" rel="bookmark"
+<li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
     >ERDDAP允许您请求带有图形和地图的 .png 和 .pdf 图像文件</a></strong>
 <br>除了实际数据之外的数据。 ERDDAP 的 Make A Graph 可让您自定义图像。
 这些图像的一些特殊用途是：
@@ -4962,7 +4962,7 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 </ul>
 
 <li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">请求压缩文件</a></strong>
-<br> ERDDAP不提供存储在压缩（例如，.zip 或 .gzip）文件中的结果
+<br>ERDDAP不提供存储在压缩（例如，.zip 或 .gzip）文件中的结果
 除非源文件已经被压缩。
 相反， ERDDAP寻找
 <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
@@ -4983,7 +4983,7 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 请求压缩响应并自动解压缩它。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP
+<li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP
 使不同类型的数据服务器（OPeNDAP、OBIS、 SOS、 WMS等）可互操作。</a></strong>
 <br>不同类型的数据服务器用于不同的科学界。
 在可预见的未来，任何一种类型都不太可能成为主导和
@@ -4991,19 +4991,19 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 之间的桥梁。客户端程序（Web 浏览器、IDV、Matlab、netCDF 程序、ODV、 WMS客户端等）
 以及不同类型的数据服务器。
 <ol>
-<li> ERDDAP接受客户端对不同格式（例如OPeNDAP、 WMS）数据的请求。
-<li> ERDDAP将给定的请求转换为源数据服务器使用的请求格式
+<li>ERDDAP接受客户端对不同格式（例如OPeNDAP、 WMS）数据的请求。
+<li>ERDDAP将给定的请求转换为源数据服务器使用的请求格式
 （例如， OPeNDAP、 SOS、 OBIS 等）并将其发送到源数据服务器。
-<li> ERDDAP将来自源数据服务器的响应数据转换为内部格式，
+<li>ERDDAP将来自源数据服务器的响应数据转换为内部格式，
 包括将所有时间数据转换为通用格式： "seconds since 1970-01-01T00:00:00Z"。
-<li> ERDDAP将数据从内部格式转换为客户端请求的文件格式
+<li>ERDDAP将数据从内部格式转换为客户端请求的文件格式
 （例如，.csv、Google Earth .kml、.htmlTable、.dods、 .mat、 .nc、 ODV .txt、.png）。
 </ol>
 客户端不必担心或知道源数据服务器的类型。
 他们只是以他们想要的文件格式获取他们想要的数据。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP仅使用两种基本数据结构来保存数据。</a></strong>
+<li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP仅使用两种基本数据结构来保存数据。</a></strong>
 <ul>
 <li>由于人类客户端和计算机客户端很难处理一组复杂的
 对于可能的数据集结构， ERDDAP只使用两种基本数据结构：
@@ -5048,21 +5048,21 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 </ul>
 
 
-<li> <strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP提供</a>
+<li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP提供</a>
 <a rel="help" href="&erddapUrl;/subscriptions/index.html">电子邮件/URL</a>和
-<a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 订阅服务，</strong>
 这样您就可以在数据集发生变化时收到通知。
 <ul>
-<li> ERDDAP非常擅长检测网格数据集的变化，因为它可以检测
+<li>ERDDAP非常擅长检测网格数据集的变化，因为它可以检测
 当轴值（例如，时间值）改变时。
-<li> ERDDAP不太擅长检测表格数据集的变化，因为通常有
+<li>ERDDAP不太擅长检测表格数据集的变化，因为通常有
 添加新数据时，元数据不会发生变化。
-<li> ERDDAP将检测数据集是否变得不可用（但可能不会立即）。
-<li> ERDDAP将检测该数据集何时再次可用。
-<li> ERDDAP对这些服务的适用性或准确性不作任何承诺
+<li>ERDDAP将检测数据集是否变得不可用（但可能不会立即）。
+<li>ERDDAP将检测该数据集何时再次可用。
+<li>ERDDAP对这些服务的适用性或准确性不作任何承诺
 （参见<a rel="license" href="&erddapUrl;/legal.html">ERDDAP 的免责声明</a>）。
 </ul>
 
@@ -5081,7 +5081,7 @@ ERDDAP允许（并鼓励）管理员描述将添加的元数据
 （计算机程序员：如果您编写 Web 服务，则可以使用 URL 系统
 让ERDDAP在数据集更改时立即通知您的 Web 服务。）
 
-<p> <strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
+<p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 订阅</strong>
@@ -5113,7 +5113,7 @@ RSS XML 文档以查找更改。
 的大量不必要的请求。它仍然不会立即检测到变化。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP是一个</a>
+<li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP是一个</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">Web应用程序<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
@@ -5127,7 +5127,7 @@ RSS XML 文档以查找更改。
 然后提交给 ERDDAP 的网络服务。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP有</a>
+<li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP有</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> -
@@ -5162,7 +5162,7 @@ ERDDAP具有用于身份验证（登录）的内置方法。
 (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">更多信息</a>)
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP以块的形式处理数据。</a></strong>
+<li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP以块的形式处理数据。</a></strong>
 <br>为了节省内存（一个大问题）并使响应更快开始， ERDDAP处理
 数据块中的数据请求 — 重复从源
 获取数据块清理它（例如，添加
@@ -5177,8 +5177,8 @@ ERDDAP具有用于身份验证（登录）的内置方法。
 内存）。
 <br>&nbsp;
 
-<li> <strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP具有模块化结构。</a></strong>
-<br> ERDDAP的结构使得添加不同的组件很容易
+<li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP具有模块化结构。</a></strong>
+<br>ERDDAP的结构使得添加不同的组件很容易
 （例如，从SOS服务器请求数据并将其存储为表的类）。
 然后新组件获得父
 的所有特性和能力。 （例如，支持OPeNDAP请求并能够以多种
@@ -5223,7 +5223,7 @@ ERDDAP将自动创建和维护另一个 ERDDAP 数据集的本地副本。
 对于其他数据集。
 生成的网络大致类似于使用程序
 设置的数据分发网络。像
-<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata 的 IDD/IDM <img 
+<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata 的 IDD/IDM<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a> ,
 但结构不那么严格。
@@ -5232,17 +5232,17 @@ ERDDAP将自动创建和维护另一个 ERDDAP 数据集的本地副本。
 </ul>
 
 
-<p> <strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP？OPeNDAP？DODS？ERDDAP？有什么不同？</a></strong>
+<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP？OPeNDAP？DODS？ERDDAP？有什么不同？</a></strong>
 我（鲍勃）的理解是：
 
-<p> DODS （分布式海洋数据系统）创建于 1990 年代，
+<p>DODS （分布式海洋数据系统）创建于 1990 年代，
 在有 http: (!) 之前。 DODS系统创建并使用了互联网上的 dods: 协议。
 当 HTTP 出现并如此成功时，他们从 dods: 切换到 http:。
 
 <p>在某个时候，他们意识到该系统不仅对海洋数据有用。
 所以他们放弃了DODS名称（尽管它存在于某些代码中），
 成立了一个名为
-的小型组织。<a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
+的小型组织。<a rel="bookmark" href="https://www.opendap.org/">OPeNDAP<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 并编写了
@@ -5254,15 +5254,15 @@ ERDDAP将自动创建和维护另一个 ERDDAP 数据集的本地副本。
 OPeNDAP （组织）仍然牧养DAP （规范）并且是Hyrax （
 经常被错误地称为OPeNDAP的数据服务器）的作者。
 
-<p> Hyrax、THREDDS、GRADS、 ERDDAP等是实现DAP 的数据服务器（软件）。
+<p>Hyrax、THREDDS、GRADS、 ERDDAP等是实现DAP 的数据服务器（软件）。
 他们每个人都实现了DAP 的一个子集，但在其他方面却截然不同。
 
-<p> ERDDAP使用代码（在&quot; dods &quot;目录中）（实际上由 NASA JPL 的 Jake Hamby 编写）
+<p>ERDDAP使用代码（在&quot; dods &quot;目录中）（实际上由 NASA JPL 的 Jake Hamby 编写）
 用于从外部DAP服务器读取数据的一些功能。
 ERDDAP使用自己的代码写出DAP响应。
 <br>&nbsp;
 
-<p> <strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP是不是解决了大家的数据分发/数据访问问题？</a></strong>
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP是不是解决了大家的数据分发/数据访问问题？</a></strong>
 <br>不ERDDAP试图找到一个对大部分
 来说是一个很好的解决方案的最佳点。我们面临的数据分布问题。
 ERDDAP采用中间件方法：
@@ -5275,7 +5275,7 @@ ERDDAP采用中间件方法：
 还需要很长时间。对它，如果有的话。在那之前， ERDDAP现在可以用来制作其他数据服务器
 可互操作并立即提供数据。
 
-<p> <a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原样处理许多/大多数数据集，但不是全部。</a>
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原样处理许多/大多数数据集，但不是全部。</a>
 并不是剩下的数据集（例如，使用立方球体投影的模型数据）
 不重要。只是 ERDDAP 的目标是以常见的文件格式返回数据
 （其中一些非常简单），排除了更复杂的内部数据结构。
@@ -5308,8 +5308,8 @@ ERDDAP作为通用数据服务器，不会试图与这些专用数据服务器�
 
 
 <br>&nbsp;
-<p> <a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAP项目的可持续性如何？</strong></a>
-<br> ERDDAP是非常可持续的。
+<p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAP项目的可持续性如何？</strong></a>
+<br>ERDDAP是非常可持续的。
 <br>有些人听到ERDDAP主要是
 感到惊讶和失望。由一个人（我，Bob Simons）开发。
 [顺便说一下，这个网页上的意见是我个人的意见和
@@ -5344,21 +5344,21 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">下载、安�
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >至少有 14 个国家/地区的 85 个组织使用ERDDAP</a> 。也许有免费午餐这样的东西。
 
-<p> ERDDAP是一个 Java 程序。源代码
+<p>ERDDAP是一个 Java 程序。源代码
 对于每个版本都在
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/BobSimons">GitHub<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 最常用的协作系统
 软件项目。
 到目前为止，其他四个小组已经为ERDDAP贡献了代码：
 <ul>
-<li> <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
     >EDDGridFromMergeIRFiles.java</a>由
 编写和贡献； R.Tech Engineering
 的Jonathan Lafite 和 Philippe Makowski ； （许可证：受版权保护的开源）。谢谢乔纳森和菲利普！
 
-<li> <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
     >.dataTable (TableWriterDataTable.java)</a>由 NOAA
 的Roland Schweitzer 编写和贡献； （许可证：受版权保护的开源）。谢谢你，罗兰！
 
@@ -5402,7 +5402,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">但到目前为止我所有的答案都不是很重要。</a>
 只有一件事是真正重要的。只有一件事可以保证可持续性
 对于ERDDAP或任何软件项目： ERDDAP是
-<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">免费和开源软件 (FOSS) <img 
+<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">免费和开源软件 (FOSS)<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> .
 具体来说， ERDDAP使用
@@ -5465,9 +5465,9 @@ ERDDAP可以并且正在由一名主要开发人员（
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">总之，
 ERDDAP有两个最重要的可持续性特征：</a>
 <ol>
-<li> ERDDAP是一个小项目（小到足以由一个主要开发人员
+<li>ERDDAP是一个小项目（小到足以由一个主要开发人员
 在其他一些人的非官方协助下处理），因此它不需要大量资源。
-<li> ERDDAP是免费的开源软件，因此没有人可以阻止您或其他任何人
+<li>ERDDAP是免费的开源软件，因此没有人可以阻止您或其他任何人
 从致力于ERDDAP。
 </ol>
 我想不出更好的情况。
@@ -5485,7 +5485,7 @@ for ERDDAP development, please contact me. I am sure we can work something out.<
 对于您使用的每个数据集，请在
 查看数据集的元数据。 .html 页面底部的数据集属性结构部分
 对于数据集，例如
-<br> <a rel="help" 
+<br><a rel="help" 
     href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
     >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html</a> 。
 元数据有时包括数据集所需或建议的引文格式。
@@ -5500,7 +5500,7 @@ for ERDDAP development, please contact me. I am sure we can work something out.<
 如果数据集的元数据包含
 <a rel="help" 
     href="https://en.wikipedia.org/wiki/Digital_object_identifier"
-    >数字对象标识符 (DOI) <img 
+    >数字对象标识符 (DOI)<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ,
 请将其包含在您创建的引文中。
@@ -5508,16 +5508,16 @@ for ERDDAP development, please contact me. I am sure we can work something out.<
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">如何在论文中引用ERDDAP</a></strong>
 <br>如果你想在科学论文中引用ERDDAP本身，请使用类似
-的东西。<br> <kbd>
+的东西。<br><kbd>
 西蒙斯，RA ERDDAP。 https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亚州蒙特雷：NOAA/NMFS/SWFSC/ERD。</kbd>
 
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">缩写&quot; ERDDAP &quot;代表什么？</a></strong>
-<br> &quot; ERDDAP &quot;曾经是一个首字母缩写词，但它超出了最初的描述。
+<br>&quot; ERDDAP &quot;曾经是一个首字母缩写词，但它超出了最初的描述。
 现在，请把它想象成一个名字，而不是一个首字母缩略词。
 
 <br>&nbsp;
-<p> <strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">数据分发系统指南</a></strong>
-<br> Bob 对设计的意见
+<p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">数据分发系统指南</a></strong>
+<br>Bob 对设计的意见
 和评估数据分发系统可以找到
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">在这里</a>。
 
@@ -5546,7 +5546,7 @@ ERDDAP安装），请发送电子邮件给<kbd>bob dot simons at noaa dot gov</k
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">或者，
 您可以</a>通过访问
 <a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">加入ERDDAP Google 群组/邮件列表</a>。 <a rel="help"
-href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
+href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>
 并点击&quot;申请会员&quot;。
@@ -6805,10 +6805,10 @@ https://www.usgin.org
 <wcsLongDescriptionHtml><![CDATA[
 ERDDAP 的网络覆盖服务 (WCS) 允许您请求数据文件或带有网格数据的图像文件。
 <br><span class="warningColor"><strong>这是一项正在进行的实验性工作。</strong></span>
-<p> <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
+<p><a rel="help" href="https://www.ogc.org/standards/wcs">WCS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
-是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC) <img 
+是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC)<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 标准为&quot;访问地理空间
@@ -6834,11 +6834,11 @@ ERDDAP 的 Web 地图服务 (WMS) 允许您请求带有绘制在地图上的数�
 <a rel="help" href="https://www.ogc.org/standards/wms">WMS<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
-是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC) <img 
+是一个<a rel="bookmark" href="https://www.ogc.org/">开放地理空间联盟 (OGC)<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 和<a rel="help" href="https://www.iso.org/standard/32546.html"
-    >ISO (19128) <img 
+    >ISO (19128)<img 
         src="&erddapUrl;/images/external.png" alt=" (external link)" 
         title="此指向外部网站的链接不构成认可。"></a>
 &quot;
