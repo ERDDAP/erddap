@@ -686,6 +686,7 @@ public static boolean developmentMode = false;
         acceptEncodingHtml,
         filesDocumentation;
     public static String 
+        acronyms,
         addConstraints,
         addVarWhereAttName,
         addVarWhereAttValue,
@@ -851,6 +852,7 @@ public static boolean developmentMode = false;
         dasTitle,
         dataAccessNotAllowed,
         databaseUnableToConnect,
+        dataProviderFormShortDescription,
         disabled,
         distinctValuesTooltip,
         doWithGraphs,
@@ -1041,6 +1043,7 @@ public static boolean developmentMode = false;
         filesDescription,
         filesSort,
         filesWarning,
+        FIPSCountryCode,
         functions,
         functionTooltip,
         functionDistinctCheck,
@@ -1081,11 +1084,15 @@ public static boolean developmentMode = false;
         infoRequestForm,
         inotifyFix,
         inotifyFixCommands,
+        interpolate,
         justGenerateAndView,
         justGenerateAndViewTooltip,
         justGenerateAndViewUrl,
         justGenerateAndViewGraphUrlTooltip,
+        keywords_word,
+        langCode,
         legal,
+        legalNotices,
         license,
         listAll,
         listOfDatasets,
@@ -1455,13 +1462,16 @@ public static boolean developmentMode = false;
 
         tabledapVideoIntro,
         Then,
+        time,
         timeoutOtherRequests,
+        units,
         unknownDatasetID,
         unknownProtocol,
         unsupportedFileType,
         updateUrlsFrom[],
         updateUrlsTo[],
         updateUrlsSkipAttributes[],
+        variableNames,
         viewAllDatasetsHtml,
         waitThenTryAgain,
         warning,
@@ -2014,9 +2024,9 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         errorInMethod = "ERROR while reading messages.xml: ";
         ResourceBundle2 messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
 
-
         //read all the static Strings from messages.xml
         acceptEncodingHtml         = messages.getNotNothingString("acceptEncodingHtml",         errorInMethod);
+        acronyms                   = messages.getNotNothingString("acronyms", errorInMethod);
         addConstraints             = messages.getNotNothingString("addConstraints",             errorInMethod);
         addVarWhereAttName         = messages.getNotNothingString("addVarWhereAttName",         errorInMethod);
         addVarWhereAttValue        = messages.getNotNothingString("addVarWhereAttValue",        errorInMethod);
@@ -2199,6 +2209,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
         dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
         databaseUnableToConnect    = messages.getNotNothingString("databaseUnableToConnect",    errorInMethod);
+        dataProviderFormShortDescription = messages.getNotNothingString("dataProviderFormShortDescription", errorInMethod);
         disabled                   = messages.getNotNothingString("disabled",                   errorInMethod);
         distinctValuesTooltip      = messages.getNotNothingString("distinctValuesTooltip",      errorInMethod);
         doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
@@ -2477,6 +2488,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         filesDocumentation         = messages.getNotNothingString("filesDocumentation",         errorInMethod);
         filesSort                  = messages.getNotNothingString("filesSort",                  errorInMethod);
         filesWarning               = messages.getNotNothingString("filesWarning",               errorInMethod);
+        FIPSCountryCode            = messages.getNotNothingString("FIPSCountryCode",               errorInMethod);
         functions                  = messages.getNotNothingString("functions",                  errorInMethod);
         functionTooltip            = messages.getNotNothingString("functionTooltip",            errorInMethod);
         functionTooltip            = MessageFormat.format(functionTooltip, "distinct()");
@@ -2523,12 +2535,16 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         inotifyFix                 = messages.getNotNothingString("inotifyFix",                 errorInMethod);
         inotifyFixCommands         = messages.getNotNothingString("inotifyFixCommands",         errorInMethod);
         inotifyFix                 = MessageFormat.format(inotifyFix, inotifyFixCommands);
+        interpolate                = messages.getNotNothingString("interpolate",                errorInMethod);
         justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
         justGenerateAndViewTooltip = messages.getNotNothingString("justGenerateAndViewTooltip", errorInMethod);
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
         justGenerateAndViewGraphUrlTooltip = messages.getNotNothingString("justGenerateAndViewGraphUrlTooltip", errorInMethod);
+        keywords_word              = messages.getNotNothingString("keywords",                   errorInMethod);
+        langCode                   = messages.getNotNothingString("langCode",                   errorInMethod);
         legal                      = messages.getNotNothingString("legal",                      errorInMethod);
         legal                      =   getSetupEVString(setup, ev,"legal",                      legal); //optionally in setup.xml
+        legalNotices               = messages.getNotNothingString("legalNotices",               errorInMethod);
         legendTitle1               = messages.getString(          "legendTitle1",               "");
         legendTitle1               =   getSetupEVString(setup, ev,"legendTitle1",               legendTitle1); //optionally in setup.xml
         legendTitle2               = messages.getString(          "legendTitle2",               "");
@@ -2927,9 +2943,11 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
 
         tabledapVideoIntro         = messages.getNotNothingString("tabledapVideoIntro",         errorInMethod);
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
+        time                       = messages.getNotNothingString("time",                       errorInMethod);
         Then                       = messages.getNotNothingString("Then",                       errorInMethod);
         timeoutOtherRequests       = messages.getNotNothingString("timeoutOtherRequests",       errorInMethod);
 
+        units                      = messages.getNotNothingString("units",                      errorInMethod);
         unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
         unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
         unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
@@ -2944,6 +2962,8 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
 
         updateUrlsSkipAttributes   = StringArray.arrayFromCSV(
                                      messages.getNotNothingString("updateUrlsSkipAttributes",   errorInMethod));
+        
+        variableNames              = messages.getNotNothingString("variableNames",              errorInMethod);
         viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        errorInMethod);
         waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           errorInMethod);
         gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
@@ -2982,6 +3002,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
                 standardPrivacyPolicy      = getSetupEVString(setup, ev,  "standardPrivacyPolicy",      DEFAULT_standardPrivacyPolicy);
 
         DEFAULT_startHeadHtml              = messages.getNotNothingString("startHeadHtml5",           errorInMethod);
+        DEFAULT_startHeadHtml              = DEFAULT_startHeadHtml.replace("&langCode;", langCode);
                 startHeadHtml              = getSetupEVString(setup, ev,  "startHeadHtml5",           DEFAULT_startHeadHtml);
         DEFAULT_startBodyHtml              = messages.getNotNothingString("startBodyHtml5",           errorInMethod);
                 startBodyHtml              = getSetupEVString(setup, ev,  "startBodyHtml5",           DEFAULT_startBodyHtml);
