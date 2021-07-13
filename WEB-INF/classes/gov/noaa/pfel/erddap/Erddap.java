@@ -960,21 +960,21 @@ public class Erddap extends HttpServlet {
                     EDStatic.indexConverters + "</a></strong>\n" +
                 "<br>" + EDStatic.indexDescribeConverters + "\n" +
                 "<table class=\"erd commonBGColor\">\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\">Acronyms</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\">" + EDStatic.acronyms + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertOceanicAtmosphericAcronyms + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\">FIPS County Codes</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\">"+ EDStatic.FIPSCountryCode + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertFipsCounty + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\">Interpolate</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\">" + EDStatic.interpolate + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertInterpolate + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\">Keywords</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\">"+ EDStatic.keywords_word +"</a></td>\n" + 
                 "    <td>" + EDStatic.convertKeywords + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Time</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">" + EDStatic.time + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertTime + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">Units</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">" + EDStatic.units + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertUnits + "</td></tr>\n" +
                 "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/urls.html\">URLs</a></td>\n" + 
                 "    <td>" + EDStatic.convertURLs + "</td></tr>\n" +
-                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\">Variable Names</a></td>\n" + 
+                "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\">" + EDStatic.variableNames + "</a></td>\n" + 
                 "    <td>" + EDStatic.convertOceanicAtmosphericVariableNames + "</td></tr>\n" +
                 "</table>\n" + 
                 "\n");
@@ -1032,8 +1032,7 @@ public class Erddap extends HttpServlet {
                 "    <td>" + EDStatic.ssUsePlain + "</td></tr>\n" : "") +
                 (EDStatic.dataProviderFormActive?
                 "<tr><td><a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm.html\">Data Provider Form</a></td>\n" + 
-                "    <td>The Data Provider Form is for people who have data and want it to be served by this ERDDAP.\n" +
-                "      It collects basic information about the dataset and emails it to this ERDDAP's administrator.</td></tr>\n" : "") +
+                "    <td>" + EDStatic.dataProviderFormShortDescription + "</td></tr>\n" : "") +
                 "</table>\n\n");
 
             //end of table
@@ -1090,13 +1089,14 @@ public class Erddap extends HttpServlet {
             writer.write(
                 "<div class=\"standard_width\">\n" +
                 EDStatic.youAreHere(loggedInAs, "Legal Notices") +
-                "<a rel=\"bookmark\" href=\"#disclaimers\">Disclaimers</a> | " +
-                "<a rel=\"bookmark\" href=\"#privacyPolicy\">Privacy Policy</a> | " +
-                "<a rel=\"bookmark\" href=\"#dataLicenses\">Data Licenses</a> | " +
-                "<a rel=\"bookmark\" href=\"#contact\">Contact</a>\n" +
-                "\n" +
-                "<h2><a class=\"selfLink\" id=\"disclaimers\" href=\"#disclaimers\" rel=\"bookmark\">Disclaimers</a></h2>\n" +
-                "\n" +
+                EDStatic.legalNotices + "\n" +
+                // "<a rel=\"bookmark\" href=\"#disclaimers\">MODIFIED Disclaimers</a> | " +
+                // "<a rel=\"bookmark\" href=\"#privacyPolicy\">Privacy Policy</a> | " +
+                // "<a rel=\"bookmark\" href=\"#dataLicenses\">Data Licenses</a> | " +
+                // "<a rel=\"bookmark\" href=\"#contact\">Contact</a>\n" +
+                // "\n" +
+                // "<h2><a class=\"selfLink\" id=\"disclaimers\" href=\"#disclaimers\" rel=\"bookmark\">Disclaimers</a></h2>\n" +
+                // "\n" +
                 EDStatic.standardGeneralDisclaimer + "\n\n" +
                 EDStatic.legal(tErddapUrl));
 
@@ -14116,21 +14116,21 @@ writer.write(
                 EDStatic.convertHtml + "\n" +
                 //"<p>Options:\n" +
                 "<ul>\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\"><strong>Acronyms</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html\"><strong>" + EDStatic.acronyms + "</strong></a> - " + 
                     EDStatic.convertOceanicAtmosphericAcronyms + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><strong>FIPS County Codes</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><strong>"+ EDStatic.FIPSCountryCode + "</strong></a> - " + 
                     EDStatic.convertFipsCounty + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\"><strong>Interpolate</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/interpolate.html\"><strong>" + EDStatic.interpolate + "</strong></a> - " + 
                     EDStatic.convertInterpolate + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><strong>Keywords</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><strong>"+ EDStatic.keywords_word +"</strong></a> - " + 
                     EDStatic.convertKeywords + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\"><strong>Time</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\"><strong>" + EDStatic.time + "</strong></a> - " + 
                     EDStatic.convertTime + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"><strong>Units</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"><strong>" + EDStatic.units + "</strong></a> - " + 
                     EDStatic.convertUnits + "\n" +
                 "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/urls.html\"><strong>URLs</strong></a> - " + 
                     EDStatic.convertURLs + "\n" +
-                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\"><strong>Variable Names</strong></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericVariableNames.html\"><strong>" + EDStatic.variableNames + "</strong></a> - " + 
                     EDStatic.convertOceanicAtmosphericVariableNames + "\n" +
                 "</ul>\n");
         } catch (Throwable t) {
@@ -18671,7 +18671,7 @@ expected =
 "{\n" +
 "  \"@context\": \"http://schema.org\",\n" +
 "  \"@type\": \"Dataset\",\n" +
-"  \"name\": \"Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01°, 2002-present, Daily\",\n" +
+"  \"name\": \"Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01ï¿½, 2002-present, Daily\",\n" +
 "  \"headline\": \"jplMURSST41\",\n" +
 "  \"description\": \"This is a merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysi" +
 "s product from Jet Propulsion Laboratory (JPL). This daily, global, Multi-scale, Ultra-high Resolution (MUR) Se" +

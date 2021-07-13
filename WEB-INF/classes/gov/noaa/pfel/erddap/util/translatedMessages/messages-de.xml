@@ -4360,7 +4360,7 @@ Information.
 -->
 <startHeadHtml5><![CDATA[
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="&langCode;">
 <head>
 <meta charset="UTF-8">
 <title>ERDDAP</title>
@@ -4427,13 +4427,13 @@ Diese spezielle ERDDAP Installation enthält ozeanographische Daten
 <!--Sie können andere Dinge ändern, aber bitte behalten Sie &quot; ERDDAP, Version &erddapVersion; &quot; und
 diese Verweise auf die Haftungsausschlüsse und die Datenschutzrichtlinie.-->
 <endBodyHtml5><![CDATA[
-<div class="standard_width"> 
+<div class="standard_width">
 <br>&nbsp;
 <hr>
 ERDDAP, Version &erddapVersion;
-<br><a rel="license" href="&erddapUrl;/legal.html">Disclaimers</a> | 
-    <a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Privacy Policy</a> |
-    <a rel="bookmark" href="&erddapUrl;/legal.html#contact">Contact</a>
+<br><a rel="license" href="&erddapUrl;/legal.html">Haftungsausschlüsse</a> |
+<a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Datenschutz</a> |
+<a rel="bookmark" href="&erddapUrl;/legal.html#contact">Kontakt</a>
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
@@ -4445,9 +4445,10 @@ ERDDAP, Version &erddapVersion;
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
-</div> 
+</div>
 </body>
-]]></endBodyHtml5>
+]]>
+</endBodyHtml5>
 <subset>Teilmenge</subset>
 <subsetSelect>Wählen Sie eine Untermenge</subsetSelect>
 <subsetNMatching>Aktuelle Anzahl unterschiedlicher Kombinationen übereinstimmender Daten: {0}</subsetNMatching>
