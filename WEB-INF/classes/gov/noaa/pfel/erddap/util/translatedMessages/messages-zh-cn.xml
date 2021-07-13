@@ -3254,6 +3254,7 @@ URL 生成并发送到服务器。
 有关形成 URL 的更多信息，请单击<kbd>绕过此表单</kbd>链接
 查看 &protocolName;文档。
 ]]></justGenerateAndViewGraphUrlTooltip>
+<langCode>zh-cn</langCode>
 
 <!--这出现在一般免责声明之后的 erddap/legal.html 网页上。
 您可以用您自己的 HTML 替换任何 [standardParts]。
@@ -3265,7 +3266,6 @@ URL 生成并发送到服务器。
 [standardDataLicenses]
 [standardContact]
 ]]></legal>
-
 <!-- 地图图例的标题（如果您不想要 LegendTitle，则什么也没有）。
 在 ERD，我们不使用它。您可以使用legendTitle1 和/或legendTitle2（第二行）。
 对于 ERDDAP 的水平图例，legendTitle1 和 2 放在同一行上。
@@ -4424,7 +4424,7 @@ favicon.ico 是浏览器与您的网站相关联的图像。
 -->
 <startHeadHtml5><![CDATA[
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="&langCode;">
 <head>
 <meta charset="UTF-8">
 <title>ERDDAP</title>
@@ -4491,13 +4491,13 @@ ERDDAP 是一个数据服务器，它为您提供了一种简单、一致的方�
 <!--您可以更改其他内容，但请保留&quot; ERDDAP, Version &erddapVersion; &quot;和
 这些对免责声明和隐私政策的引用。-->
 <endBodyHtml5><![CDATA[
-<div class="standard_width"> 
+<div class="standard_width">
 <br>&nbsp;
 <hr>
-ERDDAP, Version &erddapVersion;
-<br><a rel="license" href="&erddapUrl;/legal.html">Disclaimers</a> | 
-    <a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Privacy Policy</a> |
-    <a rel="bookmark" href="&erddapUrl;/legal.html#contact">Contact</a>
+ERDDAP, 版本 &erddapVersion;
+<br><a rel="license" href="&erddapUrl;/legal.html">免责声明</a>|
+<a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">隐私政策</a>|
+<a rel="bookmark" href="&erddapUrl;/legal.html#contact">联系</a>
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
@@ -4509,7 +4509,7 @@ ERDDAP, Version &erddapVersion;
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
-</div> 
+</div>
 </body>
 ]]></endBodyHtml5>
 <subset>子集</subset>

@@ -412,6 +412,24 @@ public class translate {
             currAmpIndex = sb.indexOf("&", currAmpIndex + 1);
             originalAmpIndex = original.indexOf("&", originalAmpIndex + 1);
         }
+        //remove the extra spaces around &quot;'s
+        int quotCount = 0;
+        int quotIndex = sb.indexOf("&quot;");
+        while (quotIndex != -1) {
+            if (quotCount % 2 == 0) {
+                //first quote in quote pairs
+                if (sb.substring(quotIndex, quotIndex + 7).equals("&quot; ")) {
+                    sb.replace(quotIndex, quotIndex + 7, "&quot;");
+                }
+            } else {
+                //second quote in quote pairs
+                if (sb.substring(quotIndex - 1, quotIndex + 6).equals(" &quot;")) {
+                    sb.replace(quotIndex - 1, quotIndex + 6, "&quot;");
+                }
+            }
+            quotIndex = sb.indexOf("&quot;", quotIndex + 1);
+            quotCount++;
+        }
         //deal with message format issues
         res = sb.toString();
         if (messageFormat) {
