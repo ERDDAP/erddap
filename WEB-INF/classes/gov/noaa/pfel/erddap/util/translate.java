@@ -167,15 +167,17 @@ public class translate {
                         } else {
                             fileWriters[j].write(translateTag(toTranslate, languageCodeList[j], html, messageFormat));
                         }
-                        //after writing the translated content, we write the <tag>
-                        fileWriters[j].write("<" + tagName + ">");
-                        if (xmlReader.isEndTag()) {
-                            // if the tag is an end tag, we add a new line charcater at the end of the tag
-                            //myWriter.write("\n");
-                            fileWriters[j].write("\n"); 
-                        }
                     }
-                }   
+                }
+                //after writing the translated content, we write <tagName>
+                for (int j = 0; j < languageCodeList.length; j++) {
+                    fileWriters[j].write("<" + tagName + ">");
+                    if (xmlReader.isEndTag()) {
+                        // if the tag is an end tag, we add a new line charcater at the end of the tag
+                        //myWriter.write("\n");
+                        fileWriters[j].write("\n"); 
+                    }
+                }
                 // breaks the loop at the end of xml file
                 if (xmlReader.allTags().length() == 0) {
                     break;
