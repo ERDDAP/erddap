@@ -163,7 +163,7 @@ public class translate {
                     for (int j = 0; j < translated.length; j++) {
                         translated[j] = !translatedTagMaps[j].getOrDefault(tagName, "DNE").equals("DNE");
                         if (!modified && translated[j]) {
-                            fileWriters[j].write(previousMessageMap.get(tagName));
+                            fileWriters[j].write(translatedTagMaps[j].get(tagName));
                         } else {
                             fileWriters[j].write(translateTag(toTranslate, languageCodeList[j], html, messageFormat));
                         }
