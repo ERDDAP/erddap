@@ -1981,14 +1981,18 @@ public class Erddap extends HttpServlet {
         String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
         Writer writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form", out);
-
+        String dataProviderFormLongDescriptionHTML = EDStatic.dataProviderFormLongDescriptionHTML
+            .replaceAll("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+            .replaceAll("&htmlTooltipImage;", EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dataProviderFormSuccess))
+            .replaceAll("&tErddapUrl;", tErddapUrl);
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
                 EDStatic.youAreHere(tLoggedInAs, "Data Provider Form"));
 
 //begin text
-writer.write(
+writer.write(dataProviderFormLongDescriptionHTML
+/*
 "This Data Provider Form is for people who have data and want it to be served by this ERDDAP.\n" +
 "The overview of the process is:\n" +
 "<ol>\n" +
@@ -2050,7 +2054,8 @@ writer.write(
 
 "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html\"\n" +
 "><span style=\"font-size:xx-large; line-height:130%;\"><strong>Click Here for Part 1 (of 4) of the\n" +
-"<br>Data Provider Form</strong></span></a>\n");
+"<br>Data Provider Form</strong></span></a>\n"
+*/);
 
         
         } catch (Throwable t) {
@@ -2127,8 +2132,9 @@ writer.write(
             frequencyOption = HtmlWidgets.validate0ToMax(
                 "Frequency", 0, frequencyOption, frequencyOptions.length - 1, errorMsgSB);
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, 
-                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                    //"<br>Please fix these problems, then 'Submit' this part of the form again.\n"
+                    );
 
             String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
 
@@ -2191,12 +2197,16 @@ writer.write(
                 "\n");
 
 //begin text
-writer.write(
+String dataProviderFormPart1 = EDStatic.dataProviderFormPart1
+    .replaceAll("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+writer.write(dataProviderFormPart1
+/*
 "This is part 1 (of 4) of the Data Provider Form.\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
-"\n");
+"\n"
+*/);
 
 //error message?
 if (isSubmission && errorMsgSB.length() > 0) 
@@ -2204,7 +2214,14 @@ writer.write("<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> 
     "<br>&nbsp;\n");
 
 //Contact Info
-writer.write(
+String dataProviderContactInfo = EDStatic.dataProviderContactInfo
+            .replace("&widgetYourName;", widgets.textField("yourName", "", //tooltip
+            30, 50, tYourName, ""))
+            .replace("&widgetEmail;", widgets.textField("emailAddress", "", //tooltip
+            30, 50, tEmailAddress, ""))
+            .replace("&tTimestamp;", tTimestamp);
+writer.write(dataProviderContactInfo
+/*
 "<h2>Your Contact Information</h2>\n" +
 "This will be used by the ERDDAP administrator to contact you.\n" +
 "This won't go in the dataset's metadata or be made public.\n" +
@@ -2215,10 +2232,16 @@ widgets.textField("yourName", "", //tooltip
 widgets.textField("emailAddress", "", //tooltip
     30, 50, tEmailAddress, "") +
 "  <br>This dataset submission's timestamp is " + tTimestamp + ".\n" + 
-"\n");
-
+"\n"
+*/);
+String dataProviderData = EDStatic.dataProviderData
+            .replaceAll("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+            .replace("&widgetGriddedOptions;", widgets.select("griddedOption", "", 1, griddedOptions, griddedOption, ""))
+            .replace("&widgetTabularOption;" ,widgets.select("tabularOption", "", 1, tabularOptions, tabularOption, ""))
+            .replace("&widgetsFrequencyOption;", widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, ""));
 //The Data
-writer.write(
+writer.write(dataProviderData
+/*
 "<h2>The Data</h2>\n" +
 "ERDDAP deals with a dataset in one of two ways: as gridded data or as tabular data.\n" +
 
@@ -2280,15 +2303,21 @@ widgets.select("tabularOption", "", 1, tabularOptions, tabularOption, "") +
 "<br>How often will this data be changed?\n" +
 widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") +
 "<br>&nbsp;\n" +
-"\n");
+"\n"
+*/);
 
 //Submit
-writer.write(
+writer.write(EDStatic.dfs_submit
+        .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
+        .replace("&partNumber;", "1")
+        .replace("&partNumber;", "2")
+/*
 "<h2>Finished with part 1?</h2>\n" + 
 "Click\n" + 
 widgets.button("submit", "Submit", "", "Submit", "") +
 "to send this information to the ERDDAP administrator and move on to part 2 (of 4).\n" +
-"\n");
+"\n"
+*/);
 
 //end form
 writer.write(widgets.endForm());        
@@ -2333,7 +2362,8 @@ writer.write(widgets.endForm());
             int defaultCdmDataType = String2.indexOf(cdmDataTypes, "Other");
             int tCdmDataType = String2.indexOf(cdmDataTypes, 
                 request.getParameter("cdm_data_type"));
-            String cdmDataTypeHelp =                 
+            String cdmDataTypeHelp = EDStatic.cdmDataTypeHelp;
+            /*      
 "CDM is Unidata's Common Data Model, a way of categorizing datasets" +
 "<br>based on the geometry of the dataset. Pick the cdm_data_type which" +
 "<br>is most appropriate:" +
@@ -2356,7 +2386,7 @@ writer.write(widgets.endForm());
 "<br>&bull; Use <kbd>Other</kbd> if the dataset doesn't have latitude,longitude data or if" +
 "<br>&nbsp;&nbsp;no other type is appropriate." +
 "<br>&nbsp;&nbsp;Examples: laboratory analyses, or fish landings by port name (if no lat,lon).";
-
+*/
             String creatorTypes[] = {
                 "person",
                 "group", 
@@ -2418,7 +2448,8 @@ writer.write(widgets.endForm());
             tComment        = HtmlWidgets.validateNotTooLong("comment",                  "", tComment,          350, errorMsgSB);
             if (errorMsgSB.length() > 0)
                 errorMsgSB.insert(0, 
-                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+                //"<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+                    EDStatic.dfs_fixProblem);
 
             String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
 
@@ -2517,13 +2548,18 @@ writer.write(widgets.endForm());
                 "\n");
 
 //begin text
-writer.write(
+String dataProviderFormPart2Header = EDStatic.dataProviderFormPart2Header
+            .replace("&fromInfo;",  XML.encodeAsHTML(fromInfo))
+            .replace("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)));
+writer.write(dataProviderFormPart2Header
+    /*
 "This is part 2 (of 4) of the Data Provider Form\n" +
 "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
 "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
 "<br>&nbsp;\n" +
-"\n");
+"\n"
+*/);
 
 //error message?
 if (isSubmission && errorMsgSB.length() > 0) 
@@ -2531,7 +2567,8 @@ writer.write("<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> 
     "<br>&nbsp;\n");
 
 //Global Metadata
-writer.write(
+writer.write(EDStatic.dataProviderFormPart2GlobalMetadata
+/*
 "<h2>Global Metadata</h2>\n" +
 "Global metadata is information about the entire dataset. It is a set of\n" +
 "<kbd>attribute=value</kbd> pairs, for example,\n" +
@@ -2539,92 +2576,104 @@ writer.write(
 "<p>.nc files &mdash; If your data is in .nc files that already have some metadata,\n" +
 "just provide the information below for attributes that aren't in your files\n" +
 "or where you want to change the attribute's value.\n" +
-"\n");
+"\n"
+*/);
 
 writer.write(
 "<br>" + widgets.beginTable("class=\"compact\"") +
 //Required
 "<tr>\n" +
-"  <td colspan=\"3\"><strong>Required</strong>\n" + 
+"  <td colspan=\"3\"><strong>" + EDStatic.dpf_required + "</strong>\n" + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>title\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-     "This is a short (&lt;=80 characters) description of the dataset. For example," + 
-"    <br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_title + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_titleTooltip
+//      "This is a short (&lt;=80 characters) description of the dataset. For example," + 
+// "    <br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>"
+) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("title", "", dpfTFWidth, 140, tTitle, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>summary\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is a paragraph describing the dataset.  (&lt;=500 characters)" + 
-    "<br>The summary should answer these questions:" +
-    "<br>&bull; Who created the dataset?" +
-    "<br>&bull; What information was collected?" +
-    "<br>&bull; When was the data collected?" +
-    "<br>&bull; Where was it collected?" +
-    "<br>&bull; Why was it collected?" +
-    "<br>&bull; How was it collected?") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_summary + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_summaryTooltip
+    // "This is a paragraph describing the dataset.  (&lt;=500 characters)" + 
+    // "<br>The summary should answer these questions:" +
+    // "<br>&bull; Who created the dataset?" +
+    // "<br>&bull; What information was collected?" +
+    // "<br>&bull; When was the data collected?" +
+    // "<br>&bull; Where was it collected?" +
+    // "<br>&bull; Why was it collected?" +
+    // "<br>&bull; How was it collected?"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"summary\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\">" +
 XML.encodeAsHTML(tSummary) + //encoding is important for security
 "</textarea>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>creator_name\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is the name of the primary person, group, institution," +
-    "<br>or position that created the data. For example," + 
-    "<br><kbd>John Smith</kbd>") + "&nbsp;" +
+"  <td>" + EDStatic.dpf_creatorName + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_creatorNameTooltip
+    // "This is the name of the primary person, group, institution," +
+    // "<br>or position that created the data. For example," + 
+    // "<br><kbd>John Smith</kbd>"
+    ) + "&nbsp;" +
 "  <td>\n" + 
 widgets.textField("creator_name", "", 40, 80, tCreatorName, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>creator_type\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This identifies the creator_name (above) as a person," +
-    "<br>group, institution, or position.") + "&nbsp;" + 
+"  <td>" + EDStatic.dpf_creatorType + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_creatorTypeTooltip
+    // "This identifies the creator_name (above) as a person," +
+    // "<br>group, institution, or position."
+    ) + "&nbsp;" + 
 "  <td>\n" + 
 widgets.select("creator_type", "", 1, creatorTypes, tCreatorType, "") +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>creator_email\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is the best contact email address for the creator of this data." +
-    "<br>Use your judgment &mdash; the creator_email might be for a" +
-    "<br>different entity than the creator_name." + 
-    "<br>For example, <kbd>your.name@yourOrganization.org</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_creatorEmail + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_creatorEmailTooltip
+    // "This is the best contact email address for the creator of this data." +
+    // "<br>Use your judgment &mdash; the creator_email might be for a" +
+    // "<br>different entity than the creator_name." + 
+    // "<br>For example, <kbd>your.name@yourOrganization.org</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("creator_email", "", 40, 60, tCreatorEmail, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>institution\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is the short/abbreviated form of the name of the primary" +
-    "<br>organization that created the data. For example," + 
-    "<br><kbd>NOAA NMFS SWFSC</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_institution + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_institutionTooltip
+    // "This is the short/abbreviated form of the name of the primary" +
+    // "<br>organization that created the data. For example," + 
+    // "<br><kbd>NOAA NMFS SWFSC</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("institution", "", 40, 120, tInstitution, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>infoUrl\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is a URL with information about this dataset." +
-    "<br>For example, <kbd>http://spray.ucsd.edu</kbd>" + 
-    "<br>If there is no URL related to the dataset, provide" +
-    "<br>a URL for the group or organization.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_infoUrl + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_infoUrlTooltip
+    // "This is a URL with information about this dataset." +
+    // "<br>For example, <kbd>http://spray.ucsd.edu</kbd>" + 
+    // "<br>If there is no URL related to the dataset, provide" +
+    // "<br>a URL for the group or organization."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("infoUrl", "", dpfTFWidth, 200, tInfoUrl, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>license\n" + 
+"  <td>" + EDStatic.dpf_license + "\n" + 
 "  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is the license and disclaimer for use of this data." +
-    "<br>ERDDAP has a standard license, which you can use via <kbd>[standard]</kbd>" +
-    "<br>You can either add to that or replace it. (&lt;=500 characters)" +
-    "<br>The text of the standard license is:" +
-    "<br><kbd>" + String2.replaceAll(EDStatic.standardLicense, "\n", "<br>") +
-    "</kbd>") + "&nbsp;\n" +
+    EDStatic.dpf_licenseTooltip
+        .replace("&standardLicense;", String2.replaceAll(EDStatic.standardLicense, "\n", "<br>"))
+        .replace("&kstandard;", "<kbd>[standard]</kbd>")
+    // "This is the license and disclaimer for use of this data." +
+    // "<br>ERDDAP has a standard license, which you can use via <kbd>[standard]</kbd>" +
+    // "<br>You can either add to that or replace it. (&lt;=500 characters)" +
+    // "<br>The text of the standard license is:" +
+    // "<br><kbd>" + String2.replaceAll(EDStatic.standardLicense, "\n", "<br>") +
+    // "</kbd>"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"license\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
 XML.encodeAsHTML(tLicense) +  //encoding is important for security
 "</textarea>\n" +
@@ -2642,86 +2691,93 @@ widgets.select("cdm_data_type", "", 1, cdmDataTypes, tCdmDataType, "") +
 "</tr>\n" +
 //Optional
 "<tr>\n" +
-"  <td><strong>Optional</strong>\n" +
+"  <td><strong>" + EDStatic.dpf_optional + "</strong>\n" +
 "  <td>&nbsp;\n" +
-"  <td>(Please provide the information if it is available for your dataset.)\n" + 
+"  <td>(" + EDStatic.dpf_provideIfAvaliable + ")\n" + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>acknowledgement\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is the place to acknowledge various types of support for" +
-    "<br>the project that produced this data. (&lt;=350 characters) For example," +
-    "<br><kbd>This project received additional funding from the NOAA" +
-    "<br>Climate and Global Change Program.</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_acknowledgement + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_acknowledgementTooltip
+    // "Optional: This is the place to acknowledge various types of support for" +
+    // "<br>the project that produced this data. (&lt;=350 characters) For example," +
+    // "<br><kbd>This project received additional funding from the NOAA" +
+    // "<br>Climate and Global Change Program.</kbd>"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"acknowledgement\" cols=\"" + dpfTAWidth + "\" rows=\"4\" maxlength=\"350\" wrap=\"soft\" >" +
 XML.encodeAsHTML(tAcknowledgement) +  //encoding is important for security
 "</textarea>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>history\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is a list of the actions (one per line) which led to the creation of this data." +
-    "<br>Ideally, each line includes a timestamp and a description of the action. (&lt;=500 characters) For example," + 
-    "<br><kbd>Datafiles are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/MODISA/L3SMI/ to NOAA NMFS SWFSC ERD." +
-    "<br>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add the time dimension and slightly modify the metadata.</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_history + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_historyTooltip
+    // "Optional: This is a list of the actions (one per line) which led to the creation of this data." +
+    // "<br>Ideally, each line includes a timestamp and a description of the action. (&lt;=500 characters) For example," + 
+    // "<br><kbd>Datafiles are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/MODISA/L3SMI/ to NOAA NMFS SWFSC ERD." +
+    // "<br>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add the time dimension and slightly modify the metadata.</kbd>"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"history\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
 XML.encodeAsHTML(tHistory) +  //encoding is important for security
 "</textarea>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "  <td>id\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is an identifier for the dataset, as provided by" +
-    "<br>its naming authority. The combination of \"naming authority\"" +
-    "<br>and the \"id\" should be globally unique, but the id can be" +
-    "<br>globally unique by itself also. IDs can be URLs, URNs, DOIs," +
-    "<br>meaningful text strings, a local key, or any other unique" +
-    "<br>string of characters. The id should not include white space" +
-    "<br>characters." +
-    "<br>For example, <kbd>CMC0.2deg-CMC-L4-GLOB-v2.0</kbd>") + "&nbsp;\n" +
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_idTooltip
+    // "Optional: This is an identifier for the dataset, as provided by" +
+    // "<br>its naming authority. The combination of \"naming authority\"" +
+    // "<br>and the \"id\" should be globally unique, but the id can be" +
+    // "<br>globally unique by itself also. IDs can be URLs, URNs, DOIs," +
+    // "<br>meaningful text strings, a local key, or any other unique" +
+    // "<br>string of characters. The id should not include white space" +
+    // "<br>characters." +
+    // "<br>For example, <kbd>CMC0.2deg-CMC-L4-GLOB-v2.0</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("id", "", 40, 80, tID, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>naming_authority\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is the organization that provided the id (above) for the dataset." +
-    "<br>The naming authority should be uniquely specified by this attribute." +
-    "<br>We recommend using reverse-DNS naming for the naming authority;" +
-    "<br>URIs are also acceptable." +
-    "<br>For example, <kbd>org.ghrsst</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_namingAuthority + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_namingAuthorityTooltip
+    // "Optional: This is the organization that provided the id (above) for the dataset." +
+    // "<br>The naming authority should be uniquely specified by this attribute." +
+    // "<br>We recommend using reverse-DNS naming for the naming authority;" +
+    // "<br>URIs are also acceptable." +
+    // "<br>For example, <kbd>org.ghrsst</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("naming_authority", "", dpfTFWidth, 160, tNamingAuthority, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>product_version\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is the version identifier of this data. For example, if you" +
-    "<br>plan to add new data yearly, you might use the year as the version identifier." +
-    "<br>For example, <kbd>2014</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_productVersion + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_productVersionTooltip
+    // "Optional: This is the version identifier of this data. For example, if you" +
+    // "<br>plan to add new data yearly, you might use the year as the version identifier." +
+    // "<br>For example, <kbd>2014</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("product_version", "", 20, 80, tProductVersion, "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>references\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is one or more published or web-based references" +
-    "<br>that describe the data or methods used to produce it. URL's and" +
-    "<br>DOI's are recommend. (&lt;=500 characters) For example,\n" +
-    "<br><kbd>Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a" +
-    "<br>algorithms for oligotrophic oceans: A novel approach" +
-    "<br>based on three-band reflectance difference, J. Geophys." +
-    "<br>Res., 117, C01011, doi:10.1029/2011JC007395.</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_references + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_referencesTooltip
+    // "Optional: This is one or more published or web-based references" +
+    // "<br>that describe the data or methods used to produce it. URL's and" +
+    // "<br>DOI's are recommend. (&lt;=500 characters) For example,\n" +
+    // "<br><kbd>Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a" +
+    // "<br>algorithms for oligotrophic oceans: A novel approach" +
+    // "<br>based on three-band reflectance difference, J. Geophys." +
+    // "<br>Res., 117, C01011, doi:10.1029/2011JC007395.</kbd>"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"references\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\" >" +
 XML.encodeAsHTML(tReferences) +  //encoding is important for security
 "</textarea>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>comment\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is miscellaneous information about the data, not" +
-    "<br>captured elsewhere. (&lt;=350 characters) For example," +
-    "<br><kbd>No animals were harmed during the collection of this data.</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_comment + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_commentTooltip
+    // "Optional: This is miscellaneous information about the data, not" +
+    // "<br>captured elsewhere. (&lt;=350 characters) For example," +
+    // "<br><kbd>No animals were harmed during the collection of this data.</kbd>"
+    ) + "&nbsp;\n" +
 "  <td><textarea name=\"comment\" cols=\"" + dpfTAWidth + "\" rows=\"4\" maxlength=\"350\" wrap=\"soft\" >" +
 XML.encodeAsHTML(tComment) +  //encoding is important for security
 "</textarea>\n" +
@@ -2736,11 +2792,16 @@ XML.encodeAsHTML(tComment) +  //encoding is important for security
 
 //Submit
 writer.write(
-"<h2>Finished with part 2?</h2>\n" + 
-"Click\n" + 
-widgets.button("submit", "Submit", "", "Submit", "") +
-"to send this information to the ERDDAP administrator and move on to part 3 (of 4).\n" +
-"\n");
+    EDStatic.dfs_submit
+        .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
+        .replace("&partNumber;", "2")
+        .replace("&partNumber;", "3")
+// "<h2>Finished with part 2?</h2>\n" + 
+// "Click\n" + 
+// widgets.button("submit", "Submit", "", "Submit", "") +
+// "to send this information to the ERDDAP administrator and move on to part 3 (of 4).\n" +
+// "\n"
+);
         
 //end form
 writer.write(widgets.endForm());        
@@ -2784,35 +2845,53 @@ writer.write(widgets.endForm());
             
             String dataTypeOptions[] = {"(unknown)", 
                 "String", "boolean", "byte",  "short", "int", "long", "float", "double"};
-            String dataTypeHelp = 
-                "This is the data type and precision of this variable." +
-                "<br>If the data file uses a specific type (for example, in a .nc file)," +
-                "<br>&nbsp;&nbsp;specify that type here." +
-                "<br>If the data file doesn't use a specific type (for example, in a .csv file)," +
-                "<br>&nbsp;&nbsp;specify the type that should be used in ERDDAP." +
-                "<br>&bull; Use <kbd>(unknown)</kbd> if you don't know." +
-                "<br>&bull; <kbd>String</kbd> is a series of characters." +
-                "<br>&nbsp;&nbsp;(For databases, ERDDAP treats all non-numeric data types as Strings.)" +
-                "<br>&bull; <kbd>boolean</kbd> is either true or false. ERDDAP will convert these to bytes, 1 or 0." +
-                "<br>&bull; <kbd>byte</kbd> is an 8 bit signed integer, +/-127" +
-                "<br>&bull; <kbd>short</kbd> is a 16 bit signed integer, +/-32,767" +
-                "<br>&bull; <kbd>int</kbd> is a 32 bit signed integer, +/-2,147,483,647" +
-                "<br>&bull; <kbd>long</kbd> is a 64 bit signed integer, +/- ~1e19" +
-                "<br>&bull; <kbd>float</kbd> is a 32 bit floating point number (up to 7 significant digits)" +
-                "<br>&bull; <kbd>double</kbd> is a 64 bit floating point number (up to 17 significant digits)";
+            String dataTypeHelp = EDStatic.dpf_dataTypeHelp
+                .replace("&kUnknown", "<kbd>(unknown)</kbd>")
+                .replace("&kString;", "<kbd>String</kbd>")
+                .replace("&kboolean;", "<kbd>boolean</kbd>")
+                .replace("&kbyte", "<kbd>byte</kbd>")
+                .replace("&kshort;", "<kbd>short</kbd>")
+                .replace("&kint;", "<kbd>int</kbd>")
+                .replace("&klong;", "<kbd>long</kbd>")
+                .replace("&kfloat;", "<kbd>float</kbd>")
+                .replace("&kdouble;", "<kbd>double</kbd>");
+
+                // "This is the data type and precision of this variable." +
+                // "<br>If the data file uses a specific type (for example, in a .nc file)," +
+                // "<br>&nbsp;&nbsp;specify that type here." +
+                // "<br>If the data file doesn't use a specific type (for example, in a .csv file)," +
+                // "<br>&nbsp;&nbsp;specify the type that should be used in ERDDAP." +
+                // "<br>&bull; Use <kbd>(unknown)</kbd> if you don't know." +
+                // "<br>&bull; <kbd>String</kbd> is a series of characters." +
+                // "<br>&nbsp;&nbsp;(For databases, ERDDAP treats all non-numeric data types as Strings.)" +
+                // "<br>&bull; <kbd>boolean</kbd> is either true or false. ERDDAP will convert these to bytes, 1 or 0." +
+                // "<br>&bull; <kbd>byte</kbd> is an 8 bit signed integer, +/-127" +
+                // "<br>&bull; <kbd>short</kbd> is a 16 bit signed integer, +/-32,767" +
+                // "<br>&bull; <kbd>int</kbd> is a 32 bit signed integer, +/-2,147,483,647" +
+                // "<br>&bull; <kbd>long</kbd> is a 64 bit signed integer, +/- ~1e19" +
+                // "<br>&bull; <kbd>float</kbd> is a 32 bit floating point number (up to 7 significant digits)" +
+                // "<br>&bull; <kbd>double</kbd> is a 64 bit floating point number (up to 17 significant digits)"
 
             int ioosUnknown = String2.indexOf(EDV.IOOS_CATEGORIES, "Unknown");
-            String ioosCategoryHelp = 
-                "Pick the ioos_category which is most appropriate for this variable." +
-                "<br>&bull; Use <kbd>Location</kbd> for place names and for longitude, latitude," +
-                "<br>&nbsp;&nbsp;altitude, and depth." +
-                "<br>&bull; Use <kbd>Time</kbd> for date/time." +
-                "<br>&bull; Use <kbd>Taxonomy</kbd> for species names." +
-                "<br>&bull; Use <kbd>Identifier</kbd> for cruise names, ship names, line names," +
-                "<br>&nbsp;&nbsp;station names, equipment types, serial numbers, etc." +
-                "<br>&bull; Use <kbd>Ocean Color</kbd> for chlorophyll." +
-                "<br>&bull; Use <kbd>Other</kbd> if no other category in the list is close." +
-                "<br>&bull; Use <kbd>Unknown</kbd> if you really don't know.";
+            String ioosCategoryHelp = EDStatic.dpf_ioosCategoryHelp
+                .replace("&Location;", "<kbd>Location</kbd>")
+                .replace("&Time;", "<kbd>Time</kbd>")
+                .replace("&Taxonomy;", "<kbd>Taxonomy</kbd>")
+                .replace("&Identifier;", "<kbd>Identifier</kbd>")
+                .replace("&OceanColor;", "<kbd>Ocean Color</kbd>")
+                .replace("&Other;", "<kbd>Other</kbd>")
+                .replace("&kUnknown;", "<kbd>Unknown</kbd>");
+                
+                // "Pick the ioos_category which is most appropriate for this variable." +
+                // "<br>&bull; Use <kbd>Location</kbd> for place names and for longitude, latitude," +
+                // "<br>&nbsp;&nbsp;altitude, and depth." +
+                // "<br>&bull; Use <kbd>Time</kbd> for date/time." +
+                // "<br>&bull; Use <kbd>Taxonomy</kbd> for species names." +
+                // "<br>&bull; Use <kbd>Identifier</kbd> for cruise names, ship names, line names," +
+                // "<br>&nbsp;&nbsp;station names, equipment types, serial numbers, etc." +
+                // "<br>&bull; Use <kbd>Ocean Color</kbd> for chlorophyll." +
+                // "<br>&bull; Use <kbd>Other</kbd> if no other category in the list is close." +
+                // "<br>&bull; Use <kbd>Unknown</kbd> if you really don't know.";
 
             String 
                 tYourName         = request.getParameter("yourName"),
@@ -2889,8 +2968,9 @@ writer.write(widgets.endForm());
                     "comment #" + var, "", tComment[var], 160, errorMsgSB);
             }
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, 
-                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                    // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
+                    );
 
             String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
 
@@ -2978,13 +3058,15 @@ dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   +
                 "\n");
 
 //begin text
-writer.write(
-"This is part 3 (of 4) of the Data Provider Form\n" +
-"<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
-"<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
-"<br>&nbsp;\n" +
-"\n");
+writer.write(EDStatic.dpf_part3Header.replace("&fromInfo;",  XML.encodeAsHTML(fromInfo))
+                .replace("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+// "This is part 3 (of 4) of the Data Provider Form\n" +
+// "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
+// "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
+//     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+// "<br>&nbsp;\n" +
+// "\n"
+);
 
 //error message?
 if (isSubmission && errorMsgSB.length() > 0) 
@@ -2992,32 +3074,33 @@ writer.write("<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> 
     "<br>&nbsp;\n");
 
 //Variable Metadata
-writer.write(
-"<h2>Variable Metadata</h2>\n" +
-"Variable metadata is information that is specific to a given variable within\n" +
-"the dataset. It is a set of <kbd>attribute=value</kbd> pairs, for example,\n" +
-"<kbd>units=degree_C</kbd> .\n" +
-"\n" +
-"<p><strong>Fewer Or More Than 10 Variables</strong>\n" + //n variables
-"<br>There are slots on this form for 10 variables.\n" +
-"<br>If your dataset has 10 or fewer variables, just use the slots that you need.\n" +
-"<br>If your dataset has more than 10 variables, then for each group of 10 variables:\n" +
-"<ol>\n" +
-"<li>Identify the group: This is the\n" +
-widgets.select("group", "", 1, groupOptions, tGroup, "") +
-"  group of 10 variables.\n" +
-"<li>Fill out the form below for that group of 10 variables.\n" +
-"<li>Click \"I'm finished!\" below to submit the information for that group of 10 variables.\n" +
-"<li>If this isn't the last group, then on the next web page (for Part 4 of this form),\n" +
-"  press your browser's Back button so that you can fill out this part of the form\n" +
-"  (Part 3) for the next group of 10 variables.\n" +
-"</ol>\n" +
-"\n" +
-"<p><strong>.nc Files</strong>\n" +
-"<br>If your data is in .nc files that already have some metadata,\n" +
-"just provide the information below for attributes that aren't in your files\n" +
-"or where you want to change the attribute's value.\n" +
-"\n");
+writer.write(EDStatic.dpf_variableMetadata.replace("&widget;", widgets.select("group", "", 1, groupOptions, tGroup, ""))
+// "<h2>Variable Metadata</h2>\n" +
+// "Variable metadata is information that is specific to a given variable within\n" +
+// "the dataset. It is a set of <kbd>attribute=value</kbd> pairs, for example,\n" +
+// "<kbd>units=degree_C</kbd> .\n" +
+// "\n" +
+// "<p><strong>Fewer Or More Than 10 Variables</strong>\n" + //n variables
+// "<br>There are slots on this form for 10 variables.\n" +
+// "<br>If your dataset has 10 or fewer variables, just use the slots that you need.\n" +
+// "<br>If your dataset has more than 10 variables, then for each group of 10 variables:\n" +
+// "<ol>\n" +
+// "<li>Identify the group: This is the\n" +
+// widgets.select("group", "", 1, groupOptions, tGroup, "") +
+// "  group of 10 variables.\n" +
+// "<li>Fill out the form below for that group of 10 variables.\n" +
+// "<li>Click \"I'm finished!\" below to submit the information for that group of 10 variables.\n" +
+// "<li>If this isn't the last group, then on the next web page (for Part 4 of this form),\n" +
+// "  press your browser's Back button so that you can fill out this part of the form\n" +
+// "  (Part 3) for the next group of 10 variables.\n" +
+// "</ol>\n" +
+// "\n" +
+// "<p><strong>.nc Files</strong>\n" +
+// "<br>If your data is in .nc files that already have some metadata,\n" +
+// "just provide the information below for attributes that aren't in your files\n" +
+// "or where you want to change the attribute's value.\n" +
+//"\n"
+);
         
 //a table for each variable
 for (int var = 1; var <= nVars; var++) 
@@ -3027,122 +3110,137 @@ widgets.beginTable("class=\"compact\"") +
 "  <td colspan=3>&nbsp;<br><strong>Variable #" + var + "</strong></td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>sourceName\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is the name of this variable currently used by the data source." +
-    "<br>For example, <kbd>wt</kbd>" +
-    "<br>This is case-sensitive.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_sourceName + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_sourceNameTooltip
+    // "This is the name of this variable currently used by the data source." +
+    // "<br>For example, <kbd>wt</kbd>" +
+    // "<br>This is case-sensitive."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("sourceName" + var, "", 20, 60, tSourceName[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>destinationName\n" + 
+"  <td>" + EDStatic.dpf_destinationName + "\n" + 
 "  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: You can specify a new, different name for this variable." +
-    "<br>This new name is the one that will be shown to users in ERDDAP." +
-    "<br>For example, <kbd>waterTemp</kbd>" +
-    "<br>This is case-sensitive." +
-    "<br>This MUST start with a letter (A-Z, a-z) and MUST be followed by\n" +
-    "<br>0 or more characters (A-Z, a-z, 0-9, and _)." +
-    "<br>&bull; Use <kbd>latitude</kbd> for the main latitude variable." +
-    "<br>&bull; Use <kbd>longitude</kbd> for the main longitude variable." +
-    "<br>&bull; Use <kbd>altitude</kbd> if the variable measures height above sea level." +
-    "<br>&bull; Use <kbd>depth</kbd> if the variable measures distance below sea level." +
-    "<br>&bull; Use <kbd>time</kbd> for the main date/time variable." +
-    "<br>&bull; Otherwise, it is up to you. If you want to use the sourceName\n" +
-    "<br>&nbsp;&nbsp;as the destinationName, leave this blank.") + "&nbsp;\n" +
+        EDStatic.dpf_destinationNameTooltip
+            .replace("&klatitude;", "<kbd>latitude</kbd>")
+            .replace("&klongitude;", "<kbd>longitude</kbd>")
+            .replace("&kaltitude;", "<kbd>altitude</kbd>")
+            .replace("&kdepth;", "<kbd>depth</kbd>")
+            .replace("&kTime;", "<kbd>time</kbd>")
+    // "Optional: You can specify a new, different name for this variable." +
+    // "<br>This new name is the one that will be shown to users in ERDDAP." +
+    // "<br>For example, <kbd>waterTemp</kbd>" +
+    // "<br>This is case-sensitive." +
+    // "<br>This MUST start with a letter (A-Z, a-z) and MUST be followed by\n" +
+    // "<br>0 or more characters (A-Z, a-z, 0-9, and _)." +
+    // "<br>&bull; Use <kbd>latitude</kbd> for the main latitude variable." +
+    // "<br>&bull; Use <kbd>longitude</kbd> for the main longitude variable." +
+    // "<br>&bull; Use <kbd>altitude</kbd> if the variable measures height above sea level." +
+    // "<br>&bull; Use <kbd>depth</kbd> if the variable measures distance below sea level." +
+    // "<br>&bull; Use <kbd>time</kbd> for the main date/time variable." +
+    // "<br>&bull; Otherwise, it is up to you. If you want to use the sourceName\n" +
+    // "<br>&nbsp;&nbsp;as the destinationName, leave this blank."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("destinationName" + var, "", 20, 60, tDestinationName[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>long_name\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "This is a longer, written-out version of the destinationName." +
-    "<br>For example, <kbd>Water Temperature</kbd>" +
-    "<br>Among other uses, it will be used as an axis title on graphs." +
-    "<br>Capitalize each word in the long_name." +
-    "<br>Don't include the units. (ERDDAP will add units when creating" +
-    "<br>&nbsp;&nbsp;an axis title.)") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_longName + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_longNameTooltip
+    // "This is a longer, written-out version of the destinationName." +
+    // "<br>For example, <kbd>Water Temperature</kbd>" +
+    // "<br>Among other uses, it will be used as an axis title on graphs." +
+    // "<br>Capitalize each word in the long_name." +
+    // "<br>Don't include the units. (ERDDAP will add units when creating" +
+    // "<br>&nbsp;&nbsp;an axis title.)"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("long_name" + var, "", 40, 100, tLongName[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>standard_name\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is the name from the CF Standard Name Table" +
-    "<br>&nbsp;&nbsp;which is most appropriate for this variable.\n" + 
-    "<br>For example, <kbd>sea_water_temperature</kbd>." +
-    "<br>Some common standard_names are listed in the dropdown list at right." +
-    "<br>If you don't already know, or if no CF Standard Name is appropriate," +
-    "<br>&nbsp;&nbsp;just leave this blank. We'll fill it in.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_standardName + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_standardNameTooltip
+    // "Optional: This is the name from the CF Standard Name Table" +
+    // "<br>&nbsp;&nbsp;which is most appropriate for this variable.\n" + 
+    // "<br>For example, <kbd>sea_water_temperature</kbd>." +
+    // "<br>Some common standard_names are listed in the dropdown list at right." +
+    // "<br>If you don't already know, or if no CF Standard Name is appropriate," +
+    // "<br>&nbsp;&nbsp;just leave this blank. We'll fill it in."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.comboBox(formName, "standard_name" + var, "", 40, 120, tStandardName[var], 
     EDStatic.commonStandardNames, "", null) + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>dataType\n" + 
+"  <td>" + EDStatic.dpf_dataType + "\n" + 
 "  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, dataTypeHelp) + "&nbsp;\n" + 
 "  <td>\n" +
 widgets.select("dataType" + var, "", 1, 
     dataTypeOptions, tDataType[var], "") +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>_FillValue\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "For numeric variables, this is the value that is used in the" +
-    "<br>data file to indicate a missing value for this variable.\n" +
-    "<br>For example, <kbd>-999</kbd> ." +
-    "<br>If the _FillValue is NaN, use <kbd>NaN</kbd> .\n" +
-    "<br>For String variables, leave this blank.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_fillValue + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_fillValueTooltip
+    // "For numeric variables, this is the value that is used in the" +
+    // "<br>data file to indicate a missing value for this variable.\n" +
+    // "<br>For example, <kbd>-999</kbd> ." +
+    // "<br>If the _FillValue is NaN, use <kbd>NaN</kbd> .\n" +
+    // "<br>For String variables, leave this blank."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("FillValue" + var, //note that field name lacks leading '_'
     "", 10, 30, tFillValue[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>units\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "These are the units of this variable. For example, <kbd>degree_C</kbd>" + 
-    "<br>This is <strong>required</strong> for numeric variables, but not used for most String variables." +
-    "<br>&bull; For temperature, use <kbd>degree_C</kbd> or <kbd>degree_F</kbd> ." +
-    "<br>&bull; For counts of things, use <kbd>count</kbd> ." +
-    "<br>&bull; For latitude variables, use <kbd>degrees_north</kbd> ." +
-    "<br>&bull; For longitude variables, use <kbd>degrees_east</kbd> ." +
-    "<br>&bull; For String date/time variables, paste a sample date/time value here." +
-    "<br>&nbsp;&nbsp;We'll convert it to UDUnits." +
-    "<br>&bull; For numeric date/time variables, describe the values as <kbd><i>units</i> since <i>basetime</i></kbd>," +
-    "<br>&nbsp;&nbsp;for example, <kbd>days since 2010-01-01</kbd>" +
-    "<br>&bull; For all other variables, use UDUNITs unit names if you know them;" +
-    "<br>&nbsp;&nbsp;otherwise, use whatever units you already know.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_units + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_unitsTooltip.replace("&kcount;", "<kbd>count</kbd>")
+    // "These are the units of this variable. For example, <kbd>degree_C</kbd>" + 
+    // "<br>This is <strong>required</strong> for numeric variables, but not used for most String variables." +
+    // "<br>&bull; For temperature, use <kbd>degree_C</kbd> or <kbd>degree_F</kbd> ." +
+    // "<br>&bull; For counts of things, use <kbd>count</kbd> ." +
+    // "<br>&bull; For latitude variables, use <kbd>degrees_north</kbd> ." +
+    // "<br>&bull; For longitude variables, use <kbd>degrees_east</kbd> ." +
+    // "<br>&bull; For String date/time variables, paste a sample date/time value here." +
+    // "<br>&nbsp;&nbsp;We'll convert it to UDUnits." +
+    // "<br>&bull; For numeric date/time variables, describe the values as <kbd><i>units</i> since <i>basetime</i></kbd>," +
+    // "<br>&nbsp;&nbsp;for example, <kbd>days since 2010-01-01</kbd>" +
+    // "<br>&bull; For all other variables, use UDUNITs unit names if you know them;" +
+    // "<br>&nbsp;&nbsp;otherwise, use whatever units you already know."
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("units" + var, "", 20, 80, tUnits[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>range\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "For numeric variables, this specifies the typical range of values." +
-    "<br>For example, <kbd>minimum=32.0</kbd> and <kbd>maximum=37.0</kbd> ." + 
-    "<br>The range should include about 98% of the values." +
-    "<br>These should be round numbers. This isn't precise.\n" +
-    "<br>If you don't know the typical range of values, leave this blank." +
-    "<br>For String variables, leave this blank.") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_range + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_rangeTooltip
+    // "For numeric variables, this specifies the typical range of values." +
+    // "<br>For example, <kbd>minimum=32.0</kbd> and <kbd>maximum=37.0</kbd> ." + 
+    // "<br>The range should include about 98% of the values." +
+    // "<br>These should be round numbers. This isn't precise.\n" +
+    // "<br>If you don't know the typical range of values, leave this blank." +
+    // "<br>For String variables, leave this blank."
+    // 
+    ) + "&nbsp;\n" +
 "  <td>minimum =\n" + 
 widgets.textField("rangeMin" + var, "", 10, 30, tRangeMin[var], "") + 
 "  &nbsp;&nbsp;maximum =\n" + 
 widgets.textField("rangeMax" + var, "", 10, 30, tRangeMax[var], "") + 
 "</tr>\n" +
 "<tr>\n" +
-"  <td>ioos_category\n" + 
+"  <td>" + EDStatic.dpf_ioosCategory + "\n" + 
 "  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, ioosCategoryHelp) + "&nbsp;\n" + 
 "  <td>\n" + 
 widgets.select("ioos_category" + var, "", 1, 
     EDV.IOOS_CATEGORIES, tIoosCategory[var], "") +
 "</tr>\n" +
 "<tr>\n" +
-"  <td>comment\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, 
-    "Optional: This is miscellaneous information about this variable, not captured" +
-    "<br>elsewhere. For example," +
-    "<br><kbd>This is the difference between today's SST and the previous day's SST.</kbd>") + "&nbsp;\n" +
+"  <td>" + EDStatic.dpf_comment + "\n" + 
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_commentTooltip
+    // "Optional: This is miscellaneous information about this variable, not captured" +
+    // "<br>elsewhere. For example," +
+    // "<br><kbd>This is the difference between today's SST and the previous day's SST.</kbd>"
+    ) + "&nbsp;\n" +
 "  <td>\n" + 
 widgets.textField("comment" + var, "", dpfTFWidth, 250, tComment[var], "") + 
 "</tr>\n" +
@@ -3156,11 +3254,17 @@ widgets.textField("comment" + var, "", dpfTFWidth, 250, tComment[var], "") +
 
 //Submit
 writer.write(
-"<h2>Finished with part 3?</h2>\n" + 
-"Click\n" + 
-widgets.button("submit", "Submit", "", "Submit", "") +
-"to send this information to the ERDDAP administrator and move on to part 4 (of 4).\n" +
-"\n");
+    EDStatic.dfs_submit
+    .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
+    .replace("&partNumber;", "3")
+    .replace("&partNumber;", "4")
+
+// "<h2>Finished with part 3?</h2>\n" + 
+// "Click\n" + 
+// widgets.button("submit", "Submit", "", "Submit", "") +
+// "to send this information to the ERDDAP administrator and move on to part 4 (of 4).\n" +
+//"\n"
+);
 
 //end form
 writer.write(widgets.endForm());        
@@ -3211,8 +3315,9 @@ writer.write(widgets.endForm());
             tOtherComments = HtmlWidgets.validateNotNullNotTooLong(
                 "Other Comments", "", tOtherComments, 500, errorMsgSB);
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, 
-                    "<br>Please fix these problems, then 'Submit' this part of the form again.\n");
+                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                    // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
+                    );
 
             String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
 
@@ -3275,13 +3380,14 @@ writer.write(widgets.endForm());
                 "\n");
 
 //begin text
-writer.write(
-"This is part 4 (of 4) of the Data Provider Form\n" +
-"<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
-"<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
-    XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
-"<br>&nbsp;\n" +
-"\n");
+writer.write(EDStatic.dpf_part4Header.replace("&fromInfo;", XML.encodeAsHTML(fromInfo))
+                .replace("&safeEmail", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
+// "This is part 4 (of 4) of the Data Provider Form\n" +
+// "<br>from " + XML.encodeAsHTML(fromInfo) + ".\n" +
+// "<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>" + 
+//     XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)) + "</kbd>).\n" +
+// "<br>&nbsp;\n" 
++ "\n");
 
 //error message?
 if (isSubmission && errorMsgSB.length() > 0) 
@@ -3289,24 +3395,27 @@ writer.write("<span class=\"warningColor\">" + errorMsgSB.toString() + "</span> 
     "<br>&nbsp;\n");
 
 //other comments
-writer.write(
-"<h2>Other Comments</h2>\n" + 
-"Optional: If there are other things you think the ERDDAP administrator\n" +
-"should know about this dataset, please add them here.\n" +
-"This won't go in the dataset's metadata or be made public. (&lt;500 characters)\n" +
-"<br><textarea name=\"otherComments\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\">" +
-XML.encodeAsHTML(tOtherComments) +  //encoding is important for security
-"</textarea>\n" +
-"<br>&nbsp;\n" +
-"\n");
+writer.write(EDStatic.dpf_otherComment.replace("&dpfTAWidth;", String.valueOf(dpfTAWidth))
+        .replace("&tOtherComments;", XML.encodeAsHTML(tOtherComments))
+// "<h2>Other Comments</h2>\n" + 
+// "Optional: If there are other things you think the ERDDAP administrator\n" +
+// "should know about this dataset, please add them here.\n" +
+// "This won't go in the dataset's metadata or be made public. (&lt;500 characters)\n" +
+// "<br><textarea name=\"otherComments\" cols=\"" + dpfTAWidth + "\" rows=\"6\" maxlength=\"500\" wrap=\"soft\">" +
+// XML.encodeAsHTML(tOtherComments) +  //encoding is important for security
+// "</textarea>\n" +
+// "<br>&nbsp;\n" +
++ "\n"
+);
 
 //Submit
-writer.write(
-"<h2>Finished with part 4?</h2>\n" + 
-"Click\n" + 
-widgets.button("submit", "Submit", "", "Submit", "") +
-"to send this information to the ERDDAP administrator and move on to the \"You're done!\" page.\n" +
-"\n");
+writer.write(EDStatic.dpf_finishPart4.replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
+// "<h2>Finished with part 4?</h2>\n" + 
+// "Click\n" + 
+// widgets.button("submit", "Submit", "", "Submit", "") +
+// "to send this information to the ERDDAP administrator and move on to the \"You're done!\" page.\n" +
+// "\n"
+);
 
 //end form
 writer.write(widgets.endForm());        
@@ -3359,16 +3468,22 @@ writer.write(widgets.endForm());
                 EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Done"));
 
 //begin text
-writer.write(
-"<h2>You're done! Congratulations! Thank you!</h2>\n" +
-"The ERDDAP administrator will email you soon to figure out the best way transfer\n" +
-"  the data and to work out other details.\n" +
-"  This dataset submission's timestamp is " + tTimestamp + ".\n" + 
-"<p>You can <a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html?" +
-    "yourName=" + SSR.minimalPercentEncode(tYourName) +
-    "&amp;emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) + "\">submit another dataset</a>\n" +
-"or go back to the <a rel=\"bookmark\" href=\"" + tErddapUrl + 
-    "/index.html\">ERDDAP home page</a>.\n");
+writer.write(EDStatic.dpf_congratulation
+        .replace("&tTimestamp;", tTimestamp)
+        .replaceAll("&tErddapUrl;", tErddapUrl)
+        .replace("&tYourName;", SSR.minimalPercentEncode(tYourName))
+        .replace("&tEmailAddress;", SSR.minimalPercentEncode(tEmailAddress))
+
+// "<h2>You're done! Congratulations! Thank you!</h2>\n" +
+// "The ERDDAP administrator will email you soon to figure out the best way transfer\n" +
+// "  the data and to work out other details.\n" +
+// "  This dataset submission's timestamp is " + tTimestamp + ".\n" + 
+// "<p>You can <a rel=\"bookmark\" href=\"" + tErddapUrl + "/dataProviderForm1.html?" +
+//     "yourName=" + SSR.minimalPercentEncode(tYourName) +
+//     "&amp;emailAddress=" + SSR.minimalPercentEncode(tEmailAddress) + "\">submit another dataset</a>\n" +
+// "or go back to the <a rel=\"bookmark\" href=\"" + tErddapUrl + 
+//     "/index.html\">ERDDAP home page</a>.\n"
+    );
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -3453,10 +3568,40 @@ writer.write(
             String htmlQueryUrlWithSpaces = htmlQueryUrl + "%20wind%20speed";
             String griddapExample  = tErddapUrl + "/griddap/" + EDStatic.EDDGridIdExample;
             String tabledapExample = tErddapUrl + "/tabledap/" + EDStatic.EDDTableIdExample;
+            
+            String modifiedRestfulHTML = EDStatic.restfulHTML
+                .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl))
+                .replaceAll("&htmlQueryUrl;", htmlQueryUrl)
+                .replaceAll("&jsonQueryUrl;", jsonQueryUrl)
+                .replaceAll("&htmlQueryUrlWithSpaces;", htmlQueryUrlWithSpaces)
+                .replaceAll("&tErddapUrl;", tErddapUrl)
+                .replaceAll("&acceptEncodingHtmlh3tErddapUrl;", EDStatic.acceptEncodingHtml("h3", tErddapUrl))
+                .replaceAll("&plainLinkExamples1;", plainLinkExamples(tErddapUrl, "/index", ""))
+                .replaceAll("&plainLinkExamples2;", plainLinkExamples(tErddapUrl, "/info/index", EDStatic.encodedAllPIppQuery))
+                .replaceAll("&plainLinkExamples3;", plainLinkExamples(tErddapUrl, 
+                    "/info/" + EDStatic.EDDGridIdExample + "/index", ""))
+                .replaceAll("&plainLinkExamples4;", plainLinkExamples(tErddapUrl, "/search/index", 
+                    EDStatic.encodedDefaultPIppQuery + //4
+                    "&amp;searchFor=wind%20speed"))
+                .replaceAll("&plainLinkExamples5;", plainLinkExamples(tErddapUrl, "/search/advanced", 
+                    EDStatic.encodedDefaultPIppQuery + //5
+                    "&amp;searchFor=wind%20speed"))
+                .replaceAll("&plainLinkExamples6;", plainLinkExamples(tErddapUrl, "/categorize/index", //6
+                    EDStatic.encodedDefaultPIppQuery))
+                .replaceAll("&plainLinkExamples7;", plainLinkExamples(tErddapUrl, "/categorize/standard_name/index", //7
+                    EDStatic.encodedDefaultPIppQuery))
+                .replaceAll("&plainLinkExamples8;", plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", //8
+                    EDStatic.encodedDefaultPIppQuery))
+                .replaceAll("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery)
+                .replaceAll("&advancedSearch;", EDStatic.advancedSearch);
+
+
             writer.write(
                 "<div class=\"standard_width\">\n" +
                 EDStatic.youAreHere(loggedInAs, "RESTful Web Services") +
-                "<h2 style=\"text-align:center;\"><a class=\"selfLink\" id=\"WebService\" href=\"#WebService\" rel=\"bookmark\">Accessing ERDDAP's RESTful Web Services</a></h2>\n" +
+                "<h2 style=\"text-align:center;\"><a class=\"selfLink\" id=\"WebService\" href=\"#WebService\" rel=\"bookmark\">" + EDStatic.accessRESTFUL +"</a></h2>\n"
+                + modifiedRestfulHTML
+                /*
                 "ERDDAP is both:\n" +
                 "<ul>\n" +
                 "<li><a rel=\"help\" href=\"https://en.wikipedia.org/wiki/Web_application\">A web application" +
@@ -3662,23 +3807,23 @@ writer.write(
                 "ERDDAP has these URL access points for computer programs:\n" +
                 "<ul>\n" +
                 "<li>To get the list of the <strong>main resource access URLs</strong>, use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/index", "") +
+                "  <br>" + plainLinkExamples(tErddapUrl, "/index", "") + //1
                 "  <br>&nbsp;\n" +
                 "<li>To get the current list of <strong>all datasets</strong>, use\n" + 
                 "  <br>" + plainLinkExamples(tErddapUrl, 
-                    "/info/index", EDStatic.encodedAllPIppQuery) + 
+                    "/info/index", EDStatic.encodedAllPIppQuery) + //2
                 "  <br>&nbsp;\n" +
                 "<li>To get <strong>metadata</strong> for a specific data set\n" +
                 "  (the list of variables and their attributes), use\n" + 
                 "  <br>" + tErddapUrl + "/info/<i>datasetID</i>/index<i>.fileType</i>\n" +
                 "  <br>for example,\n" + 
                 "  <br>" + plainLinkExamples(tErddapUrl, 
-                    "/info/" + EDStatic.EDDGridIdExample + "/index", "") + 
+                    "/info/" + EDStatic.EDDGridIdExample + "/index", "") + //3
                 "  <br>&nbsp;\n" +
                 "<li>To get the results of <strong>full text searches</strong> for datasets\n" +
                 "  (using \"searchFor=wind%20speed\" as the example), use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/search/index", 
-                    EDStatic.encodedDefaultPIppQuery + 
+                    EDStatic.encodedDefaultPIppQuery + //4
                     "&amp;searchFor=wind%20speed") +
                 "  <br>(Your program or script may need to \n" +
                 "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent-encode" +
@@ -3692,7 +3837,7 @@ writer.write(
                 "<li>To get the results of <strong>advanced searches</strong> for datasets\n" +
                 "  (using \"searchFor=wind%20speed\" as the example), use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/search/advanced", 
-                    EDStatic.encodedDefaultPIppQuery + 
+                    EDStatic.encodedDefaultPIppQuery + //5
                     "&amp;searchFor=wind%20speed") +
                 "  <br>But experiment with\n" +
                 "    <a href=\"" + tErddapUrl + "/search/advanced.html?" + 
@@ -3705,21 +3850,29 @@ writer.write(
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <strong>categoryAttributes</strong>\n" +
                 "  (for example, institution, long_name, standard_name), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/index", 
+                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/index", //6
                     EDStatic.encodedDefaultPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <strong>categories for a specific categoryAttribute</strong>\n" +
                 "  (using \"standard_name\" as the example), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/standard_name/index", 
+                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/standard_name/index", //7
                     EDStatic.encodedDefaultPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <strong>datasets in a specific category</strong>\n" +
                 "  (using \"standard_name=time\" as the example), use\n" +
-                "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", 
-                    EDStatic.encodedDefaultPIppQuery));  
+                "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", //8
+                    EDStatic.encodedDefaultPIppQuery)
+                    */);
             int tDasIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".das");
             int tDdsIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".dds");
-            writer.write(
+            String restfulGetAllDataset = EDStatic.restfulGetAllDataset
+                .replace("&plainLinkExamples1;", plainLinkExamples(tErddapUrl, 
+                        "/griddap/index", EDStatic.encodedAllPIppQuery))
+                .replace("&plainLinkExamples1;", plainLinkExamples(tErddapUrl, 
+                        "/tabledap/index", EDStatic.encodedAllPIppQuery));
+
+            writer.write(restfulGetAllDataset
+                /*
                 "  <br>&nbsp;\n" +
                 "<li>To get the current list of <strong>all datasets available via a specific protocol</strong>,\n" +
                 "  <ul>\n" +
@@ -3728,20 +3881,35 @@ writer.write(
                     EDStatic.encodedAllPIppQuery) + 
                 "  <li>For tabledap: use\n<br>" +
                     plainLinkExamples(tErddapUrl, "/tabledap/index", 
-                    EDStatic.encodedAllPIppQuery)); 
+                    EDStatic.encodedAllPIppQuery)
+                */
+                    ); 
             if (EDStatic.sosActive) writer.write(
-                "  <li>For SOS: use\n<br>" +
+                "  <li>" + EDStatic.forSOSUse + "\n<br>" +
+                //"  <li>For SOS: use\n<br>" +
                     plainLinkExamples(tErddapUrl, "/sos/index", 
                     EDStatic.encodedAllPIppQuery)); 
             if (EDStatic.wcsActive) writer.write(
-                "  <li>For WCS: use\n<br>" +
+                "  <li>" + EDStatic.forWCSUse + "\n<br>" +
+                //"  <li>For WCS: use\n<br>" +
                     plainLinkExamples(tErddapUrl, "/wcs/index", 
                     EDStatic.encodedAllPIppQuery)); 
             if (EDStatic.wmsActive) writer.write(
-                "  <li>For WMS: use\n<br>" +
+                "  <li>" + EDStatic.forWMSUse + "\n<br>" +
+                //"  <li>For WMS: use\n<br>" +
                     plainLinkExamples(tErddapUrl, "/wms/index", 
                     EDStatic.encodedAllPIppQuery));
-            writer.write(
+                    
+            String restfulHTMLContinued = EDStatic.restfulHTMLContinued
+                .replaceAll("&tErddapUrl;", tErddapUrl)
+                .replace("&dataFileTypeInfo1;", XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]))
+                .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl))
+                .replaceAll("&griddapExample;", griddapExample)
+                .replaceAll("&tabledapExample;", tabledapExample)
+                .replace("&dataFileTypeInfo2;", XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDasIndex]));
+
+            writer.write(restfulHTMLContinued
+            /*
                 "  <br>&nbsp;\n" +
                 "  </ul>\n" +
                 "<li><a class=\"selfLink\" id=\"GriddapAndTabledap\" href=\"#GriddapAndTabledap\" rel=\"bookmark\">Griddap and tabledap</a> have many web services that you can use.\n" +
@@ -3788,37 +3956,53 @@ writer.write(
                 "    get the response in whichever response file type you prefer,\n" +
                 "    for example, .html, .xhtml, .csv, .json, .jsonlCSV1, .jsonlCSV, or .jsonlKVP.\n" +
                 "    <br>&nbsp;\n" +
-                "  </ul>\n");
+                "  </ul>\n"
+                */);
             if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
                 writer.write(
+                    EDStatic.restfulProtocols
+                    /*
                 "<li><a class=\"selfLink\" id=\"OtherProtocols\" href=\"#OtherProtocols\" rel=\"bookmark\"\n" +
                 ">ERDDAP's other protocols</a> also have web services that you can use.\n" +
                 "  See\n" +
-                "  <ul>\n");
+                "  <ul>\n"
+                */);
                 if (EDStatic.sosActive) writer.write(
-                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
+                    // "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">ERDDAP's SOS documentation</a>\n");
+                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">" + EDStatic.SOSDocumentation + "</a>\n");
                 if (EDStatic.wcsActive) writer.write(
-                     "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's WCS documentation</a>\n");
+                    // "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">ERDDAP's WCS documentation</a>\n");
+                    "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">" + EDStatic.WCSDocumentation + "</a>\n");
                 if (EDStatic.wmsActive) writer.write(
-                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
+                    // "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">ERDDAP's WMS documentation</a>\n");
+                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">" + EDStatic.WMSDocumentation + "</a>\n");
                 writer.write(
                     "    <br>&nbsp;\n" +
                     "    </ul>\n");
             }
-            writer.write(
+            String subscriptionRSSHTML = EDStatic.subscriptionRSSHTML.replace("&tErddapUrl;", tErddapUrl);
+            writer.write(subscriptionRSSHTML
+                /*
                 "<li><a class=\"selfLink\" id=\"subscriptions\" href=\"#subscriptions\" rel=\"bookmark\">ERDDAP</a> offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">RSS subscriptions</a>,\n" +
                 "    so that your computer program can find out if a\n" +
                 "  dataset has changed.\n" +
-                "  <br>&nbsp;\n");
-            if (EDStatic.subscriptionSystemActive) writer.write(
+                "  <br>&nbsp;\n"
+                */
+                );
+                String subscriptionURLHTML = EDStatic.subscriptionURLHTML.replace("&tErddapUrl;", tErddapUrl);
+            if (EDStatic.subscriptionSystemActive) writer.write(subscriptionURLHTML
+                /*
                 "<li>ERDDAP offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">email/URL subscriptions</a>,\n" +
                 "    which notify your computer program\n" +
                 "  whenever a dataset changes.\n" +
-                "  <br>&nbsp;\n");
+                "  <br>&nbsp;\n"
+                */
+                );
             writer.write(
-                "<li>ERDDAP offers several converters as web pages and as web services:\n" +
+                "<li>" + EDStatic.converterWebService + "\n" +
+                // "<li>ERDDAP offers several converters as web pages and as web services:\n" +
                 (EDStatic.convertersActive?
                   "  <ul>\n" +
                   "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/oceanicAtmosphericAcronyms.html#computerProgram\">" + EDStatic.convertOceanicAtmosphericAcronyms + "</a>\n" +
@@ -3831,17 +4015,23 @@ writer.write(
                   "    <br>&nbsp;\n" +
                   "  </ul>\n" :
                   "<br> (" + MessageFormat.format(EDStatic.disabled, "convert") + ")\n<br>&nbsp;\n"));
-            if (EDStatic.outOfDateDatasetsActive) writer.write(
+            String outOfDateKeepTrack = EDStatic.outOfDateKeepTrack.replace("&tErddapUrl;", tErddapUrl);
+            if (EDStatic.outOfDateDatasetsActive) writer.write(outOfDateKeepTrack
+            /*
                 "<li>ERDDAP has a system to keep track of\n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/outOfDateDatasets.html\">Out-Of-Date Datasets</a>.\n" +
                 "    See the Options at the bottom of that web page.\n" +
-                "  <br>&nbsp;\n");
+                "  <br>&nbsp;\n"
+                */);
             writer.write(
                 "</ul>\n" +
-                "If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot gov</kbd>.\n");
+                EDStatic.additionalLinks + "\n");
+                // "If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot gov</kbd>.\n");
 
             //JavaPrograms
-            writer.write(
+            //setup.html always from coastwatch's erddap
+            writer.write(EDStatic.javaProgramsHTML
+            /*
                 "<h2><a class=\"selfLink\" id=\"JavaPrograms\" href=\"#JavaPrograms\" rel=\"bookmark\">Using ERDDAP as a Data Source within Your Java Program</a></h2>\n" +
                 "As described above, since Java programs can access data available on the web, you can\n" +
                 "write a Java program that accesses data from any publicly accessible ERDDAP installation.\n" +
@@ -3850,10 +4040,14 @@ writer.write(
                 "ERDDAP on your own server (publicly accessible or not) to serve your own data. Your Java\n" +
                 "programs can get data from that copy of ERDDAP. See\n" +
                 //setup.html always from coastwatch's erddap
-                "  <a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">Set Up Your Own ERDDAP</a>.\n");
+                "  <a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">Set Up Your Own ERDDAP</a>.\n"
+                */
+                );
 
             //login
             writer.write(
+                EDStatic.loginHTML
+                /*
                 "<h2><a class=\"selfLink\" id=\"login\" href=\"#login\" rel=\"bookmark\">Log in to access private datasets.</a></h2>\n" +
                 "Many ERDDAP installations don't have authentication enabled and thus\n" +
                 "don't provide any way for users to login, nor do they have any private datasets.\n" +
@@ -3865,10 +4059,14 @@ writer.write(
                 "that the ERDDAP administrator has explicitly authorized them to access.\n" +
                 "For instructions on logging into ERDDAP from a browser or via a script, see\n" +
                 "<a rel=\"help\" href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html\">Access to Private Datasets in ERDDAP</a>.\n" +
-                "\n");
+                "\n"
+                */);
 
             //erddap version
-            writer.write(
+            String erddapVersionHTML = EDStatic.erddapVersionHTML.replaceAll("tErddapUrl", tErddapUrl)
+                .replaceAll("&erddapVersion", EDStatic.erddapVersion);
+            writer.write(erddapVersionHTML
+                /*
                 "<h2><a class=\"selfLink\" id=\"version\" href=\"#version\" rel=\"bookmark\">ERDDAP Version</a></h2>\n" +
                 "If you want to use a new feature on a remote ERDDAP, you can find out if the new\n" +
                 "feature is available by sending a request to determine the ERDDAP's version\n" +
@@ -3889,7 +4087,8 @@ writer.write(
                 "<kbd>ERDDAP_version_string=1.82_JohnsFork</kbd>\n" +
                 "<br>If you get an <kbd>HTTP 404 Not-Found</kbd> error message, treat the ERDDAP as version\n" +
                 "1.80 or lower.\n" +
-                "\n");
+                "\n"
+                */);
 
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -5031,7 +5230,8 @@ writer.write(
         if (!protocol.equals("sos"))
             description += "\n" + 
                 MessageFormat.format(EDStatic.seeProtocolDocumentation,
-                    tErddapUrl, protocol, uProtocol) +
+                    tErddapUrl, uProtocol) +
+                    //tErddapUrl, protocol, uProtocol) +
                 "\n";
 
         //handle plainFileTypes   
@@ -10647,10 +10847,17 @@ breadCrumbs + endBreadCrumbs +
             //display start of web page
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
             Writer writer = getHtmlWriterUtf8(loggedInAs, niceProtocol, out); 
+            String openSearchDescription = EDStatic.openSearchDescription
+                .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl))
+                .replaceAll("&niceProtocol;", niceProtocol)
+                .replaceAll("&descriptionUrl;", descriptionUrl)
+                .replaceAll("&sampleUrl;", sampleUrl)
+                .replaceAll("&tErddapUrl;", tErddapUrl);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, niceProtocol) +
-                "<p><a rel=\"bookmark\" href=\"https://github.com/dewitt/opensearch#what-is-opensearch\">" + niceProtocol + "" +
+                EDStatic.youAreHere(loggedInAs, niceProtocol) + openSearchDescription
+                /*
+                "<p><a rel=\"bookmark\" href=\"https://github.com/dewitt/opensearch#what-is-opensearch\">" + niceProtocol + "" + //""?
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
                 "is a standard way for search engines at other websites to search this\n" +
                 "ERDDAP for interesting datasets.\n" +
@@ -10681,7 +10888,8 @@ breadCrumbs + endBreadCrumbs +
                 "Developers of computer programs and JavaScripted web pages can access ERDDAP's regular\n" +
                 "search options as\n" +
                 "  <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">RESTful services</a>.\n" +
-                "</div>\n");
+                "</div>\n"
+                */);
             endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }      
@@ -10744,7 +10952,7 @@ XML.encodeAsXML(EDStatic.adminInstitution.length() <= 38? " at " + EDStatic.admi
 XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</Attribution>\n" +
 "  <SyndicationRight>" + (loggedInAs == null? "open" : "private") + "</SyndicationRight>\n" +
 "  <AdultContent>false</AdultContent>\n" +
-"  <Language>en-us</Language>\n" +  //language could change if messages.xml is translated
+"  <Language>" + EDStatic.langCode + "</Language>\n" +  //language could change if messages.xml is translated
 "  <InputEncoding>UTF-8</InputEncoding>\n" +
 "  <OutputEncoding>UTF-8</OutputEncoding>\n" +
 "</OpenSearchDescription>\n");

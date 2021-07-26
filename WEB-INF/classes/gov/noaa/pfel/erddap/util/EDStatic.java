@@ -686,11 +686,13 @@ public static boolean developmentMode = false;
         acceptEncodingHtml,
         filesDocumentation;
     public static String 
+        accessRESTFUL,
         acronyms,
         addConstraints,
         addVarWhereAttName,
         addVarWhereAttValue,
         addVarWhere,
+        additionalLinks,
         admKeywords,
         admSubsetVariables,
         admSummary,
@@ -783,12 +785,14 @@ public static boolean developmentMode = false;
         categoryClickHtml,
         categoryNotAnOption,
         caughtInterrupted,
+        cdmDataTypeHelp,
         clickAccess,
         clickBackgroundInfo,
         clickERDDAP,
         clickInfo,
         clickToSubmit,
-        convertOceanicAtmosphericAcronyms,        
+        converterWebService,
+        convertOceanicAtmosphericAcronyms,
         convertOceanicAtmosphericAcronymsIntro,
         convertOceanicAtmosphericAcronymsNotes,
         convertOceanicAtmosphericAcronymsService,
@@ -852,7 +856,79 @@ public static boolean developmentMode = false;
         dasTitle,
         dataAccessNotAllowed,
         databaseUnableToConnect,
+        dataProviderFormSuccess,
         dataProviderFormShortDescription,
+        dataProviderFormLongDescriptionHTML,
+        dataProviderFormPart1,
+        dataProviderFormPart2Header,
+        dataProviderFormPart2GlobalMetadata,
+        dataProviderContactInfo,
+        dataProviderData,
+
+        dfs_submit,
+        dfs_fixProblem,
+        dpf_yourName,
+        dpf_emailAddress,
+        dpf_Timestamp,
+        dpf_frequency,
+        dpf_title,
+        dpf_titleTooltip,
+        dpf_summary,
+        dpf_summaryTooltip,
+        dpf_creatorName,
+        dpf_creatorNameTooltip,
+        dpf_creatorType,
+        dpf_creatorTypeTooltip,
+        dpf_creatorEmail,
+        dpf_creatorEmailTooltip,
+        dpf_institution,
+        dpf_institutionTooltip,
+        dpf_infoUrl,
+        dpf_infoUrlTooltip,
+        dpf_license,
+        dpf_licenseTooltip,
+        dpf_howYouStoreData,
+        dpf_required,
+        dpf_optional,
+        dpf_provideIfAvaliable,
+        dpf_acknowledgement,
+        dpf_acknowledgementTooltip,
+        dpf_history,
+        dpf_historyTooltip,
+        dpf_idTooltip,
+        dpf_namingAuthority,
+        dpf_namingAuthorityTooltip,
+        dpf_productVersion,
+        dpf_productVersionTooltip,
+        dpf_references,
+        dpf_referencesTooltip,
+        dpf_comment,
+        dpf_commentTooltip,
+        dpf_dataTypeHelp,
+        dpf_ioosCategory,
+        dpf_ioosCategoryHelp,
+        dpf_part3Header,
+        dpf_variableMetadata,
+        dpf_sourceName,
+        dpf_sourceNameTooltip,
+        dpf_destinationName,
+        dpf_destinationNameTooltip,
+        dpf_longName,
+        dpf_longNameTooltip,
+        dpf_standardName,
+        dpf_standardNameTooltip,
+        dpf_dataType,
+        dpf_fillValue,
+        dpf_fillValueTooltip,
+        dpf_units,
+        dpf_unitsTooltip,
+        dpf_range,
+        dpf_rangeTooltip,
+        dpf_part4Header,
+        dpf_otherComment,
+        dpf_finishPart4,
+        dpf_congratulation,
+
         disabled,
         distinctValuesTooltip,
         doWithGraphs,
@@ -961,6 +1037,7 @@ public static boolean developmentMode = false;
         EDDTableDapLongDescription,
         EDDTableDownloadDataTooltip,
 
+        erddapVersionHTML,
         errorTitle,
         errorRequestUrl,
         errorRequestQuery,
@@ -1043,7 +1120,11 @@ public static boolean developmentMode = false;
         filesDescription,
         filesSort,
         filesWarning,
+        findOutChange,
         FIPSCountryCode,
+        forSOSUse,
+        forWCSUse,
+        forWMSUse,
         functions,
         functionTooltip,
         functionDistinctCheck,
@@ -1085,6 +1166,7 @@ public static boolean developmentMode = false;
         inotifyFix,
         inotifyFixCommands,
         interpolate,
+        javaProgramsHTML,
         justGenerateAndView,
         justGenerateAndViewTooltip,
         justGenerateAndViewUrl,
@@ -1098,6 +1180,7 @@ public static boolean developmentMode = false;
         listOfDatasets,
         LogIn,
         login,
+        loginHTML,
         loginAttemptBlocked,
         loginDescribeCustom,
         loginDescribeEmail,
@@ -1268,11 +1351,13 @@ public static boolean developmentMode = false;
         noXxxItsGridded,
         noXxxItsTabular,
         oneRequestAtATime,
+        openSearchDescription,
         optional,
         options,
         orRefineSearchWith,
         orSearchWith,
         orComma,
+        outOfDateKeepTrack,
         outOfDateHtml,
         palettes[],
         palettes0[],
@@ -1334,6 +1419,14 @@ public static boolean developmentMode = false;
         resetTheForm,
         resetTheFormWas,
         resourceNotFound,
+        restfulWebServices,
+        restfulHTML,
+        restfulHTMLContinued,
+        restfulGetAllDataset,
+        restfulProtocols,
+        SOSDocumentation,
+        WCSDocumentation,
+        WMSDocumentation,
         requestFormatExamplesHtml,
         resultsFormatExamplesHtml,
         resultsOfSearchFor,
@@ -1373,7 +1466,9 @@ public static boolean developmentMode = false;
         ssInstructionsHtml,
         statusHtml,
         submit,
-        submitTooltip, 
+        submitTooltip,
+        subscriptionRSSHTML,
+        subscriptionURLHTML,
         subscriptionsTitle,
         subscriptionAdd,
         subscriptionAddHtml,
@@ -2026,11 +2121,13 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
 
         //read all the static Strings from messages.xml
         acceptEncodingHtml         = messages.getNotNothingString("acceptEncodingHtml",         errorInMethod);
-        acronyms                   = messages.getNotNothingString("acronyms", errorInMethod);
+        accessRESTFUL              = messages.getNotNothingString("accessRestful",              errorInMethod);
+        acronyms                   = messages.getNotNothingString("acronyms",                   errorInMethod);
         addConstraints             = messages.getNotNothingString("addConstraints",             errorInMethod);
         addVarWhereAttName         = messages.getNotNothingString("addVarWhereAttName",         errorInMethod);
         addVarWhereAttValue        = messages.getNotNothingString("addVarWhereAttValue",        errorInMethod);
         addVarWhere                = messages.getNotNothingString("addVarWhere",                errorInMethod);
+        additionalLinks            = messages.getNotNothingString("additionalLinks",            errorInMethod);
         admKeywords                = messages.getNotNothingString("admKeywords",                errorInMethod);
         admSubsetVariables         = messages.getNotNothingString("admSubsetVariables",         errorInMethod);
         admSummary                 = messages.getNotNothingString("admSummary",                 errorInMethod);
@@ -2136,12 +2233,14 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          errorInMethod);
         categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        errorInMethod);
         caughtInterrupted    = " " + messages.getNotNothingString("caughtInterrupted",          errorInMethod);
+        cdmDataTypeHelp            = messages.getNotNothingString("cdmDataTypeHelp",            errorInMethod);
         clickAccess                = messages.getNotNothingString("clickAccess",                errorInMethod);
         clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        errorInMethod);
         clickERDDAP                = messages.getNotNothingString("clickERDDAP",                errorInMethod);
         clickInfo                  = messages.getNotNothingString("clickInfo",                  errorInMethod);
         clickToSubmit              = messages.getNotNothingString("clickToSubmit",              errorInMethod);
         HtmlWidgets.comboBoxAlt    = messages.getNotNothingString("comboBoxAlt",                errorInMethod);
+        converterWebService        = messages.getNotNothingString("converterWebService",        errorInMethod);
         convertOceanicAtmosphericAcronyms             = messages.getNotNothingString("convertOceanicAtmosphericAcronyms",             errorInMethod);
         convertOceanicAtmosphericAcronymsIntro        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsIntro",        errorInMethod);
         convertOceanicAtmosphericAcronymsNotes        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsNotes",        errorInMethod);
@@ -2209,8 +2308,81 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
         dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
         databaseUnableToConnect    = messages.getNotNothingString("databaseUnableToConnect",    errorInMethod);
+        dataProviderFormSuccess    = messages.getNotNothingString("dataProviderFormSuccess",    errorInMethod);
         dataProviderFormShortDescription = messages.getNotNothingString("dataProviderFormShortDescription", errorInMethod);
+        dataProviderFormLongDescriptionHTML = messages.getNotNothingString("dataProviderFormLongDescriptionHTML", errorInMethod);
         disabled                   = messages.getNotNothingString("disabled",                   errorInMethod);
+        dataProviderFormPart1      = messages.getNotNothingString("dataProviderFormPart1",      errorInMethod);
+        dataProviderFormPart2Header = messages.getNotNothingString("dataProviderFormPart2Header", errorInMethod);
+        dataProviderFormPart2GlobalMetadata = messages.getNotNothingString("dataProviderFormPart2GlobalMetadata", errorInMethod);
+        dataProviderContactInfo    = messages.getNotNothingString("dataProviderContactInfo",    errorInMethod);
+        dataProviderData           = messages.getNotNothingString("dataProviderData",           errorInMethod);
+
+        dfs_submit                 = messages.getNotNothingString("dfs_submit",                 errorInMethod);
+        dfs_fixProblem             = messages.getNotNothingString("dfs_fixProblem",             errorInMethod);
+        dpf_yourName               = messages.getNotNothingString("dpf_yourName",               errorInMethod);
+        dpf_emailAddress           = messages.getNotNothingString("dpf_emailAddress",           errorInMethod);
+        dpf_Timestamp              = messages.getNotNothingString("dpf_Timestamp",              errorInMethod);
+        dpf_frequency              = messages.getNotNothingString("dpf_frequency",              errorInMethod);
+        dpf_title                  = messages.getNotNothingString("dpf_title",                  errorInMethod);
+        dpf_titleTooltip           = messages.getNotNothingString("dpf_titleTooltip",           errorInMethod);
+        dpf_summary                = messages.getNotNothingString("dpf_summary",                errorInMethod);
+        dpf_summaryTooltip         = messages.getNotNothingString("dpf_summaryTooltip",         errorInMethod);
+        dpf_creatorName            = messages.getNotNothingString("dpf_creatorName",            errorInMethod);
+        dpf_creatorNameTooltip     = messages.getNotNothingString("dpf_creatorNameTooltip",     errorInMethod);
+        dpf_creatorType            = messages.getNotNothingString("dpf_creatorType",            errorInMethod);
+        dpf_creatorTypeTooltip     = messages.getNotNothingString("dpf_creatorTypeTooltip",     errorInMethod);
+        dpf_creatorEmail           = messages.getNotNothingString("dpf_creatorEmail",           errorInMethod);
+        dpf_creatorEmailTooltip    = messages.getNotNothingString("dpf_creatorEmailTooltip",    errorInMethod);
+        dpf_institution            = messages.getNotNothingString("dpf_institution",            errorInMethod);
+        dpf_institutionTooltip     = messages.getNotNothingString("dpf_institutionTooltip",     errorInMethod);
+        dpf_infoUrl                = messages.getNotNothingString("dpf_infoUrl",                errorInMethod);
+        dpf_infoUrlTooltip         = messages.getNotNothingString("dpf_infoUrlTooltip",         errorInMethod);
+        dpf_license                = messages.getNotNothingString("dpf_license",                errorInMethod);
+        dpf_licenseTooltip         = messages.getNotNothingString("dpf_licenseTooltip",         errorInMethod);
+        dpf_howYouStoreData        = messages.getNotNothingString("dpf_howYouStoreData",        errorInMethod);
+        dpf_required               = messages.getNotNothingString("dpf_required",               errorInMethod);
+        dpf_optional               = messages.getNotNothingString("dpf_optional",               errorInMethod);
+        dpf_provideIfAvaliable     = messages.getNotNothingString("dpf_provideIfAvaliable",     errorInMethod);
+        dpf_acknowledgement        = messages.getNotNothingString("dpf_acknowledgement",        errorInMethod);
+        dpf_acknowledgementTooltip = messages.getNotNothingString("dpf_acknowledgementTooltip", errorInMethod);
+        dpf_history                = messages.getNotNothingString("dpf_history",                errorInMethod);
+        dpf_historyTooltip         = messages.getNotNothingString("dpf_historyTooltip",         errorInMethod);
+        dpf_idTooltip              = messages.getNotNothingString("dpf_idTooltip",              errorInMethod);
+        dpf_namingAuthority        = messages.getNotNothingString("dpf_namingAuthority",        errorInMethod);
+        dpf_namingAuthorityTooltip = messages.getNotNothingString("dpf_namingAuthorityTooltip", errorInMethod);
+        dpf_productVersion         = messages.getNotNothingString("dpf_productVersion",         errorInMethod);
+        dpf_productVersionTooltip  = messages.getNotNothingString("dpf_productVersionTooltip",  errorInMethod);
+        dpf_references              = messages.getNotNothingString("dpf_references",              errorInMethod);
+        dpf_referencesTooltip      = messages.getNotNothingString("dpf_referencesTooltip",      errorInMethod);
+        dpf_comment                = messages.getNotNothingString("dpf_comment",                errorInMethod);
+        dpf_commentTooltip         = messages.getNotNothingString("dpf_commentTooltip",         errorInMethod);
+        dpf_dataTypeHelp           = messages.getNotNothingString("dpf_dataTypeHelp",           errorInMethod);
+        dpf_ioosCategory           = messages.getNotNothingString("dpf_ioosCategory",           errorInMethod);
+        dpf_ioosCategoryHelp       = messages.getNotNothingString("dpf_ioosCategoryHelp",       errorInMethod);
+        dpf_part3Header            = messages.getNotNothingString("dpf_part3Header",            errorInMethod);
+        dpf_variableMetadata       = messages.getNotNothingString("dpf_variableMetadata",       errorInMethod);
+        dpf_sourceName             = messages.getNotNothingString("dpf_sourceName",             errorInMethod);
+        dpf_sourceNameTooltip      = messages.getNotNothingString("dpf_sourceNameTooltip",      errorInMethod);
+        dpf_destinationName        = messages.getNotNothingString("dpf_destinationName",        errorInMethod);
+        dpf_destinationNameTooltip = messages.getNotNothingString("dpf_destinationNameTooltip", errorInMethod);
+        dpf_longName               = messages.getNotNothingString("dpf_longName",               errorInMethod);
+        dpf_longNameTooltip        = messages.getNotNothingString("dpf_longNameTooltip",        errorInMethod);
+        dpf_standardName           = messages.getNotNothingString("dpf_standardName",           errorInMethod);
+        dpf_standardNameTooltip    = messages.getNotNothingString("dpf_standardNameTooltip",    errorInMethod);
+        dpf_dataType               = messages.getNotNothingString("dpf_dataType",               errorInMethod);
+        dpf_fillValue              = messages.getNotNothingString("dpf_fillValue",              errorInMethod);
+        dpf_fillValueTooltip       = messages.getNotNothingString("dpf_fillValueTooltip",       errorInMethod);
+        dpf_units                  = messages.getNotNothingString("dpf_units",                  errorInMethod);
+        dpf_unitsTooltip           = messages.getNotNothingString("dpf_unitsTooltip",           errorInMethod);
+        dpf_range                  = messages.getNotNothingString("dpf_range",                  errorInMethod);
+        dpf_rangeTooltip           = messages.getNotNothingString("dpf_rangeTooltip",           errorInMethod);
+        dpf_part4Header            = messages.getNotNothingString("dpf_part4Header",            errorInMethod);
+        dpf_otherComment           = messages.getNotNothingString("dpf_otherComment",           errorInMethod);
+        dpf_finishPart4            = messages.getNotNothingString("dpf_finishPart4",            errorInMethod);
+        dpf_congratulation         = messages.getNotNothingString("dpf_congratulation",         errorInMethod);
+
+
         distinctValuesTooltip      = messages.getNotNothingString("distinctValuesTooltip",      errorInMethod);
         doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
 
@@ -2402,6 +2574,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         EDDTableMapExampleHA         = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableMapExample));
 
         errorTitle                 = messages.getNotNothingString("errorTitle",                 errorInMethod);
+        erddapVersionHTML          = messages.getNotNothingString("erddapVersionHTML",          errorInMethod);
         errorRequestUrl            = messages.getNotNothingString("errorRequestUrl",            errorInMethod);
         errorRequestQuery          = messages.getNotNothingString("errorRequestQuery",          errorInMethod);
         errorTheError              = messages.getNotNothingString("errorTheError",              errorInMethod);
@@ -2488,7 +2661,11 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         filesDocumentation         = messages.getNotNothingString("filesDocumentation",         errorInMethod);
         filesSort                  = messages.getNotNothingString("filesSort",                  errorInMethod);
         filesWarning               = messages.getNotNothingString("filesWarning",               errorInMethod);
-        FIPSCountryCode            = messages.getNotNothingString("FIPSCountryCode",               errorInMethod);
+        findOutChange              = messages.getNotNothingString("findOutChange",              errorInMethod);
+        FIPSCountryCode            = messages.getNotNothingString("FIPSCountryCode",            errorInMethod);
+        forSOSUse                  = messages.getNotNothingString("forSOSUse",                  errorInMethod);
+        forWCSUse                  = messages.getNotNothingString("forWCSUse",                  errorInMethod);
+        forWMSUse                  = messages.getNotNothingString("forWMSUse",                  errorInMethod);
         functions                  = messages.getNotNothingString("functions",                  errorInMethod);
         functionTooltip            = messages.getNotNothingString("functionTooltip",            errorInMethod);
         functionTooltip            = MessageFormat.format(functionTooltip, "distinct()");
@@ -2536,6 +2713,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         inotifyFixCommands         = messages.getNotNothingString("inotifyFixCommands",         errorInMethod);
         inotifyFix                 = MessageFormat.format(inotifyFix, inotifyFixCommands);
         interpolate                = messages.getNotNothingString("interpolate",                errorInMethod);
+        javaProgramsHTML           = messages.getNotNothingString("javaProgramsHTML",           errorInMethod);
         justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
         justGenerateAndViewTooltip = messages.getNotNothingString("justGenerateAndViewTooltip", errorInMethod);
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
@@ -2555,6 +2733,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         listOfDatasets             = messages.getNotNothingString("listOfDatasets",             errorInMethod);
         LogIn                      = messages.getNotNothingString("LogIn",                      errorInMethod);
         login                      = messages.getNotNothingString("login",                      errorInMethod);
+        loginHTML                  = messages.getNotNothingString("loginHTML",                  errorInMethod);
         loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        errorInMethod);
         loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        errorInMethod);
         loginDescribeEmail         = messages.getNotNothingString("loginDescribeEmail",         errorInMethod);
@@ -2735,6 +2914,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            errorInMethod);
         noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            errorInMethod);
         oneRequestAtATime          = messages.getNotNothingString("oneRequestAtATime",          errorInMethod);
+        openSearchDescription      = messages.getNotNothingString("openSearchDescription",      errorInMethod);
         optional                   = messages.getNotNothingString("optional",                   errorInMethod);
         options                    = messages.getNotNothingString("options",                    errorInMethod);
         orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         errorInMethod);
@@ -2743,6 +2923,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         orSearchWith += " ";
         orComma                    = messages.getNotNothingString("orComma",                    errorInMethod);
         orComma += " ";
+        outOfDateKeepTrack         = messages.getNotNothingString("outOfDateKeepTrack",         errorInMethod);
         outOfDateHtml              = messages.getNotNothingString("outOfDateHtml",              errorInMethod);
         palettes                   = String2.split(messages.getNotNothingString("palettes",     errorInMethod), ',');
         DEFAULT_palettes = palettes; //used by LoadDatasets if palettes tag is empty
@@ -2812,6 +2993,14 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            errorInMethod);
         resourceNotFound           = messages.getNotNothingString("resourceNotFound",           errorInMethod);
         resourceNotFound += " ";
+        restfulWebServices         = messages.getNotNothingString("restfulWebServices",         errorInMethod);
+        restfulHTML                = messages.getNotNothingString("restfulHTML",                errorInMethod);
+        restfulHTMLContinued       = messages.getNotNothingString("restfulHTMLContinued",       errorInMethod);
+        restfulGetAllDataset       = messages.getNotNothingString("restfulGetAllDataset",       errorInMethod);
+        restfulProtocols           = messages.getNotNothingString("restfulProtocols",           errorInMethod);
+        SOSDocumentation           = messages.getNotNothingString("SOSDocumentation",           errorInMethod);
+        WCSDocumentation           = messages.getNotNothingString("WCSDocumentation",           errorInMethod);
+        WMSDocumentation           = messages.getNotNothingString("WMSDocumentation",           errorInMethod);
         resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  errorInMethod);
         resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         errorInMethod);
         restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  errorInMethod);
@@ -2855,6 +3044,8 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         statusHtml                 = messages.getNotNothingString("statusHtml",                 errorInMethod);
         submit                     = messages.getNotNothingString("submit",                     errorInMethod);
         submitTooltip              = messages.getNotNothingString("submitTooltip",              errorInMethod);
+        subscriptionRSSHTML        = messages.getNotNothingString("subscriptionRSSHTML",        errorInMethod);
+        subscriptionURLHTML        = messages.getNotNothingString("subscriptionURLHTML",        errorInMethod);
         subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         errorInMethod);
         subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            errorInMethod);
         subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       errorInMethod);
