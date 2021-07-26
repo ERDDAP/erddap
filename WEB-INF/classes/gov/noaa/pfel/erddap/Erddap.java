@@ -1063,7 +1063,8 @@ public class Erddap extends HttpServlet {
         Writer writer = getHtmlWriterUtf8(loggedInAs, "Information", out);
         try {
             writer.write("<div class=\"standard_width\">\n");
-            writer.write(EDStatic.youAreHere(loggedInAs, "Information"));
+            writer.write(EDStatic.youAreHere(loggedInAs, EDStatic.hpn_information));
+            //writer.write(EDStatic.youAreHere(loggedInAs, "Information"));
             writer.write(EDStatic.theLongDescriptionHtml(tErddapUrl));
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -1088,7 +1089,8 @@ public class Erddap extends HttpServlet {
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "Legal Notices") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_legalNotices) +
+                // EDStatic.youAreHere(loggedInAs, "Legal Notices") +
                 EDStatic.legalNotices + "\n" +
                 // "<a rel=\"bookmark\" href=\"#disclaimers\">MODIFIED Disclaimers</a> | " +
                 // "<a rel=\"bookmark\" href=\"#privacyPolicy\">Privacy Policy</a> | " +
@@ -1988,7 +1990,8 @@ public class Erddap extends HttpServlet {
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderForm));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form"));
 
 //begin text
 writer.write(dataProviderFormLongDescriptionHTML
@@ -2179,7 +2182,8 @@ writer.write(dataProviderFormLongDescriptionHTML
             writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form - Part 1", out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 1"));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 1"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderFormP1));
 
             //begin form
             String formName = "f1";
@@ -2528,7 +2532,8 @@ writer.write(widgets.endForm());
             writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form - Part 2", out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 2"));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 2"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderFormP2));
 
             //begin form
             String formName = "f1";
@@ -3038,7 +3043,8 @@ dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   +
             writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form - Part 3", out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 3"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderFormP3));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 3"));
 
             //begin form
             String formName = "f1";
@@ -3360,7 +3366,8 @@ writer.write(widgets.endForm());
             writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form - Part 4", out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 4"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderFormP4));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Part 4"));
 
             //begin form
             String formName = "f1";
@@ -3465,7 +3472,8 @@ writer.write(widgets.endForm());
             writer = getHtmlWriterUtf8(tLoggedInAs, "Data Provider Form - Done", out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Done"));
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.hpn_dataProviderFormDone));
+                // EDStatic.youAreHere(tLoggedInAs, "Data Provider Form - Done"));
 
 //begin text
 writer.write(EDStatic.dpf_congratulation
@@ -3517,7 +3525,8 @@ writer.write(EDStatic.dpf_congratulation
             int nTableDatasets = tableDatasetHashMap.size();
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "Status") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_status) +
+                // EDStatic.youAreHere(loggedInAs, "Status") +
                 "<pre>");
             StringBuilder sb = new StringBuilder();
             EDStatic.addIntroStatistics(sb);
@@ -3598,7 +3607,8 @@ writer.write(EDStatic.dpf_congratulation
 
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "RESTful Web Services") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_restfulWebService) +
+                // EDStatic.youAreHere(loggedInAs, "RESTful Web Services") +
                 "<h2 style=\"text-align:center;\"><a class=\"selfLink\" id=\"WebService\" href=\"#WebService\" rel=\"bookmark\">" + EDStatic.accessRESTFUL +"</a></h2>\n"
                 + modifiedRestfulHTML
                 /*
@@ -4351,7 +4361,8 @@ writer.write(EDStatic.dpf_congratulation
             Writer writer = getHtmlWriterUtf8(loggedInAs, protocol + " Documentation", out); 
             try {
                 writer.write("<div class=\"standard_width\">\n");
-                writer.write(EDStatic.youAreHere(loggedInAs, protocol, "Documentation"));
+                writer.write(EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_documentation));
+                // writer.write(EDStatic.youAreHere(loggedInAs, protocol, "Documentation"));
                 if (protocol.equals("griddap"))       
                     EDDGrid.writeGeneralDapHtmlInstructions(tErddapUrl, writer, true);
                 else if (protocol.equals("tabledap")) 
@@ -4429,7 +4440,8 @@ writer.write(EDStatic.dpf_congratulation
                 writer.write("\n");
                 writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));     
                 writer.write("<div class=\"standard_width\">\n");
-                writer.write(EDStatic.youAreHere(loggedInAs, protocol, "Help"));
+                writer.write(EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_help));
+                // writer.write(EDStatic.youAreHere(loggedInAs, protocol, "Help"));
                 writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
                 try {
                     if (protocol.equals("griddap")) 
@@ -4728,7 +4740,8 @@ writer.write(EDStatic.dpf_congratulation
             Writer writer = getHtmlWriterUtf8(loggedInAs, "ERDDAP \"files\" Documentation", out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
-                writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
+                writer.write(EDStatic.youAreHere(loggedInAs, EDStatic.hpn_files, EDStatic.hpn_documentation));
+                // writer.write(EDStatic.youAreHere(loggedInAs, "files", "Documentation"));
                 writer.write(EDStatic.filesDocumentation(tErddapUrl));
             } catch (Exception e) {
                 EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
@@ -4860,7 +4873,8 @@ writer.write(EDStatic.dpf_congratulation
 
                 writer.write(
                     "<div class=\"standard_width\">\n" +
-                    EDStatic.youAreHere(loggedInAs, "files") + 
+                    EDStatic.youAreHere(loggedInAs, EDStatic.hpn_files) + 
+                    // EDStatic.youAreHere(loggedInAs, "files") + 
                     EDStatic.filesDescription + 
                     "\n<br><span class=\"warningColor\">" + EDStatic.warning + "</span> " +
                     EDStatic.filesWarning + "\n" +
@@ -4975,7 +4989,8 @@ writer.write(EDStatic.dpf_congratulation
             try {
                 writer.write("<div class=\"standard_width\">\n");
                 writer.write(
-                    nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
+                    // nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, "files", id) :
+                    nextPath.length() == 0? EDStatic.youAreHere(loggedInAs, EDStatic.hpn_files, id) :
                     "\n<h1>" + EDStatic.erddapHref(tErddapUrl) +
                     "\n &gt; <a rel=\"contents\" href=\"" + 
                         XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(tErddapUrl, "files")) +
@@ -5704,8 +5719,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "Sensor Observation Service (SOS)") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_SOS) +
+                // EDStatic.youAreHere(loggedInAs, "Sensor Observation Service (SOS)") +
                 "\n" +
+                EDStatic.sosOverview1.replaceAll("&tErddapUrl;", tErddapUrl)
+                    .replaceAll("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery) +
+                    /*
                 "<h2>Overview</h2>\n" +
                 "In addition to making data available via \n" +
                   "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html?" + 
@@ -5716,12 +5735,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<br>available via ERDDAP's Sensor Observation Service (SOS) web service.\n" +
                 "\n" +
                 "<p>" + 
+                */
                 String2.replaceAll(EDStatic.sosLongDescriptionHtml, "&erddapUrl;", tErddapUrl) + 
+                EDStatic.sosOverview2.replace("&tErddapUrl;", tErddapUrl).replace("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery) +
+                /*
                 "<p>See the\n" +
                 "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/sos/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via SOS</a>\n" +
                 "at this ERDDAP installation.\n" +
                 "<br>The SOS web pages listed there for each dataset have further documentation and sample requests.\n" +
+                */
                 "\n");
 
         } catch (Throwable t) {
@@ -6012,28 +6035,32 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "Web Coverage Service (WCS)") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_WCS) +
+                // EDStatic.youAreHere(loggedInAs, "Web Coverage Service (WCS)") +
                 "\n" +
-                "<h2>Overview</h2>\n" +
-                "In addition to making data available via \n" +
-                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html?" + 
-                    EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
-                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/tabledap/index.html?" + 
-                    EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>,\n" + 
-                "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.\n" +
-                "\n" +
-                "<p>See the\n" +
-                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/wcs/index.html?" + 
-                    EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via WCS</a>\n" +
-                "at this ERDDAP installation.\n" +
+                EDStatic.wcsOverview1.replace("&tErddapUrl;", tErddapUrl)
+                    .replace("&encodedDefaultPIppQuery;", EDStatic.encodedDefaultPIppQuery) + 
+                // "<h2>Overview</h2>\n" +
+                // "In addition to making data available via \n" +
+                // "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                //     EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
+                // "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                //     EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>,\n" + 
+                // "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.\n" +
+                // "\n" +
+                // "<p>See the\n" +
+                // "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/wcs/index.html?" + 
+                //     EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via WCS</a>\n" +
+                // "at this ERDDAP installation.\n" +
                 "\n" +
                 "<p>" + String2.replaceAll(EDStatic.wcsLongDescriptionHtml, "&erddapUrl;", tErddapUrl) + "\n" +
-                "\n" +
-                "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n" +
-                "See this <a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations\" \n" +
-                    ">list of WCS clients (and servers)" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" + 
-                "</ul>\n");
+                EDStatic.wcsOverview2.replace("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl)) + 
+                // "\n" + 
+                // "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n" +
+                // "See this <a rel=\"bookmark\" href=\"https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations\" \n" +
+                //     ">list of WCS clients (and servers)" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" + 
+                "\n</ul>\n");
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
@@ -6343,7 +6370,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             writer.write(
                 //see almost identical documentation at ...
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "wms", "Documentation") +
+                EDStatic.youAreHere(loggedInAs, "wms", EDStatic.hpn_documentation) +
+                // EDStatic.youAreHere(loggedInAs, "wms", "Documentation") +
                 String2.replaceAll(EDStatic.wmsLongDescriptionHtml, "&erddapUrl;", tErddapUrl) + "\n" +
                 datasetListRef +
                 //"<p>\n" +
@@ -10171,7 +10199,8 @@ breadCrumbs + endBreadCrumbs +
         Writer writer = getHtmlWriterUtf8(loggedInAs, "Slide Sorter", out); 
         try {
             writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));
-            writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "Slide Sorter", 
+            // writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "Slide Sorter", 
+            writer.write(EDStatic.youAreHereWithHelp(loggedInAs, EDStatic.hpn_slideSorter, 
                 "<div class=\"standard_max_width\">" + EDStatic.ssInstructionsHtml +
                 "</div>")); 
             writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
@@ -13694,7 +13723,8 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, protocol, "add") +
+                // EDStatic.youAreHere(loggedInAs, protocol, "add") +
+                EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_add) +
                 EDStatic.subscription0Html +
                 MessageFormat.format(EDStatic.subscription1Html, tErddapUrl) + "\n" +
                 MessageFormat.format(EDStatic.subscription2Html, tErddapUrl) + "\n");
@@ -13840,7 +13870,8 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, protocol, "list") +
+                // EDStatic.youAreHere(loggedInAs, protocol, "list") +
+                EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_list) +
                 EDStatic.subscription0Html +
                 MessageFormat.format(EDStatic.subscription1Html, tErddapUrl) + "\n");
 
@@ -13967,7 +13998,8 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, protocol, "validate") +
+                EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_validate) +
+                // EDStatic.youAreHere(loggedInAs, protocol, "validate") +
                 EDStatic.subscription0Html +
                 MessageFormat.format(EDStatic.subscription1Html, tErddapUrl) + "\n");
 
@@ -14104,7 +14136,8 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, protocol, "remove") +
+                EDStatic.youAreHere(loggedInAs, protocol, EDStatic.hpn_remove) +
+                // EDStatic.youAreHere(loggedInAs, protocol, "remove") +
                 EDStatic.subscription0Html +
                 MessageFormat.format(EDStatic.subscription1Html, tErddapUrl) + "\n");
 
@@ -14320,7 +14353,8 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert") +
+                EDStatic.youAreHere(loggedInAs, EDStatic.hpn_convert) +
+                // EDStatic.youAreHere(loggedInAs, "convert") +
                 EDStatic.convertHtml + "\n" +
                 //"<p>Options:\n" +
                 "<ul>\n" +
@@ -14471,7 +14505,15 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert", "FIPS County") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "FIPS County") +
+                // The content in the parenthese requires sepcial handling, because simply calling youAreHere(String, String, String)
+                // will create an invalid URL in the page title. Similar for several other tags
+                ("\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_fipsCounty + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertFipsCounty + "</h2>\n" +
                 EDStatic.convertFipsCountyIntro + "\n");
 
@@ -14686,7 +14728,14 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Acronyms") +
+                // read coments in doConverFipsCounty
+                // EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Acronyms") +
+                ("\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_OAAcronyms + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertOceanicAtmosphericAcronyms + "</h2>\n" +
                 EDStatic.convertOceanicAtmosphericAcronymsIntro + "\n");
 
@@ -14903,7 +14952,14 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Variable Names") +
+                // see comments in doConvertFIPSCounty
+                // EDStatic.youAreHere(loggedInAs, "convert", "Oceanic/Atmospheric Variable Names") +
+                ("\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_OAVariableNames + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertOceanicAtmosphericVariableNames + "</h2>\n" +
                 EDStatic.convertOceanicAtmosphericVariableNamesIntro + "\n");
 
@@ -15104,7 +15160,13 @@ writer.write(
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert", "keywords") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "keywords") +
+                ("\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_keywords + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertKeywords + "</h2>\n" +
                 EDStatic.convertKeywordsIntro + "\n");
      
@@ -15304,7 +15366,14 @@ writer.write(
 
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "convert", "Interpolate") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "Interpolate") +
+                (
+                    "\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.interpolate + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertInterpolate + "</h2>\n" +
                 MessageFormat.format(EDStatic.convertInterpolateIntro, idVarExample));
      
@@ -16542,7 +16611,14 @@ UTC                  m   deg_n    deg_east m s-1
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
-                EDStatic.youAreHere(loggedInAs, "convert", "Time") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "time") +
+                (
+                    "\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_time + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertTime + "</h2>\n" +
                 EDStatic.convertTimeIntro + "\n");
 
@@ -16792,7 +16868,14 @@ UTC                  m   deg_n    deg_east m s-1
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "convert", "units") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "units") +
+                (
+                    "\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; " + EDStatic.hpn_units + "</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertUnits + "</h2>\n" +
                 EDStatic.convertUnitsIntro);
      
@@ -16985,7 +17068,14 @@ UTC                  m   deg_n    deg_east m s-1
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
-                EDStatic.youAreHere(loggedInAs, "convert", "URLs") +
+                // EDStatic.youAreHere(loggedInAs, "convert", "URLs") +
+                (
+                    "\n<h1 class=\"nowrap\">" + EDStatic.erddapHref(EDStatic.erddapUrl(loggedInAs)) +
+                    "\n &gt; <a rel=\"contents\" " +
+                    "href=\"" + XML.encodeAsHTMLAttribute(EDStatic.protocolUrl(EDStatic.erddapUrl(loggedInAs), "convert")) +
+                    "\">" + EDStatic.hpn_convert + "</a>" +
+                    "\n &gt; URLs</h1>\n"
+                ) +
                 "<h2>" + EDStatic.convertURLs + "</h2>\n" +
                 EDStatic.convertURLsIntro);
      
