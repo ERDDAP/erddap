@@ -83,7 +83,7 @@ public class translate {
         //keywords used in a drop-down selection
         "/admSubsetVariables","/admKeywords",
         //abreviations
-        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
+        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information",
         // others
         "/legal", "/imageWidths", "/imageHeights", "/langCode"
     ));

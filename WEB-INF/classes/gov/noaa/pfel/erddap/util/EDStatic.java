@@ -1142,6 +1142,35 @@ public static boolean developmentMode = false;
         geoServicesDescription,
         getStartedHtml,
         htmlTableMaxMessage,
+
+        hpn_information,
+        hpn_legalNotices,
+        hpn_dataProviderForm,
+        hpn_dataProviderFormP1,
+        hpn_dataProviderFormP2,
+        hpn_dataProviderFormP3,
+        hpn_dataProviderFormP4,
+        hpn_dataProviderFormDone,
+        hpn_status,
+        hpn_restfulWebService,
+        hpn_documentation,
+        hpn_help,
+        hpn_files,
+        hpn_SOS,
+        hpn_WCS,
+        hpn_slideSorter,
+        hpn_add,
+        hpn_list,
+        hpn_validate,
+        hpn_remove,
+        hpn_convert,
+        hpn_fipsCounty,
+        hpn_OAAcronyms,
+        hpn_OAVariableNames,
+        hpn_keywords,
+        hpn_time,
+        hpn_units,
+
         imageDataCourtesyOf,
         indexViewAll,
         indexSearchWith,
@@ -2686,6 +2715,35 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         getStartedHtml             = messages.getNotNothingString("getStartedHtml",             errorInMethod);
         TableWriterHtmlTable.htmlTableMaxMB     = messages.getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);                                   
         htmlTableMaxMessage        = messages.getNotNothingString("htmlTableMaxMessage",        errorInMethod);
+
+        hpn_information            = messages.getNotNothingString("hpn_information",           errorInMethod);
+        hpn_legalNotices           = messages.getNotNothingString("hpn_legalNotices",          errorInMethod);
+        hpn_dataProviderForm       = messages.getNotNothingString("hpn_dataProviderForm",      errorInMethod);
+        hpn_dataProviderFormP1     = messages.getNotNothingString("hpn_dataProviderFormP1",    errorInMethod);
+        hpn_dataProviderFormP2     = messages.getNotNothingString("hpn_dataProviderFormP2",    errorInMethod);
+        hpn_dataProviderFormP3     = messages.getNotNothingString("hpn_dataProviderFormP3",    errorInMethod);
+        hpn_dataProviderFormP4     = messages.getNotNothingString("hpn_dataProviderFormP4",    errorInMethod);
+        hpn_dataProviderFormDone   = messages.getNotNothingString("hpn_dataProviderFormDone",  errorInMethod);
+        hpn_status                 = messages.getNotNothingString("hpn_status",                errorInMethod);
+        hpn_restfulWebService      = messages.getNotNothingString("hpn_restfulWebService",     errorInMethod);
+        hpn_documentation          = messages.getNotNothingString("hpn_documentation",         errorInMethod);
+        hpn_help                   = messages.getNotNothingString("hpn_help",                  errorInMethod);
+        hpn_files                  = messages.getNotNothingString("hpn_files",                 errorInMethod);
+        hpn_SOS                    = messages.getNotNothingString("hpn_SOS",                   errorInMethod);
+        hpn_WCS                    = messages.getNotNothingString("hpn_WCS",                   errorInMethod);
+        hpn_slideSorter            = messages.getNotNothingString("hpn_slideSorter",           errorInMethod);
+        hpn_add                    = messages.getNotNothingString("hpn_add",                   errorInMethod);
+        hpn_list                   = messages.getNotNothingString("hpn_list",                  errorInMethod);
+        hpn_validate               = messages.getNotNothingString("hpn_validate",              errorInMethod);
+        hpn_remove                 = messages.getNotNothingString("hpn_remove",                errorInMethod);
+        hpn_convert                = messages.getNotNothingString("hpn_convert",               errorInMethod);
+        hpn_fipsCounty             = messages.getNotNothingString("hpn_fipsCounty",            errorInMethod);
+        hpn_OAAcronyms             = messages.getNotNothingString("hpn_OAAcronyms",            errorInMethod);
+        hpn_OAVariableNames        = messages.getNotNothingString("hpn_OAVariableNames",       errorInMethod);
+        hpn_keywords               = messages.getNotNothingString("hpn_keywords",              errorInMethod);
+        hpn_time                   = messages.getNotNothingString("hpn_time",                  errorInMethod);
+        hpn_units                  = messages.getNotNothingString("hpn_units",                 errorInMethod);
+
         imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        errorInMethod);
         imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  errorInMethod), ','));
         imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", errorInMethod), ','));

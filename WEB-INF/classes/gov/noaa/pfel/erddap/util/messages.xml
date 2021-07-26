@@ -3742,6 +3742,35 @@ To avoid crashing your browser, some additional data was not displayed.&lt;br /&
 You can avoid this by further constraining your request, so the response has less data.&lt;br /&gt;
 Or, download a file which can be viewed in a program which can handle large files (e.g., a .csv file in a text editor).&lt;br /&gt;</htmlTableMaxMessage>
 
+<!-- HPN = Html Page Name-->
+<hpn_information>Information</hpn_information>
+<hpn_legalNotices>Legal Notices</hpn_legalNotices>
+<hpn_dataProviderForm>Data Provider Form</hpn_dataProviderForm>
+<hpn_dataProviderFormP1>Data Provider Form - Part 1</hpn_dataProviderFormP1>
+<hpn_dataProviderFormP2>Data Provider Form - Part 2</hpn_dataProviderFormP2>
+<hpn_dataProviderFormP3>Data Provider Form - Part 3</hpn_dataProviderFormP3>
+<hpn_dataProviderFormP4>Data Provider Form - Part 4</hpn_dataProviderFormP4>
+<hpn_dataProviderFormDone>Data Provider Form - Done</hpn_dataProviderFormDone>
+<hpn_status>Status</hpn_status>>
+<hpn_restfulWebService>RESTful Web Services</hpn_restfulWebService>
+<hpn_documentation>Documentation</hpn_documentation>
+<hpn_help>Help</hpn_help>
+<hpn_files>Files</hpn_files>
+<hpn_SOS>Sensor Observation Service (SOS)</hpn_SOS>
+<hpn_WCS>Web Coverage Service (WCS)</hpn_WCS>
+<hpn_slideSorter>Slide Sorter</hpn_slideSorter>
+<hpn_add>add</hpn_add>
+<hpn_list>list</hpn_list>
+<hpn_validate>validate</hpn_validate>
+<hpn_remove>remove</hpn_remove>
+<hpn_convert>convert</hpn_convert>
+<hpn_fipsCounty>FIPS County</hpn_fipsCounty>
+<hpn_OAAcronyms>Oceanic/Atmospheric Acronyms</hpn_OAAcronyms>
+<hpn_OAVariableNames>Oceanic/Atmospheric Variable Names</hpn_OAVariableNames>
+<hpn_keywords>keywords</hpn_keywords>
+<hpn_time>Time</hpn_time>
+<hpn_units>units</hpn_units>
+
 <!-- The ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries*, and stateBoundaries*
 files must be in SSR.getContextDirectory() + "WEB-INF/ref/".
 I got state and national boundaries from GMT:
@@ -5110,6 +5139,23 @@ data_max, data_min, data_range, missing_value,
 valid_max, valid_min, valid_range</signedToUnsignedAttNames>
 
 <sosDescriptionHtml>The Sensor Observation Service (SOS) lets you request data via the SOS protocol.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</sosDescriptionHtml>
+
+<sosOverview1><![CDATA[
+<h2>Overview</h2>
+In addition to making data available via 
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> and
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a>,
+ERDDAP makes some datasets
+<br>available via ERDDAP's Sensor Observation Service (SOS) web service.
+<p>
+]]></sosOverview1>
+
+<sosOverview2><![CDATA[
+<p>See the
+<a rel="bookmark" href="&tErddapUrl;/sos/index.html?&encodedDefaultPIppQuery;">list of datasets available via SOS</a>
+at this ERDDAP installation.
+<br>The SOS web pages listed there for each dataset have further documentation and sample requests.
+]]></sosOverview2>
 
 <sosLongDescriptionHtml><![CDATA[
 ERDDAP's Sensor Observation Service (SOS) lets you request data via the SOS protocol.
@@ -8011,6 +8057,24 @@ never be an attribute name. -->
 
 <wcsDescriptionHtml>The Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</wcsDescriptionHtml>
 
+<wcsOverview1><![CDATA[
+<h2>Overview</h2>
+In addition to making data available via 
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> and
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a>,
+ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.
+
+<p>See the
+<a rel="bookmark" href="&tErddapUrl;/wcs/index.html?&encodedDefaultPIppQuery;">list of datasets available via WCS</a>
+at this ERDDAP installation.
+]]></wcsOverview1>
+
+<wcsOverview2><![CDATA[
+<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.
+See this <a rel="bookmark" href="https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations">
+  list of WCS clients (and servers) &externalLinkHtml;</a>
+]]></wcsOverview2>
+
 <wcsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.
 <br><span class="warningColor"><strong>This is an EXPERIMENTAL WORK-IN-PROGRESS.</strong></span>
@@ -8057,6 +8121,8 @@ standard for "the
 creation and display of registered and superimposed map-like views of information that come
 simultaneously from multiple remote and heterogeneous sources."
 ]]></wmsLongDescriptionHtml>
+
+<WMSDocumentation1><![CDATA[]]></WMSDocumentation1>
 
 <wmsManyDatasets><![CDATA[
 Many datasets can also be accessed via ERDDAP's Web Map Service (WMS).
