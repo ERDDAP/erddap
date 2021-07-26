@@ -80,6 +80,8 @@ public class translate {
         "/DEFAULT_commonStandardNames", "/palettes", "/pdfWidths", "/pdfHeights", "/questionMarkImageFile", "/signedToUnsignedAttNames", "/sparqlP01toP02pre", "/sparqlP01toP02post",
         "/startHeadHtml5", "/startBodyHtml5", "/standardizeUdunits", "/ucumToUdunits", "/udunitsToUcum", "/updateUrls",
         "/advr_dataStructure", "/advr_cdm_data_type", "/advr_class", "/inotifyFixCommands", 
+        //keywords used in a drop-down selection
+        "/admSubsetVariables","/admKeywords",
         //abreviations
         "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
         // others
