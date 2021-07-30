@@ -5122,7 +5122,7 @@ and
 <!-- Yes, '' is correct.  {0}=erddapUrl {1}=lowercaseProtocol {2}=documentation.html (so it isn't translated) {3}=uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 For details, see
-<a rel="help" href="{0}/{1}/{2}"> ERDDAP''s&nbsp;{3}&nbsp;Documentation</a>.
+<a rel="help" href="{0}"> ERDDAP''s&nbsp;{1}&nbsp;Documentation</a>.
 ]]></seeProtocolDocumentation>
 
 <selectNext>Select the next item.</selectNext>
@@ -5694,7 +5694,8 @@ This particular ERDDAP installation has oceanographic data
 ERDDAP, Version &erddapVersion;
 <br><a rel="license" href="&erddapUrl;/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Privacy Policy</a> |
-    <a rel="bookmark" href="&erddapUrl;/legal.html#contact">Contact</a>
+    <a rel="bookmark" href="&erddapUrl;/legal.html#contact">Contact</a>|
+    language&HTMLselect;&HTMLSubmit;
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
@@ -8122,7 +8123,320 @@ creation and display of registered and superimposed map-like views of informatio
 simultaneously from multiple remote and heterogeneous sources."
 ]]></wmsLongDescriptionHtml>
 
-<WMSDocumentation1><![CDATA[]]></WMSDocumentation1>
+<WMSDocumentation1><![CDATA[
+<h2>Three Ways to Make Maps with WMS</h2>
+<ol>
+<li> <strong>In theory, anyone can download, install, and use WMS client software.</strong>
+  <br>Some clients are: 
+    <a rel="bookmark" href="https://www.esri.com/software/arcgis/">ArcGIS
+    &externalLinkHtml;</a> and
+    <a rel="bookmark" href="http://udig.refractions.net//">uDig
+    &externalLinkHtml;</a>. 
+  To make these work, you would install the software on your computer.
+  Then, you would enter the URL of the WMS service into the client.
+
+  For example, in ArcGIS (not yet fully working because it doesn't handle time!), use
+  "Arc Catalog : Add Service : Arc Catalog Servers Folder : GIS Servers : Add WMS Server".
+  In ERDDAP, each dataset has its own WMS service, which is located at
+  <br>&tErddapUrl;/wms/<i>datasetID</i>/&WMS_SERVER;?
+  <br>For example: <strong>&e0;</strong>
+  <br>(Some WMS client programs don't want the <strong>?</strong> at the end of that URL.)
+&datasetListRef;
+  <p><strong>In practice,</strong> we haven't found any WMS clients that properly handle dimensions
+  other than longitude and latitude (e.g., time), a feature which is specified by the WMS
+  specification and which is utilized by most datasets in ERDDAP's WMS servers.
+  You may find that using a dataset's &makeAGraphRef;
+     form and selecting the .kml file type
+  (an OGC standard) to load images into <a rel="bookmark" href="https://www.google.com/earth/">Google Earth
+    &externalLinkHtml;</a> provides a good (non-WMS) map client.
+&makeAGraphListRef;
+<li> <strong>Web page authors can embed a WMS client in a web page.</strong>
+  <br>For example, ERDDAP uses 
+    <a rel="bookmark" href="https://leafletjs.com">Leaflet
+    &externalLinkHtml;</a>, which is a very versatile WMS client, for the WMS page for each ERDDAP dataset(&likeThis;).
+&datasetListRef;
+  Leaflet doesn't automatically deal with dimensions other than longitude and latitude
+  (e.g., time), so you will have to write JavaScript (or other scripting code) to do that.
+  (Adventurous JavaScript programmers can look at the Source Code from a web page &likeThis;.)
+  <p>Another commonly used JavaScript WMS client is
+    <a rel="bookmark" href="https://openlayers.org/">OpenLayers
+    &externalLinkHtml;</a>.
+<li> <strong>A person with a browser or a computer program can generate special WMS URLs.</strong>\n" +
+  <br>For example:
+  <ul>
+  <li>To get an image with a map with an opaque background:
+    <br><a href="&tWmsOpaqueExample130;">
+      &tWmsOpaqueExample130Replaced;</a>
+  <li>To get an image with a map with a transparent background:
+    <br><a href="&tWmsTransparentExample130;">
+    &tWmsTransparentExample130Replaced;</a>
+  </ul>
+&datasetListRef;
+  <strong>See the details below.</strong>
+  <p><strong>In practice, it is easier, more versatile,
+  and more efficient to use a dataset's
+  &makeAGraphRef; web page</strong>
+  than to use WMS for this purpose.
+&makeAGraphListRef;
+</ol>
+]]></WMSDocumentation1>
+
+<WMSGetCapabilities><![CDATA[
+<h2><a class="selfLink" id="GetCapabilities" href="#GetCapabilities" rel="bookmark">Forming GetCapabilities URLs</a></h2>
+A GetCapabilities request returns an XML document which provides background information
+  about the service and basic information about all of the data available from this
+  service. For this dataset, for WMS version 1.3.0, use
+  <br><a href="&tWmsGetCapabilities130;">&tWmsGetCapabilities130;</a>
+  <p>The supported parameters for a GetCapabilities request are:
+<table class="erd commonBGColor nowrap" style="width:100%;">
+  <tr>
+    <th><i>name=value</i><sup>*</sup></th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>service=WMS</td>
+    <td>Required.</td>
+  </tr>
+  <tr>
+    <td>version=<i>version</i></td>
+    <td>Currently, ERDDAP's WMS supports "1.1.0", "1.1.1", and "1.3.0".
+      <br>This parameter is optional. The default is "1.3.0".</td>
+  </tr>
+  <tr>
+    <td>request=GetCapabilities</td>
+    <td>Required.</td>
+  </tr>
+  </table>
+  <sup>*</sup> Parameter names are case-insensitive.
+  <br>Parameter values are case sensitive and must be
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded
+    &externalLinkHtml;</a>:
+    all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where
+    HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.
+    Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded
+    (ask a programmer for help). There are
+    "<a class="N" rel="help" href="https://www.url-encode-decode.com">websites that percent encode/decode for you
+    &externalLinkHtml;</a>.
+  <br>The parameters may be in any order in the URL, separated by '&amp;' .
+  <br>&nbsp;
+]]></WMSGetCapabilities>
+
+<WMSGetMap><![CDATA[
+<h2><a class="selfLink" id="GetMap" href="#GetMap" rel="bookmark">Forming GetMap URLs</a></h2>
+  A person with a browser or a computer program can generate a special URL to request a map.
+  The URL must be in the form
+  <br>&tErddapUrl;/wms/<i>datasetID</i>/&WMS_SERVER;?<i>query</i>
+  <br>The query for a WMS GetMap request consists of several <i>parameterName=value</i>, separated by '&amp;'.\n
+  For example,\n
+  <br><a href="&tWmsOpaqueExample130;">&tWmsOpaqueExample130Replaced;</a>
+  <br>The <a class=\"selfLink\" id=\"parameters\" href=\"#parameters\" rel=\"bookmark\">parameter</a> options for the GetMap request are:
+  <br>&nbsp;
+    <!--necessary for the blank line before the table (not <p>)-->
+<table class="erd commonBGColor" style="width:100%; ">
+  <tr>
+    <th><i>name=value</i><sup>*</sup></th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td class="N">service=WMS</td>
+    <td>Required.</td>
+  </tr>
+  <tr>
+    <td>version=<i>version</i></td>
+    <td>Request version.
+      Currently, ERDDAP's WMS supports "1.1.0", "1.1.1", and "1.3.0".  Required.
+    </td>
+  </tr>
+  <tr>
+    <td>request=GetMap</td>
+    <td>Request name.  Required.</td>
+  </tr>
+  <tr>
+    <td>layers=<i>layer_list</i></td>
+    <td>Comma-separated list of one or more map layers.
+        Layers are drawn in the order they occur in the list.
+        Currently in ERDDAP's WMS, the layer names from datasets are named <i>datasetID</i>
+    &WMS_SEPARATOR; + "<i>variableName</i> .\n
+        In ERDDAP's WMS, there are five layers not based on ERDDAP datasets:
+        <ul>
+        <li> "Land" may be drawn BEFORE (as an under layer) or AFTER (as a land mask) layers from grid datasets.
+        <li> "Coastlines" usually should be drawn AFTER layers from grid datasets.
+        <li> "LakesAndRivers" draws lakes and rivers. This usually should be drawn AFTER layers from grid datasets.
+        <li> "Nations" draws national political boundaries. This usually should be drawn AFTER layers from grid datasets.
+        <li> "States" draws state political boundaries. This usually should be drawn AFTER layers from grid datasets.
+        </ul>         
+        Required.
+    </td>
+  </tr>\n
+  <tr>\n
+    <td>styles=<i>style_list</i></td>
+    <td>Comma-separated list of one rendering style per requested layer.
+      Currently in ERDDAP's WMS, the only style offered for each layer is the default style,
+      which is specified via "" (nothing).
+      For example, if you request 3 layers, you can use "styles=,,".
+      Or, even easier, you can request the default style for all layers via "styles=". 
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td class="N">1.1.0: srs=<i>namespace:identifier</i>
+<br>1.1.1: srs=<i>namespace:identifier</i>
+<br>1.3.0: crs=<i>namespace:identifier</i></td>
+    <td>Coordinate reference system.
+        <br>Currently in ERDDAP's WMS 1.1.0, the only valid SRS is EPSG:4326.
+        <br>Currently in ERDDAP's WMS 1.1.1, the only valid SRS is EPSG:4326.
+        <br>Currently in ERDDAP's WMS 1.3.0, the only valid CRS's are CRS:84 and EPSG:4326,
+        <br>Required.
+    </td>
+  </tr>
+  <tr>
+    <td>bbox=<i>4commaSeparatedValues</i></td>
+    <td>Bounding box corners in SRS/CRS units.
+      For version=1.3.0 with CRS=EPSG:4326, the 4 values are: minLat,minLon,maxLat,maxLon.
+      For all other situations, the 4 values are: minLon,minLat,maxLon,maxLat.
+      (The reverse order! Yes, it's bizarre. Welcome to the world of OGC!)
+      ERDDAP supports requests within the dataset's longitude (perhaps 0 to 360, perhaps -180 to 180)
+      and latitude range. Most WMS clients assume longitude values are in the range -180 to 180.
+      If ERDDAP offers a variant of a dataset with longitude -180 to 180, use it for WMS requests.
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td>width=<i>output_width</i></td>
+    <td>Width in pixels of map picture. Required.
+    </td>
+  </tr>
+  <tr>
+    <td>height=<i>output_height</i></td>
+    <td>Height in pixels of map picture. Required.
+    </td>
+  </tr>
+  <tr>
+    <td>format=<i>output_format</i></td>
+    <td>Output format of map.  Currently in ERDDAP's WMS, only image/png is valid.
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td>transparent=<i>TRUE|FALSE</i></td>
+    <td>Background transparency of map.  Optional (default=FALSE).
+      If TRUE, any part of the image using the BGColor will be made transparent.
+    </td>
+  </tr>
+  <tr>
+    <td>bgcolor=<i>color_value</i></td>
+    <td>Hexadecimal 0xRRGGBB color value for the background color. Optional (default=0xFFFFFF, white).
+      If transparent=true, we recommend bgcolor=0x808080 (gray), since white is in some color palettes.
+    </td>
+  </tr>
+  <tr>
+    <td>exceptions=<i>exception_format</i></td>
+    <td>The format for WMS exception responses.  Optional.
+      <br>Currently, ERDDAP's WMS 1.1.0 and 1.1.1 supports
+          "application/vnd.ogc.se_xml" (the default),
+      <br>"application/vnd.ogc.se_blank" (a blank image) and
+          "application/vnd.ogc.se_inimage" (the error in an image).
+      <br>Currently, ERDDAP's WMS 1.3.0 supports \"XML\" (the default),
+          "BLANK" (a blank image), and
+      <br>"INIMAGE" (the error in an image).
+    </td>
+  </tr>
+  <tr>
+    <td>time=<i>time</i></td>
+    <td>Time value of layer desired, specified in ISO8601 format: yyyy-MM-ddTHH:mm:ssZ .
+      Currently in ERDDAP's WMS, you can only specify one time value per request.
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.
+      <br>In ERDDAP's WMS, the default value is the last value in the dataset's 1D time array.
+      <br>In ERDDAP's WMS, "current" is interpreted as the last available time (recent or not).
+      <br>Optional (in ERDDAP's WMS, the default is the last value, whether it is recent or not).
+    </td>
+  </tr>
+  <tr>
+    <td>elevation=<i>elevation</i></td>
+    <td>Elevation of layer desired.
+      Currently in ERDDAP's WMS, you can only specify one elevation value per request.
+      <br>In ERDDAP's WMS, this is used for the altitude or depth (converted to altitude) dimension (if any).
+      (in meters, positive=up)
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n
+      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude or depth array).\n
+    </td>\n
+  </tr>\n
+  <tr>\n
+    <td>dim_<i>name</i>=<i>value</i></td>
+    <!--see WMS 1.3.0 spec section C.-->
+    <td>Value of other dimensions as appropriate.
+      Currently in ERDDAP's WMS, you can only specify one value per dimension per request.
+      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude, non-depth dimensions.
+      <br>The name of a dimension will be "dim_" plus the dataset's name for the dimension, for example "dim_model".
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.
+      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dimension's 1D array).
+    </td>
+  </tr>
+</table>
+<!--WMS 1.3.0 spec section 6.8.1-->
+  <sup>*</sup> Parameter names are case-insensitive.
+  <br>Parameter values are case sensitive and must be
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded
+    &externalLinkHtml;</a>:
+  all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where
+  HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.
+  Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded
+    (ask a programmer for help). There are
+<a class="N" rel="help" href="https://www.url-encode-decode.com">websites that percent encode/decode for you
+    &externalLinkHtml;</a>.
+  <br>The parameters may be in any order in the URL, separated by '&amp;' .
+<p>(Revised from Table 8 of the WMS 1.3.0 specification)
+]]></WMSGetMap>
+
+<WMSNotes><![CDATA[
+<h3><a class="selfLink" id="notes" href="#notes" rel="bookmark">Notes</a></h3>
+<ul>
+<!--These WMS requirements are also in setupDatasetXml.-->
+<li><a class="selfLink" id="DatasetRequirements" href="#DatasetRequirements" rel="bookmark"><strong>Dataset Requirements:</strong></a>
+  The main requirements for a variable to be accessible via
+  ERDDAP's WMS server are:
+  <ul>
+  <li>The dataset must be an EDDGrid... dataset.
+  <li>The data variable MUST be a gridded variable.
+  <li>The data variable MUST have longitude and latitude axis variables. (Other axis variables 
+      are OPTIONAL.)
+  <li>There MUST be some longitude values between -180 and 180.
+  <li>The
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">
+        colorBarMinimum and colorBarMaximum attributes</a>
+      MUST be specified. (Other color bar
+    attributes are OPTIONAL.)
+  </ul>
+<li><strong>Grid data layers:</strong> In ERDDAP's WMS, all data variables in grid datasets that use
+  longitude and latitude dimensions are available via WMS.
+  Each such variable is available as a WMS layer, with the name <i>datasetID</i>
+    &WMS_SEPARATOR;<i>variableName</i>.
+  Each such layer is transparent (i.e., data values are represented as a range of colors
+  and missing values are represented by transparent pixels).
+<li><strong>Table data layers:</strong> Currently in ERDDAP's WMS, data variables in table datasets are
+  not available via WMS.
+<li><strong>Dimensions:</strong> A consequence of the WMS design is that the TIME, ELEVATION, and other 
+  dimension values that you specify in a GetMap request apply to all of the layers.
+  There is no way to specify different values for different layers.
+
+<!--"<li><strong>Longitude:</strong> The supported CRS values only support longitude values from -180 to 180.
+//"   But some ERDDAP datasets have longitude values 0 to 360.
+//"   Currently in ERDDAP's WMS, those datasets are only available from longitude 0 to 180 in WMS.-->
+
+<li><strong>Strict?</strong> The table above specifies how a client should form a GetMap request.
+  In practice, ERDDAP's WMS tries to be as lenient as possible when processing GetMap
+  requests, since many current clients don't follow the specification. However, if you
+  are forming GetMap URLs, we encourage you to try to follow the specification.
+<li><strong>Why are there separate WMS servers for each dataset?</strong> Because the GetCapabilities
+  document lists all values of all dimensions for each dataset, the information for each
+  dataset can be voluminous (easily 300 KB). If all the datasets (currently ~300 at the)
+  ERDDAP main site were to be included in one WMS, the resulting GetCapabilities document
+  would be huge (~90 MB) which would take a long time to download (causing many people
+  think something was wrong and give up) and would overwhelm most client software.
+<!--//"   However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at
+//"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?-->
+</ul>
+]]></WMSNotes>
 
 <wmsManyDatasets><![CDATA[
 Many datasets can also be accessed via ERDDAP's Web Map Service (WMS).
