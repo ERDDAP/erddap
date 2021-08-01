@@ -872,7 +872,7 @@ public static boolean developmentMode = false;
         dpf_Timestamp,
         dpf_frequency,
         dpf_title,
-        dpf_titleTooltip,
+        dpf_titleTooltip[],
         dpf_summary,
         dpf_summaryTooltip,
         dpf_creatorName,
@@ -1487,6 +1487,8 @@ public static boolean developmentMode = false;
         shiftXAllTheWayRight,
         sosDescriptionHtml,
         sosLongDescriptionHtml,
+        sosOverview1,
+        sosOverview2,
         sparqlP01toP02pre,
         sparqlP01toP02post,
         ssUse,
@@ -1602,8 +1604,14 @@ public static boolean developmentMode = false;
 
         wcsDescriptionHtml,
         wcsLongDescriptionHtml,
+        wcsOverview1,
+        wcsOverview2,
 
         wmsDescriptionHtml,
+        WMSDocumentation1,
+        WMSGetCapabilities,
+        WMSGetMap,
+        WMSNotes,
         wmsInstructions,
         wmsLongDescriptionHtml,
         wmsManyDatasets,
@@ -1614,7 +1622,14 @@ public static boolean developmentMode = false;
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
     private static String theLongDescriptionHtml; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
+    //must be in the same order of translate.languageCodeList
+    public static final String[] languageList = {"English (default)", "Chinese"};
+    //this differs from translate.languageCodeList because the index 0 is "en"
+    public static String[] fullLanguageCodeList;
     
+
+    public static int languageChosenIndex = 0;
+
     /** These are only created/used by GenerateDatasetsXml threads. 
      *  See the related methods below that create them.
      */
@@ -2148,6 +2163,21 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         errorInMethod = "ERROR while reading messages.xml: ";
         ResourceBundle2 messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
 
+        fullLanguageCodeList = new String[languageList.length];
+        fullLanguageCodeList[0] = "en";
+        for (int i = 1; i < fullLanguageCodeList.length; i++) {
+            fullLanguageCodeList[i] = translate.languageCodeList[i - 1];
+        }
+        ResourceBundle2[] messagesList = new ResourceBundle2[languageList.length];
+        //messagesList[0] is either the custom messages.xml or the one provided by Erddap
+        messagesList[0] = messages;
+        for (int i = 1; i < fullLanguageCodeList.length; i++) {
+            String translatedFilePath = String2.getClassPath() + //WEB-INF directory
+                "gov/noaa/pfel/erddap/util/translatedMessages/messages-" + 
+                fullLanguageCodeList[i] + ".xml";
+            messagesList[i] = ResourceBundle2.fromXml(XML.parseXml(translatedFilePath, false));
+        }
+        
         //read all the static Strings from messages.xml
         acceptEncodingHtml         = messages.getNotNothingString("acceptEncodingHtml",         errorInMethod);
         accessRESTFUL              = messages.getNotNothingString("accessRestful",              errorInMethod);
@@ -2354,7 +2384,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dpf_Timestamp              = messages.getNotNothingString("dpf_Timestamp",              errorInMethod);
         dpf_frequency              = messages.getNotNothingString("dpf_frequency",              errorInMethod);
         dpf_title                  = messages.getNotNothingString("dpf_title",                  errorInMethod);
-        dpf_titleTooltip           = messages.getNotNothingString("dpf_titleTooltip",           errorInMethod);
+        dpf_titleTooltip           = getMessageInAllVersions(messagesList, "dpf_titleTooltip",           errorInMethod);
         dpf_summary                = messages.getNotNothingString("dpf_summary",                errorInMethod);
         dpf_summaryTooltip         = messages.getNotNothingString("dpf_summaryTooltip",         errorInMethod);
         dpf_creatorName            = messages.getNotNothingString("dpf_creatorName",            errorInMethod);
@@ -3091,7 +3121,9 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
         seeProtocolDocumentation   = MessageFormat.format(seeProtocolDocumentation, "documentation.html"); //so it isn't translated
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
-        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod); 
+        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod);
+        sosOverview1               = messages.getNotNothingString("sosOverview1",               errorInMethod); 
+        sosOverview2               = messages.getNotNothingString("sosOverview2",               errorInMethod);  
         sparqlP01toP02pre          = messages.getNotNothingString("sparqlP01toP02pre",          errorInMethod); 
         sparqlP01toP02post         = messages.getNotNothingString("sparqlP01toP02post",         errorInMethod); 
         ssUse                      = messages.getNotNothingString("ssUse",                      errorInMethod);
@@ -3218,11 +3250,17 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
         warning                    = messages.getNotNothingString("warning",                    errorInMethod);
         wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         errorInMethod);
-        wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     errorInMethod); 
+        wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     errorInMethod);
+        wcsOverview1               = messages.getNotNothingString("wcsOverview1",               errorInMethod);
+        wcsOverview2               = messages.getNotNothingString("wcsOverview2",               errorInMethod);
         wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         errorInMethod);
         wmsInstructions            = messages.getNotNothingString("wmsInstructions",            errorInMethod); 
         wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     errorInMethod); 
         wmsManyDatasets            = messages.getNotNothingString("wmsManyDatasets",            errorInMethod); 
+        WMSDocumentation1          = messages.getNotNothingString("WMSDocumentation1",          errorInMethod);
+        WMSGetCapabilities         = messages.getNotNothingString("WMSGetCapabilities",         errorInMethod);
+        WMSGetMap                  = messages.getNotNothingString("WMSGetMap",                  errorInMethod);
+        WMSNotes                   = messages.getNotNothingString("WMSNotes",                   errorInMethod);
 
         zoomIn                     = messages.getNotNothingString("zoomIn",                     errorInMethod); 
         zoomOut                    = messages.getNotNothingString("zoomOut",                    errorInMethod); 
@@ -3454,6 +3492,37 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             return value;
         }
         return setup.getString(paramName, tDefault);
+    }
+
+        /**
+     * This will read translated tags from messages.xml and all messages-langCode.xml
+     * @param messages The Array of ResourceBundle2 objects of messages.xml files
+     * @param tagName The tagName of the corresponding text
+     * @param errorInMethod The start of an Error message
+     */
+    private static String[] getMessageInAllVersions(ResourceBundle2[] messages, String tagName, String errorInMethod) {
+        String[] res = new String[messages.length];
+        for (int i = 0; i < messages.length; i++) {
+            res[i] = messages[i].getNotNothingString(tagName, errorInMethod);
+        }
+        return res;
+    }
+    
+    /**
+     * This will read translated tags from messages.xml and all messages-langCode.xml, with some modifications
+     * @param messages The Array of ResourceBundle2 objects of messages.xml files
+     * @param tagName The tagName of the corresponding text
+     * @param appendFront Text to add at the beginning of the message
+     * @param appendEnd Text to add at the end of the message
+     * @param errorInMethod The start of an Error message
+     */
+    private String[] getMessageInAllVersions(ResourceBundle2[] messages, String tagName,
+            String appendFront, String appendEnd,String errorInMethod) {
+        String[] res = new String[messages.length];
+        for (int i = 0; i < messages.length; i++) {
+            res[i] = appendFront + messages[i].getNotNothingString(tagName, errorInMethod) + appendEnd;
+        }
+        return res;
     }
 
     /**
@@ -4513,7 +4582,15 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs)  (erddapUrl, or erddapHttpsUrl if user is logged in)
      */
     public static String endBodyHtml(String tErddapUrl) {
-        return String2.replaceAll(endBodyHtml, "&erddapUrl;", tErddapUrl); 
+        HtmlWidgets widget = new HtmlWidgets();
+        return String2.replaceAll(endBodyHtml, "&erddapUrl;", tErddapUrl)
+            .replace("&HTMLselect;",
+                "<form name=\"lang\">\n" + //no action
+                widget.select("language", "", 1, languageList, languageChosenIndex, 
+                    ")")
+                + widget.button("submit", "LangSubmit", "", "Submit", "")
+                + widget.endForm()
+            );
     }
     public static String legal(String tErddapUrl) {
         StringBuilder tsb = new StringBuilder(legal);
