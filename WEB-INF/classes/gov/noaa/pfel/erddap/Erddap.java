@@ -178,7 +178,7 @@ public class Erddap extends HttpServlet {
     //But Firefox shows TextArea's as very wide, so leads to these values.
     public final static int dpfTFWidth = 56; //data provider form TextField width
     public final static int dpfTAWidth = 58; //data provider form TextArea width
-
+ 
     // ************** END OF STATIC VARIABLES *****************************
 
     protected RunLoadDatasets runLoadDatasets;
@@ -415,6 +415,29 @@ public class Erddap extends HttpServlet {
         doGet(request, response);
     }
 
+    /**
+     * get the Url of a request without the language code
+     * note this does not change the languageChosenIndex
+     */
+    public String getUrlWithoutLang(HttpServletRequest request) {
+        String requestUrl = request.getRequestURI();
+        int protocolStart = EDStatic.warName.length() + 2;
+        int langCodeEnd = requestUrl.indexOf("/", protocolStart);
+        if (langCodeEnd < 0) {
+            // there is nothing after hostURL/erddap, no changes needed
+            return requestUrl;
+        } else {
+            String currLangCode = requestUrl.substring(protocolStart, langCodeEnd);
+            EDStatic.languageChosenIndex = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
+            if (EDStatic.languageChosenIndex == -1) {
+                //the content between the "/" after hostURL/erddap and the "/" that follows is not recognized
+                return requestUrl;
+            } else {
+                protocolStart = langCodeEnd + 1;
+            }
+            return "/" + EDStatic.warName + "/" + requestUrl.substring(protocolStart);
+        }
+    }
     /** 
      * This responds to a "get" request from the user by extending HttpServlet's doGet.
      * Mostly, this just identifies the protocol (e.g., "tabledap") in the requestUrl
@@ -554,6 +577,25 @@ public class Erddap extends HttpServlet {
             }
             int protocolStart = EDStatic.warName.length() + 2;            
 
+            int langCodeEnd = requestUrl.indexOf("/", protocolStart);
+            if (langCodeEnd < 0) {
+                // there is nothing after hostURL/erddap
+                //set language to default, proceed to get protocols
+                langCodeEnd = protocolStart;
+                EDStatic.languageChosenIndex = 0;
+            } else {
+                String currLangCode = requestUrl.substring(protocolStart, langCodeEnd);
+                System.out.println("currLangCode: " + currLangCode);
+                EDStatic.languageChosenIndex = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
+                if (EDStatic.languageChosenIndex == -1) {
+                    //langCode not found in our list, use default(0)
+                    EDStatic.languageChosenIndex = 0;
+                    langCodeEnd = protocolStart;
+                } else {
+                    protocolStart = langCodeEnd + 1;
+                }
+                System.out.println("languageChosenIndex: " + EDStatic.languageChosenIndex);   
+            }
             //get protocol (e.g., "griddap" or "tabledap")
             int protocolEnd = requestUrl.indexOf("/", protocolStart);
             if (protocolEnd < 0)
@@ -561,7 +603,7 @@ public class Erddap extends HttpServlet {
             String protocol = requestUrl.substring(protocolStart, protocolEnd);
             String endOfRequest = requestUrl.substring(protocolStart);
             if (reallyVerbose) String2.log("  protocol=" + protocol);
-
+            System.out.println("protocol: " + protocol);
             //Pass the query to the requested protocol or web page.
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
             if (protocol.equals("griddap") ||
@@ -740,8 +782,8 @@ public class Erddap extends HttpServlet {
         String loggedInAs) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-        String requestUrl = request.getRequestURI();  //post EDD.baseUrl, pre "?"
-
+        String requestUrl = getUrlWithoutLang(request);  //post EDD.baseUrl, pre "?"
+        System.out.println("index requestUrl:" + requestUrl);
         //plain file types  
         for (int pft = 0; pft < plainFileTypes.length; pft++) { 
 
@@ -2592,7 +2634,7 @@ writer.write(
 "</tr>\n" +
 "<tr>\n" +
 "  <td>" + EDStatic.dpf_title + "\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_titleTooltip
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_titleTooltip[EDStatic.languageChosenIndex]
 //      "This is a short (&lt;=80 characters) description of the dataset. For example," + 
 // "    <br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>"
 ) + "&nbsp;\n" +
@@ -6375,324 +6417,349 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 String2.replaceAll(EDStatic.wmsLongDescriptionHtml, "&erddapUrl;", tErddapUrl) + "\n" +
                 datasetListRef +
                 //"<p>\n" +
-                "<h2>Three Ways to Make Maps with WMS</h2>\n" +
-                "<ol>\n" +
-                "<li> <strong>In theory, anyone can download, install, and use WMS client software.</strong>\n" +
-                "  <br>Some clients are: \n" +
-                "    <a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/\">ArcGIS" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
-                "    <a rel=\"bookmark\" href=\"http://udig.refractions.net//\">uDig" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>. \n" +
-                "  To make these work, you would install the software on your computer.\n" +
-                "  Then, you would enter the URL of the WMS service into the client.\n" +
-                //arcGis required WMS 1.1.1 (1.1.0 and 1.3.0 didn't work)
-                "  For example, in ArcGIS (not yet fully working because it doesn't handle time!), use\n" +
-                "  \"Arc Catalog : Add Service : Arc Catalog Servers Folder : GIS Servers : Add WMS Server\".\n" +
-                "  In ERDDAP, each dataset has its own WMS service, which is located at\n" +
-                "  <br>" + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?\n" +  
-                "  <br>For example: <strong>" + e0 + "</strong>\n" +  
-                "  <br>(Some WMS client programs don't want the <strong>?</strong> at the end of that URL.)\n" +
-                datasetListRef +
-                "  <p><strong>In practice,</strong> we haven't found any WMS clients that properly handle dimensions\n" +
-                "  other than longitude and latitude (e.g., time), a feature which is specified by the WMS\n" +
-                "  specification and which is utilized by most datasets in ERDDAP's WMS servers.\n" +
-                "  You may find that using a dataset's " + makeAGraphRef + 
-                "     form and selecting the .kml file type\n" +
-                "  (an OGC standard) to load images into <a rel=\"bookmark\" href=\"https://www.google.com/earth/\">Google Earth" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a> provides\n" +            
-                "    a good (non-WMS) map client.\n" +
-                makeAGraphListRef +
-                "<li> <strong>Web page authors can embed a WMS client in a web page.</strong>\n" +
-                "  <br>For example, ERDDAP uses \n" +
-                "    <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>, \n" +  
-                "    which is a very versatile WMS client, for the WMS\n" +
-                "  page for each ERDDAP dataset \n" +
-                "    (" + likeThis + ").\n" +  
-                datasetListRef +
-                "  Leaflet doesn't automatically deal with dimensions other than longitude and latitude\n" +            
-                "  (e.g., time), so you will have to write JavaScript (or other scripting code) to do that.\n" +
-                "  (Adventurous JavaScript programmers can look at the Source Code from a web page " + likeThis + ".)\n" + 
-                "  <p>Another commonly used JavaScript WMS client is\n" +
-                "    <a rel=\"bookmark\" href=\"https://openlayers.org/\">OpenLayers" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-                "<li> <strong>A person with a browser or a computer program can generate special WMS URLs.</strong>\n" +
-                "  <br>For example:\n" +
-                "  <ul>\n" +
-                "  <li>To get an image with a map with an opaque background:\n" +
-                "    <br><a href=\"" + tWmsOpaqueExample130 + "\">" + 
-                    String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&") + "</a>\n" +
-                "  <li>To get an image with a map with a transparent background:\n" +
-                "    <br><a href=\"" + tWmsTransparentExample130 + "\">" + 
-                    String2.replaceAll(tWmsTransparentExample130, "&", "<wbr>&") + "</a>\n" +
-                "  </ul>\n" +
-                datasetListRef +
-                "  <strong>See the details below.</strong>\n" +
-                "  <p><strong>In practice, it is easier, more versatile,\n" +
-                "  and more efficient to use a dataset's\n" +
-                "    " + makeAGraphRef + " web page</strong>\n" +
-                "  than to use WMS for this purpose.\n" +
-                makeAGraphListRef +
-                "</ol>\n" +
-                "\n");
+                EDStatic.WMSDocumentation1
+                    .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl))
+                    .replaceAll("&tErddapUrl;", tErddapUrl)
+                    .replace("&WMS_SERVER;", EDD.WMS_SERVER)
+                    .replace("&e0;", e0)
+                    .replaceAll("&datasetListRef;", datasetListRef)
+                    .replaceAll("&makeAGraphRef;", makeAGraphRef)
+                    .replaceAll("&makeAGraphListRef;", makeAGraphListRef)
+                    .replaceAll("&likeThis;", likeThis)
+                    .replace("&tWmsOpaqueExample130;", tWmsOpaqueExample130)
+                    .replace("&tWmsOpaqueExample130Replaced;", String2.replaceAll(tWmsTransparentExample130, "&", "<wbr>&"))
+                    .replace("&tWmsTransparentExample130;", tWmsTransparentExample130)
+                    .replace("&tWmsTransparentExample130Replaced;", String2.replaceAll(tWmsTransparentExample130, "&", "<wbr>&")) +
+                // "<h2>Three Ways to Make Maps with WMS</h2>\n" +
+                // "<ol>\n" +
+                // "<li> <strong>In theory, anyone can download, install, and use WMS client software.</strong>\n" +
+                // "  <br>Some clients are: \n" +
+                // "    <a rel=\"bookmark\" href=\"https://www.esri.com/software/arcgis/\">ArcGIS" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and\n" +
+                // "    <a rel=\"bookmark\" href=\"http://udig.refractions.net//\">uDig" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>. \n" +
+                // "  To make these work, you would install the software on your computer.\n" +
+                // "  Then, you would enter the URL of the WMS service into the client.\n" +
+                // //arcGis required WMS 1.1.1 (1.1.0 and 1.3.0 didn't work)
+                // "  For example, in ArcGIS (not yet fully working because it doesn't handle time!), use\n" +
+                // "  \"Arc Catalog : Add Service : Arc Catalog Servers Folder : GIS Servers : Add WMS Server\".\n" +
+                // "  In ERDDAP, each dataset has its own WMS service, which is located at\n" +
+                // "  <br>" + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?\n" +  
+                // "  <br>For example: <strong>" + e0 + "</strong>\n" +  
+                // "  <br>(Some WMS client programs don't want the <strong>?</strong> at the end of that URL.)\n" +
+                // datasetListRef +
+                // "  <p><strong>In practice,</strong> we haven't found any WMS clients that properly handle dimensions\n" +
+                // "  other than longitude and latitude (e.g., time), a feature which is specified by the WMS\n" +
+                // "  specification and which is utilized by most datasets in ERDDAP's WMS servers.\n" +
+                // "  You may find that using a dataset's " + makeAGraphRef + 
+                // "     form and selecting the .kml file type\n" +
+                // "  (an OGC standard) to load images into <a rel=\"bookmark\" href=\"https://www.google.com/earth/\">Google Earth" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a> provides\n" +            
+                // "    a good (non-WMS) map client.\n" +
+                // makeAGraphListRef +
+                // "<li> <strong>Web page authors can embed a WMS client in a web page.</strong>\n" +
+                // "  <br>For example, ERDDAP uses \n" +
+                // "    <a rel=\"bookmark\" href=\"https://leafletjs.com\">Leaflet" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>, \n" +  
+                // "    which is a very versatile WMS client, for the WMS\n" +
+                // "  page for each ERDDAP dataset \n" +
+                // "    (" + likeThis + ").\n" +  
+                // datasetListRef +
+                // "  Leaflet doesn't automatically deal with dimensions other than longitude and latitude\n" +            
+                // "  (e.g., time), so you will have to write JavaScript (or other scripting code) to do that.\n" +
+                // "  (Adventurous JavaScript programmers can look at the Source Code from a web page " + likeThis + ".)\n" + 
+                // "  <p>Another commonly used JavaScript WMS client is\n" +
+                // "    <a rel=\"bookmark\" href=\"https://openlayers.org/\">OpenLayers" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
+                // "<li> <strong>A person with a browser or a computer program can generate special WMS URLs.</strong>\n" +
+                // "  <br>For example:\n" +
+                // "  <ul>\n" +
+                // "  <li>To get an image with a map with an opaque background:\n" +
+                // "    <br><a href=\"" + tWmsOpaqueExample130 + "\">" + 
+                //     String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&") + "</a>\n" +
+                // "  <li>To get an image with a map with a transparent background:\n" +
+                // "    <br><a href=\"" + tWmsTransparentExample130 + "\">" + 
+                //     String2.replaceAll(tWmsTransparentExample130, "&", "<wbr>&") + "</a>\n" +
+                // "  </ul>\n" +
+                // datasetListRef +
+                // "  <strong>See the details below.</strong>\n" +
+                // "  <p><strong>In practice, it is easier, more versatile,\n" +
+                // "  and more efficient to use a dataset's\n" +
+                // "    " + makeAGraphRef + " web page</strong>\n" +
+                // "  than to use WMS for this purpose.\n" +
+                // makeAGraphListRef +
+                // "</ol>\n" +
+                "\n"
+                );
 
             //GetCapabilities
             writer.write(
-                "<h2><a class=\"selfLink\" id=\"GetCapabilities\" href=\"#GetCapabilities\" rel=\"bookmark\">Forming GetCapabilities URLs</a></h2>\n" +
-                "A GetCapabilities request returns an XML document which provides background information\n" +
-                "  about the service and basic information about all of the data available from this\n" +
-                "  service. For this dataset, for WMS version 1.3.0, use\n" + 
-                "  <br><a href=\"" + tWmsGetCapabilities130 + "\">\n" + 
-                                     tWmsGetCapabilities130 + "</a>\n" +
-                "  <p>The supported parameters for a GetCapabilities request are:\n" +
-                "<table class=\"erd commonBGColor nowrap\" style=\"width:100%;\">\n" +
-                "  <tr>\n" +
-                "    <th><i>name=value</i><sup>*</sup></th>\n" +
-                "    <th>Description</th>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>service=WMS</td>\n" +
-                "    <td>Required.</td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>version=<i>version</i></td>\n" +
-                "    <td>Currently, ERDDAP's WMS supports \"1.1.0\", \"1.1.1\", and \"1.3.0\".\n" +
-                "      <br>This parameter is optional. The default is \"1.3.0\".</td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>request=GetCapabilities</td>\n" +
-                "    <td>Required.</td>\n" +
-                "  </tr>\n" +
-                "  </table>\n" +
-                "  <sup>*</sup> Parameter names are case-insensitive.\n" +
-                "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
-                "   all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
-                "   HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
-                "   Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
-                "   (ask a programmer for help). There are\n" +
-                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-                "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
-                "  <br>&nbsp;\n" +
+                EDStatic.WMSGetCapabilities
+                    .replaceAll("&tWmsGetCapabilities130;", tWmsGetCapabilities130)
+                    .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl)) +
+                // "<h2><a class=\"selfLink\" id=\"GetCapabilities\" href=\"#GetCapabilities\" rel=\"bookmark\">Forming GetCapabilities URLs</a></h2>\n" +
+                // "A GetCapabilities request returns an XML document which provides background information\n" +
+                // "  about the service and basic information about all of the data available from this\n" +
+                // "  service. For this dataset, for WMS version 1.3.0, use\n" + 
+                // "  <br><a href=\"" + tWmsGetCapabilities130 + "\">\n" + 
+                //                      tWmsGetCapabilities130 + "</a>\n" +
+                // "  <p>The supported parameters for a GetCapabilities request are:\n" +
+                // "<table class=\"erd commonBGColor nowrap\" style=\"width:100%;\">\n" +
+                // "  <tr>\n" +
+                // "    <th><i>name=value</i><sup>*</sup></th>\n" +
+                // "    <th>Description</th>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>service=WMS</td>\n" +
+                // "    <td>Required.</td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>version=<i>version</i></td>\n" +
+                // "    <td>Currently, ERDDAP's WMS supports \"1.1.0\", \"1.1.1\", and \"1.3.0\".\n" +
+                // "      <br>This parameter is optional. The default is \"1.3.0\".</td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>request=GetCapabilities</td>\n" +
+                // "    <td>Required.</td>\n" +
+                // "  </tr>\n" +
+                // "  </table>\n" +
+                // "  <sup>*</sup> Parameter names are case-insensitive.\n" +
+                // "  <br>Parameter values are case sensitive and must be\n" +
+                // "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+                // "   all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
+                // "   HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+                // "   Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+                // "   (ask a programmer for help). There are\n" +
+                //     "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
+                // "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
+                // "  <br>&nbsp;\n" +
                 "\n");
 
             //getMap
             writer.write(
-                "<h2><a class=\"selfLink\" id=\"GetMap\" href=\"#GetMap\" rel=\"bookmark\">Forming GetMap URLs</a></h2>\n" +
-                "  A person with a browser or a computer program can generate a special URL to request a map.\n" + 
-                "  The URL must be in the form\n" +
-                "  <br>" + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?<i>query</i> " +
-                "  <br>The query for a WMS GetMap request consists of several <i>parameterName=value</i>, separated by '&amp;'.\n" +
-                "  For example,\n" +
-                "  <br><a href=\"" + tWmsOpaqueExample130 + "\">" + 
-                  String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&") + "</a>\n" +
-                "  <br>The <a class=\"selfLink\" id=\"parameters\" href=\"#parameters\" rel=\"bookmark\">parameter</a> options for the GetMap request are:\n" +
-                "  <br>&nbsp;\n" + //necessary for the blank line before the table (not <p>)
-                "<table class=\"erd commonBGColor\" style=\"width:100%; \">\n" +
-                "  <tr>\n" +
-                "    <th><i>name=value</i><sup>*</sup></th>\n" +
-                "    <th>Description</th>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td class=\"N\">service=WMS</td>\n" +
-                "    <td>Required.</td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>version=<i>version</i></td>\n" +
-                "    <td>Request version.\n" +
-                "      Currently, ERDDAP's WMS supports \"1.1.0\", \"1.1.1\", and \"1.3.0\".  Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>request=GetMap</td>\n" +
-                "    <td>Request name.  Required.</td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>layers=<i>layer_list</i></td>\n" +
-                "    <td>Comma-separated list of one or more map layers.\n" +
-                "        Layers are drawn in the order they occur in the list.\n" +
-                "        Currently in ERDDAP's WMS, the layer names from datasets are named <i>datasetID</i>" + 
-                    EDD.WMS_SEPARATOR + "<i>variableName</i> .\n" +
-                "        In ERDDAP's WMS, there are five layers not based on ERDDAP datasets:\n" +
-                "        <ul>\n" +
-                "        <li> \"Land\" may be drawn BEFORE (as an under layer) or AFTER (as a land mask) layers from grid datasets.\n" +
-                "        <li> \"Coastlines\" usually should be drawn AFTER layers from grid datasets.\n" +  
-                "        <li> \"LakesAndRivers\" draws lakes and rivers. This usually should be drawn AFTER layers from grid datasets.\n" +
-                "        <li> \"Nations\" draws national political boundaries. This usually should be drawn AFTER layers from grid datasets.\n" +
-                "        <li> \"States\" draws state political boundaries. This usually should be drawn AFTER layers from grid datasets.\n" +
-                "        </ul>\n" +                
-                "        Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>styles=<i>style_list</i></td>\n" +
-                "    <td>Comma-separated list of one rendering style per requested layer.\n" +
-                "      Currently in ERDDAP's WMS, the only style offered for each layer is the default style,\n" +
-                "      which is specified via \"\" (nothing).\n" +
-                "      For example, if you request 3 layers, you can use \"styles=,,\".\n" +
-                "      Or, even easier, you can request the default style for all layers via \"styles=\".\n" + 
-                "      Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td class=\"N\">1.1.0: srs=<i>namespace:identifier</i>" +
-                           "<br>1.1.1: srs=<i>namespace:identifier</i>" +
-                           "<br>1.3.0: crs=<i>namespace:identifier</i></td>\n" +
-                "    <td>Coordinate reference system.\n" +
-                "        <br>Currently in ERDDAP's WMS 1.1.0, the only valid SRS is EPSG:4326.\n" +
-                "        <br>Currently in ERDDAP's WMS 1.1.1, the only valid SRS is EPSG:4326.\n" +
-                "        <br>Currently in ERDDAP's WMS 1.3.0, the only valid CRS's are CRS:84 and EPSG:4326,\n" +
-                "        <br>Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>bbox=<i>4commaSeparatedValues</i></td>\n" +
-                "    <td>Bounding box corners in SRS/CRS units.\n" +
-                "      For version=1.3.0 with CRS=EPSG:4326, the 4 values are: minLat,minLon,maxLat,maxLon.\n" +
-                "      For all other situations, the 4 values are: minLon,minLat,maxLon,maxLat.\n" +
-                "      (The reverse order! Yes, it's bizarre. Welcome to the world of OGC!)\n" +
-                "      ERDDAP supports requests within the dataset's longitude (perhaps 0 to 360, perhaps -180 to 180)\n" +
-                "      and latitude range. Most WMS clients assume longitude values are in the range -180 to 180.\n" +
-                "      If ERDDAP offers a variant of a dataset with longitude -180 to 180, use it for WMS requests.\n" +
-                "      Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>width=<i>output_width</i></td>\n" +
-                "    <td>Width in pixels of map picture. Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>height=<i>output_height</i></td>\n" +
-                "    <td>Height in pixels of map picture. Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>format=<i>output_format</i></td>\n" +
-                "    <td>Output format of map.  Currently in ERDDAP's WMS, only image/png is valid.\n" +
-                "      Required.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>transparent=<i>TRUE|FALSE</i></td>\n" +
-                "    <td>Background transparency of map.  Optional (default=FALSE).\n" +
-                "      If TRUE, any part of the image using the BGColor will be made transparent.\n" +      
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>bgcolor=<i>color_value</i></td>\n" +
-                "    <td>Hexadecimal 0xRRGGBB color value for the background color. Optional (default=0xFFFFFF, white).\n" +
-                "      If transparent=true, we recommend bgcolor=0x808080 (gray), since white is in some color palettes.\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>exceptions=<i>exception_format</i></td>\n" +
-                "    <td>The format for WMS exception responses.  Optional.\n" +
-                "      <br>Currently, ERDDAP's WMS 1.1.0 and 1.1.1 supports\n" +
-                "          \"application/vnd.ogc.se_xml\" (the default),\n" +
-                "      <br>\"application/vnd.ogc.se_blank\" (a blank image) and\n" +
-                "          \"application/vnd.ogc.se_inimage\" (the error in an image).\n" +
-                "      <br>Currently, ERDDAP's WMS 1.3.0 supports \"XML\" (the default),\n" +
-                "         \"BLANK\" (a blank image), and\n" +
-                "      <br>\"INIMAGE\" (the error in an image).\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>time=<i>time</i></td>\n" +
-                "    <td>Time value of layer desired, specified in ISO8601 format: yyyy-MM-ddTHH:mm:ssZ .\n" +
-                "      Currently in ERDDAP's WMS, you can only specify one time value per request.\n" +
-                "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
-                "      <br>In ERDDAP's WMS, the default value is the last value in the dataset's 1D time array.\n" +
-                "      <br>In ERDDAP's WMS, \"current\" is interpreted as the last available time (recent or not).\n" +
-                "      <br>Optional (in ERDDAP's WMS, the default is the last value, whether it is recent or not).\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>elevation=<i>elevation</i></td>\n" +
-                "    <td>Elevation of layer desired.\n" +
-                "      Currently in ERDDAP's WMS, you can only specify one elevation value per request.\n" +
-                "      <br>In ERDDAP's WMS, this is used for the altitude or depth (converted to altitude) dimension (if any).\n" +
-                "      (in meters, positive=up)\n" +
-                "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
-                "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude or depth array).\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "  <tr>\n" +
-                "    <td>dim_<i>name</i>=<i>value</i></td>\n" + //see WMS 1.3.0 spec section C.3.5
-                "    <td>Value of other dimensions as appropriate.\n" +
-                "      Currently in ERDDAP's WMS, you can only specify one value per dimension per request.\n" +
-                "      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude, non-depth dimensions.\n" +
-                "      <br>The name of a dimension will be \"dim_\" plus the dataset's name for the dimension, for example \"dim_model\".\n" +
-                "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
-                "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dimension's 1D array).\n" +
-                "    </td>\n" +
-                "  </tr>\n" +
-                "</table>\n" +
-                //WMS 1.3.0 spec section 6.8.1
-                "  <sup>*</sup> Parameter names are case-insensitive.\n" +
-                "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
-                "  all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
-                "  HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
-                "  Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
-                "   (ask a programmer for help). There are\n" +
-                    "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
-                "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
-                "<p>(Revised from Table 8 of the WMS 1.3.0 specification)\n" +
+                EDStatic.WMSGetMap.replaceAll("&tErddapUrl;", tErddapUrl)
+                    .replaceAll("&WMS_SERVER;", EDD.WMS_SERVER)
+                    .replaceAll("&tWmsOpaqueExample130;", tWmsOpaqueExample130)
+                    .replaceAll("&tWmsOpaqueExample130Replaced;", String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&"))
+                    .replaceAll("&WMS_SEPARATOR;", Character.toString(EDD.WMS_SEPARATOR))
+                    .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(tErddapUrl)) +
+                // "<h2><a class=\"selfLink\" id=\"GetMap\" href=\"#GetMap\" rel=\"bookmark\">Forming GetMap URLs</a></h2>\n" +
+                // "  A person with a browser or a computer program can generate a special URL to request a map.\n" + 
+                // "  The URL must be in the form\n" +
+                // "  <br>" + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?<i>query</i> " +
+                // "  <br>The query for a WMS GetMap request consists of several <i>parameterName=value</i>, separated by '&amp;'.\n" +
+                // "  For example,\n" +
+                // "  <br><a href=\"" + tWmsOpaqueExample130 + "\">" + 
+                //   String2.replaceAll(tWmsOpaqueExample130, "&", "<wbr>&") + "</a>\n" +
+                // "  <br>The <a class=\"selfLink\" id=\"parameters\" href=\"#parameters\" rel=\"bookmark\">parameter</a> options for the GetMap request are:\n" +
+                // "  <br>&nbsp;\n" + //necessary for the blank line before the table (not <p>)
+                // "<table class=\"erd commonBGColor\" style=\"width:100%; \">\n" +
+                // "  <tr>\n" +
+                // "    <th><i>name=value</i><sup>*</sup></th>\n" +
+                // "    <th>Description</th>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td class=\"N\">service=WMS</td>\n" +
+                // "    <td>Required.</td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>version=<i>version</i></td>\n" +
+                // "    <td>Request version.\n" +
+                // "      Currently, ERDDAP's WMS supports \"1.1.0\", \"1.1.1\", and \"1.3.0\".  Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>request=GetMap</td>\n" +
+                // "    <td>Request name.  Required.</td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>layers=<i>layer_list</i></td>\n" +
+                // "    <td>Comma-separated list of one or more map layers.\n" +
+                // "        Layers are drawn in the order they occur in the list.\n" +
+                // "        Currently in ERDDAP's WMS, the layer names from datasets are named <i>datasetID</i>" + 
+                //     EDD.WMS_SEPARATOR + "<i>variableName</i> .\n" +
+                // "        In ERDDAP's WMS, there are five layers not based on ERDDAP datasets:\n" +
+                // "        <ul>\n" +
+                // "        <li> \"Land\" may be drawn BEFORE (as an under layer) or AFTER (as a land mask) layers from grid datasets.\n" +
+                // "        <li> \"Coastlines\" usually should be drawn AFTER layers from grid datasets.\n" +  
+                // "        <li> \"LakesAndRivers\" draws lakes and rivers. This usually should be drawn AFTER layers from grid datasets.\n" +
+                // "        <li> \"Nations\" draws national political boundaries. This usually should be drawn AFTER layers from grid datasets.\n" +
+                // "        <li> \"States\" draws state political boundaries. This usually should be drawn AFTER layers from grid datasets.\n" +
+                // "        </ul>\n" +                
+                // "        Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>styles=<i>style_list</i></td>\n" +
+                // "    <td>Comma-separated list of one rendering style per requested layer.\n" +
+                // "      Currently in ERDDAP's WMS, the only style offered for each layer is the default style,\n" +
+                // "      which is specified via \"\" (nothing).\n" +
+                // "      For example, if you request 3 layers, you can use \"styles=,,\".\n" +
+                // "      Or, even easier, you can request the default style for all layers via \"styles=\".\n" + 
+                // "      Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td class=\"N\">1.1.0: srs=<i>namespace:identifier</i>" +
+                //            "<br>1.1.1: srs=<i>namespace:identifier</i>" +
+                //            "<br>1.3.0: crs=<i>namespace:identifier</i></td>\n" +
+                // "    <td>Coordinate reference system.\n" +
+                // "        <br>Currently in ERDDAP's WMS 1.1.0, the only valid SRS is EPSG:4326.\n" +
+                // "        <br>Currently in ERDDAP's WMS 1.1.1, the only valid SRS is EPSG:4326.\n" +
+                // "        <br>Currently in ERDDAP's WMS 1.3.0, the only valid CRS's are CRS:84 and EPSG:4326,\n" +
+                // "        <br>Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>bbox=<i>4commaSeparatedValues</i></td>\n" +
+                // "    <td>Bounding box corners in SRS/CRS units.\n" +
+                // "      For version=1.3.0 with CRS=EPSG:4326, the 4 values are: minLat,minLon,maxLat,maxLon.\n" +
+                // "      For all other situations, the 4 values are: minLon,minLat,maxLon,maxLat.\n" +
+                // "      (The reverse order! Yes, it's bizarre. Welcome to the world of OGC!)\n" +
+                // "      ERDDAP supports requests within the dataset's longitude (perhaps 0 to 360, perhaps -180 to 180)\n" +
+                // "      and latitude range. Most WMS clients assume longitude values are in the range -180 to 180.\n" +
+                // "      If ERDDAP offers a variant of a dataset with longitude -180 to 180, use it for WMS requests.\n" +
+                // "      Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>width=<i>output_width</i></td>\n" +
+                // "    <td>Width in pixels of map picture. Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>height=<i>output_height</i></td>\n" +
+                // "    <td>Height in pixels of map picture. Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>format=<i>output_format</i></td>\n" +
+                // "    <td>Output format of map.  Currently in ERDDAP's WMS, only image/png is valid.\n" +
+                // "      Required.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>transparent=<i>TRUE|FALSE</i></td>\n" +
+                // "    <td>Background transparency of map.  Optional (default=FALSE).\n" +
+                // "      If TRUE, any part of the image using the BGColor will be made transparent.\n" +      
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>bgcolor=<i>color_value</i></td>\n" +
+                // "    <td>Hexadecimal 0xRRGGBB color value for the background color. Optional (default=0xFFFFFF, white).\n" +
+                // "      If transparent=true, we recommend bgcolor=0x808080 (gray), since white is in some color palettes.\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>exceptions=<i>exception_format</i></td>\n" +
+                // "    <td>The format for WMS exception responses.  Optional.\n" +
+                // "      <br>Currently, ERDDAP's WMS 1.1.0 and 1.1.1 supports\n" +
+                // "          \"application/vnd.ogc.se_xml\" (the default),\n" +
+                // "      <br>\"application/vnd.ogc.se_blank\" (a blank image) and\n" +
+                // "          \"application/vnd.ogc.se_inimage\" (the error in an image).\n" +
+                // "      <br>Currently, ERDDAP's WMS 1.3.0 supports \"XML\" (the default),\n" +
+                // "         \"BLANK\" (a blank image), and\n" +
+                // "      <br>\"INIMAGE\" (the error in an image).\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>time=<i>time</i></td>\n" +
+                // "    <td>Time value of layer desired, specified in ISO8601 format: yyyy-MM-ddTHH:mm:ssZ .\n" +
+                // "      Currently in ERDDAP's WMS, you can only specify one time value per request.\n" +
+                // "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
+                // "      <br>In ERDDAP's WMS, the default value is the last value in the dataset's 1D time array.\n" +
+                // "      <br>In ERDDAP's WMS, \"current\" is interpreted as the last available time (recent or not).\n" +
+                // "      <br>Optional (in ERDDAP's WMS, the default is the last value, whether it is recent or not).\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>elevation=<i>elevation</i></td>\n" +
+                // "    <td>Elevation of layer desired.\n" +
+                // "      Currently in ERDDAP's WMS, you can only specify one elevation value per request.\n" +
+                // "      <br>In ERDDAP's WMS, this is used for the altitude or depth (converted to altitude) dimension (if any).\n" +
+                // "      (in meters, positive=up)\n" +
+                // "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
+                // "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude or depth array).\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "  <tr>\n" +
+                // "    <td>dim_<i>name</i>=<i>value</i></td>\n" + //see WMS 1.3.0 spec section C.3.5
+                // "    <td>Value of other dimensions as appropriate.\n" +
+                // "      Currently in ERDDAP's WMS, you can only specify one value per dimension per request.\n" +
+                // "      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude, non-depth dimensions.\n" +
+                // "      <br>The name of a dimension will be \"dim_\" plus the dataset's name for the dimension, for example \"dim_model\".\n" +
+                // "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
+                // "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dimension's 1D array).\n" +
+                // "    </td>\n" +
+                // "  </tr>\n" +
+                // "</table>\n" +
+                // //WMS 1.3.0 spec section 6.8.1
+                // "  <sup>*</sup> Parameter names are case-insensitive.\n" +
+                // "  <br>Parameter values are case sensitive and must be\n" +
+                // "    <a class=\"N\" rel=\"help\" href=\"https://en.wikipedia.org/wiki/Percent-encoding\">percent encoded" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>:\n" +
+                // "  all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where\n" +
+                // "  HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
+                // "  Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
+                // "   (ask a programmer for help). There are\n" +
+                //     "<a class=\"N\" rel=\"help\" href=\"https://www.url-encode-decode.com\">websites that percent encode/decode for you" +
+                //     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
+                // "  <br>The parameters may be in any order in the URL, separated by '&amp;' .\n" +
+                // "<p>(Revised from Table 8 of the WMS 1.3.0 specification)\n" +
                 "\n");
 
             //notes
             writer.write(
-                "<h3><a class=\"selfLink\" id=\"notes\" href=\"#notes\" rel=\"bookmark\">Notes</a></h3>\n" +
-                "<ul>\n" +     
-                //These WMS requirements are also in setupDatasetXml.
-                "<li><a class=\"selfLink\" id=\"DatasetRequirements\" href=\"#DatasetRequirements\" rel=\"bookmark\"><strong>Dataset Requirements:</strong></a>\n" +
-                "  The main requirements for a variable to be accessible via\n" +
-                "  ERDDAP's WMS server are:\n" +
-                "  <ul>\n" +
-                "  <li>The dataset must be an EDDGrid... dataset.\n" +
-                "  <li>The data variable MUST be a gridded variable.\n" +
-                "  <li>The data variable MUST have longitude and latitude axis variables. (Other axis variables\n" +
-                "    are OPTIONAL.)\n" +
-                "  <li>There MUST be some longitude values between -180 and 180.\n" +
-                "  <li>The\n" +
-                "    <a rel=\"help\" \n" +
-                "    href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar\" \n" +
-                "    >colorBarMinimum and colorBarMaximum attributes</a>\n" +
-                "     MUST be specified. (Other color bar\n" +
-                "    attributes are OPTIONAL.)\n" +
-                "  </ul>\n" +
-                "<li><strong>Grid data layers:</strong> In ERDDAP's WMS, all data variables in grid datasets that use\n" +
-                "  longitude and latitude dimensions are available via WMS.\n" +
-                "  Each such variable is available as a WMS layer, with the name <i>datasetID</i>" + 
-                    EDD.WMS_SEPARATOR + "<i>variableName</i>.\n" +
-                "  Each such layer is transparent (i.e., data values are represented as a range of colors\n" +
-                "  and missing values are represented by transparent pixels).\n" +
-                "<li><strong>Table data layers:</strong> Currently in ERDDAP's WMS, data variables in table datasets are\n" +
-                "  not available via WMS.\n" +
-                "<li><strong>Dimensions:</strong> A consequence of the WMS design is that the TIME, ELEVATION, and other \n" +
-                "  dimension values that you specify in a GetMap request apply to all of the layers.\n" +
-                "  There is no way to specify different values for different layers.\n" +
-                //"<li><strong>Longitude:</strong> The supported CRS values only support longitude values from -180 to 180.\n" +
-                //"   But some ERDDAP datasets have longitude values 0 to 360.\n" +
-                //"   Currently in ERDDAP's WMS, those datasets are only available from longitude 0 to 180 in WMS.\n" +
-                "<li><strong>Strict?</strong> The table above specifies how a client should form a GetMap request.\n" +
-                "  In practice, ERDDAP's WMS tries to be as lenient as possible when processing GetMap\n" +
-                "  requests, since many current clients don't follow the specification. However, if you\n" +
-                "  are forming GetMap URLs, we encourage you to try to follow the specification.\n" +
-                "<li><strong>Why are there separate WMS servers for each dataset?</strong> Because the GetCapabilities\n" +
-                "  document lists all values of all dimensions for each dataset, the information for each\n" +
-                "  dataset can be voluminous (easily 300 KB). If all the datasets (currently ~300 at the)\n" +
-                "  ERDDAP main site were to be included in one WMS, the resulting GetCapabilities document\n" +
-                "  would be huge (~90 MB) which would take a long time to download (causing many people\n" +
-                "  think something was wrong and give up) and would overwhelm most client software.\n" +
-                //"   However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at\n" +
-                //"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?\n" + 
-                "</ul>\n");
+                EDStatic.WMSNotes.replace("&WMS_SEPARATOR;", Character.toString(EDD.WMS_SEPARATOR))
+                // "<h3><a class=\"selfLink\" id=\"notes\" href=\"#notes\" rel=\"bookmark\">Notes</a></h3>\n" +
+                // "<ul>\n" +     
+                // //These WMS requirements are also in setupDatasetXml.
+                // "<li><a class=\"selfLink\" id=\"DatasetRequirements\" href=\"#DatasetRequirements\" rel=\"bookmark\"><strong>Dataset Requirements:</strong></a>\n" +
+                // "  The main requirements for a variable to be accessible via\n" +
+                // "  ERDDAP's WMS server are:\n" +
+                // "  <ul>\n" +
+                // "  <li>The dataset must be an EDDGrid... dataset.\n" +
+                // "  <li>The data variable MUST be a gridded variable.\n" +
+                // "  <li>The data variable MUST have longitude and latitude axis variables. (Other axis variables\n" +
+                // "    are OPTIONAL.)\n" +
+                // "  <li>There MUST be some longitude values between -180 and 180.\n" +
+                // "  <li>The\n" +
+                // "    <a rel=\"help\" \n" +
+                // "    href=\"https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar\" \n" +
+                // "    >colorBarMinimum and colorBarMaximum attributes</a>\n" +
+                // "     MUST be specified. (Other color bar\n" +
+                // "    attributes are OPTIONAL.)\n" +
+                // "  </ul>\n" +
+                // "<li><strong>Grid data layers:</strong> In ERDDAP's WMS, all data variables in grid datasets that use\n" +
+                // "  longitude and latitude dimensions are available via WMS.\n" +
+                // "  Each such variable is available as a WMS layer, with the name <i>datasetID</i>" + 
+                //     EDD.WMS_SEPARATOR + "<i>variableName</i>.\n" +
+                // "  Each such layer is transparent (i.e., data values are represented as a range of colors\n" +
+                // "  and missing values are represented by transparent pixels).\n" +
+                // "<li><strong>Table data layers:</strong> Currently in ERDDAP's WMS, data variables in table datasets are\n" +
+                // "  not available via WMS.\n" +
+                // "<li><strong>Dimensions:</strong> A consequence of the WMS design is that the TIME, ELEVATION, and other \n" +
+                // "  dimension values that you specify in a GetMap request apply to all of the layers.\n" +
+                // "  There is no way to specify different values for different layers.\n" +
+                // //"<li><strong>Longitude:</strong> The supported CRS values only support longitude values from -180 to 180.\n" +
+                // //"   But some ERDDAP datasets have longitude values 0 to 360.\n" +
+                // //"   Currently in ERDDAP's WMS, those datasets are only available from longitude 0 to 180 in WMS.\n" +
+                // "<li><strong>Strict?</strong> The table above specifies how a client should form a GetMap request.\n" +
+                // "  In practice, ERDDAP's WMS tries to be as lenient as possible when processing GetMap\n" +
+                // "  requests, since many current clients don't follow the specification. However, if you\n" +
+                // "  are forming GetMap URLs, we encourage you to try to follow the specification.\n" +
+                // "<li><strong>Why are there separate WMS servers for each dataset?</strong> Because the GetCapabilities\n" +
+                // "  document lists all values of all dimensions for each dataset, the information for each\n" +
+                // "  dataset can be voluminous (easily 300 KB). If all the datasets (currently ~300 at the)\n" +
+                // "  ERDDAP main site were to be included in one WMS, the resulting GetCapabilities document\n" +
+                // "  would be huge (~90 MB) which would take a long time to download (causing many people\n" +
+                // "  think something was wrong and give up) and would overwhelm most client software.\n" +
+                // //"   However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at\n" +
+                // //"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?\n" + 
+                // "</ul>\n"
+                );
 
             writer.write(
                 //1.3.0 examples
