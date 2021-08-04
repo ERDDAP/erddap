@@ -526,8 +526,8 @@ public class Erddap extends HttpServlet {
                 }
 
                 //if (debugMode) String2.log(">> requestUrl=" + requestUrl);
-                if (requestUrl.startsWith("/" + EDStatic.warName + "/download/") ||  
-                    requestUrl.startsWith("/" + EDStatic.warName + "/images/")) {  
+                if (getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/download/") ||  
+                    getUrlWithoutLang(request).startsWith("/" + EDStatic.warName + "/images/")) {  
                     //small static content (e.g., erddap.css) is exempt from request limits
                     //   (but still counts toward ipAddressMaxRequests above)
                     //so don't wait
@@ -783,7 +783,6 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = getUrlWithoutLang(request);  //post EDD.baseUrl, pre "?"
-        System.out.println("index requestUrl:" + requestUrl);
         //plain file types  
         for (int pft = 0; pft < plainFileTypes.length; pft++) { 
 
@@ -6896,7 +6895,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //find mainDatasetID  (if request is from one dataset's wms)
             //Currently, all requests are from one dataset's wms.
             // https://coastwatch.pfeg.noaa.gov/erddap/wms/erdBAssta5day/EDD.WMS_SERVER?service=.....
-            String[] requestParts = String2.split(request.getRequestURI(), '/');  //post EDD.baseUrl, pre "?"
+            String[] requestParts = String2.split(getUrlWithoutLang(request), '/');  //post EDD.baseUrl, pre "?"
             int wmsPart = String2.indexOf(requestParts, "wms");
             String mainDatasetID = null;
             if (wmsPart >= 0 && wmsPart == requestParts.length - 3) { //it exists, and there are two more parts
@@ -12774,13 +12773,14 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
+        String requestUrlNoLang = getUrlWithoutLang(request);
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(datasetIDStartsAt);
         String fileTypeName = File2.getExtension(endOfRequestUrl);
 
-        if (requestUrl.equals("/" + EDStatic.warName + "/info") ||
-            requestUrl.equals("/" + EDStatic.warName + "/info/") ||
-            requestUrl.equals("/" + EDStatic.warName + "/info/index.htm")) {
+        if (requestUrlNoLang.equals("/" + EDStatic.warName + "/info") ||
+            requestUrlNoLang.equals("/" + EDStatic.warName + "/info/") ||
+            requestUrlNoLang.equals("/" + EDStatic.warName + "/info/index.htm")) {
             sendRedirect(response, tErddapUrl + "/info/index.html?" +
                 EDStatic.passThroughPIppQueryPage1(request));
             return;
