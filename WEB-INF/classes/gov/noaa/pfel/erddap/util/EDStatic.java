@@ -38,6 +38,7 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.translate;
 import gov.noaa.pfel.coastwatch.util.Tally;
 
 import gov.noaa.pfel.erddap.*;
@@ -3685,7 +3686,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *  (neither has slash at end).
      */
     public static String erddapUrl(String loggedInAs) {
-        return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
+        
+        if (languageChosenIndex == 0) {
+            return loggedInAs == null? erddapUrl : erddapHttpsUrl;
+        } else {
+            return loggedInAs == null? erddapUrl + "/" + fullLanguageCodeList[languageChosenIndex] : erddapHttpsUrl + "/" + fullLanguageCodeList[languageChosenIndex];
+        }
+        //return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
     }
 
     /**
@@ -4584,12 +4591,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static String endBodyHtml(String tErddapUrl) {
         HtmlWidgets widget = new HtmlWidgets();
         return String2.replaceAll(endBodyHtml, "&erddapUrl;", tErddapUrl)
-            .replace("&HTMLselect;",
-                "<form name=\"lang\">\n" + //no action
-                widget.select("language", "", 1, languageList, languageChosenIndex, 
-                    ")")
-                + widget.button("submit", "LangSubmit", "", "Submit", "")
-                + widget.endForm()
+            .replace("&HTMLselect;",""
+                // Erddap supports the changing the language mode by changing the url
+                // changing it with a select needs additional configuration
+                // "<form name=\"lang\">\n" + //no action
+                // widget.select("language", "", 1, languageList, languageChosenIndex, 
+                //     ")")
+                // + widget.button("submit", "LangSubmit", "", "Submit", "")
+                // + widget.endForm()
             );
     }
     public static String legal(String tErddapUrl) {
