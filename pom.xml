@@ -459,7 +459,6 @@ since this is impossible for AWS S3 dependencies without Maven.
             <artifactId>regions</artifactId>
             <version>2.16.94</version>
         </dependency>
-        
         <!-- Added by Qi for translation purpose -->
         <dependency>
             <groupId>com.google.cloud</groupId>

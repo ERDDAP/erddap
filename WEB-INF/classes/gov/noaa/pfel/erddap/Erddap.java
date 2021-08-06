@@ -417,7 +417,7 @@ public class Erddap extends HttpServlet {
 
     /**
      * get the Url of a request without the language code
-     * note this does not change the languageChosenIndex
+     * note this does not change the currLang variable in EDStatic
      */
     public String getUrlWithoutLang(HttpServletRequest request) {
         String requestUrl = request.getRequestURI();
@@ -428,8 +428,8 @@ public class Erddap extends HttpServlet {
             return requestUrl;
         } else {
             String currLangCode = requestUrl.substring(protocolStart, langCodeEnd);
-            EDStatic.languageChosenIndex = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
-            if (EDStatic.languageChosenIndex == -1) {
+            int temp = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
+            if (temp == -1) {
                 //the content between the "/" after hostURL/erddap and the "/" that follows is not recognized
                 return requestUrl;
             } else {
@@ -582,19 +582,20 @@ public class Erddap extends HttpServlet {
                 // there is nothing after hostURL/erddap
                 //set language to default, proceed to get protocols
                 langCodeEnd = protocolStart;
-                EDStatic.languageChosenIndex = 0;
+                EDStatic.updateLangChoice(0);
             } else {
                 String currLangCode = requestUrl.substring(protocolStart, langCodeEnd);
                 System.out.println("currLangCode: " + currLangCode);
-                EDStatic.languageChosenIndex = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
-                if (EDStatic.languageChosenIndex == -1) {
+                int temp = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
+                if (temp == -1) {
                     //langCode not found in our list, use default(0)
-                    EDStatic.languageChosenIndex = 0;
+                    EDStatic.updateLangChoice(0);
                     langCodeEnd = protocolStart;
                 } else {
                     protocolStart = langCodeEnd + 1;
+                    EDStatic.updateLangChoice(temp);
                 }
-                System.out.println("languageChosenIndex: " + EDStatic.languageChosenIndex);   
+                //System.out.println("curr Lang: " + EDStatic.currLang);   
             }
             //get protocol (e.g., "griddap" or "tabledap")
             int protocolEnd = requestUrl.indexOf("/", protocolStart);
@@ -2176,7 +2177,7 @@ writer.write(dataProviderFormLongDescriptionHTML
             frequencyOption = HtmlWidgets.validate0ToMax(
                 "Frequency", 0, frequencyOption, frequencyOptions.length - 1, errorMsgSB);
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                errorMsgSB.insert(0, EDStatic.dpf_fixProblem
                     //"<br>Please fix these problems, then 'Submit' this part of the form again.\n"
                     );
 
@@ -2352,7 +2353,7 @@ widgets.select("frequencyOption", "", 1, frequencyOptions, frequencyOption, "") 
 */);
 
 //Submit
-writer.write(EDStatic.dfs_submit
+writer.write(EDStatic.dpf_submit
         .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
         .replace("&partNumber;", "1")
         .replace("&partNumber;", "2")
@@ -2494,7 +2495,7 @@ writer.write(widgets.endForm());
             if (errorMsgSB.length() > 0)
                 errorMsgSB.insert(0, 
                 //"<br>Please fix these problems, then 'Submit' this part of the form again.\n");
-                    EDStatic.dfs_fixProblem);
+                    EDStatic.dpf_fixProblem);
 
             String fromInfo = tYourName  + " <" + tEmailAddress + "> at " + tTimestamp;
 
@@ -2633,7 +2634,7 @@ writer.write(
 "</tr>\n" +
 "<tr>\n" +
 "  <td>" + EDStatic.dpf_title + "\n" + 
-"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_titleTooltip[EDStatic.languageChosenIndex]
+"  <td>&nbsp;" + EDStatic.htmlTooltipImage(tLoggedInAs, EDStatic.dpf_titleTooltip
 //      "This is a short (&lt;=80 characters) description of the dataset. For example," + 
 // "    <br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>"
 ) + "&nbsp;\n" +
@@ -2838,7 +2839,7 @@ XML.encodeAsHTML(tComment) +  //encoding is important for security
 
 //Submit
 writer.write(
-    EDStatic.dfs_submit
+    EDStatic.dpf_submit
         .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
         .replace("&partNumber;", "2")
         .replace("&partNumber;", "3")
@@ -3014,7 +3015,7 @@ writer.write(widgets.endForm());
                     "comment #" + var, "", tComment[var], 160, errorMsgSB);
             }
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                errorMsgSB.insert(0, EDStatic.dpf_fixProblem
                     // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
                     );
 
@@ -3301,7 +3302,7 @@ widgets.textField("comment" + var, "", dpfTFWidth, 250, tComment[var], "") +
 
 //Submit
 writer.write(
-    EDStatic.dfs_submit
+    EDStatic.dpf_submit
     .replace("&widgetsSubmitButton;", widgets.button("submit", "Submit", "", "Submit", ""))
     .replace("&partNumber;", "3")
     .replace("&partNumber;", "4")
@@ -3362,7 +3363,7 @@ writer.write(widgets.endForm());
             tOtherComments = HtmlWidgets.validateNotNullNotTooLong(
                 "Other Comments", "", tOtherComments, 500, errorMsgSB);
             if (errorMsgSB.length() > 0)
-                errorMsgSB.insert(0, EDStatic.dfs_fixProblem
+                errorMsgSB.insert(0, EDStatic.dpf_fixProblem
                     // "<br>Please fix these problems, then 'Submit' this part of the form again.\n"
                     );
 

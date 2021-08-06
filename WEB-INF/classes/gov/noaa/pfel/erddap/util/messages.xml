@@ -2290,13 +2290,13 @@ But some things you might not have considered are:
 ]]></doWithGraphs>
 
 <!-- DPF = Data Provider Form-->
-<dfs_submit><![CDATA[
+<dpf_submit><![CDATA[
 <h2>Finished with part &partNumber;?</h2>
 Click &widgetsSubmitButton; to send this information to the ERDDAP administrator and move on to part &partNumber; (of 4).    
-]]></dfs_submit>
-<dfs_fixProblem><![CDATA[
+]]></dpf_submit>
+<dpf_fixProblem><![CDATA[
 <br>Please fix these problems, then 'Submit' this part of the form again.
-]]></dfs_fixProblem>
+]]></dpf_fixProblem>
 <dpf_yourName>Your Name</dpf_yourName>
 <dpf_emailAddress>Email Address</dpf_emailAddress>
 <dpf_Timestamp>Timestamp</dpf_Timestamp>
@@ -5695,7 +5695,7 @@ ERDDAP, Version &erddapVersion;
 <br><a rel="license" href="&erddapUrl;/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Privacy Policy</a> |
     <a rel="bookmark" href="&erddapUrl;/legal.html#contact">Contact</a>|
-    language&HTMLselect;&HTMLSubmit;
+    language&HTMLselect;
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;

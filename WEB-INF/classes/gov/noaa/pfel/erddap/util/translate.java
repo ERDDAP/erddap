@@ -68,7 +68,7 @@ public class translate {
     private static final String oldMessagePath = translatedFolderPath + "messages-Copy.xml";
     
     //translation settings
-    private static final String[] languageCodeList = {"zh-cn"};
+    public static final String[] languageCodeList = {"zh-cn"};
     private static HashSet<String> doNotTranslateSet = new HashSet<String>(Arrays.asList(
         //* all tags that match the regular expresion:  <EDDGrid.*Example> ,
         "/EDDGridErddapUrlExample", "/EDDGridIdExample", "/EDDGridDimensionExample", "/EDDGridNoHyperExample", "/EDDGridDimNamesExample", "/EDDGridDataTimeExample", "/EDDGridDataValueExample",
@@ -83,7 +83,7 @@ public class translate {
         //keywords used in a drop-down selection
         "/admSubsetVariables","/admKeywords",
         //abreviations
-        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information",
+        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information", "/EDDIso19115",
         // others
         "/legal", "/imageWidths", "/imageHeights", "/langCode"
     ));
