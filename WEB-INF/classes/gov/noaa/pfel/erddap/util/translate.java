@@ -68,7 +68,7 @@ public class translate {
     private static final String oldMessagePath = translatedFolderPath + "messages-Copy.xml";
     
     //translation settings
-    private static final String[] languageCodeList = {"zh-cn"};
+    public static final String[] languageCodeList = {"zh-cn"};
     private static HashSet<String> doNotTranslateSet = new HashSet<String>(Arrays.asList(
         //* all tags that match the regular expresion:  <EDDGrid.*Example> ,
         "/EDDGridErddapUrlExample", "/EDDGridIdExample", "/EDDGridDimensionExample", "/EDDGridNoHyperExample", "/EDDGridDimNamesExample", "/EDDGridDataTimeExample", "/EDDGridDataValueExample",
@@ -80,8 +80,10 @@ public class translate {
         "/DEFAULT_commonStandardNames", "/palettes", "/pdfWidths", "/pdfHeights", "/questionMarkImageFile", "/signedToUnsignedAttNames", "/sparqlP01toP02pre", "/sparqlP01toP02post",
         "/startHeadHtml5", "/startBodyHtml5", "/standardizeUdunits", "/ucumToUdunits", "/udunitsToUcum", "/updateUrls",
         "/advr_dataStructure", "/advr_cdm_data_type", "/advr_class", "/inotifyFixCommands", 
+        //keywords used in a drop-down selection
+        "/admSubsetVariables","/admKeywords",
         //abreviations
-        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", 
+        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information", "/EDDIso19115",
         // others
         "/legal", "/imageWidths", "/imageHeights", "/langCode"
     ));
