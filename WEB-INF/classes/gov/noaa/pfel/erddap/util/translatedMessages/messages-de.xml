@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!--ERDDAP enthält Textnachrichten für ERDDAP (die in EDStatic gelesen werden).
 Wenn Sie ERDDAP auf Ihrem Server installieren, können alle diese Nachrichten ERDDAP bleiben.
 da diese Nachrichten bei verschiedenen ERDDAP Installationen normalerweise gleich sind.
@@ -22,8 +21,7 @@ In diesen Nachrichten muss jedes einfache Anführungszeichen ' als '' maskiert w
 Siehe <a href="https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html">https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html</a>
 
 -->
-<erddapMessages>
-<!--Dies gibt HTML-Inhalt zurück, der das Anfordern von komprimierten Dateien beschreibt.
+<erddapMessages><!--Dies gibt HTML-Inhalt zurück, der das Anfordern von komprimierten Dateien beschreibt.
 Siehe <a href="https://httpd.apache.org/docs/1.3/mod/mod_mime.html">https://httpd.apache.org/docs/1.3/mod/mod_mime.html</a>
 was besagt, dass x-gzip=gzip und x-compress=compress
 Dies wird auch in Messages2.xml in . wiederholt
@@ -57,6 +55,8 @@ eine komprimierte Antwort anfordern und automatisch dekomprimieren.
 (obwohl Sie entweder mit <kbd>deflate</kbd> -Antworten umgehen oder <kbd>deflate</kbd> nicht anfordern sollten).
 </ul>
 ]]></acceptEncodingHtml>
+<accessRestful>Zugriff auf die RESTful Web Services von ERDDAP</accessRestful>
+<acronyms>Akronyme</acronyms>
 <addConstraints>Sie können Anforderungen an diese Webseite tabledap-ähnliche Einschränkungen hinzufügen.
 beispielsweise,</addConstraints>
 <addVarWhereAttName>Optional: Geben Sie einen Attributnamen an.</addVarWhereAttName>
@@ -68,9 +68,12 @@ Optional: Wenn Sie hier einen Attributwert angeben, wird
 <br>die Variablen im Datensatz wobei <kbd><i>attName=attValue</i></kbd>
 <br>zur Liste der angeforderten Variablen.
 ]]></addVarWhere>
+<additionalLinks><![CDATA[
+Wenn Sie Vorschläge für weitere Links haben, wenden Sie sich an <kbd>bob dot simons at noaa dot gov</kbd> .
+]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
-<admKeywords>19115, zugänglich, Höhe, Durchschnitt, Hintergrund, Basis, Datensatz, Tiefe, E-Mail, Erddap, fgdc, Grafik, Raster, Informationen, Institution, ISO, Breitengrad, Standort, Längengrad, Grafik erstellen, Maximum, Metadaten, Minimum, opendap, rss, Sequenz, Service, SOS, Quelle, Abstand, Struktur, Abonnement, Teilmenge, Zusammenfassung, Tabelle, Zeit, Titel, URL, WC, WMS</admKeywords>
-<admSubsetVariables>zugänglich, dataStructure, cdm_data_type, Klasse, Institution, testOutOfDate</admSubsetVariables>
+<admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
+<admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>Dieser Datensatz ist eine Tabelle, die eine Zeile mit Informationen für jeden Datensatz enthält, der derzeit in diesem ERDDAP ist.</admSummary>
 <admTitle>Die Liste aller aktiven ERDDAP</admTitle>
 <!-- (a)ll(D)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
@@ -138,7 +141,6 @@ Vielleicht gibt es in diesem ERDDAP keine ERDDAP, die nahezu in Echtzeit vorlieg
 <strong>Wegbeschreibung:</strong> Geben Sie so viele oder so wenige Suchkriterien an, wie Sie möchten, und klicken Sie dann auf <kbd>&searchButton;</kbd> .
 <br>In den Ergebnissen erscheinen nur die Datensätze, die <strong>allen</strong> Suchkriterien entsprechen.
 ]]></advancedSearchDirections>
-
 <!-- Dies ist eine Beschreibung der erweiterten Suche.-->
 <advancedSearchTooltip><![CDATA[
 Die erweiterte Suche kombiniert alle Suchtechniken
@@ -207,7 +209,6 @@ Dies ist optional.
 <br>angegebenen Zeitgrenzen.
 </ul>
 ]]></advancedSearchTimeTooltip>
-
 <!-- {0}=plainFileType (z. B. .json) der erweiterten Suchanfrage.-->
 <advancedSearchWithCriteria>Eine {0} Erweiterte Suche-Anfrage muss ein oder mehrere Kriterien enthalten, zum Beispiel &amp;quot;?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature &quot;.</advancedSearchWithCriteria>
 <advancedSearchFewerCriteria>Versuchen Sie es mit weniger und/oder breiteren Suchkriterien.</advancedSearchFewerCriteria>
@@ -222,7 +223,6 @@ klicken Sie dann auf <kbd>{0}</kbd> .
 <br>Bei anderen Dateitypen löst die erweiterte Suche eine Ausnahme aus, wenn ein Teil der Anforderung ungültig ist.
 <br>Es werden jedoch nur erwartete Parameter überprüft; unerwartete Parameter werden einfach ignoriert.
 ]]></advancedSearchErrorHandling>
-
 <!-- Diese werden in PrimitiveArray injiziert.
      Diese verwenden MessageFormat.-->
 <ArrayAddN>FEHLER in {0}.addN: n ({1}) &lt; 0.</ArrayAddN>
@@ -247,7 +247,6 @@ Haben Sie oft mehrere Anfragen gleichzeitig gestellt?
 Haben Sie in kurzer Zeit oft identische Anfragen gestellt?
 Haben Sie viele ungültige Anfragen eingereicht?
 Wenn Sie diese Probleme vermeiden möchten, senden Sie bitte eine E-Mail an {0}, um die Entfernung von der schwarzen Liste zu beantragen.</blacklistMsg>
-
 <!-- Diese Nachrichten beziehen sich auf die Suche nach Kategorie.-->
 <categoryTitleHtml>Suche nach Datensätzen nach Kategorie</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -260,28 +259,48 @@ Datensätze können anhand der Werte verschiedener Metadatenattribute auf unters
 <categoryClickHtml>Klicken Sie auf eine Kategorie (einen Attributwert), um eine Liste relevanter Datensätze anzuzeigen.</categoryClickHtml>
 <categoryNotAnOption>Wenn attribute= &quot;{0} &quot;, value= "{1}" keine Option ist.</categoryNotAnOption>
 <caughtInterrupted>gefangen currentThread().isInterrupted().</caughtInterrupted>
-
+<cdmDataTypeHelp><![CDATA[
+CDM ist das Common Data Model von Unidata , eine Methode zur Kategorisierung von Datensätzen
+<br>basierend auf der Geometrie des Datensatzes. Wählen Sie den cdm_data_type aus, den
+<br>ist am besten geeignet:
+<br>&bull; Verwenden Sie <kbd>Raster</kbd> für alle Rasterdatensätze.
+<br>&bull; Verwenden Sie <kbd>Punkt</kbd> für ein Dataset mit nicht zusammenhängenden Punkten.
+<br>&nbsp;&nbsp; Beispiel: Walsichtungen oder Sichtungen gestrandeter Meeressäuger.
+<br>&bull; <kbd>Profil</kbd> für Daten aus mehreren Tiefen auf einem oder mehreren Längengraden verwenden,
+<br>&nbsp;&nbsp; Breitengrad-Standorte.
+<br>&nbsp;&nbsp; Beispiel: CTDs, wenn sie nicht mit einer TimeSeries oder Trajectory verknüpft sind.
+<br>&bull; Verwenden Sie <kbd>TimeSeries</kbd> für Daten von einer Reihe von Stationen mit festem Längengrad,
+<br>&nbsp;&nbsp; Breite (, Höhe).
+<br>&nbsp;&nbsp; Beispiele: festgemachte Bojen oder Stationen.
+<br>&bull; Verwenden Sie <kbd>TimeSeriesProfile</kbd> für Profile von einer Reihe von Stationen.
+<br>&nbsp;&nbsp; Beispiele: Stationen mit CTDs.
+<br>&bull; Verwenden Sie die <kbd>Trajektorie</kbd> für Daten aus einem Satz von Längengrad, Breitengrad (, Höhe)
+<br>&nbsp;&nbsp; Pfade genannt Trajektorien.
+<br>&nbsp;&nbsp; Beispiele: Schiffe, Gleiter oder markierte Tiere.
+<br>&bull; Verwenden Sie <kbd>TrajectoryProfile</kbd> für Profile entlang von Trajektorien.
+<br>&nbsp;&nbsp; Beispiele: Schiffe + CTDs oder Profilierungssegelflugzeuge.
+<br>&bull; <kbd>Andere verwenden,</kbd> wenn der Datensatz keine Breiten- und Längengraddaten enthält oder wenn
+<br>&nbsp;&nbsp; kein anderer Typ ist geeignet.
+<br>&nbsp;&nbsp; Beispiele: Laboranalysen oder Fischanlandungen nach Hafennamen (wenn kein lat,lon).
+]]></cdmDataTypeHelp>
 <!--Diese Nachricht wird als Tooltip für die &quot; Zugriffs &quot; -Links auf HTML-Seiten verwendet
 wenn eine Tabelle mit Datensätzen angezeigt wird (zB wenn Sie eine Volltextsuche nach Datensätzen durchführen).
 -->
 <clickAccess>Klicken Sie hier, um ein OPeNDAP- Datenzugriffsformular für diesen Datensatz OPeNDAP , damit Sie Daten anfordern können.</clickAccess>
-
 <!--Diese Nachricht wird als Tooltip für den &quot; Hintergrund &quot; -Link auf HTML-Seiten verwendet
 wenn eine Tabelle mit Datensätzen angezeigt wird (zB wenn Sie eine Volltextsuche nach Datensätzen durchführen).
 -->
 <clickBackgroundInfo>Klicken Sie hier, um Hintergrundinformationen aus der Quelle dieses Datensatzes anzuzeigen.</clickBackgroundInfo>
 <clickERDDAP>Klicken Sie hier, um zur ERDDAP -Homepage zurückzukehren.</clickERDDAP>
-
 <!--Diese Nachricht wird als Tooltip für den &quot; Info &quot; -Link auf HTML-Seiten verwendet, wenn
 eine Tabelle mit Datensätzen wird angezeigt (zB wenn Sie eine Volltextsuche nach Datensätzen durchführen).
 -->
 <clickInfo>Klicken Sie hier, um eine Liste der Variablen dieses Datasets und die vollständige Liste der Metadatenattribute anzuzeigen.</clickInfo>
 <clickToSubmit>Klicken Sie hier, um das Formular an den Server zu senden.</clickToSubmit>
 <comboBoxAlt>Bewegen Sie den Mauszeiger hierher, um eine Liste der Optionen anzuzeigen. Klicken Sie auf eine Option, um sie auszuwählen.</comboBoxAlt>
-
+<converterWebService>ERDDAP bietet mehrere Konverter als Webseiten und als Webservices an:</converterWebService>
 <!--Diese HTML-Meldungen werden verwendet, um die &quot; Konvertieren &quot; -Optionen allgemein und einzeln zu beschreiben.-->
 <convertOceanicAtmosphericAcronyms>Konvertieren eines gemeinsamen ozeanischen/atmosphärischen Akronyms in/von einem vollständigen Namen</convertOceanicAtmosphericAcronyms>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN...).-->
 <convertOceanicAtmosphericAcronymsIntro><![CDATA[
 Auf dieser Webseite können Sie ein gebräuchliches ozeanisches/atmosphärisches Akronym in einen vollständigen Namen umwandeln.
@@ -317,7 +336,6 @@ Akronym oder nehmen Sie eine Korrektur vor, <kbd>senden</kbd> Sie es bitte <kbd>
 <br>&nbsp;
 </ul>
 ]]></convertOceanicAtmosphericAcronymsNotes>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN, ...).-->
 <convertOceanicAtmosphericAcronymsService><![CDATA[
 <p>&nbsp;<hr>
@@ -357,7 +375,6 @@ Es gibt
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></convertOceanicAtmosphericAcronymsService>
 <convertOceanicAtmosphericVariableNames>Konvertieren eines gemeinsamen ozeanischen/atmosphärischen Variablennamens in einen/von einem vollständigen Namen</convertOceanicAtmosphericVariableNames>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN...).-->
 <convertOceanicAtmosphericVariableNamesIntro><![CDATA[
 Auf dieser Webseite können Sie einen gebräuchlichen ozeanischen/atmosphärischen Variablennamen in einen/von einem vollständigen Namen umwandeln.
@@ -393,7 +410,6 @@ Bitte <kbd>senden</kbd> Sie es <kbd>per</kbd> E-Mail an <kbd>bob dot simons at n
 <br>&nbsp;
 </ul>
 ]]></convertOceanicAtmosphericVariableNamesNotes>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN, ...).-->
 <convertOceanicAtmosphericVariableNamesService><![CDATA[
 <p>&nbsp;<hr>
@@ -425,7 +441,6 @@ in Prozent kodiert sein (bitten Sie einen Programmierer um Hilfe). Es gibt
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></convertOceanicAtmosphericVariableNamesService>
 <convertFipsCounty>Konvertieren eines FIPS-Landkreiscodes in/von einem Landkreisnamen</convertFipsCounty>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN...).-->
 <!--&quot; FIPS-Kreiscode &quot; war ein Link zu <a href="http://www.itl.nist.gov/fipspubs/fip6-4.htm">http://www.itl.nist.gov/fipspubs/fip6-4.htm</a>
 dann <a href="https://www.census.gov/geo/reference/codes/cou.html">https://www.census.gov/geo/reference/codes/cou.html</a>
@@ -503,7 +518,6 @@ Die Entitäten auf Bundesstaatsebene sind:
 <br>&nbsp;
 </ul>
 ]]></convertFipsCountyNotes>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN, ...).-->
 <convertFipsCountyService><![CDATA[
 <p>&nbsp;<hr>
@@ -799,10 +813,8 @@ in Prozent kodiert sein (bitten Sie einen Programmierer um Hilfe). Es gibt
     src="../images/external.png" alt=" (external link)" 
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></convertInterpolateService>
-
 <!--Diese HTML-Meldungen werden verwendet, um die &quot; Konvertieren &quot; -Optionen allgemein und einzeln zu beschreiben.-->
 <convertKeywords>Konvertieren eines CF-Standardnamens in/von einem GCMD-Wissenschaftsschlüsselwort</convertKeywords>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN...).-->
 <convertKeywordsIntro><![CDATA[
 Auf dieser Webseite können Sie einen
@@ -852,7 +864,6 @@ Vollständigkeit oder Nützlichkeit aller Informationen auf dieser Website.
 Bitte <kbd>senden</kbd> Sie alle vorgeschlagenen Korrekturen <kbd>per</kbd> E-Mail an <kbd>bob dot simons at noaa dot gov</kbd> .
 </ul>
 ]]></convertKeywordsNotes>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN, ...).-->
 <convertKeywordsService><![CDATA[
 <p>&nbsp;<hr>
@@ -900,7 +911,6 @@ und führen Sie Zeitumrechnungen aus einem Computerprogramm, Skript oder einer W
 ERDDAP hat
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">ein Dienst zum Konvertieren einer Zeichenfolgenzeit in/von einer numerischen Zeit</a> .
 ]]></convertTimeReference>
-
 <!-- Ändern Sie nicht die Beispielwerte (von defaultN...).-->
 <convertTimeIntro><![CDATA[
 An verschiedenen Stellen in ERDDAP kann ein Zeitpunkt entweder wie folgt dargestellt werden:
@@ -1263,7 +1273,6 @@ zur Zeit.
 
 </ul>
 ]]></convertTimeNotes>
-
 <!-- Ändern Sie nicht die Beispiele (von defaultN, ...).-->
 <convertTimeService><![CDATA[
 <p>&nbsp;<hr>
@@ -1352,7 +1361,6 @@ Sie können auch andere gängige Formate für die Basiszeit verwenden.
 Der Jahreswert muss vierstellig sein - verwenden Sie bei Bedarf 0-Padding.
 Beachten Sie, dass #/#/# als Monat/Datum/Jahr interpretiert wird, nicht als Datum/Monat/Jahr.
 ]]></convertTimeUnitsTooltip>
-
 <!-- Das Beispiel in der ersten Zeile ist EDV.TIME_UNITS.-->
 <convertTimeUnitsHelp><![CDATA[
 Beispiel: "seconds since 1970-01-01T00:00:00Z".
@@ -1808,7 +1816,6 @@ in Prozent kodiert sein (bitten Sie einen Programmierer um Hilfe). Es gibt
     src="../images/external.png" alt=" (external link)" 
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></convertURLsService>
-
 <!-- CookiesHilfe zuletzt aktualisiert 2019-12-19-->
 <cookiesHelp><![CDATA[Stellen Sie sicher, dass Ihr Browser so eingestellt ist, dass
 <a rel="help" href="https://en.wikipedia.org/wiki/HTTP_cookie">Kekse<img 
@@ -1851,10 +1858,170 @@ Jede Zeile stellt eine andere Stichprobe der Daten dar (z. B. von einer anderen 
 ).
 ]]></dafTableTooltip>
 <dasTitle>Die Datensatzattributstruktur (.das) für diesen Datensatz</dasTitle>
-
 <!--Die Meldung, die angezeigt werden soll, wenn die Daten nicht heruntergeladen werden können (zB SeaWiFS &lt;=14 Tage alt).-->
 <dataAccessNotAllowed>[Es tut uns leid. Diese Daten können nicht heruntergeladen werden.]</dataAccessNotAllowed>
 <databaseUnableToConnect>Verbindung mit der Datenbank fehlgeschlagen.</databaseUnableToConnect>
+<dataProviderFormSuccess><![CDATA[
+Erfolg! Wie Sie sehen, wenn Sie Ihre Maus über
+<br>dieser Fragezeichensymbole sehen Sie hilfreiche Hinweise
+<br>und Begriffsdefinitionen.
+]]></dataProviderFormSuccess>
+<dataProviderFormShortDescription>Das Datenanbieterformular ist für Personen gedacht, die über Daten verfügen und möchten, dass diese von diesem ERDDAP werden.
+Es sammelt grundlegende Informationen über den Datensatz und sendet sie per E-Mail an den Administrator dieses ERDDAP.</dataProviderFormShortDescription>
+<dataProviderFormLongDescriptionHTML><![CDATA[
+Dieses Datenanbieterformular ist für Personen gedacht, die über Daten verfügen und möchten, dass diese von diesem ERDDAP werden.
+Die Übersicht über den Vorgang ist:
+<ol>
+<li>Sie füllen ein 4-teiliges Formular aus. Wenn Sie ein Teil fertigstellen, wird
+die soeben eingegebenen Informationen sind
+an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ) <kbd>gesendet</kbd> .
+<li>Der ERDDAP Administrator wird sich mit Ihnen in Verbindung setzen, um herauszufinden, wie Sie
+die Daten zu übertragen und weitere Details zu klären.
+&nbsp;
+</ol>
+
+<h2> Dinge, die Sie wissen müssen</h2>
+<strong>Das Ziel</strong>
+<br>Das Ziel dieses Formulars ist es, Ihnen beim Erstellen einer Beschreibung Ihres Datensatzes
+("Metadaten"), damit jemand, der nichts über diesen Datensatz weiß,
+in der Lage ist, den Datensatz zu finden, wenn er nach diesem Datensatztyp
+verstehen Sie den Datensatz, verwenden Sie die Daten richtig und geben Sie
+dafür, dass Sie den Datensatz erstellt haben.
+<p><strong>Nicht überfliegen.</strong>
+<br>Bitte arbeiten Sie sich dieses Dokument durch und lesen Sie alles sorgfältig durch. Nicht überfliegen.
+Wenn Sie einen wichtigen Punkt überspringen, ist es nur doppelt so viel
+später für dich (und mich) arbeiten.
+<p><strong>Gib dein Bestes.</strong>
+<br>Dies ist der erste Durchgang zum Erstellen von Metadaten für dieses Dataset.
+Der ERDDAP Administrator wird dies bearbeiten und mit Ihnen zusammenarbeiten, um es zu verbessern.
+Es ist sogar einfach, die Metadaten zu ändern, nachdem sich der Datensatz in ERDDAP.
+Aber es ist besser, dies beim ersten Mal richtig zu machen.
+Bitte konzentrieren Sie sich, lesen Sie sorgfältig, seien Sie geduldig, seien Sie fleißig und geben Sie Ihr Bestes.
+<p><strong>Hilfreiche</strong> &htmlTooltipImage;
+<br>Wenn Sie Ihre Maus über diese Fragezeichensymbole bewegen/bewegen, wird
+Sie sehen hilfreiche Hinweise und Begriffsdefinitionen.
+Probieren Sie es jetzt mit dem obigen Symbol aus.
+Es gibt viele dieser Symbole auf dieser Webseite und im ERDDAP im Allgemeinen.
+Die darin enthaltenen Informationen sind für das ordnungsgemäße Ausfüllen dieses Formulars unerlässlich.
+<p><strong>Wie lange wird das dauern?</strong>
+<br>Es dauert eine Stunde, um mit diesem Formular einen wirklich guten Job zu machen,
+weniger, wenn Sie alle benötigten Informationen zur Hand haben.
+<p><strong>Die Zeit wird knapp?</strong>
+<br>Wenn Ihnen die Zeit ausgeht, bevor Sie alle 4 Teile fertig haben, verlassen Sie einfach den
+Öffnen Sie die Registerkarte in Ihrem Browser, damit Sie später zurückkehren und sie beenden können.
+Es gibt kein Zeitlimit für die Fertigstellung aller 4 Teile.
+<p><strong>Große Anzahl von Datensätzen?</strong>
+<br>Wenn Sie über strukturierte Informationen (z. B. ISO 19115-Dateien) für einen großen
+Anzahl von Datensätzen, gibt es wahrscheinlich Möglichkeiten, zusammenzuarbeiten, um
+(halb-)automatisieren Sie den Prozess des ERDDAP der Datensätze in ERDDAP.
+Bitte senden Sie eine E-Mail an den Administrator dieses ERDDAP
+( <kbd>&safeEmail;</kbd> )
+um die Möglichkeiten zu besprechen.
+<p><strong>Brauchen Sie Hilfe?</strong>
+<br>Wenn Sie beim Ausfüllen dieses Formulars Fragen haben oder Hilfe benötigen, können Sie
+Bitte senden Sie eine E-Mail an den Administrator dieses ERDDAP
+( <kbd>&safeEmail;</kbd> ).
+<br>&nbsp;
+
+
+<p><a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">
+<span style="font-size:xx-large; line-height:130%;"><strong>Klicken Sie hier für Teil 1 (von 4) des
+<br>Data Provider Formular</strong></span></a>
+]]></dataProviderFormLongDescriptionHTML>
+<dataProviderFormPart1><![CDATA[
+Dies ist Teil 1 (von 4) des Datenanbieterformulars.
+<br>Brauchen Sie Hilfe? Senden Sie eine E-Mail an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ).
+<br>&nbsp;
+]]></dataProviderFormPart1>
+<dataProviderFormPart2Header><![CDATA[
+Dies ist Teil 2 (von 4) des
+<br>von &fromInfo;.
+<br>Brauchen Sie Hilfe? Senden Sie eine E-Mail an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ).
+<br>&nbsp;
+]]></dataProviderFormPart2Header>
+<dataProviderFormPart2GlobalMetadata><![CDATA[
+<h2> Globale Metadaten</h2>
+Globale Metadaten sind Informationen über den gesamten Datensatz. Es ist ein Satz von
+<kbd>Attribut=Wert-</kbd> Paare, zum Beispiel
+<br><kbd>title=Spray Gliders, Scripps Institution of Oceanography</kbd>
+<p>.nc Dateien &mdash; Wenn sich Ihre Daten in .nc Dateien befinden, die bereits einige Metadaten enthalten, wird
+Geben Sie einfach die folgenden Informationen für Attribute ein, die sich nicht in Ihren Dateien befinden
+oder wo Sie den Wert des Attributs ändern möchten.
+]]></dataProviderFormPart2GlobalMetadata>
+<dataProviderContactInfo><![CDATA[
+<h2> Ihre Kontaktinformationen</h2>
+Dies wird vom ERDDAP Administrator verwendet, um Sie zu kontaktieren.
+Dies wird nicht in die Metadaten des Datasets aufgenommen oder veröffentlicht.
+<p>Wie heißt du?
+&widgetYourName;
+<br>Wie lautet deine E-Mail Adresse?
+&widgetEmail;
+<br>Der Zeitstempel dieser Datensatzübergabe lautet &tTimestamp;.
+]]></dataProviderContactInfo>
+<dataProviderData><![CDATA[
+<h2> Die Daten</h2>
+ERDDAP behandelt einen Datensatz auf zwei Arten: als Rasterdaten oder als Tabellendaten.
+
+<p><strong>Rasterdaten</strong>
+<br>ERDDAP kann Daten aus verschiedenen Arten von Datendateien
+(und von OPeNDAP Servern wie Hyrax, THREDDS, GrADS, ERDDAP), die mehrdimensionale
+gerasterte Daten, zum Beispiel Daten zur Meeresoberflächentemperatur der Ebene 3 (von einem Satelliten) mit
+drei Dimensionen: [Zeit][Breitengrad][Längengrad].
+<p>Die Daten für einen gerasterten Datensatz können in einer Datei oder in mehreren Dateien gespeichert werden
+(normalerweise mit einem Zeitpunkt pro Datei).
+<p>Wenn Ihr Datensatz bereits über einen OPeNDAP Server bereitgestellt wird, wird
+überspringen Sie dieses Formular und OPeNDAP einfach die OPeNDAP- URL des Datensatzes
+an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ).
+<p>Wie werden Ihre Rasterdaten gespeichert?
+&widgetGriddedOptions;
+
+<p><strong>Tabular Data</strong>
+<br>ERDDAP kann auch Daten ERDDAP , <i>die</i> als einzelner, datenbankähnlicher
+Tabelle, in der es für jeden Datentyp eine Spalte und für jede Beobachtung eine Zeile gibt.
+Dazu gehören:
+<ul>
+<li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Daten</a> , die derzeit in einer relationalen Datenbank gespeichert sind.
+<br>Bitte lesen Sie die Informationen zum
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
+Datensatztyp in ERDDAP, insbesondere die ersten ~2 Bildschirme mit Informationen, die
+sprechen Sie über die Notwendigkeit, eine denormalisierte Tabelle zu erstellen. Das mag verrückt klingen. Bitte
+Vertrauen genug, um die Gründe dafür zu lesen.
+<br>&nbsp;
+<li>Alle <i>in-situ-</i> Daten.
+<br>Beispiele: eine Zeitreihe von einem Instrument oder mehreren ähnlichen Instrumenten,
+Profildaten von einem CTD oder einer Gruppe von
+oder Daten, die während einer Schiffsreise gesammelt wurden (ähnlich über mehrere Jahre).
+<br>&nbsp;
+<li>Nicht-geografische Daten, die als Datentabelle dargestellt werden können.
+<br>Beispiele: Daten aus einem Laborexperiment, genetische Sequenzdaten,
+oder eine Liste mit bibliographischen Referenzen.
+<br>&nbsp;
+<li>Sammlungen anderer Dateitypen (z. B. Bild- oder Audiodateien).
+<br>ERDDAP kann die Dateinamen in einer Tabelle darstellen und Benutzern
+die Dateien anzeigen oder herunterladen.
+</ul>
+Die Daten für einen tabellarischen Datensatz können in einer Datei oder in mehreren Dateien gespeichert werden
+(normalerweise mit Daten für eine Station, ein Segelflugzeug, ein Tier oder eine Reise pro Datei).
+Wir empfehlen, einen Datensatz mit allen sehr ähnlichen Daten zu
+und nicht viele separate Datensätze.
+Sie können beispielsweise einen Datensatz mit Daten aus einer Gruppe von festgemachten Bojen
+eine Gruppe von Segelflugzeugen, eine Gruppe von Tieren oder eine Gruppe von Kreuzfahrten (zum Beispiel jährlich auf einer Linie).
+<p>Wie werden Ihre Tabellendaten gespeichert? &widgetTabularOption;
+
+<p><strong>Häufigkeit der Änderungen</strong>
+<br>Einige Datensätze erhalten häufig neue Daten. Einige Datensätze werden nie geändert.
+<br>Wie oft werden diese Daten geändert?
+&widgetsFrequencyOption;
+<br>&nbsp;
+]]></dataProviderData>
+<dataProviderSubmit><![CDATA[
+<h2> Fertig mit Teil 1?</h2>
+Klicken Sie auf &widgetsSubmitButton;
+diese Informationen an den ERDDAP- Administrator zu senden und mit Teil 2 (von 4) ERDDAP .
+]]></dataProviderSubmit>
+<dataProviderFixProblem><![CDATA[
+<br>Bitte beheben Sie diese Probleme und 'Senden' Sie diesen Teil des Formulars erneut.
+]]></dataProviderFixProblem>
 <DEFAULT_commonStandardNames>air_potential_temperature,
 air_pressure,
 air_pressure_at_sea_level,
@@ -1982,7 +2149,6 @@ wind_to_direction,
 x_wind,
 y_wind</DEFAULT_commonStandardNames>
 <disabled>Das System &quot;{0} &quot; wurde in diesem ERDDAP.</disabled>
-
 <!--Dies ist der Tooltip zum EDDTable-Datenzugriffsformular und zum Erstellen eines Diagramms
 für das Auswahl-Widget, das einen eindeutigen Wert in Einschränkung Nr. 1 überträgt.
 [3. Zeilenende war: anders als das erste (&quot; &quot;), ]
@@ -1995,7 +2161,6 @@ dieser Wert wird für Einschränkung Nr. 1 verwendet.
 (siehe Link oben), wodurch die Auswahl von Teilmengen
 dieses Datensatzes durch Auswahl von Kombinationen unterschiedlicher Werte.
 ]]></distinctValuesTooltip>
-
 <!--Dies verwendet &ssUse; und &erddapUrl;-->
 <doWithGraphs><![CDATA[
 <br>&nbsp;
@@ -2013,6 +2178,294 @@ Verwendung von HTML- &lt; img &gt; -Tags.
 </ul>
 ]]></doWithGraphs>
 
+<!-- DPF = Datenanbieterformular-->
+<dpf_submit><![CDATA[
+<h2> Fertig mit Teil &partNumber;?</h2>
+Klicken Sie auf &widgetsSubmitButton; um diese Informationen an den ERDDAP Administrator zu senden und mit Teil &partNumber; (von 4).
+]]></dpf_submit>
+<dpf_fixProblem><![CDATA[
+<br>Bitte beheben Sie diese Probleme und 'Senden' Sie diesen Teil des Formulars erneut.
+]]></dpf_fixProblem>
+<dpf_yourName>Dein Name</dpf_yourName>
+<dpf_emailAddress>E-Mail-Addresse</dpf_emailAddress>
+<dpf_Timestamp>Zeitstempel</dpf_Timestamp>
+<dpf_frequency>Frequenz</dpf_frequency>
+<dpf_title>Titel</dpf_title>
+<dpf_titleTooltip><![CDATA[
+Dies ist eine kurze (&lt;=80 Zeichen) Beschreibung des Datensatzes. Beispiel:
+<br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>
+]]></dpf_titleTooltip>
+<dpf_summary>Zusammenfassung</dpf_summary>
+<dpf_summaryTooltip><![CDATA[
+Dies ist ein Absatz, der den Datensatz beschreibt. (&lt;=500 Zeichen)
+<br>Die Zusammenfassung sollte diese Fragen beantworten:
+<br>&bull; Wer hat den Datensatz erstellt?
+<br>&bull; Welche Informationen wurden gesammelt?
+<br>&bull; Wann wurden die Daten erhoben?
+<br>&bull; Wo wurde es gesammelt?
+<br>&bull; Warum wurde es gesammelt?
+<br>&bull; Wie wurde es gesammelt?
+]]></dpf_summaryTooltip>
+<dpf_creatorName>Erstellername</dpf_creatorName>
+<dpf_creatorNameTooltip><![CDATA[
+Dies ist der Name der primären Person, Gruppe, Institution,
+<br>oder Position, die die Daten erstellt hat. Beispiel:
+<br><kbd>John Smith</kbd>
+]]></dpf_creatorNameTooltip>
+<dpf_creatorType>Erstellertyp</dpf_creatorType>
+<dpf_creatorTypeTooltip><![CDATA[
+Dies identifiziert den Erstellernamen (oben) als Person,
+<br>Gruppe, Institution oder Position.
+]]></dpf_creatorTypeTooltip>
+<dpf_creatorEmail>Ersteller_E-Mail</dpf_creatorEmail>
+<dpf_creatorEmailTooltip><![CDATA[
+Dies ist die beste Kontakt-E-Mail-Adresse für den Ersteller dieser Daten.
+<br>Verwenden Sie Ihr Urteilsvermögen &mdash; die Creator_email könnte für einen
+<br>eine andere Entität als der Erstellername.
+<br>Beispiel: <kbd>Ihr.name@IhreOrganisation.org</kbd>
+]]></dpf_creatorEmailTooltip>
+<dpf_institution>Institution</dpf_institution>
+<dpf_institutionTooltip><![CDATA[
+Dies ist die Kurz-/Abkürzungsform des Namens des primären
+<br>Organisation, die die Daten erstellt hat. Beispiel:
+<br><kbd>NOAA NMFS SWFSC</kbd>
+]]></dpf_institutionTooltip>
+<dpf_infoUrl>infoUrl</dpf_infoUrl>
+<dpf_infoUrlTooltip><![CDATA[
+Dies ist eine URL mit Informationen zu diesem Datensatz.
+<br>Beispiel: <kbd>http://spray.ucsd.edu</kbd>
+<br>Wenn keine URL zum Datensatz vorhanden ist, geben Sie
+<br>eine URL für die Gruppe oder Organisation.
+]]></dpf_infoUrlTooltip>
+<dpf_license>Lizenz</dpf_license>
+<dpf_licenseTooltip><![CDATA[
+Dies ist die Lizenz und der Haftungsausschluss für die Verwendung dieser Daten.
+<br>ERDDAP hat eine Standardlizenz, die Sie über &kstandard;
+<br>Sie können es entweder ergänzen oder ersetzen. (&lt;=500 Zeichen)
+<br>Der Text der Standardlizenz lautet: &standardLicense;
+<br><kbd>
+</kbd>]]></dpf_licenseTooltip>
+<dpf_howYouStoreData><![CDATA[
+<br>&bull; Fehler: Bitte geben Sie (unten) an, wie Ihre gerasterten oder tabellarischen Daten gespeichert werden.
+]]></dpf_howYouStoreData>
+<dpf_required>Erforderlich</dpf_required>
+<dpf_optional>Optional</dpf_optional>
+<dpf_provideIfAvaliable>Bitte geben Sie die Informationen an, wenn sie für Ihren Datensatz verfügbar sind.</dpf_provideIfAvaliable>
+<dpf_acknowledgement>Wissen</dpf_acknowledgement>
+<dpf_acknowledgementTooltip><![CDATA[
+Optional: Hier können Sie verschiedene Arten von Unterstützung für
+<br>das Projekt, das diese Daten erzeugt hat. (&lt;=350 Zeichen) Zum Beispiel
+<br><kbd>Dieses Projekt erhielt zusätzliche Mittel von der NOAA
+<br>Klima- und Globaler Wandel-Programm.</kbd>
+]]></dpf_acknowledgementTooltip>
+<dpf_history>Geschichte</dpf_history>
+<dpf_historyTooltip><![CDATA[
+Optional: Dies ist eine Liste der Aktionen (eine pro Zeile), die zur Erstellung dieser Daten geführt haben.
+<br>Idealerweise enthält jede Zeile einen Zeitstempel und eine Beschreibung der Aktion. (&lt;=500 Zeichen) Zum Beispiel
+<br><kbd>Datendateien werden so schnell wie möglich von https://oceandata.sci.gsfc.nasa.gov/MODISA/L3SMI/ auf NOAA NMFS SWFSC ERD SWFSC .
+<br>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) verwendet NCML, um die Zeitdimension hinzuzufügen und die Metadaten geringfügig zu ändern.</kbd>
+]]></dpf_historyTooltip>
+<dpf_idTooltip><![CDATA[
+Optional: Dies ist ein Bezeichner für das Dataset, wie von
+<br>dessen Namensgeber. Die Kombination aus "
+<br>und die "id" sollte global eindeutig sein, aber die ID kann
+<br>auch an sich weltweit einzigartig. IDs können URLs, URNs, DOIs,
+<br>aussagekräftige Textzeichenfolgen, ein lokaler Schlüssel oder ein anderer eindeutiger
+<br>Zeichenfolge aus. Die ID darf keine Leerzeichen enthalten
+<br>Figuren.
+<br>Beispiel: <kbd>CMC0.2deg-CMC-L4-GLOB-v2.0</kbd>
+]]></dpf_idTooltip>
+<dpf_namingAuthority>Namensautorität</dpf_namingAuthority>
+<dpf_namingAuthorityTooltip><![CDATA[
+Optional: Dies ist die Organisation, die die ID (oben) für das Dataset bereitgestellt hat.
+<br>Die Benennungsautorität sollte durch dieses Attribut eindeutig angegeben werden.
+<br>Wir empfehlen die Verwendung von Reverse-DNS-Benennungen für die Benennungsautorität;
+<br>URIs sind ebenfalls akzeptabel.
+<br>Beispiel: <kbd>org.ghrsst</kbd> ")
+]]></dpf_namingAuthorityTooltip>
+<dpf_productVersion>Produktversion</dpf_productVersion>
+<dpf_productVersionTooltip><![CDATA[
+Optional: Dies ist die Versionskennung dieser Daten. Wenn Sie beispielsweise
+<br>Wenn Sie planen, jährlich neue Daten hinzuzufügen, können Sie das Jahr als Versionskennung verwenden.
+<br>Beispiel: <kbd>2014</kbd>
+]]></dpf_productVersionTooltip>
+<dpf_references>Verweise</dpf_references>
+<dpf_referencesTooltip><![CDATA[
+Optional: Dies ist eine oder mehrere veröffentlichte oder webbasierte Referenzen
+<br>die die Daten oder Methoden beschreiben, die zu ihrer Herstellung verwendet wurden.
+<br>DOIs sind empfehlenswert. (&lt;=500 Zeichen) Zum Beispiel
+<br><kbd>Hu, C., Lee Z. und Franz, BA (2012). Chlorophyll-a
+<br>algorithms for oligotrophic oceans: A novel approach
+<br>based on three-band reflectance difference, J. Geophys.
+<br>Res., 117, C01011, doi:10.1029/2011JC007395.</kbd>
+]]></dpf_referencesTooltip>
+<dpf_comment>Kommentar</dpf_comment>
+<dpf_commentTooltip><![CDATA[
+Optional: Dies sind verschiedene Informationen zu den Daten, nicht
+<br>woanders eingefangen. (&lt;=350 Zeichen) Zum Beispiel
+<br><kbd>Bei der Erhebung dieser Daten kamen keine Tiere zu Schaden.</kbd>
+]]></dpf_commentTooltip>
+<dpf_dataTypeHelp><![CDATA[
+Dies ist der Datentyp und die Genauigkeit dieser Variablen.
+<br>Wenn die Datendatei einen bestimmten Typ verwendet (z. B. in einer .nc Datei), wird
+<br>&nbsp;&nbsp; Geben Sie diesen Typ hier an.
+<br>Wenn die Datendatei keinen bestimmten Typ verwendet (z. B. in einer CSV-Datei), wird
+<br>&nbsp;&nbsp; ERDDAP den Typ an, der in ERDDAP verwendet werden soll.
+<br>&bull; Verwenden Sie &kUnknown; wenn du es nicht weißt.
+<br>&bull; &kString; ist eine Reihe von Charakteren.
+<br>&nbsp;&nbsp; (Bei Datenbanken behandelt ERDDAP alle nicht numerischen Datentypen als Strings.)
+<br>&bull; &kboolean; ist entweder wahr oder falsch. ERDDAP konvertiert diese in Bytes, 1 oder 0.
+<br>&bull; &kbyte; ist eine 8-Bit-Ganzzahl mit Vorzeichen, +/-127
+<br>&bull; &kshort; ist eine 16-Bit-Ganzzahl mit Vorzeichen, +/-32.767
+<br>&bull; &kint; ist eine 32-Bit-Ganzzahl mit Vorzeichen, +/-2.147.483.647
+<br>&bull; &klong; ist eine 64-Bit-Ganzzahl mit Vorzeichen, +/- ~1e19
+<br>&bull; &kfloat; ist eine 32-Bit-Gleitkommazahl (bis zu 7 signifikante Stellen)
+<br>&bull; &kdouble; ist eine 64-Bit-Gleitkommazahl (bis zu 17 signifikante Stellen)
+]]></dpf_dataTypeHelp>
+<dpf_ioosCategory>ioos_kategorie</dpf_ioosCategory>
+<dpf_ioosCategoryHelp><![CDATA[
+Wählen Sie die für diese Variable am besten geeignete ioos_category aus.
+<br>&bull; Verwenden Sie &Standort; für Ortsnamen und für Längengrad, Breitengrad,
+<br>&nbsp;&nbsp; Höhe und Tiefe.
+<br>&bull; Verwenden Sie &Zeit; für Datum/Uhrzeit.
+<br>&bull; Verwenden Sie &Taxonomie; für Artnamen.
+<br>&bull; Verwenden Sie &Identifier; für Kreuzfahrtnamen, Schiffsnamen,
+<br>&nbsp;&nbsp; Stationsnamen, Gerätetypen, Seriennummern usw.
+<br>&bull; Verwenden Sie &OceanColor; für Chlorophyll.
+<br>&bull; Verwenden Sie &Andere; wenn keine andere Kategorie in der Liste in der Nähe ist.
+<br>&bull; Verwenden Sie &kUnknown; wenn du es wirklich nicht weißt.
+]]></dpf_ioosCategoryHelp>
+<dpf_part3Header><![CDATA[
+Dies ist Teil 3 (von 4) des
+<br>von &fromInfo;.
+<br>Brauchen Sie Hilfe? Senden Sie eine E-Mail an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ).
+<br>&nbsp;
+]]></dpf_part3Header>
+<dpf_variableMetadata><![CDATA[
+<h2> Variable Metadaten</h2>
+Variablenmetadaten sind Informationen, die für eine bestimmte Variable in
+sind. den Datensatz. Es ist ein Satz von <kbd>Attribut=Wert-</kbd> Paaren, zum Beispiel
+<kbd>Einheiten= degree_C</kbd> .
+
+<p><strong>Weniger oder mehr als 10 Variablen</strong>
+<br>Dieses Formular enthält Slots für 10 Variablen.
+<br>Wenn Ihr Dataset 10 oder weniger Variablen enthält, verwenden Sie einfach die benötigten Slots.
+<br>Wenn Ihr Datensatz mehr als 10 Variablen enthält, dann für jede Gruppe von 10 Variablen:
+<ol>
+<li>Identifizieren Sie die Gruppe: Dies ist das &widget; Gruppe von 10 Variablen.
+<li>Füllen Sie das untenstehende Formular für diese Gruppe von 10 Variablen aus.
+<li>Klicken Sie auf "Ich bin fertig!" unten, um die Informationen für diese Gruppe von 10 Variablen zu übermitteln.
+<li>Wenn dies nicht die letzte Gruppe ist, dann wird auf der nächsten Webseite (für Teil 4 dieses Formulars)
+drücken Sie die Zurück-Taste Ihres Browsers, damit Sie diesen Teil des Formulars ausfüllen können
+(Teil 3) für die nächste Gruppe von 10 Variablen.
+</ol>
+
+<p><strong>.nc Dateien</strong>
+<br>Wenn sich Ihre Daten in .nc Dateien befinden, die bereits einige Metadaten enthalten, wird
+Geben Sie einfach die folgenden Informationen für Attribute ein, die sich nicht in Ihren Dateien befinden
+oder wo Sie den Wert des Attributs ändern möchten.
+]]></dpf_variableMetadata>
+<dpf_sourceName>Quellenname</dpf_sourceName>
+<dpf_sourceNameTooltip><![CDATA[
+Dies ist der Name dieser Variablen, die derzeit von der Datenquelle verwendet wird.
+<br>Zum Beispiel <kbd>wt</kbd>
+<br>Hierbei wird die Groß-/Kleinschreibung beachtet.
+]]></dpf_sourceNameTooltip>
+<dpf_destinationName>Zielname</dpf_destinationName>
+<dpf_destinationNameTooltip><![CDATA[
+Optional: Sie können für diese Variable einen neuen, anderen Namen angeben.
+<br>Dieser neue Name wird den Benutzern in ERDDAP.
+<br>Zum Beispiel <kbd>WATERTEMP</kbd>
+<br>Hierbei wird die Groß-/Kleinschreibung beachtet.
+<br>Dies MUSS mit einem Buchstaben (AZ, az) beginnen und MUSS von
+<br>0 oder mehr Zeichen (AZ, az, 0-9 und _).
+<br>&bull; Verwenden Sie &klatitude; für die wichtigste Breitengradvariable.
+<br>&bull; Verwenden Sie &klongitude; für die Hauptlängenvariable.
+<br>&bull; Verwenden Sie &kaltitude; wenn die Variable die Höhe über dem Meeresspiegel misst.
+<br>&bull; Verwenden Sie &kdepth; wenn die Variable die Entfernung unter dem Meeresspiegel misst.
+<br>&bull; Verwenden Sie &kTime; für die Hauptvariable Datum/Uhrzeit.
+<br>&bull; Ansonsten liegt es an Ihnen. Wenn Sie den sourceName
+<br>&nbsp;&nbsp; Lassen Sie dieses Feld als Zielname leer.
+]]></dpf_destinationNameTooltip>
+<dpf_longName>long_name</dpf_longName>
+<dpf_longNameTooltip><![CDATA[
+Dies ist eine längere, ausgeschriebene Version des Zielnamens.
+<br>Beispiel: <kbd>Wassertemperatur</kbd>
+<br>Unter anderem wird es als Achsentitel in Diagrammen verwendet.
+<br>Schreiben Sie jedes Wort in long_name.
+<br>Schließen Sie die Einheiten nicht ein. (ERDDAP fügt Einheiten hinzu, wenn
+<br>&nbsp;&nbsp; einen
+]]></dpf_longNameTooltip>
+<dpf_standardName>Standardname</dpf_standardName>
+<dpf_standardNameTooltip><![CDATA[
+Optional: Dies ist der Name aus der CF-Standardnamenstabelle
+<br>&nbsp;&nbsp; welches für diese Variable am besten geeignet ist.
+<br>Beispiel: <kbd>sea_water_temperature</kbd> .
+<br>Einige gängige Standardnamen sind in der Dropdown-Liste rechts aufgeführt.
+<br>Wenn Sie es noch nicht wissen oder kein CF-Standardname geeignet ist, wird
+<br>&nbsp;&nbsp; lass das einfach leer. Wir füllen es aus.
+]]></dpf_standardNameTooltip>
+<dpf_dataType>Datentyp</dpf_dataType>
+<dpf_fillValue>_Füllwert</dpf_fillValue>
+<dpf_fillValueTooltip><![CDATA[
+Bei numerischen Variablen ist dies der Wert, der im
+<br>Datendatei, um einen fehlenden Wert für diese Variable anzugeben.
+<br>Beispiel: <kbd>-999</kbd> .
+<br>Wenn der _FillValue NaN ist, verwenden Sie <kbd>NaN</kbd> .
+<br>Lassen Sie dieses Feld für String-Variablen leer.
+]]></dpf_fillValueTooltip>
+<dpf_units>Einheiten</dpf_units>
+<dpf_unitsTooltip><![CDATA[
+Dies sind die Einheiten dieser Variablen. Beispiel: <kbd>degree_C</kbd>
+<br>Dies ist für numerische Variablen <strong>erforderlich</strong> , wird jedoch für die meisten String-Variablen nicht verwendet.
+<br>&bull; Verwenden <kbd>Sie</kbd> für die Temperatur <kbd>degree_C</kbd> oder <kbd>degree_F</kbd> .
+<br>&bull; Um Dinge zu zählen, verwenden Sie &kcount;.
+<br>&bull; Für Breitengradvariablen verwenden Sie <kbd>degrees_north</kbd> .
+<br>&bull; Für Längengradvariablen verwenden Sie <kbd>degrees_east</kbd> .
+<br>&bull; für String-Datums-/Uhrzeitvariablen hier einen Beispielwert für Datum/Uhrzeit ein.
+<br>&nbsp;&nbsp; Wir konvertieren es in UDUnits.
+<br>&bull; Beschreiben Sie bei numerischen Datums-/ <kbd><i>Uhrzeitvariablen</i></kbd> die Werte als <kbd><i>Einheiten</i> seit der <i>Basiszeit</i></kbd> ,
+<br>&nbsp;&nbsp; zum Beispiel <kbd>days since 2010-01-01 seit dem</kbd>
+<br>&bull; Verwenden Sie für alle anderen Variablen die Unit-Namen von UDUNITs, wenn Sie diese kennen;
+<br>&nbsp;&nbsp; andernfalls verwenden Sie die Einheiten, die Sie bereits kennen.
+]]></dpf_unitsTooltip>
+<dpf_range>Angebot</dpf_range>
+<dpf_rangeTooltip><![CDATA[
+Für numerische Variablen gibt dies den typischen Wertebereich an.
+<br>Beispiel: <kbd>minimum=32.0</kbd> und <kbd>maximum=37.0</kbd> .
+<br>Der Bereich sollte etwa 98% der Werte umfassen.
+<br>Diese sollten runde Zahlen sein. Das ist nicht genau.
+<br>Wenn Sie den typischen Wertebereich nicht kennen, lassen Sie dieses Feld leer.
+<br>Lassen Sie dieses Feld für String-Variablen leer.
+]]></dpf_rangeTooltip>
+<dpf_part4Header><![CDATA[
+Dies ist Teil 4 (von 4) des
+<br>von &fromInfo;.
+<br>Brauchen Sie Hilfe? Senden Sie eine E-Mail an den Administrator dieses ERDDAP ( <kbd>&safeEmail;</kbd> ).
+<br>&nbsp;
+]]></dpf_part4Header>
+<dpf_otherComment><![CDATA[
+<h2> Andere Kommentare</h2>
+Optional: Wenn es andere Dinge gibt, die Sie denken, der ERDDAP Administrator
+über diesen Datensatz wissen sollten, fügen Sie sie bitte hier hinzu.
+Dies wird nicht in die Metadaten des Datasets aufgenommen oder veröffentlicht. (&lt; 500 Zeichen)
+<br><textarea name="otherComments" cols="&dpfTAWidth;" rows="6" maxlength="500" wrap="soft"> <span id='x-goog-220946160-glossary-7'>
+</span> &tOtherComments; <span id='x-goog-220946160-glossary-8'>
+</span></textarea>
+<br>&nbsp;
+]]></dpf_otherComment>
+<dpf_finishPart4><![CDATA[
+<h2> Fertig mit Teil 4?</h2>
+Klicken Sie auf &widgetsSubmitButton; senden Sie diese Informationen an den ERDDAP- Administrator und fahren Sie mit dem ERDDAP "Sie sind fertig!" fort. Seite.
+]]></dpf_finishPart4>
+<dpf_congratulation><![CDATA[
+<h2> Sie sind fertig! Glückwünsche! Danke!</h2>
+Der ERDDAP- Administrator wird Ihnen in Kürze eine E-Mail ERDDAP, um herauszufinden, wie Sie
+die Daten und um weitere Details zu erarbeiten.
+Der Zeitstempel dieser Datensatzübergabe lautet &tTimestamp;.
+<p>Sie können einen <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">anderen Datensatz</a>
+oder gehen Sie zurück zur <a rel="bookmark" href="&tErddapUrl;/index.html">ERDDAP -Homepage</a> .
+]]></dpf_congratulation>
 <!-- Datensatztabelle (z. B. eine Liste von Datensätzen)-->
 <dtAccessible><![CDATA[<strong>Ist dieser Datensatz für Sie zugänglich?</strong>
 <br>&quot; öffentlich &quot; = Ja. Es ist für jedermann zugänglich (eingeloggt oder nicht eingeloggt).]]></dtAccessible>
@@ -2028,7 +2481,6 @@ Verwendung von HTML- &lt; img &gt; -Tags.
 <dtSubset>Klicken Sie hier, um Teilmengen dieses Datensatzes über die Facettensuche auszuwählen und anzuzeigen.</dtSubset>
 <dtWCS>Klicken Sie hier, um Informationen zum Abrufen von Daten und/oder Karten über den Web Coverage Service dieses Datensatzes zu erhalten.</dtWCS>
 <dtWMS>Klicken Sie hier, um mehr über die Erstellung von Karten dieser Daten über den Web Map Service dieses Datensatzes zu erfahren.</dtWMS>
-
 <!--Die EDD-Meldungen werden auf den tabledap und griddap angezeigt.-->
 <EDDClickOnSubmitHtml><![CDATA[Klicken Sie auf <kbd>Senden</kbd> .]]></EDDClickOnSubmitHtml>
 <EDDDatasetID>Datensatz-ID</EDDDatasetID>
@@ -2075,7 +2527,6 @@ Verwendung von HTML- &lt; img &gt; -Tags.
 <EDDChangedTableToGrid>Die neue Version ist ein EDDGrid. Die alte Version nicht!</EDDChangedTableToGrid>
 <EDDSimilarDifferentNVar>EDD.similar: Der andere Datensatz hat eine andere Anzahl von Variablen</EDDSimilarDifferentNVar>
 <EDDSimilarDifferent>EDD.similar: Das andere Dataset hat eine andere {0} für dataVariable {1} {2}</EDDSimilarDifferent>
-
 <!-- Die EDDGrid-Meldungen werden auf dem Griddap-Datenzugriffsformular angezeigt.-->
 <EDDGridDapDescription>Mit Griddap können Sie das OPeNDAP Hyperslab-Protokoll verwenden, um Teildatensätze, Grafiken und Karten aus gerasterten Datensätzen (z. B. Satellitendaten und Klimamodelldaten) anzufordern.</EDDGridDapDescription>
 <EDDGridDapLongDescription><![CDATA[
@@ -2144,7 +2595,6 @@ fehlt oder ist in einem ansonsten perfekt gleichmäßig verteilten Datensatz feh
 <br>* So laden Sie Rasterdaten herunter: Wählen Sie eine oder mehrere Rastervariablen aus.]]></EDDGridDownloadTooltip>
 <EDDGridGridVariableHtml><![CDATA[<strong>Grid Variablen</strong>
 (die immer auch alle Dimensionsvariablen herunterladen)]]></EDDGridGridVariableHtml>
-
 <!--Griddap-Beispiele
 Diese Gruppe von Einstellungen wird verwendet, um Beispiele für die Griddap-Dokumentation zu
 das erscheint unter [baseUrl]/erddap/griddap/documentation.html und anderswo.
@@ -2160,7 +2610,6 @@ Wenn Sie möchten, dass die Beispiele auf Ihre ERDDAP, ist die einfachste Method
 <EDDGridErddapUrlExample> https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
 -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
-
 <!--Dies ist die datasetID für ein EDDGrid-Dataset, das von Ihrem ERDDAP wird.
 Dieser Datensatz wird als Grundlage für alle unten aufgeführten EDDGrid-Beispiele verwendet.
 Im Idealfall handelt es sich um ein Dataset, das (mindestens) die Dimensionen Zeit, Breite und Länge hat.
@@ -2168,47 +2617,37 @@ Im Idealfall handelt es sich um ein Dataset, das (mindestens) die Dimensionen Ze
 Die in den folgenden Beispielen verwendeten Längengradwerte dürfen 180 nicht umfassen (um mit .esriAscii zu arbeiten).
 (Es ist in Ordnung, wenn der Datensatz 0 bis 360 ist – verwenden Sie einfach den Teil 0 bis 180 (oder 180 bis 360).)-->
 <EDDGridIdExample>jplMURSST41</EDDGridIdExample>
-
 <!-- Dies ist eine vollständige Abfragezeichenfolge zum Abrufen einiger Achsendaten aus dem Beispielgitter-Dataset.-->
 <EDDGridDimensionExample>latitude[0:100:1000]</EDDGridDimensionExample>
-
 <!-- Dies ist der Name einer Datenvariablen im Beispiel-Grid-Dataset.-->
 <EDDGridNoHyperExample>analysed_sst</EDDGridNoHyperExample>
-
 <!-- Dies wird verwendet, um alle Dimensionen im Beispiel-Raster-Dataset zu benennen/zu erklären/zu beschreiben.-->
 <EDDGridDimNamesExample>[time][latitude][longitude]</EDDGridDimNamesExample>
-
 <!--Dies ist eine beispielhafte Datenabfrage, die die ()-Notation von ERDDAP und die ISO-formatierte Zeit verwendet.
 Es ist schön (nicht erforderlich), dass diese Teilmenge zum Erstellen einer Karte geeignet ist (siehe EDDGridMapExample unten).
 Die verwendeten Längengrade dürfen nicht 180 umfassen (um mit .esriAscii zu arbeiten).
 Die Verwendung von &quot;:1000: &quot; vermeidet das Senden einer Menge Daten an den Benutzer.
 Sie können Ihr Beispiel über das Datenzugriffsformular Ihres Datensatzes in ERDDAP.-->
 <EDDGridDataTimeExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataTimeExample>
-
 <!-- Dies ist eine äquivalente Beispieldatenabfrage, die jedoch die Zeit als Sekunden seit 1970-01-01 angibt.
      Wenn Sie Datum/Uhrzeit in Sekunden seit 1970-01-01 konvertieren müssen, verwenden Sie
      https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html .-->
 <EDDGridDataValueExample>analysed_sst[(1022922000)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]</EDDGridDataValueExample>
-
 <!-- Dies ist eine äquivalente Beispieldatenabfrage, die jedoch nur die traditionelle Notation im Index-Stil von opendap verwendet.-->
 <EDDGridDataIndexExample>analysed_sst[0][0:1000:16383][0:1000:32767]</EDDGridDataIndexExample>
-
 <!--Dies ist eine Beispielabfrage, die ein Diagramm generiert.
 Sie könnten Ihr Beispiel über das Formular „Make A Graph“ Ihres Datensatzes in ERDDAP.-->
 <EDDGridGraphExample>analysed_sst[(2002-06-01T09:00:00Z):(2002-07-01T09:00:00Z)][(29)][(-135)]&amp;.draw=linesAndMarkers&amp;.vars=time|analysed_sst|&amp;.marker=1|3&amp;.color=0xFF9900&amp;.colorBar=|C|Linear|||</EDDGridGraphExample>
-
 <!--Dies ist eine Beispielabfrage, die eine Karte generiert.
 Das Beispiel &quot; map &quot; muss einen Längengrad haben, der für .esriAscii nicht 180 umfasst.
 Die Verwendung von &quot;:1000: &quot; vermeidet das Senden einer Menge Daten an den Benutzer.
 &quot;:1000: &quot; ist beim Anfordern einer .png irrelevant, aber relevant, wenn der Benutzer die tatsächlichen Daten erhält (zB .csv).-->
 <EDDGridMapExample>analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):1000:(89.99)][(-179.99):1000:(180.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|analysed_sst&amp;.colorBar=Rainbow|C|Linear|0|32|</EDDGridMapExample>
-
 <!--Dies ist ein zweizeiliges Matlab-Beispiel, das Daten aus dem EDDGridMapExample verwendet.
 Hoffentlich können Sie einfach Ihre datasetID durch &quot; jplMURSST41 &quot; ersetzen
 und modifizieren Sie &quot;[0 32] &quot; (den Datenbereich für den Farbbalken).-->
 <EDDGridMatlabPlotExample>imagesc(jplMURSST41.longitude, jplMURSST41.latitude, squeeze(jplMURSST41.analysed_sst), [0 32])
 set(gca, 'YDir', 'normal')</EDDGridMatlabPlotExample>
-
 <!--Die EDDTable-Meldungen werden auf dem tabledap- Datenzugriffsformular und dem tabledap eines Diagramms angezeigt.-->
 <EDDTableConstraints>Einschränkungen</EDDTableConstraints>
 <EDDTableDapDescription>Mit Tabledap können Sie das OPeNDAP- Einschränkungs-/Auswahlprotokoll verwenden, um Datenteilmengen, Grafiken und Karten aus tabellarischen Datensätzen (z. B. OPeNDAP) anzufordern.</EDDTableDapDescription>
@@ -2304,7 +2743,6 @@ Wenn Sie einen Wert auswählen, wird dieser für Einschränkung Nr. 1 verwendet.
 Es ist möglich, dass keine übereinstimmenden Daten vorhanden sind. Erwägen Sie die Verwendung von <kbd>Subset</kbd> ,
 Dies macht es einfach, gültige Kombinationen zu finden.
 ]]></EDDTableSelectConstraintTooltip>
-
 <!--Tabledap-Beispiele
 Diese Gruppe von Einstellungen wird verwendet, um Beispiele für die Tabledap- Dokumentation zu tabledap
 das erscheint in [baseUrl] / erddap / tabledap/documentation.html und anderswo.
@@ -2319,46 +2757,59 @@ Wenn Sie möchten, dass die Beispiele auf Ihre ERDDAP, ist die einfachste Method
 &lt; EDDTableErddapUrlExample &gt;<a href="https://coastwatch.pfeg.noaa.gov/erddap/">https://coastwatch.pfeg.noaa.gov/erddap/</a> &lt;/EDDTableErddapUrlExample &gt;
 -->
 <EDDTableErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDTableErddapUrlExample>
-
 <!--Dies ist die datasetID für ein EDDTable-Dataset, das von Ihrem ERDDAP wird.
 Dieser Datensatz wird als Grundlage für alle unten aufgeführten EDDGrid-Beispiele verwendet.
 Im Idealfall handelt es sich um einen Datensatz mit Längengrad-, Breitengrad- und Zeitvariablen (unter anderem).
 („Zeit“ ermöglicht das Erstellen eines Zeitreihendiagramms. „Breitengrad“ und „Längengrad“ ermöglichen das Erstellen einer Karte.)
 Das Dataset kann Längengradwerte von -180 bis 180 oder 0 bis 360 haben.-->
 <EDDTableIdExample>pmelTaoDySst</EDDTableIdExample>
-
 <!--Dies ist eine durch Kommas getrennte Liste von Variablen aus dem Datensatz.
 Es ist nützlich, wenn es sich um &quot; Längengrad,Breitengrad,Zeit &quot; plus einem Datenvariablennamen handelt.-->
 <EDDTableVariablesExample>longitude,latitude,time,station,wmo_platform_code,T_25</EDDTableVariablesExample>
-
 <!--Dies ist das Beispiel für Einschränkungen, das an EDDTableVariablesExample angehängt wird.
 DIES FEHLT in SSR.testForBrokenLinks ABER ERFOLGREICH mit der Verwendung auf der tabledap Dokumentationswebseite. Also lass es.-->
 <EDDTableConstraintsExample>&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableConstraintsExample>
-
 <!--Dies ist eine Beispieldatenabfrage mit einer ISO-formatierten Zeit.
 Sie können Ihr Beispiel über das Datenzugriffsformular Ihres Datensatzes in ERDDAP.
 DIES FEHLT in SSR.testForBrokenLinks ABER ERFOLGREICH mit der Verwendung auf der tabledap Dokumentationswebseite. Also lass es.-->
 <EDDTableDataTimeExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z</EDDTableDataTimeExample>
-
 <!--Dies ist eine äquivalente Beispieldatenabfrage, die jedoch die Zeit als Sekunden seit 1970-01-01 angibt.
 Wenn Sie ein Datum/eine Uhrzeit in "seconds since 1970-01-01", verwenden Sie
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">https://coastwatch.pfeg.noaa.gov/erddap/convert/time.html</a>-->
 <EDDTableDataValueExample>longitude,latitude,time,station,wmo_platform_code,T_25&amp;time&gt;=1432382400&amp;time&lt;=1433073600</EDDTableDataValueExample>
-
 <!--Dies ist eine Beispielabfrage, die ein Diagramm generiert.
 Sie könnten Ihr Beispiel über das Formular „Make A Graph“ Ihres Datensatzes in ERDDAP.-->
 <EDDTableGraphExample>time,T_25&amp;station="0n0e"&amp;time&gt;=2015-05-23T12:00:00Z&amp;time&lt;=2015-05-31T12:00:00Z&amp;.draw=lines</EDDTableGraphExample>
-
 <!-- Dies ist eine Beispielabfrage, die eine Karte generiert.-->
 <EDDTableMapExample>longitude,latitude,T_25&amp;time=2015-05-31T12:00:00Z&amp;.draw=markers&amp;.marker=5|5</EDDTableMapExample>
-
 <!-- Dies ist ein Matlab-Beispiel, das Daten aus dem EDDTableGraphExample verwendet.
      Beachten Sie die Matlab-Notation datasetName.variableName.-->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
 <EDDTableFromHttpGetDatasetDescription>Dies ist insofern ein ungewöhnlicher Datensatz, als es sich bei den Datendateien tatsächlich um Protokolldateien handelt. Wenn Sie Daten aus diesem Datensatz anfordern, verarbeitet ERDDAP die Befehle Einfügen (Befehl=0) und Löschen (Befehl=1) in den Protokolldateien, um Daten aus der aktuellen Version dieses Datensatzes zurückzugeben. Wenn Sie jedoch eine Anfrage stellen, die &amp;timestamp &lt;= enthält, gibt ERDDAP den Datensatz so zurück, wie er zu diesem Zeitpunkt war. Oder wenn Sie eine Anfrage stellen, die &amp;timestamp &gt; (oder &gt;= oder =) enthält, zB &amp;timestamp &gt; 0, dann gibt ERDDAP die Rohdaten aus den Protokolldateien zurück.</EDDTableFromHttpGetDatasetDescription>
 <EDDTableFromHttpGetAuthorDescription>Die Werte in dieser Spalte identifizieren den Autor, der jede Datenzeile zum Dataset hinzugefügt hat.</EDDTableFromHttpGetAuthorDescription>
 <EDDTableFromHttpGetTimestampDescription>Die Werte in dieser Spalte werden von ERDDAP hinzugefügt, um zu erkennen, wann jede Datenzeile der ERDDAP hinzugefügt wurde.</EDDTableFromHttpGetTimestampDescription>
-
+<erddapVersionHTML><![CDATA[
+<h2> <a class="selfLink" id="version" href="#version" rel="bookmark">ERDDAP Version</a></h2>
+Wenn Sie eine neue Funktion auf einem entfernten ERDDAP, können Sie herausfinden, ob der neue
+ist verfügbar, indem Sie eine Anfrage senden, um die Version des ERDDAP
+Nummer, zum Beispiel
+<br><a href="&tErddapUrl;/version">&tErddapUrl;/version</a>
+<br>ERDDAP sendet eine ERDDAP Versionsnummer dieses ERDDAP.
+Beispiel:
+<kbd>ERDDAP_version= &erddapVersion;</kbd>
+<br>Wenn Sie eine <kbd>HTTP 404 Not-Found-</kbd> Fehlermeldung erhalten, behandeln Sie den ERDDAP als Version
+1,22 oder niedriger.
+<p>Oder Sie können den version_string anfordern, der möglicherweise zusätzliche Informationen enthält.
+Beispiel:
+<br><a href="&tErddapUrl;/version_string">&tErddapUrl;/version_string</a>
+<br>ERDDAP sendet eine ERDDAP Versionszeichenfolge dieses ERDDAP.
+Es ist eine Gleitkommazahl (die Versionsnummer)
+mit optionalem Suffix '_' plus zusätzlichem ASCII-Text (keine Leerzeichen oder Steuerzeichen).
+Beispiel:
+<kbd>ERDDAP_version_string=1.82_JohnsFork</kbd>
+<br>Wenn Sie eine <kbd>HTTP 404 Not-Found-</kbd> Fehlermeldung erhalten, behandeln Sie den ERDDAP als Version
+1,80 oder niedriger.
+]]></erddapVersionHTML>
 <!-- Diese Meldungen werden angezeigt, wenn eine Fehlermeldung angezeigt wird.-->
 <errorTitle>Error</errorTitle>
 <errorRequestUrl>Ihre Anfrage-URL:</errorRequestUrl>
@@ -2368,7 +2819,6 @@ Sie könnten Ihr Beispiel über das Formular „Make A Graph“ Ihres Datensatze
 <errorFileNotFound>Datei nicht gefunden: {0} .</errorFileNotFound>
 <errorFileNotFoundImage>Datei nicht im Cache gefunden. Erstellen Sie das Bild neu und versuchen Sie es erneut.</errorFileNotFoundImage>
 <errorInternal>Interner Fehler:</errorInternal>
-
 <!-- Fügen Sie den ungültigen (bösartigen?) Funktionsnamen nicht in die Fehlermeldung ein.-->
 <errorJsonpFunctionName>Dieser jsonp-Funktionsname ist nicht zulässig. Das erste Zeichen muss ein ISO 8859-1-Buchstabe oder &quot;_ &quot;. Jedes optionale nachfolgende Zeichen muss ein ISO 8859-1-Buchstabe, &quot;_ &quot;, eine Ziffer oder &quot;. &quot;.</errorJsonpFunctionName>
 <errorJsonpNotAllowed>Eine jsonp-Anfrage ist für diesen Dateityp nicht zulässig.</errorJsonpNotAllowed>
@@ -2378,7 +2828,6 @@ Sie könnten Ihr Beispiel über das Formular „Make A Graph“ Ihres Datensatze
 <errorOdvLLTGrid>Bei einer ODV .txt Datei MUSS der Datensatz Längen-, Breiten- und Zeitachsen enthalten.</errorOdvLLTGrid>
 <errorOdvLLTTable>Datenanforderungen für ODV-.txt- Dateien müssen Längen-, Breiten- und ODV .txt enthalten.</errorOdvLLTTable>
 <errorOnWebPage>Beim Schreiben dieser Webseite ist ein Fehler aufgetreten:</errorOnWebPage>
-
 <!-- Diese sind auch in HtmlWidgets/kopiert-->
 <errorXWasntSpecified>Fehler: &quot;{0} &quot; nicht angegeben.</errorXWasntSpecified>
 <errorXWasTooLong>Fehler: &quot;{0} &quot; war mehr als {1} Zeichen lang.</errorXWasTooLong>
@@ -2443,7 +2892,6 @@ Sie könnten Ihr Beispiel über das Formular „Make A Graph“ Ihres Datensatze
 <fileHelp_png>Zeigen Sie eine standardmäßige, mittelgroße PNG-Bilddatei mit einer Grafik oder Karte an.</fileHelp_png>
 <fileHelp_largePng>Zeigen Sie eine große PNG-Bilddatei mit einem Diagramm oder einer Karte an.</fileHelp_largePng>
 <fileHelp_transparentPng>Zeigen Sie eine PNG-Bilddatei an (nur die Daten, ohne Achsen, Landmaske oder Legende).</fileHelp_transparentPng>
-
 <!-- Der Wortlaut von Beschreibung und Warnung ist vage, um einen oder mehrere Datensätze zu ermöglichen.-->
 <filesDescription>Mit dem " Dateisystem "files" von ERDDAP können Sie ein virtuelles Dateisystem durchsuchen und Quelldatendateien herunterladen.</filesDescription>
 <filesSort>Klicken Sie auf eine Überschrift (zB Name, Zuletzt geändert, Größe), um die Sortierreihenfolge zu ändern. &quot; Zuletzt geändert &quot; verwendet die Zulu Zeitzone.</filesSort>
@@ -2948,8 +3396,8 @@ Verwenden Sie curl, wget oder Ihren Browser, um die gesamte Datei aus dem /files
 Greifen Sie dann von Ihrer lokalen Kopie der Datei auf die Daten zu.
 </ul>
 ]]></filesDocumentation>
+<FIPSCountryCode>FIPS Kreiscodes</FIPSCountryCode>
 <functions>Serverseitige Funktionen</functions>
-
 <!-- {0}=distinct(), also wird es nicht übersetzt-->
 <functionTooltip><![CDATA[
 TableDAP unterstützt einige serverseitige Funktionen, die die Daten
@@ -2962,7 +3410,6 @@ Wenn Sie mehr als eine Funktion verwenden, werden diese in der Reihenfolge
 dass sie in der Anfrage erscheinen.
 ]]></functionTooltip>
 <functionDistinctCheck>Aktivieren Sie dies, wenn Sie die Funktion unique() verwenden möchten.</functionDistinctCheck>
-
 <!-- {0}=distinct(), also wird es nicht übersetzt-->
 <functionDistinctTooltip><![CDATA[
 Das ERDDAP von &quot;{0} &quot; weist ERDDAP an, die Ergebnistabelle nach allen
@@ -3073,12 +3520,10 @@ Version 1.0.
 <li>Doppelklicken Sie auf eine datasetID.
 </ol>
 ]]></geoServicesDescription>
-
 <!--Auf der rechten Seite der Startseite wird Erste Schritte angezeigt.
 &quot; Erste Schritte mit ERDDAP &quot;.
 -->
 <getStartedHtml><![CDATA[<span class="standoutColor">Beginnen Sie mit der Verwendung von ERDDAP:<br>&nbsp;&nbsp;&nbsp;&nbsp; Suche nach interessanten Datensätzen</span>]]></getStartedHtml>
-
 <!--Dies verhindert naive Anfragen nach großen Datenmengen in einer HtmlTable
 vom Absturz des Browsers des Benutzers.
 Dies wird verwendet, um TableWriterHtmlTable.htmlTableMaxMB zu überschreiben.
@@ -3093,7 +3538,34 @@ IE unter Windows XP ist schmerzhaft langsam.
 Sie können dies vermeiden, indem Sie Ihre Anfrage weiter einschränken, sodass die Antwort weniger Daten enthält. &lt; br / &gt;
 
 Oder laden Sie eine Datei herunter, die in einem Programm angezeigt werden kann, das große Dateien verarbeiten kann (z. B. eine CSV-Datei in einem Texteditor). &lt; br / &gt;</htmlTableMaxMessage>
-
+<!-- HPN = Html Page Name-->
+<hpn_information>Information</hpn_information>
+<hpn_legalNotices>Rechtliche Hinweise</hpn_legalNotices>
+<hpn_dataProviderForm>Formular für Datenanbieter</hpn_dataProviderForm>
+<hpn_dataProviderFormP1>Formular für Datenanbieter - Teil 1</hpn_dataProviderFormP1>
+<hpn_dataProviderFormP2>Formular für Datenanbieter - Teil 2</hpn_dataProviderFormP2>
+<hpn_dataProviderFormP3>Formular für Datenanbieter - Teil 3</hpn_dataProviderFormP3>
+<hpn_dataProviderFormP4>Formular für Datenanbieter - Teil 4</hpn_dataProviderFormP4>
+<hpn_dataProviderFormDone>Formular für Datenanbieter - Fertig</hpn_dataProviderFormDone>
+<hpn_status>Status</hpn_status>
+&gt;<hpn_restfulWebService>RESTful-Webdienste</hpn_restfulWebService>
+<hpn_documentation>Dokumentation</hpn_documentation>
+<hpn_help>Hilfe</hpn_help>
+<hpn_files>Dateien</hpn_files>
+<hpn_SOS>Sensorbeobachtungsdienst (SOS)</hpn_SOS>
+<hpn_WCS>Web Coverage Service (WCS)</hpn_WCS>
+<hpn_slideSorter>Foliensortierer</hpn_slideSorter>
+<hpn_add>hinzufügen</hpn_add>
+<hpn_list>aufführen</hpn_list>
+<hpn_validate>bestätigen</hpn_validate>
+<hpn_remove>Löschen</hpn_remove>
+<hpn_convert>Konvertieren</hpn_convert>
+<hpn_fipsCounty>FIPS Kreis</hpn_fipsCounty>
+<hpn_OAAcronyms>Ozeanische/Atmosphärische Akronyme</hpn_OAAcronyms>
+<hpn_OAVariableNames>Namen von ozeanischen/atmosphärischen Variablen</hpn_OAVariableNames>
+<hpn_keywords>Schlüsselwörter</hpn_keywords>
+<hpn_time>Zeit</hpn_time>
+<hpn_units>Einheiten</hpn_units>
 <!--ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries* und stateBoundaries*
 Dateien müssen sich in SSR.getContextDirectory() + &quot; WEB-INF/ref/ &quot;.
 Ich habe staatliche und nationale Grenzen von GMT:
@@ -3104,13 +3576,11 @@ wobei &quot; N1 &quot; (national) in &quot; N2 &quot; (Staat) geändert werden k
 Die resultierenden Dateien verwenden das GMT_FORMAT.
 -->
 <imageDataCourtesyOf>Daten mit freundlicher Genehmigung von {0}</imageDataCourtesyOf>
-
 <!-- Für jede imageSize gibt es eine imageWidth und imageHeight (in Pixel).
 Die Breiten stehen im Verhältnis 2:3:6, was die Anzeige von 3, 2 oder 1 pro Zeile in einem Grafikprogramm ermöglicht.
 -->
 <imageWidths>240, 360, 720</imageWidths>
 <imageHeights>320, 440, 800</imageHeights>
-
 <!-- Text für die rechte Seite von index.html-->
 <indexViewAll>Liste aller {0} Datensätze anzeigen View</indexViewAll>
 <indexSearchWith>Nach Datensätzen mit {0} suchen</indexSearchWith>
@@ -3124,10 +3594,8 @@ kann nach Datensätzen suchen über</indexDevelopersSearch>
 <indexAllDatasetsSearch>Der tabellarische Datensatz allDatasets von ERDDAP, der eine Zeile mit Informationen für jeden Datensatz enthält</indexAllDatasetsSearch>
 <indexOpenSearch>OpenSearch 1.1-Dienst von ERDDAP</indexOpenSearch>
 <indexMetadata>Metadaten</indexMetadata>
-
 <!-- {0} {1} ist ein Link zu nur einem von FGDC oder ISO 19115 WAF-->
 <indexWAF1>ERDDAP verfügt über eine {0} mit {1} Metadatendateien für alle Geodatensätze in dieser ERDDAP.</indexWAF1>
-
 <!-- Links zu FGDC- und ISO 19115-WAFs-->
 <indexWAF2>ERDDAP hat eine {0} mit {1} Metadatendateien und eine {2} mit {3} Metadatendateien für alle Geodatensätze in dieser ERDDAP.</indexWAF2>
 <indexConverters>Konverter</indexConverters>
@@ -3147,12 +3615,21 @@ und sogar von Webseiten (über HTML-Image-Tags oder JavaScript).
 {0}
 Oder verwenden Sie höhere Zahlen, wenn das Problem weiterhin besteht.
 Der Standardwert für Uhren ist 8192. Der Standardwert für Instanzen ist 128.</inotifyFix>
-
 <!-- übersetze nicht-->
 <inotifyFixCommands>echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
   echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
   sysctl -p</inotifyFixCommands>
+<interpolate>Interpolieren</interpolate>
+<javaProgramsHTML><![CDATA[
+<h2> <a class="selfLink" id="JavaPrograms" href="#JavaPrograms" rel="bookmark">Verwenden von ERDDAP als Datenquelle in Ihrem Java-Programm</a></h2>
+Da Java-Programme wie oben beschrieben auf im Web verfügbare Daten zugreifen können, können Sie
+ein Java-Programm schreiben, das auf Daten von jeder öffentlich zugänglichen ERDDAP- Installation ERDDAP .
 
+<p>Da ERDDAP Open-Source-Programm ist, können Sie auch Ihre eigene Kopie von
+ERDDAP auf Ihrem eigenen Server (öffentlich zugänglich oder nicht), um Ihre eigenen Daten ERDDAP . Ihr Java
+Programme können Daten von dieser Kopie von ERDDAP. Siehe
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Richten Sie Ihr eigenes ERDDAP ein</a> .
+]]></javaProgramsHTML>
 <!-- Die justGenerateAndView-Nachrichten werden für die justGenerateAndView-Schaltfläche verwendet
 auf den Datenzugriffsformularen.
 Die Nachricht justGenerateAndViewHtml kann &protocolName; .
@@ -3191,7 +3668,8 @@ sendet sie an ERDDAP die Daten oder Bilder ab.
 Um weitere Informationen zum Bilden der URLs zu erhalten, klicken Sie auf den Link <kbd>Dieses Formular</kbd>
 um das &protokollName; Dokumentation.
 ]]></justGenerateAndViewGraphUrlTooltip>
-
+<keywords>Schlüsselwörter</keywords>
+<langCode>de</langCode>
 <!--Dies erscheint auf der Webseite erddap/legal.html nach dem Allgemeinen Haftungsausschluss.
 Sie können alle [standardParts] durch Ihren eigenen HTML-Code ersetzen.
 [standardContact] verweist auf die adminEmail.-->
@@ -3202,7 +3680,14 @@ Sie können alle [standardParts] durch Ihren eigenen HTML-Code ersetzen.
 [standardDataLicenses]
 [standardContact]
 ]]></legal>
+<legalNotices><![CDATA[
+<a rel="bookmark" href="#disclaimers">Haftungsausschlüsse</a> |
+<a rel="bookmark" href="#privacyPolicy">Datenschutz</a> |
+<a rel="bookmark" href="#dataLicenses">Datenlizenzen</a> |
+<a rel="bookmark" href="#contact">Kontakt</a>
 
+<h2> <a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Haftungsausschlüsse</a></h2>
+]]></legalNotices>
 <!--Der Titel für die Legende der Karte (oder nichts, wenn Sie keinen Legendentitel wünschen).
 Bei ERD verwenden wir dies nicht. Sie können legendTitle1 und/oder legendTitle2 (die zweite Zeile) verwenden.
 Für die horizontale Legende von ERDDAP werden legendTitle1 und 2 in dieselbe Zeile gelegt.
@@ -3213,12 +3698,24 @@ Der Standardwert ist nichts (unbenutzt).
 <legendTitle1></legendTitle1>
 <legendTitle2></legendTitle2>
 <license>Lizenz</license>
-
 <!--zB {0}= WMS oder listAll-->
 <listOfDatasets>Liste von {0} Datensätzen</listOfDatasets>
 <listAll>Alle</listAll>
 <LogIn>Einloggen</LogIn>
 <login>Einloggen</login>
+<loginHTML><![CDATA[
+<h2> <a class="selfLink" id="login" href="#login" rel="bookmark">Melden Sie sich an, um auf private Datensätze zuzugreifen.</a></h2>
+Bei vielen ERDDAP Installationen ist die Authentifizierung nicht aktiviert und daher ist
+bieten keine Möglichkeit für Benutzer, sich anzumelden, noch verfügen sie über private Datensätze.
+<p>Bei einigen ERDDAP Installationen ist die Authentifizierung aktiviert.
+Derzeit unterstützt ERDDAP nur die Authentifizierung über von Google verwaltete E-Mail-Konten,
+Dazu gehören E-Mail-Konten bei NOAA und vielen Universitäten.
+Wenn für eine ERDDAP die Authentifizierung aktiviert ist, kann jeder mit einem von Google verwalteten E-Mail-Konto
+können sich anmelden, haben aber nur Zugriff auf die privaten Datensätze
+dass der ERDDAP Administrator ihnen den Zugriff ausdrücklich autorisiert hat.
+Anweisungen zum Anmelden bei ERDDAP über einen Browser oder über ein Skript finden Sie unter
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Zugriff auf private ERDDAP</a> .
+]]></loginHTML>
 <loginAttemptBlocked>FEHLER: Anmeldeversuche für {0} werden nach 3 fehlgeschlagenen Versuchen vorübergehend blockiert.
 Warten Sie {1} Minuten und versuchen Sie es dann erneut.</loginAttemptBlocked>
 <loginDescribeCustom><![CDATA[
@@ -3380,7 +3877,6 @@ die Berechtigung haben, darauf zuzugreifen.
 <LogOut>Ausloggen</LogOut>
 <logout>Ausloggen</logout>
 <logoutOpenID>Melden Sie sich bei Ihrem OpenID Anbieter ab.</logoutOpenID>
-
 <!-- logoutErfolg zuletzt aktualisiert 19.12.2019-->
 <logoutSuccess>Du hast dich erfolgreich abgemeldet.
 
@@ -3440,7 +3936,6 @@ Klicken <kbd>Sie auf Grafik neu zeichnen,</kbd> bevor Sie hier klicken, damit di
 ]]></magDownloadTooltip>
 <magFileType>Legen Sie dann den Dateityp fest</magFileType>
 <magGraphType>Diagrammtyp</magGraphType>
-
 <!-- Übersetzen Sie nicht die graphType-Namen-->
 <magGraphTypeTooltipGrid><![CDATA[
 <strong>Diagrammtyp</strong>
@@ -3556,7 +4051,6 @@ Die bevorzugte Y-Achsenskalierung kann &quot; &quot; (die Standardeinstellung, a
 <magJust1Value><![CDATA[nur 1 Wert angeben &rarr;]]></magJust1Value>
 <magRange>Reichweite</magRange>
 <magRangeTo>zu</magRangeTo>
-
 <!-- z.B. von 0 bis 100-->
 <magRedraw>Zeichnen Sie das Diagramm neu Re</magRedraw>
 <magRedrawTooltip>Zeichnen Sie das Diagramm basierend auf den obigen Einstellungen neu.</magRedrawTooltip>
@@ -3619,7 +4113,6 @@ Befehle.
 <br>Dann müssen Sie dieses Formular nicht verwenden, um Daten zu erhalten. Siehe den Link &quot; Dieses Formular umgehen &quot;
 unten.
 ]]></magTableTooltip>
-
 <!-- speicherbezogene Fehler müssen dieses Wort enthalten. Dies sollte alles in Kleinbuchstaben sein (für Tests, bei denen die Groß-/Kleinschreibung nicht beachtet wird).-->
 <memory>Erinnerung</memory>
 <memoryTooMuchData>Ihre Abfrage hat zu viele Daten erzeugt. Versuchen Sie, weniger Daten anzufordern. [Erinnerung]</memoryTooMuchData>
@@ -3628,7 +4121,6 @@ unten.
 <memoryThanSafe>Die Anforderung benötigt mehr Speicher ({0} MB) als jemals in diesem Java-Setup sicher verfügbar ist ({1} MB).</memoryThanSafe>
 <metadataDownload>Klicken Sie hier, um {0} Metadaten herunterzuladen.</metadataDownload>
 <moreInformation>Mehr Informationen</moreInformation>
-
 <!-- Diese Nachrichten im MessageFormat-Stil werden in MustBe.xxx gepusht.-->
 <!--Dies ist eine wichtige Fehlermeldung. Es zeigt an, dass die Anfrage gültig war,
 aber das Ergebnis waren keine Daten. Kunden suchen möglicherweise genau nach dieser Nachricht.
@@ -3638,13 +4130,11 @@ Aber dods.dap.DODSException hat keine relevante Ausnahme.
 Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten der Länge 0.
 -->
 <MustBeThereIsNoData>Ihre Abfrage hat keine übereinstimmenden Ergebnisse erbracht.</MustBeThereIsNoData>
-
 <!-- Viele Dateitypen begrenzen die Datenmenge, die eine Datei enthalten kann (z. B. 2 GB).-->
 <MustBeNotNull>{0} darf nicht null sein.</MustBeNotNull>
 <MustBeNotEmpty>{0} darf kein leerer String sein.</MustBeNotEmpty>
 <MustBeInternalError>Interner Fehler</MustBeInternalError>
 <MustBeOutOfMemoryError>Außerhalb des Speicherfehler</MustBeOutOfMemoryError>
-
 <!-- Diese können HTML-Inhalte haben-->
 <nMatching1>1 übereinstimmender Datensatz.</nMatching1>
 <nMatching>{0} übereinstimmende Datensätze.</nMatching>
@@ -3654,10 +4144,8 @@ Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten d
 <nMatchingCurrent>Strom</nMatchingCurrent>
 <noDataFixedValue>Variable mit festem Wert={0} hat den Test {1} nicht bestanden.</noDataFixedValue>
 <noDataNoLL>Es sind keine gültigen Längen- oder Breitenwerte vorhanden.</noDataNoLL>
-
 <!--zB {0}= &quot; protocol=griddap &quot;-->
 <noDatasetWith>Derzeit gibt es keine Datensätze mit {0}.</noDatasetWith>
-
 <!-- {0}=Seite {1}=letzteSeite-->
 <noPage1>Sie haben Ergebnisseite={0} angefordert, aber die letzte Seite ist {1}.</noPage1>
 <noPage2>Bitte fordern Sie eine Seite von 1 bis {1} an.</noPage2>
@@ -3666,7 +4154,6 @@ Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten d
 <notAuthorizedForData>LogInAs={0} ist nicht berechtigt, auf Daten von datasetID={1} zuzugreifen, aber berechtigt, auf Grafiken und Metadaten zuzugreifen.</notAuthorizedForData>
 <notAvailable>Derzeit ist datasetID={0} nicht verfügbar.</notAvailable>
 <note>HINWEIS!</note>
-
 <!--Xxx ist Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ...-->
 <noXxx>Dieses Dataset ist nicht über {0} verfügbar.</noXxx>
 <noXxxBecause>Dieses Dataset ist über {0} nicht verfügbar, da {1}.</noXxxBecause>
@@ -3690,13 +4177,45 @@ Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten d
 <noXxxItsGridded>es ist ein gerasterter Datensatz</noXxxItsGridded>
 <noXxxItsTabular>es ist ein tabellarischer Datensatz</noXxxItsTabular>
 <oneRequestAtATime>Bitte stellen Sie jeweils nur eine Anfrage.</oneRequestAtATime>
+<openSearchDescription><![CDATA[
+<p><a rel="bookmark" href="https://github.com/dewitt/opensearch#what-is-opensearch">&niceProtocol;
+&externalLinkHtml;</a>
+ist eine Standardmethode für Suchmaschinen auf anderen Websites, um diesen
+ERDDAP für interessante Datensätze.
+<ul>
+<li>Um die Suchmaschine Ihrer Website für die Suche nach Datensätzen über
+&niceProtocol;,
+zeigen Sie Ihr &niceProtocol; Client an das &niceProtocol;
+Dienstbeschreibungsdokument unter
+<br><a href="&descriptionUrl;">&descriptionUrl;</a>
+<br>&nbsp;
+<li>Ein Beispiel für &niceProtocol; Anfrage für eine Atom-Antwort ist
+<br><a href="&sampleUrl;&format=atom">&sampleUrl;&format=atom</a>
+<br>&nbsp;
+<li>Ein Beispiel für &niceProtocol; Anforderung einer RSS Antwort lautet
+<br><a href="&sampleUrl;&format=rss>&sampleUrl;&format=rss</a>
+</ul>
+
+<p>If you aren't setting up a website that uses &niceProtocol;, please use ERDDAP's regular
+search options on the right hand side of
+  <a rel="start" href="&tErddapUrl;/index.html">Homepage von ERDDAP</a> .
+Entwickler von Computerprogrammen und JavaScript-basierten Webseiten können auf den regulären
+. Suchoptionen als
+<a rel="help" href="&tErddapUrl;"/rest.html">RESTful-Services</a> .
+</div>
+]]></openSearchDescription>
 <optional>Optional</optional>
 <options>Optionen</options>
 <orRefineSearchWith>Oder verfeinern Sie diese Suche mit</orRefineSearchWith>
 <orSearchWith>Oder suchen Sie nach Datensätzen mit data</orSearchWith>
 <orComma>Oder,</orComma>
 <outOfDateHtml>Auf der Webseite Veraltete Datensätze wird eine Liste von Datensätzen angezeigt, die nahezu in Echtzeit geordnet sind, sortiert nach ihrer Veraltung.</outOfDateHtml>
-
+<outOfDateKeepTrack><![CDATA[
+<li>ERDDAP verfügt über ein System, um
+<a rel="help" href="&tErddapUrl;/outOfDateDatasets.html">Veraltete Datensätze</a> .
+Siehe die Optionen unten auf dieser Webseite.
+<br>&nbsp;
+]]></outOfDateKeepTrack>
 <!--pageFirst &gt; first &lt;/pageFirst &gt;
 &lt; SeiteZurück &gt; Zurück &lt;/SeiteZurück &gt;
 &lt; pageCurrent &gt; aktuell &lt;/pageCurrent &gt;
@@ -3717,7 +4236,6 @@ KT_gray, KT_haline, KT_ice, KT_matter, KT_oxy, KT_phase, KT_solar,
 KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <patientData>(Bitte haben Sie etwas Geduld. Es kann eine Weile dauern, bis die Daten abgerufen werden.)</patientData>
 <patientYourGraph>[Die von Ihnen angegebene Grafik. Bitte haben Sie Geduld.]</patientYourGraph>
-
 <!--Für jede Bildgröße gibt es eine pdfWidth und eine pdfHeight (in 1/144 Zoll).
 Die große Größe ist maximal, um auf die Seite zu passen (.5 &quot; LR-Ränder, 1 &quot; TB-Ränder ergibt die beste Legendengröße).
 Breiten stehen im Verhältnis 1:2:3.
@@ -3740,7 +4258,6 @@ in Prozent kodiert sein (bitten Sie einen Programmierer um Hilfe). Es gibt
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></percentEncode>
 <pickADataset>Wählen Sie einen Datensatz aus</pickADataset>
-
 <!-- Nachrichten im Zusammenhang mit protokollbasierten Dataset-Suchen.-->
 <protocolSearchHtml>Suche nach Datensätzen nach Protokoll</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
@@ -3796,6 +4313,326 @@ Unterschiedliche Protokolle sind für unterschiedliche Datentypen und für unter
 <resetTheForm>Setzen Sie das Formular auf die Standardwerte zurück.</resetTheForm>
 <resetTheFormWas>Das Formular wurde auf die Standardwerte zurückgesetzt.</resetTheFormWas>
 <resourceNotFound>Ressource nicht gefunden:</resourceNotFound>
+<restfulWebServices>RESTful-Webdienste</restfulWebServices>
+<restfulHTML><![CDATA[
+ERDDAP ist beides:
+<ul>
+<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">Eine Webanwendung
+&externalLinkHtml;</a>
+&ndash; eine Webseite mit einem Formular, das Menschen mit Browsern verwenden können (in diesem Fall zum Abrufen von Daten, Grafiken oder Informationen zu Datensätzen).
+<br>&nbsp;
+<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">Ein RESTful-Webservice
+&externalLinkHtml;</a>
+&ndash; eine URL, die Computerprogramme verwenden können (in diesem Fall um Daten, Grafiken und Informationen zu Datensätzen abzurufen).
+</ul>
+Für jede ERDDAP Webseite mit einem Formular, das Sie als Mensch mit einem Browser verwenden können, gibt es einen
+<br>entsprechenden ERDDAP Webservice, der für Computerprogramme und Skripte einfach zu bedienen ist.
+Menschen können beispielsweise diese URL verwenden, um eine Volltextsuche nach interessanten Datensätzen
+<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
+<br>Durch Ändern der Dateierweiterung in der URL von .html in .json (oder .csv oder .htmlTable oder .jsonlCSV1 oder .xhtml, ...):
+<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
+<br>erhalten wir eine URL, die ein Computerprogramm oder JavaScript-Skript verwenden kann, um denselben
+Informationen in einem computerprogrammfreundlicheren Format wie
+<a rel="help" href="https://www.json.org/">JSON
+&externalLinkHtml;</a> .
+
+<h3> <a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">Bauen Sie Dinge auf ERDDAP auf</a></h3>
+Es gibt viele Funktionen in ERDDAP , die von Computerprogrammen oder Skripten verwendet werden können
+dass du schreibst. Sie können sie verwenden, um andere Webanwendungen oder Webdienste auf
+top of ERDDAP, wodurch ERDDAP die meiste Arbeit ERDDAP !
+Wenn Sie also eine Idee für eine bessere Schnittstelle zu den von ERDDAP Daten oder einem Web-
+Seite, die einen einfachen Zugriff auf Daten benötigt, empfehlen wir Ihnen, Ihren eigenen
+Webanwendung, Webservice oder Webseite und verwenden ERDDAP als Grundlage.
+Ihr System kann Daten, Grafiken und andere Informationen von ERDDAP oder von
+andere ERDDAP Installationen, oder Sie können
+<!-- setup always from coastwatch's erddap -->
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">richten Sie Ihren eigenen ERDDAP Server ein</a> ,
+das kann
+öffentlich zugänglich oder nur privat zugänglich.
+
+
+<h3> <a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful-URL-Anfragen</a></h3>
+Anfragen nach Benutzerschnittstelleninformationen von ERDDAP (z. B. Suchergebnisse)
+Verwenden Sie den universellen Standard des Webs für Anfragen:
+<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs
+&externalLinkHtml;</a>
+gesendet über
+<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET
+&externalLinkHtml;</a> .
+Dies ist der gleiche Mechanismus, den Ihr Browser verwendet, wenn Sie ein Formular ausfüllen
+auf einer Webseite und klicken Sie auf <kbd>Submit</kbd>
+Um HTTP GET, generieren Sie eine speziell geformte URL (die eine Abfrage enthalten kann)
+und senden Sie es mit HTTP GET. Sie können diese URLs von Hand bilden und in
+das Adresstextfeld Ihres Browsers (zum Beispiel
+<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a> )
+<br>Oder Sie können ein Computerprogramm oder ein Webseitenskript schreiben, um eine URL zu erstellen, diese zu senden,
+und bekomme die Antwort. URLs über HTTP GET wurden gewählt, weil
+<ul>
+<li>Sie sind einfach zu bedienen.
+<li>Sie funktionieren gut.
+<li>Sie werden universell unterstützt (in Browsern, Computersprachen, Betriebssystem
+usw.).
+<li>Sie sind eine Grundlage von
+<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">Representational State Transfer (REST)
+&externalLinkHtml;</a> und
+<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">Ressourcenorientierte Architektur (ROA)
+&externalLinkHtml;</a>
+<li>Sie erleichtern die Nutzung des World Wide Web als große verteilte Anwendung,
+beispielsweise über
+<a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups
+&externalLinkHtml;</a>
+<a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX Anwendungen
+&externalLinkHtml;</a>
+<li>Sie sind <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">zustandslos
+&externalLinkHtml;</a>
+ebenso wie ERDDAP, was das System einfacher macht.
+<li>Eine URL definiert eine bestimmte Anfrage vollständig, sodass Sie sie in Ihrem Browser mit einem Lesezeichen versehen können,
+schreiben Sie es in Ihre Notizen, senden Sie es per E-Mail an einen Freund usw.
+</ul>
+
+<h3> <a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Prozentcodierung</a></h3>
+In URLs sind einige Zeichen nicht erlaubt (zB Leerzeichen) und andere Zeichen
+haben spezielle Bedeutungen (z. B. trennt '&amp;' Schlüssel=Wert-Paare in einer Abfrage).
+Wenn Sie auf einer Webseite ein Formular ausfüllen und auf Absenden klicken, wird Ihr Browser automatisch
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">Prozent codiert
+&externalLinkHtml;</a>
+die Sonderzeichen in der URL (zum Beispiel wird das Leerzeichen zu %20), zum Beispiel
+<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
+<br>Aber wenn Ihr Computerprogramm oder Skript die URLs generiert, muss es wahrscheinlich den
+selbst codieren. Wenn ja, dann wahrscheinlich alle Zeichen außer A-Za-z0-9_-!.~'()*
+in den Werten der Abfrage (die Teile nach den '='-Zeichen) müssen
+als %HH, wobei HH der zweistellige hexadezimale Wert des Zeichens ist, z. B. wird das Leerzeichen zu %20.
+Zeichen über #127 müssen in UTF-8-Bytes konvertiert werden, dann muss jedes UTF-8-Byte
+(Bitten Sie einen Programmierer um Hilfe). Programmiersprachen haben dafür Werkzeuge (siehe zum Beispiel Javas
+<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder
+&externalLinkHtml;</a> und JavaScripts
+<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent()
+&externalLinkHtml;</a> ) und es gibt
+<a class="N" rel="help" href="https://www.url-encode-decode.com">Websites, die prozentual für Sie codieren/decodieren
+&externalLinkHtml;</a>
+
+
+<h3> <a class="selfLink" id="responses" href="#responses" rel="bookmark">Antwortdateitypen</a></h3>
+Obwohl Menschen, die Browser verwenden, die Ergebnisse der Benutzeroberfläche (z. B.
+) als HTML-Dokumente erhalten möchten, ziehen es Computerprogramme häufig vor, Ergebnisse in
+einfache, leicht zu analysierende, weniger ausführliche Dokumente. ERDDAP kann die Benutzeroberfläche
+Ergebnisse als Datentabelle in diesen gängigen, computerprogrammfreundlichen Dateitypen:
+<ul>
+<li>.csv - eine durch Kommas getrennte ASCII-Texttabelle.
+( <a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.htmlTable - eine .html-Webseite mit den Daten in einer Tabelle.
+( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.itx - eine Igor-Textdatei mit einer Welle für jede .itx .
+"(<a rel=\"help\" href=\"https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf\">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.json - eine tabellenähnliche JSON-Datei.
+( <a rel="help" href="https://www.json.org/">mehr&nbsp; info
+&externalLinkHtml;</a> oder\
+<a rel="help" href="&tErddapUrl;"/tabledap/documentation.html#json\">ERDDAP-spezifische Info</a> )
+<li>.jsonlCSV1 - eine "Besser als CSV" .jsonlCSV1 mit Spaltennamen in der ersten Zeile.
+( <a rel="help" href="https://jsonlines.org/">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.jsonlCSV - eine "Besser als CSV" .jsonlCSV ohne Spaltennamen.
+( <a rel="help" href="https://jsonlines.org/">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.jsonlKVP - eine JSON-Lines-Datei mit Schlüssel:Wert-Paaren.
+( <a rel="help" href="https://jsonlines.org/">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.mat - eine MATLAB-Binärdatei.
+( <a rel="help" href="https://www.mathworks.com/">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.nc - eine flache, tabellenartige NetCDF 3 Binärdatei.
+( <a rel=\"help\" href="https://www.unidata.ucar.edu/software/netcdf/">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.nccsv - eine flache, tabellenähnliche, NetCDF ähnliche ASCII-CSV-Datei.
+( <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.tsv - eine tabulatorgetrennte ASCII-Texttabelle.
+( <a rel="help" href="https://jkorpela.fi/TSV.html">mehr&nbsp; info
+&externalLinkHtml;</a> )
+<li>.xhtml - eine XHTML (XML) Datei mit den Daten in einer Tabelle.
+( <a rel="help" href="https://www.w3schools.com/html/html_tables.asp">mehr&nbsp; info
+&externalLinkHtml;</a> )
+</ul>
+In jedem Ergebnistabellenformat (außer .jsonlKVP, wo sich Spaltennamen in jeder Zeile befinden):
+<ul>
+<li>Jede Spalte hat einen Spaltennamen und einen Informationstyp.
+<li>Die erste Zeile der Tabelle enthält die Spaltennamen.
+<li>Nachfolgende Zeilen enthalten die angeforderten Informationen.
+</ul>
+<p>Der Inhalt dieser einfachen Dateitypen unterscheidet sich ebenfalls geringfügig vom .html
+Antwort &mdash; es ist absichtlich einfach gehalten, damit es für einen Computer einfacher ist
+Programm zu arbeiten.
+
+<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">Eine konsistente Datenstruktur für die Antworten</a>
+<br>Alle auf dieser Seite beschriebenen Benutzeroberflächendienste können eine Tabelle mit
+Daten in einem der oben aufgeführten gängigen Dateiformate. Hoffentlich können Sie
+nur eine Prozedur zum Parsen einer Datentabelle in einem der Formate. Dann können Sie
+Verwenden Sie dieses Verfahren erneut, um die Antwort von einem dieser Dienste zu analysieren. Dieser
+soll den Umgang mit ERDDAP erleichtern.
+
+
+<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv-</a> und .tsv Details<ul>
+<li>Wenn ein Datum in einer .csv-Datei interne doppelte Anführungszeichen oder Kommas enthält, folgt ERDDAP dem
+.csv-Spezifikation streng: Es setzt doppelte Anführungszeichen um das Datum und verdoppelt
+die internen doppelten Anführungszeichen.
+<li>Sonderzeichen in einer .csv- oder .tsv Datei werden wie
+<a rel="help" href="https://www.json.org/">JSON
+&externalLinkHtml;</a>
+mit umgekehrtem Schrägstrich codierte Zeichen:
+\n (neue Zeile), \\ (umgekehrter Schrägstrich), \f (Seitenvorschub), \t (Tabulator), \r (Wagenrücklauf)
+oder mit der \u <i>hhhh-</i> Syntax.
+</ul>
+
+
+<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
+<br>Anforderungen für .json Dateien können jetzt einen optionalen
+<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp
+&externalLinkHtml;</a> Anfrage von
+Hinzufügen von "&amp;.jsonp= <i>functionName</i> " am Ende der Abfrage. Im Grunde sagt dies
+ERDDAP , um " <i>functionName</i> (" am Anfang der Antwort und ")" an
+Ende der Antwort. Das erste Zeichen von <i>functionName</i> muss ein ISO 8859-Buchstabe oder "_" sein.
+Jedes optionale nachfolgende Zeichen muss ein ISO 8859-Buchstabe, "_", eine Ziffer oder "." sein.
+Wenn ursprünglich keine Abfrage vorhanden war, lassen Sie das "&amp;" weg. in Ihrer Anfrage.
+
+
+<p>griddap und tabledap bieten verschiedene
+<br>Die oben aufgeführten Dateitypen sind Dateitypen, die ERDDAP kann, um auf
+Benutzerschnittstellentypen von Anforderungen (z. B. Suchanfragen). ERDDAP unterstützt
+einen anderen Satz von Dateitypen für wissenschaftliche Daten (z. B. Satelliten- und
+
+<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">-Daten</a> ) anfordern (siehe
+<a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> und
+<a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a>
+).
+
+
+&acceptEncodingHtmlh3tErddapUrl;
+
+
+<h3> <a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">Zugriffs-URLs für die Dienste von ERDDAP</a></h3>
+ERDDAP hat diese URL-Zugriffspunkte für Computerprogramme:
+<ul>
+<li>Um die Liste der <strong>wichtigsten Ressourcenzugriffs-URLs</strong> abzurufen , verwenden Sie
+<br>&plainLinkExamples1;
+<br>&nbsp;
+<li>Um die aktuelle Liste <strong>aller Datensätze zu erhalten</strong> , verwenden Sie
+<br>&plainLinkExamples2;
+<br>&nbsp;
+<li>Um <strong>Metadaten</strong> für einen bestimmten Datensatz
+(die Liste der Variablen und ihrer Attribute), verwenden Sie
+<br>&tErddapUrl;/info/ <i>datasetID</i> /index <i>.fileType</i>
+<br>beispielsweise
+<br>&plainLinkExamples3;
+<br>&nbsp;
+<li>Um die Ergebnisse von <strong>Volltextsuchen</strong> für Datensätze zu erhalten,
+(mit "searchFor=wind%20speed" als Beispiel), verwenden Sie
+<br>&plainLinkExamples4;
+<br>(Ihr Programm oder Skript muss den Wert in der Abfrage möglicherweise
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">prozentual codieren.
+&externalLinkHtml;</a>
+)
+<br>&nbsp;
+<br>Oder verwenden Sie den
+<a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a>
+Standard, um eine Volltextsuche nach Datensätzen durchzuführen.
+<br>&nbsp;
+<li>Um die Ergebnisse der <strong>erweiterten Suche</strong> nach Datensätzen zu erhalten,
+(mit "searchFor=wind%20speed" als Beispiel), verwenden Sie
+<br>&plainLinkExamples5;
+<br>Aber experimentieren Sie mit
+<a href="&tErddapUrl;/search/advanced.html?"&encodedDefaultPIppQuery;">"&advancedSearch;</a>
+in einem Browser, um alle optionalen Parameter
+(Ihr Programm oder Skript muss möglicherweise
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">prozentual
+&externalLinkHtml;</a>
+den Wert in der Abfrage
+<br>&nbsp;
+<li>Um die Liste der <strong>categoryAttributes</strong>
+(zB Institution, long_name, Standardname), verwenden Sie
+<br>&plainLinkExamples6;
+<br>&nbsp;
+<li>Um die Liste der <strong>Kategorien für ein bestimmtes categoryAttribute</strong>
+(unter Verwendung von "standard_name" als Beispiel), verwenden Sie
+<br>&plainLinkExamples7;
+<br>&nbsp;
+<li>Um die Liste der <strong>Datensätze in einer bestimmten Kategorie</strong>
+(unter Verwendung von "standard_name=time" als Beispiel), verwenden Sie
+<br>&plainLinkExamples8;
+]]></restfulHTML>
+<restfulHTMLContinued><![CDATA[
+<br>&nbsp;
+</ul>
+<li><a class="selfLink" id="GriddapAndTabledap" href="#GriddapAndTabledap" rel="bookmark">Griddap und tabledap</a> verfügen über viele Webdienste, die Sie verwenden können.
+<ul>
+<li>Die Datenzugriffsformulare sind nur einfache Webseiten zum Generieren von URLs, die
+<strong>Anforderungsdaten</strong> (zum Beispiel Satelliten und Bojendaten). Die Daten können sich in einem beliebigen
+mehrere gängige Dateiformate. Ihr Programm kann diese URLs direkt generieren.
+Weitere Informationen finden Sie im
+<a rel="help" href="&tErddapUrl;/griddap/documentation.html">Griddap-Dokumentation</a> und
+<a rel="help" href="&tErddapUrl;/tabledap/documentation.html">tabledap Dokumentation</a> .
+<br>&nbsp;
+<li>Die Make A Graph-Seiten sind einfache Webseiten zum Generieren von URLs, die
+<strong>Graphen</strong> einer Teilmenge der Daten anfordern. Die Diagramme können sich in einem von mehreren
+gängigen Dateiformaten. Ihr Programm kann diese URLs direkt generieren. Für
+Weitere Informationen finden Sie im
+<a rel="help" href="&tErddapUrl;/griddap/documentation.html">Griddap-Dokumentation</a> und
+<a rel="help" href="&tErddapUrl;/tabledap/documentation.html">tabledap Dokumentation</a> .
+<br>&nbsp;
+<li>Um <strong>die Struktur</strong> eines <strong>Datensatzes zu erhalten</strong> , einschließlich Variablennamen und Datentypen,
+verwenden Sie einen Standard- OPeNDAP
+<a rel="help" href="&dataFileTypeInfo1;">.dds
+&externalLinkHtml;</a>
+Anfrage. Beispiel:
+<br><a href="&griddapExample;.dds">&griddapExample;.dds</a> ( <a href="&griddapExample;.dds">gerasterte</a> Daten) oder
+<br><a href="&tabledapExample;.dds">&tabledapExample;.dds</a> (Tabellendaten).
+<br>&nbsp;
+<li>Um <strong>die Metadaten</strong> eines <strong>Datasets</strong> OPeNDAP , verwenden Sie einen Standard- OPeNDAP
+<a rel="help" href="&dataFileTypeInfo2;">.das"
+&externalLinkHtml;</a>
+-Anfrage.
+Zum Beispiel
+<br><a href="&griddapExample;.das">&griddapExample;.das</a> ( <a href="&griddapExample;.das">gerasterte</a> Daten) oder
+<br><a href="&tabledapExample;.das">&tabledapExample;.das</a> (Tabellendaten).
+<br>&nbsp;
+<li>ERDDAP hat einen speziellen tabellarischen Datensatz namens
+<a href="&tErddapUrl;/tabledap/allDatasets.html"><strong>allDatasets</strong></a>
+die Daten zu allen derzeit in
+verfügbaren Datensätzen enthält. diese ERDDAP. Für jeden Datensatz gibt es eine Zeile. Es gibt Spalten mit
+verschiedene Arten von Informationen (z. B. datasetID, Titel, Zusammenfassung,
+Institution, Lizenz, URL des Datenzugriffsformulars, URL zum Erstellen eines Diagramms).
+Da es sich um ein tabledap Dataset handelt, ist
+Sie können eine tabledap verwenden, um
+bestimmte Spalten und Zeilen, die den Einschränkungen entsprechen, und Sie können
+erhalten Sie die Antwort in dem von Ihnen bevorzugten
+beispielsweise .html, .xhtml, .csv, .json, .jsonlCSV1, .jsonlCSV oder .jsonlKVP.
+<br>&nbsp;
+</ul>
+]]></restfulHTMLContinued>
+<restfulGetAllDataset><![CDATA[
+<br>&nbsp;
+<li>Um die aktuelle Liste <strong>aller über ein bestimmtes Protokoll verfügbaren Datensätze</strong>
+<ul>
+<li>Für Griddap: verwenden Sie
+<br>&plainLinkExamples1;
+<li>Für tabledap: verwenden Sie
+<br>&plainLinkExamples2;
+]]></restfulGetAllDataset>
+<restfulProtocols><![CDATA[
+<li><a class="selfLink" id="OtherProtocols" href="#OtherProtocols" rel="bookmark">
+Die anderen Protokolle von ERDDAP</a> verfügen ebenfalls über Webdienste, die Sie verwenden können.
+Siehe
+<ul>
+]]></restfulProtocols>
+<forSOSUse>Für SOS: verwenden</forSOSUse>
+<forWCSUse>Für WCS: verwenden</forWCSUse>
+<forWMSUse>Für WMS: verwenden</forWMSUse>
+<SOSDocumentation>SOS Dokumentation von ERDDAP</SOSDocumentation>
+<WCSDocumentation>WCS Dokumentation von ERDDAP</WCSDocumentation>
+<WMSDocumentation>WMS Dokumentation von ERDDAP</WMSDocumentation>
+<findOutChange>damit Ihr Computerprogramm feststellen kann, ob sich ein Datensatz geändert hat.</findOutChange>
 <requestFormatExamplesHtml><![CDATA[
 (zum Beispiel
 <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET<img 
@@ -3863,10 +4700,8 @@ oder ein HTML-Formular)
 <searchDoFullTextHtml>Führen Sie eine Volltextsuche für Datensätze durch</searchDoFullTextHtml>
 <searchFullTextHtml>Volltextsuche für Datensätze</searchFullTextHtml>
 <searchButton>Suche</searchButton>
-
 <!-- Der QuickInfo-Text für die Schaltfläche Senden der Volltextsuche.-->
 <searchClickTip>Klicken Sie hier, um Ihre Suchanfrage zu übermitteln.</searchClickTip>
-
 <!--Dies ist der HTML-Code zur Beschreibung der Details der Volltextsuche.
 EDStatic ändert dies und fügt dann &lt; div class= &quot; standard_max_width &quot; &gt;.-->
 <searchHintsTooltip><![CDATA[
@@ -3919,19 +4754,16 @@ und
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> .
 ]]></searchMultipleERDDAPsDescription>
 <searchNotAvailable>Es tut uns leid. Das Suchsystem ist derzeit nicht verfügbar.</searchNotAvailable>
-
 <!-- Der QuickInfo-Text für das Textfeld der Volltextsuche.-->
 <searchTip>Geben Sie wie bei der Google-Suche durch Leerzeichen getrennte Wörter ein, zum Beispiel &quot;{0} &quot;.</searchTip>
 <searchSpelling>Überprüfen Sie die Schreibweise der gesuchten Wörter.</searchSpelling>
 <searchFewerWords>Versuchen Sie es mit weniger Suchbegriffen.</searchFewerWords>
-
 <!-- {0}=plainFileType einer Suchabfrage, {1}=die Beispielabfrage.-->
 <searchWithQuery>Eine {0}-Suchanfrage muss eine Suchanfrage enthalten, zum Beispiel "{1}".</searchWithQuery>
-
 <!-- Ja ist richtig. {0}=erddapUrl {1}=lowercaseProtocol {2}=documentation.html (also nicht übersetzt) {3}=uppercaseProtocol-->
 <seeProtocolDocumentation><![CDATA[
 Einzelheiten finden Sie unter
-<a rel="help" href="{0}/{1}/{2}">ERDDAP''s&nbsp; {3}&nbsp; Dokumentation</a> .
+<a rel="help" href="{0}">ERDDAP''s&nbsp; {1}&nbsp; Dokumentation</a> .
 ]]></seeProtocolDocumentation>
 <selectNext>Wählen Sie das nächste Element aus.</selectNext>
 <selectPrevious>Wählen Sie das vorherige Element aus.</selectPrevious>
@@ -3944,6 +4776,21 @@ actual_max, actual_min, actual_range,
 data_max, data_min, data_range, missing_value,
 valid_max, valid_min, valid_range</signedToUnsignedAttNames>
 <sosDescriptionHtml>Mit dem Sensor Observation Service (SOS) können Sie Daten über das SOS Protokoll anfordern. Dies ist ein EXPERIMENTELLES WORK-IN-PROGRESS.</sosDescriptionHtml>
+<sosOverview1><![CDATA[
+<h2> Überblick</h2>
+Neben der Bereitstellung von Daten über
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> und
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a> ,
+ERDDAP einige Datensätze
+<br>über den Webservice Sensor Observation Service (SOS) von ERDDAP verfügbar.
+<p>
+]]></sosOverview1>
+<sosOverview2><![CDATA[
+<p>Siehe
+<a rel="bookmark" href="&tErddapUrl;/sos/index.html?&encodedDefaultPIppQuery;">Liste der über SOS verfügbaren Datensätze</a>
+bei dieser ERDDAP Installation.
+<br>Die dort für jeden Datensatz aufgeführten SOS Webseiten enthalten weitere Dokumentationen und Musteranfragen.
+]]></sosOverview2>
 <sosLongDescriptionHtml><![CDATA[
 Mit dem Sensor Observation Service (SOS) von ERDDAP können Sie Daten über das SOS Protokoll anfordern.
 <br><span class="warningColor"><strong>Dies ist ein EXPERIMENTELLES WORK-IN-PROGRESS.</strong></span>
@@ -3971,7 +4818,6 @@ und der<!-- was http://www.oostethys.org --> OOSTethys SOS Server.
 ]]></sosLongDescriptionHtml>
 <sparqlP01toP02pre>https://vocab.nerc.ac.uk/sparql/sparql?query=prefix+skos%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E+prefix+rdf%3A%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E+prefix+owl%3A%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E+prefix+dc%3A%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Fterms%2F%3E+%0D%0A+%0D%0Aselect+distinct+%28%3Fdci+as+%3FIdentifier%29+%28%3Fpl+as+%3FPrefLabel%29+%28%3Fdefx+as+%3FDefinition%29+%28%3Fver+as+%3FVersion%29+%28%3Fsr+as+%3Frelated%29+%3FDate+%28%3Fdt+as+%3FUrl%29+where+%7B%3Chttp%3A%2F%2Fvocab.nerc.ac.uk%2Fcollection%2FP01%2Fcurrent%2F%3E++skos%3Amember+%3Fdt+.%0D%0AFILTER%28regex%28str%28%3Fdt%29%2C%22</sparqlP01toP02pre>
 <sparqlP01toP02post>%22%29%29%0D%0A%3Fdt+dc%3Aidentifier+%3Fdci+.+optional%7B%3Fdt+skos%3Adefinition+%3Fdef+.FILTER%28langMatches%28lang%28%3Fdef%29%2C+%22en%22%29%29%7D+.+%3Fdt+skos%3AprefLabel+%3Fpl+.+FILTER%28langMatches%28lang%28%3Fpl%29%2C+%22en%22%29%29++%3Fdt+owl%3AversionInfo+%3Fver+%3B+dc%3Adate+%3FDate+%3B+owl%3Adeprecated+%3Fdeprecated+.+optional+%7B%3Fdt+skos%3AaltLabel+%3Falt+%7D.%0D%0A%3Fdt+skos%3Abroader+%3Fsr+.%0D%0AFILTER+%28regex%28str%28%3Fsr%29%2C+%22P02%22%2C%22i%22%29%29%0D%0A+%0D%0AFILTER%28%28str%28%3Fdeprecated%29%3D%22false%22%29%29%0D%0A+%0D%0ABIND%28if%28EXISTS%7B%3Fdt+skos%3Adefinition+%3Fdef%7D%2C%3Fdef%2C%22%22%29+as+%3Fdefx%29+%7D+order+by+%3Fpl+&amp;output=csv&amp;stylesheet=</sparqlP01toP02post>
-
 <!-- SlideSorter-Nachrichten-->
 <ssUse><![CDATA[
 <li>Jeder kann ERDDAP die Verwendung der <a rel="help" href="&erddapUrl;/slidesorter.html">Foliensortierungs</a>
@@ -4005,7 +4851,6 @@ auf Ihre Festplatte.
 auf Ihrer Festplatte und bookmarken Sie es.
 </ol>
 ]]></ssInstructionsHtml>
-
 <!--Die Standardlizenz wird den globalen Metadaten vieler Datensätze hinzugefügt (siehe datasets.xml)-->
 <standardLicense>Die Daten dürfen kostenlos verwendet und weitergegeben werden, sind aber nicht beabsichtigt
 für den legalen Gebrauch, da es Ungenauigkeiten enthalten kann. Weder die Daten
@@ -4014,7 +4859,6 @@ ihrer Mitarbeiter oder Auftragnehmer, Garantien, ausdrückliche oder
 impliziert, einschließlich Garantien der Marktgängigkeit und Eignung für a
 bestimmten Verwendungszweck oder übernimmt die gesetzliche Haftung für die Richtigkeit,
 Vollständigkeit oder Nützlichkeit dieser Informationen.</standardLicense>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.-->
 <standardContact><![CDATA[
 <br>&nbsp;
@@ -4022,7 +4866,6 @@ Vollständigkeit oder Nützlichkeit dieser Informationen.</standardLicense>
 <h2> <a class="selfLink" id="contact" href="#contact" rel="help">Kontakt</a></h2>
 Fragen, Kommentare, Anregungen? Bitte senden Sie eine E-Mail an <kbd>&adminEmail;</kbd>&nbsp; .
 ]]></standardContact>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.-->
 <standardDataLicenses><![CDATA[
 <br>&nbsp;
@@ -4032,7 +4875,6 @@ Die Daten aus einigen Datensätzen können Nutzungseinschränkungen oder -beschr
 des Datensatzes . <kbd>Lizenz</kbd> - Metadaten, die auf der Datenzugriffs Formular der Datenmenge (.html)
 gefunden werden kann; Erstellen Sie ein Diagramm (.graph) und Webseiten für die Datensatzattributstruktur (.das).
 ]]></standardDataLicenses>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.-->
 <standardDisclaimerOfEndorsement><![CDATA[
 <h3> HAFTUNGSAUSSCHLUSS</h3>
@@ -4042,7 +4884,6 @@ Produkt, Prozess oder Dienstleistung oder deren Hersteller oder Anbieter. Die An
 referenzierte Dokumente geben nicht notwendigerweise die der Personen oder Organisationen
 mit dieser Website verbunden.
 ]]></standardDisclaimerOfEndorsement>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.
 Dies basiert auf <a href="https://swfsc.nmfs.noaa.gov/disclaimer.htm">https://swfsc.nmfs.noaa.gov/disclaimer.htm</a> .-->
 <standardDisclaimerOfExternalLinks><![CDATA[
@@ -4053,7 +4894,6 @@ darin enthaltene Produkte oder Dienstleistungen. Die Personen und Organisationen
 übt keine redaktionelle Kontrolle über die Informationen aus, die Sie an diesen Orten finden. Diese
 Links werden in Übereinstimmung mit dem angegebenen Zweck dieser Website bereitgestellt.
 ]]></standardDisclaimerOfExternalLinks>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.
 Dies ist von BSD plus zwei Instanzen von &quot;, WEB SERVICE UND/ODER DATEN &quot;.
 Vor 2010-08-05 war
@@ -4076,7 +4916,6 @@ HAFTUNG, OB VERTRAGLICH, STRENG HAFTUNG ODER unerlaubte Handlung (EINSCHLIESSLIC
 FAHRLÄSSIGKEIT ODER ANDERWEITIG), DIE IN JEDER WEISE AUS DER NUTZUNG DIESER SOFTWARE ERGIBT ,
 WEB-SERVICE ODER DATEN, SELBST WENN SIE AUF DIE MÖGLICHKEIT SOLCHER SCHÄDEN INFORMIERT WERDEN.</kbd>
 ]]></standardGeneralDisclaimer>
-
 <!--Dies wird von &lt; legal &gt; in setup.xml verwendet.-->
 <standardPrivacyPolicy><![CDATA[
 <br>&nbsp;
@@ -4088,10 +4927,21 @@ ERDDAP folgt auf
 ]]></standardPrivacyPolicy>
 <statusHtml>Die Status-Webseite ist eine schnelle Möglichkeit, den aktuellen Status/Zustand zu überprüfen
 dieser ERDDAP, einschließlich einer Liste von Datensätzen, die nicht geladen werden konnten.</statusHtml>
-
 <!-- Text für die Schaltfläche Senden in verschiedenen Formularen.-->
 <submit>einreichen</submit>
 <submitTooltip>Senden Sie dieses Formular ab und starten Sie den Download der Daten.</submitTooltip>
+<subscriptionOfferRss><![CDATA[
+<li><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP</a> bietet
+<a rel="help" href="&tErddapUrl;/information.html#subscriptions">RSS Abonnements</a> ,
+damit Ihr Computerprogramm feststellen kann, ob sich ein Datensatz geändert hat.
+<br>&nbsp;
+]]></subscriptionOfferRss>
+<subscriptionOfferUrl><![CDATA[
+<li>ERDDAP bietet
+<a rel="help" href="&tErddapUrl;/information.html#subscriptions">E-Mail-/URL-Abonnements</a> ,
+die Ihr Computerprogramm benachrichtigen, wenn sich ein Datensatz ändert.
+<br>&nbsp;
+]]></subscriptionOfferUrl>
 <subscriptionsTitle>Abonnements</subscriptionsTitle>
 <subscriptionAdd>Neues Abonnement hinzufügen</subscriptionAdd>
 <subscriptionValidate>Bestätigen Sie ein Abonnement</subscriptionValidate>
@@ -4151,7 +5001,6 @@ Ihre Anfrage zum Hinzufügen eines Abonnements wurde erfolgreich gesendet.</stro
 <subscriptionEmailInvalid>Die von Ihnen angegebene E-Mail-Adresse ist ungültig.</subscriptionEmailInvalid>
 <subscriptionEmailTooLong>Die von Ihnen angegebene E-Mail-Adresse ist zu lang.</subscriptionEmailTooLong>
 <subscriptionEmailUnspecified>Sie haben Ihre E-Mail-Adresse nicht angegeben.</subscriptionEmailUnspecified>
-
 <!--ID wird für datasetID und SubscriptionID verwendet.-->
 <subscriptionIDInvalid>Die von Ihnen übermittelte ID ist ungültig.</subscriptionIDInvalid>
 <subscriptionIDTooLong>Die von Ihnen übermittelte ID ist zu lang.</subscriptionIDTooLong>
@@ -4216,7 +5065,6 @@ Sie klicken auf einen Link in der E-Mail, die ERDDAP Ihnen nach Ihrer Anfrage an
 <p><span class="successColor"><strong>Ihre Anfrage zur Validierung eines Abonnements wurde empfangen.</strong>
 <br>Wenn der Schlüssel korrekt ist und das Abonnement noch nicht gültig ist, wird das Abonnement validiert.</span>
 ]]></subscriptionValidateSuccess>
-
 <!--Dies ist die Kurzbeschreibung von ERDDAP, die in der Mitte des
 linke Seite der ERDDAP-Homepage.
 Dies kann sich auf &convertTimeReference;, &erddapUrl;,
@@ -4330,7 +5178,6 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a>
 nimmt ERDDAP in seine Liste der empfohlenen Datenserver zur Verwendung durch Gruppen innerhalb der NOAA auf.
 ]]></standardShortDescriptionHtml>
-
 <!-- Bob: siehe identisches Tabellen-CSS in Table.ERD_TABLE_CSS-->
 <!--startHeadHtml enthält den Anfang des HTML-Dokuments und die 'head'-Tags
 (beginnend bei &quot; &lt;!DOCTYPE &quot;, aber nicht einschließlich &quot; &lt;/head &gt; &quot;)
@@ -4368,7 +5215,6 @@ Information.
 <link href="&erddapUrl;/images/erddap2.css" rel="stylesheet" type="text/css">
 <meta name="viewport" content="width=device-width, initial-scale=1">  
 ]]></startHeadHtml5>
-
 <!-- Das StandardstartBodyHtml-->
 <startBodyHtml5><![CDATA[
 <body>
@@ -4399,7 +5245,6 @@ Information.
   </tr> 
 </table>
 ]]></startBodyHtml5>
-
 <!--Dies ist die Kurzbeschreibung von ERDDAP, die in der Mitte des
 linke Seite der ERDDAP-Homepage.
 Dies kann sich auf &erddapUrl;, &requestFormatExamplesHtml;
@@ -4423,7 +5268,6 @@ Diese spezielle ERDDAP Installation enthält ozeanographische Daten
 [standardShortDescriptionHtml]
 
 ]]></theShortDescriptionHtml>
-
 <!--Sie können andere Dinge ändern, aber bitte behalten Sie &quot; ERDDAP, Version &erddapVersion; &quot; und
 diese Verweise auf die Haftungsausschlüsse und die Datenschutzrichtlinie.-->
 <endBodyHtml5><![CDATA[
@@ -4433,7 +5277,8 @@ diese Verweise auf die Haftungsausschlüsse und die Datenschutzrichtlinie.-->
 ERDDAP, Version &erddapVersion;
 <br><a rel="license" href="&erddapUrl;/legal.html">Haftungsausschlüsse</a> |
 <a rel="bookmark" href="&erddapUrl;/legal.html#privacyPolicy">Datenschutz</a> |
-<a rel="bookmark" href="&erddapUrl;/legal.html#contact">Kontakt</a>
+<a rel="bookmark" href="&erddapUrl;/legal.html#contact">Kontakt</a> |
+Sprache&HTMLselect;
 <p>&nbsp;
 <p>&nbsp;
 <p>&nbsp;
@@ -4447,8 +5292,7 @@ ERDDAP, Version &erddapVersion;
 <p>&nbsp;
 </div>
 </body>
-]]>
-</endBodyHtml5>
+]]></endBodyHtml5>
 <subset>Teilmenge</subset>
 <subsetSelect>Wählen Sie eine Untermenge</subsetSelect>
 <subsetNMatching>Aktuelle Anzahl unterschiedlicher Kombinationen übereinstimmender Daten: {0}</subsetNMatching>
@@ -4470,7 +5314,6 @@ Um {0}
 <subsetViewSelectRelatedCounts>die zugehörigen Daten zählen</subsetViewSelectRelatedCounts>
 <subsetWhen>Wenn {0},</subsetWhen>
 <subsetWhenNoConstraints>Wenn es keine Einschränkungen gibt,</subsetWhenNoConstraints>
-
 <!-- Dem folgenden Tag geht 1 der 2 vorhergehenden Tags voraus.
   {0} ist subsetViewSelectDistintCombos oder subsetViewSelectRelatedCounts.-->
 <subsetWhenCounts>{0} für die {1}-Werte von &quot;{2} &quot; sind:</subsetWhenCounts>
@@ -4552,7 +5395,6 @@ Video-Einführung in die Verwendung von tabledap<img
 src="{0}/images/external.png" alt=" (external link)"
 title="Dieser Link zu einer externen Website stellt keine Billigung dar." /></a> .
 ]]></tabledapVideoIntro>
-
 <!--Dies ist die lange Beschreibung von ERDDAP, die auf der Hintergrundinformations-Webseite verwendet wird.
 Dies kann sich auf &erddapUrl;, &requestFormatExamplesHtml; &ssUse und &resultsFormatExamplesHtml; .
 -->
@@ -5496,7 +6338,6 @@ geben nicht unbedingt die Position der Regierung oder der National Oceanic and A
 
 ]]></theLongDescriptionHtml>
 <Then>Dann</Then>
-
 <!--Dies ist eine Möglichkeit, den Standardize UDUnits-Konverter von ERDDAP zu überschreiben
 durch die Bereitstellung spezifischer Konvertierungen.
 standardizeUdunits hat Tripletts von Zeilen: vor, nach und leer.
@@ -5509,8 +6350,8 @@ degrees_east
 
 degrees +N
 degrees_north</standardizeUdunits>
+<time>Zeit</time>
 <timeoutOtherRequests>Zeitüberschreitung beim Warten auf die Verarbeitung Ihrer anderen Anfragen.</timeoutOtherRequests>
-
 <!--Dies ist eine Möglichkeit, den UCUM-zu- UDUNITS- Konverter von ERDDAP zu UDUNITS
 durch die Bereitstellung spezifischer Konvertierungen.
 ucumToUdunits hat Tripletts von Zeilen: vor, nach und leer.
@@ -5529,7 +6370,6 @@ degrees_east
 
 deg north 
 degrees_north</ucumToUdunits>
-
 <!--Dies ist eine Möglichkeit, den UDUNITS zu-UCUM-Konverter von ERDDAP zu überschreiben
 durch die Bereitstellung spezifischer Konvertierungen.
 udunitsToUcum hat Tripletts von Zeilen: vor, nach und leer.
@@ -5560,7 +6400,6 @@ deg{north}
 
 degrees north
 deg{north}</udunitsToUcum>
-
 <!--Dies ist ein Versuch, mit veralteten URL-Quellmetadaten umzugehen.
 updateUrls wird auf jedes der String-Metadatenattribute eines Datasets angewendet
 (global und variabel) jedes Mal, wenn der Datensatz geladen wird.
@@ -5738,6 +6577,9 @@ https://mvco.whoi.edu/
 
 http://myroms.org
 https://www.myroms.org
+
+www.noaa.gov/big-data-project
+www.noaa.gov/information-technology/big-data
 
 www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf/ncdump.html
 linux.die.net/man/1/ncdump
@@ -6468,6 +7310,9 @@ https://www.iso.org
 http://www.isotc211.org
 https://www.isotc211.org
 
+http://jkorpela.fi/
+https://jkorpela.fi/
+
 http://www.jma.go.jp
 https://www.jma.go.jp
 
@@ -6647,7 +7492,6 @@ https://xerial.org
 
 http://xkcd.com
 https://xkcd.com</updateUrls>
-
 <!--Dies sind http-URLs, die wahrscheinlich eines Tages über https erreichbar sein werden.
 Es sind hier als Kommentar zum schnellen Testen aufgeführt.
 !!! WENN EINES GÜLTIG WIRD, verschiebt Bob es in die updateUrls oberhalb von
@@ -6733,13 +7577,31 @@ https://www.usgin.org
 Das kann nichts sein. Wenn Sie also nichts wollen, geben Sie ein Kauderwelschwort ein, das
 niemals ein Attributname sein.-->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
+<variableNames>Variablennamen</variableNames>
 <viewAllDatasetsHtml>Anzeigen einer Liste aller Datensätze</viewAllDatasetsHtml>
 <waitThenTryAgain>Es gab ein (vorübergehendes?) Problem. Warten Sie eine Minute und versuchen Sie es dann erneut. (Klicken Sie in einem Browser auf die Schaltfläche Neu laden.)</waitThenTryAgain>
 <warning>WARNUNG!</warning>
+<units>Einheiten</units>
 <unknownDatasetID>Derzeit unbekannte datasetID={0}</unknownDatasetID>
 <unknownProtocol>Unbekanntes Protokoll={0}</unknownProtocol>
 <unsupportedFileType>Nicht unterstützter fileType={0}</unsupportedFileType>
 <wcsDescriptionHtml>Mit dem Web Coverage Service (WCS) können Sie eine Datendatei oder eine Bilddatei mit gerasterten Daten anfordern. Dies ist ein EXPERIMENTELLES WORK-IN-PROGRESS.</wcsDescriptionHtml>
+<wcsOverview1><![CDATA[
+<h2> Überblick</h2>
+Neben der Bereitstellung von Daten über
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> und
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a> ,
+ERDDAP stellt einige Datensätze über den Web Coverage Service (WCS) von ERDDAP zur Verfügung.
+
+<p>Siehe
+<a rel="bookmark" href="&tErddapUrl;/wcs/index.html?&encodedDefaultPIppQuery;">Liste der über WCS verfügbaren Datensätze</a>
+bei dieser ERDDAP Installation.
+]]></wcsOverview1>
+<wcsOverview2><![CDATA[
+<p>WCS Clients senden HTTP POST- oder GET-Anforderungen (speziell geformte URLs) an den WCS Dienst und erhalten XML-Antworten.
+Siehe diesen <a rel="bookmark" href="https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations">
+Liste der WCS Clients (und -Server) &externalLinkHtml;</a>
+]]></wcsOverview2>
 <wcsLongDescriptionHtml><![CDATA[
 Mit dem Web Coverage Service (WCS) von ERDDAP können Sie eine Datendatei oder eine Bilddatei mit gerasterten Daten anfordern.
 <br><span class="warningColor"><strong>Dies ist ein EXPERIMENTELLES WORK-IN-PROGRESS.</strong></span>
@@ -6783,6 +7645,317 @@ Standard für &quot; den
 Erstellung und Anzeige von registrierten und überlagerten kartenähnlichen Ansichten von Informationen, die
 gleichzeitig von mehreren entfernten und heterogenen Quellen stammen. &quot;
 ]]></wmsLongDescriptionHtml>
+<WMSDocumentation1><![CDATA[
+<h2> Drei Möglichkeiten zum Erstellen von Karten mit WMS</h2>
+<ol>
+<li><strong>Theoretisch kann jeder WMS Client-Software herunterladen, installieren und verwenden.</strong>
+<br>Einige Clients sind:
+<a rel="bookmark" href="https://www.esri.com/software/arcgis/">ArcGIS
+&externalLinkHtml;</a> und
+<a rel="bookmark" href="http://udig.refractions.net//">uDig
+&externalLinkHtml;</a> .
+Damit dies funktioniert, installieren Sie die Software auf Ihrem Computer.
+Anschließend geben Sie die URL des WMS Dienstes in den Client ein.
+
+Verwenden Sie beispielsweise in ArcGIS (das noch nicht vollständig funktioniert, da es keine Zeit verwaltet!)
+"Arc-Katalog: Dienst hinzufügen: Arc-Katalog-Serverordner: GIS-Server: WMS- Server WMS ".
+In ERDDAP hat jeder Datensatz seinen eigenen WMS Dienst, der sich unter
+<br>&tErddapUrl;/wms/ <i>datasetID</i> / &WMS_SERVER;?
+<br>Beispiel: <strong>&e0;</strong>
+<br>(Einige WMS Clientprogramme möchten das <strong>?</strong> am Ende dieser URL nicht.)
+&datasetListRef;
+<p><strong>In der Praxis haben</strong> wir keine WMS Clients gefunden, die die Dimensionen
+anders als Längen- und Breitengrad (z. B. Zeit), ein Merkmal, das vom WMS
+Spezifikation und die von den meisten Datensätzen in den WMS Servern von ERDDAP verwendet wird.
+Sie können feststellen, dass die Verwendung von &makeAGraphRef;
+Formular und wählen Sie den .kml Dateityp
+(ein OGC Standard) zum Laden von Bildern in <a rel="bookmark" href="https://www.google.com/earth/">Google Earth
+&externalLinkHtml;</a> bietet einen guten (Nicht- WMS) Kartenclient.
+&makeAGraphListRef;
+<li><strong>Webseitenautoren können einen WMS Client in eine Webseite einbetten.</strong>
+<br>ERDDAP verwendet beispielsweise
+<a rel="bookmark" href="https://leafletjs.com">Leaflet
+&externalLinkHtml;</a> , einem sehr vielseitigen WMS Client, für die WMS Seite für jeden ERDDAP Datensatz (&likeThis;).
+&datasetListRef;
+Leaflet nicht automatisch andere Dimensionen als Längen- und Breitengrad
+(zB Zeit), also müssen Sie dafür JavaScript (oder anderen Skriptcode) schreiben.
+(Abenteuerliche JavaScript-Programmierer können sich den Quellcode von einer Webseite &likeThis;.)
+<p>Ein weiterer häufig verwendeter JavaScript- WMS Client ist
+<a rel="bookmark" href="https://openlayers.org/">OpenLayers
+&externalLinkHtml;</a> .
+<li><strong>Eine Person mit einem Browser oder einem Computerprogramm kann spezielle WMS URLs generieren.</strong> \n" +
+<br>Beispiel:
+<ul>
+<li>So erhalten Sie ein Bild mit einer Karte mit undurchsichtigem Hintergrund:
+<br><a href="&tWmsOpaqueExample130;">
+&tWmsOpaqueExample130Replaced;</a>
+<li>So erhalten Sie ein Bild mit einer Karte mit transparentem Hintergrund:
+<br><a href="&tWmsTransparentExample130;">
+&tWmsTransparentExample130Replaced;</a>
+</ul>
+&datasetListRef;
+<strong>Siehe die Details unten.</strong>
+<p><strong>In der Praxis ist es einfacher und vielseitiger,
+und effizienter, den
+eines Datensatzes zu verwenden. &makeAGraphRef; Webseite</strong>
+als WMS zu diesem Zweck zu verwenden.
+&makeAGraphListRef;
+</ol>
+]]></WMSDocumentation1>
+<WMSGetCapabilities><![CDATA[
+<h2> <a class="selfLink" id="GetCapabilities" href="#GetCapabilities" rel="bookmark">GetCapabilities URLs</a></h2>
+Eine GetCapabilities Anfrage gibt ein XML-Dokument zurück, das Hintergrundinformationen
+über den Dienst und grundlegende Informationen zu allen verfügbaren Daten dieses
+Service. Verwenden Sie für dieses Dataset für WMS Version 1.3.0
+<br><a href="&tWmsGetCapabilities130;">&tWmsGetCapabilities130;</a>
+<p>Die unterstützten Parameter für eine GetCapabilities Anfrage sind:
+<table class="erd commonBGColor nowrap" style="width:100%;">
+<tr>
+<th> <i>Name=Wert</i> <sup>*</sup></th>
+<th> Beschreibung</th>
+</tr>
+<tr>
+<td> service= WMS</td>
+<td> Erforderlich.</td>
+</tr>
+<tr>
+<td> version= <i>version</i></td>
+<td> Derzeit unterstützt das WMS von ERDDAP "1.1.0", "1.1.1" und "1.3.0".
+<br>Dieser Parameter ist optional. Der Standardwert ist "1.3.0".</td>
+</tr>
+<tr>
+<td> request= GetCapabilities</td>
+<td> Erforderlich.</td>
+</tr>
+</table>
+<sup>* Bei</sup> Parameternamen wird die Groß-/Kleinschreibung nicht beachtet.
+<br>Bei Parameterwerten muss die Groß-/Kleinschreibung beachtet werden und müssen
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">Prozent codierter
+&externalLinkHtml;</a> :
+alle Zeichen in Abfragewerten außer A-Za-z0-9_-!.~'()* müssen als %HH codiert werden, wobei
+HH ist der zweistellige Hexadezimalwert des Zeichens, beispielsweise wird das Leerzeichen zu %20.
+Zeichen über #127 müssen in UTF-8-Bytes konvertiert werden, dann muss jedes UTF-8-Byte
+(Bitten Sie einen Programmierer um Hilfe). Es gibt
+" <a class="N" rel="help" href="https://www.url-encode-decode.com">Websites, die prozentual für Sie codieren/decodieren
+&externalLinkHtml;</a> .
+<br>Die Parameter können in beliebiger Reihenfolge in der URL stehen, getrennt durch '&amp;' .
+<br>&nbsp;
+]]></WMSGetCapabilities>
+<WMSGetMap><![CDATA[
+<h2> <a class="selfLink" id="GetMap" href="#GetMap" rel="bookmark">GetMap URLs</a></h2>
+Eine Person mit einem Browser oder einem Computerprogramm kann eine spezielle URL generieren, um eine Karte anzufordern.
+Die URL muss das Format
+<br>&tErddapUrl;/wms/ <i>datasetID</i> / &WMS_SERVER;? <i>Abfrage</i>
+<br>Die Abfrage für eine WMS GetMap Anfrage besteht aus mehreren <i>parameterName=value</i> , getrennt durch '&amp;'.\n
+Beispiel:\n
+<br><a href="&tWmsOpaqueExample130;">&tWmsOpaqueExample130Replaced;</a>
+<br>Die <a class=\"selfLink\" id=\"parameters\" href=\"#parameters\" rel=\"bookmark\">Parameteroptionen</a> für die GetMap Anfrage sind:
+<br>&nbsp;
+<!--necessary for the blank line before the table (not <p>)-->
+<table class="erd commonBGColor" style="width:100%; ">
+<tr>
+<th> <i>Name=Wert</i> <sup>*</sup></th>
+<th> Beschreibung</th>
+</tr>
+<tr>
+<td class="N"> service= WMS</td>
+<td> Erforderlich.</td>
+</tr>
+<tr>
+<td> version= <i>version</i></td>
+<td> Version anfordern.
+Derzeit unterstützt das WMS von ERDDAP "1.1.0", "1.1.1" und "1.3.0". Erforderlich.
+</td>
+</tr>
+<tr>
+<td> request= GetMap</td>
+<td> Name anfordern. Erforderlich.</td>
+</tr>
+<tr>
+<td> Schichten = <i>Schichtliste</i></td>
+<td> Durch Kommas getrennte Liste mit einem oder mehreren Kartenlayern.
+Layer werden in der Reihenfolge gezeichnet, in der sie in der Liste vorkommen.
+Im WMS von <i>ERDDAP</i> heißen die <i>Layernamen</i> aus Datensätzen <i>datasetID</i>
+&WMS_SEPARATOR; + " <i>variableName</i> .\n
+Im WMS von ERDDAP gibt es fünf Ebenen, die nicht auf ERDDAP Datensätzen basieren:
+<ul>
+<li>"Land" kann VOR (als Unterebene) oder NACH (als Landmaske) Ebenen aus Rasterdatensätzen gezeichnet werden.
+<li>"Coastlines" sollten normalerweise NACH Layern aus Rasterdatensätzen gezeichnet werden.
+<li>"LakesAndRivers" zeichnet Seen und Flüsse. Dies sollte normalerweise NACH Layern aus Raster-Datasets gezeichnet werden.
+<li>"Nations" zieht nationale politische Grenzen. Dies sollte normalerweise NACH Layern aus Raster-Datasets gezeichnet werden.
+<li>"States" zieht staatliche politische Grenzen. Dies sollte normalerweise NACH Layern aus Raster-Datasets gezeichnet werden.
+</ul>
+Erforderlich.
+</td>
+</tr> \n
+<tr> \n
+<td> <i>style</i> = <i>style_list</i></td>
+<td> Durch Kommas getrennte Liste mit einem Rendering-Stil pro angeforderter Ebene.
+Derzeit ist im WMS von ERDDAP der einzige Stil, der für jede Ebene angeboten wird, der Standardstil
+die über "" (nichts) angegeben wird.
+Wenn Sie beispielsweise 3 Ebenen anfordern, können Sie "styles=,," verwenden.
+Oder noch einfacher, Sie können den Standardstil für alle Ebenen über "styles=" anfordern.
+Erforderlich.
+</td>
+</tr>
+<tr>
+<td class="N"> 1.1.0: srs= <i>namespace:identifier</i>
+<br>1.1.1: srs= <i>namespace:identifier</i>
+<br>1.3.0: crs= <i>namespace:identifier</i></td>
+<td> Koordinatenbezugssystem.
+<br>Derzeit ist im WMS 1.1.0 von ERDDAP der einzige gültige SRS EPSG:4326.
+<br>Derzeit ist im WMS 1.1.1 von ERDDAP der einzige gültige SRS EPSG:4326.
+<br>Derzeit sind im WMS 1.3.0 von ERDDAP die einzigen gültigen CRSs CRS:84 und EPSG:4326,
+<br>Erforderlich.
+</td>
+</tr>
+<tr>
+<td> bbox= <i>4commaSeparatedValues</i></td>
+<td> Begrenzungsrahmenecken in SRS/CRS-Einheiten.
+Für Version=1.3.0 mit CRS=EPSG:4326 sind die 4 Werte: minLat,minLon,maxLat,maxLon.
+Für alle anderen Situationen sind die 4 Werte: minLon,minLat,maxLon,maxLat.
+(Die umgekehrte Reihenfolge! Ja, es ist bizarr. Willkommen in der Welt von OGC!)
+ERDDAP unterstützt Anfragen innerhalb des Längengrades des Datensatzes (vielleicht 0 bis 360, vielleicht -180 bis 180)
+und Breitengrad. Die meisten WMS Clients gehen davon aus, dass Längengradwerte im Bereich -180 bis 180 liegen.
+Wenn ERDDAP eine Variante eines Datensatzes mit Längengrad -180 bis 180 anbietet, verwenden Sie diese für WMS Anfragen.
+Erforderlich.
+</td>
+</tr>
+<tr>
+<td> width= <i>output_width</i></td>
+<td> Breite in Pixeln des Kartenbildes. Erforderlich.
+</td>
+</tr>
+<tr>
+<td> Höhe = <i>Ausgabe_Höhe</i></td>
+<td> Höhe in Pixel des Kartenbildes. Erforderlich.
+</td>
+</tr>
+<tr>
+<td> format= <i>Ausgabeformat</i></td>
+<td> Ausgabeformat der Karte. Derzeit ist im WMS von ERDDAP nur Bild/png gültig.
+Erforderlich.
+</td>
+</tr>
+<tr>
+<td> transparent= <i>WAHR|FALSCH</i></td>
+<td> Hintergrundtransparenz der Karte. Optional (Standard=FALSE).
+Bei TRUE wird jeder Teil des Bildes, der die BGColor verwendet, transparent gemacht.
+</td>
+</tr>
+<tr>
+<td> bgcolor= <i>color_value</i></td>
+<td> Hexadezimaler 0xRRGGBB-Farbwert für die Hintergrundfarbe. Optional (Standard=0xFFFFFF, weiß).
+Bei transparent=true empfehlen wir bgcolor=0x808080 (grau), da Weiß in einigen Farbpaletten enthalten ist.
+</td>
+</tr>
+<tr>
+<td> Ausnahmen = <i>Ausnahme_Format</i></td>
+<td> Das Format für WMS Ausnahmeantworten. Optional.
+<br>Derzeit unterstützen WMS 1.1.0 und 1.1.1 von
+"application/vnd.ogc.se_xml" (Standardeinstellung),
+<br>"application/vnd.ogc.se_blank" (ein leeres Bild) und
+"application/vnd.ogc.se_inimage" (der Fehler in einem Bild).
+<br>Derzeit unterstützt WMS 1.3.0 von ERDDAP \"XML\" (die Standardeinstellung),
+"BLANK" (ein leeres Bild) und
+<br>"INIMAGE" (der Fehler in einem Bild).
+</td>
+</tr>
+<tr>
+<td> Zeit = <i>Zeit</i></td>
+<td> Zeitwert der gewünschten Schicht, angegeben im ISO8601-Format: yyyy-MM-ddTHH:mm:ssZ .
+Derzeit können Sie im WMS von ERDDAP nur einen Zeitwert pro Anfrage angeben.
+<br>Im WMS von ERDDAP wird der Wert verwendet, der dem von Ihnen angegebenen Wert am nächsten kommt (wenn zwischen min und max liegt).
+<br>Im WMS von ERDDAP ist der Standardwert der letzte Wert im 1D-Zeitarray des Datensatzes.
+<br>Im WMS von ERDDAP wird "aktuell" als die letzte verfügbare Zeit (neu oder nicht) interpretiert.
+<br>Optional (im WMS von ERDDAP ist der Standardwert der letzte Wert, unabhängig davon, ob er aktuell ist oder nicht).
+</td>
+</tr>
+<tr>
+<td> Höhe = <i>Höhe</i></td>
+<td> Schichthöhe erwünscht.
+Derzeit können Sie im WMS von ERDDAP nur einen Höhenwert pro Anfrage angeben.
+<br>Im WMS von ERDDAP wird dies für die Höhen- oder Tiefendimension (umgerechnet in Höhe) (falls vorhanden) verwendet.
+(in Metern, positiv=up)
+<br>Im WMS von ERDDAP wird der Wert verwendet, der dem von Ihnen angegebenen Wert am nächsten kommt (sofern zwischen min und max liegt).\n
+<br>Optional (im WMS von ERDDAP ist der Standardwert der letzte Wert im 1D-Höhen- oder Tiefenarray des Datensatzes).\n
+</td> \n
+</tr> \n
+<tr> \n
+<td> dim_ <i>name</i> = <i>Wert</i></td>
+<!--see WMS 1.3.0 spec section C.-->
+<td> Wert anderer Dimensionen nach Bedarf.
+Derzeit können Sie im WMS von ERDDAP nur einen Wert pro Dimension pro Anfrage angeben.
+<br>Im WMS von ERDDAP wird dies für die Dimensionen Nicht-Zeit, Nicht-Höhe, Nicht-Tiefe verwendet.
+<br>Der Name einer Dimension lautet "dim_" plus dem Namen des Datasets für die Dimension, beispielsweise "dim_model".
+<br>Im WMS von ERDDAP wird der Wert verwendet, der dem von Ihnen angegebenen Wert am nächsten kommt (wenn zwischen min und max liegt).
+<br>Optional (im WMS von ERDDAP ist der Standardwert der letzte Wert im 1D-Array der Dimension).
+</td>
+</tr>
+</table>
+<!--WMS 1.3.0 spec section 6.8.1-->
+<sup>* Bei</sup> Parameternamen wird die Groß-/Kleinschreibung nicht beachtet.
+<br>Bei Parameterwerten muss die Groß-/Kleinschreibung beachtet werden und müssen
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">Prozent codierter
+&externalLinkHtml;</a> :
+alle Zeichen in Abfragewerten außer A-Za-z0-9_-!.~'()* müssen als %HH codiert werden, wobei
+HH ist der zweistellige Hexadezimalwert des Zeichens, beispielsweise wird das Leerzeichen zu %20.
+Zeichen über #127 müssen in UTF-8-Bytes konvertiert werden, dann muss jedes UTF-8-Byte
+(Bitten Sie einen Programmierer um Hilfe). Es gibt
+<a class="N" rel="help" href="https://www.url-encode-decode.com">Websites, die prozentual für Sie codieren/decodieren
+&externalLinkHtml;</a> .
+<br>Die Parameter können in beliebiger Reihenfolge in der URL stehen, getrennt durch '&amp;' .
+<p>(Überarbeitet aus Tabelle 8 der WMS 1.3.0-Spezifikation)
+]]></WMSGetMap>
+<WMSNotes><![CDATA[
+<h3> <a class="selfLink" id="notes" href="#notes" rel="bookmark">Anmerkungen</a></h3>
+<ul>
+<!--These WMS requirements are also in setupDatasetXml.-->
+<li>Datensatzanforderungen <a class="selfLink" id="DatasetRequirements" href="#DatasetRequirements" rel="bookmark"><strong>:</strong></a>
+Die wichtigsten Voraussetzungen für den Zugriff auf eine Variable über
+Die WMS Server von
+<ul>
+<li>Der Datensatz muss ein EDDGrid...-Datensatz sein.
+<li>Die Datenvariable MUSS eine Rastervariable sein.
+<li>Die Datenvariable MUSS Längen- und Breitenachsenvariablen haben. (Andere
+sind OPTIONAL.)
+<li>Es MÜSSEN einige Längengradwerte zwischen -180 und 180 angegeben werden.
+<li>Der
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">
+colorBarMinimum und colorBarMaximum Attribute</a>
+MUSS angegeben werden. (Andere
+-Attribute der Farbleiste sind OPTIONAL.)
+</ul>
+<li>Rasterdatenschichten <strong>:</strong> Im WMS von ERDDAP werden alle Datenvariablen in Rasterdatensätzen, die
+Längen- und Breitengrade sind über WMS verfügbar.
+Jede dieser Variablen ist als WMS Schicht mit dem Namen <i>datasetID</i>
+&WMS_SEPARATOR;<i>Variablenname</i> .
+Jede dieser Ebenen ist transparent (dh Datenwerte werden als ein Bereich von Farben
+und fehlende Werte werden durch transparente Pixel dargestellt).
+<li><strong>Tabellendatenschichten:</strong> Derzeit sind im WMS von ERDDAP Datenvariablen in Tabellendatensätzen
+nicht über WMS verfügbar.
+<li><strong>Abmessungen:</strong> Eine Konsequenz des WMS Designs ist, dass TIME, ELEVATION und andere
+Dimensionswerte, die Sie in einer GetMap Anfrage angeben, gelten für alle Layer.
+Es gibt keine Möglichkeit, unterschiedliche Werte für verschiedene Layer anzugeben.
+
+<!--"<li><strong>Longitude:</strong> The supported CRS values only support longitude values from -180 to 180.
+//"   But some ERDDAP datasets have longitude values 0 to 360.
+//"   Currently in ERDDAP's WMS, those datasets are only available from longitude 0 to 180 in WMS.-->
+
+<li><strong>Strikt?</strong> Die obige Tabelle gibt an, wie ein Client eine GetMap Anforderung bilden soll .
+In der Praxis versucht das WMS von ERDDAP, bei der Verarbeitung von GetMap
+Anfragen, da viele aktuelle Clients die Spezifikation nicht befolgen. Wenn Sie jedoch
+GetMap- URLs bilden, GetMap wir Ihnen, die Spezifikation zu befolgen.
+<li><strong>Warum gibt es für jeden Datensatz separate WMS Server?</strong> Da die GetCapabilities
+document listet alle Werte aller Dimensionen für jeden Datensatz auf, die Informationen für jeden
+Der Datensatz kann umfangreich sein (leicht 300 KB). Wenn alle Datensätze (derzeit ~300 am)
+Die ERDDAP Hauptsite sollte in ein WMS werden, das resultierende GetCapabilities Dokument
+wäre riesig (~90 MB), was eine lange Zeit zum Herunterladen dauern würde (was dazu führen würde, dass viele Leute
+, dass etwas nicht stimmte und aufgeben) und die meisten Client-Software überfordern würde.
+<!--//"   However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at
+//"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?-->
+</ul>
+]]></WMSNotes>
 <wmsManyDatasets><![CDATA[
 Auf viele Datensätze kann auch über den Web Map Service (WMS) von ERDDAP zugegriffen werden.
 ]]></wmsManyDatasets>

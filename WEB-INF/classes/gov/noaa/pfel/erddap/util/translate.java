@@ -68,7 +68,7 @@ public class translate {
     private static final String oldMessagePath = translatedFolderPath + "messages-Copy.xml";
     
     //translation settings
-    private static final String[] languageCodeList = {"zh-cn"};
+    public static final String[] languageCodeList = {"zh-cn", "de"};
     private static HashSet<String> doNotTranslateSet = new HashSet<String>(Arrays.asList(
         //* all tags that match the regular expresion:  <EDDGrid.*Example> ,
         "/EDDGridErddapUrlExample", "/EDDGridIdExample", "/EDDGridDimensionExample", "/EDDGridNoHyperExample", "/EDDGridDimNamesExample", "/EDDGridDataTimeExample", "/EDDGridDataValueExample",
@@ -83,7 +83,7 @@ public class translate {
         //keywords used in a drop-down selection
         "/admSubsetVariables","/admKeywords",
         //abreviations
-        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information",
+        "admKeywords", "advl_datasetID", "/extensionsNoRangeRequests", "hpn_information", "/EDDIso19115",
         // others
         "/legal", "/imageWidths", "/imageHeights", "/langCode"
     ));
@@ -101,12 +101,15 @@ public class translate {
         // and add the tags to the doNotTranslateSet
         // Currently not needed because I have found all tags following the pattern (as 6/23/21) and hard coded them to the set
         // addDoNotTranslateSet();
-
+        
         // uncomment the try-catch statement below to begin the translation
         /*
+        System.out.println(translate.class.getClassLoader().getResource("").toString());
         try {
             //preferablly the languageCodeList should be used as the 3rd parameter of updateGlossray(), but right now 
             //I'm testing the languages one by one, so languageCodeList contains few items, thus the parameter in updateGlossray() is hard-coded
+
+            
             //updateGlossary(ERDDAPprojectId, ERDDAPglossaryId, Arrays.asList("en","zh-cn","de"));
             SimpleXMLReader xmlReader = getSimpleXMLReader(messagePath);
             //myWriter is a reader used solely for testing purposes
@@ -129,7 +132,7 @@ public class translate {
             }
             //this for-loop tests the translation output of first 100 tags.
             //To translate all tags, make it a while(true) loop. The break command will be executed when there are no tags left
-            for (int i = 0; i < 100; i++) {
+            while (true) {
                 //testing what is in xmlReader
                 xmlReader.nextTag();
                 if (xmlReader.allTags().length() == 0) {
@@ -144,6 +147,13 @@ public class translate {
                     //myWriter.write(toTranslate);
                     for (int j = 0; j < languageCodeList.length; j++) {
                         fileWriters[j].write(xmlReader.rawContent()); 
+                        //after writing the translated content, we write the <tag>
+                        fileWriters[j].write("<" + tagName + ">");
+                        if (xmlReader.isEndTag()) {
+                            // if the tag is an end tag, we add a new line charcater at the end of the tag
+                            //myWriter.write("\n");
+                            fileWriters[j].write("\n"); 
+                        }
                     }
                 } else if (doNotTranslateSet.contains(tagName)) {
                     // if the tag is one of the tags we do not want to translate
@@ -156,6 +166,13 @@ public class translate {
                         } else {
                             fileWriters[j].write(xmlReader.rawContent()); 
                         }
+                        //after writing the translated content, we write the <tag>
+                        fileWriters[j].write("<" + tagName + ">");
+                        if (xmlReader.isEndTag()) {
+                            // if the tag is an end tag, we add a new line charcater at the end of the tag
+                            //myWriter.write("\n");
+                            fileWriters[j].write("\n"); 
+                        }
                     }
                 } else {
                     boolean modified = !previousMessageMap.getOrDefault(tagName, "DNE").equals(xmlReader.rawContent());
@@ -165,7 +182,7 @@ public class translate {
                     for (int j = 0; j < translated.length; j++) {
                         translated[j] = !translatedTagMaps[j].getOrDefault(tagName, "DNE").equals("DNE");
                         if (!modified && translated[j]) {
-                            fileWriters[j].write(previousMessageMap.get(tagName));
+                            fileWriters[j].write(translatedTagMaps[j].get(tagName));
                         } else {
                             fileWriters[j].write(translateTag(toTranslate, languageCodeList[j], html, messageFormat));
                         }
@@ -194,7 +211,6 @@ public class translate {
            e.printStackTrace();
         }
         */
-        
         System.out.println("translator called " + translationCounter + " times.");
     }
     /**
