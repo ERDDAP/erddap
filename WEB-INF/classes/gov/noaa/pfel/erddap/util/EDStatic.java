@@ -866,14 +866,14 @@ public static boolean developmentMode = false;
         dataProviderContactInfo,
         dataProviderData,
 
-        dfs_submit,
-        dfs_fixProblem,
+        dpf_submit,
+        dpf_fixProblem,
         dpf_yourName,
         dpf_emailAddress,
         dpf_Timestamp,
         dpf_frequency,
         dpf_title,
-        dpf_titleTooltip[],
+        dpf_titleTooltip,
         dpf_summary,
         dpf_summaryTooltip,
         dpf_creatorName,
@@ -2378,14 +2378,14 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dataProviderContactInfo    = messages.getNotNothingString("dataProviderContactInfo",    errorInMethod);
         dataProviderData           = messages.getNotNothingString("dataProviderData",           errorInMethod);
 
-        dfs_submit                 = messages.getNotNothingString("dfs_submit",                 errorInMethod);
-        dfs_fixProblem             = messages.getNotNothingString("dfs_fixProblem",             errorInMethod);
+        dpf_submit                 = messages.getNotNothingString("dpf_submit",                 errorInMethod);
+        dpf_fixProblem             = messages.getNotNothingString("dpf_fixProblem",             errorInMethod);
         dpf_yourName               = messages.getNotNothingString("dpf_yourName",               errorInMethod);
         dpf_emailAddress           = messages.getNotNothingString("dpf_emailAddress",           errorInMethod);
         dpf_Timestamp              = messages.getNotNothingString("dpf_Timestamp",              errorInMethod);
         dpf_frequency              = messages.getNotNothingString("dpf_frequency",              errorInMethod);
         dpf_title                  = messages.getNotNothingString("dpf_title",                  errorInMethod);
-        dpf_titleTooltip           = getMessageInAllVersions(messagesList, "dpf_titleTooltip",           errorInMethod);
+        dpf_titleTooltip           = messages.getNotNothingString("dpf_titleTooltip",           errorInMethod);
         dpf_summary                = messages.getNotNothingString("dpf_summary",                errorInMethod);
         dpf_summaryTooltip         = messages.getNotNothingString("dpf_summaryTooltip",         errorInMethod);
         dpf_creatorName            = messages.getNotNothingString("dpf_creatorName",            errorInMethod);
