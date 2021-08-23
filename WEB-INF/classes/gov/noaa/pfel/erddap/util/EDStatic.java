@@ -38,7 +38,6 @@ import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import gov.noaa.pfel.coastwatch.util.translate;
 import gov.noaa.pfel.coastwatch.util.Tally;
 
 import gov.noaa.pfel.erddap.*;
@@ -1624,7 +1623,7 @@ public static boolean developmentMode = false;
     private static String theLongDescriptionHtml; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
     //must be in the same order of translate.languageCodeList
-    public static final String[] languageList = {"English (default)", "Chinese"};
+    public static final String[] languageList = {"English (default)", "Chinese", "German"};
     //this differs from translate.languageCodeList because the index 0 is "en"
     public static String[] fullLanguageCodeList;
     
