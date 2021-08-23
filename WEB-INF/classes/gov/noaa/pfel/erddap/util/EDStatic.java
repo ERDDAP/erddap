@@ -1498,8 +1498,8 @@ public static boolean developmentMode = false;
         statusHtml,
         submit,
         submitTooltip,
-        subscriptionRSSHTML,
-        subscriptionURLHTML,
+        subscriptionOfferRss,
+        subscriptionOfferUrl,
         subscriptionsTitle,
         subscriptionAdd,
         subscriptionAddHtml,
@@ -3134,8 +3134,8 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         statusHtml                 = messages.getNotNothingString("statusHtml",                 errorInMethod);
         submit                     = messages.getNotNothingString("submit",                     errorInMethod);
         submitTooltip              = messages.getNotNothingString("submitTooltip",              errorInMethod);
-        subscriptionRSSHTML        = messages.getNotNothingString("subscriptionRSSHTML",        errorInMethod);
-        subscriptionURLHTML        = messages.getNotNothingString("subscriptionURLHTML",        errorInMethod);
+        subscriptionOfferRss        = messages.getNotNothingString("subscriptionOfferRss",        errorInMethod);
+        subscriptionOfferUrl        = messages.getNotNothingString("subscriptionOfferUrl",        errorInMethod);
         subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         errorInMethod);
         subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            errorInMethod);
         subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       errorInMethod);
@@ -3686,12 +3686,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static String erddapUrl(String loggedInAs) {
         
-        if (languageChosenIndex == 0) {
-            return loggedInAs == null? erddapUrl : erddapHttpsUrl;
-        } else {
-            return loggedInAs == null? erddapUrl + "/" + fullLanguageCodeList[languageChosenIndex] : erddapHttpsUrl + "/" + fullLanguageCodeList[languageChosenIndex];
-        }
-        //return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
+        // if (languageChosenIndex == 0) {
+        //     return loggedInAs == null? erddapUrl : erddapHttpsUrl;
+        // } else {
+        //     return loggedInAs == null? erddapUrl + "/" + fullLanguageCodeList[languageChosenIndex] : erddapHttpsUrl + "/" + fullLanguageCodeList[languageChosenIndex];
+        // }
+        return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
     }
 
     /**

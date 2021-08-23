@@ -5316,18 +5316,18 @@ of this ERDDAP, including a list of datasets which failed to load.</statusHtml>
 <submit>Submit</submit>
 <submitTooltip>Submit this form and start downloading the data.</submitTooltip>
 
-<subscriptionRSSHTML><![CDATA[
+<subscriptionOfferRss><![CDATA[
   <li><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP</a> offers 
   <a rel="help" href="&tErddapUrl;/information.html#subscriptions">RSS subscriptions</a>,
   so that your computer program can find out if a dataset has changed.
   <br>&nbsp;
-  ]]></subscriptionRSSHTML>
-  <subscriptionURLHTML><![CDATA[
+  ]]></subscriptionOfferRss>
+  <subscriptionOfferUrl><![CDATA[
   <li>ERDDAP offers 
       <a rel="help" href="&tErddapUrl;/information.html#subscriptions">email/URL subscriptions</a>,
       which notify your computer program whenever a dataset changes.
     <br>&nbsp;
-  ]]></subscriptionURLHTML>
+  ]]></subscriptionOfferUrl>
   
 <subscriptionsTitle>Subscriptions</subscriptionsTitle>
 <subscriptionAdd>Add a new subscription</subscriptionAdd>
