@@ -431,6 +431,7 @@ public class Erddap extends HttpServlet {
             EDStatic.languageChosenIndex = Arrays.asList(EDStatic.fullLanguageCodeList).indexOf(currLangCode);
             if (EDStatic.languageChosenIndex == -1) {
                 //the content between the "/" after hostURL/erddap and the "/" that follows is not recognized
+                EDStatic.languageChosenIndex = 0;
                 return requestUrl;
             } else {
                 protocolStart = langCodeEnd + 1;
@@ -4031,8 +4032,8 @@ writer.write(EDStatic.dpf_congratulation
                     "    <br>&nbsp;\n" +
                     "    </ul>\n");
             }
-            String subscriptionRSSHTML = EDStatic.subscriptionRSSHTML.replace("&tErddapUrl;", tErddapUrl);
-            writer.write(subscriptionRSSHTML
+            String subscriptionOfferRss = EDStatic.subscriptionOfferRss.replace("&tErddapUrl;", tErddapUrl);
+            writer.write(subscriptionOfferRss
                 /*
                 "<li><a class=\"selfLink\" id=\"subscriptions\" href=\"#subscriptions\" rel=\"bookmark\">ERDDAP</a> offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">RSS subscriptions</a>,\n" +
@@ -4041,8 +4042,8 @@ writer.write(EDStatic.dpf_congratulation
                 "  <br>&nbsp;\n"
                 */
                 );
-                String subscriptionURLHTML = EDStatic.subscriptionURLHTML.replace("&tErddapUrl;", tErddapUrl);
-            if (EDStatic.subscriptionSystemActive) writer.write(subscriptionURLHTML
+                String subscriptionOfferUrl = EDStatic.subscriptionOfferUrl.replace("&tErddapUrl;", tErddapUrl);
+            if (EDStatic.subscriptionSystemActive) writer.write(subscriptionOfferUrl
                 /*
                 "<li>ERDDAP offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">email/URL subscriptions</a>,\n" +
