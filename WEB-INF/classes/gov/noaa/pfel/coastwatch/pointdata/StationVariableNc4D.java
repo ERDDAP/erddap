@@ -27,11 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 //import java.util.Vector;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 //import ucar.nc2.dods.*;

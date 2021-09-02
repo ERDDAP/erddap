@@ -2572,10 +2572,10 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1620844183000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+"index.html,1628705828000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
             Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy).\n" +
@@ -2643,7 +2643,7 @@ String expected =
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-05-12T18:29:43Z,32357.0,.html\n" + //changes sometimes
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-08-11T18:17:08Z,32357.0,.html\n" + //changes sometimes
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
@@ -2665,6 +2665,9 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n" +
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,\n" + //appeared 2021-08-31
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,\n" + //appeared 2021-08-31
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,\n" + //appeared 2021-08-31
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
@@ -2690,6 +2693,9 @@ String expected =
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,\n" + //appeared 2021-06-24
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,\n" + //appeared 2021-08-31
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,\n" + //appeared 2021-08-31
+"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,\n" + //appeared 2021-08-31
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n" +
 "http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n" +

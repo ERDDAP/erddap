@@ -9511,12 +9511,11 @@ Attributes {
             "  <li>Few situations: By hand in a browser or with a program like\n" +
             "    <a rel=\"help\" href=\"#curl\">curl</a>, download a .nc file\n" +
             "    with a subset of the dataset.  Then, use NetCDF-Java to open and access the data in\n" +
-            "    that local file, e.g.,\n" +
+            "    that local file, e.g., one of these options:\n" +
             "    <pre>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1\n" +
-            "    NetcdfFile nc = NetcdfFiles.open(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+\n" +
-            "    NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1</pre>\n" +
-            "    or\n" +
-            "    <pre>NetcdfDataset nc = NetcdfDatasets.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+</pre>\n" +
+                "NetcdfFile nc = NetcdfFiles.open(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+\n" +
+                "NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //pre v5.4.1\n" +
+                "NetcdfDataset nc = NetcdfDatasets.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");  //v5.4.1+</pre>\n" +
             "    (NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "    <br>This approach makes more sense if you want a local copy of the data subset, so\n" +
             "    that you can access it repeatedly (today, tomorrow, next week, ...) and quickly.\n" +
@@ -9595,7 +9594,7 @@ Attributes {
             "  (don't use <kbd>NetcdfFile.open</kbd>; it is for local files only) or\n" +
             "  <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");  //pre v5.4.1</pre>\n" +
             "  or\n" +
-            "  <pre>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");  //v5.4.1+</pre>\n" +
+            "  <pre>NetcdfDataset nc = NetcdfDatasets.openDataset(\"" + datasetBase + "\");  //v5.4.1+</pre>\n" +
             "  (NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
             "  <br>Once you have the <kbd>nc</kbd> object, you can request metadata or a subset of a\n" +
             "  variable's data.\n" +
