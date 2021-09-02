@@ -19,11 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;

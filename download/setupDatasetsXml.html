@@ -643,6 +643,21 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
             <br>&nbsp;
           </ul>
           
+      <li><a class="selfLink" id="EDDGridLon0360FromErddapCatalog" href="#EDDGridLon0360FromErddapCatalog" rel="bookmark">EDDGridLon0360FromErddapCatalog</a>
+          <br>This EDDType generates the datasets.xml to make 
+            <a rel="help" href="#EDDGridLon0360">EDDGridLon0360</a> datasets
+            from all of the EDDGrid datasets in an ERDDAP
+            that have any longitude values less than 0.
+          <ul>
+          <li>If possible, use a public IP address (for example, https://oceanwatch.pfeg.noaa.gov)
+            in the URL, not a local numeric IP address (for example, https://12.34.56.78).
+            If the ERDDAP is only accessible via the local numeric IP address, you can use
+            <a rel="help" href="#convertToPublicSourceUrl"><kbd>&lt;convertToPublicSourceUrl&gt;</kbd></a>
+            so ERDDAP users see the public address, even though ERDDAP gets data from the 
+            local numeric address. 
+            <br>&nbsp;
+          </ul>
+          
       <li><a class="selfLink" id="EDDsFromFiles" href="#EDDsFromFiles" rel="bookmark">EDDsFromFiles</a> 
         <br>Given a start directory, 
         this traverses the directory and all subdirectories and tries
@@ -2581,6 +2596,9 @@ currently recommend
       <li><a rel="help" href="#EDDGridLonPM180">EDDGridLonPM180</a> 
         modifies the longitude values of a child EDDGrid so that they are in 
         the range -180 to 180.
+      <li><a rel="help" href="#EDDGridLon0360">EDDGridLon0360</a> 
+        modifies the longitude values of a child EDDGrid so that they are in 
+        the range 0 to 360.
       <li><a rel="help" href="#EDDGridSideBySide">EDDGridSideBySide</a> 
         aggregates two or more EDDGrid datasets side by side.
       <li><a rel="help" href="#EDDGridAggregateExistingDimension">EDDGridAggregateExistingDimension</a> 
@@ -4435,6 +4453,130 @@ with the 0-360 dataset to forcibly disable the WMS service for that dataset.
   EDDGridLonPM180 dataset is:</a>
 <pre>
 &lt;dataset type="EDDGridLonPM180" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
+  <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
+  <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For
+    EDDGridFromDap, this gets the remote .dds and then gets the new 
+    leftmost (first) dimension values. --&gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#graphsAccessibleTo">&lt;graphsAccessibleTo&gt;</a>auto|public&lt;/graphsAccessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#accessibleViaWMS">&lt;accessibleViaWMS&gt;</a>...&lt;/accessibleViaWMS&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#nThreads">&lt;nThreads&gt;</a>...&lt;/nThreads&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#dimensionValuesInMemory">&lt;dimensionValuesInMemory&gt;</a>...&lt;/dimensionValuesInMemory&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
+  &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- The child EDDGrid dataset. --&gt;
+&lt;/dataset&gt;
+</pre>
+&nbsp;
+</ul>
+
+
+<p><a class="selfLink" id="EDDGridLon0360" href="#EDDGridLon0360" rel="bookmark"><strong>EDDGridLon0360</strong></a> 
+modifies the longitude values of a child (enclosed) EDDGrid dataset 
+that has some longitude values less than 0 (for example, -180 to 180) so that 
+they are in the range 0 to 360 (hence the name).
+<ul>
+<li>Working near a discontinuity causes problems, regardless of whether
+  the discontinuity is at longitude 0 or at longitude 180. 
+  This dataset type lets you avoid those problems for everyone,
+  by offering two versions of the same dataset:
+  <br>one with longitude values in the range -180 to 180 ("Atlanticentric"?).
+  <br>one with longitude values in the range 0 to 360 ("Pacificentric"?),
+
+<li>For child datasets with all longitude values less than 0,
+    all of the new longitude values are simply 360 degrees higher.
+    For example, a dataset with longitude values of -180 to -120 would 
+    become a dataset with longitude values of 180 to 240.
+
+<li>For child datasets that have longitude values for the entire globe
+    (roughly -180 to 180), the new longitude value will be rearranged
+    to be (roughly) 0 to 360: 
+    <br>The original -180 to 0 values are converted to 180 to 360 and
+      shifted to the end of the longitude array.
+    <br>The original 0 to almost 180 values are unchanged.
+
+<li>For child datasets that span lon=0 but don't cover the globe,
+   ERDDAP inserts missing values as needed to make a dataset which
+   covers the globe.
+   For example, a child dataset with longitude values of -40 to 20
+   would become a dataset with longitude values of 0 to 360.
+   <br>The child values of 0 to 20 would be unchanged.
+   <br>New longitude values would be inserted from 20 to 320.
+      The corresponding data values will be _FillValues.
+   <br>The child values of -40 to 0 would become 320 to 360.
+   <br>The insertion of missing values may seem odd, but it avoids several
+     problems that result from having longitude values that
+     jump suddenly (e.g, from 20 to 320).
+
+<li>In <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml</a>,
+    there is a special "dataset type", EDDGridLon0360FromErddapCatalog,
+    that lets you generate the datasets.xml for EDDGridLon0360 datasets
+    from each of the EDDGrid datasets in an ERDDAP
+    that have any longitude values greater than 180.
+    This facilitates offering two versions of these datasets:
+    <br>the original, with longitude values in the range 0 to 360, 
+    <br>and the new dataset, with longitude values in the range -180 to 180.
+
+    <p>The child dataset within each EDDGridLon0360 dataset will
+    be an EDDGridFromErddap dataset which points to the original dataset.
+    <br>The new dataset's datasetID will be the name of the original dataset
+      plus "_Lon0360".
+    <br>For example,
+<pre>&lt;dataset type="EDDGridLon0360" datasetID="erdMBsstdmday_Lon0360" active="true"&gt;
+  &lt;dataset type="EDDGridFromErddap" datasetID="erdMBsstdmday_Lon0360Child"&gt;
+    &lt;!-- SST, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, Daytime 
+      (Monthly Composite) minLon=-40.0 maxLon=20.0 --&gt;
+    &lt;sourceUrl&gt;https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMBsstdmday
+    &lt;/sourceUrl&gt;
+  &lt;/dataset&gt;
+&lt;/dataset&gt; </pre>
+    Put the EDDGridLon0360 dataset <strong>below</strong> the original dataset in datasets.xml.
+      That avoids some possible problems.
+
+    <p>Alternatively, you can replace the EDDGridFromErddap child dataset with
+    the original dataset's datasets.xml. Then, there will be only one version
+    of the dataset: the one with longitude values within 0 to 360.
+    We discourage this because there are times when each version of the 
+    dataset is more convenient. 
+
+<li>If you offer two versions of a dataset, for example, one with longitude 0 to 360 and
+    one with longitude -180 to 180:
+  <ul>
+  <li>You can use the optional 
+    <a rel="help"
+href="#accessibleViaWMS"><kbd>&lt;accessibleViaWMS&gt;false&lt;/accessibleViaWMS&gt;</kbd></a> 
+with the 0 to 360 dataset to forcibly disable the WMS service for that dataset.
+    Then, only the -180 to 180 version of the dataset will be accessible via WMS. 
+  <li>There are a couple of ways to keep the Lon0360 dataset up-to-date
+    with changes to the underlying dataset:
+    <ul>
+    <li>If the child dataset is a EDDGridFromErddap dataset that references
+      a dataset in the same ERDDAP, the Lon0360 dataset will try to 
+      directly subscribe to the underlying dataset so that it is always up-to-date.
+      Direct subscriptions don't generate emails asking you to validate the subscription -
+      validation should be done automatically.
+    <li>If the child dataset is not an EDDGridFromErddap dataset that is
+      on the same ERDDAP, the Lon0360 dataset will try to use
+      the regular subscription system to subscribe to the underlying dataset.
+      If you have the subscription system in your ERDDAP turned on, 
+      you should get emails asking you to validate the subscription. Please do so.
+    <li>If you have the subscription system in your ERDDAP turned off,
+      the Lon0360 dataset may sometimes have outdated metadata until the
+      Lon0360 dataset is reloaded. So if the subscription system is turned off,
+      you should set the 
+      <a rel="help" href="#reloadEveryNMinutes"><kbd>&lt;reloadEveryNMinutes&gt;</kbd></a>
+      setting of the Lon0360 dataset to a smaller number, so that it is more 
+      likely to catch changes to the child dataset sooner.
+    </ul>
+  </ul>
+
+<li><a class="selfLink" id="EDDGridLon0360SkeletonXML" href="#EDDGridLon0360SkeletonXML" rel="bookmark">The skeleton XML for an 
+  EDDGridLon0360 dataset is:</a>
+<pre>
+&lt;dataset type="EDDGridLon0360" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt; 
   <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt; &lt;!-- 0 or 1. For
     EDDGridFromDap, this gets the remote .dds and then gets the new 
@@ -12038,13 +12180,15 @@ while processing each request.
       classes, you may see a problem where a dataset fails to load (occasionally or
       consistently) with the error message:
       "IOException: User limit of inotify instances reached or too many open files".
-      The cause may be a bug in Java which causes inotify instances to be not garbage collected. This problem is avoided in ERDDAP v1.66 and higher. 
+      The cause may be a bug in Java which causes inotify instances to be not garbage collected. 
+      This problem is avoided in ERDDAP v1.66 and higher. 
       So the best solution is to switch the latest version of ERDDAP.
       <br>If that doesn't solve the problem (that is, if you have a really large
       number of datasets using <kbd>&lt;updateEveryNMillis&gt;</kbd>),
-      you can fix this problem by calling (as root):<kbd>
-      <br>echo 20000 > /proc/sys/fs/inotify/max_user_watches
-      <br>echo 500 > /proc/sys/fs/inotify/max_user_instances</kbd>
+      you can fix this problem by calling:<kbd>
+      <br>sudo sysctl fs.inotify.max_user_watches=65536
+      <br>sudo sysctl fs.inotify.max_user_instances=1024
+      <br>sudo sysctl -p</kbd>
       <br>Or, use higher numbers if the problem persists.
       The default for watches is 8192. The default for instances is 128.
     </ul>
@@ -15565,7 +15709,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.12
+<p>ERDDAP, Version 2.14
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

@@ -42,12 +42,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 
-/**
- * NcHelper and ucar classes only used for testing netcdf-java.
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 
 /** 
