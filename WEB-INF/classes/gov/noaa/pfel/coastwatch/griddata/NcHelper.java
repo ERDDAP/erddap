@@ -21,11 +21,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -535,11 +531,13 @@ public class NcHelper  {
      * @param buildStringsFromChars only applies to source DataType=char variables.
      * @param isUnsigned if true and if the object type isIntegerType, 
      *   the resulting PrimitiveArray will be an unsigned PAType.
+     *   If false and object type isIntegerType, the resulting PrimitiveArrray will 
+     *   match the signedness(?) of nc2Array.
      * @return a PrimitiveArray
      */
     public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
         //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
-        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars), isUnsigned);
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars), nc2Array.isUnsigned() || isUnsigned);
         return pa;
     }
 
@@ -1363,10 +1361,11 @@ public class NcHelper  {
      *
      * @param variable
      * @param attributes the Attributes that will be added to.
+     * @return the same attributes object, for convenience
      */
-    public static void getVariableAttributes(Variable variable, Attributes attributes) {
+    public static Attributes getVariableAttributes(Variable variable, Attributes attributes) {
         if (variable == null)
-            return;
+            return attributes;
         getAttributes(variable.attributes(), attributes);
 
         //in nc3 files, if variables has _Unsigned=true, convert some signed attributes to unsigned
@@ -1374,6 +1373,7 @@ public class NcHelper  {
         PrimitiveArray us = attributes.remove("_Unsigned");
         if (us != null && "true".equals(us.toString()))
             attributes.convertSomeSignedToUnsigned();
+        return attributes;
     }
 
 
@@ -2008,7 +2008,7 @@ public class NcHelper  {
      * @throws Exception if trouble
      */
     public static NetcdfDataset openOpendapAsNetcdfDataset(String url) throws Exception {
-        return NetcdfDatasets.openDataset(url);   //2021: 's' is new API
+        return NetcdfDatasets.openDataset(url);   //2021 v5.4.1: 's' is new API
     }
 
 

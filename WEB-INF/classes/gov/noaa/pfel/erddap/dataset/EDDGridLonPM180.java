@@ -794,13 +794,12 @@ public class EDDGridLonPM180 extends EDDGrid {
         StringBuilder sb = new StringBuilder();
         int nRows = table.nRows();
         for (int row = 0; row < nRows; row++) {
-            if (datasetIDPA.getString(row).equals("etopo360"))
+            String id = datasetIDPA.getString(row);
+            if (datasetIDPA.getString(row).equals("etopo360") || id.endsWith("_Lon0360"))
                 continue;
 sb.append(
-"<dataset type=\"EDDGridLonPM180\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_LonPM180\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_LonPM180Child\">\n" +
+"<dataset type=\"EDDGridLonPM180\" datasetID=\"" + id + "_LonPM180\" active=\"true\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + id + "_LonPM180Child\">\n" +
 "        <!-- " + XML.encodeAsXML(titlePA.getString(row)) + "\n" +
 "             minLon=" + minLonPA.getString(row) + " maxLon=" + maxLonPA.getString(row) + " -->\n" +
 //set updateEveryNMillis?  frequent if local ERDDAP, less frequent if remote?
@@ -1461,15 +1460,15 @@ expected =
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 150];\n" + //changes
+"  Float64 time[time = 152];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 150][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 152][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 150];\n" +  //changes
+"      Float64 time[time = 152];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
