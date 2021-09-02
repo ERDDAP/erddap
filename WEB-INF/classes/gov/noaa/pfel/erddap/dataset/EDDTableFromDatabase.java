@@ -1781,7 +1781,7 @@ expected =
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"[TIME]Z (source database)\n" +
 "[TIME]Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
-"    String infoUrl \"https://swfsc.noaa.gov/erd.aspx\";\n" +
+"    String infoUrl \"https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"birthdate, category, first, height, last, weight\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +

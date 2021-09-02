@@ -803,7 +803,7 @@ String expected =
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">station</att>\n" +
 "        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
-//"        <att name=\"testOutOfDate\">now-1day</att>\n" +  //gone 2021-06-24
+"        <att name=\"testOutOfDate\">now-1day</att>\n" +  //returned 2021-08-31  gone 2021-06-24
 "        <att name=\"title\">The Newer Title!</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -2728,22 +2728,22 @@ expected =
                   cu = creatorUrl3;
             } else if (!acronym.equals("???")) {
                 cu = 
-                "AFSC".equals(  acronym)? "https://www.afsc.noaa.gov/":
-                "AKRO".equals(  acronym)? "https://alaskafisheries.noaa.gov/":
-                "GARFO".equals( acronym)? "https://www.greateratlantic.fisheries.noaa.gov/":
+                "AFSC".equals(  acronym)? "https://www.fisheries.noaa.gov/region/alaska#science":
+                "AKRO".equals(  acronym)? "https://www.fisheries.noaa.gov/region/alaska":
+                "GARFO".equals( acronym)? "https://www.fisheries.noaa.gov/region/new-england-mid-atlantic":
                 "GSMFC".equals( acronym)? "http://www.gsmfc.org/":
-                "NEFSC".equals( acronym)? "https://www.nefsc.noaa.gov/":
-                "NWFSC".equals( acronym)? "https://www.nwfsc.noaa.gov/":
-                "OHC".equals(   acronym)? "http://www.habitat.noaa.gov/":
+                "NEFSC".equals( acronym)? "https://www.fisheries.noaa.gov/region/new-england-mid-atlantic#science":
+                "NWFSC".equals( acronym)? "https://www.fisheries.noaa.gov/region/west-coast#northwest-science":
+                "OHC".equals(   acronym)? "https://www.fisheries.noaa.gov/topic/habitat-conservation":
                 "OPR".equals(   acronym)? "https://www.fisheries.noaa.gov/about/office-protected-resources":
                 "OSF".equals(   acronym)? "https://www.fisheries.noaa.gov/about/office-sustainable-fisheries":
-                "OST".equals(   acronym)? "https://www.st.nmfs.noaa.gov/":
-                "PIFSC".equals( acronym)? "https://www.pifsc.noaa.gov/":
-                "PIRO".equals(  acronym)? "http://www.fpir.noaa.gov/":
-                "SEFSC".equals( acronym)? "https://www.sefsc.noaa.gov/":
-                "SERO".equals(  acronym)? "http://sero.nmfs.noaa.gov/":
-                "SWFSC".equals( acronym)? "https://swfsc.noaa.gov/": 
-                "WCRO".equals(  acronym)? "http://www.westcoast.fisheries.noaa.gov/":
+                "OST".equals(   acronym)? "https://www.fisheries.noaa.gov/about/office-science-and-technology":
+                "PIFSC".equals( acronym)? "https://www.fisheries.noaa.gov/region/pacific-islands#science":
+                "PIRO".equals(  acronym)? "https://www.fisheries.noaa.gov/region/pacific-islands":
+                "SEFSC".equals( acronym)? "https://www.fisheries.noaa.gov/about/southeast-fisheries-science-center":
+                "SERO".equals(  acronym)? "https://www.fisheries.noaa.gov/region/southeast":
+                "SWFSC".equals( acronym)? "https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center": 
+                "WCRO".equals(  acronym)? "https://www.fisheries.noaa.gov/region/west-coast":
                 null;
             }
             if (cu != null)
@@ -3573,7 +3573,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" + //typos: Surveyes, trackliens
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.14 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +                         //typo in source below
@@ -3738,7 +3738,7 @@ expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.14 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -4144,7 +4144,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.14 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -4272,7 +4272,7 @@ expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" +
-today + " GenerateDatasetsXml in ERDDAP v2.14 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +

@@ -807,13 +807,12 @@ public class EDDGridLon0360 extends EDDGrid {
         StringBuilder sb = new StringBuilder();
         int nRows = table.nRows();
         for (int row = 0; row < nRows; row++) {
-            if (datasetIDPA.getString(row).equals("etopo360"))
+            String id = datasetIDPA.getString(row);
+            if (id.equals("etopo180") || id.endsWith("_LonPM180"))
                 continue;
 sb.append(
-"<dataset type=\"EDDGridLon0360\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_Lon0360\" active=\"true\">\n" +
-"    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + 
-    datasetIDPA.getString(row) + "_Lon0360Child\">\n" +
+"<dataset type=\"EDDGridLon0360\" datasetID=\"" + id + "_Lon0360\" active=\"true\">\n" +
+"    <dataset type=\"EDDGridFromErddap\" datasetID=\"" + id + "_Lon0360Child\">\n" +
 "        <!-- " + XML.encodeAsXML(titlePA.getString(row)) + "\n" +
 "             minLon=" + minLonPA.getString(row) + " maxLon=" + maxLonPA.getString(row) + " -->\n" +
 //set updateEveryNMillis?  frequent if local ERDDAP, less frequent if remote?
@@ -883,7 +882,6 @@ sb.append(
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
-      try {
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdVHNchlamday_Lon0360");       
 
@@ -892,15 +890,15 @@ sb.append(
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 69];\n" +
+"  Float64 time[time = 71];\n" +
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 11985];\n" +
 "  Float64 longitude[longitude = 9333];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chla[time = 69][altitude = 1][latitude = 11985][longitude = 9333];\n" +
+"      Float32 chla[time = 71][altitude = 1][latitude = 11985][longitude = 9333];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 69];\n" +
+"      Float64 time[time = 71];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 11985];\n" +
 "      Float64 longitude[longitude = 9333];\n" +
@@ -1012,10 +1010,6 @@ expected =
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         String2.log("\n*** EDDGridLon0360.testLT0() finished.");
-      } catch (Throwable t) {
-          String2.pressEnterToContinue("\n" +
-              MustBe.throwableToString(t));
-      }
     }
 
     /**

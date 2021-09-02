@@ -137,6 +137,7 @@ public abstract class PrimitiveArray {
      * @param o a char[][], String[] or primitive[] (e.g., int[])
      * @param isUnsigned if true and if the object type isIntegerType, 
      *   the resulting PrimitiveArray will be an unsigned PAType.
+     *   If false and the objectType isIntegerType, then the result will be signed.
      * @return a PrimitiveArray which (at least initially) uses the array for data storage.
      */
     public static PrimitiveArray factory(Object o, boolean isUnsigned) {

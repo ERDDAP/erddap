@@ -121,10 +121,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/kevin/NetCDF_Example_blue sharks_Level1.nc"; 
+//      String tFileName = "/data/fred/biooracle.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"test_erdVHNchlamday_Lon0360", "-verbose"});
+//      DasDds.main(new String[]{"testTimeSince19000101", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -208,12 +208,13 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/data/goes16/20190101000000-STAR-L3C_GHRSST-SSTsubskin-ABI_G16-ACSPO_V2.70-v02.0-fv01.0.nc", 
 //        "-v sea_surface_temperature(0,0:10,0:10)")); //2nd param, e.g., "LAT;LON"));
 //   EDD.debugMode=true;
-//    s = EDDGridFromDap.generateDatasetsXml(
-//      "https://rsg.pml.ac.uk/thredds/dodsC/CCI_ALL-v5.0-MONTHLY.html",
-//      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
-//      -1, null);
-//      String2.setClipboardString(s); String2.log(s); 
-//    DasDds.main(new String[]{"gomoosBuoy", "-verbose"});
+/*    s = EDDGridFromDap.generateDatasetsXml(
+      "https://www.star.nesdis.noaa.gov/thredds/dodsC/CoastWatch/VIIRS/npp/chlora/WeeklyGlobal/WW00",
+      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
+      -1, null);
+      String2.setClipboardString(s); String2.log(s); 
+    /* */
+//    DasDds.main(new String[]{"testGraphs_Lon0360", "-verbose"});
 
 //    String tFileName = "/programs/_tomcat/webapps/cwexperimental/download/setupDatasetsXml.html";
 //    String ts = String2.directReadFromUtf8File(tFileName + "Old");
@@ -272,8 +273,8 @@ public class TestAll  {
 //    os.close();
 //
 //    s = EDDGridFromNcFilesUnpacked.generateDatasetsXml(
-//        "/u00/FNMOC/NAVGEM/onedegree/pressure/", //10mWinds 20mWinds 500MbHeight pressure
-//        "US.*", //US.*wnd_ucmp,  or vcmp, or ""
+//        "/data/andy/", //10mWinds 20mWinds 500MbHeight pressure
+//        "pilot.*\\.bufr", //US.*wnd_ucmp,  or vcmp, or ""
 //        "", "", "", //sampleFile, group, dimensionsCSV
 //        -1, "", null);
 //    String2.setClipboardString(s); String2.log(s);
@@ -348,11 +349,16 @@ public class TestAll  {
 //    *** Daily
 //    Projects.viirsLatLon(true); //create
     
-//    String s = EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(
+//    s = EDDGridLonPM180.generateDatasetsXmlFromErddapCatalog(
 //        "https://coastwatch.pfeg.noaa.gov/erddap/", ".*"); 
 //    String2.setClipboardString(s);
 //    String2.log(s);
 //    EDDGridLonPM180.testHardFlag();
+
+//    s = EDDGridLon0360.generateDatasetsXmlFromErddapCatalog(
+//        "https://coastwatch.pfeg.noaa.gov/erddap/", ".*"); 
+//    String2.setClipboardString(s);
+//    String2.log(s);
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
 //        "/u00/data/points/ndbcMet2Csv/", ".*\\.csv", "",
@@ -487,11 +493,11 @@ public class TestAll  {
 //        null)); //externalAddAttributes) 
 
 //    s = EDDTableFromNcCFFiles.generateDatasetsXml(
-//        "/data/ben/", ".*.nc", 
+//        "/data/andy/", "pilot.*\\.bufr", 
 //        "", 1440, //sample file
 //        "", "", "", 
 //        "", "", 
-//        "", "", "", "", 0, new Attributes()); 
+//        "", "", "", "", 0, "", new Attributes()); 
 //    String2.setClipboardString(s);  String2.log(s);
 //      Table.debugMode = true; DasDds.main(new String[]{"bridger2", "-verbose"});
 
@@ -505,13 +511,13 @@ public class TestAll  {
 //String2.log(tTable.toCSVString());
 //
 //    String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-//        "/data/marco/example1/", ".*\\.nc",
+//        "/data/andy/", "pilot.*\\.bufr",
 //        "", 
 //        "", 1440, 
 //        "", "", "", 
 //        "", "", 
 //        "", 
-//        "", "", "", "", 0, new Attributes()));
+//        "", "", "", "", 0, "", new Attributes()));
         //String tFileDir, String tFileNameRegex, String sampleFileName, int tReloadEveryNMinutes,
         //String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         //String tColumnNameForExtract, String tSortedColumnSourceName,
@@ -522,12 +528,12 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
 /* 
       s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        "/data/hsu/", ".*\\.nc", "",
+        "/data/fred/", ".*\\.nc", "",
         "", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
         true, //removeMVRows  //often true
-        "time", //sort files by    profile_time
+        "", //sort files by    profile_time
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
         "", //treatDimensionsAs
@@ -559,7 +565,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 2, 2021, 5, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 4, 2021, 7, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -592,7 +598,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 2, 2021, 5); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 4, 2021, 7); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -761,7 +767,8 @@ public class TestAll  {
 //        "https://upwell.pfeg.noaa.gov/erddap/");
 //        "http://75.101.155.155/erddap/");
 
-//    Projects.splitOBIS("S:\\occurrence.csv.zip", "S:\\obis\\"); //try using .zip directly
+    //!!! This runs much faster if Windows Explorer windows are all closed!
+//    Projects.splitOBIS("S:\\occurrence.csv.gz", "S:\\obisOccurrence\\"); //next time: try using .zip directly   //~3 hours
 
 
 //    SSR.displayInBrowser("file://" + tName);
@@ -779,6 +786,9 @@ public class TestAll  {
 //    StringArray.repeatedDiff("c:/downloads/f1.txt", "c:/downloads/f2.txt");
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
 //                  "c:/programs/mapserver/WVBoreholeResponsePretty.xml");
+
+//      Table.testReadNcSequence();
+      
 
 
 //Force compilation of all the classes that need to be deployed.
@@ -1056,7 +1066,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = true;
+        boolean interactive = false;
         boolean doSlowTestsToo = false;
 
 /* for releases, this line should have open/close comment */
