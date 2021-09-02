@@ -3093,8 +3093,8 @@ than elsewhere in ERDDAP!
 You might prefer using the dataset's Data Access Form instead.
 ]]></filesWarning>
 <filesDocumentation><![CDATA[
-ERDDAP's "files" system lets you browse a virtual file system and download 
-source data files. Hopefully, this is a familiar, easy system that you can use with your
+ERDDAP's "files" system lets you browse a virtual file system and download source
+data files. Hopefully, this is a familiar, easy system that you can use with your
 favorite web browser or, if you prefer, from a command line program like 
 <a rel="help" href="#curl">curl</a>.
 
@@ -3439,7 +3439,7 @@ Fortunately, there are lots of software tools for working with the various file 
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a> 
     and
-     <a rel="help" href="http://meteora.ucsd.edu/~pierce/ncview_home_page.html">Ncview<img
+     <a rel="help" href="https://www.psc.edu/resources/software/ncview/">Ncview<img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a>
     (which can also be installed
@@ -3821,15 +3821,15 @@ and even from web pages (via HTML image tags or JavaScript).
 <infoTableTitleHtml>The Dataset's Variables and Attributes</infoTableTitleHtml>
 <infoRequestForm>{0}/info requests must be in the form {0}/info/[datasetID]/index[fileType] .</infoRequestForm>
 
-<inotifyFix>This may be the problem that is solvable in Linux by calling (as root):
+<inotifyFix>This may be the problem that is solvable in Linux by calling:
 {0}
 Or, use higher numbers if the problem persists.
 The default for watches is 8192. The default for instances is 128.</inotifyFix>
 <!-- do not translate -->
 <inotifyFixCommands>
-  echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
-  echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
-  sysctl -p
+  sudo sysctl fs.inotify.max_user_watches=65536
+  sudo sysctl fs.inotify.max_user_instances=1024
+  sudo sysctl -p
 </inotifyFixCommands>
 <interpolate>Interpolate</interpolate>
 
@@ -5583,7 +5583,7 @@ or via the source files or database.
 Then, people will have another way to access your data
 and will be able to download the data in additional file formats
 or as graphs or maps.
-ERDDAP has been installed by over 85 organizations in at least 14 countries.
+ERDDAP has been installed by over 90 organizations in at least 14 countries.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5652,7 +5652,7 @@ information.
       <a title="National Marine Fisheries Service" rel="bookmark"
       href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
-      href="https://swfsc.noaa.gov">SWFSC</a> 
+      href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
       href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
@@ -5963,7 +5963,7 @@ can serve many types of scientific data, not just oceanographic data.</a></stron
   <br>ERDDAP is a data server that was written at
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
       <a title="National Marine Fisheries Service" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
-      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
       <a title="Environmental Research Division" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>.
     The ERDDAP server at ERD serves oceanographic data,
     but ERDDAP (the program) can access and serve any gridded or tabular data.
@@ -6565,7 +6565,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">download, ins
 <strong>for free</strong> to distribute their scientific data.  
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
->Over 85 organizations in at least 14 countries use ERDDAP</a>. Maybe there is such a thing as a free lunch.
+>Over 90 organizations in at least 14 countries use ERDDAP</a>. Maybe there is such a thing as a free lunch.
 
 <p>ERDDAP is a Java program. The source code
 for every version is on 
@@ -7076,6 +7076,9 @@ https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 https://mur.jpl.nasa.gov
 https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 
+http://meteora.ucsd.edu/~pierce/ncview_home_page.html
+https://www.psc.edu/resources/software/ncview/
+
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/
 docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
@@ -7115,9 +7118,6 @@ https://podaac.jpl.nasa.gov
 http://podaac-opendap.jpl.nasa.gov
 https://opendap.jpl.nasa.gov
 
-https://swfsc.noaa.gov/PRD/
-https://swfsc.noaa.gov/main.aspx?Division=PRD&amp;ParentMenuId=147&amp;id=1221
-
 https://pyoceans.github.io/erddapy/
 https://github.com/ioos/erddapy#--erddapy
 
@@ -7133,8 +7133,23 @@ https://www.rvdata.us
 https://sfbeams.sfsu.edu/
 https://coastalobservations.sfsu.edu
 
+https://swfsc.noaa.gov/erd.aspx
+https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
+
 https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200
 https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/textblock.aspx?Division=FED&amp;ParentMenuId=54&amp;id=16833
+https://www.fisheries.noaa.gov/about/fisheries-ecology-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/PRD/
+https://www.fisheries.noaa.gov/about/marine-mammal-and-turtle-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/main.aspx?Division=PRD&amp;ParentMenuId=147&amp;id=1221
+https://www.fisheries.noaa.gov/about/marine-mammal-and-turtle-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/GroundfishAnalysis/
+https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
@@ -7897,9 +7912,6 @@ https://www.slf4j.org
 
 http://www.stevens.edu
 https://www.stevens.edu
-
-http://www.swfsc.noaa.gov
-https://swfsc.noaa.gov
 
 http://www.udel.edu
 https://www.udel.edu

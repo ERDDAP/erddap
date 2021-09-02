@@ -37,11 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 //import ucar.nc2.dods.*;
@@ -1602,7 +1598,7 @@ NcHelper.debugMode = true;
 
             //palette as unsigned byte
             pa = NcHelper.getPrimitiveArray(
-                var.read(new int[]{0,0}, new int[]{1, 10}), true, NcHelper.isUnsigned(var)); //origin, shape
+                var.read(new int[]{0,0}, new int[]{1, 10}), true, true); //origin, shape,  buildStringFromChar
             Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
             results = pa.toString();
             expected = 
@@ -1658,7 +1654,7 @@ NcHelper.debugMode = true;
 
             //poc as packed values (shorts)
             pa = NcHelper.getPrimitiveArray(   
-                var.read(new Section("(0:4100:1000,0:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride 
+                var.read(new Section("(0:4100:1000,0:8100:1000)")), true, false); //start:end:stride, buildStringFromChar, isUnsigned
             Test.ensureEqual(pa.elementTypeString(), "float", "");
             results = pa.toString();
             expected = 
@@ -1772,7 +1768,7 @@ NcHelper.debugMode = true;
 
         //palette as unsigned byte
         pa = NcHelper.getPrimitiveArray(
-            var.read(new int[]{0,0}, new int[]{1, 10}), true, NcHelper.isUnsigned(var)); //origin, shape
+            var.read(new int[]{0,0}, new int[]{1, 10}), true, true); //origin, shape, buildStringFromChar, isUnsigned
         Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
         results = pa.toString();
         expected = 
@@ -1828,7 +1824,7 @@ NcHelper.debugMode = true;
 
         //poc as packed values (shorts)
         pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
-            var.read(new Section("(70:4100:1000,70:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride 
+            var.read(new Section("(70:4100:1000,70:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride, buildStringFromChar 
         Test.ensureEqual(pa.elementTypeString(), "short", "");
         results = pa.toString();
         expected = 

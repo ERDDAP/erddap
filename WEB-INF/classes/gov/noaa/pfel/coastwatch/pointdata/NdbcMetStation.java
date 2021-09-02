@@ -36,11 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Vector;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 //import ucar.nc2.dods.*;
@@ -223,7 +219,7 @@ public class NdbcMetStation  {
      * This changes every month when I get the latest historical data.
      * For the processing on the ~25th, change this to the beginning of this month.
      */
-    public static String firstNearRealTimeData = "2021-06-01T00:00:00";
+    public static String firstNearRealTimeData = "2021-08-01T00:00:00";
     /** Change current year ~Feb 28 when Jan monthly historical files become available. */
     public static String HISTORICAL_FILES_CURRENT_YEAR = "2021";  
 
@@ -1798,6 +1794,7 @@ public class NdbcMetStation  {
         } else if (stationNameLC.equals("42097")) { lat = 25.7;   lon =  -83.65;
         } else if (stationNameLC.equals("43010")) { lat = 10.051; lon = -125.032; 
         } else if (stationNameLC.equals("43wsl")) { return; //lat = ; lon = ; 
+        } else if (stationNameLC.equals("44009")) { lat = 38.451; lon =  -74.684; 
         } else if (stationNameLC.equals("44089")) { lat = 37.756; lon =  -75.334;
         } else if (stationNameLC.equals("44090")) { lat = 41.840; lon =  -70.329; 
         } else if (stationNameLC.equals("44091")) { lat = 39.769; lon =  -73.770; 
@@ -3350,8 +3347,8 @@ expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).\";\n" +
 "  :testOutOfDate = \"now-25minutes\";\n" +
-"  :time_coverage_end = \"2021-06-16T21:40:00Z\";\n" +    //Don't sanitize. I want to see this. 
-"  :time_coverage_start = \"2021-05-01T23:00:00Z\";\n" +  //Don't sanitize. I want to see this. 
+"  :time_coverage_end = \"2021-08-16T14:40:00Z\";\n" +    //Don't sanitize. I want to see this. 
+"  :time_coverage_start = \"2021-07-01T23:00:00Z\";\n" +  //Don't sanitize. I want to see this. 
 "  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
 "  :Westernmost_Easting = -123.167f; // float\n" +
 "}\n";
@@ -3384,33 +3381,33 @@ expected =
         //  https://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day  
         //  Copied rows are in opposite order to expected.
 
-//2021 06 01 00 20 260  4.0  4.0   0.1    MM   4.0  MM 1022.7  12.8  11.6  11.0   MM   MM    MM
-//2021 06 01 00 10 240  3.0  4.0   0.1    MM   4.0  MM 1022.7  13.1  10.7  11.5   MM   MM    MM
-//2021 06 01 00 00 240  3.0  3.0    MM    MM    MM  MM 1022.5  13.5    MM  11.6   MM   MM    MM
+//2021 08 01 00 20 250  5.0  7.0   0.6     3   3.3 248 1017.5  12.6  12.3  11.7   MM   MM    MM
+//2021 08 01 00 10 250  6.0  8.0   0.6    MM   3.3 248 1017.4  12.6  11.9  11.6   MM   MM    MM
+//2021 08 01 00 00 250  7.0  8.0    MM    MM    MM  MM 1017.2  12.7  11.6  11.6   MM   MM    MM
 
 // 2) Run the test to get the actual expected content, paste it below, and check that data matches
 // 3) Rerun the test 
 expected = 
 //Older start time because no monthly files for 46088
 "LON,LAT,DEPTH,TIME,ID,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV\n" +
-"-123.167,48.333,0.0,2021-05-01T23:00:00Z,46088,,,,,,,,,,,,,,,,\n" +
-"-123.167,48.333,0.0,2021-05-02T00:00:00Z,46088,270,11.0,13.0,,,,,1019.7,10.8,,5.2,,,,11.0,0.0\n";        
+"-123.167,48.333,0.0,2021-07-01T23:00:00Z,46088,,,,,,,,,,,,,,,,\n" +
+"-123.167,48.333,0.0,2021-07-02T00:00:00Z,46088,240,5.0,5.0,,,,,1016.0,12.5,,11.8,,-0.3,,4.3,2.5\n";        
         results = fullResults.substring(0, expected.length());
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         // 4) copy most recent times in  45day file 46088.txt    
-//2021 06 16 21 20  MM  0.0  1.0   0.1    MM   3.2  MM 1027.6  15.1  10.9  11.8   MM   MM    MM
-//2021 06 16 21 10  MM  0.0  1.0   0.1    MM   3.2  MM 1027.7  14.7  10.7  11.7   MM   MM    MM
-//2021 06 16 21 00 300  1.0  1.0    MM    MM    MM  MM 1027.8  14.8    MM  11.5   MM -1.0    MM
+//2021 08 16 14 40 230  9.0 10.0    MM    MM    MM  MM 1013.0  13.8  12.7  13.4   MM   MM    MM
+//2021 08 16 14 30 230  9.0 10.0    MM    MM    MM  MM 1013.1  13.8  12.7  13.4   MM   MM    MM
+//2021 08 16 14 20 230  9.0 10.0   1.0     5   4.3 237 1013.1  13.9  12.7  13.5   MM   MM    MM
 
 expected = 
 // 5) Put correct 3rd-to-the-last date/time on first row
 // 6) Run the test to get the actual expected content and paste it below
 // 7) Rerun the test
 // 8) The values here may change when addLast is run (updated info)
-"-123.167,48.333,0.0,2021-06-16T21:00:00Z,46088,300,1.0,1.0,,,,,1027.8,14.8,,11.5,,-1.0,,0.9,-0.5\n" +
-"-123.167,48.333,0.0,2021-06-16T21:10:00Z,46088,,0.0,1.0,0.1,,3.2,,1027.7,14.7,10.7,11.7,,,,,\n" +
-"-123.167,48.333,0.0,2021-06-16T21:20:00Z,46088,,0.0,1.0,0.1,,3.2,,1027.6,15.1,10.9,11.8,,,,,\n";
+"-123.167,48.333,0.0,2021-08-16T14:20:00Z,46088,230,9.0,10.0,1.0,5.0,4.3,237,1013.1,13.9,12.7,13.5,,,,6.9,5.8\n" +
+"-123.167,48.333,0.0,2021-08-16T14:30:00Z,46088,230,9.0,10.0,,,,,1013.1,13.8,12.7,13.4,,,,6.9,5.8\n" +
+"-123.167,48.333,0.0,2021-08-16T14:40:00Z,46088,230,9.0,10.0,0.9,,3.9,247,1013.0,13.8,12.7,13.4,,,,6.9,5.8\n";
         po = fullResults.indexOf(expected.substring(0, 40));        
         if (po < 0)
             String2.log(fullResults.substring(fullResults.length() - 400) + 
@@ -3459,22 +3456,22 @@ expected =
 
 
         //UPDATE_EACH_MONTH  
-// 1) copy last rows from latest monthly file x:  https://www.ndbc.noaa.gov/data/stdmet/May/rcpt2.txt  !but change 3-letter month each month
+// 1) copy last rows from latest monthly file x:  https://www.ndbc.noaa.gov/data/stdmet/July/rcpt2.txt  !but change 3-letter month each month
 //  or e.g., /u00/data/points/ndbcMet2HistoricalTxt/rcpt2 x 2020.txt  
-//2021 05 31 23 42 139  6.3  8.1 99.00 99.00 99.00 999 1015.8  28.2  28.7 999.0 99.0 99.00
-//2021 05 31 23 48 138  6.5  8.1 99.00 99.00 99.00 999 1015.8  28.1  28.7 999.0 99.0 99.00
-//2021 05 31 23 54 135  5.5  7.4 99.00 99.00 99.00 999 1015.9  28.0  28.7 999.0 99.0 99.00
+//2021 07 31 23 42 147  6.1  8.3 99.00 99.00 99.00 999 1016.7  31.6  34.1 999.0 99.0 99.00
+//2021 07 31 23 48 151  7.6  9.2 99.00 99.00 99.00 999 1016.6  31.3  34.1 999.0 99.0 99.00
+//2021 07 31 23 54 144  6.0  9.3 99.00 99.00 99.00 999 1016.7  31.5  34.0 999.0 99.0 99.00
 
 // 2) change date each month to first time from above 
-        po = fullResults.indexOf("2021-05-31T23:42");  
+        po = fullResults.indexOf("2021-07-31T23:42");  
         if (po < 0)
             String2.log("end of fullResults:\n" + fullResults.substring(fullResults.length() - 280));
         results = fullResults.substring(po - 19);
 expected = 
 // 3) run the test. Copy/paste results. verify that they match values in file (above)
-"-97.047,28.022,0.0,2021-05-31T23:42:00Z,RCPT2,139,6.3,8.1,,,,,1015.8,28.2,28.7,,,,,-4.1,4.8\n" +
-"-97.047,28.022,0.0,2021-05-31T23:48:00Z,RCPT2,138,6.5,8.1,,,,,1015.8,28.1,28.7,,,,,-4.3,4.8\n" +
-"-97.047,28.022,0.0,2021-05-31T23:54:00Z,RCPT2,135,5.5,7.4,,,,,1015.9,28.0,28.7,,,,,-3.9,3.9\n";
+"-97.047,28.022,0.0,2021-07-31T23:42:00Z,RCPT2,147,6.1,8.3,,,,,1016.7,31.6,34.1,,,,,-3.3,5.1\n" +
+"-97.047,28.022,0.0,2021-07-31T23:48:00Z,RCPT2,151,7.6,9.2,,,,,1016.6,31.3,34.1,,,,,-3.7,6.6\n" +
+"-97.047,28.022,0.0,2021-07-31T23:54:00Z,RCPT2,144,6.0,9.3,,,,,1016.7,31.5,34.0,,,,,-3.5,4.9\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         String2.log("testHistoricalRCPT2 was successful");
@@ -3505,31 +3502,31 @@ expected =
         //    or https://www.ndbc.noaa.gov/data/realtime2/RCPT2.txt    //45 day  
         //  Copied rows are in opposite order to expected.
 
-//2021 06 01 00 12 140  4.1  6.7    MM    MM    MM  MM 1016.1  28.0  28.7    MM   MM   MM    MM
-//2021 06 01 00 06 140  5.7  7.7    MM    MM    MM  MM 1016.0  28.0  28.7    MM   MM   MM    MM
-//2021 06 01 00 00 140  5.7  7.7    MM    MM    MM  MM 1015.9  28.0  28.7    MM   MM -0.8    MM
+//2021 08 01 00 12 150  7.7  9.3    MM    MM    MM  MM 1016.6  31.2  34.0    MM   MM   MM    MM
+//2021 08 01 00 06 150  6.7  9.3    MM    MM    MM  MM 1016.6  31.4  34.0    MM   MM   MM    MM
+//2021 08 01 00 00 150  6.7  8.8    MM    MM    MM  MM 1016.6  31.4  34.0    MM   MM -0.9    MM
 
 // 2) Run the test to get the actual expected content and paste it below
 // 3) Rerun the test 
 expected = 
 "LON,LAT,DEPTH,TIME,ID,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV\n" +
-"-97.047,28.022,0.0,2021-06-01T00:00:00Z,RCPT2,140,5.7,7.7,,,,,1015.9,28.0,28.7,,,-0.8,,-3.7,4.4\n" +
-"-97.047,28.022,0.0,2021-06-01T00:06:00Z,RCPT2,140,5.7,7.7,,,,,1016.0,28.0,28.7,,,,,-3.7,4.4\n";
+"-97.047,28.022,0.0,2021-08-01T00:00:00Z,RCPT2,150,6.7,8.8,,,,,1016.6,31.4,34.0,,,-0.9,,-3.3,5.8\n" +
+"-97.047,28.022,0.0,2021-08-01T00:06:00Z,RCPT2,150,6.7,9.3,,,,,1016.6,31.4,34.0,,,,,-3.3,5.8\n";
         
         results = fullResults.substring(0, expected.length());
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         // 4) copy most recent times from that 45day file RCPT2.txt    
-//2021 06 16 21 18  80  4.6  6.2    MM    MM    MM  MM 1015.1  33.2  31.8    MM   MM   MM    MM
-//2021 06 16 21 12  90  3.1  5.7    MM    MM    MM  MM 1015.1  33.4  31.7    MM   MM   MM    MM
-//2021 06 16 21 06  70  4.1  6.2    MM    MM    MM  MM 1015.1  33.3  31.8    MM   MM   MM    MM
+//2021 08 16 09 30 340  2.1  3.1    MM    MM    MM  MM 1013.4  25.8  32.9    MM   MM   MM    MM
+//2021 08 16 09 24 320  1.5  2.6    MM    MM    MM  MM 1013.4  25.9  32.9    MM   MM   MM    MM
+//2021 08 16 09 18 310  2.1  2.6    MM    MM    MM  MM 1013.4  25.9  32.9    MM   MM   MM    MM
 
 // 5) Put correct 3rd-from-last date/time on first row
 // 6) Run the test to get the actual expected content and paste it below
 // 7) Rerun the test
 expected = 
-"-97.047,28.022,0.0,2021-06-16T21:06:00Z,RCPT2,70,4.1,6.2,,,,,1015.1,33.3,31.8,,,,,-3.9,-1.4\n" +
-"-97.047,28.022,0.0,2021-06-16T21:12:00Z,RCPT2,90,3.1,5.7,,,,,1015.1,33.4,31.7,,,,,-3.1,0.0\n";
+"-97.047,28.022,0.0,2021-08-16T09:18:00Z,RCPT2,310,2.1,2.6,,,,,1013.4,25.9,32.9,,,,,1.6,-1.3\n" +
+"-97.047,28.022,0.0,2021-08-16T09:24:00Z,RCPT2,320,1.5,2.6,,,,,1013.4,25.9,32.9,,,,,1.0,-1.1\n";
         po = fullResults.indexOf(expected.substring(0, 39));        
         if (po < 0)
             String2.log(fullResults.substring(fullResults.length() - 400) +
@@ -3571,9 +3568,9 @@ expected =
         //!!!***SPECIAL UPDATE EACH MONTH -- after separateFiles made 
 // 1) Copy first 3 NRT (beginning of month) rows of https://www.ndbc.noaa.gov/data/realtime2/46088.txt here
 //BUT: 2021 copy earliest data in file because currently no monthly 46088 files.
-//2021 05 03 00 20 240  6.0  7.0   0.3     7   3.8 249 1022.9   9.5   9.4   7.1   MM   MM    MM
-//2021 05 03 00 10 250  6.0  7.0   0.3    MM   3.8 249 1023.1   9.6   9.5   7.2   MM   MM    MM
-//2021 05 03 00 00 240  5.0  6.0    MM    MM    MM  MM 1023.2   9.7   9.6   7.3   MM -1.2    MM
+//2021 07 03 00 20 260  5.0  6.0   0.4     8   3.3 239 1016.2  12.2  11.9  11.9   MM   MM    MM
+//2021 07 03 00 10 260  5.0  6.0   0.4    MM   3.3 239 1016.3  12.3  11.9  12.1   MM   MM    MM
+//2021 07 03 00 00 260  5.0  6.0    MM    MM    MM  MM 1016.3  12.3  12.0  12.1   MM   MM    MM
 
 // 3) Run the test to get the actual expected content and paste it below
 // 4) Verify that the numbers below are match the numbers above.
@@ -3581,10 +3578,10 @@ expected =
 expected = 
 //Older start time because no monthly files for 46088
 "LON,LAT,DEPTH,TIME,ID,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV\n" +
-"-123.167,48.333,0.0,2021-05-01T23:00:00Z,46088,,,,,,,,,,,,,,,,\n" +
-"-123.167,48.333,0.0,2021-05-02T00:00:00Z,46088,270,11.0,13.0,,,,,1019.7,10.8,,5.2,,,,11.0,0.0\n" +
-"-123.167,48.333,0.0,2021-05-02T00:10:00Z,46088,270,10.0,12.0,1.5,,4.1,231,1019.7,10.7,8.7,5.3,,,,10.0,0.0\n" +
-"-123.167,48.333,0.0,2021-05-02T00:20:00Z,46088,270,11.0,13.0,1.5,5.0,4.1,231,1019.6,10.7,8.7,5.1,,,,11.0,0.0\n";        
+"-123.167,48.333,0.0,2021-07-01T23:00:00Z,46088,,,,,,,,,,,,,,,,\n" +
+"-123.167,48.333,0.0,2021-07-02T00:00:00Z,46088,240,5.0,5.0,,,,,1016.0,12.5,,11.8,,-0.3,,4.3,2.5\n" +
+"-123.167,48.333,0.0,2021-07-02T00:10:00Z,46088,240,5.0,5.0,0.3,,3.5,217,1015.8,12.5,11.4,11.8,,,,4.3,2.5\n" +
+"-123.167,48.333,0.0,2021-07-02T00:20:00Z,46088,240,5.0,6.0,0.3,8.0,3.5,217,1015.8,12.5,11.4,11.8,,,,4.3,2.5\n";        
         results = fullResults.substring(0, expected.length());
         Test.ensureEqual(results, expected, "fullResults=\n" + fullResults);
 
@@ -3594,18 +3591,18 @@ expected =
 // 1) copy first 3 rows (last 3 times) of https://www.ndbc.noaa.gov/data/realtime2/46088.txt here
 //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
 //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-//2021 06 17 16 10  MM  0.0  1.0    MM    MM    MM  MM 1023.2  10.9  10.1  10.1   MM   MM    MM
-//2021 06 17 16 00 300  1.0  1.0    MM    MM    MM  MM 1023.1  10.7    MM  10.0   MM +0.4    MM
-//2021 06 17 15 50 300  1.0  1.0   0.1    MM   3.3  MM 1023.1  10.5    MM   9.8   MM   MM    MM
+//2021 08 17 12 40 190  4.0  5.0   0.3    MM   3.8 229 1012.9  12.0  11.2  11.5   MM   MM    MM
+//2021 08 17 12 30 180  4.0  5.0    MM    MM    MM  MM 1012.7  12.0  11.2  11.5   MM   MM    MM
+//2021 08 17 12 20 170  4.0  5.0   0.3     5   3.9 224 1012.7  12.0  11.4  11.5   MM   MM    MM
 
 expected = 
 // 2) Put 3rd to last date/time on first row below
 // 3) Run the test to get the actual expected content and paste it below
 // 4) Verify that the numbers below are match the numbers above.
 // 5) Rerun the test
-"-123.167,48.333,0.0,2021-06-17T15:50:00Z,46088,300,1.0,1.0,0.1,,3.3,,1023.1,10.5,,9.8,,,,0.9,-0.5\n" +
-"-123.167,48.333,0.0,2021-06-17T16:00:00Z,46088,300,1.0,1.0,,,,,1023.1,10.7,,10.0,,0.4,,0.9,-0.5\n" +
-"-123.167,48.333,0.0,2021-06-17T16:10:00Z,46088,,0.0,1.0,,,,,1023.2,10.9,10.1,10.1,,,,,\n";
+"-123.167,48.333,0.0,2021-08-17T12:20:00Z,46088,170,4.0,5.0,0.3,5.0,3.9,224,1012.7,12.0,11.4,11.5,,,,-0.7,3.9\n" +
+"-123.167,48.333,0.0,2021-08-17T12:30:00Z,46088,180,4.0,5.0,,,,,1012.7,12.0,11.2,11.5,,,,0.0,4.0\n" +
+"-123.167,48.333,0.0,2021-08-17T12:40:00Z,46088,190,4.0,5.0,0.3,,3.8,229,1012.9,12.0,11.2,11.5,,,,0.7,3.9\n";
         po = fullResults.indexOf(expected.substring(0, 40));
         if (po < 0)
             Test.error("end of results:\n" + fullResults.substring(fullResults.length() - 400) + 
@@ -3647,18 +3644,18 @@ expected =
 // 1) Copy first 3 rows (start of month) of https://www.ndbc.noaa.gov/data/realtime2/RCPT2.txt here
 //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
 //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-//2021 06 01 00 12 140  4.1  6.7    MM    MM    MM  MM 1016.1  28.0  28.7    MM   MM   MM    MM
-//2021 06 01 00 06 140  5.7  7.7    MM    MM    MM  MM 1016.0  28.0  28.7    MM   MM   MM    MM
-//2021 06 01 00 00 140  5.7  7.7    MM    MM    MM  MM 1015.9  28.0  28.7    MM   MM -0.8    MM
+//2021 08 01 00 12 150  7.7  9.3    MM    MM    MM  MM 1016.6  31.2  34.0    MM   MM   MM    MM
+//2021 08 01 00 06 150  6.7  9.3    MM    MM    MM  MM 1016.6  31.4  34.0    MM   MM   MM    MM
+//2021 08 01 00 00 150  6.7  8.8    MM    MM    MM  MM 1016.6  31.4  34.0    MM   MM -0.9    MM
 
 // 3) Run the test to get the actual expected content and paste it below
 // 4) Verify that the numbers below are match the numbers above.
 // 5) Rerun the test
 expected = 
 "LON,LAT,DEPTH,TIME,ID,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV\n" +
-"-97.047,28.022,0.0,2021-06-01T00:00:00Z,RCPT2,140,5.7,7.7,,,,,1015.9,28.0,28.7,,,-0.8,,-3.7,4.4\n" +
-"-97.047,28.022,0.0,2021-06-01T00:06:00Z,RCPT2,140,5.7,7.7,,,,,1016.0,28.0,28.7,,,,,-3.7,4.4\n" +
-"-97.047,28.022,0.0,2021-06-01T00:12:00Z,RCPT2,140,4.1,6.7,,,,,1016.1,28.0,28.7,,,,,-2.6,3.1\n";
+"-97.047,28.022,0.0,2021-08-01T00:00:00Z,RCPT2,150,6.7,8.8,,,,,1016.6,31.4,34.0,,,-0.9,,-3.3,5.8\n" +
+"-97.047,28.022,0.0,2021-08-01T00:06:00Z,RCPT2,150,6.7,9.3,,,,,1016.6,31.4,34.0,,,,,-3.3,5.8\n" +
+"-97.047,28.022,0.0,2021-08-01T00:12:00Z,RCPT2,150,7.7,9.3,,,,,1016.6,31.2,34.0,,,,,-3.8,6.7\n";
         results = fullResults.substring(0, expected.length());
         Test.ensureEqual(results, expected, "fullResults=\n" + fullResults);
 
@@ -3667,18 +3664,18 @@ expected =
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
 // 1) put the most recent time's data from https://www.ndbc.noaa.gov/data/realtime2/RCPT2.txt here
-//2021 06 17 16 00  70  4.1  5.1    MM    MM    MM  MM 1016.1  31.6  31.7    MM   MM +0.5    MM
-//2021 06 17 15 54  70  3.1  4.6    MM    MM    MM  MM 1016.1  31.7  31.7    MM   MM   MM    MM
-//2021 06 17 15 48  40  2.6  4.1    MM    MM    MM  MM 1016.1  30.6  31.6    MM   MM   MM    MM
+//2021 08 17 12 30 150  4.1  5.1    MM    MM    MM  MM 1013.0  29.7  32.7    MM   MM   MM    MM
+//2021 08 17 12 24 160  4.6  5.7    MM    MM    MM  MM 1012.9  29.8  32.8    MM   MM   MM    MM
+//2021 08 17 12 18 160  5.1  5.7    MM    MM    MM  MM 1012.8  29.8  32.8    MM   MM   MM    MM
 
 expected = 
 // 2) Put correct last date/time on first row
 // 3) Run the test to get the actual expected content and paste it below
 // 4) Verify that the numbers below are match the numbers above.
 // 5) Rerun the test
-"-97.047,28.022,0.0,2021-06-17T15:36:00Z,RCPT2,40,2.6,4.1,,,,,1016.0,30.4,31.6,,,,,-1.7,-2.0\n" +
-"-97.047,28.022,0.0,2021-06-17T15:42:00Z,RCPT2,30,2.1,4.6,,,,,1016.0,30.4,31.6,,,,,-1.0,-1.8\n" +
-"-97.047,28.022,0.0,2021-06-17T15:48:00Z,RCPT2,40,2.6,4.1,,,,,1016.1,30.6,31.6,,,,,-1.7,-2.0\n";
+"-97.047,28.022,0.0,2021-08-17T12:18:00Z,RCPT2,160,5.1,5.7,,,,,1012.8,29.8,32.8,,,,,-1.7,4.8\n" +
+"-97.047,28.022,0.0,2021-08-17T12:24:00Z,RCPT2,160,4.6,5.7,,,,,1012.9,29.8,32.8,,,,,-1.6,4.3\n" +
+"-97.047,28.022,0.0,2021-08-17T12:30:00Z,RCPT2,150,4.1,5.1,,,,,1013.0,29.7,32.7,,,,,-2.0,3.6\n";
         po = Math.max(0, fullResults.indexOf(expected.substring(0, 40)));        
         results = fullResults.substring(po, Math.min(fullResults.length(), po + expected.length()));
         Test.ensureEqual(results, expected, "fullResults=\n" + fullResults);
@@ -3820,9 +3817,9 @@ expected =
         //Doing this isn't (strictly-speaking) needed for the monthly reprocessing of the ndbc data
         //  because the updating script running on coastwatch will do it.
         //This does last hour's data from 1 source file (from 5 or 45 day file if needed)
-        testMode = false; //do true first, then false
+        testMode = true; //do true first, then false
         //addLatestObsData(ndbcNrtNcDir, testMode); //3 minutes on my PC (if done recently)
-            //was addLastNDaysInfo(ndbcNrtNcDir, 5, testMode);  //5 or 45        
+           //was addLastNDaysInfo(ndbcNrtNcDir, 5, testMode);  //5 or 45        
         test46088AddLastNDaysNc(ndbcNrtNcDir); //!!!!**** EACH MONTH, THIS TEST NEED UPDATING
         testRCPT2AddLastNDaysNc(ndbcNrtNcDir); //!!!!**** EACH MONTH, THIS TEST NEED UPDATING
 
