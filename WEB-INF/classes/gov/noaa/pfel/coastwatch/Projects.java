@@ -37,9 +37,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.*;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.jexl3.introspection.JexlSandbox;
@@ -51,11 +53,7 @@ import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
 import java.time.*;
 import java.time.format.*;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
 import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -10238,7 +10236,9 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
 3defa8a9-5c4e-4185-9779-1246b720082c,5b9d8c82-3fdf-4aa3-8eaf-5399902a84ef,-61.8325,47.425,,,,,Gonyaulax spinifera,Gonyaulax spinifera,0,0,,,f,f,1064,2,7.28,28.49,1,1,1,0,Species,110041,,Biota,,Chromista,Harosa,Alveolata,Myzozoa,,,Dinozoa,Dinoflagellata,,Dinophyceae,,,,,Gonyaulacales,,,,,Gonyaulacaceae,,,,,Gonyaulax,,,,,Gonyaulax spinifera,,,,,,,,2014-09-04T15:06:34Z,En,http://data.gc.ca/eng/open-government-licence-canada & http://www.canadensys.net/norms,"Her Majesty the Queen in right of Canada, as represented by the Minister of Fisheries and Oceans",,,,,,BioChem_AZMP_Quebec_P,DFO-ISDM,"BONNEAU,ESTHER",Atlantic Zone Monitoring Program (AZMP) DFO Quebec region phytoplankton,,HumanObservation,,,Sample size = Number per cubic metre; Classification=WoRMS; Verbatim name=Gonyaulax spinifera,,BioChem_AZMP_Quebec_P_20000002080159,20000002080159,,,"BONNEAU,ESTHER",,20000,,,,,,,,,,,,,,,,,,,,,,,,,bucket,,,,,17.5,,,1999,6,8,,,1999200245_1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,urn:lsid:marinespecies.org:taxname:110041,,,,,,,,,,,,,,spinifera,,,,,,,,
         </pre>
      *  Bob Simons made this from the "Full OBIS export 2021-05-18" occurrence.csv file from https://obis.org/manual/access/
-     *  After using this, gzip all the resulting .csv files.
+     *  After using this, gzip all the resulting .csv files with GitBash in S: gzip -r obis 
+     *
+     * <p>!!! This runs much faster if Windows Explorer windows are all closed!
      *
      * @param sourceFileName
      * @param destDirectory the parent directory. If nonexistent, it will be created.
@@ -10246,10 +10246,9 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
      * @throws Exception if trouble
      */
     public static void splitOBIS(String sourceFileName, String destDirectory) throws Exception {
-//FUTURE: faster if make hashmap<fileName, StringBuilder> and only flush when sb.length()>5KB
-//  and flush all at the end.  But will that use too much memory?
-// 5000x200000sppx2bytes/char = 2gb
-//OR: Read n lines (a million?) into a table. Sort. Flush that to individual files.
+        //This makes hashmap<fileName, StringBuilder> and only flush an sb when sb.length()>20KB.
+        //  It flushs all pending sb at the end.  But will that use too much memory?
+        //  20,000 B x 20,000 genera x 2bytes/char = 800MB   In practice ~2GB
 
         destDirectory = File2.addSlash(destDirectory);
         String2.log("*** Projects.splitOBIS(" + sourceFileName + ", " + destDirectory + ")");
@@ -10259,56 +10258,94 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
         int nLines = 1;
         int nSuccess = 0; 
         int nFail = 0;
+        HashMap<String,StringBuilder> genLines = new HashMap(); // genus -> csvLines
 
         try {
             //read the column names line
             String line0 = in.readLine();
             String colNames[] = StringArray.arrayFromCSV(line0);
             int nCol = colNames.length;
-            int snCol = String2.indexOf(colNames, "scientificname");
+            int gCol = String2.indexOf(colNames, "genus");  
+            if (gCol < 0)
+                throw new RuntimeException("colName=genus not found on first line:\n" + line0);            
+            int snCol = String2.indexOf(colNames, "scientificname");  
             if (snCol < 0)
                 throw new RuntimeException("colName=scientificname not found on first line:\n" + line0);            
+            int yCol = String2.indexOf(colNames, "date_year");  
+            if (yCol < 0)
+                throw new RuntimeException("colName=date_year not found on first line:\n" + line0);            
 
-            StringBuilder pending = new StringBuilder();  //accumulate lines with same scientificname
-            String pendingSN = "zz"; 
             while (true) {
                 String line = in.readLine();
                 nLines++;
-                if (nLines % 100000 == 0) 
-                    String2.log("" + nLines);
+                if (nLines % 100000 == 0)   //every ~11 seconds
+                    String2.log("" + nLines + "  " + Math2.memoryString());
                 if (line == null) {
                     //end of file
                     //flush pending
-                    String name = String2.modifyToBeFileNameSafe(pendingSN);
-                    if (appendOBIS(nLines, destDirectory + Character.toLowerCase(name.charAt(0)) + "/" + name + ".csv", line0, pending.toString()))
-                        nSuccess++;
-                    else nFail++;
+                    Set<Map.Entry<String,StringBuilder>> set = genLines.entrySet();
+                    Iterator it = set.iterator();
+                    while (it.hasNext()) {
+                        Map.Entry entry = (Map.Entry)it.next();
+                        String genus = (String)entry.getKey();
+                        StringBuilder sb = (StringBuilder)entry.getValue();
+                        if (appendOBIS(nLines, destDirectory + Character.toLowerCase(genus.charAt(0)) + "/" + genus + ".csv", line0, sb.toString()))
+                            nSuccess++;
+                        else nFail++;
+                    }
 
                     break;  
                 } 
-                line = String2.replaceAll(line, "\\\"\"", "\\\"");
-                //if (line.endsWith("\\\"") && line.startsWith("\""))  //4 tags have this, not lines
-                //    line = line.substring(0, line.length() - 2) + "\"";
+                //OBIS doesn't escape \, so convert all \ to \\
+                line = String2.replaceAll(line, "\\", "\\\\");
+                //but they did escape " as \", so now \\"
+                line = String2.replaceAll(line, "\\\\\"\"", "\\\"");
 
                 String parts[] = StringArray.arrayFromCSV(line);
                 if (parts.length != nCol) {
                     //skip this line
                     String2.log("Error at line #" + nLines + ": Unexpected number of columns (" + parts.length + " vs expected=" + nCol + "):\n" + 
                         line);
+                    continue;
+                }
 
-                } else if (parts[snCol].equals(pendingSN)) {
-                    pending.append(line + "\n");
+                String genus = parts[gCol];
+                //if no genus or huge genus, use "_" + scientificName
+                if (genus.length() == 0 || 
+                    genus.equals("Clupea") ||
+                    genus.equals("Fulmarus") ||
+                    genus.equals("Gadus") ||
+                    genus.equals("Limanda") ||
+                    genus.equals("Mirounga") ||
+                    genus.equals("Oncorhynchus") ||
+                    genus.equals("Pandalus") ||
+                    genus.equals("Sula")) {
+                    genus = "_" + parts[snCol];
+                }
+                //split some further into decades
+                if (genus.equals("_Copepoda") ||
+                    genus.equals("_Clupea pallasii") ||
+                    genus.equals("_Gadus morhua") ||
+                    genus.equals("_Mirounga leonina") ||
+                    genus.equals("_Pandalus jordani") ||
+                    genus.equals("_Sula variegata")) {
+                    String year = parts[yCol];
+                    if (year.length() > 3)
+                        genus += "_" + year.substring(0, 3) + "0";
+                }
+                genus = String2.modifyToBeFileNameSafe(genus);
+                StringBuilder sb = genLines.get(genus);
+                if (sb == null) {
+                    sb = new StringBuilder();
+                    genLines.put(genus, sb);
+                }
+                sb.append(line + "\n");
 
-                } else {
-                    String name = String2.modifyToBeFileNameSafe(pendingSN);
-                    if (appendOBIS(nLines, destDirectory + Character.toLowerCase(name.charAt(0)) + "/" + name + ".csv", line0, pending.toString()))
+                if (sb.length() > 20000) { //20KB triggers flush to file
+                    if (appendOBIS(nLines, destDirectory + Character.toLowerCase(genus.charAt(0)) + "/" + genus + ".csv", line0, sb.toString()))
                         nSuccess++;
                     else nFail++;
-
-                    //restart stringBuffer
-                    pending.setLength(0);
-                    pending.append(line + "\n");
-                    pendingSN = parts[snCol];
+                    sb.setLength(0);
                 }
             }
             String2.log("Successfully finished reading nLines=" + nLines + ". nSuccess=" + nSuccess + " nFail=" + nFail);
@@ -10326,7 +10363,7 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
      */
     public static boolean appendOBIS(int nLines, String fileName, String colNamesLine, String lines) {
         if (lines.length() == 0)
-            return false;
+            return true;
 
         if (!File2.isFile(fileName)) {
             File2.makeDirectory(File2.getDirectory(fileName));

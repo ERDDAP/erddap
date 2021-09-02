@@ -348,7 +348,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>netcdfAll</artifactId>
-            <version>5.4.1</version>
+            <version>5.4.2</version>
         </dependency>
 
         <!-- NO LONGER NEEDED! It's in netcdf-all.jar  

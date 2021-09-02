@@ -84,11 +84,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-/**
- * Get netcdfAll-......jar from ftp://ftp.unidata.ucar.edu/pub
- * and copy it to [tomcat]/webapps/erddap/WEB-INF/lib renamed as netcdf-latest.jar.
- * Put it in the classpath for the compiler and for Java.
- */
+// from netcdfAll-x.jar
+import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.constants.FeatureType;
 import ucar.nc2.dataset.NetcdfDataset;
@@ -96,10 +93,10 @@ import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.ft.FeatureDataset;
 import ucar.nc2.ft.point.standard.PointDatasetStandardFactory;
 //import ucar.nc2.dods.*;
+import ucar.nc2.Sequence;
 import ucar.nc2.util.*;
 import ucar.nc2.write.NetcdfFileFormat;
 import ucar.nc2.write.NetcdfFormatWriter;
-import ucar.ma2.*;
 
 /** The Java DAP classes.  */
 import dods.dap.*;
@@ -8769,6 +8766,300 @@ Dataset {
             null, null, null); //conVars, conOps, conVals
         Test.ensureEqual(table.nRows(), 0, "");
         Test.ensureEqual(table.nColumns(), 0, "");
+
+
+        //done
+        /* */
+        debugMode = oDebugMode;
+    }
+
+    /**
+     * This reads and flattens a group of variables in a sequence or nested sequence
+     * in a .nc or .bufr file.
+     * <br>For strings, this always calls String2.trimEnd(s)
+     * 
+     * @param fullName This may be a local file name, an "http:" address of a
+     *   .nc or .bufr file, an .ncml file (which must end with ".ncml"), or an opendap url.
+     *   <p>If the fullName is an http address, the name needs to start with "http://" 
+     *   or "https://" (upper or lower case) and the server needs to support "byte ranges"
+     *   (see ucar.nc2.NetcdfFile documentation). 
+     *   But this is very slow, so not recommended.
+     * @param loadVarNames  
+     *   Use the format sequenceName.name or sequenceName.sequenceName.name.
+     *   If loadVarNames is specified, those variables will be loaded.
+     *   If loadVarNames isn't specified, this method reads vars which use
+     *   the specified loadDimNames and scalar vars.
+     *   <br>If a specified var isn't in the file, there won't be a column 
+     *   in the results table for it and it isn't an error.
+     * @param loadSequenceNames. If loadVarNames is specified, this is ignored.  
+     *   If loadSequenceNames is used, only this outer sequence and/or nested sequence is read.
+     *   If loadDimNames isn't specified (or size=0), this method finds the first sequence
+     *     (and nested sequence).
+     *   So if you want to get just the scalar vars, request a nonexistent
+     *      dimension (e.g., ZZTOP).
+     * @param getMetadata if true, global and variable metadata is read
+     * @param standardizeWhat see Attributes.unpackVariable's standardizeWhat
+     * @param conVars the names of the constraint variables. May be null.
+     *   It is up to this method how much they will be used.
+     *   Currently, the constraints are just used for *quick* tests to see if the
+     *   file has no matching data.  
+     *   If a conVar isn't in the loadVarNames (provided or derived),
+     *   then the constraint isn't used.
+     *   If standardizeWhat != 0, the constaints are applied to the unpacked variables.
+     * @param conOps the operators for the constraints.
+     *   All ERDDAP ops are supported. May be null.
+     * @param conVals the values of the constraints. May be null.
+     * @throws Exception if unexpected trouble.
+     *    But if none of the specified loadVariableNames are present
+     *    or a requested dimension's size=0, 
+     *    it is not an error and it returns an empty table.
+     */
+    public void readNcSequence(String fullName, 
+        StringArray loadVarNames, 
+        StringArray loadSequenceNames, 
+        boolean getMetadata, 
+        int standardizeWhat, 
+        StringArray conVars, StringArray conOps, StringArray conVals) throws Exception {
+
+        //clear the table
+        clear();
+        HashSet<String> loadVarNamesSet = null;
+        if (loadVarNames != null && loadVarNames.size() > 0) {
+            loadVarNamesSet = new HashSet();
+            for (int i = 0; i < loadVarNames.size(); i++)
+                loadVarNamesSet.add(loadVarNames.get(i));
+        }
+        HashSet<String> loadSequenceNamesSet = null;
+        if (loadSequenceNames != null && loadSequenceNames.size() > 0) {
+            loadSequenceNamesSet = new HashSet();
+            for (int i = 0; i < loadSequenceNames.size(); i++)
+                loadSequenceNamesSet.add(loadSequenceNames.get(i));
+        }
+        if (standardizeWhat != 0)
+            getMetadata = true;
+        String msg = "  Table.readNcSequence " + fullName + 
+            "\n  loadVars=" + loadVarNames; 
+        long time = System.currentTimeMillis();
+        String warningInMethod = "Table.readNcSequence read " + fullName + ":\n";
+        boolean haveConstraints = 
+            conVars != null && conVars.size() > 0 &&
+            conOps  != null && conOps.size() == conVars.size() &&
+            conVals != null && conVals.size() == conVars.size();
+
+        //read the file
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        Attributes gridMappingAtts = null;
+        try {
+
+            //load the global metadata
+            if (getMetadata) 
+                NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
+
+            //go through all the variables
+            List<Variable> allVars = ncFile.getVariables();
+            int nAllVars = allVars.size();
+            StringArray seqNames = new StringArray();
+            boolean printSeq3Error = true;
+            for (Variable outerVar : allVars) {
+
+                String outerVarName = outerVar.getFullName();
+                String2.log("outerVar=" + outerVarName);
+
+
+                //is it a sequence???
+                if (outerVar instanceof Sequence) {
+                    Sequence seq1 = (Sequence)outerVar;
+// new attempt
+                    ArraySequence arSeq = (ArraySequence)seq1.read(); //reads all, in memory
+                    List<StructureMembers.Member> memberList1 = arSeq.getMembers();
+                    for (StructureMembers.Member mem1 : memberList1) {
+                        String memName1 = outerVarName + "." + mem1.getFullName(); 
+                        if (loadVarNamesSet == null || loadVarNamesSet.contains(memName1)) {
+                            //add it
+                            Array tar = arSeq.extractMemberArray(mem1);
+ String2.log("mem1=" + memName1 + "=" + tar.getClass().getCanonicalName());
+                            if (tar instanceof ArrayObject.D1) {
+                                //member is a sequence
+                                ArrayObject.D1 seq2 = (ArrayObject.D1)tar;
+                                String2.log("[0]=" + seq2.get(0).getClass().getCanonicalName());
+
+
+                            } else {
+                                //simple member
+                                addColumn(nColumns(), memName1, 
+                                    NcHelper.getPrimitiveArray(tar, false, tar.isUnsigned()), //buildStringFromChar?, tar in .nc4 may be unsigned
+                                    new Attributes());
+                            }
+                        }
+                    }
+                
+
+
+
+/*
+                    //e.g., "obs" in the test file
+                    StructureDataIterator seqIter1 = seq1.getStructureIterator(65536); //go through the rows
+                    int rowNum1 = -1;
+                    try {
+                        while (seqIter1.hasNext()) {
+                            StructureData sd1 = seqIter1.next();  //a row
+                            rowNum1++;
+                            int memberNum1 = -1;
+                            ArrayList<PrimitiveArray> pas1 = new ArrayList(); //the pa in this table for each member (or null)
+                            for (Iterator sdIter1 = sd1.getMembers().iterator(); sdIter1.hasNext(); ) { //go through members/columns
+                                StructureMembers.Member m1 = (StructureMembers.Member)sdIter1.next();
+                                memberNum1++;
+                                String mFullName1 = outerVarName + "." + m1.getFullName(); //getFullName isn't full name
+    String2.log("mFullName1=" + mFullName1);
+
+                                //is it a sequence???
+                                if (m1 instanceof Sequence) {
+                                    //e.g., "seq1" in the test file
+                                    Sequence seq2 = (Sequence)m1;
+                                    StructureDataIterator seqIter2 = seq2.getStructureIterator(65536); //go through the rows
+                                    int rowNum2 = -1;
+                                    try {
+                                        while (seqIter2.hasNext()) {
+                                            StructureData sd2 = seqIter2.next();  //a row
+                                            rowNum2++;
+                                            int memberNum2 = -1;
+                                            ArrayList<PrimitiveArray> pas2 = new ArrayList(); //the pa in this table for each member (or null)
+                                            for (Iterator sdIter2 = sd2.getMembers().iterator(); sdIter2.hasNext(); ) { //go through members/columns
+                                                StructureMembers.Member m2 = (StructureMembers.Member)sdIter2.next();
+                                                memberNum2++;
+
+                                                //is it a sequence???
+                                                if (m2 instanceof Sequence) 
+                                                    throw new RuntimeException("3+ levels of sequences isn't supported.");
+
+                                                if (rowNum2 == 0) {
+                                                    //first row of the seq2
+                                                    String mFullName2 = mFullName1 + "." + m2.getFullName(); //getFullName isn't full name
+                String2.log("mFullName2=" + mFullName2);
+                                                    PrimitiveArray tpa2 = NcHelper.getPrimitiveArray(sd2.getArray(m2), false); //buildStringsFromChar
+
+                                                    int col = findColumnNumber(mFullName2);
+                                                    if (col >= 0) {
+                                                        PrimitiveArray pa = getColumn(col);
+                                                        pa.append(tpa2);
+                                                        pas2.add(pa);                                                
+                                                    } else if (loadVarNamesSet == null || loadVarNamesSet.contains(mFullName1)) {
+                                                        //add it
+                                                        addColumn(nColumns(), mFullName2, tpa2, new Attributes());
+                                                        pas2.add(tpa2);
+                                                    } else { 
+                                                        //don't store this member's data
+                                                        pas2.add(null);
+                                                    }
+
+                                                } else {
+                                                    //subsequent rows: append the data to known pa
+                                                    PrimitiveArray pa = pas2.get(memberNum2);
+                                                    if (pa != null)
+                                                        pa.append(NcHelper.getPrimitiveArray(m2.getDataArray(), false)); //buildStringsFromChar
+                                                }
+                                            } //end sdIter2 for loop
+                                        } //end seqIter2 while loop
+                                    } finally {
+                                        seqIter2.close();
+                                    }
+
+                                } else { //m1 isn't a sequence
+                                    if (rowNum1 == 0) {
+                                        //first row of the seq1
+                                        PrimitiveArray tpa1 = NcHelper.getPrimitiveArray(sd1.getArray(m1), false); //buildStringsFromChar
+
+                                        int col = findColumnNumber(mFullName1);
+                                        if (col >= 0) {
+                                            PrimitiveArray pa = getColumn(col);
+                                            pa.append(tpa1);
+                                            pas1.add(pa);                                                
+                                        } else if (loadVarNamesSet == null || loadVarNamesSet.contains(mFullName1)) {
+                                            //add it
+                                            addColumn(nColumns(), mFullName1, tpa1, new Attributes());
+                                            pas1.add(tpa1);
+                                        } else { 
+                                            //don't store this member's data
+                                            pas1.add(null);
+                                        }
+
+                                    } else {
+                                        //subsequent rows: append the data to known pa
+                                        PrimitiveArray pa = pas1.get(memberNum1);
+                                        if (pa != null)
+                                            pa.append(NcHelper.getPrimitiveArray(m1.getDataArray(), false)); //buildStringsFromChar
+                                    }
+                                }
+                            } //end sdIter1 for loop
+                        } //end seqIter1 while loop
+                    } finally {
+                        seqIter1.close();
+                    }
+*/
+
+                } else { //outerVar isn't a sequence
+                    if (loadVarNamesSet == null || loadVarNamesSet.contains(outerVarName)) {                       
+                        PrimitiveArray tpa = NcHelper.getPrimitiveArray(outerVar.read(), false, NcHelper.isUnsigned(outerVar)); //buildStringsFromChar
+                        addColumn(nColumns(), outerVarName, tpa, new Attributes());
+                    }
+                }
+
+                ensureColumnsAreSameSize_LastValue();
+                String2.log(toString());
+            }
+
+            if (reallyVerbose) msg += 
+                " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
+                " time=" + (System.currentTimeMillis() - time) + "ms";
+        } catch (Throwable t) {
+            if (!reallyVerbose) String2.log(msg); 
+            throw t;
+
+        } finally  {
+            ncFile.close(); 
+            if (debugMode) msg += "\n" + Math2.memoryString();                
+            if (reallyVerbose) String2.log(msg);
+        }
+    }
+
+
+    /** This tests readNcSequence. */
+    public static void testReadNcSequence() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+        String2.log("\n*** Table.testReadNcSequence");
+        Table table = new Table();
+        String fiName = "/data/andy/pilot_20210818202736_IUPA50_EGRR_181930.bufr"; //String2.unitTestDataDir + "";
+        String2.log(NcHelper.ncdump(fiName, ""));
+        String results, expectedStart, expectedEnd;
+        /* */
+
+        //** don't specify varNames or dimNames -- it find vars with most dims
+        table.readNcSequence(fiName, new StringArray(), new StringArray(),  
+            true, 0, //readMetadata, standardizeWhat=0
+            null, null, null); //conVars, conOps, conVals
+        results = table.dataToString(3);
+        expectedStart = 
+//static vars and vars like  char SCIENTIFIC_CALIB_COEFFICIENT(N_PROF=254, N_CALIB=1, N_PARAM=3, STRING256=256);
+"DATA_TYPE,FORMAT_VERSION,HANDBOOK_VERSION,REFERENCE_DATE_TIME,DATE_CREATION,DATE_UPDATE,PLATFORM_NUMBER,PROJECT_NAME,PI_NAME,STATION_PARAMETERS,CYCLE_NUMBER,DIRECTION,DATA_CENTRE,DC_REFERENCE,DATA_STATE_INDICATOR,DATA_MODE,PLATFORM_TYPE,FLOAT_SERIAL_NO,FIRMWARE_VERSION,WMO_INST_TYPE,JULD,JULD_QC,JULD_LOCATION,LATITUDE,LONGITUDE,POSITION_QC,POSITIONING_SYSTEM,PROFILE_PRES_QC,PROFILE_TEMP_QC,PROFILE_PSAL_QC,VERTICAL_SAMPLING_SCHEME,CONFIG_MISSION_NUMBER,PARAMETER,SCIENTIFIC_CALIB_EQUATION,SCIENTIFIC_CALIB_COEFFICIENT,SCIENTIFIC_CALIB_COMMENT,SCIENTIFIC_CALIB_DATE\n" +
+"Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PRES,1,A,HZ,0066_80617_001,2C,D,,APEX_SBE_4136,,846,21660.34238425926,1,21660.345046296297,21.513999938964844,123.36499786376953,1,ARGOS,A,A,A,,1,PRES,PRES_ADJUSTED = PRES - dP,dP =  0.1 dbar.,Pressures adjusted by using pressure offset at the sea surface. The quoted error is manufacturer specified accuracy in dbar.,20110628060155\n" +
+"Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,TEMP,1,A,HZ,0066_80617_001,2C,D,,APEX_SBE_4136,,846,21660.34238425926,1,21660.345046296297,21.513999938964844,123.36499786376953,1,ARGOS,A,A,A,,1,TEMP,none,none,The quoted error is manufacturer specified accuracy with respect to ITS-90 at time of laboratory calibration.,20110628060155\n" +
+"Argo profile,3.1,1.2,19500101000000,20090422121913,20160415204722,2901175,CHINA ARGO PROJECT,JIANPING XU,PSAL,1,A,HZ,0066_80617_001,2C,D,,APEX_SBE_4136,,846,21660.34238425926,1,21660.345046296297,21.513999938964844,123.36499786376953,1,ARGOS,A,A,A,,1,PSAL,\"PSAL_ADJUSTED = sw_salt( sw_cndr(PSAL,TEMP,PRES), TEMP, PRES_ADJUSTED ); PSAL_ADJ corrects conductivity cell therm mass (CTM), Johnson et al, 2007, JAOT;\",\"same as for PRES_ADJUSTED; CTL: alpha=0.0267, tau=18.6;\",No significant salinity drift detected; SBE sensor accuracy,20110628060155\n" +
+"...\n";
+        Test.ensureEqual(results, expectedStart, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 762, "nRows"); //254*3
+
+        //* same but quick reject based on constraint
+        table.readMultidimNc(fiName, new StringArray(), new StringArray(), null,
+            true, 0, false, //readMetadata, standardizeWhat=0, removeMVRows
+            StringArray.fromCSV("FORMAT_VERSION,FORMAT_VERSION"), //conVars
+            StringArray.fromCSV("=,="), //conOps
+            StringArray.fromCSV("3.1,3.2")); //conVals
+        Test.ensureEqual(table.nRows(), 0, "nRows"); 
+
+
 
 
         //done
@@ -33404,47 +33695,42 @@ expected =
     /** Test the speed of readASCII */
     public static void testReadASCIISpeed() throws Exception {
 
-        try {
-            String fileName = "/u00/data/points/ndbcMet2HistoricalTxt/41009h1990.txt"; 
-            long time = 0;
+        String fileName = "/u00/data/points/ndbcMet2HistoricalTxt/41009h1990.txt"; 
+        long time = 0;
 
-            for (int attempt = 0; attempt < 4; attempt++) {
-                String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
-                Math2.gcAndWait(); //in a test
-                Math2.sleep(5000);
-                //time it
-                long fileLength = File2.length(fileName); //was 1335204
-                Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
-                time = System.currentTimeMillis();
-                Table table = new Table();
-                table.readASCII(fileName);
-                time = System.currentTimeMillis() - time;
+        for (int attempt = 0; attempt < 4; attempt++) {
+            String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
+            Math2.gcAndWait(); //in a test
+            Math2.sleep(5000);
+            //time it
+            long fileLength = File2.length(fileName); //was 1335204
+            Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
+            time = System.currentTimeMillis();
+            Table table = new Table();
+            table.readASCII(fileName);
+            time = System.currentTimeMillis() - time;
 
-                String results = table.dataToString(3);
-                String expected =
+            String results = table.dataToString(3);
+            String expected =
 "YY,MM,DD,hh,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS\n" +
 "90,01,01,00,161,08.6,10.7,01.50,05.00,04.80,999,1017.2,22.7,22.0,999.0,99.0\n" +
 "90,01,01,01,163,09.3,11.3,01.50,05.00,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
 "90,01,01,01,164,09.2,10.6,01.60,04.80,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
 "...\n";
-                Test.ensureEqual(results, expected, "results=\n" + results);
-                Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
-                Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
+            Test.ensureEqual(results, expected, "results=\n" + results);
+            Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
+            Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
 
-                String2.log("********** attempt #" + attempt + " Done.\n" +
-                    "cells/ms=" + (table.nColumns() * table.nRows()/time) + 
-                      " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)" +
-                    "\ntime=" + time + "ms (good=106ms, but slower when computer is busy.\n" +
-                    "  (was 101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
-                if (time <= 130)
-                    break;
-            }
-            if (time > 130)
-                throw new SimpleException("readASCII took too long (but often does when computer is busy).");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e) +
-                "\nUnexpected " + String2.ERROR); 
+            String2.log("********** attempt #" + attempt + " Done.\n" +
+                "cells/ms=" + (table.nColumns() * table.nRows()/time) + 
+                  " (usual=2560 with StringHolder. With String, was 2711 Java 1.7M4700, was 648)" +
+                "\ntime=" + time + "ms (good=106ms, but slower when computer is busy.\n" +
+                "  (was 101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
+            if (time <= 130)
+                break;
         }
+        if (time > 130)
+            throw new SimpleException("readASCII took too long (but often does when computer is busy).");
     }
 
 
@@ -34723,8 +35009,9 @@ readAsNcCF?
                     if (test == 37) testReadMultidimNc();
                     if (test == 38) testHardReadMultidimNc();
                     if (test == 39) testUnpack();
+                    if (test == 40) testReadNcSequence();
 
-                    if (test == 40 && doSlowTestsToo) testReadInvalidCRA(); //very slow
+                    if (test == 41 && doSlowTestsToo) testReadInvalidCRA(); //very slow
 
                     //readNcCF tests
                     if (test == 45) testReadNcCFPoint(false);  //pauseAfterEachTest

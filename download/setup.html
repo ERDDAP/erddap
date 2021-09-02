@@ -92,9 +92,9 @@ You can <a rel="help" href="#customize">customize</a> your ERDDAP's appearance
 so ERDDAP reflects your organization and fits in with the rest of your website.
 
 <h2><a class="selfLink" id="organizations" href="#organizations" rel="bookmark">ERDDAP 
- has been installed by over 90 organizations in at least 14 countries</a></h2>
+ has been installed by over 90 organizations in at least 15 countries</a></h2>
  (Australia, Belgium, Canada, China, France, India, Ireland, 
- Italy, New Zealand, South Africa, Spain, Thailand, UK, USA),
+ Italy, New Zealand, Sri Lanka, South Africa, Spain, Thailand, UK, USA),
  including:
 <ul>
 <li><a rel="bookmark" href="https://apdrc.soest.hawaii.edu/erddap/index.html">APDRC<img 
@@ -149,9 +149,11 @@ which offers coding and technology training for students and adults
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
   (Irish Centre for High-End Computing)
-<li>INCOIS 
+<li><a rel="bookmark" href="https://erddap.incois.gov.in/erddap/index.html">INCOIS<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
   (Indian National Centre for Ocean Information Services)
-  <!-- 2017-08-08 email Devender Raju, was http://erddap.incois.gov.in/erddap/index.html  -->
+  <!-- 2017-08-08 email Devender Raju -->
 <li>IRD (Institut de Recherche pour le Développement, France)
   <br>CNRS (Centre National de la Recherche Scientifique, France)
   <br>UPMC (Université Pierre et Marie CURIE, Paris, France)
@@ -174,7 +176,7 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-19 Damian Smyth -->
 <li>Marine Instruments S.A. (Spain)
   <!-- 2015-03-25 Iago Tejeda Pérez -->
-<li><a rel="bookmark" href="http://nrm-erddap.nci.org.au/erddap/index.html">NCI<img 
+<li><a rel="bookmark" href="https://nrm-erddap.nci.org.au/erddap/index.html">NCI<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
   (Australia's National Computational Infrastructure)
@@ -730,8 +732,11 @@ or Mac server instead.
         <ul>
         <li>On Linux:
           <ul>
-          <li>With Linux AdoptOpenJDK Java distributions: DejaVu fonts are built in,
-            so you don't have to separately install them.
+          <li>For Linux AdoptOpenJDK Java distributions, see 
+            <a rel="help" href="https://blog.adoptopenjdk.net/2021/01/prerequisites-for-font-support-in-adoptopenjdk/"
+            >these instructions<img 
+            src="../images/external.png" alt=" (external link)" 
+            title="This link to an external website does not constitute an endorsement."></a>.
           <li>With other Java distributions: 
            As the Tomcat user, copy the font files into <i>JAVA_HOME</i>/lib/fonts 
            so Java can find the fonts.
@@ -817,10 +822,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: \content\bat\md5 erddapContent2.12.zip -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.14.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddapContent.zip">erddapContent.zip</a>
-    (version 2.12, 19,826 bytes, MD5=D0942715DD11A036A6941D1C5C1BB1E3, dated 2021-05-14)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddapContent.zip">erddapContent.zip</a>
+    (version 2.14, 19,826 bytes, MD5=8C9FCE5C47654BCC7F7E924A935755E7, dated 2021-07-02)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -833,15 +838,6 @@ or Mac server instead.
     so ERDDAP can find this new content directory.
 
   <p>[Some previous versions are also available:  
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddapContent.zip">1.78</a>
-    (23,878 bytes, MD5=9AB513BE1DFB6C9EA8DAA24A8114E855, dated 2017-05-27)
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.80/erddapContent.zip">1.80</a>
-    (23,878 bytes, MD5=7F85DEF1445B247010049C73984554EB, dated 2017-08-04)
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.82/erddapContent.zip">1.82</a>
-    (21,414 bytes, MD5=85AAD46840A7E4A7691C6433B59A2458, dated 2018-01-26)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddapContent.zip">2.00b</a>
     (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-06-26)
@@ -857,6 +853,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddapContent.zip">2.11</a>
     (19,765 bytes, MD5=8EAE38587180C97279A59EFBE28045A5, dated 2020-12-04)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddapContent.zip">2.12</a>
+    (19,826 bytes, MD5=D0942715DD11A036A6941D1C5C1BB1E3, dated 2021-05-14)
     ]
 
   <p>Then,
@@ -933,26 +932,17 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: \content\bat\md5.bat erddap2.12.war  
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.14.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.12, 516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated
-    <span class="N">2021-05-14</span>)
+    <br>(version 2.14, 516,963,012 bytes, MD5=59514A1FCEB0922FADCF45CF8B07FA0A, dated
+    <span class="N">2021-07-02</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
   <p>[Some previous versions are also available.
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.78/erddap.war">1.78</a>
-    (534,713,263 bytes, MD5=E8407EDC977C073CB816D873EF85320F, dated 2017-05-27)
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.80/erddap.war">1.80</a>
-    (502,908,740 bytes, MD5=F09D55AAACF1221F13276541FEF61AE8, dated 2017-08-04)
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v1.82/erddap.war">1.82</a>
-    (504,431,073 bytes, MD5=2B342B3E6CD9CE562236753ED28ED5FB, dated 2018-01-26)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddap.war">2.00b</a>
     (512,875,729 bytes, MD5=B5FA224EDDB0BC8F2B257B0FF7F6936D, dated 2019-06-26)
@@ -968,6 +958,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.11/erddap.war">2.11</a>
     (664,570,603 bytes, MD5=6671AE5D67A727C4A49C500069B1FE98, dated 2020-12-04)
+    <a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">2.12</a>
+    (516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated 2021-05-14)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1154,10 +1147,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.12, 516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated
-    <span class="N">2021-05-14</span>)
+    <br>(version 2.14, 516,963,012 bytes, MD5=59514A1FCEB0922FADCF45CF8B07FA0A, dated
+    <span class="N">2021-07-02</span>)
 
   <br>&nbsp;
 
@@ -5438,7 +5431,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
       title="This link to an external website does not constitute an endorsement."></a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2020, NOAA.
+ERDDAP, Copyright 2021, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
@@ -5469,7 +5462,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.12
+<p>ERDDAP, Version 2.14
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
