@@ -3134,6 +3134,11 @@ for each stationID for each day.
 and just returns one row for each group. That row will have the mean of each of the other variables.
 For example, orderByMax("stationID, time/1day") will create a group for each
 stationID for each day, and will calculate and return the mean of the other variables.
+
+<p><strong>orderBySum</strong> sorts the rows of the results table into groups
+and just returns one row for each group. That row will have the sum of each of the other variables.
+For example, orderByMax("stationID, time/1day") will create a group for each
+stationID for each day, and will calculate and return the sum of the other variables.
 ]]></functionOrderByTooltip>
 
 <functionOrderByExtra>For orderByClosest, specify the interval (using the format n[timeUnits], e.g., 1 hour) here.
@@ -3980,6 +3985,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorOrderByClosest>For orderByClosest, you must specify a CSV list of 1 or more orderBy column names (each of which must be in the list of results variables) plus the interval for the last orderBy variable (e.g., "stationID,time,10 minutes").</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of 0 or more orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]) plus the maximum number of rows for each group (e.g., "stationID,time/1day,10").</queryErrorOrderByLimit>
 <queryErrorOrderByMean>For orderByMean, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderByMean>
+<queryErrorOrderBySum>For orderBySum, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 
