@@ -4386,6 +4386,11 @@ writer.write(
                         newOrderBy = true;
                         break;
                     }
+                    if (userDapQuery.indexOf("orderBySum") >= 0 ||
+                        (parts[p].startsWith("orderBy") && parts[p].indexOf('/') > 0)) {
+                        newOrderBy = true;
+                        break;
+                    }
                 }
             }
             if (newOrderBy ||
@@ -18671,7 +18676,7 @@ expected =
 "{\n" +
 "  \"@context\": \"http://schema.org\",\n" +
 "  \"@type\": \"Dataset\",\n" +
-"  \"name\": \"Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01°, 2002-present, Daily\",\n" +
+"  \"name\": \"Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01ï¿½, 2002-present, Daily\",\n" +
 "  \"headline\": \"jplMURSST41\",\n" +
 "  \"description\": \"This is a merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysi" +
 "s product from Jet Propulsion Laboratory (JPL). This daily, global, Multi-scale, Ultra-high Resolution (MUR) Se" +

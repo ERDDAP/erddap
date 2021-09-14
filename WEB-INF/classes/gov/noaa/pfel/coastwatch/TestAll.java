@@ -1048,6 +1048,7 @@ TableWriterOrderByCount twobcount;
 TableWriterOrderByLimit twobl;
 TableWriterOrderByMax twobm;
 TableWriterOrderByMean twobmean;
+TableWriterOrderBySum twobsum;
 TableWriterOrderByMin twobmin;
 TableWriterOrderByMinMax twobmm;
 TableWriterSeparatedValue twsv;
