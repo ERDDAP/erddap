@@ -2769,6 +2769,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         Table.ORDER_BY_CLOSEST_ERROR=messages.getNotNothingString("queryErrorOrderByClosest",   errorInMethod);
         Table.ORDER_BY_LIMIT_ERROR = messages.getNotNothingString("queryErrorOrderByLimit",     errorInMethod);
         Table.ORDER_BY_MEAN_ERROR  = messages.getNotNothingString("queryErrorOrderByMean",      errorInMethod);
+        Table.ORDER_BY_SUM_ERROR   = messages.getNotNothingString("queryErrorOrderBySum",       errorInMethod);
         queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  errorInMethod);
         queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  errorInMethod);
 

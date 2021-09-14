@@ -151,7 +151,7 @@ public abstract class EDDTable extends EDD {
      * No codes depends on the specific order/positions, except [0]="". */
     public static String orderByOptions[] = { "",
         "orderBy", "orderByClosest", "orderByCount", "orderByLimit", 
-        "orderByMax", "orderByMin", "orderByMinMax", "orderByMean"};
+        "orderByMax", "orderByMin", "orderByMinMax", "orderByMean", "orderBySum"};
     public static String DEFAULT_ORDERBYCLOSEST = "1 hour";
     public static String DEFAULT_ORDERBYLIMIT   = "100";
     /** These are used on web pages when a user changes orderBy. 
@@ -2157,6 +2157,27 @@ public abstract class EDDTable extends EDD {
                 continue;
             }
 
+            //special case: server-side functions: special orderBySum(varCSV)
+            if (constraint.endsWith("\")") &&
+                constraint.startsWith("orderBySum(\"")) {
+                //ensure all orderBy vars are in resultsVariables
+                if (!repair) {
+                    int ppo = constraint.indexOf("(\"");
+                    StringArray obv = StringArray.fromCSV(constraint.substring(
+                        ppo + 2, constraint.length() - 2));
+                    int last = obv.size(); // last may be time interval...
+                    for (int obvi = 0; obvi < last; obvi++) {
+                       String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
+                       String item = obvParts[0];
+                        if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
+                            throw new SimpleException(EDStatic.queryError +
+                                Table.ORDER_BY_SUM_ERROR +
+                                " (col=" + obv.get(obvi) + " not in results variables)");
+                    }
+                }
+                continue;
+            }
+
             //special case: server-side function
             if (constraint.equals("distinct()"))
                 continue;
@@ -3429,6 +3450,13 @@ public abstract class EDDTable extends EDD {
                     part == firstActiveDistinctOrOrderBy? this : null,
                     tNewHistory, 
                     dir, fileName, tableWriter, p.substring(13, p.length() - 2));
+                tableWriter = twobm;
+            
+            } else if (p.startsWith("orderBySum(\"") && p.endsWith("\")")) {
+                TableWriterOrderBySum twobm = new TableWriterOrderBySum(
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
 
             } else if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) {
@@ -7837,7 +7865,7 @@ public abstract class EDDTable extends EDD {
             "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python, by Filipe Pires Alvarenga Fernandes)</a> and\n" +
             "  <br><a rel=\"bookmark\" href=\"https://github.com/hmedrano/erddap-python\">erddap-python" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> (by Favio Medrano)\n" +
-            "  <br>are Python libraries that \"take advantage of ERDDAP’s RESTful web services and create the\n" +
+            "  <br>are Python libraries that \"take advantage of ERDDAPï¿½s RESTful web services and create the\n" +
             "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n" +
             "    They have somewhat different programming styles and slightly different feature sets,\n" +
             "    so it might be good to experiment with both to see which you prefer.\n" +
@@ -8578,6 +8606,31 @@ public abstract class EDDTable extends EDD {
             "        For other degree units (e.g., degree_east, degree_north), the returned mean will be in the range -180 to 180.\n" +
             "      <li>Any requested string or character variables not in the orderByMean list are discarded\n" +
             "        (unless the value does not vary) since asking for the mean of a string variable is meaningless.\n" +
+            "      </ul>\n" +
+            "      <br>&nbsp;\n" +
+            "    <li><a class=\"selfLink\" id=\"orderBySum\" href=\"#orderBySum\" rel=\"bookmark\"\n" +
+            "      ><kbd>&amp;orderBySum(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>The comma-separated (CSV) list of 0 or more variable names\n" +
+            "      lets you specify how the results table will be sorted and grouped.\n" +
+            "      Numeric variables in the CSV list usually have an optional\n" +
+            "      divisor to identify groupings, e.g., time/1day .\n" +
+            "      (See <a rel=\"help\" href=\"#orderByDivisorOptions\">divisor&nbsp;details</a>.)\n" +
+            "      <br>All of the orderBySum variables MUST be included in the list of requested variables in\n" +
+            "      the query as well as in the orderBySum CSV list of variables (the .html and .graph\n" +
+            "      forms will do this for you).\n" +
+            "      <p>For orderBySum, for each group, ERDDAP will return the sum\n" +
+            "      of each of the variables not in the CSV list.\n" +
+            "      You can use the same <a href=\"#orderByDivisorOptions\" rel=\"bookmark\" \n" +
+            "        >divisor options</a> as other orderBy options (e.g., time/1day or depth/10).\n" +
+            "      For example,\n" +
+            "      <pre>?stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBySum(\"stationID,time/1day\")</pre>\n" +
+            "      will sort by stationID and time, but only return the sum of temperature value for each stationID for each day.\n" +
+            "      <ul>\n" +
+            "      <li>The sum values are returned as doubles, with _FillValue=NaN used to represent empty cells\n" +
+            "        (groups with no finite values for a given variable).\n" +
+            "      <li>If a column has degree-related units, the sum is not calculated.\n" +
+            "      <li>Any requested string or character variables not in the orderBySum list are discarded\n" +
+            "        (unless the value does not vary) since asking for the sum of a string variable is meaningless.\n" +
             "      </ul>\n" +
             "      <br>&nbsp;\n" +
             "    <li><a class=\"selfLink\" id=\"units\" href=\"#units\" rel=\"bookmark\"><kbd>&amp;units(\"<i>value</i>\")</kbd></a>\n" +
