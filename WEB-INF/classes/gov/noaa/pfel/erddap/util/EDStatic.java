@@ -934,6 +934,10 @@ public static boolean developmentMode = false;
         EDDGridSpacingTooltip,
         EDDGridDownloadTooltip,
         EDDGridGridVariableHtml,
+        EDDGridCheckAll,
+        EDDGridCheckAllTooltip,
+        EDDGridUncheckAll,
+        EDDGridUncheckAllTooltip,
 
         EDDTableConstraints,
         EDDTableTabularDatasetTooltip,
@@ -2282,6 +2286,10 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         EDDGridStrideTooltip       = messages.getNotNothingString("EDDGridStrideTooltip",       errorInMethod);
         EDDGridSpacingTooltip      = messages.getNotNothingString("EDDGridSpacingTooltip",      errorInMethod);
         EDDGridGridVariableHtml    = messages.getNotNothingString("EDDGridGridVariableHtml",    errorInMethod);
+        EDDGridCheckAll            = messages.getNotNothingString("EDDGridCheckAll",            errorInMethod);
+        EDDGridCheckAllTooltip     = messages.getNotNothingString("EDDGridCheckAllTooltip",     errorInMethod);
+        EDDGridUncheckAll          = messages.getNotNothingString("EDDGridUncheckAll",          errorInMethod);
+        EDDGridUncheckAllTooltip   = messages.getNotNothingString("EDDGridUncheckAllTooltip",   errorInMethod);
 
         //default EDDGrid...Example
         EDDGridErddapUrlExample    = messages.getNotNothingString("EDDGridErddapUrlExample",    errorInMethod);

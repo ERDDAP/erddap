@@ -2244,6 +2244,10 @@ missing or bad in an otherwise perfectly evenly spaced dataset.
 <EDDGridGridVariableHtml><![CDATA[<strong>Grid Variables</strong>
   (which always also download all of the dimension variables)]]></EDDGridGridVariableHtml>
 
+<EDDGridCheckAll>Check All</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Click here to select all variables.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Uncheck All</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Click here to de-select all variables.</EDDGridUncheckAllTooltip>
 <!-- Griddap Examples
 This group of settings is used to make examples for the griddap documentation 
 that appears at [baseUrl]/erddap/griddap/documentation.html and elsewhere.
