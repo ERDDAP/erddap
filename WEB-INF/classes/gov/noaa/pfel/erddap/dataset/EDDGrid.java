@@ -6108,9 +6108,9 @@ Attributes {
                         otherInfo.append(", ");
                     double td = axisVar.destinationValue(ttIndex).getNiceDouble(0); 
                     if (av == lonIndex)
-                        otherInfo.append(td + " E"); //° didn't work
+                        otherInfo.append(td + " E"); //ï¿½ didn't work
                     else if (av == latIndex) 
-                        otherInfo.append(td + " N"); //° didn't work
+                        otherInfo.append(td + " N"); //ï¿½ didn't work
                     else if (axisVar instanceof EDVTimeStampGridAxis) 
                         otherInfo.append(Calendar2.epochSecondsToLimitedIsoStringT(
                             axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
@@ -9025,8 +9025,22 @@ Attributes {
         writer.write(
             widgets.beginTable("class=\"compact nowrap\"") +
             "<tr>\n" +
-            "  <td>&nbsp;<br>" + EDStatic.EDDGridGridVariableHtml + "</td>\n" +
-            "</tr>\n");
+            "  <td>&nbsp;<br>" + EDStatic.EDDGridGridVariableHtml + "&nbsp;");
+
+        StringBuilder checkAll = new StringBuilder();
+        StringBuilder uncheckAll = new StringBuilder();
+        int nDv = dataVariables.length;
+        for (int dv = 0; dv < nDv; dv++) {
+            checkAll.append(  formName + ".dvar" + dv + ".checked=true;");
+            uncheckAll.append(formName + ".dvar" + dv + ".checked=false;");
+        }
+
+        writer.write(widgets.button("button", "CheckAll", EDStatic.EDDGridCheckAllTooltip,
+            EDStatic.EDDGridCheckAll,   "onclick=\"" + checkAll.toString() + "\""));
+        writer.write(widgets.button("button", "UncheckAll", EDStatic.EDDGridUncheckAllTooltip,
+            EDStatic.EDDGridUncheckAll, "onclick=\"" + uncheckAll.toString() + "\""));
+
+         writer.write("</td></tr>\n");
 
         //a row for each dataVariable
         for (int dv = 0; dv < dataVariables.length; dv++) {
@@ -9635,7 +9649,7 @@ Attributes {
             "    <a class=\"selfLink\" id=\"erddapy\" href=\"#erddapy\" rel=\"bookmark\">(ERDDAP + Python, by Filipe Pires Alvarenga Fernandes)</a> and\n" +
             "  <br><a rel=\"bookmark\" href=\"https://github.com/hmedrano/erddap-python\">erddap-python" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> (by Favio Medrano)\n" +
-            "  <br>are Python libraries that \"take advantage of ERDDAP’s RESTful web services and create the\n" +
+            "  <br>are Python libraries that \"take advantage of ERDDAPï¿½s RESTful web services and create the\n" +
             "    ERDDAP URL for any request like searching for datasets, acquiring metadata, downloading data, etc.\"\n" +
             "    They have somewhat different programming styles and slightly different feature sets,\n" +
             "    so it might be good to experiment with both to see which you prefer.\n" +
