@@ -41,7 +41,7 @@ public class Units2 {
         "giga",  "mega",  "kilo",  "hecto", "deka", 
         "deci",  "centi", "milli", "micro", "nano", 
         "pico",  "femto", "atto",  "zepto", "yocto", 
-        "µ",     };
+        "Âµ",     };
     public static String metricAcronym[] = {
         "Y", "Z", "E", "P", "T", 
         "G", "M", "k", "h", "da",
@@ -60,10 +60,10 @@ public class Units2 {
     //these don't need to be thread-safe because they are read-only after creation
     private static HashMap<String,String> udHashMap = getHashMapStringString(
         String2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UdunitsToUcum.properties", 
-        String2.ISO_8859_1);
+        String2.UTF_8);
     private static HashMap<String,String> ucHashMap = getHashMapStringString(
         String2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UcumToUdunits.properties", 
-        String2.ISO_8859_1);
+        String2.UTF_8);
 
     //these special cases are usually populated by EDStatic static constructor, but don't have to be
     public static HashMap<String,String> standardizeUdunitsHM = new HashMap();
@@ -383,7 +383,7 @@ public class Units2 {
             }
 
             //letter  
-            if (isUdunitsLetter(ch)) {     //includes 'µ' and '°'
+            if (isUdunitsLetter(ch)) {     //includes 'Âµ' and 'Â°'
                 //find contiguous letters|_|digit|-|^ 
                 int po2 = po + 1;
                 while (po2 < udLength && 
@@ -542,7 +542,7 @@ public class Units2 {
     }
 
     private static boolean isUdunitsLetter(char ch) {
-        return String2.isLetter(ch) || ch == 'µ' || ch == '°';
+        return String2.isLetter(ch) || ch == 'Âµ' || ch == 'Â°';
     }
 
     /**
@@ -667,8 +667,8 @@ public class Units2 {
         testUdunitsToUcum("ampere",            "A");
         testUdunitsToUcum("amp",               "A");
         testUdunitsToUcum("amu",               "u");
-        testUdunitsToUcum("Å",                 "Ao");
-        testUdunitsToUcum("Ångström",          "Ao");  
+        testUdunitsToUcum("Ã…",                 "Ao");
+        testUdunitsToUcum("Ã…ngstrÃ¶m",          "Ao");  
         testUdunitsToUcum("angstrom",          "Ao");  
         testUdunitsToUcum("angular_degree",    "deg");  
         testUdunitsToUcum("angular_minute",    "'");  
@@ -783,7 +783,7 @@ public class Units2 {
         testUdunitsToUcum("degreesW",          "deg{west}");
 
         //most plurals are only in udunits-2
-        testUdunitsToUcum("°C",                "Cel");  //udunits-2
+        testUdunitsToUcum("Â°C",                "Cel");  //udunits-2
         testUdunitsToUcum("degree_centigrade", "Cel");
         testUdunitsToUcum("degree_Celsius",    "Cel");  
         testUdunitsToUcum("degrees_Celsius",   "Cel");  
@@ -808,7 +808,7 @@ public class Units2 {
         //ucum seems to always treat degF as a unit of heat
         //  but C and K can be measures on a scale.
         //  F is a Farad.
-        testUdunitsToUcum("°F",                "[degF]");  //udunits-2
+        testUdunitsToUcum("Â°F",                "[degF]");  //udunits-2
         testUdunitsToUcum("degree_Fahrenheit", "[degF]");
         testUdunitsToUcum("degrees_Fahrenheit","[degF]"); //non-standard
         testUdunitsToUcum("degF",              "[degF]");  
@@ -823,7 +823,7 @@ public class Units2 {
         testUdunitsToUcum("deg_f",             "[degF]");
         testUdunitsToUcum("degs_f",            "[degF]");
 
-        testUdunitsToUcum("°K",                "K");  //udunits-2
+        testUdunitsToUcum("Â°K",                "K");  //udunits-2
         testUdunitsToUcum("degree_Kelvin",     "K");
         testUdunitsToUcum("degrees_Kelvin",    "K"); //non-standard
         testUdunitsToUcum("degK",              "K");
@@ -838,7 +838,7 @@ public class Units2 {
         testUdunitsToUcum("deg_k",             "K");
         testUdunitsToUcum("degs_k",            "K");
 
-        testUdunitsToUcum("°R",                "(5/9.K)");  //udunits-2
+        testUdunitsToUcum("Â°R",                "(5/9.K)");  //udunits-2
         testUdunitsToUcum("degree_Rankine",    "(5/9.K)");
         testUdunitsToUcum("degrees_Rankine",   "(5/9.K)"); //non-standard
         testUdunitsToUcum("degR",              "(5/9.K)");
@@ -1238,7 +1238,7 @@ public class Units2 {
         testUdunitsToUcum("kilo",              "k{count}");
         testUdunitsToUcum("mega",              "M{count}");
         testUdunitsToUcum("micro",             "u{count}");
-        testUdunitsToUcum("µ",                 "u{count}");
+        testUdunitsToUcum("Âµ",                 "u{count}");
         testUdunitsToUcum("milli",             "m{count}");
         testUdunitsToUcum("nano",              "n{count}");
         testUdunitsToUcum("peta",              "P{count}");
@@ -1291,18 +1291,18 @@ public class Units2 {
         testUdunitsToUcum("m PER s",            "m.s-1");
         testUdunitsToUcum("m**s",                "m^s");  //exponent
         testUdunitsToUcum("m*s",                "m.s");  //explicit multiplication
-        testUdunitsToUcum("m·s",                 "m.s");   //explicit multiplication   middot is tiny in this font!
+        testUdunitsToUcum("mÂ·s",                 "m.s");   //explicit multiplication   middot is tiny in this font!
         testUdunitsToUcum("m s",                "m.s");  //implied multiplication
         testUdunitsToUcum("\"",                 "''");
         testUdunitsToUcum("'",                  "'");
         testUdunitsToUcum("#",                  "{count}");
 
-        testUdunitsToUcum("°",                 "deg");
-        testUdunitsToUcum("°F",                "[degF]");
-        testUdunitsToUcum("°R",                "(5/9.K)");
-        testUdunitsToUcum("°C",                "Cel");
-        testUdunitsToUcum("°K",                "K");
-        testUdunitsToUcum("°north",            "{°north}"); //invalid
+        testUdunitsToUcum("Â°",                 "deg");
+        testUdunitsToUcum("Â°F",                "[degF]");
+        testUdunitsToUcum("Â°R",                "(5/9.K)");
+        testUdunitsToUcum("Â°C",                "Cel");
+        testUdunitsToUcum("Â°K",                "K");
+        testUdunitsToUcum("Â°north",            "{Â°north}"); //invalid
 
         debugMode = false;
     }
@@ -1461,7 +1461,7 @@ public class Units2 {
             }
 
             //letter  
-            if (isUcumLetter(ch)) {     //includes [, ], {, }, 'µ' and "'"
+            if (isUcumLetter(ch)) {     //includes [, ], {, }, 'Âµ' and "'"
                 //find contiguous letters|_|digit (no '-') 
                 int po2 = po + 1;
                 while (po2 < ucLength && 
@@ -1602,7 +1602,7 @@ public class Units2 {
         return String2.isLetter(ch) || 
             ch == '[' || ch == ']' || 
             ch == '{' || ch == '}' || 
-            ch == 'µ' || ch == '\'';
+            ch == 'Âµ' || ch == '\'';
     }
 
     /**
@@ -3467,7 +3467,7 @@ testToUcumToUdunits("yyyyMMdd'_'HHmmss",
                     "yyyyMMdd'_'HHmmss",
                     "{yyyyMMdd'_'HHmmss}");
 testToUcumToUdunits("yyyyMMddHHmm",     "{yyyyMMddHHmm}",   "yyyyMMddHHmm",     "{yyyyMMddHHmm}");
-testToUcumToUdunits("µmole/kg",         "umol.kg-1",        "umol kg-1",        "umol.kg-1");    
+testToUcumToUdunits("Âµmole/kg",         "umol.kg-1",        "umol kg-1",        "umol.kg-1");    
 
 //more tests
 debugMode = true;

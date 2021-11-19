@@ -767,7 +767,7 @@ String2.log("!!!Category=" + category);
                         oneOf.shortClassName() + " shared.tryToLoad internalName=" + internalName + "\n" +
                         "  fileInfo: " + String2.toCSSVString(dataSetFileInfo) + "\n" +
                         "  otherInfo: " + String2.toCSSVString(dataSetOtherInfo) //+ "\n" +
-                        //"  fgdc: " + (tFGDC == null? tFGDC : XML.encodeAsXML(tFGDC))
+                        //"  fgdc: " + (tFGDC == null? tFGDC : XNL.encodeAsTerminal(tFGDC))
                         );
 
                 //handle local climatology dataset

@@ -218,7 +218,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -414,15 +414,18 @@ public class EDDGridLonPM180 extends EDDGrid {
 
     /**
      * This returns the childDataset (if not null) or the localChildDataset.
+     *
+     * @param language the index of the selected language
      */
-    public EDDGrid getChildDataset() {
+    public EDDGrid getChildDataset(int language) {
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = childDataset;
         if (tChildDataset == null) {
             tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
             if (tChildDataset == null) {
                 EDD.requestReloadASAP(localChildDatasetID);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                throw new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
             }
         }
@@ -462,6 +465,7 @@ public class EDDGridLonPM180 extends EDDGrid {
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -471,27 +475,28 @@ public class EDDGridLonPM180 extends EDDGrid {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
-        return tChildDataset.accessibleViaFilesFileTable(nextPath);
+        EDDGrid tChildDataset = getChildDataset(language);
+        return tChildDataset.accessibleViaFilesFileTable(language, nextPath);
     }
 
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
          if (!accessibleViaFiles)
              return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
-        return tChildDataset.accessibleViaFilesGetLocal(relativeFileName);
+        EDDGrid tChildDataset = getChildDataset(language);
+        return tChildDataset.accessibleViaFilesGetLocal(language, relativeFileName);
      }
 
 
@@ -506,6 +511,7 @@ public class EDDGridLonPM180 extends EDDGrid {
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -517,12 +523,12 @@ public class EDDGridLonPM180 extends EDDGrid {
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
+        EDDGrid tChildDataset = getChildDataset(language);
                 
-        boolean changed = tChildDataset.lowUpdate(msg, startUpdateMillis);
+        boolean changed = tChildDataset.lowUpdate(language, msg, startUpdateMillis);
         //catch and deal with time axis changes: by far the most common
         if (changed && timeIndex >= 0) {
             axisVariables[timeIndex] = tChildDataset.axisVariables[timeIndex];
@@ -540,6 +546,7 @@ public class EDDGridLonPM180 extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -553,14 +560,14 @@ public class EDDGridLonPM180 extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
         //This isn't ideal (better if GridDataAccessor had stable reference to childDataset, 
         //but it needs this dataset), but it is pretty good.
-        EDDGrid tChildDataset = getChildDataset();
+        EDDGrid tChildDataset = getChildDataset(language);
         tDirTable  = tChildDataset.getDirTable();
         tFileTable = tChildDataset.getFileTable();
 
@@ -585,7 +592,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
             newConstraints.set(li3 + 0, rStart - (dloni0 - sloni0));
             newConstraints.set(li3 + 2, rStop  - (dloni0 - sloni0));            
-            return tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
+            return tChildDataset.getSourceData(language, tDirTable, tFileTable, tDataVariables, newConstraints);
         }
 
         //easy: all the requested lons are from the left: <=dloni359
@@ -594,7 +601,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             IntArray newConstraints = (IntArray)tConstraints.subset(0, 1, tConstraints.size() - 1);
             newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
             newConstraints.set(li3 + 2, rStop  + sloni180); // (sloni180 - dloni180), but dloni180 is 0
-            PrimitiveArray results[] = tChildDataset.getSourceData(tDirTable, tFileTable, 
+            PrimitiveArray results[] = tChildDataset.getSourceData(language, tDirTable, tFileTable, 
                 tDataVariables, newConstraints);
             results[lonIndex] = (PrimitiveArray)results[lonIndex].clone();
             results[lonIndex].addOffsetScale(-360, 1);
@@ -617,7 +624,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             //some values are from source loni180 to loni359
             newConstraints.set(li3 + 0, rStart + sloni180); // (sloni180 - dloni180), but dloni180 is 0
             newConstraints.set(li3 + 2, sloni359);
-            results180 = tChildDataset.getSourceData(tDirTable, tFileTable, tDataVariables, newConstraints);
+            results180 = tChildDataset.getSourceData(language, tDirTable, tFileTable, tDataVariables, newConstraints);
             results180[lonIndex] = (PrimitiveArray)results180[lonIndex].clone();
             results180[lonIndex].addOffsetScale(-360, 1);
             if (debugMode) String2.log(">> got results180 from source lon[" + 
@@ -668,7 +675,7 @@ public class EDDGridLonPM180 extends EDDGrid {
             int tStop  = rStop - (dloni0 - sloni0);
             newConstraints.set(li3 + 0, tStart); 
             newConstraints.set(li3 + 2, tStop);            
-            results0 = tChildDataset.getSourceData(tDirTable, tFileTable, 
+            results0 = tChildDataset.getSourceData(language, tDirTable, tFileTable, 
                 tDataVariables, newConstraints);
             if (debugMode) String2.log(">> got results0 from source lon[" + 
                 tStart + ":" + rStride + ":" + tStop + "]");
@@ -846,7 +853,7 @@ sb.append(
 "\n" +
 "<dataset type=\"EDDGridLonPM180\" datasetID=\"erdMWchlamday_LonPM180\" active=\"true\">\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMWchlamday_LonPM180Child\">\n" +
-"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125&#xb0;, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
+"        <!-- Chlorophyll-a, Aqua MODIS, NPP, 0.0125°, West US, EXPERIMENTAL, 2002-present (Monthly Composite)\n" +
 "             minLon=205.0 maxLon=255.0 -->\n" +
 "        <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMWchlamday</sourceUrl>\n" +
 "    </dataset>\n" +
@@ -883,12 +890,13 @@ sb.append(
         String name, tName, userDapQuery, results, expected, error;
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
+        int language = 0;
 
       try {
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMWchlamday_LonPM180");       
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_GT180_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -909,7 +917,7 @@ sb.append(
 "} test_erdMWchlamday_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_GT180_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -948,7 +956,7 @@ expected =
 
         //lon values
         userDapQuery = "longitude[(-155):400:(-105)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_GT180_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -958,7 +966,7 @@ expected =
 
         //entire lon range
         userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][(35):80:(36)][(-155):400:(-105)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_GT180_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -993,7 +1001,7 @@ expected =
 
         //lon subset   (-119 will be rolled back to -120)
         userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][(35):80:(36)][(-145):400:(-119)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_GT180_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1018,7 +1026,7 @@ expected =
 
         //test image
         userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][][]&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_GT180", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
@@ -1045,13 +1053,14 @@ expected =
 
         String2.log("\n****************** EDDGridLonPM180.test1to359() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, userDapQuery, results, expected, error;
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdRWdhws1day_LonPM180");       
  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_1to359_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1072,7 +1081,7 @@ expected =
 "} erdRWdhws1day_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_1to359_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
@@ -1113,7 +1122,7 @@ expected =
         //lon values
         //this tests correct jump across lon 0
         userDapQuery = "longitude[(-179.75):100:(179.75)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1123,7 +1132,7 @@ expected =
 
         //lon values near 0
         userDapQuery = "longitude[(-.75):1:(.75)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1133,7 +1142,7 @@ expected =
 
         //almost entire new lon range
         userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-179.75):100:(179.75)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1152,7 +1161,7 @@ expected =
 
         //left and right, smaller range
         userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-108):100:(120)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_1s", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1168,7 +1177,7 @@ expected =
 
         //subset of that, just <0  (ask for into positive, but it will roll back)
         userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(-179.97):100:(10)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1184,7 +1193,7 @@ expected =
 
         //subset of that, just > 0 
         userDapQuery = "dhw[(2001-10-16)][][(0):22:(1)][(35.97):100:(179.97)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_1to359_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1199,7 +1208,7 @@ expected =
 
         //test image
         userDapQuery = "dhw[(2001-10-16T12:00:00Z)][][][]&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_1to359", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
@@ -1226,13 +1235,14 @@ expected =
 
         String2.log("\n****************** EDDGridLonPM180.test0to360() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, userDapQuery, results, expected, error;
         int po;
         String dir = EDStatic.fullTestCacheDirectory;
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "test_erdMHsstnmday_LonPM180");       
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_0to360_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1253,7 +1263,7 @@ expected =
 "} test_erdMHsstnmday_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_0to360_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
@@ -1294,7 +1304,7 @@ expected =
         //lon values
         //this tests correct jump across lon 0
         userDapQuery = "longitude[(-179.98):1234:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1304,7 +1314,7 @@ expected =
 
         //lon values near 0
         userDapQuery = "longitude[(-.125):1:(.125)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1315,7 +1325,7 @@ expected =
 
         //entire new lon range
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-179.98):1234:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1342,7 +1352,7 @@ expected =
 
         //subset of that, just <0  (ask for into positive, but it will roll back)
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-179.98):1234:(10)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1362,7 +1372,7 @@ expected =
 
         //subset of that, just > 0 
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(25.7):1234:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1382,7 +1392,7 @@ expected =
 
         //values near 0 
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][(0):23:(1)][(-.125):1:(.125)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_0to360_4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1412,7 +1422,7 @@ expected =
 
         //test image
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][][]&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_0to360", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
@@ -1434,6 +1444,7 @@ expected =
 
         String2.log("\n****************** EDDGridLonPM180.test120to320() *****************\n");
         testVerboseOn();
+        int language = 0; 
         boolean oDebugMode = debugMode;
         debugMode = true;
         String name, tName, userDapQuery, results, expected, error;
@@ -1455,20 +1466,20 @@ expected =
         //test120 to 320
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMBsstdmday_LonPM180");       
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_120to320_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 152];\n" + //changes
+"  Float64 time[time = 147];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 152][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 147][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 152];\n" +  //changes
+"      Float64 time[time = 147];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1476,7 +1487,7 @@ expected =
 "} erdMBsstdmday_LonPM180;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_120to320_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
@@ -1517,7 +1528,7 @@ expected =
         //lon values
         //this tests correct jump across lon 0
         userDapQuery = "longitude[(-180):2057:(179.975)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_lon", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1527,7 +1538,7 @@ expected =
 
         //lon values near 0
         userDapQuery = "longitude[(-.075):1:(.075)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_lonNear0", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
@@ -1537,7 +1548,7 @@ expected =
 
         //entire new lon range
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(179.975)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1567,7 +1578,7 @@ expected =
 
         //subset of that, left+insert+right sections 
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(135)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1590,7 +1601,7 @@ expected =
 
         //subset: just left
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-70)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1L", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1605,7 +1616,7 @@ expected =
 
         //subset: just left, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):2057:(-120)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1Lb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1618,7 +1629,7 @@ expected =
 
         //subset: just insert   //insert values are between -40 and 120
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(27)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1I", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1633,7 +1644,7 @@ expected =
 
         //subset: just insert, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-25.725):2057:(-20)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1Ib", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1646,7 +1657,7 @@ expected =
 
         //subset: just right
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1R", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1661,7 +1672,7 @@ expected =
 
         //subset: just right, 1 point
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(128.55):2057:(135)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_1Rb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1674,7 +1685,7 @@ expected =
 
         //subset of that, left + insert
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-180):2057:(27)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1695,7 +1706,7 @@ expected =
 
         //subset of that, insert + right
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(25.7):2057:(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1714,7 +1725,7 @@ expected =
 
         //subset of that, left + right  (jump over insert)
         userDapQuery = "sst[(2008-04-15T12:00:00Z)][][(0):4:(0.1)][(-128.575):" + (2057*5) + ":(179.98)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_120to320_3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1729,7 +1740,7 @@ expected =
 
         //test image
         userDapQuery = "sst[(2008-04-16T00:00:00Z)][][][]&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_120to320", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
@@ -1742,7 +1753,8 @@ expected =
      */
     public static void testBadFilesFlag() throws Throwable {
         String2.log("\n*** EDDGridLonPM180.testBadFilesFlag()\n" +
-            "This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.");
+            "This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP." );
+        int language = 0;
         try {
         String datasetID      = "test_erdPHsstamday_LonPM180";
         String childDatasetID = "test_erdPHsstamday_LonPM180Child";
@@ -1753,8 +1765,8 @@ expected =
         String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
 
         //wait 10 seconds and test that all times are present
-        String2.log("I set the badFileFlag. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(20000); //sometimes computer is super slow
+        String2.log("I set the badFileFlag. Now I'm waiting 30 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(30000); //sometimes computer is super slow
 
         //test that all times are present
         results = SSR.getUrlResponseStringUnchanged(request);
@@ -1766,7 +1778,7 @@ expected =
         
         //mark a file bad
         EDDGridLonPM180 edd = (EDDGridLonPM180)oneFromDatasetsXml(null, datasetID); 
-        EDDGridFromFiles childEdd = (EDDGridFromFiles)edd.getChildDataset(); 
+        EDDGridFromFiles childEdd = (EDDGridFromFiles)edd.getChildDataset(language); 
         Table fileTable = childEdd.getFileTable(); // throws Throwable
         int dirIndex    = fileTable.getColumn(EDDGridFromFiles.FT_DIR_INDEX_COL).getInt(0);
         String fileName = fileTable.getColumn(EDDGridFromFiles.FT_FILE_LIST_COL).getString(0);
@@ -1777,8 +1789,8 @@ expected =
         String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, "doesn't matter");
 
         //wait 10 seconds and test that that time point is gone
-        String2.log("I marked a file as bad. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(20000);  //sometimes computer is super slow
+        String2.log("I marked a file as bad. Now I'm waiting 30 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(30000);  //sometimes computer is super slow
         results = SSR.getUrlResponseStringUnchanged(request);
         expected = 
 "time (UTC)\n" +
@@ -1789,12 +1801,14 @@ expected =
         String2.writeToFile(EDStatic.fullBadFilesFlagDirectory + datasetID, "doesn't matter");
 
         //wait 10 seconds and test that all times are present
-        String2.log("I set the badFileFlag. Now I'm waiting 10 seconds while localhost ERDDAP reloads the dataset.");
-        Math2.sleep(10000);
+        String2.log("I set the badFileFlag. Now I'm waiting 20 seconds while localhost ERDDAP reloads the dataset.");
+        Math2.sleep(20000);
         results = SSR.getUrlResponseStringUnchanged(request);
         Test.ensureEqual(results, fullExpected, "results=\n" + results);
         } catch (Exception e) {
-            throw new RuntimeException("\n!!! This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.", e);
+            throw new RuntimeException(
+                "\n!!! This test requires that test_erdPHsstamday_LonPM180 be loaded in the local ERDDAP.\n" +
+                "It fails often during TestAll (busy computer?), but not when run alone.", e); //2021-11-17 I lengthened timeouts.
         }
     }
 

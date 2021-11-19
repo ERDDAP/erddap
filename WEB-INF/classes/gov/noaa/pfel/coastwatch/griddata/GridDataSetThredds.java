@@ -182,7 +182,7 @@ J1ugeo has just one level: <dataset>   *** So look for <dataset> with urlPath at
 
         //open the thredds catalog xml file
         //String2.log("getUrlString for " + baseUrl + "catalog.xml");
-        //String2.log(XML.encodeAsXML(SSR.getURLResponseStringUnchanged(baseUrl + "catalog.xml")));
+        //String2.log(XML.encodeAsTerminal(SSR.getURLResponseStringUnchanged(baseUrl + "catalog.xml")));
         Document document = XML.parseXml(SSR.getBufferedUrlReader(baseUrl + "catalog.xml"), false);
         XPath xPath = XML.getXPath();
 

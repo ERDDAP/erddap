@@ -40,6 +40,7 @@ import java.util.GregorianCalendar;
  */
 public class GenerateDatasetsXml {
 
+    int language = 0;
     Writer outFile = null;
     static String logFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.log";
     static String outFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.out";
@@ -101,7 +102,7 @@ public class GenerateDatasetsXml {
             String2.standardHelpAboutMessage());
         String insert = null;
         boolean reallyVerbose = false;  
-        outFile = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(outFileName)); //charset to match datasets.xml
+        outFile = String2.getBufferedOutputStreamWriterUtf8(new FileOutputStream(outFileName)); //charset to match datasets.xml
         //String2.pressEnterToContinue("stackTrace:\n" + MustBe.stackTrace() + ">> outFile is open");
 
         try {
@@ -334,7 +335,7 @@ public class GenerateDatasetsXml {
                         EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
                             resultsFileName, s1, s2, s3, s4, 
                             String2.parseInt(s5, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
-                        printToBoth(String2.readFromFile(resultsFileName)[1]);
+                        printToBoth(String2.readFromFile(resultsFileName, String2.UTF_8)[1]);
 
                     } else if (eddType.equals("EDDGridLonPM180FromErddapCatalog")) {
                         s1  = get(args,  1,  s1, "ERDDAP URL (ending in \"/erddap/\")");         
@@ -517,7 +518,7 @@ public class GenerateDatasetsXml {
                         s2  = get(args,  2,  s2, "Dataset name regex (usually \".*\")");  
                         s3  = get(args,  3,  s3, "Max axis0 (suggested: " + EDDTableFromEDDGrid.DEFAULT_MAX_AXIS0 + ")");  
                         String2.log("working...");
-                        printToBoth(EDDTableFromEDDGrid.generateDatasetsXml(
+                        printToBoth(EDDTableFromEDDGrid.generateDatasetsXml(language, 
                             s1, s2, String2.parseInt(s3)));
 
                     } else if (eddType.equals("EDDTableFromEML")) {
@@ -578,7 +579,7 @@ public class GenerateDatasetsXml {
                         s8  = get(args,  8,  s8, "summary");
                         s9  = get(args,  9,  s9, "title");
                         String2.log("working...");
-                        printToBoth(EDDTableFromHttpGet.generateDatasetsXml(
+                        printToBoth(EDDTableFromHttpGet.generateDatasetsXml(language, 
                             s1, s2, s3, s4, s5, s6, s7, s8, s9, null));
 
 
@@ -838,7 +839,7 @@ public class GenerateDatasetsXml {
                         String2.flushLog();
                         outFile.close();
                         outFile = null;
-                        return String2.readFromFile(outFileName)[1];
+                        return String2.readFromFile(outFileName, String2.UTF_8)[1];
                     }
                     String2.log(msg);
                 }
@@ -853,7 +854,7 @@ public class GenerateDatasetsXml {
             if (String2.OSIsWindows) 
                 Math2.sleep(250);
         }
-        String ret = String2.readFromFile(outFileName)[1]; 
+        String ret = String2.readFromFile(outFileName, String2.UTF_8)[1]; 
 
         //insert switch:  -idatasetsXmlName#tagName  
         //(or -I for testmode: no overwrite datasets.xml)
@@ -903,8 +904,8 @@ public class GenerateDatasetsXml {
 
             //copy datasets.xml line-by-line to new file, 
             tempName = datasetsXmlName + localCompactTime;
-            inFile = File2.getDecompressedBufferedFileReader(datasetsXmlName, String2.ISO_8859_1); //charset to match datasets.xml  
-            outFile = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(tempName)); //charset to match datasets.xml
+            inFile = File2.getDecompressedBufferedFileReader(datasetsXmlName, String2.UTF_8); //charset to match datasets.xml  
+            outFile = String2.getBufferedOutputStreamWriterUtf8(new FileOutputStream(tempName)); //charset to match datasets.xml
             
             //look for the beginLine  
             String line = inFile.readLine();

@@ -57,6 +57,7 @@ public class TableWriterGeoJson extends TableWriter {
     /**
      * The constructor.
      *
+     * @param tLanguage the index of the selected language
      * @param tOutputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
@@ -66,13 +67,15 @@ public class TableWriterGeoJson extends TableWriter {
      *     and https://www.raymondcamden.com/2014/03/12/Reprint-What-in-the-heck-is-JSONP-and-why-would-you-use-it/ .
      *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
      */
-    public TableWriterGeoJson(EDD tEdd, String tNewHistory, 
+    public TableWriterGeoJson(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource, String tJsonp) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
-            throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + EDStatic.errorJsonpFunctionNameAr[0]       ,
+                EDStatic.queryErrorAr[language] + EDStatic.errorJsonpFunctionNameAr[language]));
     }
 
 
@@ -107,8 +110,9 @@ public class TableWriterGeoJson extends TableWriter {
             latColumn = table.findColumnNumber(EDV.LAT_NAME);
             altColumn = table.findColumnNumber(EDV.ALT_NAME); 
             if (lonColumn < 0 || latColumn < 0) 
-                throw new SimpleException(EDStatic.queryError + 
-                    "Requests for GeoJSON data must include the longitude and latitude variables.");
+                throw new SimpleException(EDStatic.bilingual(language,
+                    EDStatic.queryErrorAr[0]        + "Requests for GeoJSON data must include the longitude and latitude variables.",
+                    EDStatic.queryErrorAr[language] + "Requests for GeoJSON data must include the longitude and latitude variables."));
             //it is unclear to me if specification supports altitude in coordinates info...
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
@@ -350,10 +354,10 @@ public class TableWriterGeoJson extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource outputStreamSource, String tJsonp) throws Throwable {
 
-        TableWriterGeoJson twgj = new TableWriterGeoJson(tEdd, tNewHistory, 
+        TableWriterGeoJson twgj = new TableWriterGeoJson(language, tEdd, tNewHistory, 
             outputStreamSource, tJsonp);
         twgj.writeAllAndFinish(table);
     }

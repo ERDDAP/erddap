@@ -248,6 +248,7 @@ public class EDDTableCopy extends EDDTable{
             tDatasetID + ") constructor:\n";
             
         //save the parameters
+        int language = 0;
         className = "EDDTableCopy"; 
         datasetID = tDatasetID;
         sourceEdd = tSourceEdd;
@@ -315,12 +316,12 @@ public class EDDTableCopy extends EDDTable{
                         "&distinct()";
                     String cacheDir = cacheDirectory();
                     File2.makeDirectory(cacheDir);  //ensure it exists
-                    TableWriterAll twa = new TableWriterAll(null, null, //metadata not relevant
+                    TableWriterAll twa = new TableWriterAll(language, null, null, //metadata not relevant
                         cacheDir, "extract");
-                    TableWriter tw = encloseTableWriter(true, cacheDir, "extractDistinct",
+                    TableWriter tw = encloseTableWriter(0, true, cacheDir, "extractDistinct",
                         twa, "", //metadata not relevant
                         query); //leads to enclosing in TableWriterDistinct
-                    sourceEdd.getDataForDapQuery(EDStatic.loggedInAsSuperuser, 
+                    sourceEdd.getDataForDapQuery(0, EDStatic.loggedInAsSuperuser, 
                         "", query, tw); //"" is requestUrl, not relevant here
                     Table table = twa.cumulativeTable(); //has the distinct results
                     tw = null;
@@ -577,16 +578,17 @@ public class EDDTableCopy extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, String userDapQuery, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, String userDapQuery, 
         TableWriter tableWriter) throws Throwable {
 
-        localEdd.getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);
+        localEdd.getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tableWriter);
     }
 
     /** 
@@ -594,6 +596,7 @@ public class EDDTableCopy extends EDDTable{
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -603,23 +606,24 @@ public class EDDTableCopy extends EDDTable{
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
-        return localEdd.accessibleViaFilesFileTable(nextPath);
+        return localEdd.accessibleViaFilesFileTable(language, nextPath);
     }
 
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
          if (!accessibleViaFiles)
              return null;
-         return localEdd.accessibleViaFilesGetLocal(relativeFileName);
+         return localEdd.accessibleViaFilesGetLocal(language, relativeFileName);
      }
 
     /**
@@ -628,6 +632,7 @@ public class EDDTableCopy extends EDDTable{
      */
     public static void testBasic() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
         String error = "";
@@ -641,7 +646,7 @@ public class EDDTableCopy extends EDDTable{
 
             //*** test getting das for entire dataset
             String2.log("\n****************** EDDTableCopy.test das dds for entire dataset\n");
-            tName = edd.makeNewFileForDapQuery(null, null, "", 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_Entire", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -984,7 +989,7 @@ public class EDDTableCopy extends EDDTable{
 
             
             //*** test getting dds for entire dataset
-            tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Entire", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1022,7 +1027,7 @@ public class EDDTableCopy extends EDDTable{
 
 
             //*** test DAP data access form
-            tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Entire", ".html"); 
             results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             expected = "<option>.png - View a standard, medium-sized .png image file with a graph or map.";
@@ -1036,7 +1041,7 @@ public class EDDTableCopy extends EDDTable{
             String2.log("\n****************** EDDTableCopy.test make DATA FILES\n");       
 
             //.asc
-            tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".asc"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1060,7 +1065,7 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.csv
-            tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1078,7 +1083,7 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.dds 
-            tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_Data", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1095,7 +1100,7 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.dods
-            //tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            //tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             //    edd.className() + "_Data", ".dods"); 
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             String2.log("\ndo .dods test");
@@ -1122,7 +1127,7 @@ public class EDDTableCopy extends EDDTable{
             String2.log("  .dods test succeeded");
 
             //test .png
-            tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_GraphM", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -1141,6 +1146,7 @@ public class EDDTableCopy extends EDDTable{
         String2.log("\n****************** EDDTableCopy.testRepPostDet(tCheckSourceData=" + 
             tCheckSourceData + ") *****************\n");
         testVerboseOn();
+        int language = 0;
         defaultCheckSourceData = tCheckSourceData;
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
         String error = "";
@@ -1170,7 +1176,7 @@ reallyVerbose=false;
 
             //.dds
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_postDet", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1192,7 +1198,7 @@ reallyVerbose=false;
  
             //.das 
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_postDet", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1212,7 +1218,7 @@ reallyVerbose=false;
 
             //1var
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "pi&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet1Var", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1228,7 +1234,7 @@ reallyVerbose=false;
 
             //2var
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "pi,common_name&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet2var", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1263,7 +1269,7 @@ reallyVerbose=false;
 
             //3var
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "pi,common_name,surgery_id&distinct()", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet3var", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1283,7 +1289,7 @@ reallyVerbose=false;
 
             //1tag
             eTime = System.currentTimeMillis();
-            tName = edd.makeNewFileForDapQuery(null, null, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "&pi=\"BARRY BEREJIKIAN\"&common_name=\"STEELHEAD\"&surgery_id=2846", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet1tag", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1300,7 +1306,7 @@ reallyVerbose=false;
             eTime = System.currentTimeMillis();
             tQuery = "&pi=\"DAVID WELCH\"&common_name=\"CHINOOK\"&latitude>50" +
                 "&surgery_id>=1201&surgery_id<1202&time>=2007-05-01T08&time<2007-05-01T09";
-            tName = edd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, tQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_peb_constrained", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  

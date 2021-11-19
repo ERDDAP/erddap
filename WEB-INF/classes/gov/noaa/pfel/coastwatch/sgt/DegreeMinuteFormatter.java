@@ -14,7 +14,7 @@ import com.cohort.util.Test;
 public class DegreeMinuteFormatter implements NumberFormatter  {
  
     /**
-     * This formats a decimal degree value formatted as "degree°minute'".
+     * This formats a decimal degree value formatted as "degreeÂ°minute'".
      * If minutes=0, that part is not displayed.
      *
      * @param d a decimal degree value
@@ -34,12 +34,12 @@ public class DegreeMinuteFormatter implements NumberFormatter  {
 
         //return the formatted string
         return (min < 0? "-" : "") + //optional "-" sign
-            degrees + "°" + 
+            degrees + "Â°" + 
             (minutes > 0? minutes + "'" : ""); //optional minutes
     }
 
     /**
-     * This formats a decimal degree value formatted as "degree°minute'".
+     * This formats a decimal degree value formatted as "degreeÂ°minute'".
      * There is no "NaN" test in this method.
      *
      * @param d a decimal degree value
@@ -56,17 +56,17 @@ public class DegreeMinuteFormatter implements NumberFormatter  {
      */
     public static void basicTest() {
         DegreeMinuteFormatter dmf = new DegreeMinuteFormatter();
-        Test.ensureEqual(dmf.format(4),     "4°",      "a");
-        Test.ensureEqual(dmf.format(4.501), "4°30'",   "b");
-        Test.ensureEqual(dmf.format(4.499), "4°30'",   "c");
-        Test.ensureEqual(dmf.format(0.251), "0°15'",   "d");
-        Test.ensureEqual(dmf.format(0.001), "0°",      "e");
+        Test.ensureEqual(dmf.format(4),     "4Â°",      "a");
+        Test.ensureEqual(dmf.format(4.501), "4Â°30'",   "b");
+        Test.ensureEqual(dmf.format(4.499), "4Â°30'",   "c");
+        Test.ensureEqual(dmf.format(0.251), "0Â°15'",   "d");
+        Test.ensureEqual(dmf.format(0.001), "0Â°",      "e");
 
-        Test.ensureEqual(dmf.format(-4),     "-4°",    "j");
-        Test.ensureEqual(dmf.format(-4.501), "-4°30'", "k");
-        Test.ensureEqual(dmf.format(-4.499), "-4°30'", "l");
-        Test.ensureEqual(dmf.format(-0.251), "-0°15'", "m");
-        Test.ensureEqual(dmf.format(-0.001), "0°",     "n");
+        Test.ensureEqual(dmf.format(-4),     "-4Â°",    "j");
+        Test.ensureEqual(dmf.format(-4.501), "-4Â°30'", "k");
+        Test.ensureEqual(dmf.format(-4.499), "-4Â°30'", "l");
+        Test.ensureEqual(dmf.format(-0.251), "-0Â°15'", "m");
+        Test.ensureEqual(dmf.format(-0.001), "0Â°",     "n");
 
     }
 

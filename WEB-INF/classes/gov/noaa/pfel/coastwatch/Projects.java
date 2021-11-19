@@ -1821,8 +1821,8 @@ String2.log("uniqueSpp = " + uniqueSpp);
                     String2.log("  startRow=" + startRow + " end=" + (row-1) + " island=" + island + " station=" + station); 
 
                     //do tests that look for known data
-//1985	Anacapa	Admiral's Reef	8/30/1985 0:00:00	14003.00	Oxyjulis californica	 Adult	Señorita Adult	1	15
-//2005	Anacapa	Admiral's Reef	8/22/2005 0:00:00	14003.00	Oxyjulis californica	 Adult	Señorita Adult	1	38
+//1985	Anacapa	Admiral's Reef	8/30/1985 0:00:00	14003.00	Oxyjulis californica	 Adult	SeÃ±orita Adult	1	15
+//2005	Anacapa	Admiral's Reef	8/22/2005 0:00:00	14003.00	Oxyjulis californica	 Adult	SeÃ±orita Adult	1	38
                     if (island.equals("Anacapa") && station.equals("Admiral's Reef")) {
                         int nRows = stationTable.nRows();
                         int testCol = stationTable.findColumnNumber("Oxyjulis_californica_Adult");
@@ -5072,7 +5072,7 @@ String2.log("Projects.touchUrls is finished.");
 "\n" +
 "Vrooman, Andrew M.,  1964.  Serologically differentiated subpopulations of the\n" +
 "Pacific sardine, Sardinops caerulea.  Fish.  Res. Bd. Canada, Jour. 21(4):\n" +
-"691 – 701.\n");
+"691 â€“ 701.\n");
         globatts.add("sourceUrl", "(database data, converted to local files)");
         //customize subsetVariables, summary, and title (CalCOFI Data Reports, ...) below
         String project = 
@@ -5507,8 +5507,8 @@ project)
 "echo sounder coupled to an Ocean Sonics Precision Depth Recorder was used.\n" +
 "A 29 kHz sonar was fixed in a horizontal plane 75-90 degrees from the vessel's\n" +
 "heading.  The diameters listed are the lower limits of the class intervals,\n" +
-"where the width of each class interval is 5 meters 5 – 9, 10 – 14, etc.  In\n" +
-"addition, only for years between 1974 – 1979, inclusive collected this type of\n" +
+"where the width of each class interval is 5 meters 5 â€“ 9, 10 â€“ 14, etc.  In\n" +
+"addition, only for years between 1974 â€“ 1979, inclusive collected this type of\n" +
 "data.\n\n" + project)
             .add("subsetVariables", cruiseSSVars);
         anchSchoolData.columnAttributes(3)  //Diameter
@@ -5608,7 +5608,7 @@ project)
             .add("summary", 
 "This dataset lists the miles scouted and the number of schools seen in each area\n" +
 "covered by a cruise (the area descriptions are given under AreaCode. Data exit\n" + //exist for?
-"during the years 1950 – 1965.\n" +
+"during the years 1950 â€“ 1965.\n" +
 "\n" +
 "The number of sardine, anchovy, mackerel, miscellaneous, and unidentified\n" +
 "schools is given.\n" +
@@ -10235,7 +10235,7 @@ id,dataset_id,decimallongitude,decimallatitude,date_start,date_mid,date_end,date
 f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938,50.73743,1158019200000,1158019200000,1158019200000,2006,Spiophanes bombyx,Spiophanes bombyx,23.1,23.1,,,f,f,12831,16,12.63,33.92,1,0,0,0,Species,131187,,Biota,,Animalia,,,Annelida,,,,,,Polychaeta,Sedentaria,Canalipalpata,,,Spionida,Spioniformia,,,,Spionidae,,,,,Spiophanes,,,,,Spiophanes bombyx,,,,,,,,2018-04-09 15:18:52,en,,,,,,,,IMIS:dasid:5922,CEFAS,,RSMP Baseline Dataset,,Occurrence,,,,,RSMP_MAL0270906_003A_337587,RSMP_MAL0270906_003A_337587,,,,,,,,,,,,,present,,,,,,,,,,,,,,,MAL0270906_003A,,,,,,2006-09-12,,,,2006,9,12,,,,,sample,,,,,,,,,,,,,,,,,,,,,,,,,,,,EPSG:4326,,,,EPSG:4326,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,urn:lsid:marinespecies.org:taxname:131187,,,,,,,,,,,,,,,,,,,,,,
 3defa8a9-5c4e-4185-9779-1246b720082c,5b9d8c82-3fdf-4aa3-8eaf-5399902a84ef,-61.8325,47.425,,,,,Gonyaulax spinifera,Gonyaulax spinifera,0,0,,,f,f,1064,2,7.28,28.49,1,1,1,0,Species,110041,,Biota,,Chromista,Harosa,Alveolata,Myzozoa,,,Dinozoa,Dinoflagellata,,Dinophyceae,,,,,Gonyaulacales,,,,,Gonyaulacaceae,,,,,Gonyaulax,,,,,Gonyaulax spinifera,,,,,,,,2014-09-04T15:06:34Z,En,http://data.gc.ca/eng/open-government-licence-canada & http://www.canadensys.net/norms,"Her Majesty the Queen in right of Canada, as represented by the Minister of Fisheries and Oceans",,,,,,BioChem_AZMP_Quebec_P,DFO-ISDM,"BONNEAU,ESTHER",Atlantic Zone Monitoring Program (AZMP) DFO Quebec region phytoplankton,,HumanObservation,,,Sample size = Number per cubic metre; Classification=WoRMS; Verbatim name=Gonyaulax spinifera,,BioChem_AZMP_Quebec_P_20000002080159,20000002080159,,,"BONNEAU,ESTHER",,20000,,,,,,,,,,,,,,,,,,,,,,,,,bucket,,,,,17.5,,,1999,6,8,,,1999200245_1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,urn:lsid:marinespecies.org:taxname:110041,,,,,,,,,,,,,,spinifera,,,,,,,,
         </pre>
-     *  Bob Simons made this from the "Full OBIS export 2021-05-18" occurrence.csv file from https://obis.org/manual/access/
+     *  Bob Simons made this from the "Full OBIS export 2021-05-18" occurrence.csv file (87 GB?) from https://obis.org/manual/access/
      *  After using this, gzip all the resulting .csv files with GitBash in S: gzip -r obis 
      *
      * <p>!!! This runs much faster if Windows Explorer windows are all closed!

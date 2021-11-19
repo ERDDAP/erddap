@@ -40,6 +40,7 @@ public class TableWriterOrderByCount extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -48,10 +49,10 @@ public class TableWriterOrderByCount extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCountCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByCount(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByCount(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         orderBy = String2.isSomething(tOrderByCsv)?
             String2.split(tOrderByCsv, ','):

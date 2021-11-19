@@ -3154,13 +3154,13 @@ public class Table  {
                 msg + " finished. nColumns=" + nColumns() + " nRows=" + row + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
             
+            try {reader.close();} catch (Exception e2) {}
+            reader = null;
 
         } catch (Exception e) {
+            try {reader.close();} catch (Exception e2) {}
             if (!reallyVerbose) String2.log(msg + " failed.");
             throw e;
-
-        } finally {
-            try {reader.close();} catch (Exception e2) {}
         }
     }
 
@@ -3298,7 +3298,7 @@ public class Table  {
     public void readNccsv(String fullName, boolean readData) throws Exception {
         BufferedReader bufferedReader = String2.isRemote(fullName)?
             SSR.getBufferedUrlReader(fullName) : //handles AWS S3
-            new BufferedReader(new FileReader(fullName));      
+            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), String2.ISO_8859_1));      
         try {
             lowReadNccsv(fullName, readData, bufferedReader);
         } finally {
@@ -4058,7 +4058,8 @@ public class Table  {
      * @throws Exception if trouble. No_data is not an error.
      */
 /* project not finished or tested
-    public void writeNccsvDos(DataOutputStream dos, boolean catchScalars, 
+    public void writeNccsvDos(DataOutputStream dos,   //should be Writer to 8859-1 file
+        boolean catchScalars, 
         boolean writeMetadata, int writeDataRows) throws Exception {
 
         //figure out what's what
@@ -5062,15 +5063,17 @@ String stationsXml =
             if (reallyVerbose) 
                 msg += " finished, nRows=" + nRows() +
                     " time=" + (System.currentTimeMillis() - time) + "ms";
+            if (xmlReader != null) {
+                xmlReader.close();
+                xmlReader = null;
+            }
+            if (reallyVerbose) String2.log(msg);
 
         } catch (Throwable t) {
             if (!reallyVerbose) String2.log(msg); 
-            throw t;
-
-        } finally {
             if (xmlReader != null)
                 xmlReader.close();
-            if (reallyVerbose) String2.log(msg);
+            throw t;
         }
     }
 
@@ -5466,7 +5469,7 @@ Dataset {
 
 
     /**
-     * This is like the other saveAsHtml, but saves to a UTF-8 file.
+     * This is like the other saveAsHtml, but saves to a UTF-8 file (not just an outputStream).
      *
      * @param fullFileName the complete file name (including directory and
      *    extension, usually ".htm" or ".html").
@@ -6398,17 +6401,19 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
+            netcdfFile.close(); 
+            netcdfFile = null;
             if (reallyVerbose) 
-                msg += " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                    " TIME=" + (System.currentTimeMillis() - time) + "ms";
+                String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
+                    " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (netcdfFile != null) {
+                try {netcdfFile.close(); } catch (Throwable t9) {}
+            }
             throw t;
 
-        } finally {
-            netcdfFile.close(); 
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -6464,18 +6469,17 @@ Dataset {
                 convertToUnsignedPAs();
                 standardize(standardizeWhat);
             }
-
+            netcdfFile.close(); 
+            netcdfFile = null;
             if (reallyVerbose) 
                 msg += " finished. nColumns=" + nColumns() +  
                     " TIME=" + (System.currentTimeMillis() - time) + "ms";
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (netcdfFile != null)
+                try {netcdfFile.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally {
-            netcdfFile.close(); 
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -6601,17 +6605,17 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
-            if (reallyVerbose) msg +=  
-                " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+            netcdfFile.close();
+            netcdfFile = null;
+            if (reallyVerbose) 
+                String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
+                    " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            if (netcdfFile != null)
+                try {netcdfFile.close(); } catch (Throwable t9) {}
+            String2.log(msg); 
             throw t;
-
-        } finally {
-            netcdfFile.close();
-            if (reallyVerbose) String2.log(msg);
         }
     }
     
@@ -6782,17 +6786,17 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
-            if (reallyVerbose) msg +=  
-                " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+            ncFile.close();
+            ncFile = null;
+            if (reallyVerbose) String2.log(
+                msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (ncFile != null)
+                try {ncFile.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally {
-            ncFile.close(); 
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -7180,18 +7184,19 @@ Dataset {
             }
             decodeCharsAndStrings();
             convertToUnsignedPAs();
+            ncFile.close();
+            ncFile = null;
             if (verbose && varsNotFound.size() > 0) 
                 String2.log("  vars not found: " + varsNotFound.toString());
-            if (reallyVerbose) msg += " finished. nRows=" + nRows() + 
-                " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms";
+            if (reallyVerbose) 
+                String2.log(msg + " finished. nRows=" + nRows() + 
+                    " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (ncFile != null)
+                try {ncFile.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally {            
-            ncFile.close(); 
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -8036,18 +8041,18 @@ Dataset {
             decodeCharsAndStrings();
             convertToUnsignedPAs();
 
-            if (reallyVerbose) msg += 
-                " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
-                " time=" + (System.currentTimeMillis() - time) + "ms";
+            ncFile.close();
+            ncFile = null;
+            if (reallyVerbose)
+                String2.log(msg + 
+                    " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg +"\n" + Math2.memoryString()); 
+            if (ncFile != null)
+                try {ncFile.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally  {
-            ncFile.close(); 
-            if (debugMode) msg += "\n" + Math2.memoryString();                
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -8774,7 +8779,7 @@ Dataset {
     }
 
     /**
-     * This reads and flattens a group of variables in a sequence or nested sequence
+     * 2021: NOT FINISHED. This reads and flattens a group of variables in a sequence or nested sequence
      * in a .nc or .bufr file.
      * <br>For strings, this always calls String2.trimEnd(s)
      * 
@@ -8814,7 +8819,7 @@ Dataset {
      *    or a requested dimension's size=0, 
      *    it is not an error and it returns an empty table.
      */
-    public void readNcSequence(String fullName, 
+/*    public void readNcSequence(String fullName, 
         StringArray loadVarNames, 
         StringArray loadSequenceNames, 
         boolean getMetadata, 
@@ -8996,7 +9001,7 @@ Dataset {
                         seqIter1.close();
                     }
 */
-
+/*
                 } else { //outerVar isn't a sequence
                     if (loadVarNamesSet == null || loadVarNamesSet.contains(outerVarName)) {                       
                         PrimitiveArray tpa = NcHelper.getPrimitiveArray(outerVar.read(), false, NcHelper.isUnsigned(outerVar)); //buildStringsFromChar
@@ -9008,23 +9013,23 @@ Dataset {
                 String2.log(toString());
             }
 
-            if (reallyVerbose) msg += 
-                " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
-                " time=" + (System.currentTimeMillis() - time) + "ms";
+            ncFile.close();
+            ncFile = null;
+            if (reallyVerbose) 
+                String2.log(msg +  
+                    " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
+                    " time=" + (System.currentTimeMillis() - time) + "ms");
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg + "\n" + Math2.memoryString()); 
+            if (ncFile != null)
+                try {ncFile.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally  {
-            ncFile.close(); 
-            if (debugMode) msg += "\n" + Math2.memoryString();                
-            if (reallyVerbose) String2.log(msg);
         }
     }
+*/
 
-
-    /** This tests readNcSequence. */
-    public static void testReadNcSequence() throws Exception {
+    /** NOT FINISHED. This tests readNcSequence. */
+/*    public static void testReadNcSequence() throws Exception {
         verbose = true;
         reallyVerbose = true;
         boolean oDebugMode = debugMode;
@@ -9034,7 +9039,6 @@ Dataset {
         String fiName = "/data/andy/pilot_20210818202736_IUPA50_EGRR_181930.bufr"; //String2.unitTestDataDir + "";
         String2.log(NcHelper.ncdump(fiName, ""));
         String results, expectedStart, expectedEnd;
-        /* */
 
         //** don't specify varNames or dimNames -- it find vars with most dims
         table.readNcSequence(fiName, new StringArray(), new StringArray(),  
@@ -9059,13 +9063,9 @@ Dataset {
             StringArray.fromCSV("3.1,3.2")); //conVals
         Test.ensureEqual(table.nRows(), 0, "nRows"); 
 
-
-
-
         //done
-        /* */
         debugMode = oDebugMode;
-    }
+    } */
 
     /** This tests unpack by reading an Argo Profile file. */
     public static void testUnpack() throws Exception {
@@ -11824,26 +11824,18 @@ Dataset {
             reorderColumns(loadVariableNames, true); //discard others
             decodeCharsAndStrings();
             convertToUnsignedPAs();
-            
+
+            ncFile.close();
+            ncFile = null;
             if (ncCFcc != null) ncCFcc.set(99);
-            if (reallyVerbose) msg += " finished (nLevels=2, readAs=" + readAs + 
+            if (reallyVerbose) String2.log(msg + " finished (nLevels=2, readAs=" + readAs + 
                 "). nRows=" + nRows() + " nCols=" + nColumns() + 
-                " time=" + (System.currentTimeMillis() - time) + "ms";
+                " time=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (ncFile != null) try {ncFile.close(); } catch (Throwable t2) {};
             throw t;
-
-        } finally {
-            //make sure ncFile is explicitly closed
-            if (ncFile != null) {
-                try {
-                    ncFile.close();
-                } catch (Throwable t) {
-                    msg += "\n" + MustBe.throwableToString(t);
-                }
-            }
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -20865,22 +20857,15 @@ String2.log(table.dataToString());
                 reorderColumns(colNames, true);
 
             //we're done
-            if (reallyVerbose) msg += 
+            if (reallyVerbose) String2.log(msg + 
                 " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
-                " time=" + (System.currentTimeMillis() - time) + "ms";
+                " time=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Exception e) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (ncFile != null) try {ncFile.close(); } catch (Throwable t) {};
             throw new Exception(String2.ERROR + " in readInvalidCRA(" + fullName + "): " + 
                 e.toString(), e);
-
-        } finally {
-            //make sure ncFile is explicitly closed
-            if (ncFile != null) {
-                try { ncFile.close();
-                } catch (Throwable t2) {}
-            }
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -24148,26 +24133,24 @@ String2.log(table.dataToString());
                     new java.io.File(fullOutName + randomInt));
             } finally {
                 ais.close();
-                dis = null;
+                ais = null;
             }
 
+            dis.close();
+            dis = null;
             File2.rename(fullOutName + randomInt, fullOutName); //throws Exception if trouble
-
-            if (reallyVerbose) msg += " finished.  nRows=" + nRow + 
+            
+            if (reallyVerbose) String2.log(msg + " finished.  nRows=" + nRow + 
                 " nChannels=" + nCol + " encoding=" + encoding.toString() + 
                 " isBigEndian=true" +
                 " nBits=" + nBits + " isFloat=" + isFloat + 
-                " time=" + (System.currentTimeMillis() - startTime) + "ms";
+                " time=" + (System.currentTimeMillis() - startTime) + "ms");
 
         } catch (Exception e) {
-            if (!reallyVerbose) String2.log(msg); 
-            if (dis != null)
-                dis.close();
+            String2.log(msg); 
+            if (dis != null) try {dis.close(); } catch (Throwable t) {};
             File2.delete(fullOutName + randomInt);
             throw e;
-
-        } finally {
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -25017,17 +25000,16 @@ String2.log(table.dataToString());
                 }
             }
 
-            if (reallyVerbose) msg +=  
+            netcdfFile.close(); 
+            netcdfFile = null;
+            if (reallyVerbose) String2.log(msg +  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t9) {};
             throw t;
-
-        } finally {
-            netcdfFile.close();
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -25390,20 +25372,15 @@ String2.log(table.dataToString());
             globalAttributes = getNcGlobalAttributes(netcdfFile);
             columnAttributes = getNcVariableAttributes(loadVariables);
             appendNcRows(loadVariables, 0, -1);
-            if (reallyVerbose) msg += 
+            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t) {};
+            if (reallyVerbose) String2.log(msg + 
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t) {};
             throw t;
-
-        } finally {
-            try {
-                netcdfFile.close(); //make sure it is explicitly closed
-            } catch (Exception e) {
-            }
-            if (reallyVerbose) String2.log(msg);
         }
     }
 */
@@ -28743,17 +28720,18 @@ String2.log(table.dataToString());
             File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
 
             //diagnostic
-            if (reallyVerbose) msg +=  
+            if (reallyVerbose) String2.log(msg +  
                 " done. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h");
 
         } catch (Exception e) {
-            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + "\n" + 
+                msg + "\n" + 
+                MustBe.throwableToString(e));
             if (ncWriter != null) {
                 try {ncWriter.abort(); } catch (Exception e9) {}
                 File2.delete(fullName + randomInt); 
-                ncWriter = null;
             }
 
             //delete any existing file
@@ -28761,9 +28739,6 @@ String2.log(table.dataToString());
             if (!reallyVerbose) String2.log(msg);
 
             throw e;
-
-        } finally {
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -29267,27 +29242,22 @@ String2.log(table.dataToString());
             File2.rename(fullName + randomInt, fullName); //throws Exception if trouble
 
             //diagnostic
-            if (reallyVerbose) msg += 
+            if (reallyVerbose) String2.log(msg + 
                 " done. make4IndicesTime=" + make4IndicesTime +
-                " total TIME=" + (System.currentTimeMillis() - time) + "ms";
+                " total TIME=" + (System.currentTimeMillis() - time) + "ms");
             //String2.log(NcHelper.ncdump(fullName, "-h"));
 
         } catch (Exception e) {
-            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e));
-            if (ncWriter != null) {
-                try {ncWriter.abort(); } catch (Exception e9) {}
-                File2.delete(fullName + randomInt); 
-                ncWriter = null;
-            }
+            String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + "\n" +
+                msg + "\n" +
+                MustBe.throwableToString(e));
+            if (ncWriter != null) {try {ncWriter.abort(); } catch (Exception e9) {} }
 
             //delete the destination file, if any
+            File2.delete(fullName + randomInt);
             File2.delete(fullName);
-            if (!reallyVerbose) String2.log(msg);
 
             throw e;
-
-        } finally {
-            if (reallyVerbose) String2.log(msg);
         }
 
 
@@ -29388,16 +29358,15 @@ String2.log(table.dataToString());
         Statement statement = con.createStatement();
         try {
             readSqlResultSet(statement.executeQuery(query));
-            if (reallyVerbose) msg += " finished. nColumns=" + nColumns() +
-                " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms";
+            statement.close();
+            statement = null;
+            if (reallyVerbose) String2.log(msg + " finished. nColumns=" + nColumns() +
+                " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - time) + "ms");            
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (statement != null) try { statement.close(); } catch (Throwable t9) {}
             throw t;
-
-        } finally {
-            statement.close();
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -30902,9 +30871,9 @@ String2.log(table.dataToString());
             if (!append)  //replace the existing file
               File2.rename(fullFileName + randomInt, fullFileName); //throws Exception if trouble
 
-            if (reallyVerbose) msg +=  
+            if (reallyVerbose) String2.log(msg +  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
-                " TIME=" + (System.currentTimeMillis() - time) + "ms";
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
         } catch (Exception e) {
             if (bw != null) {
@@ -30913,11 +30882,8 @@ String2.log(table.dataToString());
             File2.delete(fullFileName + randomInt);
             File2.delete(fullFileName);
 
-            if (!reallyVerbose) String2.log(msg);
+            String2.log(msg);
             throw e;
-
-        } finally {
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -31266,18 +31232,17 @@ String2.log(table.dataToString());
                     isTimeStamp, "");
             }
 
+            writer.flush(); //essential (but done by close?)
+            writer.close(); //it should call flush
             //done!
-            if (reallyVerbose) msg += " finished. TIME=" + 
-                (System.currentTimeMillis() - time) + "ms\n";
+            if (reallyVerbose) String2.log(msg + " finished. TIME=" + 
+                (System.currentTimeMillis() - time) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
-            throw t;
+            String2.log(msg); 
+            if (writer != null) try {writer.close(); } catch (Throwable t9) {};
 
-        } finally {
-            writer.flush(); //essential
-            writer.close();
-            if (reallyVerbose) String2.log(msg);
+            throw t;
         }
 
     }
@@ -32281,16 +32246,15 @@ String2.log(table.dataToString());
      :resolution = 0.001f; // float
      */
 
-            if (reallyVerbose) msg += " finished. nColumns=" + nColumns() +
-                " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - tTime) + "ms";
+            nc.close();
+            nc = null;
+            if (reallyVerbose) String2.log(msg + " finished. nColumns=" + nColumns() +
+                " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - tTime) + "ms");
 
         } catch (Throwable t) {
-            if (!reallyVerbose) String2.log(msg); 
+            String2.log(msg); 
+            if (nc != null) try {nc.close(); } catch (Throwable t9) {};
             throw t;
-
-        } finally {
-            nc.close();
-            if (reallyVerbose) String2.log(msg);
         }
     }
 
@@ -35009,7 +34973,7 @@ readAsNcCF?
                     if (test == 37) testReadMultidimNc();
                     if (test == 38) testHardReadMultidimNc();
                     if (test == 39) testUnpack();
-                    if (test == 40) testReadNcSequence();
+                    //if (test == 40) testReadNcSequence(); //2021 NOT FINISHED
 
                     if (test == 41 && doSlowTestsToo) testReadInvalidCRA(); //very slow
 

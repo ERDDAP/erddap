@@ -326,15 +326,18 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
     /**
      * This returns the childDataset (if not null) or the localChildDataset.
+     *
+     * @param language the index of the selected language
      */
-    public EDDGrid getChildDataset() {
+    public EDDGrid getChildDataset(int language) {
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = childDataset;
         if (tChildDataset == null) {
             tChildDataset = erddap.gridDatasetHashMap.get(localChildDatasetID);
             if (tChildDataset == null) {
                 EDD.requestReloadASAP(localChildDatasetID);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                throw new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(underlying local datasetID=" + localChildDatasetID + " not found)"); 
             }
         }
@@ -352,6 +355,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -363,13 +367,13 @@ public class EDDTableFromEDDGrid extends EDDTable{
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
+        EDDGrid tChildDataset = getChildDataset(language);
 
         //update the internal childDataset
-        return tChildDataset.lowUpdate(msg, startUpdateMillis);
+        return tChildDataset.lowUpdate(language, msg, startUpdateMillis);
     }
 
    /** 
@@ -377,17 +381,18 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
+        EDDGrid tChildDataset = getChildDataset(language);
         //String2.log("\n>> getSourceData tChildDataset type=" + tChildDataset.className);
 
         //parse the userDapQuery into a DESTINATION query
@@ -396,7 +401,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         //parseUserDapQuery, not getSourceQueryFromDapQuery.  Get DESTINATION resultsVars+constraints.
-        parseUserDapQuery(userDapQuery,  
+        parseUserDapQuery(language, userDapQuery,  
             resultsVariables,  //doesn't catch constraintVariables that aren't in users requested results
             constraintVariables, constraintOps, constraintValues, false); //repair
             //Non-regex EDVTimeStamp constraintValues will be returned as epochSeconds
@@ -458,10 +463,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
                     } 
                 }
                 if (!passed) 
-                    throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (" + 
-                        MessageFormat.format(EDStatic.queryErrorNeverTrue, 
-                            conVar + conOp + conValD) + 
-                        ")");
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        MustBe.THERE_IS_NO_DATA + " (" + MessageFormat.format(EDStatic.queryErrorNeverTrueAr[0]       , conVar + conOp + conValD) + ")",
+                        MustBe.THERE_IS_NO_DATA + " (" + MessageFormat.format(EDStatic.queryErrorNeverTrueAr[language], conVar + conOp + conValD) + ")"));
 
                 if (oldAvMin != avMin[av] || oldAvMax != avMax[av])
                     hasAvConstraints = true;
@@ -475,10 +479,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
             EDVGridAxis edvga = childDatasetAV[av];
             //are the constraints impossible?
             if (avMin[av] > avMax[av])
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " + 
-                    MessageFormat.format(EDStatic.queryErrorNeverTrue, 
-                        edvga.destinationName() + ">=" + avMin[av] + " and " +
-                        edvga.destinationName() + "<=" + avMax[av]));            
+                throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + MessageFormat.format(EDStatic.queryErrorNeverTrueAr[0]       , edvga.destinationName() + ">=" + avMin[av] + " and " + edvga.destinationName() + "<=" + avMax[av]),
+                    MustBe.THERE_IS_NO_DATA + " " + MessageFormat.format(EDStatic.queryErrorNeverTrueAr[language], edvga.destinationName() + ">=" + avMin[av] + " and " + edvga.destinationName() + "<=" + avMax[av])));            
             if (edvga.isAscending())
                 avConstraints[av] = "[(" + avMin[av] + "):(" + avMax[av] + ")]";
             else
@@ -518,7 +521,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 }
             }
             if (debugMode) String2.log(">>nDvNames > 0, gridDapQuery=" + gridDapQuery);
-            GridDataAccessor gda = new GridDataAccessor(tChildDataset, gridRequestUrl, 
+            GridDataAccessor gda = new GridDataAccessor(language, tChildDataset, gridRequestUrl, 
                 gridDapQuery.toString(), true, //rowMajor
                 false); //convertToNaN (would be true, but TableWriterSeparatedValue will do it)
 
@@ -566,9 +569,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
                     if (debugMode) String2.log(tTable.dataToString(5));
                     if (Thread.currentThread().isInterrupted())
                         throw new SimpleException("EDDTableFromEDDGrid.getDataForDapQuery" + 
-                            EDStatic.caughtInterrupted);      
+                            EDStatic.caughtInterruptedAr[0]);      
 
-                    standardizeResultsTable(requestUrl, //applies all constraints
+                    standardizeResultsTable(language, requestUrl, //applies all constraints
                         userDapQuery, tTable); 
                     tableWriter.writeSome(tTable);
                     tTable = makeEmptySourceTable(sourceTableVars, chunkNRows); 
@@ -585,7 +588,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             //finish
             if (tTable.nRows() > 0) {
-                standardizeResultsTable(requestUrl,  //applies all constraints
+                standardizeResultsTable(language, requestUrl,  //applies all constraints
                     userDapQuery, tTable); 
                 tableWriter.writeSome(tTable);
             }
@@ -626,7 +629,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
             //parse the gridDapQuery
             StringArray tDestinationNames = new StringArray();
             IntArray tConstraints = new IntArray(); //start,stop,stride for each tDestName
-            tChildDataset.parseAxisDapQuery(gridDapQuery.toString(), tDestinationNames, 
+            tChildDataset.parseAxisDapQuery(language, gridDapQuery.toString(), tDestinationNames, 
                 tConstraints, false);
 
             //figure out the shape and make the NDimensionalIndex
@@ -656,9 +659,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 if (++cumNRows >= chunkNRows) {
                     if (Thread.currentThread().isInterrupted())
                         throw new SimpleException("EDDTableFromDatabase.getDataForDapQuery" + 
-                            EDStatic.caughtInterrupted);
+                            EDStatic.caughtInterruptedAr[0]);
         
-                    standardizeResultsTable(requestUrl, //applies all constraints
+                    standardizeResultsTable(language, requestUrl, //applies all constraints
                         modifiedUserDapQuery.toString(), tTable); 
                     tableWriter.writeSome(tTable);
                     //??? no need for make a new table, colOrder may have changed, but PaAr hasn't
@@ -673,7 +676,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             //finish
             if (tTable.nRows() > 0) {
-                standardizeResultsTable(requestUrl,  //applies all constraints
+                standardizeResultsTable(language, requestUrl,  //applies all constraints
                     modifiedUserDapQuery.toString(), tTable); 
                 tableWriter.writeSome(tTable);
             }
@@ -681,7 +684,9 @@ public class EDDTableFromEDDGrid extends EDDTable{
             
         } else {        
             //if get here, no results variables?! error should have been thrown before
-            throw new SimpleException(EDStatic.queryError + " No results variables?!"); 
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + " No results variables?!",
+                EDStatic.queryErrorAr[language] + " No results variables?!")); 
         }
     }
 
@@ -691,6 +696,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -700,27 +706,28 @@ public class EDDTableFromEDDGrid extends EDDTable{
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
-        return tChildDataset.accessibleViaFilesFileTable(nextPath);
+        EDDGrid tChildDataset = getChildDataset(language);
+        return tChildDataset.accessibleViaFilesFileTable(language, nextPath);
     }
 
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
          if (!accessibleViaFiles)
              return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
-        EDDGrid tChildDataset = getChildDataset();
-        return tChildDataset.accessibleViaFilesGetLocal(relativeFileName);
+        EDDGrid tChildDataset = getChildDataset(language);
+        return tChildDataset.accessibleViaFilesGetLocal(language, relativeFileName);
      }
 
 
@@ -733,11 +740,12 @@ public class EDDTableFromEDDGrid extends EDDTable{
         debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "erdMBsstdmday_AsATable";
+        int language = 0;
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, id);
         String dir = EDStatic.fullTestCacheDirectory;
 /* */
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "1", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -888,7 +896,7 @@ expected2 =
         Test.ensureEqual(results.substring(tPo), expected2, "results=\n" + results);      
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -907,7 +915,7 @@ expected2 =
         //query 1 axis
         query = "latitude&latitude>20&latitude<=20.1" +
             "&longitude=200"; //longitude constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -920,7 +928,7 @@ expected2 =
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //query 1 axis =min    lon is 120 - 320
-        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=120", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude=120", 
             dir, tedd.className() + "1axisMin", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -930,7 +938,7 @@ expected2 =
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //query 1 axis <=min 
-        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<=120", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude<=120", 
             dir, tedd.className() + "1axisLEMin", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -941,7 +949,7 @@ expected2 =
 
         //query 1 axis <min fails but not immediately
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<120", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude<120", 
                 dir, tedd.className() + "1axisLMin", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -953,7 +961,7 @@ expected2 =
 
         //query 1 axis <min fails immediately
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<-119.99", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude<-119.99", 
                 dir, tedd.className() + "1axisLMin2", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -966,7 +974,7 @@ expected2 =
 
 
         //query 1 axis =max
-        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=320", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude=320", 
             dir, tedd.className() + "1axisMax", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -976,7 +984,7 @@ expected2 =
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //query 1 axis >=max 
-        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>=320", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude>=320", 
             dir, tedd.className() + "1axisGEMax", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -987,7 +995,7 @@ expected2 =
 
         //query 1 axis >max fails but not immediately
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>320", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude>320", 
                 dir, tedd.className() + "1axisGMax", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -999,7 +1007,7 @@ expected2 =
 
         //query 1 axis >max fails immediately
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>320.1", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude>320.1", 
                 dir, tedd.className() + "1axisGMin2", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1013,7 +1021,7 @@ expected2 =
 
         //query time axis =min
         String timeMin = "2008-02-15T12:00:00Z";
-        tName = tedd.makeNewFileForDapQuery(null, null, "time&time=" + timeMin, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time=" + timeMin, 
             dir, tedd.className() + "timeAxisMin", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1023,7 +1031,7 @@ expected2 =
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //query time axis <=min 
-        tName = tedd.makeNewFileForDapQuery(null, null, "time&time<=" + timeMin, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time<=" + timeMin, 
             dir, tedd.className() + "timeAxisLEMin", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1034,7 +1042,7 @@ expected2 =
 
         //query time axis <min fails but not immediately   (< is tested as <=)
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "time&time<2008-02-15T12:00:00Z", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time<2008-02-15T12:00:00Z", 
                 dir, tedd.className() + "timeAxisLMin", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1046,7 +1054,7 @@ expected2 =
 
         //query time axis <=min-1day fails immediately
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "time&time<=2008-02-14T12", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time<=2008-02-14T12", 
                 dir, tedd.className() + "timeAxisLMin2", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1060,7 +1068,7 @@ expected2 =
 
         //query time axis >max fails
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "time&time>2008-03-16T12", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time>2008-03-16T12", 
                 dir, tedd.className() + "timeAxisGMax", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1077,7 +1085,7 @@ expected2 =
         try {
             query = "latitude&latitude>20&latitude<=20.5" +
                 "&longitude=201.04"; //invalid:  in middle of range but no match
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "1axisInvalid", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1092,7 +1100,7 @@ expected2 =
         try {
             query = "latitude&latitude>20&latitude<=20.5" +
                 "&longitude=119"; //invalid:  out of actual_range
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "1axisInvalid", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1106,7 +1114,7 @@ expected2 =
         //query 2 axes
         query = "longitude,latitude&latitude>20&latitude<=20.1" +
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; //time constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1134,7 +1142,7 @@ expected2 =
         //query all axes  (different order)
         query = "latitude,longitude,altitude,time&latitude>20&latitude<=20.1" +
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1164,7 +1172,7 @@ expected2 =
         try {
             query = "latitude,longitude,altitude,time,chlorophyll&latitude>20&latitude<=20.1" +
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; 
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "1axisInvalid", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1178,7 +1186,7 @@ expected2 =
         //query av and dv, with time constraint
         query = "latitude,longitude,altitude,time,sst&latitude>20&latitude<=20.1" +
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1205,7 +1213,7 @@ expected2 =
         //av+dv query with dv and av constraints
         query = //"latitude,longitude,altitude,time,sst&sst>37&time=\"2008-02-15T12\""); 
                   "latitude,longitude,altitude,time,sst&sst%3E37&time=%222008-02-15T12%22"; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test17", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1234,7 +1242,7 @@ expected2 =
         //av query with dv and av constraints
         query = //"latitude,longitude,altitude,time&latitude>0&sst>37&time=\"2008-02-15T12\""); 
                   "latitude,longitude,altitude,time&latitude%3E0&sst%3E37&time=%222008-02-15T12%22"; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test18", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1249,7 +1257,7 @@ expected2 =
         //dv query with dv and av constraint
         query = //"sst&sst>40&time=\"2008-02-15T12\""); 
                   "sst&sst%3E40&time=%222008-02-15T12%22"; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test19", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1264,7 +1272,7 @@ expected2 =
         try {
            query = //"latitude,longitude,altitude,time&latitude>0&sst>37"); 
                      "latitude,longitude,altitude,time&latitude%3E0&sst%3E37"; 
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "maxAxis0Error", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -1911,11 +1919,12 @@ expected2 =
     /** 
      * This runs generateDatasetsXmlFromErddapCatalog.
      * 
+     * @param language the index of the selected language
      * @param oPublicSourceUrl  A complete URL of an ERDDAP (ending with "/erddap/"). 
      * @param datasetIDRegex  E.g., ".*" for all dataset Names.
      * @return a String with the results
      */
-    public static String generateDatasetsXml( 
+    public static String generateDatasetsXml(int language, 
         String oPublicSourceUrl, String datasetIDRegex, int tMaxAxis0) throws Throwable {
 
         String2.log("*** EDDTableFromEDDGrid.generateDatasetsXmlFromErddapCatalog(" +
@@ -1954,18 +1963,15 @@ expected2 =
         PrimitiveArray griddapPA   = table.findColumn("griddap");
         StringBuilder sb = new StringBuilder();
         int nRows = table.nRows();
-        boolean sIsSomething = String2.isSomething(EDStatic.EDDTableFromEDDGridSummary);
         for (int row = 0; row < nRows; row++) {
             String tDatasetID = datasetIDPA.getString(row);
             String tTitle   = titlePA.getString(row) + ", (As A Table)";
             String tSummary = 
-                (sIsSomething && tMaxAxis0 > 0?
-                    MessageFormat.format(EDStatic.EDDTableFromEDDGridSummary, tDatasetID, tMaxAxis0) + "\n" : 
+                (tMaxAxis0 > 0?
+                    MessageFormat.format(EDStatic.EDDTableFromEDDGridSummaryAr[language], tDatasetID, tMaxAxis0) + "\n" : 
                     "") +
-                summaryPA.getString(row);
-            if (sIsSomething)
-                 
-sb.append(
+                summaryPA.getString(row);               
+            sb.append(
 "<dataset type=\"EDDTableFromEDDGrid\" datasetID=\"" + tDatasetID + "_AsATable\" active=\"true\">\n" +
 "    <addAttributes>\n" +
 "        <att name=\"maxAxis0\" type=\"int\">" + tMaxAxis0 + "</att>\n" +
@@ -1992,11 +1998,12 @@ sb.append(
 
         String2.log("\n*** EDDTableFromEDDGrid.testGenerateDatasetsXml() ***\n");
         testVerboseOn();
+        int language = 0;
         String url = "http://localhost:8080/cwexperimental/";
         //others are good, different test cases
         String regex = "(erdMBsstdmday|jplMURSST41|zztop)";
 
-        String results = generateDatasetsXml(url, regex, Integer.MAX_VALUE) + "\n"; 
+        String results = generateDatasetsXml(language, url, regex, Integer.MAX_VALUE) + "\n"; 
 
         String expected =
 "<dataset type=\"EDDTableFromEDDGrid\" datasetID=\"erdMBsstdmday_AsATable\" active=\"true\">\n" +
@@ -2017,14 +2024,14 @@ sb.append(
 "NOAA CoastWatch provides SST data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  Currently, only daytime imagery is supported.</att>\n" +
 "    </addAttributes>\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"erdMBsstdmday_AsATableChild\">\n" +
-"        <sourceUrl>http://localhost:8080/cwexperimental/griddap/erdMBsstdmday</sourceUrl>\n" +
+"        <sourceUrl>http://127.0.0.1:8080/cwexperimental/griddap/erdMBsstdmday</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n" +
 "<dataset type=\"EDDTableFromEDDGrid\" datasetID=\"jplMURSST41_AsATable\" active=\"true\">\n" +
 "    <addAttributes>\n" +
 "        <att name=\"maxAxis0\" type=\"int\">10</att>\n" +
-"        <att name=\"title\">Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01&#xb0;, 2002-present, Daily, (As A Table)</att>\n" +
+"        <att name=\"title\">Multi-scale Ultra-high Resolution (MUR) SST Analysis fv04.1, Global, 0.01°, 2002-present, Daily, (As A Table)</att>\n" +
 "        <att name=\"summary\">NOTE: This dataset is the tabular version of a gridded dataset which is also\n" +
 "available in this ERDDAP (see datasetID=jplMURSST41). Most people, most\n" +
 "of the time, will prefer to use the original gridded version of this dataset.\n" +
@@ -2039,7 +2046,7 @@ sb.append(
 "This is a merged, multi-sensor L4 Foundation Sea Surface Temperature (SST) analysis product from Jet Propulsion Laboratory (JPL). This daily, global, Multi-scale, Ultra-high Resolution (MUR) Sea Surface Temperature (SST) 1-km data set, Version 4.1, is produced at JPL under the NASA MEaSUREs program. For details, see https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1 . This dataset is part of the Group for High-Resolution Sea Surface Temperature (GHRSST) project. The data for the most recent 7 days is usually revised everyday.  The data for other days is sometimes revised.</att>\n" +
 "    </addAttributes>\n" +
 "    <dataset type=\"EDDGridFromErddap\" datasetID=\"jplMURSST41_AsATableChild\">\n" +
-"        <sourceUrl>http://localhost:8080/cwexperimental/griddap/jplMURSST41</sourceUrl>\n" +
+"        <sourceUrl>http://127.0.0.1:8080/cwexperimental/griddap/jplMURSST41</sourceUrl>\n" +
 "    </dataset>\n" +
 "</dataset>\n" +
 "\n\n";

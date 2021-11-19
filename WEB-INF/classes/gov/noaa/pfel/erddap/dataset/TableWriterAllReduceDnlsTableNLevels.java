@@ -33,15 +33,16 @@ public class TableWriterAllReduceDnlsTableNLevels extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName-safe fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      * @param tnLevels The number of dir levels beyond baseDir (0+)
      */
-    public TableWriterAllReduceDnlsTableNLevels(EDD tEdd, String tNewHistory, String tDir,
+    public TableWriterAllReduceDnlsTableNLevels(int language, EDD tEdd, String tNewHistory, String tDir,
         String tFileNameNoExt, String tBaseDir, int tnLevels) {
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt);
+        super(language, tEdd, tNewHistory, tDir, tFileNameNoExt);
         baseDir = tBaseDir;
         nLevels = tnLevels;
     }

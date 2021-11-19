@@ -374,13 +374,14 @@ boolean addTestPostUser = false;
      * preparedStatements (so String values are properly escaped and
      * numbers are assured to be numbers).
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         if (reallyVerbose) String2.log("EDDTableFromPostDatabase query=" + userDapQuery);
@@ -388,7 +389,7 @@ boolean addTestPostUser = false;
         userDapQuery = reviseDapQueryForPost(loggedInAs, userDapQuery);
 
         //then get the data
-        super.getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);
+        super.getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tableWriter);
     }
 
     /** 
@@ -511,6 +512,7 @@ boolean addTestPostUser = false;
     public static void testPostSurg3() throws Throwable {
         String2.log("\n*** EDDTableFromPostDatabase.testPostSurg3");
         testVerboseOn();
+        int language = 0;
         long eTime;
         int po;
         String tQuery, tName, results, expected;
@@ -519,7 +521,7 @@ boolean addTestPostUser = false;
             EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postSurg3"); 
  
             //das
-            tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_ps3_Data", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -856,7 +858,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_ps3_Data", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -913,7 +915,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             //test 1 role, public data   not loggedIn
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1role", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
@@ -926,7 +928,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             //test 1 role, public data   loggedIn for other data
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
-            tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleLIOD", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //same expected
@@ -938,7 +940,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
-                tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+                tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleP", ".csv"); 
                 results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
@@ -953,7 +955,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
-                tName = tedd.makeNewFileForDapQuery(null, "WELCH_DAVID", tQuery, 
+                tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleWP", ".csv"); 
                 results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
@@ -967,7 +969,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             //test 1 role, public data, logged in
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
-            tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleL", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
@@ -982,7 +984,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             //test public data + logged in
             eTime = System.currentTimeMillis();
             tQuery = "";
-            tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1rolePDLI", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
@@ -998,7 +1000,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             //test public data all have lat/lon/time?
             eTime = System.currentTimeMillis();
             tQuery = "longitude,latitude,time&time>=2007-05-01&time<2007-09-01";
-            tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_LLT", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log("results=\n" + results.substring(0, Math.min(results.length(), 10000)));
@@ -1028,7 +1030,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
             EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, "postDet3"); 
 /* */
             //das
-            tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_pd3_Data", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -1218,7 +1220,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_pd3_Data", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -1249,7 +1251,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             //test 1 tag, public data   not loggedIn
             eTime = System.currentTimeMillis();
             tQuery = "&unique_tag_id=\"19835\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1tag", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
 //the row from the surgery table is
@@ -1267,7 +1269,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             //test 1 role, public data   not loggedIn
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1role", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //expected = same
@@ -1277,7 +1279,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             //test 1 role, public data   loggedIn for other data
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
-            tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleLIOD", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //same expected
@@ -1289,7 +1291,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
-                tName = tedd.makeNewFileForDapQuery(null, null, tQuery, 
+                tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleP", ".csv"); 
                 results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
@@ -1304,7 +1306,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             try {
-                tName = tedd.makeNewFileForDapQuery(null, "WELCH_DAVID", tQuery, 
+                tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleWP", ".csv"); 
                 results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
@@ -1318,7 +1320,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/postDet3.das\";\n" +
             //test 1 role, private data, logged in
             eTime = System.currentTimeMillis();
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
-            tName = tedd.makeNewFileForDapQuery(null, "ROBICHAUD_DAVID", tQuery, 
+            tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleL", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
 String2.log("\n" + results.substring(0, 4000) + "\n");
@@ -1354,7 +1356,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
             EDDTableFromPostDatabase tedd = (EDDTableFromPostDatabase)oneFromDatasetsXml(null, 
                 "testPostDet3"); 
 
-            tName = tedd.makeNewFileForDapQuery(null, null, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, 
                 //fails:
                 //"&PI=\"BARRY BEREJIKIAN\"&scientific_name=\"ONCORHYNCHUS MYKISS\"" +
                 //"&stock=\"BIG BEEF CREEK\"&unique_tag_id=\"1039490\"", 
@@ -1415,7 +1417,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
         try {
             EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testPostSurg3"); 
 
-            tName = tedd.makeNewFileForDapQuery(null, null, "&PI=\"DAVID WELCH\"", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "&PI=\"DAVID WELCH\"", 
                 dir, tedd.className() + "_ps3_Data", ".nc"); 
             table = new Table();
             table.readFlatNc(dir + tName, null, 1); //standardizeWhat=1
@@ -1435,7 +1437,7 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
 "1000_A69-1204_1030201", "1000_A69-1204_1032813", "1001_A69-1204_1030202", 
 "1001_A69-1204_1032814", "1001_A69-1204_9174D"};
             for (int tag = 0; tag < tags.length; tag++) {
-                tName = tedd.makeNewFileForDapQuery(null, null, 
+                tName = tedd.makeNewFileForDapQuery(language, null, null, 
                     "&unique_tag_id=\"" + tags[tag] + "\"", 
                     dir, tedd.className() + "_ps3_tag" + tag, ".nc"); 
                 Table table2 = new Table();

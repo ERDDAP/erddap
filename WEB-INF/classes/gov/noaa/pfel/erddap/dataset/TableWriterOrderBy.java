@@ -36,6 +36,7 @@ public class TableWriterOrderBy extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -44,12 +45,12 @@ public class TableWriterOrderBy extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderBy(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderBy(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
-        String err = EDStatic.queryError +
+        String err = EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
                "No column names were specified for 'orderBy'.";
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
             throw new SimpleException(err);
@@ -58,7 +59,7 @@ public class TableWriterOrderBy extends TableWriterAll {
             throw new SimpleException(err);
         for (int i = 0; i < orderBy.length; i++)
             if (orderBy[i].indexOf('/') >= 0)
-                throw new SimpleException(EDStatic.queryError + 
+                throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                     "'orderBy' doesn't support '/' (" + orderBy[i] + ").");
     }
 
@@ -112,7 +113,7 @@ public class TableWriterOrderBy extends TableWriterAll {
             keys[ob] = table.findColumnNumber(orderBy[ob]);
             ascending[ob] = true;
             if (keys[ob] < 0)
-                throw new SimpleException(EDStatic.queryError +
+                throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                     "'orderBy' column=" + orderBy[ob] + " isn't in the results table.");
         }
 

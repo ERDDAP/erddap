@@ -62,12 +62,12 @@ public class TableWriterSeparatedValue extends TableWriter {
      *    ERDDAP .csv and .tsv use "NaN" because they did since the beginning and
      *    because it is easier/safer to replace "NaN" with "" than replace nothing with "NaN".
      */
-    public TableWriterSeparatedValue(EDD tEdd, String tNewHistory, 
+    public TableWriterSeparatedValue(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource,
         String tSeparator, boolean tTwoQuotes, boolean tWriteColumnNames, 
         char tWriteUnits, String tNanString) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         separator = tSeparator;
         twoQuotes = tTwoQuotes;
         writeColumnNames = tWriteColumnNames;
@@ -234,11 +234,11 @@ public class TableWriterSeparatedValue extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource tOutputStreamSource, String tSeparator, boolean tTwoQuotes, 
         boolean tWriteColumnNames, char tWriteUnits, String tNanString) throws Throwable {
 
-        TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(tEdd, 
+        TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(language, tEdd, 
             tNewHistory, tOutputStreamSource, tSeparator,tTwoQuotes, 
             tWriteColumnNames, tWriteUnits, tNanString);
         twsv.writeAllAndFinish(table);

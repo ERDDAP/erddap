@@ -71,10 +71,10 @@ public class TableWriterEsriCsv extends TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      */
-    public TableWriterEsriCsv(EDD tEdd, String tNewHistory, 
+    public TableWriterEsriCsv(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
     }
 
     /**
@@ -237,10 +237,10 @@ public class TableWriterEsriCsv extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource tOutputStreamSource) throws Throwable {
 
-        TableWriterEsriCsv twsv = new TableWriterEsriCsv(tEdd, tNewHistory, 
+        TableWriterEsriCsv twsv = new TableWriterEsriCsv(language, tEdd, tNewHistory, 
             tOutputStreamSource);
         twsv.writeAllAndFinish(table);
     }

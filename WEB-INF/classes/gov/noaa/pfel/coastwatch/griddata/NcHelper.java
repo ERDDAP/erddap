@@ -2083,7 +2083,7 @@ public class NcHelper  {
      */
     public static void writePAsInNc3(String fullName, StringArray varNames, 
         PrimitiveArray pas[]) throws Exception {
-        String msg = "  NcHelper.savePAsInNc " + fullName; 
+        String msg = "  NcHelper.writePAsInNc3 " + fullName; 
         long time = System.currentTimeMillis();
 
         //If procedure fails half way through, there won't be a half-finished file.
@@ -2168,8 +2168,8 @@ public class NcHelper  {
             File2.rename(fullName + randomInt, fullName);
 
             //diagnostic
-            if (reallyVerbose) msg += " finished. TIME=" + 
-                (System.currentTimeMillis() - time) + "ms";
+            if (reallyVerbose) 
+                String2.log(msg + " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
             //String2.log(NcHelper.ncdump(directory + name + ext, "-h"));
 
         } catch (Exception e) {
@@ -2183,8 +2183,6 @@ public class NcHelper  {
             if (!reallyVerbose) String2.log(msg);
 
             throw e;
-        } finally {
-            if (reallyVerbose) String2.log(msg);
         }
 
     }
@@ -2527,16 +2525,19 @@ String2.log(pas13.toString());
                 
 
             //NOTE: instead of closing the ncWriter to write changes to disk, you can use ncWriter.flush().
-        } catch (Exception e9) {
-            String2.log("row=" + row + " " + NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
-            throw e9;
-
-        } finally {
             if (ncWriter != null) {
                 try {ncWriter.abort(); } catch (Exception e9) {}
                 File2.delete(testUnlimitedFileName); 
                 ncWriter = null;
             }
+        } catch (Exception e9) {
+            String2.log("row=" + row + " " + NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(e9));
+            if (ncWriter != null) {
+                try {ncWriter.abort(); } catch (Exception e8) {}
+                File2.delete(testUnlimitedFileName); 
+                ncWriter = null;
+            }
+            throw e9;
         }
 
         results = NcHelper.ncdump(testUnlimitedFileName, "");
@@ -2571,14 +2572,9 @@ String2.log(pas13.toString());
 "      {-123.45, -123.45, -123.45, -123.45, -123.45}\n" +
 "    sst = \n" +  
 "      {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
-"    comment = \"0 comm\", \"1 comm\", \"2 comm\", \"3 comm\", \"4 comm\"\n" +
+"    comment =   \"0 comm\",   \"1 comm\",   \"2 comm\",   \"3 comm\",   \"4 comm\"\n" +
 "}\n";
-        try {
-            Test.ensureEqual(results, expected, "");
-        } catch (Exception e) {
-            Test.knownProblem("I reported this (nc fill value of 9.969209968386869E36 in all by last value of each array) to Sean Arms 2021-01-11", e);
-
-        }
+        Test.ensureEqual(results, expected, "");
 
     }
 

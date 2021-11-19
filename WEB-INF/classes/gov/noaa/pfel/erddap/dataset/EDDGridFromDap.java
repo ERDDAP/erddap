@@ -302,7 +302,7 @@ public class EDDGridFromDap extends EDDGrid {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -554,6 +554,7 @@ public class EDDGridFromDap extends EDDGrid {
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -565,7 +566,7 @@ public class EDDGridFromDap extends EDDGrid {
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
                 
         //read dds
         DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
@@ -599,7 +600,8 @@ public class EDDGridFromDap extends EDDGrid {
         DArrayDimension dad = mainDArray.getDimension(0);
         int newSize = dad.getSize();  
         if (newSize < oldSize) 
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
                 " < oldSize=" + oldSize + ")"); 
         if (newSize == oldSize) {
@@ -632,14 +634,16 @@ public class EDDGridFromDap extends EDDGrid {
             return false;
         }
         if (oldValues.elementType() != newValues.elementType())  //they're canonical, so != works
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + edvga.destinationName() + " dataType changed: " +
                    " new=" + newValues.elementTypeString() +
                 " != old=" + oldValues.elementTypeString() + ")"); 
 
         //ensure last old value is unchanged 
         if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
                   "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
                           " != new=" + newValues.getDouble(0)); 
@@ -666,7 +670,8 @@ public class EDDGridFromDap extends EDDGrid {
         //test isAscending  (having last old value is essential)
         String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
         if (error.length() > 0) 
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + edvga.destinationName() + " was " + 
                 (edvga.isAscending()? "a" : "de") +
                 "scending, but the newest values aren't (" + error + ").)"); 
@@ -833,6 +838,7 @@ public class EDDGridFromDap extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -846,7 +852,7 @@ public class EDDGridFromDap extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -880,7 +886,8 @@ public class EDDGridFromDap extends EDDGrid {
 
                 String2.log(MustBe.throwableToString(t));
                 throw t instanceof WaitThenTryAgainException? t : 
-                    new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    new WaitThenTryAgainException(
+                        EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                         "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
                         t); 
             }
@@ -911,7 +918,7 @@ public class EDDGridFromDap extends EDDGrid {
                         String tError = results[av].almostEqual(pa[av + 1]); 
                         if (tError.length() > 0) 
                             throw new WaitThenTryAgainException(
-                                EDStatic.waitThenTryAgain +
+                                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                                 "\nDetails: The axis values for dataVariable=0,axis=" + av +  
                                 ")\ndon't equal the axis values for dataVariable=" + dv + ",axis=" + av + ".\n" +
                                 tError);
@@ -919,7 +926,8 @@ public class EDDGridFromDap extends EDDGrid {
                 }
 
             } else {
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                throw new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\nDetails: An unexpected data structure was returned from the source (size observed=" + 
                     pa.length + ", expected=" + (axisVariables.length + 1) + ").");
             }
@@ -1447,7 +1455,7 @@ public class EDDGridFromDap extends EDDGrid {
             Math2.almostEqual(4, latSpacing, lonSpacing)) { //MHchlamday has lat=0.04167631 lon=0.04167149
             String ts = "" + (float)latSpacing;
             if (tTitle.indexOf(ts) < 0) { //not ideal. This will fail (in a safe way) if version# (or ...) in title and spacing both equal 1.0.
-                tTitle += ", " + ts + "°";            
+                tTitle += ", " + ts + "Â°";            
                 axisAddTable.globalAttributes().set("title", tTitle); 
             }
         }
@@ -2062,8 +2070,9 @@ String expected2 =
     public static void testForCarleton() throws Throwable {
         //test for Charles Carleton   .nc request failed; others ok
         testVerboseOn();
+        int language = 0;
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "NCOM_Region7_2D"); //should work
-        String tName = gridDataset.makeNewFileForDapQuery(null, null,
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null,
             "surf_el[(2008-06-12T00:00:00):1:(2008-06-12T00:00:00)][(10.0):100:(65.0)][(-150.0):100:(-100.0)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Carleton", ".nc"); 
         String results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
@@ -2091,6 +2100,7 @@ String expected2 =
 
     public static void testForDave() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         //tests for Dave    works, but datasets not always active
         //the cwAM datasets are gone; see active noaa_coastwatch_... datasets
@@ -2101,23 +2111,23 @@ String expected2 =
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, tid);
 
         String2.log("\n\n***** DDS");
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_" + tid, ".dds"); 
         String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
 
         String2.log("\n\n***** DAS ");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_" + tid, ".das"); 
         String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
 
         String2.log("\n\n***** NCDUMP ");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "chlor_a[(2008-03-29T12:00:00):1:(2008-03-29T12:00:00)][(0.0):1:(0.0)][(16.995124378128825):100:(31.00905181853181)][(-99.01235553141787):100:(-78.99636386525192)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_" + tid, ".nc"); 
         String2.log(NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, ""));        
 
         String2.log("\n\n***** PNG ");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlor_a[0][][][]&.colorBar=Rainbow|C|Log|.04|10|", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlor_a[0][][][]&.colorBar=Rainbow|C|Log|.04|10|", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_" + tid + "_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -2127,6 +2137,7 @@ String expected2 =
     public static void testBasic1() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testBasic1\n");
         testVerboseOn();
+        int language = 0;
         EDDGridFromDap gridDataset;
         String name, tName, axisDapQuery, results, expected, error;
         int tPo;
@@ -2158,7 +2169,7 @@ String expected2 =
         //*** test parseQuery with invalid queries
         error = "";
         try {
-            gridDataset.parseDataDapQuery("zztop", destinationNames, constraints, false);  
+            gridDataset.parseDataDapQuery(0, "zztop", destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
@@ -2168,7 +2179,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseDataDapQuery("chlorophyll[][][]", destinationNames, constraints, false);  
+            gridDataset.parseDataDapQuery(0, "chlorophyll[][][]", destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
@@ -2179,7 +2190,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseDataDapQuery(
+            gridDataset.parseDataDapQuery(0,
                 "chlorophyll[(2007-02-06)[][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
@@ -2195,7 +2206,7 @@ String expected2 =
         // but 2007-2-06 is allowed as of 2018-05-17.
         error = "";
         try {
-            gridDataset.parseDataDapQuery(
+            gridDataset.parseDataDapQuery(0, 
                 "chlorophyll[(2007-002-06):(2007-02-06)][][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
@@ -2210,7 +2221,7 @@ String expected2 =
         //invalid date format    2014-10-02
         error = "";
         try {
-            gridDataset.parseDataDapQuery(
+            gridDataset.parseDataDapQuery(0, 
                 "chlorophyll[(2007-02-06):(2007-002-06)][][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
@@ -2225,7 +2236,7 @@ String expected2 =
         //extra dimension    2014-10-02
         error = "";
         try {
-            gridDataset.parseDataDapQuery(
+            gridDataset.parseDataDapQuery(0, 
                 "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)][somethingElse]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
@@ -2238,7 +2249,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("zztop", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery(0, "zztop", destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
@@ -2248,7 +2259,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude,chlorophyll", destinationNames, 
+            gridDataset.parseAxisDapQuery(0, "latitude,chlorophyll", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2260,7 +2271,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseDataDapQuery("chlorophyll,latitude", destinationNames, 
+            gridDataset.parseDataDapQuery(0, "chlorophyll,latitude", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2272,7 +2283,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[", destinationNames, 
+            gridDataset.parseAxisDapQuery(0, "latitude[", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2290,54 +2301,54 @@ String expected2 =
         //*** test valid parseDataDapQuery
         String iso = Calendar2.epochSecondsToIsoStringTZ(1.0260864E9);
         Test.ensureTrue(!gridDataset.isAxisDapQuery(userDapQuery), "");
-        gridDataset.parseDataDapQuery(userDapQuery, destinationNames, constraints, false);
+        gridDataset.parseDataDapQuery(0, userDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
         //pre 2009-09-09 was different. Based on other changes: Dave must have regridded the dataset
         Test.ensureEqual(constraints.toString(), 
             "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 5399, 10, 5927", "");
 
         String tDapQuery  = "chlorophyll[(2007-02-06)][][(29):10:(50)][last:1:last]"; //test last
-        gridDataset.parseDataDapQuery(tDapQuery, destinationNames, constraints, false);
+        gridDataset.parseDataDapQuery(0, tDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
         Test.ensureEqual(constraints.toString(), 
             "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
 
         tDapQuery  = "chlorophyll[(2007-02-06T12:00:00)][][(29):10:(50)][last]"; //test colons
-        gridDataset.parseDataDapQuery(tDapQuery, destinationNames, constraints, false);
+        gridDataset.parseDataDapQuery(0, tDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
         Test.ensureEqual(constraints.toString(), 
             "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
 
         Test.ensureTrue(gridDataset.isAxisDapQuery("time"), "");
-        gridDataset.parseAxisDapQuery("time", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery(0, "time", destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "time", "");        
         //Test.ensureEqual(constraints.toString(), "0, 1, 331", ""); //this will increase once in a while
 
         Test.ensureTrue(gridDataset.isAxisDapQuery("time["), "");
-        gridDataset.parseAxisDapQuery("time[(2007-02-06)]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "time[(2007-02-06)]", destinationNames, 
             constraints, false);
         Test.ensureEqual(destinationNames.toString(), "time", "");
         Test.ensureEqual(constraints.toString(), "206, 1, 206", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last : 1 : last ]", 
+        gridDataset.parseAxisDapQuery(0, "longitude[ last : 1 : last ]", 
             destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "longitude", "");
         Test.ensureEqual(constraints.toString(), "8639, 1, 8639", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last ]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "longitude[ last ]", destinationNames, 
             constraints, false);
         Test.ensureEqual(destinationNames.toString(), "longitude", "");
         Test.ensureEqual(constraints.toString(), "8639, 1, 8639", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last - 20]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "longitude[ last - 20]", destinationNames, 
             constraints, false);
         Test.ensureEqual(constraints.toString(), "8619, 1, 8619", "");
 
-        gridDataset.parseAxisDapQuery("longitude[last+-20]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "longitude[last+-20]", destinationNames, 
             constraints, false);
         Test.ensureEqual(constraints.toString(), "8619, 1, 8619", "");
 
-        gridDataset.parseAxisDapQuery("time[20:10:(2007-02-06)],altitude,longitude[last]", 
+        gridDataset.parseAxisDapQuery(0, "time[20:10:(2007-02-06)],altitude,longitude[last]", 
             destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toNewlineString(), 
             "time\naltitude\nlongitude\n", "");
@@ -2345,26 +2356,26 @@ String expected2 =
             "20, 10, 206, 0, 1, 0, 8639, 1, 8639", "");
 
         //lon: incr=0.04166667   n=8640
-        gridDataset.parseAxisDapQuery("longitude[(last-0.4166)]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "longitude[(last-0.4166)]", destinationNames, 
             constraints, false);
         Test.ensureEqual(constraints.toString(), "8629, 1, 8629", "");
 
-        gridDataset.parseAxisDapQuery("longitude[(last+-0.4166)]", 
+        gridDataset.parseAxisDapQuery(0, "longitude[(last+-0.4166)]", 
             destinationNames, constraints, false);
         Test.ensureEqual(constraints.toString(), "8629, 1, 8629", "");
 
         //time: incr=8days  n=272    16days=16*86400=1382400
-        gridDataset.parseAxisDapQuery("time[(last-1382400)]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "time[(last-1382400)]", destinationNames, 
             constraints, false);
         //Test.ensureEqual(constraints.toString(), "329, 1, 329", ""); //changes sometimes
 
-        gridDataset.parseAxisDapQuery("time[(last+-1382400)]", destinationNames, 
+        gridDataset.parseAxisDapQuery(0, "time[(last+-1382400)]", destinationNames, 
             constraints, false);
         //Test.ensureEqual(constraints.toString(), "329, 1, 329", ""); //changes sometimes
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[last-2.0]", destinationNames, 
+            gridDataset.parseAxisDapQuery(0, "latitude[last-2.0]", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2374,7 +2385,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[(last-2.0a)]", destinationNames, 
+            gridDataset.parseAxisDapQuery(0, "latitude[(last-2.0a)]", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2384,7 +2395,7 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[(last*2)]", destinationNames, 
+            gridDataset.parseAxisDapQuery(0, "latitude[(last*2)]", destinationNames, 
                 constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2396,23 +2407,23 @@ String expected2 =
         EDVGridAxis edvga = gridDataset.axisVariables()[0];
         Test.ensureEqual(edvga.isEvenlySpaced(), false, "");
         //Test.ensureEqual(edvga.averageSpacing(), 700858.0060422961, "");  //changes sometimes
-        //Test.ensureEqual(edvga.spacingDescription(), "8 days 02:46:30 (uneven)", ""); //changes sometimes
+        //Test.ensureEqual(edvga.spacingDescription(0), "8 days 02:46:30 (uneven)", ""); //changes sometimes
 
         edvga = gridDataset.axisVariables()[1];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), Double.NaN, "");
-        Test.ensureEqual(edvga.spacingDescription(), "(just one value)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "(just one value)", "");
 
         edvga = gridDataset.axisVariables()[2];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), 0.041676313961565174, "");  //not ideal, but true
-        Test.ensureEqual(edvga.spacingDescription(), "0.04167631 (even)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "0.04167631 (even)", "");
 
 
 
         //*** test dapInstructions
         //StringWriter sw = new StringWriter();
-        //writeGeneralDapHtmlDocument(EDStatic.erddapUrl, sw);  //for testing, always non-https url
+        //writeGeneralDapHtmlDocument(language, EDStatic.erddapUrl, sw);  //for testing, always non-https url
         //results = sw.toString();
         //String2.log(results);
         //expected = "Requests for Gridded Data in ";
@@ -2423,7 +2434,7 @@ String expected2 =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridFromDap test entire dataset\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2465,7 +2476,7 @@ String expected2 =
 
 
         //*** test getting dds for entire dataset
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2488,14 +2499,14 @@ String expected2 =
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Entire", ".html"); 
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         //*** test getting das for 1 variable     das isn't affected by userDapQuery
         String2.log("\n****************** EDDGridFromDap test 1 variable\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_1Variable", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -2522,7 +2533,7 @@ String expected2 =
 
 
         //*** test getting dds for 1 variable
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_1Variable", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -2556,6 +2567,7 @@ String expected2 =
         String mapDapQuery   = "chlorophyll[200][][(29):(50)][(225):(247)]"; //stride irrelevant 
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
+        int language = 0;
 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); //should work
         //just comment out to work on some other test
@@ -2565,7 +2577,7 @@ String expected2 =
 
         //.asc
         String2.log("\n*** EDDGridFromDap test get .ASC axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".asc"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -2585,7 +2597,7 @@ String expected2 =
  
         //.csv
         String2.log("\n*** EDDGridFromDap test get .csv axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -2601,7 +2613,7 @@ String expected2 =
 
         //.csvp
         String2.log("\n*** EDDGridFromDap test get .csvp axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".csvp"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -2616,7 +2628,7 @@ String expected2 =
 
         //.csv  test of gridName.axisName notation
         String2.log("\n*** EDDGridFromDap test get .CSV axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll.time[0:100:200],chlorophyll.longitude[last]", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_AxisG.A", ".csv"); 
@@ -2633,7 +2645,7 @@ String expected2 =
 
         //.das     which disregards userDapQuery
         String2.log("\n*** EDDGridFromDap test get .DAS axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".das"); 
         results = String2.annotatedString(new String((
@@ -2660,7 +2672,7 @@ String expected2 =
 
         //.dds
         String2.log("\n*** EDDGridFromDap test get .DDS axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".dds"); 
@@ -2677,7 +2689,7 @@ String expected2 =
 
         //.dods
         String2.log("\n*** EDDGridFromDap test get .DODS axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".dods"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
@@ -2695,7 +2707,7 @@ String expected2 =
 
         //.json
         String2.log("\n*** EDDGridFromDap test get .JSON axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".json"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -2719,7 +2731,7 @@ String expected2 =
         //.json with jsonp
         String2.log("\n*** EDDGridFromDap test get .JSON axis data (with jsonp)\n");
         String jsonp = "myFunctionName";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]" + "&.jsonp=" + SSR.percentEncode(jsonp), 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".json"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -2746,7 +2758,7 @@ String expected2 =
         //octave> erdMHchla8day
         String matlabAxisQuery = "time[0:100:200],longitude[last]"; 
         String2.log("\n*** EDDGridFromDap test get .MAT axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, matlabAxisQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, matlabAxisQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".mat"); 
         String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
         results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
@@ -2784,7 +2796,7 @@ String expected2 =
 /* */
         //.nc
         String2.log("\n*** EDDGridFromDap test get .nc axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
@@ -2875,7 +2887,7 @@ String expected2 =
 
         //.ncHeader
         String2.log("\n*** EDDGridFromDap test get .NCHEADER axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".ncHeader"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2920,7 +2932,7 @@ String expected2 =
 
         //.ncoJson
         String2.log("\n*** EDDGridFromDap test get .ncoJson axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".ncoJson"); 
         //2017-08-03 I tested the resulting file for validity at https://jsonlint.com/
@@ -2951,7 +2963,7 @@ String expected2 =
 //2017-07-31T20:10:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]\"},\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]\"},\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
@@ -3020,11 +3032,13 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 "  }\n" +
 "}\n";
         tPo = results.indexOf(expected.substring(0, 40));
-        Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results);
+        if (tPo < 0)
+            String2.log("results=\n" + results + "\ntPo=" + tPo);
+        Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results + "\ntPo=" + tPo);
 
         //.ncoJson with jsonp
         String2.log("\n*** EDDGridFromDap test get .ncoJson axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]&.jsonp=myFunctionName", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axisjp", ".ncoJson"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -3053,7 +3067,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 //2017-07-31T20:10:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:10:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]&.jsonp=myFunctionName\"},\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?time[0:100:200],longitude[last]&.jsonp=myFunctionName\"},\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
@@ -3127,7 +3141,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 
         //.timeGaps
         String2.log("\n*** EDDGridFromDap test get .timeGaps\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_tg", ".timeGaps"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -3149,7 +3163,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 
          //.tsv
         String2.log("\n*** EDDGridFromDap test get .TSV axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".tsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -3166,7 +3180,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 
          //.tsvp
         String2.log("\n*** EDDGridFromDap test get .tsv axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".tsvp"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -3181,7 +3195,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 
         //.xhtml   latitude
         String2.log("\n*** EDDGridFromDap test get .XHTML axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "latitude[0:10:40],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_LatAxis", ".xhtml"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -3195,7 +3209,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDGridFromDap_LatAxis</title>\n" +
-"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://127.0.0.1:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
 "<body>\n" +
 "\n" +
@@ -3236,17 +3250,17 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
 
         //.htmlTable   latitude
         String2.log("\n*** EDDGridFromDap test get .htmlTable axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
-            "latitude[0:10:40],longitude[last]", 
+        String tQuery = "latitude[0:10:40],longitude[last]";
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, tQuery,
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_LatAxis", ".htmlTable"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
-EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "EDDGridFromDap_LatAxis") + "\n" +
+EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String)null, language), "EDDGridFromDap_LatAxis") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
+EDStatic.startBodyHtml(language, null, "griddap/erdMHchla8day.htmlTable", tQuery) + "&nbsp;<br>\n" +
 "&nbsp;\n" +
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -3278,13 +3292,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "<td>\n" +
 "</tr>\n" +
 "</table>\n" +
-EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
+EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language)) + "\n" +
 "</html>\n";
         Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
         //.xhtml   time
         String2.log("\n*** EDDGridFromDap test get .XHTML axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".xhtml"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3326,16 +3340,17 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         String mapDapQuery   = "chlorophyll[200][][(29):(50)][(225):(247)]"; //stride irrelevant 
         StringArray destinationNames = new StringArray();
         IntArray constraints = new IntArray();
+        int language = 0;
 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); //should work
         //just comment out to work on some other test
 
         //******************************************** test GridDataRandomAccessor
         //set up GridDataRandomAccessor
-        GridDataAccessor gda = new GridDataAccessor(gridDataset, "", userDapQuery, true, true); //rowMajor toNaN
+        GridDataAccessor gda = new GridDataAccessor(language, gridDataset, "", userDapQuery, true, true); //rowMajor toNaN
         GridDataRandomAccessor gdra = new GridDataRandomAccessor(gda);
         //maka a new rowMajor gda and test if same data
-        gda = new GridDataAccessor(gridDataset, "", userDapQuery, true, true); //rowMajor toNaN
+        gda = new GridDataAccessor(language, gridDataset, "", userDapQuery, true, true); //rowMajor toNaN
         PAOne gdaPAOne  = new PAOne(gda.dataVariables()[0].sourceDataPAType());
         PAOne gdraPAOne = new PAOne(gdra.dataPAType(0));
         int current[] = gda.totalIndex().getCurrent(); //the internal object that changes
@@ -3348,7 +3363,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         }
         String2.log("Test of GridDataRandomAccess rowMajor succeeded. count=" + count);
         //maka a new columnMajor gda and test if same data
-        gda = new GridDataAccessor(gridDataset, "", userDapQuery, false, true); //rowMajor toNaN
+        gda = new GridDataAccessor(language, gridDataset, "", userDapQuery, false, true); //rowMajor toNaN
         gdaPAOne  = new PAOne(gda.dataVariables()[0].sourceDataPAType());
         gdraPAOne = new PAOne(gdra.dataPAType(0));
         current = gda.totalIndex().getCurrent(); //the internal object that changes
@@ -3367,7 +3382,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         //********************************************** test getting grid data
         //.asc
         String2.log("\n*** EDDGridFromDap test get .ASC data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".asc"); 
         results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
         //String2.log("\n.asc results=\n" + results);
@@ -3409,7 +3424,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 
         //.csv
         String2.log("\n*** EDDGridFromDap test get .CSV data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =  //missing values are "NaN"
@@ -3448,7 +3463,7 @@ pre 2012-08-17 was
 
         //.csv   test gridName.gridName notation
         String2.log("\n*** EDDGridFromDap test get .CSV data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll." + userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll." + userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -3486,7 +3501,7 @@ pre 2012-08-17 was
 
         //.das
         String2.log("\n*** EDDGridFromDap test get .DAS data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".das"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -3512,7 +3527,7 @@ pre 2012-08-17 was
 
         //.dds
         String2.log("\n*** EDDGridFromDap test get .DDS data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".dds"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -3534,7 +3549,7 @@ pre 2012-08-17 was
 
         //.dods
         String2.log("\n*** EDDGridFromDap test get .DODS data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".dods"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -3561,7 +3576,7 @@ pre 2012-08-17 was
 
         //.esriAscii 
         String2.log("\n*** EDDGridFromDap test get .esriAscii data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Map", //must be Map because .asc already used
             ".esriAscii"); 
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -3583,7 +3598,7 @@ pre 2012-08-17 was
 
         //.json
         String2.log("\n*** EDDGridFromDap test get .JSON data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".json"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         expected = //missing values are "null"
@@ -3617,7 +3632,7 @@ pre 2012-08-17 was
         //octave> load('c:/temp/griddap/EDDGridFromDap_Data.mat');
         //octave> erdMHchla8day
         String2.log("\n*** EDDGridFromDap test get .MAT data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".mat"); 
         results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
 
@@ -3667,7 +3682,7 @@ pre 2012-08-17 was
 /* */
         //.nc
         String2.log("\n*** EDDGridFromDap test get .NC data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
         expected = //changed a little ("// (has coord.var)") when switched to netcdf-java 4.0, 2009-02-23
@@ -3810,7 +3825,7 @@ pre 2012-08-17 was
 
         //.ncHeader
         String2.log("\n*** EDDGridFromDap test get .NCHEADER data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".ncHeader"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3852,7 +3867,7 @@ pre 2012-08-17 was
 
         //.ncoJson
         String2.log("\n*** EDDGridFromDap test get .ncoJson data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".ncoJson"); 
         //2017-08-03 I tested the resulting file for validity at https://jsonlint.com/
@@ -3891,7 +3906,7 @@ pre 2012-08-17 was
 //2017-07-31T20:37:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
-expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]\"},\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]\"},\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
@@ -4030,11 +4045,13 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 //2017-08-01 I verified these number by hand in ERDDAP with 
 //https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day.htmlTable?chlorophyll[(2002-07-08):1:(2002-07-16)][(0.0):1:(0.0)][(29):100:(50)][(225):100:(247)]
         po10 = results.indexOf(expected.substring(0, 40));
+        if (po10 < 0)
+            String2.log("results=\n" + results + "\npo10=" + po10);
         Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
 
         //.ncoJson with jsonp
         String2.log("\n*** EDDGridFromDap test get .ncoJson data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Datajp", ".ncoJson"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
@@ -4071,7 +4088,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 //2017-07-31T20:37:46Z https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\\n2017-07-31T20:37:46Z 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
-expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName\"},\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?chlorophyll[(2002-07-08):(2002-07-16)][][(29):100:(50)][(225):100:(247)]&.jsonp=myFunctionName\"},\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\"},\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD\"},\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"8-day, aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, Earth Science > Oceans > Ocean Chemistry > Chlorophyll, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\"},\n" +
@@ -4211,12 +4228,14 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 //2017-08-01 I verified these number by hand in ERDDAP with 
 //https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day.htmlTable?chlorophyll[(2002-07-08):1:(2002-07-16)][(0.0):1:(0.0)][(29):100:(50)][(225):100:(247)]
         po10 = results.indexOf(expected.substring(0, 40));
+        if (po10 < 0)
+            String2.log("results=\n" + results + "\npo10=" + po10);
         Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
 
 
         //.tsv
         String2.log("\n*** EDDGridFromDap test get .TSV data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".tsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4244,7 +4263,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
         //.xhtml
         String2.log("\n*** EDDGridFromDap test get .XHTMLTABLE data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".xhtml"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4295,7 +4314,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         //test " in attributes
         EDDGrid tedg = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSGchla8day");
         String2.log("\n***raw references=" + tedg.addGlobalAttributes.getString("references"));
-        tName = tedg.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedg.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             tedg.className() + "Quotes", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         int po9 = results.indexOf("The 4th Pacific");
@@ -4322,30 +4341,31 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         String graphDapQuery = SSR.percentEncode("chlorophyll[0:10:200][][(29)][(225)]"); 
         String mapDapQuery   = SSR.percentEncode("chlorophyll[200][][(29):(45)][(225):(247)]"); //stride irrelevant 
         String tName, results;
+        int language = 0;
 
         //*** test getting graphs
         String2.log("\n****************** EDDGridFromDap test get graphs\n");
 
         //test graph .png
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.size=128|240&.font=0.75", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.size=128|240&.font=0.75", 
                 tDir, gridDataset.className() + "_GraphTiny", 
                 ".largePng"); //to show it's irrelevant
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_GraphS", ".smallPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_Graph", ".png"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_GraphL", ".largePng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.size=1700|1800&.font=3", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.size=1700|1800&.font=3", 
                 tDir, gridDataset.className() + "_GraphHuge", 
                 ".smallPng"); //to show it's irrelevant
             SSR.displayInBrowser("file://" + tDir + tName);
@@ -4353,38 +4373,38 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
         //test graph .pdf
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_GraphS", ".smallPdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_Graph", ".pdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery, 
                 tDir, gridDataset.className() + "_GraphL", ".largePdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test legend= options
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Off&.trim=10", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.legend=Off&.trim=10", 
                 tDir, gridDataset.className() + "_GraphLegendOff", ".png"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.legend=Only", 
                 tDir, gridDataset.className() + "_GraphLegendOnlySmall", ".smallPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.legend=Only", 
                 tDir, gridDataset.className() + "_GraphLegendOnlyMed", ".png"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.legend=Only", 
                 tDir, gridDataset.className() + "_GraphLegendOnlyLarge", ".largePng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, graphDapQuery + "&.legend=Only", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, graphDapQuery + "&.legend=Only", 
                 tDir, gridDataset.className() + "_GraphTransparentLegendOnly", ".transparentPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
         }
@@ -4394,7 +4414,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         //String2.log("\n****************** EDDGridFromDap test get colored surface graph\n");
         //not working yet    time axis is hard to work with
         //String tempDapQuery = "chlorophyll[0:10:20][][(29):1:(50)][(225):1:(225)]";
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, tempDapQuery, 
+        //tName = gridDataset.makeNewFileForDapQuery(language, null, null, tempDapQuery, 
         //    tDir, gridDataset.className() + "_CSGraph", ".png"); 
         //SSR.displayInBrowser("file://" + tDir + tName);
 
@@ -4403,24 +4423,24 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         if (testAll || false) {
             String2.log("\n****************** EDDGridFromDap test get maps\n");
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=120|280&.font=0.75", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery + "&.size=120|280&.font=0.75", 
                 tDir, gridDataset.className() + "_MapTiny", 
                 ".largePng"); //to show it's irrelevant
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_MapS", ".smallPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_Map", ".png"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_MapL", ".largePng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=1700|1800&.font=3", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery + "&.size=1700|1800&.font=3", 
                 tDir, gridDataset.className() + "_MapHuge", 
                 ".smallPng"); //to show it's irrelevant
             SSR.displayInBrowser("file://" + tDir + tName);
@@ -4431,33 +4451,33 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         if (testAll || false) {
 
             //yes, stretched.  that's what query is asking for
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery + "&.size=300|400", 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery + "&.size=300|400", 
                 tDir, gridDataset.className() + "_MapTPSmall", ".transparentPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_MapTP", ".transparentPng"); 
             SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test map pdf
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_MapS", ".smallPdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_Map", ".pdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_MapL", ".largePdf"); 
             SSR.displayInBrowser("file://" + tDir + tName);
         }
 
         //test map kml
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_Map", ".kml"); 
             results = String2.directReadFromUtf8File(tDir + tName);
             String2.log("results=\n" + results);
@@ -4467,7 +4487,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
         //test .geotif
         if (testAll || false) {
-            tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 tDir, gridDataset.className() + "_Map", ".geotif"); 
             SSR.displayInBrowser("file://" + tDir + tName);
 
@@ -4480,7 +4500,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
             EDDGrid mur = (EDDGrid)oneFromDatasetsXml(null, "jplMURSST41"); //should work
 
             //this is cool looking (but you have to double click on file in windows explorer to see it)
-            tName = mur.makeNewFileForDapQuery(null, null, 
+            tName = mur.makeNewFileForDapQuery(language, null, null, 
                 //EDDGridMapExample, but stride->100
                 "analysed_sst[(2002-06-01T09:00:00Z)][(-89.99):100:(89.99)][(-179.99):100:(180.0)]&.draw=surface&.vars=longitude|latitude|analysed_sst&.colorBar=Rainbow|C|Linear|0|32|",
                 tDir, mur.className() + "_ExampleMap", ".geotif"); 
@@ -4509,6 +4529,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
             String mapDapQuery   = "chlorophyll[200][][(29):(50)][(225):(247)]"; //stride irrelevant 
             StringArray destinationNames = new StringArray();
             IntArray constraints = new IntArray();
+            int language = 0;
 
             //get das and dds
             String threddsUrl = "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day";
@@ -4784,7 +4805,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
                 erddapUrl, -1, true); //sourceUrl, nThreads, dimensionValuesInMemory); //in tests, always non-https url
 
             //.xhtml
-            tName = eddGrid2.makeNewFileForDapQuery(null, null, griddapUserDapQuery, 
+            tName = eddGrid2.makeNewFileForDapQuery(language, null, null, griddapUserDapQuery, 
                 EDStatic.fullTestCacheDirectory, eddGrid2.className() + "_Itself", ".xhtml"); 
             results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -4796,7 +4817,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>EDDGridFromDap_Itself</title>\n" +
-"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://127.0.0.1:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
 "<body>\n" +
 "\n" +
@@ -4849,6 +4870,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
         //this dataset is good test because it has 2 dimension combos
         String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
+        int language = 0;
 
 String expected1 = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_82a3_7247_c8d7\" active=\"true\">\n" +
@@ -4858,7 +4880,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
-"        <att name=\"history\">Thu Jul 01 10:54:43 HST 2021 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"history\">Tue Oct 12 11:59:38 HST 2021 : imported by GrADS Data Server 2.0</att>\n" +
 "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -4875,7 +4897,7 @@ String expected1 =
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.2.4 monthly means (soda pop2.2.4)</att>\n" +
-"        <att name=\"title\">SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5&#xb0;, 1871-2010</att>\n" +
+"        <att name=\"title\">SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5Â°, 1871-2010</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -5085,7 +5107,7 @@ String expected1 =
         EDD edd = oneFromXmlFragment(null, results);   //only returns the first dataset defined in results
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
         Test.ensureEqual(edd.title(), 
-            "SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010", "");
+            "SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5Â°, 1871-2010", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "temp, salt, u, v, w", "");    
     }
@@ -5103,6 +5125,7 @@ String expected1 =
         testVerboseOn();
         String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday";
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml2");
+        int language = 0;
 
 String expected1 = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_cada_f1d6_7111\" active=\"true\">\n" +
@@ -5288,7 +5311,7 @@ String expected2 =
         String tResults = results.substring(po, po2 + 6);
         String tExpected = "<att name=\"title\">SST, GOES Imager, Day and Night, " +
             "Western Hemisphere, 2006-2020 (Hourly) (erdGAsstahday), " +
-            "0.05&#xb0;</att>";  //important test of catching resolution
+            "0.05Â°</att>";  //important test of catching resolution
         Test.ensureEqual(tResults, tExpected, "results=\n" + results);
    
     }
@@ -5299,6 +5322,7 @@ String expected2 =
         String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml3()");
         //from uaf.  Not sorted and never will be.
         String url = "http://oos.soest.hawaii.edu/thredds/dodsC/pacioos/ncom/global/NCOM_Global_Ocean_Model_fmrc.ncd";
+        int language = 0;
 
         try {
             String results = generateDatasetsXml(url, 
@@ -5334,10 +5358,11 @@ String expected2 =
         //and tests of _FillValue with no missing_value
         testVerboseOn();
         int tPo;
+        int language = 0;
 
         try {
             EDDGrid amsr = (EDDGridFromDap)oneFromDatasetsXml(null, "ncdcOisst2AmsrAgg"); //should work
-            String tName = amsr.makeNewFileForDapQuery(null, null, "", 
+            String tName = amsr.makeNewFileForDapQuery(language, null, null, "", 
                 EDStatic.fullTestCacheDirectory, amsr.className() + "amsr", ".das"); 
             String results = String2.directReadFrom88591File(
                 EDStatic.fullTestCacheDirectory + tName);
@@ -5395,7 +5420,7 @@ String expected2 =
 
             //test mv as -9.99  (adjusted by scaleFactor)
             String amsrq = "sst[0][0][0:200:600][0:200:600]";
-            tName = amsr.makeNewFileForDapQuery(null, null, amsrq, 
+            tName = amsr.makeNewFileForDapQuery(language, null, null, amsrq, 
                 EDStatic.fullTestCacheDirectory, amsr.className() + "amsr", ".asc"); 
             results = String2.directReadFrom88591File(
                 EDStatic.fullTestCacheDirectory + tName);
@@ -5433,7 +5458,7 @@ String expected2 =
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //test mv as NaN (adjusted to -9.99 by scaleFactor, then converted to NaN (then null))
-            tName = amsr.makeNewFileForDapQuery(null, null, amsrq, 
+            tName = amsr.makeNewFileForDapQuery(language, null, null, amsrq, 
                 EDStatic.fullTestCacheDirectory, amsr.className() + "amsr", ".json"); 
             results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -5473,26 +5498,28 @@ String expected2 =
 
     public static void testOneTime() throws Throwable {
 
+        int language = 0;
+
         //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "pmelOscar"); 
         //if (true) System.exit(0);
 
         //one time stuff
         //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "ncdcOisstAmsrAgg"); 
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        //tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
         //    gridDataset.className() + "ncdc", ".das"); 
         //String results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
 
         //soda
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda202d"); //should work
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202d", ".das"); 
         String results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
 
         String sodaq = "time[(2001-12-15T00:00:00):100:(2001-12-15T00:00:00)]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, sodaq, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, sodaq, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202dqt", ".json"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
@@ -5509,21 +5536,21 @@ String expected2 =
 ;
 //The error: 	GridDataAccessor.increment: partialResults[0] was not as expected. 
 //The other primitiveArray has a different value #0 (1008374400 != 623)
-        tName = gridDataset.makeNewFileForDapQuery(null, null, sodaq, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, sodaq, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202dq", ".json"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
 
 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda202s"); //should work
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_soda202s", ".das"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda203d"); //should work
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda203d", ".das"); 
         results = String2.directReadFrom88591File(
@@ -5531,7 +5558,7 @@ String expected2 =
         String2.log(results);
 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdSoda203s"); //should work
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda203s", ".das"); 
         results = String2.directReadFrom88591File(
@@ -5554,23 +5581,24 @@ String expected2 =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "pmelOscar"); 
         EDVGridAxis edvga;
+        int language = 0;
 
         //***test some edvga things
         //time commented out: it changes too often
         //EDVGridAxis edvga = eddGrid.axisVariables()[0];  
         //Test.ensureEqual(edvga.isEvenlySpaced(), false, "");
         //Test.ensureEqual(edvga.averageSpacing(), 438329.1311754685, "");  //changes sometimes
-        //Test.ensureEqual(edvga.spacingDescription(), "5 days 01:45:29 (uneven)", "");
+        //Test.ensureEqual(edvga.spacingDescription(0), "5 days 01:45:29 (uneven)", "");
 
         edvga = eddGrid.axisVariables()[1];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), Double.NaN, "");
-        Test.ensureEqual(edvga.spacingDescription(), "(just one value)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "(just one value)", "");
 
         edvga = eddGrid.axisVariables()[2];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), -1, "");  
-        Test.ensureEqual(edvga.spacingDescription(), "-1.0 (even)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "-1.0 (even)", "");
 
         //time
         results = eddGrid.axisVariables[0].sliderCsvValues();
@@ -5610,7 +5638,7 @@ String expected2 =
 
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -5736,7 +5764,7 @@ expected =
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -5788,7 +5816,7 @@ expected =
 
         //.nc lat values subset (subset correct? actual_range correct?)
         userDapQuery = "latitude[(69.5):10:(-69.5)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "Lat", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         String2.log(results);
@@ -5869,7 +5897,7 @@ expected =
 
         //.csv data 
         userDapQuery = "u[0][0][(69.5):10:(-69.5)][0]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
@@ -5896,7 +5924,7 @@ expected =
             "u[(2008-08-06T00:00:00Z)][][][]" +
             "&.draw=surface&.vars=longitude|latitude|u&.colorBar=|C|Linear|||&.land=under";
         
-        tName = eddGrid.makeNewFileForDapQuery(null, null, mapDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".png"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -5904,7 +5932,7 @@ expected =
         String transparentQuery = 
             "u[(2008-08-06T00:00:00Z)][][][]" +
             "&.draw=surface&.vars=longitude|latitude|u&.colorBar=|C|Linear|||&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, transparentQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, transparentQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Transparent", ".transparentPng"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -5912,18 +5940,18 @@ expected =
         String query180 = 
             "u[(2008-08-06T00:00:00Z)][][][0:(179)]" +
             "&.draw=surface&.vars=longitude|latitude|u&.colorBar=|C|Linear|||&.land=under";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, query180, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, query180, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".kml"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
 
 //currently doesn't work, either ERDDAP needs to rearrange lat and lon values        
 //  or GeotiffWritter needs to accept descending axis values.
-//        tName = eddGrid.makeNewFileForDapQuery(null, null, query180, EDStatic.fullTestCacheDirectory, 
+//        tName = eddGrid.makeNewFileForDapQuery(language, null, null, query180, EDStatic.fullTestCacheDirectory, 
 //            eddGrid.className() + "_Map", ".geotif"); 
 //        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "u[(2008-08-06T00:00:00Z)][][0:50:(last)][0:50:(179)]", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".esriAscii"); 
         results = String2.directReadFrom88591File(
@@ -5990,12 +6018,13 @@ expected =
         int tpo;
         String query180       = SSR.fixPercentEncodedUrl("topo[][]&.draw=surface&.vars=longitude|latitude|topo");
         String query180stride = SSR.fixPercentEncodedUrl("topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo");
+        int language = 0;
 /* */
         //***test some edvga things with descending lat axis
         edvga = eddGrid.axisVariables()[0];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), -8.333333333333334E-4, "");
-        Test.ensureEqual(edvga.spacingDescription(), "-8.333333E-4 (even)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "-8.333333E-4 (even)", "");
 
         tSize = edvga.sourceValues().size();
         String2.log("tSize-1=" + (tSize-1));  //6000
@@ -6020,7 +6049,7 @@ expected =
         edvga = eddGrid.axisVariables()[1];
         Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
         Test.ensureEqual(edvga.averageSpacing(), 8.333333333333334E-4, "");
-        Test.ensureEqual(edvga.spacingDescription(), "8.333333E-4 (even)", "");
+        Test.ensureEqual(edvga.spacingDescription(0), "8.333333E-4 (even)", "");
 
         tSize = edvga.sourceValues().size();
         String2.log("tSize-1=" + (tSize-1));  //9600
@@ -6062,7 +6091,7 @@ expected =
 
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -6116,7 +6145,7 @@ expected =
 
 //"2013-08-29T17:33:53Z https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
 //"2013-08-29T17:33:53Z 
-expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 "    String infoUrl \"https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "    String institution \"NOAA NGDC\";\n" +
 "    String keywords \"altitude, arc, atmosphere, bathymetry, coastal, earth science, Earth Science > Oceans > Bathymetry/Seafloor Topography > Bathymetry, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
@@ -6145,7 +6174,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -6165,7 +6194,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 
         //.nc lat values subset (subset correct? actual_range correct?)
         userDapQuery = "latitude[(22):10:(21)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "Lat", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         results = String2.replaceAll(results, "\r", "");
@@ -6198,7 +6227,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 //2013-08-29T17:41:13Z https://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc
 //2013-08-29T17:41:13Z 
         expected = 
-"http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
 "  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
 "  :keywords = \"altitude, arc, atmosphere, bathymetry, coastal, earth science, Earth Science > Oceans > Bathymetry/Seafloor Topography > Bathymetry, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
@@ -6229,7 +6258,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
 
         //.csv data 
         userDapQuery = "topo[(20.005):(20.003)][(-156.002):(-156)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
@@ -6251,7 +6280,7 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
             "topo[(23):(18)][(-161):(-153)]" +
             "&.draw=surface&.vars=longitude|latitude|topo";
         
-        tName = eddGrid.makeNewFileForDapQuery(null, null, mapDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".png"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -6259,25 +6288,25 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
         String transparentQuery = 
             "topo[(23):20:(18)][(-161):20:(-153)]" +
             "&.draw=surface&.vars=longitude|latitude|topo";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, transparentQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, transparentQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Transparent", ".transparentPng"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
 
         //this test requires usgsCeCrm10 to be available from localhost erddap
         //  (The .kml is produced locally.  But it refers to a .png on the localhost erddap.)
-        tName = eddGrid.makeNewFileForDapQuery(null, null, query180, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, query180, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".kml"); 
         if (doGraphicsTests) SSR.displayInBrowser(
             "file://" + EDStatic.fullTestCacheDirectory + tName);
 
 
         //2013-10-21 this works with new GeotiffWriter (which rearranges lat values)
-        tName = eddGrid.makeNewFileForDapQuery(null, null, query180stride, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, query180stride, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Map", ".geotif"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "topo[0:1000:last][0:1000:last]", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".esriAscii"); 
         results = String2.directReadFrom88591File(
@@ -6312,11 +6341,12 @@ expected = "http://localhost:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+        int language = 0;
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "mb-7201adc"); 
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -6503,7 +6533,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -6572,7 +6602,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 
         //.csv   altitude values
         userDapQuery = "altitude"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "Alt", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -6603,7 +6633,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 
         //.csv data values
         userDapQuery = "u_1205[0][0:17][0][0]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -6642,6 +6672,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
      */
     public static void testScaleFactor() throws Throwable {
         testVerboseOn();         
+        int language = 0;
         //soda 2.2.4
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb"); 
         String query = 
@@ -6656,15 +6687,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
                "v[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)]," + 
                "w[(2001-12-15T00:00:00)][(5.01):(500)][(23.1)][(185.2)]";
 
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, query,
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null, query,
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda224", ".htmlTable"); //was ok
         String results = String2.directReadFromUtf8File(
             EDStatic.fullTestCacheDirectory + tName);
         String expected = 
-EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "EDDGridFromDap_soda224") + "\n" +
+EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String)null, language), "EDDGridFromDap_soda224") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
+EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable", query) + "&nbsp;<br>\n" +
 //HtmlWidgets.BACK_BUTTON +
 "&nbsp;\n" +
 "<table class=\"erd commonBGColor nowrap\">\n" +
@@ -6725,7 +6756,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "</tr>\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
      
-        tName = gridDataset.makeNewFileForDapQuery(null, null, query,
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, query,
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda224", ".mat");  //threw an exception
         results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
@@ -6836,7 +6867,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             results.substring(0, 71 * 4) + results.substring(71 * 7), //remove the creation dateTime
             expected, "results=\n" + results);    
 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, query,
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, query,
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_soda224", ".asc"); 
         results = String2.directReadFrom88591File(
@@ -6884,7 +6915,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
             results = "This shouldn't happen.";
             try {
-                tName = gridDataset.makeNewFileForDapQuery(null, null, query,
+                tName = gridDataset.makeNewFileForDapQuery(language, null, null, query,
                     EDStatic.fullTestCacheDirectory, 
                     gridDataset.className() + "_soda224", fileType); 
             } catch (Throwable t) {
@@ -6901,7 +6932,8 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         testVerboseOn();
         String name, tName, results, expected;
         EDDGridFromDap gridDataset;
-        
+        int language = 0;
+
         //test erdBAssta5day
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
 
@@ -7029,6 +7061,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /** This tests saveAsKml. */
     public static void testKml() throws Throwable {
         testVerboseOn();
+        int language = 0;
         try {
 
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
@@ -7036,7 +7069,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String dir = EDStatic.fullTestCacheDirectory;
 
         //overall kml
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "sst[(2008-11-01T12:00:00Z)][][][]",
             dir, gridDataset.className() + "_testKml", ".kml"); 
         SSR.displayInBrowser("file://" + dir + tName);
@@ -7156,7 +7189,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         Test.ensureEqual(results, expected, "results=\n" + results);    
 
         //a quadrant
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "sst[(2008-11-01T12:00:00Z)][0][(-75.0):(4.163336E-15)][(180.0):(360.0)]",
             dir, gridDataset.className() + "_testKml2", ".kml"); 
         results = String2.directReadFromUtf8File(dir + tName);
@@ -7271,6 +7304,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testGridWithDepth2");
         String results, expected, tName;
         int po;
+        int language = 0;
 
         //test generateDatasetsXml -- It should catch z variable and convert to altitude.
         //!!! I don't have a test dataset with real altitude data that isn't already called altitude!
@@ -7300,7 +7334,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");         
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".das"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -7322,7 +7356,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //FGDC should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".fgdc"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("<vertdef>");
@@ -7341,7 +7375,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //ISO 19115 should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".iso19115"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
 
@@ -7381,6 +7415,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testGridWithDepth2_LonPM180");
         String results, expected, tName;
         int po;
+        int language = 0;
 
         //test generateDatasetsXml -- It should catch z variable and convert to altitude.
         //!!! I don't have a test dataset with real altitude data that isn't already called altitude!
@@ -7411,7 +7446,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, 
             "hawaii_d90f_20ee_c4cb_LonPM180");         
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".das"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -7433,7 +7468,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //FGDC should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".fgdc"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("<vertdef>");
@@ -7452,7 +7487,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //ISO 19115 should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".iso19115"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
 
@@ -7615,6 +7650,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testGridWithDepth");
         String results, expected, tName;
         int po;
+        int language = 0;
 
         //test generateDatasetsXml -- It should catch z variable and convert to depth.
         String url = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
@@ -7641,7 +7677,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "testGridWithDepth");         
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("depth {");
@@ -7663,7 +7699,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //FGDC should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".fgdc"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("<vertdef>");
@@ -7682,7 +7718,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             "results=\n" + results);
 
         //ISO 19115 should deal with depth correctly
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".iso19115"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
 
@@ -7823,12 +7859,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
+        int language = 0;
 
         try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testNoAxisVariable"); 
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
@@ -7886,7 +7923,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -7907,7 +7944,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //.csv   an index values
         userDapQuery = "xi_rho[0:2:5]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "XiRho", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -7921,7 +7958,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //.csv data values
         userDapQuery = "zeta[0][0:2][0:2]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_NAV", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -7951,7 +7988,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //analogous query
         userDapQuery = "zeta[0][(0):(2)][(0):(2)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_NAV2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -7967,11 +8004,12 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testClimatologyTime");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
+        int language = 0;
 
         try {      
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ncdcOwClm9505"); //2020-08-20 this now often fails with Http 502 Bad Gateway error after a delay
             userDapQuery = "u[(0000-12-28)][][(22)][(225)]";
-            tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, eddGrid.className() + "_clim", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -7994,6 +8032,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String roleNone[] = new String[0];
         String roleBob[] = new String[]{"bob"};
         String roleBMT[] = new String[]{"bob", "mike", "tom"};
+        int language = 0;
 
         //test accessible = null
         eddGrid.setAccessibleTo(null);
@@ -8044,10 +8083,11 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 22000000, EDStatic.partialRequestMaxBytes));
         NetcdfFile ncFile = null; 
+        int language = 0;
         try {
             EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
             String dir = EDStatic.fullTestCacheDirectory;
-            String tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            String tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
                 "sst[0:" + (nTimePoints - 1) + "][][][]", 
                 dir, eddGrid.className() + "_testBigRequest", ".nc"); 
             String2.log("done. size=" + File2.length(dir + tName));
@@ -8068,7 +8108,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
                 String2.log("\nfrom ncFile, sst=" + pa.getFloat(0));
 
                 //from opendap:
-                String testName = eddGrid.makeNewFileForDapQuery(null, null, 
+                String testName = eddGrid.makeNewFileForDapQuery(language, null, null, 
                     "sst[" + tp + ":" + tp + "][" + zIndex + "][" + yIndex + "][" + xIndex + "]", 
                     dir, eddGrid.className() + "_testBigRequestDap", ".csv"); 
                 String dapResult[] = String2.readFromFile(dir + testName);
@@ -8112,6 +8152,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      */
     public static void testBigRequestSpeed(int nTimePoints, String fileType, int expectedMs) throws Throwable {
         testVerboseOn();
+        int language = 0;
         String msg = "\n*** EDDGridFromDap.testbigRequest  partialRequestMaxBytes=" +
             EDStatic.partialRequestMaxBytes + 
             "\n nTimePoints=" + nTimePoints +
@@ -8120,13 +8161,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log(msg);
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "nceiPH53sstd1day"); 
         String dir = EDStatic.fullTestCacheDirectory;
-        String tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        String tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "sst[0:" + (nTimePoints - 1) + "][][][]", 
             dir, eddGrid.className() + "_testBigRequest", fileType); 
 
         //time the second request
         long time = System.currentTimeMillis();
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "sst[0:" + (nTimePoints - 1) + "][][][]", 
             dir, eddGrid.className() + "_testBigRequest2", fileType); 
         msg += "\n*** Not necessarily a problem, just logging the results:\n" +
@@ -8143,16 +8184,17 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testSpeedDAF() throws Throwable {
         //setup and warmup
         EDD.testVerbose(false);
+        int language = 0;
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String fileName = EDStatic.fullTestCacheDirectory + "gridTestSpeedDAF.txt";
         Writer writer = new BufferedWriter(new FileWriter(fileName));
-        gridDataset.writeDapHtmlForm(null, "", writer);
+        gridDataset.writeDapHtmlForm(language, null, "", writer);
 
         //time it DAF
         String2.log("start timing"); 
         long time = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++)  //1000 so it dominates program run time
-            gridDataset.writeDapHtmlForm(null, "", writer);
+            gridDataset.writeDapHtmlForm(language, null, "", writer);
         String2.log("EDDGridFromDap.testSpeedDAF time per .html = " +
             ((System.currentTimeMillis() - time) / 1000.0) + "ms (avg=6.14ms)\n" +
             "  outputFileName=" + fileName);
@@ -8168,6 +8210,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String baseFileName = "gridTestSpeedMAG";
+        int language = 0;
 
         //time it 
         String2.log("start timing");
@@ -8177,7 +8220,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
             String fileName = baseFileName + i + ".html";
             OutputStreamSource oss = new OutputStreamSourceSimple(
                 new BufferedOutputStream(new FileOutputStream(dir + fileName)));
-            gridDataset.respondToGraphQuery(null, null, "", "", oss,
+            gridDataset.respondToGraphQuery(0, null, null, "", "", "", oss,
                 EDStatic.fullTestCacheDirectory, fileName, ".graph");
             Test.ensureTrue(File2.delete(dir + fileName), "");
         }
@@ -8192,6 +8235,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testQuickRestart() throws Throwable {
         String2.log("\nEDDGridFromDap.testQuickRestart");
         String tDatasetID = "erdBAssta5day";
+        int language = 0;
 
         //regular load dataset
         File2.delete(quickRestartFullFileName(tDatasetID)); //force regular load
@@ -8223,9 +8267,10 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testGeotif() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testGeotif");
         EDD.testVerbose(false);
+        int language = 0;
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day");  
         String mapDapQuery   = "sst[200][][(20):(50)][(220):(250)]"; 
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, "testGeotif", ".geotif"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     }
@@ -8238,12 +8283,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n*** EDDGridFromDap.testDescendingAxisGeotif");
         EDD.testVerbose(false);
         EDDGrid gridDataset; 
+        int language = 0;
         String tName; 
 /* */
 
         //descending Lat axis
         gridDataset = (EDDGrid)oneFromDatasetsXml(null, "usgsCeCrm10"); 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
             EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -8251,7 +8297,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //NOT FINISHED ADDING FEATURE
         //descending Lat axis AND &.size=width|height
         //gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "usgsCeCrm10"); 
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        //tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
         //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
         //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -8271,7 +8317,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String error = "shoudn't happen";
         try {
             gridDataset = (EDDGrid)oneFromDatasetsXml(null, "jplAmsreSstMon"); 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
                 "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
                 "&.draw=surface&.vars=longitude|latitude|tos", 
                 EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
@@ -8295,7 +8341,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         error = "shouldn't happen";
         try {
             gridDataset = (EDDGrid)oneFromDatasetsXml(null, "gfdlCM2120C3M5OS"); 
-            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
                 "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
                 "&.draw=surface&.vars=longitude|latitude|tos", 
                 EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
@@ -8320,16 +8366,17 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /** This tests saveAsNcml. */
     public static void testNcml() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String name, tName, results, expected;
 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_testNcml", ".ncml"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n" +
-"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/erdBAssta5day\">\n" +
+"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://127.0.0.1:8080/griddap/erdBAssta5day\">\n" +
 "  <attribute name=\"acknowledgement\" value=\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\" />\n" +
 "  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
 "  <attribute name=\"composite\" value=\"true\" />\n" +
@@ -8487,6 +8534,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //open as a NetcdfDataset, not a NetcdfFile as above
         String url = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
         //String url = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
+        int language = 0;
 
         NetcdfDataset nc = NetcdfDatasets.openDataset(url);  //2021: 's' is the new API
         String results, expected;
@@ -8689,10 +8737,11 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testMap74to434() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testMap74to434\n");
         testVerboseOn();
+        int language = 0;
         try {
             String mapDapQuery = "sst[last][0][0:last][0:last]&.land=under"; //stride irrelevant 
             EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "ncepRtofsG2DNowDailyProg"); //should work
-            String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            String tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_434_Map", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             //String2.pressEnterToContinue(); 
@@ -8714,13 +8763,14 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testMapAntialiasing() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testMapAntialiasing\n");
         testVerboseOn();
+        int language = 0;
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "etopo360"); 
 
         //most color backgrounds don't have a problem
         String mapDapQuery = "altitude" +
             "[(68):(71)][(217):(220)]" + //stride irrelevant 
             "&.draw=surface&.vars=longitude|latitude|altitude"; 
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+        String tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingOKAY", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -8728,7 +8778,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //as if it is bad interpolation based on pixel to left and right.
         //So vertical lines look worst and pure horizontal lines are okay.
         mapDapQuery += "&.colorBar=BlackBlueWhite|||||"; 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingBAD", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -8741,6 +8791,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     public static void testTimeErrorMessage() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testTimeErrorMessage\n");
         testVerboseOn();
+        int language = 0;
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String results = "shouldn't be this", expected;
@@ -8749,7 +8800,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //start <
         try {
             String dapQuery = "sst[(2002-07-05)][(0.0)][(30):(31)][(225):(226)]"; 
-            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+            String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -8767,7 +8818,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         results = "shouldn't be this";
         try {
             String dapQuery = "sst[(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
-            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+            String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -8786,7 +8837,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         try {
             String dapQuery = 
                 "sst[(2014-03-01):(2014-02-01)][(0.0)][(30):(31)][(225):(226)]"; 
-            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+            String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -8802,7 +8853,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         try {
             String dapQuery = 
                 "sst[(2014-03-03):(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
-            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+            String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -8821,49 +8872,50 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
     /** This tests creation of surface graphs (e.g., x,y axes, not lon,lat axes). */
     public static void testSurfaceGraph() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         //qtot is weird: first 1/3 time complex red blue, 2nd half: big blog red, rest blue 
         EDDGrid gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hycom_GLBa008_tyx");
         String tName, result, dir = EDStatic.fullTestCacheDirectory;
 
         //minimal request
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500][][]", 
             dir, gridDataset.className() + "_surfaceGraphA0", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //.draw specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500][][]&.draw=surface", 
             dir, gridDataset.className() + "_surfaceGraphA1", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //.vars specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500][][]&.vars=Y|X|qtot", //intentionally flipped x/y 
             dir, gridDataset.className() + "_surfaceGraphA2", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //.draw specified
-        tName = gridDataset.makeNewFileForDapQuery(null, null,         //min|max|nDiv
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null,         //min|max|nDiv
             "qtot[1500][][]&.draw=surface&.vars=X|Y|qtot&.colorBar=LightRainbow|||||", 
             dir, gridDataset.className() + "_surfaceGraphA3", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //time on x axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500:1510][1200][]&.draw=surface&.vars=time|X|qtot", //1200 is through Australia
             dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //time on y axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500:1510][1200][]&.draw=surface&.vars=X|time|qtot", //1200 is through Australia
             dir, gridDataset.className() + "_surfaceGraphA4", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //2 x&y axis values
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "qtot[1500:1501][1200][313:314]&.draw=surface&.vars=time|X|qtot", 
             dir, gridDataset.className() + "_surfaceGraph2Values", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
@@ -8873,7 +8925,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //  because all axes have just 1 value.
         //This could probably be made to work because .vars is specified (so activeAxis are known)
         //  and x,y axis range could be made +/- avgSpacing/2.
-        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        //tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
         //    "qtot[1500][1200][313]&.draw=surface&.vars=time|X|qtot", 
         //    dir, gridDataset.className() + "_surfaceGraph1Value", ".png"); 
         //SSR.displayInBrowser("file://" + dir + tName);
@@ -8882,13 +8934,13 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         //*** 
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "hawaii_d90f_20ee_c4cb");
         // depth on Y axis
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "temp[(2010-12-15)][][(-30.75)][]&.draw=surface&.vars=longitude|depth|temp", 
             dir, gridDataset.className() + "_surfaceGraphB0", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
 
         //Hovmoeller Diagram x=time, y=depth    
-        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
             "temp[(2009-12-15):(2010-12-15)][][(-30.75)][(225)]&.draw=surface&.vars=time|depth|temp", 
             dir, gridDataset.className() + "_surfaceGraphB1", ".png"); 
         SSR.displayInBrowser("file://" + dir + tName);
@@ -8901,6 +8953,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log("\n\n*** EDDGridFromDap.testValidMinMax");
         String results, expected, tName, userDapQuery;
         String tDir = EDStatic.fullTestCacheDirectory;
+        int language = 0;
 
         //ncdump of source file
         String fiName = "/u00/satellite/PH2/sstd/1day/20121231152528-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA19_G_2012366_day-v02.0-fv01.0.nc";
@@ -8909,7 +8962,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //look at metadata
         EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "nodcPH2sstd1day"); //should work
-        tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             edd.className() + "_vmm", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =  
@@ -8932,7 +8985,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         //get some data
         userDapQuery = "sea_surface_temperature[(2001-01-01T12)][(10):100:(0)][(-140):100:(-130)]";
-        tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             edd.className() + "_tvmm", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);   
@@ -8966,6 +9019,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
         String2.log(SSR.getUrlResponseStringNewline(url + ".dds"));
         String2.log("\n.das:\n");
         String2.log(SSR.getUrlResponseStringNewline(url + ".das"));
+        int language = 0;
 
         String results = generateDatasetsXml(url, null, null, null, 10080, null);
 
@@ -9449,7 +9503,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
-        String tName = edd.makeNewFileForDapQuery(null, null, "", 
+        String tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_gdx4", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -9573,7 +9627,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
 "} nasa_jpl_aa77_f42f_c5ff;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);    
 
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_gdx4", ".nccsvMetadata"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -9824,6 +9878,7 @@ EDStatic.startBodyHtml(null) + "&nbsp;<br>\n" +
      */
     public static void testGenerateDatasetsXml5() throws Throwable {
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXml5");
+        int language = 0;
         String results = generateDatasetsXml(
             "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MUR41/ssta/1day", 
             null, null, null, -1, null);
@@ -9935,7 +9990,7 @@ expected =
 //"        <att name=\"time_coverage_end\">2017-12-18T21:00:00Z</att>\n" +
 //"        <att name=\"time_coverage_start\">2017-12-17T21:00:00Z</att>\n" +
 expected = 
-        "<att name=\"title\">Daily MUR SST, Interim near-real-time (nrt) product (1day), 0.01&#xb0;, 2002-present</att>\n" +
+        "<att name=\"title\">Daily MUR SST, Interim near-real-time (nrt) product (1day), 0.01Â°, 2002-present</att>\n" +
 "        <att name=\"uuid\">null</att>\n" +
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
@@ -10143,6 +10198,8 @@ expected =
 "</dataset>\n" +
 "\n";
         po = results.indexOf(expected.substring(0, 100));
+        if (po < 0)
+            String2.log("results=" + results + "\npo=" + po);
         Test.ensureEqual(results.substring(po), expected, "");
     }
 
@@ -10152,6 +10209,7 @@ expected =
      */
     public static void testGenerateDatasetsXmlUInt16() throws Throwable {
         String2.log("*** EDDGridFromDap.testGenerateDatasetsXmlUInt16");
+        int language = 0;
         String results = generateDatasetsXml(
             "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml", 
             null, null, new String[]{"time", "lat", "lon"}, -1, null);
@@ -10185,7 +10243,7 @@ expected =
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
 "    <reloadEveryNMinutes>[RELOAD]</reloadEveryNMinutes>\n" + //changes
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!
+"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!  2021-11-16 was 2020-09-21! We're going backwards!
 "        <att name=\"cdm_data_type\">grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6 ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" +
@@ -10194,7 +10252,7 @@ expected =
 "        <att name=\"data_bins\" type=\"int\">[DATA_BINS]</att>\n" +   //changes  (often?)
 "        <att name=\"data_maximum\" type=\"float\">[DATA_MAXIMUM]</att>\n" + //changes  (often?)
 "        <att name=\"data_minimum\" type=\"float\">[DATA_MINIMUM]</att>\n" + //changes  (often?)
-"        <att name=\"date_created\">2019-12-17T[TIME].000Z</att>\n" +  //few seconds changes  (often?)
+"        <att name=\"date_created\">2019-12-17T[TIME].000Z</att>\n" +  //few seconds changes  (often?)   2021-11-16 was 2020-09-21! We're going backwards!
 "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
 "        <att name=\"end_orbit_number\" type=\"int\">[END_ORBIT_NUMBER]</att>\n" + //changes often?
 "        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" +
@@ -10255,7 +10313,7 @@ expected =
 "        <att name=\"processing_control_input_parameters_west\">-180.000</att>\n" +
 "        <att name=\"processing_control_l2_flag_names\">LAND,~HISOLZEN</att>\n" +
 "        <att name=\"processing_control_software_name\">l3mapgen</att>\n" +
-"        <att name=\"processing_control_software_version\">2.2.0-V2019.4</att>\n" +
+"        <att name=\"processing_control_software_version\">2.2.0-V2019.4</att>\n" + //2021-11-16 was 2.3.0-b2c954b
 "        <att name=\"processing_control_source\">AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc</att>\n" +
 "        <att name=\"processing_level\">L3 Mapped</att>\n" +
 "        <att name=\"processing_version\">R2019.0</att>\n" +
@@ -10270,7 +10328,7 @@ expected =
 "        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
 "        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
 "        <att name=\"start_time\">00:00:00 UTC</att>\n" +
-"        <att name=\"stop_date\">2021-04-23 UTC</att>\n" +  //changes 
+"        <att name=\"stop_date\">2021-07-20 UTC</att>\n" +  //changes 
 "        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
 "        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
 "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
@@ -10319,7 +10377,7 @@ expected =
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
 //"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
-"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668&#xb0;, 2002-present</att>\n" + //2021-05-03 was -present
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668Â°, 2002-present</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -10424,34 +10482,34 @@ expected =
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDD edd = oneFromXmlFragment(null, results);
 
-        String tName = edd.makeNewFileForDapQuery(null, null, "", 
+        String tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".dds"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 864];\n" +  //changes
+"  Float64 time[time = 876];\n" +  //changes
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 864][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = 876][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 864];\n" +
+"      Float64 time[time = 876];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 864][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"      UInt16 qual_sst4[time = 876][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
 "    MAPS:\n" +
-"      Float64 time[time = 864];\n" +
+"      Float64 time[time = 876];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
 "} nasa_jpl_0d1b_74cd_7593;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         results = results.replaceAll("\\d{8}_\\d{8}", "[DATE_DATE]");
@@ -10461,7 +10519,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.619136e+9;\n" +  //changes
+"    Float64 actual_range 1.0257408e+9, 1.6267392e+9;\n" +  //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -10513,14 +10571,14 @@ expected =
 "    UInt16 valid_min 0;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
-"    String _lastModified \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this
+"    String _lastModified \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this.  2021-11-16 time jumped backwards from 2020-09-21!
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"CF-1.6 ACDD-1.3, COARDS\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
 "    String creator_type \"group\";\n" +
 "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-"    String date_created \"2019-12-17T[TIME_VARIES].000Z\";\n" +
+"    String date_created \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //changes sometimes
 "    Float64 Easternmost_Easting 179.979169546;\n" +
 "    Float64 geospatial_lat_max 89.979166667;\n" +
 "    Float64 geospatial_lat_min -89.97916810599999;\n" +
@@ -10532,7 +10590,7 @@ expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"l3mapgen par=AQUA_MODIS.[DATE_DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
 "[DATE_TIME] https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\n" +
-"[DATE_TIME] http://localhost:8080/cwexperimental/griddap/nasa_jpl_0d1b_74cd_7593.das\";\n" +
+"[DATE_TIME] http://127.0.0.1:8080/cwexperimental/griddap/nasa_jpl_0d1b_74cd_7593.das\";\n" +
 "    String id \"AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc\";\n" +
 "    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
@@ -10596,9 +10654,9 @@ expected =
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
 //"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
-"    String time_coverage_end \"2021-04-23T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String time_coverage_end \"2021-07-20T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" + //2021-05-03 was -present
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668Â°, 2002-present\";\n" + //2021-05-03 was -present
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
@@ -10619,6 +10677,7 @@ expected =
      */
     public static void testUInt16Dap() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testUInt16");
+        int language = 0;
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, url;
         String baseUrl = "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml"; 
@@ -10796,7 +10855,7 @@ expected =
 "        String stop_date \"[STOP_DATE] UTC\";\n" +  //varies
 "        String stop_time \"23:59:59 UTC\";\n" +
 "        String processing_control_software_name \"l3mapgen\";\n" +
-"        String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"        String processing_control_software_version \"2.2.0-V2019.4\";\n" + //2011-11-17 was 2.3.0-b2c954b !
 "        String processing_control_source \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
 "        String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
 "        String processing_control_input_parameters_par \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\";\n" +
@@ -10854,10 +10913,10 @@ expected =
  
 
         //.nccsvMetadata
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".nccsvMetadata"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
-        results = results.replaceAll("2019-12-17T.*.000Z", 
+        results = results.replaceAll("2019-12-17T.*.000Z",          //date changes sometimes  //2021-11-17 was 2020-09-21, now 2019!
                                      "2019-12-17T[TIME].000Z");
         results = results.replaceAll("AQUA_MODIS\\.\\d{8}_\\d{8}\\.L3", 
                                      "AQUA_MODIS.[DATE]_[DATE].L3");        
@@ -10929,7 +10988,7 @@ expected =
 "*GLOBAL*,processing_control_input_parameters_west,\"-180.000\"\n" +
 "*GLOBAL*,processing_control_l2_flag_names,\"LAND,~HISOLZEN\"\n" +
 "*GLOBAL*,processing_control_software_name,l3mapgen\n" +
-"*GLOBAL*,processing_control_software_version,2.2.0-V2019.4\n" +
+"*GLOBAL*,processing_control_software_version,2.2.0-V2019.4\n" + //2021-11-17 was 2.3.0-b2c954b so it went backwards!
 "*GLOBAL*,processing_control_source,AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\n" +
 "*GLOBAL*,processing_level,L3 Mapped\n" +
 "*GLOBAL*,processing_version,R2019.0\n" +
@@ -10951,7 +11010,7 @@ expected =
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,2002-07-04T00:00:00Z\\n2021-04-23T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
+"time,actual_range,2002-07-04T00:00:00Z\\n2021-07-20T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +
@@ -11003,7 +11062,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //.das from erddap dataset    das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[TODAY] http");
@@ -11093,7 +11152,7 @@ expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"l3mapgen par=AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\n" +
 "[TODAY] https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml\n" +
-"[TODAY] http://localhost:8080/cwexperimental/griddap/testUInt16Dap.das\";\n" +
+"[TODAY] http://127.0.0.1:8080/cwexperimental/griddap/testUInt16Dap.das\";\n" +
 "    String id \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc/L3/AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
 "    String infoUrl \"https://podaac.jpl.nasa.gov/dataset/MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0\";\n" +
 "    String institution \"NASA/GSFC OBPG\";\n" +
@@ -11158,14 +11217,14 @@ expected =
 "    String temporal_range \"8-day\";\n" +
 "    String time_coverage_end \"[TCE]\";\n" +
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" +
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668Â°, 2002-present\";\n" +
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -11198,7 +11257,7 @@ expected =
 //same query to source also shows 255's
 //https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml.ascii?qual_sst4%5B0:1:0%5D%5B400:200:800%5D%5B400:200:800%5D
         userDapQuery = "qual_sst4[0][400:200:800][400:200:800]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -11220,7 +11279,7 @@ expected =
 
         //display the image
         String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "qual_sst4[0][][]", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "qual_sst4[0][][]", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -11240,6 +11299,7 @@ expected =
      */
     public static void testScale1Offset0() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testScale1Offset0");
+        int language = 0;
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
@@ -11247,7 +11307,7 @@ expected =
 
          //.dds -- error only occurs on .nc
         userDapQuery = ""; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "scale1offset0", ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -11271,7 +11331,7 @@ expected =
 
         //.nc -- error only occurs on .nc
         userDapQuery = "wind_speed[(2012-12-31T12:00:00Z)][(89.97918):1000:(-89.97916)][(-179.9792):1000:(179.9792)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "scale1offset0", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         expected = //source is byte, with double scale_factor=1 and add_offset=0
@@ -11306,6 +11366,7 @@ expected =
     public static void testFromNccsv() throws Throwable {
 
         testVerboseOn();
+        int language = 0;
         //don't test local dataset because of dns/numericIP problems
         //this dataset is good test because it has several dimension combos
         String url = "https://opendap.jpl.nasa.gov/opendap/allData/amsre/L3/sst_1deg_1mo/tos_AMSRE_L3_v7_200206-201012.nc";
@@ -11356,7 +11417,7 @@ String expected =
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Obs-Advanced Microwave Scanning Radiometer on EOS (AMSRE) model output prepared for Observations for Model Intercomparisons (obs4MIPs) NASA-Jet Propulsion Laboratory (JPL) observation (tos AMSRE L3 v7 200206-201012)</att>\n" +
-"        <att name=\"title\">Obs-AMSRE model output prepared for obs4MIPs NASA-JPL observation, 1.0&#xb0;, 2002-2010</att>\n" + //test of resolution and timeRange
+"        <att name=\"title\">Obs-AMSRE model output prepared for obs4MIPs NASA-JPL observation, 1.0Â°, 2002-2010</att>\n" + //test of resolution and timeRange
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -11782,6 +11843,7 @@ String expected =
      */
     public static void testCrawlThreddsCatalog() throws Throwable {
         String2.log("\n*** testCrawlThreddsCatalog()");
+        int language = 0;
 
         //test find several datasets
         StringWriter writer = null;
@@ -12428,6 +12490,7 @@ String expected =
      */
     public static void testActualRange() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testActualRange");
+        int language = 0;
         testVerboseOn();
         String tDir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, userDapQuery;
@@ -12435,7 +12498,7 @@ String expected =
 
             EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange"); //should work
 
-            tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 edd.className() + "_actual_range", ".dds"); 
             int nTime = edd.axisVariables[0].sourceValues().size();
             results = String2.directReadFrom88591File(tDir + tName);
@@ -12527,7 +12590,7 @@ String expected =
 "} testActualRange;\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 edd.className() + "_actual_range", ".das"); 
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
@@ -12602,7 +12665,7 @@ String expected =
 "    String coordsys \"geographic\";\n" +
 "    String ioos_category \"CO2\";\n" +
 "    String long_name \"NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Total Alkalinity (TA) 25km\";\n" +
-"    String units \"µmole/kg\";\n" +
+"    String units \"Âµmole/kg\";\n" +
 "    String variable_info \"The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008 and depend on the tropical/subtropical algorthim offered by Lee et al. 2006\";\n" +
 "  }\n" +
 "  TC {\n" +
@@ -12612,7 +12675,7 @@ String expected =
 "    String coordsys \"geographic\";\n" +
 "    String ioos_category \"Ocean Color\";\n" +
 "    String long_name \"NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Total Inorganic Carbon (TC) 25km\";\n" +
-"    String units \"µmole/kg\";\n" +
+"    String units \"Âµmole/kg\";\n" +
 "    String variable_info \"The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA & fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis & Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson & Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale\";\n" +
 "  }\n" +
 "  pH {\n" +
@@ -12643,7 +12706,7 @@ String expected =
 "    String coordsys \"geographic\";\n" +
 "    String ioos_category \"CO2\";\n" +
 "    String long_name \"NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Bicarbonate Ion Concentration (HCO3-) 25km\";\n" +
-"    String units \"µmole/kg\";\n" +
+"    String units \"Âµmole/kg\";\n" +
 "    String variable_info \"The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA & fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis & Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson & Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale\";\n" +
 "  }\n" +
 "  CO3 {\n" +
@@ -12653,7 +12716,7 @@ String expected =
 "    String coordsys \"geographic\";\n" +
 "    String ioos_category \"CO2\";\n" +
 "    String long_name \"NOAA Coral Reef Watch Experimental Ocean Acidification Product Suite - Carbonate Ion Concentration (CO3--) 25km\";\n" +
-"    String units \"µmole/kg\";\n" +
+"    String units \"Âµmole/kg\";\n" +
 "    String variable_info \"The values in this variable array and in the valid_range attribute are in the units of x10umol/kg . The data values should be multiplied by the value (=0.1) contained in thescale_factor attribute to obtain the actual values in the units of .umol/kg .  The values are modeled according to Gledhill et al., 2008.  Fields of TA & fCO2sw were  were coupled to solve for the carbonic acid system using the CO2SYS program (Lewis & Wallace, 1998).  Constants: K1,K2 from Mehrbach et al, 1973 refit by Dickson & Millero, 1987;  fCO2 (versus pCO2); KSO4 from Dickson; pH = total scale\";\n" +
 "  }\n" +
 "  surface_flag {\n" +
@@ -12705,6 +12768,7 @@ String expected =
      */
     public static void testActualRange2() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testActualRange2");
+        int language = 0;
         testVerboseOn();
         String tDir = EDStatic.fullTestCacheDirectory;
         String name, tName, results, tResults, expected, userDapQuery;
@@ -12712,7 +12776,7 @@ String expected =
 
         EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testActualRange2"); //should work
 
-        tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
             edd.className() + "_actual_range2", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -12731,7 +12795,7 @@ String expected =
 "} testActualRange2;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
       
-        tName = edd.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
             edd.className() + "_actual_range2", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -12819,6 +12883,7 @@ String expected =
      */
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
+        int language = 0;
         if (lastTest < 0)
             lastTest = interactive? 15 : 42;
         String msg = "\n^^^ EDDGridFromDap.test(" + interactive + ") test=";

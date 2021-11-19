@@ -1251,7 +1251,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
                 msg = MustBe.throwableToString(t);
                 if (msg.indexOf("inotify instances") >= 0)
-                    msg += EDStatic.inotifyFix;
+                    msg += EDStatic.inotifyFixAr[0];
                 EDStatic.email(EDStatic.adminEmail, subject, msg);
                 msg = "";
             }
@@ -1432,7 +1432,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             while (tFileListPo < tFileNamePA.size()) {
                 if (Thread.currentThread().isInterrupted())
                     throw new SimpleException("EDDTableFromFiles.init" +
-                        EDStatic.caughtInterrupted);
+                        EDStatic.caughtInterruptedAr[0]);
 
                 int    tDirI   = tFileDirIndexPA.get(tFileListPo);
                 String tFileS  = tFileNamePA.get(tFileListPo);
@@ -2429,6 +2429,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -2440,7 +2441,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
         //Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
         if (watchDirectory == null)
@@ -2524,7 +2525,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         for (int evi = 0; evi < nEvents; evi++) {
             if (Thread.currentThread().isInterrupted())
                 throw new SimpleException("EDDTableFromFiles.lowUpdate" +
-                        EDStatic.caughtInterrupted);
+                        EDStatic.caughtInterruptedAr[0]);
 
             String fullName = contexts.get(evi);
             String dirName = File2.getDirectory(fullName);
@@ -2905,6 +2906,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -2914,7 +2916,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         try {
@@ -2934,11 +2936,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-    public String accessibleViaFilesGetLocal(String relativeFileName) {
+    public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         //identical code in EDDGridFromFiles and EDDTableFromFiles
         if (!accessibleViaFiles)
              return null;
@@ -3398,13 +3401,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
  
         //get the sourceDapQuery (a query that the source can handle)
@@ -3413,7 +3417,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         StringArray conVars   = new StringArray();
         StringArray conOps    = new StringArray();
         StringArray conValues = new StringArray(); 
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,  //sourceNames
             conVars, conOps, conValues); //timeStamp constraints other than regex are epochSeconds        
         if (reallyVerbose) String2.log("getDataForDapQuery sourceQuery=" + 
@@ -3451,7 +3455,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
             //standardizeResultsTable applies all constraints
             preStandardizeResultsTable(loggedInAs, table); 
-            standardizeResultsTable(requestUrl, userDapQuery, table);
+            standardizeResultsTable(language, requestUrl, userDapQuery, table);
             tableWriter.writeAllAndFinish(table);
 
             cumNNotRead += tFileTable.nRows();
@@ -3869,7 +3873,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     //standardizeResultsTable applies all constraints
                     preStandardizeResultsTable(loggedInAs, distinctTable); 
                     if (distinctTable.nRows() > 0) {
-                        standardizeResultsTable(requestUrl, userDapQuery, distinctTable);
+                        standardizeResultsTable(language, requestUrl, userDapQuery, distinctTable);
                         tableWriter.writeSome(distinctTable);
                         if (tableWriter.noMoreDataPlease) {
                             tableWriter.logCaughtNoMoreDataPlease(datasetID);
@@ -3892,7 +3896,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (reallyVerbose) String2.log("#" + f + " get data from " + tDir + tName);
 
                 //*** The new parallelized version of reading data files
-                FutureTask futureTask = new FutureTask(new EDDTableFromFilesCallable(
+                FutureTask futureTask = new FutureTask(new EDDTableFromFilesCallable(language, 
                     ">> " + className + " " + datasetID + " nThreads=" + tnThreads + 
                     //parent thread's name (so in ERDDAP I can distinguish different user requests)
                     " thread=" + Thread.currentThread().getName() + 
@@ -3970,7 +3974,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String2.log(MustBe.throwableToString(t));
                 throw t;
                 //throw t instanceof WaitThenTryAgainException? t : 
-                //    new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                //    new WaitThenTryAgainException(
+                //        EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 //        "\n(" + EDStatic.errorFromDataSource + tToString + ")", t); 
             }
 
@@ -3988,7 +3993,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //standardizeResultsTable applies all constraints
             preStandardizeResultsTable(loggedInAs, distinctTable); 
             if (distinctTable.nRows() > 0) {
-                standardizeResultsTable(requestUrl, userDapQuery, distinctTable);
+                standardizeResultsTable(language, requestUrl, userDapQuery, distinctTable);
                 tableWriter.writeSome(distinctTable);
             }
             distinctTable = null;

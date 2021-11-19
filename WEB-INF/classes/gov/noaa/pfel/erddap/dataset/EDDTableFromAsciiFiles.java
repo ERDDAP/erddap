@@ -1072,6 +1072,7 @@ String expected =
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiFiles.test() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1084,7 +1085,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromAsciiFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1228,7 +1229,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1255,7 +1256,7 @@ expected =
         //.csv    for one lat,lon,time
         //46012 -122.879997    37.360001
         userDapQuery = "&longitude=-122.88&latitude=37.36&time>=2005-07-01&time<2005-07-01T10";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1277,7 +1278,7 @@ expected =
 
         //.csv    for one station,time
         userDapQuery = "&station=\"46012\"&time>=2005-07-01&time<2005-07-01T10";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1287,7 +1288,7 @@ expected =
 
         //.csv for test requesting all stations, 1 time, 1 species
         userDapQuery = "&time=2005-07-01";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_3", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1303,7 +1304,7 @@ expected =
 
         //.csv for test requesting all stations, 1 time, 1 species   String > <
         userDapQuery = "&wtmp>32";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_4", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1317,7 +1318,7 @@ expected =
         //.csv for test station regex
         userDapQuery = "longitude,latitude,altitude,time,station,atmp,wtmp" + 
             "&time=2005-07-01&station=~\"(46012|46026|zztop)\"";  
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_5", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1337,6 +1338,7 @@ expected =
 
         String2.log("\n****************** EDDTableFromAsciiFiles.testFixedValueAndScripts() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, dapQuery, tQuery;
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
@@ -1352,7 +1354,7 @@ expected =
             EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
             //test getting das for entire dataset
-            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fv" + test, ".das"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1386,7 +1388,7 @@ expected =
 "  longitude0360 {\n" +
 "    Float32 actual_range 263.2194, 274.2898;\n" +
 "    String ioos_category \"Location\";\n" +
-"    String long_name \"Longitude 0-360�\";\n" +
+"    String long_name \"Longitude 0-360°\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n" +
@@ -1466,7 +1468,7 @@ expected=
             Test.ensureEqual(results.substring(po), expected, "test=" + test + " results=\n" + results);
 
             //test getting some data
-            tName = eddTable.makeNewFileForDapQuery(null, null, "&time<2013-04-05T17", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time<2013-04-05T17", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1479,7 +1481,7 @@ expected=
             Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test getting just the fixed value variable
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "ship_call_sign&ship_call_sign!=\"zztop\"", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fvb" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
@@ -1490,7 +1492,7 @@ expected=
             Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test getting longitude0360 (referenced variable) and longitude
-            tName = eddTable.makeNewFileForDapQuery(null, null, "longitude0360,longitude&time<2013-04-05T17", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "longitude0360,longitude&time<2013-04-05T17", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1503,7 +1505,7 @@ expected=
             Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test getting time (different variable) and longitude
-            tName = eddTable.makeNewFileForDapQuery(null, null, "time,longitude&time<2013-04-05T17", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "time,longitude&time<2013-04-05T17", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1516,7 +1518,7 @@ expected=
             Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test just getting longitude
-            tName = eddTable.makeNewFileForDapQuery(null, null, "longitude&time<2013-04-05T17", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "longitude&time<2013-04-05T17", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1529,7 +1531,7 @@ expected=
             Test.ensureEqual(results, expected, "test=" + test + " results=\n" + results);
 
             //test just getting seaTemperatureF
-            tName = eddTable.makeNewFileForDapQuery(null, null, "seaTemperatureF&time<2013-04-05T17", 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, "seaTemperatureF&time<2013-04-05T17", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_fva" + test, ".csv"); 
             results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
             expected = 
@@ -1544,7 +1546,7 @@ expected=
             //test that using longitude0360 as the x axis still draws a map (not a graph)
             dapQuery = 
 "longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
-            tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test,  ".png"); 
             SSR.displayInBrowser("file://" + dir + tName);
         }
@@ -1560,6 +1562,7 @@ expected=
     public static void testBasic2() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() \n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1581,7 +1584,7 @@ expected=
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -1604,7 +1607,7 @@ expected=
 
         //*** test getting das for entire dataset
         String2.log("\nEDDTableFromAsciiFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -1708,7 +1711,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -1732,7 +1735,7 @@ expected =
 
         //only subsetVars
         userDapQuery = "fileName,five";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_sv", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         expected = 
@@ -1743,7 +1746,7 @@ expected =
 
         //subset of variables, constrain boolean and five
         userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_conbool", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         expected = 
@@ -3088,6 +3091,7 @@ expected =
     public static void testTimeZone() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testTimeZone() \n");
         testVerboseOn();
+        int language = 0;
         int po;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String testDir = EDStatic.fullTestCacheDirectory;
@@ -3141,7 +3145,7 @@ expected =
 
         //.das
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_tz_all", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3179,7 +3183,7 @@ expected =
 
         expected = 
 //2016-09-19T20:17:35Z
-"http://localhost:8080/cwexperimental/tabledap/testTimeZone.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testTimeZone.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"keywords, many\";\n" +
@@ -3203,7 +3207,7 @@ expected =
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_tz_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3235,6 +3239,7 @@ expected =
 
         String2.log("\n****************** EDDTableFromAsciiFiles.testTimeZone2() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3245,7 +3250,7 @@ expected =
 
         //.csv   
         userDapQuery = "&time>=2004-12-03T15:55";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3267,6 +3272,7 @@ expected =
 
         String2.log("\n****************** EDDTableFromAsciiFiles.testTimeMV() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3294,7 +3300,7 @@ expected =
 
         //.das   
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_3", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3325,7 +3331,7 @@ expected =
 
         expected = 
 //2016-09-19T22:37:33Z
-"http://localhost:8080/cwexperimental/tabledap/testTimeMV.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testTimeMV.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"keywords, lots, of\";\n" +
@@ -3351,7 +3357,7 @@ expected =
         // a>b won't return mv=NO SAMPLE   or NULL
         //all string and date missing values are treated like / become ""
         userDapQuery = "&a>\"b\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3370,7 +3376,7 @@ expected =
         // a<k will return mv=NO SAMPLE 
         //all string and date missing values are treated like / become ""
         userDapQuery = "&a<\"k\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3391,7 +3397,7 @@ expected =
 
         // a<j & a!=""  won't return mv converted to ""
         userDapQuery = "&a<\"j\"&a!=\"\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv2b", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3408,7 +3414,7 @@ expected =
 
         // a="" will return mv rows converted to ""
         userDapQuery = "&a=\"\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv3", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3422,7 +3428,7 @@ expected =
     
         // a!="" will return non mv rows
         userDapQuery = "&a!=\"\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv3b", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3441,7 +3447,7 @@ expected =
     
         //time>... works in UTC time and won't return mv   
         userDapQuery = "&time>=2010-12-07T20";  //request in UTC
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3453,7 +3459,7 @@ expected =
 
         //time=NaN  returns mv   
         userDapQuery = "&time=NaN";  
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4aa", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3469,7 +3475,7 @@ expected =
 
         //m>=11  won't return mv   
         userDapQuery = "&m>=11";  //request in UTC
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4b", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3481,7 +3487,7 @@ expected =
 
         //m<=1  won't return mv   
         userDapQuery = "&m<=1";  //request in UTC
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv4c", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3493,7 +3499,7 @@ expected =
 
         //m=NaN returns correct info
         userDapQuery = "&m=NaN";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_mv5", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3568,7 +3574,8 @@ String expected =
 "        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
 "        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
 "        <att name=\"history\">archive_location=Other\n" +
-"Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+                        //  1/4 below is in source!
+"Lineage Statement: Multibeam (downloaded From NGDC¼ degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
 "Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" + //typos: Surveyes, trackliens
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
@@ -3733,7 +3740,8 @@ expected =
 "        <att name=\"geospatial_lon_max\" type=\"double\">170.0</att>\n" +
 "        <att name=\"geospatial_lon_min\" type=\"double\">-133.0</att>\n" +
 "        <att name=\"history\">archive_location=Other\n" +
-"Lineage Statement: Multibeam (downloaded From NGDC&#xbc; degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
+                                   //  1/4 below is in source!
+"Lineage Statement: Multibeam (downloaded From NGDC¼ degrees blocks. 2913 downloads) NOAA Fisheries, Alaska 254,125,225 Hydro Survey NOAA Fisheries, Alaska 21,436,742 GOA: UNH Multibeam: 2010 Univ of New Hampshire\\AKRO 17,225,078 Bering SEA UNH Multibeam Univ of New Hampshire\\AKRO 2,120,598 Trackline Geophyics NOAA Fisheries, Alaska 42,851,636 Chart Smooth Sheets Bathy Points SEAK The Nature Conservancy - TNC SEAK 79,481 Multibeam - 2013 NOAA Fisheries, Alaska 25,885,494 Gebco ETOPO NOAA Fisheries, Alaska 56,414,222 Mapped Shoreline (Units) defines MHW ShoreZone Program 151,412  Compiled by NGDC  NOAA Ship Rainier - Multibeam Processing with Caris Compiled by Rainier 1,126,111  Compiled  Lim, E., B.W. Eakins, and R. Wigley, Coastal Relief Model of Southern Alaska: Procedures, Data Sources and Analysis, NOAA Technical Memorandum NESDIS NGDC-43, 22 pp., August 2011. With parts of NGDC:: Southeast Alaska, AK MHHW DEM; Juneau Alaska, AK MHHW DEM, Sitka Alaska, MHHW DEM. TOTAL Processed Features Added to AKRO Terrain Dataset where we did not have multibeam or hydro survey data.  138,195,886559,611,885 \n" +
 "Further MB from NCEIis downloaded as 43,000 individual tracklines in XYZ or MB58 format and processed using ArcPY and MB software.\n" +
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
@@ -4596,6 +4604,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
 
         String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange()\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
 
@@ -4603,7 +4612,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //test getting das for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -4626,7 +4635,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test getting min and max time values
-        tName = eddTable.makeNewFileForDapQuery(null, null, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&orderByMinMax(\"time\")", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".csv"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
@@ -4645,6 +4654,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
 
         String2.log("\n*** EDDTableFromAsciiFiles.testTimeRange2()\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
 
@@ -4652,7 +4662,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //test getting das for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr2", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -4675,7 +4685,7 @@ today + " GenerateDatasetsXml in ERDDAP v2.15 (contact: bob.simons@noaa.gov) con
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test getting min and max time values
-        tName = eddTable.makeNewFileForDapQuery(null, null, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&orderByMinMax(\"time\")", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_ttr", ".csv"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
@@ -5509,8 +5519,8 @@ String expected =
 "        <att name=\"deployment_1_start_date\">2010-10-15</att>\n" +
 "        <att name=\"deployment_1_title\">KN199-04</att>\n" +
 "        <att name=\"deployment_1_webpage\">https://www.bco-dmo.org/deployment/58066</att>\n" +
-"        <att name=\"deployment_2_description\">KN199-05 is the completion of the US GEOTRACES Zonal North Atlantic Survey Section cruise originally planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +
-"4 November 2010 update: Due to engine failure, the science activities scehduled for the KN199-04 cruise were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde (ending KN199 leg 4) and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University.&#xa0; The objective of KN199 leg 5 (KN199-05) is to carry the vessel in transit to Charleston, SC while conducting abbreviated science activities originally planned for KN199-04. The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
+"        <att name=\"deployment_2_description\">KN199-05 is the completion of the US GEOTRACES Zonal North Atlantic Survey Section cruise originally planned for late Fall 2010 from Lisboa, Portugal to Woods Hole, MA, USA.\n" +                                                                                                       
+"4 November 2010 update: Due to engine failure, the science activities scehduled for the KN199-04 cruise were canceled on 2 November 2010. On 4 November the R/V KNORR put in at Porto Grande, Cape Verde (ending KN199 leg 4) and is scheduled to depart November 8, under the direction of Acting Chief Scientist Oliver Wurl of Old Dominion University.\u00a0 The objective of KN199 leg 5 (KN199-05) is to carry the vessel in transit to Charleston, SC while conducting abbreviated science activities originally planned for KN199-04. The vessel is scheduled to arrive at the port of Charleston, SC, on 26 November 2010. The original cruise was intended to be 55 days duration with arrival in Norfolk, VA on 5 December 2010.\n" +
 "Planned scientific activities and operations area during the KN199 leg 5 (KN199-05)  transit will be as follows: the ship&#39;s track will cross from the highly productive region off West Africa into the oligotrophic central subtropical gyre waters, then across the western boundary current (Gulf Stream), and into the productive coastal waters of North America. During this transit, underway surface sampling will be done using the towed fish for trace metals, nanomolar nutrients, and arsenic speciation. In addition, a port-side high volume pumping system will be used to acquire samples for radium isotopes. Finally, routine aerosol and rain sampling will be done for trace elements. This section will provide important information regarding atmospheric deposition, surface transport, and transformations of many trace elements.\n" +
 "Science Objectives are to obtain state of the art  trace metal and isotope measurements on a suite of samples taken on a  mid-latitude zonal transect of the North Atlantic. In particular  sampling will target the oxygen minimum zone extending off the west  African coast near Mauritania, the TAG hydrothermal field, and the  western boundary current system along Line W. In addition, the major  biogeochemical provinces of the subtropical North Atlantic will be  characterized. For additional information, please refer to the GEOTRACES  program Web site ( [ https://www.geotraces.org/ ] GEOTRACES.org) for overall program objectives and a summary of properties to be measured.\n" +
 "Science Activities include seawater sampling via  GoFLO and Niskin carousels, in situ pumping (and filtration), CTDO2 and  transmissometer sensors, underway pumped sampling of surface waters, and  collection of aerosols and rain.\n" +
@@ -5596,12 +5606,12 @@ String expected =
 "Hydrography, CTD and nutrient measurements will be supported by the Ocean Data Facility (J. Swift) at Scripps Institution of Oceanography and funded through NSF Facilities. They will be providing an additional CTD rosette system along with nephelometer and LADCP. A trace metal clean Go-Flo Rosette and winch will be provided by the group at Old Dominion University (G. Cutter) along with a towed underway pumping system.\n" +
 "The North Atlantic Transect cruise began in 2010 with KN199 leg 4 (station sampling) and leg 5 (underway sampling only) (Figure 2).\n" +
 "[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Cruise_Report_for_Knorr_199_Final_v3.pdf ] KN199-04 Cruise Report (PDF)\n" +
-"Figure 2. The red line shows the cruise track for the first leg of the US Geotraces North Atlantic Transect on the R/V Knorr in October 2010.&#xa0; The rest of the stations (beginning with 13) will be completed in October-December 2011 on the R/V Knorr (courtesy of Bill Jenkins, Chief Scientist, GNAT first leg).  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/GNAT_stationPlan.jpg ] \n" +
+"Figure 2. The red line shows the cruise track for the first leg of the US Geotraces North Atlantic Transect on the R/V Knorr in October 2010.\u00a0 The rest of the stations (beginning with 13) will be completed in October-December 2011 on the R/V Knorr (courtesy of Bill Jenkins, Chief Scientist, GNAT first leg).  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/GNAT_stationPlan.jpg ] \n" +
 "The section completion effort resumed again in November 2011 with KN204-01A,B (Figure 3).\n" +
 "[ http://bcodata.whoi.edu//US_GEOTRACES/AtlanticSection/Submitted_Preliminary_Cruise_Report_for_Knorr_204-01.pdf ] KN204-01A,B Cruise Report (PDF)\n" +
-"Figure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R/V Knorr in November 2011.&#xa0;  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/KN204-01_Stations.png ] \n" +
+"Figure 3. Station locations occupied on the US Geotraces North Atlantic Transect on the R/V Knorr in November 2011.\u00a0  [ http://bcodata.whoi.edu/US_GEOTRACES/AtlanticSection/KN204-01_Stations.png ] \n" +
 "Data from the North Atlantic Transect cruises are available under the Datasets heading below, and consensus values for the SAFe and North Atlantic GEOTRACES Reference Seawater Samples are available from the GEOTRACES Program Office: [ https://www.geotraces.org/standards-and-reference-materials/?acm=455_215 ] Standards and Reference Materials\n" +
-"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04&#xa0;&#xa0; (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05&#xa0;&#xa0; (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
+"ADCP data are available from the Currents ADCP group at the University of Hawaii at the links below: [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_4 ] KN199-04\u00a0\u00a0 (leg 1 of 2010 cruise; Lisbon to Cape Verde) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2010.html#kn199_5 ] KN199-05\u00a0\u00a0 (leg 2 of 2010 cruise; Cape Verde to Charleston, NC) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_01 ] KN204-01A (part 1 of 2011 cruise; Woods Hole, MA to Bermuda) [ https://currents.soest.hawaii.edu/uhdas_adcp/year2011.html#kn204_02 ] KN204-01B (part 2 of 2011 cruise; Bermuda to Cape Verde)</att>\n" +
 "        <att name=\"project_1_title\">U.S. GEOTRACES North Atlantic Transect</att>\n" +
 "        <att name=\"project_1_webpage\">https://www.bco-dmo.org/project/2066</att>\n" +
 "        <att name=\"publisher_email\">info@bco-dmo.org</att>\n" +
@@ -6210,6 +6220,7 @@ String expected =
      */
     public static void testStandardizeWhat() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testStandardizeWhat\n");
+        int language = 0;
 
         String tID = "testStandardizeWhat";
         EDD.deleteCachedDatasetInfo(tID);
@@ -6320,7 +6331,7 @@ String expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //das 
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestStandadizeWhat", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6348,7 +6359,7 @@ String expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         //get data from first file
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestStandadizeWhat", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6358,7 +6369,7 @@ String expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //get data from second file
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestStandadizeWhat2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6378,6 +6389,7 @@ String expected =
     public static void testAwsS3StandardizeWhat() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testAwsS3StandardizeWhat\n" +
             "This is a private bucket, so requires Bob's IAM (or similar permission).");
+        int language = 0;
 
         String tID = "testAwsS3StandardizeWhat";
         EDD.deleteCachedDatasetInfo(tID);
@@ -6492,7 +6504,7 @@ String expected =
 
         //das 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, tID); 
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestAwsS3StandadizeWhat", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6520,7 +6532,7 @@ String expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         //get data from first file
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=2010-01-01", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestAwsS3StandadizeWhat", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6530,7 +6542,7 @@ String expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //get data from second file
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=2010-01-03", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_TestAwsS3StandadizeWhat2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -6691,6 +6703,7 @@ String expected =
     public static void testNThreads() throws Throwable {
         String2.log("\n*** EDDTableFromAsciiFiles.testNThreads()\n");
 
+        int language = 0;
         Table.verbose = false;
         Table.reallyVerbose = false;
         EDD.verbose = false;
@@ -6721,7 +6734,7 @@ String expected =
 
         //warmup
         EDDTableFromAsciiFiles eddTable = (EDDTableFromAsciiFiles)oneFromDatasetsXml(null, id); 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "testNThreadsWarmup", ".csv"); 
 
         //test
@@ -6732,7 +6745,7 @@ String expected =
             Math2.gc(5000);
 
             long startTime = System.currentTimeMillis();
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
                 "testNThreads" + i, ".csv"); 
 
             long eTime = System.currentTimeMillis() - startTime;

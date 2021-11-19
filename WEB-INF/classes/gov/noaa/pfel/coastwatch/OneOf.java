@@ -408,7 +408,7 @@ public class OneOf {
                 fgdcTemplate = sb.toString();
             }
             //if (verbose)
-            //    String2.log("fgdcTemplate=" + String2.annotatedString(XML.encodeAsXML(fgdcTemplate)));
+            //    String2.log("fgdcTemplate=" + String2.annotatedString(XML.encodeAsTerminal(fgdcTemplate)));
 
             infoUrlBaseDir = dataSetRB2.getString("infoUrlBaseDir", null);
             infoUrlBaseUrl = dataSetRB2.getString("infoUrlBaseUrl", null); 

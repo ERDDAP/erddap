@@ -362,7 +362,7 @@ public class EDDTableFromNOS extends EDDTable{
                 StringBuilder sb = new StringBuilder(stationTable.getStringData(STATION_LON_COL, row));
                 int po = sb.indexOf(" ");
                 if (po > 0) {
-                    sb.setCharAt(po, '°');
+                    sb.setCharAt(po, 'Â°');
                     po = sb.indexOf(" ", po + 1);
                     if (po > 0) {
                         sb.setCharAt(po, '\'');
@@ -383,7 +383,7 @@ public class EDDTableFromNOS extends EDDTable{
                 StringBuilder sb = new StringBuilder(stationTable.getStringData(STATION_LAT_COL, row));
                 int po = sb.indexOf(" ");
                 if (po > 0) {
-                    sb.setCharAt(po, '°');
+                    sb.setCharAt(po, 'Â°');
                     po = sb.indexOf(" ", po + 1);
                     if (po > 0) {
                         sb.setCharAt(po, '\'');
@@ -509,13 +509,14 @@ public class EDDTableFromNOS extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //get the sourceDapQuery (a query that the source can handle)
@@ -523,7 +524,7 @@ public class EDDTableFromNOS extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -851,6 +852,7 @@ public class EDDTableFromNOS extends EDDTable{
      */
     public static void basicTest(boolean doLongTest) throws Throwable {
         String2.log("\n****************** EDDTableFromNOS.test() *****************\n");
+        int language = 0;
         verbose = true;
         reallyVerbose = true;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -917,7 +919,7 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
         String error = "";
 
         //getEmpiricalMinMax   just do once
-        //wind.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true);
+        //wind.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true);
         //if (true) System.exit(1);
 
         //getMinMaxTime   just do once   
@@ -926,12 +928,12 @@ String2.log("\n  response=\n" + SSR.getSoapString(sourceUrl, request,
         //  looking for even one station with data.
         //last failure 1991-05-01     treat this as min time
         //last successful 1991-06-01
-        //wind.getEmpiricalMinMax("1991-06-01", "1991-06-01", false, true);
+        //wind.getEmpiricalMinMax(language, "1991-06-01", "1991-06-01", false, true);
         //if (true) System.exit(1);
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNOS.test das dds for entire dataset\n");
-        tName = wind.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".das"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -1067,7 +1069,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = wind.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Entire", ".dds"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -1099,7 +1101,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.asc test of just station data
         userDapQuery = "longitude,latitude,station_name,station_id" +
             "&longitude=" + tLon + "&latitude=" + tLat; 
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_station1", ".asc"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1121,7 +1123,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.asc test of just station data          REGEX
         userDapQuery = "longitude,latitude,station_name,station_id" +
             "&station_name" + PrimitiveArray.REGEX_OP + "\"P.*e.*\""; 
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_station2", ".asc"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected =   
@@ -1180,7 +1182,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
 
         //.asc    test 1 lon,lat point
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Data", ".asc"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1216,7 +1218,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude>=" + (tLon-0.01) + "&longitude<" + (tLon+0.01) + 
             "&wind_speed>2.2&wind_speed<3.2" +  //wind_speed
             "&latitude=" + tLat + "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_Num", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1229,7 +1231,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name,wind_speed,wind_from_direction" + 
             "&station_name>\"Prov\"&station_name<\"Prow\"" +
             "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_name", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1245,7 +1247,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name,wind_speed,wind_from_direction" + 
             "&station_id>\"8454\"&station_id<\"8455\"" +
             "&time>=" + beginDate + "&time<=" + endDate;
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_id", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1278,7 +1280,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //"&stationID=9411340&time>=1993-09-09&time<=1993-09-11"; //succeeds, including data on 9/9
             "&stationID=9411340&time>=1993-09-09&time<=1993-09-10";  //fails: no data
             //"&stationID=9411340&time=1993-09-09"; //fails: no data
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
         results = String2.annotatedString(String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -1308,7 +1310,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         userDapQuery = "longitude,latitude,time,station_id,station_name," +
             "wind_speed,wind_from_direction,wind_speed_of_gust,MaxExceeded,RateExceeded" +
             "&longitude>-125&longitude<-115&latitude>30&latitude<35&time=2006-01-01";
-        tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
         results = String2.annotatedString(String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -1338,7 +1340,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             String tUserDapQuery = "longitude,latitude,time,station_name," +
                 "wind_speed,wind_from_direction,wind_speed_of_gust" +
                 "&longitude=" + tLon + "&latitude=" + tLat + "&time>=" + beginDate + "&time<=2007-05-01"; //>366 days (their limit)
-            tName = wind.makeNewFileForDapQuery(null, null, tUserDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = wind.makeNewFileForDapQuery(language, null, null, tUserDapQuery, EDStatic.fullTestCacheDirectory, 
                 wind.className() + "_DataTime", ".asc"); 
             results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
             expected = 
@@ -1371,7 +1373,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "\nresults=\n" + results.substring(results.length() - 200, results.length()));
 
         //data for mapExample
-        tName = wind.makeNewFileForDapQuery(null, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-02", 
+        tName = wind.makeNewFileForDapQuery(language, null, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-02", 
             EDStatic.fullTestCacheDirectory, wind.className() + "Map", ".csv");
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 

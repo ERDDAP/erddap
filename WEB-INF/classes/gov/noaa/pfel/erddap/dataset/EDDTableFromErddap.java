@@ -482,13 +482,14 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //don't getSourceQueryFromDapQuery
@@ -516,7 +517,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         }
 
         //String2.log(table.toString());
-        standardizeResultsTable(requestUrl, userDapQuery, table); //not necessary?
+        standardizeResultsTable(language, requestUrl, userDapQuery, table); //not necessary?
         tableWriter.writeAllAndFinish(table);
     }
 
@@ -525,6 +526,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -534,7 +536,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
         if (!accessibleViaFiles)
             return null;
@@ -576,11 +578,12 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-    public String accessibleViaFilesGetLocal(String relativeFileName) {
+    public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
         if (!accessibleViaFiles)
              return null;
@@ -720,7 +723,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 String expected = 
 "<dataset type=\"EDDTableFromErddap\" datasetID=\"erdGlobecBottle\" active=\"true\">\n" +
 "    <!-- GLOBEC NEP Rosette Bottle Data (2002) -->\n" +
-"    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n" +
+"    <sourceUrl>http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle</sourceUrl>\n" +
 "</dataset>\n";
 String fragment = expected;
             String2.log("\nresults=\n" + results);
@@ -919,7 +922,7 @@ expected =
 
 expected =        
 //T17:35:08Z (local files)\\n2017-04-18T17:35:08Z  
-"http://localhost:8080/cwexperimental/tabledap/" + 
+"http://127.0.0.1:8080/cwexperimental/tabledap/" + 
     (tRedirect? "testNccsvScalar" : tID) + 
     ".nccsv\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
@@ -1132,6 +1135,7 @@ expected =
      */
     public static void testChukchiSea() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
         String error = "";
         int epo, tPo;
@@ -1142,7 +1146,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** EDDTableFromErddap.testChukchiSea das dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1179,7 +1183,7 @@ expected =
 
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1224,7 +1228,7 @@ expected =
         String2.log("\n*** EDDTableFromErddap.testChukchiSea make DATA FILES\n");       
 
         //.asc
-        tName = eddTable.makeNewFileForDapQuery(null, null, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "&id=%22ae1001c011%22", //"&id=\"ae1001c011\"", 
             EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Data", ".csv"); 

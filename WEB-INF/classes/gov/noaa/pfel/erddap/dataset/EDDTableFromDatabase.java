@@ -653,13 +653,14 @@ public class EDDTableFromDatabase extends EDDTable{
      * preparedStatements (so String values are properly escaped and
      * numbers are assured to be numbers).
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //good summary of using statements, queries, resultSets, ...
@@ -670,7 +671,7 @@ public class EDDTableFromDatabase extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
         //String2.log(">>resultsVars=" + resultsVariables.toString());
@@ -733,7 +734,9 @@ public class EDDTableFromDatabase extends EDDTable{
                 if (nDistinctOrOrderBy == 0 && sourceCanOrderBy >= CONSTRAIN_PARTIAL) {
                     int tpo = p.indexOf("(\"");
                     if (tpo < 0) 
-                        throw new SimpleException(EDStatic.queryError + "Invalid syntax for \"" + p + "\"."); //should have been caught already
+                        throw new SimpleException(EDStatic.bilingual(language,
+                            EDStatic.queryErrorAr[0]        + "Invalid syntax for \"" + p + "\".",
+                            EDStatic.queryErrorAr[language] + "Invalid syntax for \"" + p + "\".")); //should have been caught already
                     StringArray tQueryOrderBy = StringArray.fromCSV(
                         p.substring(tpo + 2, p.length() - 2));
                     //change from destNames to sourceNames
@@ -741,8 +744,9 @@ public class EDDTableFromDatabase extends EDDTable{
                     for (int oi = 0; oi < tQueryOrderBy.size(); oi++) {
                         int v = String2.indexOf(dataVariableDestinationNames(), tQueryOrderBy.get(oi));
                         if (v < 0)
-                            throw new SimpleException(EDStatic.queryError +
-                                MessageFormat.format(EDStatic.queryErrorUnknownVariable, queryOrderBy.get(oi))); 
+                            throw new SimpleException(EDStatic.bilingual(language,
+                                EDStatic.queryErrorAr[0]        + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[0]       , queryOrderBy.get(oi)),
+                                EDStatic.queryErrorAr[language] + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[language], queryOrderBy.get(oi)))); 
                         String tSourceName = dataVariableSourceNames()[v];
                         tQueryOrderBy.set(oi, tSourceName);
                         HashSet<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
@@ -822,8 +826,9 @@ public class EDDTableFromDatabase extends EDDTable{
                 //give up
                 String2.log(msg + "2=\n" +
                     MustBe.throwableToString(t2));
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + EDStatic.databaseUnableToConnect + ": " + t.toString() + ")");
+                throw new WaitThenTryAgainException(EDStatic.bilingual(language,
+                    EDStatic.waitThenTryAgainAr[0]        + "(" + EDStatic.databaseUnableToConnectAr[0]        + ": " + t.toString() + ")",
+                    EDStatic.waitThenTryAgainAr[language] + "(" + EDStatic.databaseUnableToConnectAr[language] + ": " + t.toString() + ")"));
             }
         }
 
@@ -1019,7 +1024,7 @@ public class EDDTableFromDatabase extends EDDTable{
                     paArray[0].size() >= triggerNRows) {
                     if (Thread.currentThread().isInterrupted())
                         throw new SimpleException("EDDTableFromDatabase.getDataForDapQuery" + 
-                            EDStatic.caughtInterrupted);
+                            EDStatic.caughtInterruptedAr[0]);
 
                     //convert script columns into data columns
                     if (scriptNames != null)             
@@ -1029,7 +1034,7 @@ public class EDDTableFromDatabase extends EDDTable{
                     //String2.log(table.toString("rows",5));
                     preStandardizeResultsTable(loggedInAs, table); 
                     if (table.nRows() > 0) {
-                        standardizeResultsTable(requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
+                        standardizeResultsTable(language, requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
                         tableWriter.writeSome(table); //okay if 0 rows
                     }
 
@@ -1062,7 +1067,7 @@ public class EDDTableFromDatabase extends EDDTable{
             //String2.log("EDDTableFromDatabase caught:\n" + msg);
 
             if (msg.indexOf(MustBe.THERE_IS_NO_DATA) >= 0 ||
-                msg.indexOf(EDStatic.caughtInterrupted) >= 0) { 
+                msg.indexOf(EDStatic.caughtInterruptedAr[0]) >= 0) { 
                 throw t;
             } else {
                 //all other errors probably from database
@@ -1498,6 +1503,7 @@ pgAdmin3
 password = "MyPassword";
             String connectionProps[] =  new String[]{"user", testUser, "password", password};
             String dir = EDStatic.fullTestCacheDirectory;
+            int language = 0;
 
             //list catalogs
             String2.log("* list catalogs");
@@ -1693,7 +1699,7 @@ expected =
                 "");
 
             //!!! This does request data, so it is a complete test
-            tName = edd.makeNewFileForDapQuery(null, null, "&orderBy(\"id\")", 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "&orderBy(\"id\")", 
                 dir, edd.className() + "_" + tDatasetID + "_getCSV", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = 
@@ -1721,6 +1727,7 @@ expected =
     public static void testBasic(String tDatasetID) throws Throwable {
         String2.log("\n*** EDDTableFromDatabase.testBasic tDatasetID=" + tDatasetID);
         testVerboseOn();
+        int language = 0;
         long eTime;
         String tQuery;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -1729,7 +1736,7 @@ expected =
 
         EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null,
             tDatasetID); 
-        String tName = tedd.makeNewFileForDapQuery(null, null, "", 
+        String tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, tedd.className() + "_Basic", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
@@ -1780,7 +1787,7 @@ expected =
 "    String cdm_data_type \"Other\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"[TIME]Z (source database)\n" +
-"[TIME]Z http://localhost:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
+"[TIME]Z http://127.0.0.1:8080/cwexperimental/tabledap/" + tDatasetID + ".das\";\n" +
 "    String infoUrl \"https://www.fisheries.noaa.gov/contact/environmental-research-division-southwest-fisheries-science-center\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD\";\n" +
 "    String keywords \"birthdate, category, first, height, last, weight\";\n" +
@@ -1802,7 +1809,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.dds 
-        tName = tedd.makeNewFileForDapQuery(null, null, "", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, 
             tedd.className() + "_peb_Data", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -1823,7 +1830,7 @@ expected =
 
         //all      check dataset's orderBy
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1839,7 +1846,7 @@ expected =
 
         //subset
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "time,last&time=1967-07-08T09:10:11Z",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "time,last&time=1967-07-08T09:10:11Z",
             dir, tedd.className() + "_subset", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1851,7 +1858,7 @@ expected =
 
         //just script variable
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&time=1967-07-08T09:10:11Z",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&time=1967-07-08T09:10:11Z",
             dir, tedd.className() + "_script2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1863,7 +1870,7 @@ expected =
 
         //constraint just script variable
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "&weight_lb=119",
             dir, tedd.className() + "_script3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1875,7 +1882,7 @@ expected =
 
         //constrain script variable (first, not passed to database) and non-script
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "&weight_lb=119&category=\"B\"",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "&weight_lb=119&category=\"B\"",
             dir, tedd.className() + "_script4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1888,7 +1895,7 @@ expected =
 
         //distinct()   subsetVariables
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "category&distinct()",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "category&distinct()",
             dir, tedd.className() + "_subset", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1902,7 +1909,7 @@ expected =
 
         //distinct()   subsetVariables
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&distinct()",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&distinct()",
             dir, tedd.className() + "_subset2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1918,7 +1925,7 @@ expected =
 
         //distinct()  2 vars (one of which is script)
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "category,weight_lb&distinct()",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "category,weight_lb&distinct()",
             dir, tedd.className() + "_distinct1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = //tDatasetID.equals("testMyDatabaseNo") ||
@@ -1947,7 +1954,7 @@ expected =
 
         //distinct()  2 vars, different order
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "first,weight_lb&distinct()",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "first,weight_lb&distinct()",
             dir, tedd.className() + "_distinct2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1963,7 +1970,7 @@ expected =
 
         //orderBy()  subsetVars
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "category&orderBy(\"category\")",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "category&orderBy(\"category\")",
             dir, tedd.className() + "_orderBy1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1977,7 +1984,7 @@ expected =
 
         //orderBy()  subsetVars
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "weight_lb&orderBy(\"weight_lb\")",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&orderBy(\"weight_lb\")",
             dir, tedd.className() + "_orderBy1a", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -1993,7 +2000,7 @@ expected =
 
         //orderBy()  
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderBy(\"last,category\")",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "category,last,first&orderBy(\"last,category\")",
             dir, tedd.className() + "_orderBy2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =  
@@ -2009,7 +2016,7 @@ expected =
 
         //orderBy()  
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first,weight_lb&orderBy(\"category,weight_lb,last\")",
             dir, tedd.className() + "_orderBy3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -2039,7 +2046,7 @@ expected =
 
         //orderBy() and distinct()
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first&orderBy(\"category,last\")&distinct()",
             dir, tedd.className() + "_orderBy4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -2057,7 +2064,7 @@ expected =
 
         //orderByMax()  and distinct()
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
             dir, tedd.className() + "_orderBy5", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
 //ERDDAP sorts "" at top and it is ERDDAP's orderByMax that is done last
@@ -2072,7 +2079,7 @@ expected =
 
         //orderByMax()  and orderBy()
         eTime = System.currentTimeMillis();
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first&orderByMax(\"category,last\")&orderBy(\"first\")",
             dir, tedd.className() + "_orderBy6", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -2088,7 +2095,7 @@ expected =
         //no matching data (database determined)
         eTime = System.currentTimeMillis();
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height=170",
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "last,height&height=170",
                 dir, tedd.className() + "_subset", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = "Shouldn't get here";
@@ -2104,7 +2111,7 @@ expected =
         //quick reject -> orderBy var not in results vars
         //orderBy()  
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "category,last&orderBy(\"category,last,first\")",
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "category,last&orderBy(\"category,last,first\")",
                 dir, tedd.className() + "_qr1", ".csv"); 
             throw new SimpleException("Shouldn't get here");
         } catch (Throwable t) {
@@ -2118,7 +2125,7 @@ expected =
         //quick reject -> no matching data
         eTime = System.currentTimeMillis();
         try {
-            tName = tedd.makeNewFileForDapQuery(null, null, "last,height&height>1000",
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "last,height&height>1000",
                 dir, tedd.className() + "_qr2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = "Shouldn't get here";
@@ -2137,12 +2144,13 @@ expected =
     /**
      * This returns the contents of a dataset in csv form.
      *
+     * @param language the index of the selected language
      * @throws Throwable if trouble
      */
-    public static String getCSV(String datasetID) throws Throwable {
+    public static String getCSV(int language, String datasetID) throws Throwable {
         String dir = EDStatic.fullTestCacheDirectory;
         EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, datasetID); 
-        String tName = tedd.makeNewFileForDapQuery(null, null, "", 
+        String tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, tedd.className() + "_" + datasetID + "_getCSV", ".csv"); 
         return String2.directReadFrom88591File(dir + tName);
     }
@@ -2156,12 +2164,13 @@ expected =
         String2.log("\n*** EDDTableFromDatabase.testNonExistentVariable()");
         String dir = EDStatic.fullTestCacheDirectory;
         String results = "not set";
+        int language = 0;
         try {
             //if there is no subsetVariables att, the dataset will be created successfully
             EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentVariable"); 
             results = "shouldn't get here";
-            edd.getDataForDapQuery(null, "", "",                    //should throw error
-                new TableWriterAll(edd, "", dir, "testNonExistentVariable")); 
+            edd.getDataForDapQuery(language, null, "", "",                    //should throw error
+                new TableWriterAll(language, edd, "", dir, "testNonExistentVariable")); 
             results = "really shouldn't get here";
         } catch (Throwable t) {
             results = MustBe.throwableToString(t);
@@ -2178,12 +2187,13 @@ expected =
         String2.log("\n*** EDDTableFromDatabase.testNonExistentTable()");
         String dir = EDStatic.fullTestCacheDirectory;
         String results = "not set";
+        int language = 0;
         try {
             //if there is no subsetVariables att, the dataset will be created successfully
             EDDTableFromDatabase edd = (EDDTableFromDatabase)oneFromDatasetsXml(null, "testNonExistentTable"); 
             results = "shouldn't get here";
-            edd.getDataForDapQuery(null, "", "",                    //should throw error
-                new TableWriterAll(edd, "", dir, "testNonExistentTable")); 
+            edd.getDataForDapQuery(language, null, "", "",                    //should throw error
+                new TableWriterAll(language, edd, "", dir, "testNonExistentTable")); 
             results = "really shouldn't get here";
         } catch (Throwable t) {
             results = MustBe.throwableToString(t);

@@ -50,6 +50,7 @@ public abstract class TableWriter {
 
     //these are set by the constructor
     protected long time;
+    protected int language;
     protected EDD edd;
     protected String newHistory;
     protected OutputStreamSource outputStreamSource;
@@ -65,6 +66,7 @@ public abstract class TableWriter {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tEdd will be used as the source of metadata if not null.
      *    If null (e.g., when Erddap.java uses TableWriters), metadata will be
      *    from the first table sent to writeSome().
@@ -74,8 +76,9 @@ public abstract class TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      */
-    public TableWriter(EDD tEdd, String tNewHistory, OutputStreamSource tOutputStreamSource) {
+    public TableWriter(int tLanguage, EDD tEdd, String tNewHistory, OutputStreamSource tOutputStreamSource) {
         time = System.currentTimeMillis();
+        language = tLanguage;
         edd = tEdd;
         newHistory = tNewHistory;
         outputStreamSource = tOutputStreamSource;

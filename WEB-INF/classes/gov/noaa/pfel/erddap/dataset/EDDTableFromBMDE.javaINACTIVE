@@ -423,13 +423,14 @@ public class EDDTableFromBMDE extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //get the sourceDapQuery (a query that the source can handle)
@@ -437,7 +438,7 @@ public class EDDTableFromBMDE extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -493,7 +494,7 @@ public class EDDTableFromBMDE extends EDDTable{
 
         //if (reallyVerbose) String2.log(table.toString());
 
-        standardizeResultsTable(requestUrl, userDapQuery, table);
+        standardizeResultsTable(language, requestUrl, userDapQuery, table);
         tableWriter.writeAllAndFinish(table);
     }
 
@@ -502,13 +503,14 @@ public class EDDTableFromBMDE extends EDDTable{
      * This tests the bmde with all variables -- used for getting numerical variable ranges
      * and indications of which String variables are active.
      *
+     * @param language the index of the selected language
      * @param sourceUrl  http://digir.prbo.org/digir/DiGIR.php
      * @param souceCode  e.g., prbo05
      * @param startDate for the test query, e.g., "2002-07-01"
      * @param stopDate for the test query, e.g., "2002-09-01"
      * @throws Throwable if trouble
      */
-    public static void testAllVariables(String sourceUrl, String sourceCode, 
+    public static void testAllVariables(int language, String sourceUrl, String sourceCode, 
           String startDate, String stopDate) throws Throwable {
         String2.log("\n*** EDDTableFromBMDE.testAllVariables");
         testVerboseOn();
@@ -538,7 +540,7 @@ public class EDDTableFromBMDE extends EDDTable{
             //this returns HTTP error 414 -- url too long
             //so I repeatedly: modify first and last in getEmpricalMinMax and run for those vars
             //??? PERHAPS NOT WORKING BECAUSE I MADE CHANGES TO CREATING WHEN NO DATAVARIABLES SPECIFIED
-            bmde.getEmpiricalMinMax(null, startDate, stopDate, false, true);
+            bmde.getEmpiricalMinMax(language, null, startDate, stopDate, false, true);
 
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
@@ -554,6 +556,7 @@ public class EDDTableFromBMDE extends EDDTable{
     public static void testPrbo() throws Throwable {
         String2.log("\n*** EDDTableFromBMDE.testPrbo");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery;
         String error = "";
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -568,11 +571,11 @@ public class EDDTableFromBMDE extends EDDTable{
         EDDTable prbo = (EDDTable)oneFromDatasetsXml(null, "prbo05Bmde"); 
 
         //one time getEmpiricalMinMax 
-        //prbo.getEmpiricalMinMax("2002-07-01", "2002-09-01", false, true);
+        //prbo.getEmpiricalMinMax(language, "2002-07-01", "2002-09-01", false, true);
         //if (true) System.exit(0);
 
         //.das     das isn't affected by userDapQuery
-        tName = prbo.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = prbo.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
@@ -712,7 +715,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //        "bmde:GlobalUniqueIdentifier", "bmde:Genus", "bmde:ScientificName"});
         userDapQuery = "longitude,latitude,altitude,time,GlobalUniqueIdentifier,Genus,ScientificName,ObservationCount" +
             "&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
-        tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
@@ -736,7 +739,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.csv     variation to test string  < >
         userDapQuery = "longitude,latitude,altitude,time,GlobalUniqueIdentifier,Genus,ScientificName,ObservationCount" +
             "&Family=\"Laridae\"&Genus>=\"Urh\"&Genus<\"Urj\"&time>2007-06-01&time<2007-06-05"; 
-        tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
@@ -745,7 +748,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.csv     variation to test string  regex
         userDapQuery = "longitude,latitude,altitude,time,GlobalUniqueIdentifier,Genus,ScientificName,ObservationCount" +
             "&Family=\"Laridae\"&Genus=~\"(zztop|Uria)\"&time>2007-06-01&time<2007-06-05"; 
-        tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
@@ -756,7 +759,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //All I ever get for altitude is missingValue.
         userDapQuery = "longitude,latitude,altitude,time,GlobalUniqueIdentifier,Genus,ScientificName,ObservationCount" +
             "&longitude=-123.002737&latitude=37.698771&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
-        tName = prbo.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "LonLat", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);

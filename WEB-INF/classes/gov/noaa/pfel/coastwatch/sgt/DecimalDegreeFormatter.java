@@ -14,7 +14,7 @@ import com.cohort.util.Test;
 public class DecimalDegreeFormatter implements NumberFormatter  {
  
     /**
-     * This formats a decimal degree value formatted as "degree.dddddd°".
+     * This formats a decimal degree value formatted as "degree.ddddddÂ°".
      *
      * @param d a decimal degree value
      * @return the formatted value.
@@ -24,18 +24,18 @@ public class DecimalDegreeFormatter implements NumberFormatter  {
         if (Double.isNaN(d))
             return "NaN";
 
-        return String2.genEFormat6(d) + "°";
+        return String2.genEFormat6(d) + "Â°";
     }
 
     /**
-     * This formats a degree value formatted as "degree°".
+     * This formats a degree value formatted as "degreeÂ°".
      * There is no "NaN" test in this method.
      *
      * @param d a decimal degree value
      * @return the formatted value.
      */
     public String format(long l) {
-        return l + "°";
+        return l + "Â°";
     }
 
     /**
@@ -45,17 +45,17 @@ public class DecimalDegreeFormatter implements NumberFormatter  {
      */
     public static void basicTest() {
         DecimalDegreeFormatter ddf = new DecimalDegreeFormatter();
-        Test.ensureEqual(ddf.format(4),           "4°",        "a");
-        Test.ensureEqual(ddf.format(4.500000001), "4.5°",      "b");
-        Test.ensureEqual(ddf.format(4.499999999), "4.5°",      "c");
-        Test.ensureEqual(ddf.format(0.251),       "0.251°",    "d");
-        Test.ensureEqual(ddf.format(0.00125),     "1.25E-3°",  "e");
+        Test.ensureEqual(ddf.format(4),           "4Â°",        "a");
+        Test.ensureEqual(ddf.format(4.500000001), "4.5Â°",      "b");
+        Test.ensureEqual(ddf.format(4.499999999), "4.5Â°",      "c");
+        Test.ensureEqual(ddf.format(0.251),       "0.251Â°",    "d");
+        Test.ensureEqual(ddf.format(0.00125),     "1.25E-3Â°",  "e");
 
-        Test.ensureEqual(ddf.format(-4),           "-4°",        "a");
-        Test.ensureEqual(ddf.format(-4.500000001), "-4.5°",      "b");
-        Test.ensureEqual(ddf.format(-4.499999999), "-4.5°",      "c");
-        Test.ensureEqual(ddf.format(-0.251),       "-0.251°",    "d");
-        Test.ensureEqual(ddf.format(-0.00125),     "-1.25E-3°",  "e");
+        Test.ensureEqual(ddf.format(-4),           "-4Â°",        "a");
+        Test.ensureEqual(ddf.format(-4.500000001), "-4.5Â°",      "b");
+        Test.ensureEqual(ddf.format(-4.499999999), "-4.5Â°",      "c");
+        Test.ensureEqual(ddf.format(-0.251),       "-0.251Â°",    "d");
+        Test.ensureEqual(ddf.format(-0.00125),     "-1.25E-3Â°",  "e");
     }
 
     /**

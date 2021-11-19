@@ -109,7 +109,7 @@ public abstract class GridDataSetCW extends GridDataSet {
         if (fgdc != null) {
             fgdcSubstitutions = String2.splitNoTrim(fgdc, '\n');
             //String2.log(internalName + " fgdcSubstitutions.length=" + fgdcSubstitutions.length + 
-            //    "\n" + XML.encodeAsXML(String2.toNewlineString(fgdc)));
+            //    "\n" + XNL.encodeAsTerminal(String2.toNewlineString(fgdc)));
         }
         keywords            = dataSetRB2.getString(sixName + "Keywords", null);  //null will be caught; it must be present for CW datasets
         keywordsVocabulary  = FileNameUtility.getKeywordsVocabulary();  

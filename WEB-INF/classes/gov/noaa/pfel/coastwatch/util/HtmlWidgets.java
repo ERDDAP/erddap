@@ -106,11 +106,14 @@ public class HtmlWidgets {
         "</noscript>\n";
 
     /** The default tooltip for twoClickMap. */
-    public static String twoClickMapDefaultTooltip =
-        "Specify a rectangle by clicking on two diagonal corners.  Do it again if needed.";
-    public static String comboBoxAlt = "Hover here to see a list of options. Click on an option to select it.";
-    public static String errorXWasntSpecified = "Error: \"{0}\" wasn''t specified.";
-    public static String errorXWasTooLong = "\"{0}\" was more than {1} characters long.";
+    public static String twoClickMapDefaultTooltipAr[] = new String[]{
+        "Specify a rectangle by clicking on two diagonal corners.  Do it again if needed."};
+    public static String comboBoxAltAr[] = new String[]{
+        "Hover here to see a list of options. Click on an option to select it."};
+    public static String errorXWasntSpecifiedAr[] = new String[]{
+        "Error: \"{0}\" wasn''t specified."};
+    public static String errorXWasTooLongAr[] = new String[]{
+        "\"{0}\" was more than {1} characters long."};
 
     /**
      * If you want to use Tip for big html tooltips (see below),
@@ -141,7 +144,7 @@ public class HtmlWidgets {
     /**
      * HTML head stuff for leaflet.
      *
-     * @param tErddapUrl e.g, from EDStatic.erddapUrl(loggedInAs): 
+     * @param tErddapUrl e.g, from EDStatic.erddapUrl(loggedInAs, language): 
      *   ending in "erddap", without the trailing slash 
      */
     public static String leafletHead(String tErddapUrl) {
@@ -980,6 +983,7 @@ public class HtmlWidgets {
      *
      * <p>Note current lack of encodeSpace option to deal with multiple adjacent spaces in an option.
      *
+     * @param language the index of the selected language
      * @param fieldLength  the size of the field, in mspaces(?), e.g., 10.
      *     If the fieldLength <= 0, no 'size' value is specified in the html.
      * @param maxLength    usually 255
@@ -989,7 +993,7 @@ public class HtmlWidgets {
      * @param other Other attributes for the textField (usually "")
      * @param onChange the onChange parameter for the options (use null for the standard value).
      */    
-    public String comboBox(String formName, String name, String tooltip, 
+    public String comboBox(int language, String formName, String name, String tooltip, 
         int fieldLength, int maxLength,
         String initialTextValue, String options[], String other, String onChange) {
 
@@ -1002,9 +1006,9 @@ public class HtmlWidgets {
         sb.append(cssTooltip(
             "<img " + //imgOther + //there could be additional attributes for the image
                 " style=\"vertical-align:top;\" " +
-                completeTooltip(comboBoxAlt) +                 
+                completeTooltip(comboBoxAltAr[language]) +                 
                 "\n  src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "arrowD.gif") + "\"\n" +
-                  "  alt=\"" + XML.encodeAsHTMLAttribute(comboBoxAlt) + "\"\n" +
+                  "  alt=\"" + XML.encodeAsHTMLAttribute(comboBoxAltAr[language]) + "\"\n" +
                   ">",  
             "style=\"padding:0px; max-width:90%; margin-left:-19px;\"",
             select(name + "TooltipSelect", "", Math.min(nOptions, 10),
@@ -1494,10 +1498,14 @@ sb.append(
         return sb.toString();
     }
 
-    /** A common use of twoClickMap to show a lon=-180 to 540 map. */
-    public static String[] myTwoClickMap540Big(String formName, String imageUrl, 
+    /** 
+     * A common use of twoClickMap to show a lon=-180 to 540 map. 
+     *
+     * @param language the index of the selected language
+     */
+    public static String[] myTwoClickMap540Big(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 785, 278, //2019-10-18 was 412, 155,  //image w, h
             21, 9, 748, 251, //2019-10-18 was 17, 12, 381, 128,  //map left, top, width, height  (via subtraction+1)
@@ -1505,10 +1513,14 @@ sb.append(
             null, debugInBrowser);
     }
 
-    /** A common use of twoClickMap to show a lon=-180 to 180 map. */
-    public static String[] myTwoClickMap180Big(String formName, String imageUrl, 
+    /** 
+     * A common use of twoClickMap to show a lon=-180 to 180 map. 
+     *
+     * @param language the index of the selected language
+     */
+    public static String[] myTwoClickMap180Big(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 285, 155,
             17, 12, 254, 128, //map left, top, width, height  (via subtraction+1)
@@ -1516,10 +1528,14 @@ sb.append(
             null, debugInBrowser);
     }
 
-    /** A common use of twoClickMap to show a lon=0 to 360 map. */
-    public static String[] myTwoClickMap360Big(String formName, String imageUrl, 
+    /**
+     * A common use of twoClickMap to show a lon=0 to 360 map. 
+     *
+     * @param language the index of the selected language
+     */
+    public static String[] myTwoClickMap360Big(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 284, 155,
             16, 12, 254, 128, //map left, top, width, height  (via subtraction+1)
@@ -1527,10 +1543,14 @@ sb.append(
             null, debugInBrowser);
     }
 
-    /** A common use of twoClickMap to show a lon=-180 to 540 map. */
-    public static String[] myTwoClickMap540(String formName, String imageUrl, 
+    /** 
+     * A common use of twoClickMap to show a lon=-180 to 540 map. 
+     *
+     * @param language the index of the selected language
+     */
+    public static String[] myTwoClickMap540(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 293, 113,
             18, 10, 261, 87, //map left, top, width, height  (via subtraction+1)
@@ -1539,9 +1559,9 @@ sb.append(
     }
 
     /** A common use of twoClickMap to show a lon=-180 to 180 map. */
-    public static String[] myTwoClickMap180(String formName, String imageUrl, 
+    public static String[] myTwoClickMap180(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
             18, 10, 174, 87, //map left, top, width, height  (via subtraction+1)
@@ -1550,9 +1570,9 @@ sb.append(
     }
 
     /** A common use of twoClickMap to show a lon=0 to 360 map. */
-    public static String[] myTwoClickMap360(String formName, String imageUrl, 
+    public static String[] myTwoClickMap360(int language, String formName, String imageUrl, 
         boolean debugInBrowser) {
-        return twoClickMap(
+        return twoClickMap(language, 
             formName, "minLon", "maxLon", "minLat", "maxLat",
             imageUrl, 205, 113,
             18, 10, 174, 87, //map left, top, width, height  (via subtraction+1)
@@ -1567,6 +1587,7 @@ sb.append(
      *
      * <p>There can be only one twoClickMap per web page.
      *
+     * @param language the index of the selected language
      * @param formName e.g., f1
      * @param minLonTF the minLon textFieldName, e.g., minLon
      * @param maxLonTF the maxLon textFieldName
@@ -1589,7 +1610,7 @@ sb.append(
      *    [1] is the string with the map (usually right after [0])
      *    and [2] is the string to be put after the end of the form.
      */
-    public static String[] twoClickMap(
+    public static String[] twoClickMap(int language,
          String formName, String minLonTF, String maxLonTF, String minLatTF, String maxLatTF,
          String imageUrl, int imageWidth, int imageHeight,
          int mapX, int mapY, int mapWidth, int mapHeight,
@@ -1597,7 +1618,7 @@ sb.append(
          String tooltip, boolean debugInBrowser) {
 
 if (tooltip == null) 
-    tooltip = twoClickMapDefaultTooltip;
+    tooltip = twoClickMapDefaultTooltipAr[language];
 
 StringBuilder sb0 = new StringBuilder();
 sb0.append(
@@ -1785,17 +1806,18 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
     /**
      * This ensure that the string value isn't null and isn't too long. 
      * 
+     * @param language the index of the selected language
      * @param cumulativeHtmlErrorMsg (may be null)
      * @return the corrected value (default (if it was null), previous value.trim(), or 
      *    previous value shortened to maxLength)
      */
-    public static String validateNotNullNotTooLong(String name, String defaultValue, 
+    public static String validateNotNullNotTooLong(int language, String name, String defaultValue, 
         String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
        
         if (value == null) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    MessageFormat.format(errorXWasntSpecifiedAr[language], XML.encodeAsHTML(name)) + 
                     "\n");
             return defaultValue;
         } else {
@@ -1804,7 +1826,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         if (value.length() > maxLength) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    MessageFormat.format(errorXWasTooLongAr[language], XML.encodeAsHTML(name), "" + maxLength) + 
                     "\n");
             return value.substring(0, maxLength);
         }
@@ -1814,17 +1836,18 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
     /**
      * This ensure that the string value isSomething and isn't too long. 
      * 
+     * @param language the index of the selected language
      * @param cumulativeHtmlErrorMsg (may be null)
      * @return the corrected value (default (if value was null or ""), previous value.trim(), or 
      *    previous value shortened to maxLength)
      */
-    public static String validateIsSomethingNotTooLong(String name, String defaultValue, 
+    public static String validateIsSomethingNotTooLong(int language, String name, String defaultValue, 
         String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
        
         if (!String2.isSomething(value)) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    MessageFormat.format(errorXWasntSpecifiedAr[language], XML.encodeAsHTML(name)) + 
                     "\n");
             return defaultValue;
         } else {
@@ -1833,7 +1856,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         if (value.length() > maxLength) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    MessageFormat.format(errorXWasTooLongAr[language], XML.encodeAsHTML(name), "" + maxLength) + 
                     "\n");
             return value.substring(0, maxLength);
         }
@@ -1843,11 +1866,12 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
     /**
      * This ensure that the string value isn't too long. 
      * 
+     * @param language the index of the selected language
      * @param cumulativeHtmlErrorMsg (may be null)
      * @return the corrected value (default (if value was null), previous value.trim(), or 
      *    previous value shortened to maxLength)
      */
-    public static String validateNotTooLong(String name, String defaultValue, 
+    public static String validateNotTooLong(int language, String name, String defaultValue, 
         String value, int maxLength, StringBuilder cumulativeHtmlErrorMsg) {
        
         if (value == null)
@@ -1857,7 +1881,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         if (value.length() > maxLength) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasTooLong, XML.encodeAsHTML(name), "" + maxLength) + 
+                    MessageFormat.format(errorXWasTooLongAr[language], XML.encodeAsHTML(name), "" + maxLength) + 
                     "\n");
             return value.substring(0, maxLength);
         }
@@ -1867,17 +1891,18 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
     /**
      * This ensure that value is &gt;=0 and &lt;=maxValue. 
      * 
+     * @param language the index of the selected language
      * @param cumulativeHtmlErrorMsg (may be null)
      * @return the corrected value (default (if it was null), previous value, or 
      *    previous value shortened to maxLength)
      */
-    public static int validate0ToMax(String name, int defaultValue, 
+    public static int validate0ToMax(int language, String name, int defaultValue, 
         int value, int max, StringBuilder cumulativeHtmlErrorMsg) {
        
         if (value < 0 || value > max) {
             if (cumulativeHtmlErrorMsg != null)
                 cumulativeHtmlErrorMsg.append("<br>&bull; " + 
-                    MessageFormat.format(errorXWasntSpecified, XML.encodeAsHTML(name)) + 
+                    MessageFormat.format(errorXWasntSpecifiedAr[language], XML.encodeAsHTML(name)) + 
                     "\n");
             return defaultValue;
         }
@@ -1974,6 +1999,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             htmlAudioControl("http://localhost:8080/cwexperimental/files/testMediaFiles/ShouldWork/M1F1-int16-AFsp.wav"));
 
         String formName = "f1";
+        int language = 0;
         sb.append(widgets.beginForm(formName, "GET", "testUrl", ""));
         sb.append(
             widgets.checkbox("checkboxName1", "checkboxTooltip literal: &lt;&gt;&amp;\"!", true, "checkboxValue1", "rightLabel1", "") +
@@ -2000,7 +2026,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             "<br>Password: \n" +
             "<input type=\"password\" name=\"mypassword\" autocomplete=\"off\">\n" +
             "<br>ComboBox: " + 
-            widgets.comboBox(formName, "myComboBox", "My comboBox tooltip", 25, 255,
+            widgets.comboBox(language, formName, "myComboBox", "My comboBox tooltip", 25, 255,
                 "myInitialValue", new String[]{"", "able", "baker", "charlie"}, "", null) + //other
             "<br>TextField1: \n" + 
             widgets.textField("textFieldName1", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, 
@@ -2144,10 +2170,10 @@ widgets.slider(5, bgWidth, "") + //was "style=\"text-align:left\"") +
 "</table>\n");
 
 //twoClickMap
-//String twoClickMap[] = myTwoClickMap540(formName, imageDir + "world540.png", false); // debugInBrowser
-//String twoClickMap[] = myTwoClickMap180Big(formName, imageDir + "worldPM180Big.png", false); // "debugInBrowser
-//String twoClickMap[] = myTwoClickMap360Big(formName, imageDir + "world0360Big.png", false); // debugInBrowser 
-String twoClickMap[] = myTwoClickMap540Big(formName, imageDir + "world540Big.png", false); // debugInBrowser 
+//String twoClickMap[] = myTwoClickMap540(language, formName, imageDir + "world540.png", false); // debugInBrowser
+//String twoClickMap[] = myTwoClickMap180Big(language, formName, imageDir + "worldPM180Big.png", false); // "debugInBrowser
+//String twoClickMap[] = myTwoClickMap360Big(language, formName, imageDir + "world0360Big.png", false); // debugInBrowser 
+String twoClickMap[] = myTwoClickMap540Big(language, formName, imageDir + "world540Big.png", false); // debugInBrowser 
 
 sb.append(
 "<table class=\"compact\">\n" +

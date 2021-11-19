@@ -145,7 +145,7 @@ public class TaskThread extends Thread {
                         "    file=" + fileDir + fileName + fileType;
                     String2.log(taskSummary);
 
-                    edd.reuseOrMakeFileForDapQuery(null, EDStatic.loggedInAsSuperuser, //request, loggedInAs
+                    edd.reuseOrMakeFileForDapQuery(0, null, EDStatic.loggedInAsSuperuser, //language=English!, request, loggedInAs
                         query, fileDir, fileName, fileType);
 
                 //TASK_SET_FLAG

@@ -571,8 +571,8 @@ String expected =
 "            <att name=\"testInts\" type=\"intList\">-2147483648 0 2147483647</att>\n" +
 "            <att name=\"testLongs\" type=\"longList\">-9223372036854775808 0 9223372036854775807</att>\n" +
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
-"            <att name=\"testStrings\"> a&#9;~&#xfc;,\n" +
-"&#39;z&quot;&#x20ac;</att>\n" +  
+"            <att name=\"testStrings\"> a&#9;~\u00fc,\n" +
+"&#39;z&quot;\u20ac</att>\n" +  
 "            <att name=\"testUBytes\" type=\"ubyteList\">0 127 255</att>\n" +
 "            <att name=\"testUInts\" type=\"uintList\">0 2147483647 4294967295</att>\n" +
 "            <att name=\"testULongs\" type=\"ulongList\">0 9223372036854775807 18446744073709551615</att>\n" +
@@ -585,8 +585,8 @@ String expected =
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Sea Surface Temperature</att>\n" +
-"            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
-"&#39;z&quot;&#x20ac;</att>\n" +  
+"            <att name=\"testStrings\">a&#9;~\u00fc,\n" +
+"&#39;z&quot;\u20ac</att>\n" +  
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -612,7 +612,7 @@ String expected =
 
     /**
      * This does basic tests of this class.
-     * Note that ü in utf-8 is \xC3\xBC or [195][188]
+     * Note that Ã¼ in utf-8 is \xC3\xBC or [195][188]
      * Note that Euro is \\u20ac (and low byte is #172 is \\u00ac -- I worked to encode as '?')
      *
      * @throws Throwable if trouble
@@ -620,6 +620,7 @@ String expected =
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromNccsvFiles.testBasic() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -652,7 +653,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNccsvFiles  test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -779,7 +780,7 @@ String expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 expected =
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD, NOAA PMEL\";\n" +
 "    String keywords \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n" +
@@ -804,7 +805,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -831,7 +832,7 @@ expected =
 
         //.asc  all data        
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".asc"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -862,7 +863,7 @@ expected =
 
         //.csv  all data        
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -880,7 +881,7 @@ expected =
 
         //.csv   subset
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -892,7 +893,7 @@ expected =
 
         //.csv   subset based on string constraint
         userDapQuery = "&ship=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\""; //json formatted constraint
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1string", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -909,7 +910,7 @@ expected =
 
         //.csv   subset based on char constraint
         userDapQuery = "&status=\"\\u20ac\""; //json formatted constraint
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1char", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -921,7 +922,7 @@ expected =
 
         //.csv   subset based on easy long constraint
         userDapQuery = "&testLong=-9007199254740992";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1long", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -933,7 +934,7 @@ expected =
 
         //.csv   subset based on harder long constraint
         userDapQuery = "&testLong=-9223372036854775808";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1longb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -945,7 +946,7 @@ expected =
 
         //.csv   subset based on harder ulong constraint
         userDapQuery = "&testULong=18446744073709551614";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_u1longb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -957,7 +958,7 @@ expected =
 
         //.nccsvMetadata        
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45"; //will be ignored
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".nccsvMetadata"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1079,7 +1080,7 @@ expected =
 
         //.nccsv all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".nccsv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1105,7 +1106,7 @@ expected =
 
 expected =        
 //T17:35:08Z (local files)\\n2017-04-18T17:35:08Z  
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nccsv\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
@@ -1211,7 +1212,7 @@ expected =
 
         //.nccsv subset
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".nccsv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1237,7 +1238,7 @@ expected =
 
 expected =        
 //2017-04-18T17:41:53Z (local files)\\n2017-04-18T17:41:53Z 
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
@@ -1306,6 +1307,7 @@ expected =
     public static void testChar() throws Throwable {
         String2.log("\n****************** EDDTableFromNccsvFiles.testChar() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1317,7 +1319,7 @@ expected =
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** getting dap asc
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".asc"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1365,7 +1367,7 @@ expected =
 
         //*** getting csv
         //  written as 7-bit ASCII NCCSV strings to ISO-8859-1 (irrelevant)
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1385,7 +1387,7 @@ expected =
 
         //*** getting csvp
         //  written as 7-bit ASCII NCCSV strings to ISO-8859-1 (irrelevant)
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".csvp"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1404,7 +1406,7 @@ expected =
 
         //*** getting csv0
         //  written as 7-bit ASCII NCCSV strings to ISO-8859-1 (irrelevant)
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".csv0"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1422,7 +1424,7 @@ expected =
         //das and dds tested above
 
         //*** getting dods
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".dods"); 
         results = String2.annotatedString(
             String2.directReadFrom88591File(dir + tName));
@@ -1457,7 +1459,7 @@ expected =
 
 
         //*** getting esriCsv        written as 7bit ASCII via ISO-8859-1
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".esriCsv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1474,7 +1476,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting geoJson
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".geoJson"); 
         results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
@@ -1577,7 +1579,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting htmlTable
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".htmlTable"); 
         results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
@@ -1608,7 +1610,7 @@ results=
 "<th>degree_C\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T00:45:00Z\n" +
 "<td class=\"R\">28.0002\n" +
 "<td class=\"R\">-130.2576\n" +
@@ -1620,7 +1622,7 @@ results=
 "<td class=\"R\">10.9\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T01:45:00Z\n" +
 "<td class=\"R\">28.0003\n" +
 "<td class=\"R\">-130.3472\n" +
@@ -1632,7 +1634,7 @@ results=
 "<td class=\"R\">10.0\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T02:45:00Z\n" +
 "<td class=\"R\">28.0001\n" +
 "<td class=\"R\">-130.4305\n" +
@@ -1644,7 +1646,7 @@ results=
 "<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T12:45:00Z\n" +
 "<td class=\"R\">27.9998\n" +
 "<td class=\"R\">-131.5578\n" +
@@ -1656,7 +1658,7 @@ results=
 "<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T21:45:00Z\n" +
 "<td class=\"R\">28.0003\n" +
 "<td class=\"R\">-132.0014\n" +
@@ -1668,7 +1670,7 @@ results=
 "<td>\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td> a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
+"<td>Â a\\t~&uuml;,\\n&#39;z\\&quot;&#x20ac;\n" +
 "<td>2017-03-23T23:45:00Z\n" +
 "<td class=\"R\">28.0002\n" +
 "<td class=\"R\">-132.1591\n" +
@@ -1687,7 +1689,7 @@ results=
             "results=\n" + results);        
 
         //*** getting itx
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".itx"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, '\r', '\n');
@@ -1805,7 +1807,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting json
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".json"); 
         results = String2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
@@ -1830,7 +1832,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting jsonlCSV1
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".jsonlCSV1"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1847,7 +1849,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting jsonlCSV
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".jsonlCSV"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1863,7 +1865,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting jsonlKVP
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".jsonlKVP"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1879,7 +1881,7 @@ results=
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
 /*        //*** getting mat
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".mat"); 
         results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
@@ -1896,7 +1898,7 @@ results=
         PrimitiveArray pa = edv.combinedAttributes().get("actual_range");
         String2.log("  status actual_range " + pa.elementType() + " " + pa.toString());
 
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".nc"); 
         results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
@@ -2028,7 +2030,7 @@ results=
 //        T18:32:36Z (local files)[10]\n" +
 //"2017-04-21T18:32:36Z 
 expected = 
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.nc\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nc\";[10]\n" +
 "  :id = \"testNccsvScalar\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
@@ -2082,7 +2084,7 @@ expected =
             expected, "results=\n" + results);
 
         //*** getting ncCF   and ncCFHeader
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".ncCF"); 
         results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
@@ -2222,7 +2224,7 @@ expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 expected = 
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncCF\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncCF\";[10]\n" +
 "  :id = \"testNccsvScalar\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
@@ -2273,7 +2275,7 @@ expected =
             expected, "results=\n" + results);
 
         //*** getting ncCFMA   and ncCFMAHeader
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".ncCFMA"); 
         results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
         //String2.log(results);
@@ -2412,7 +2414,7 @@ expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 expected = 
-"http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncCFMA\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncCFMA\";[10]\n" +
 "  :id = \"testNccsvScalar\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
@@ -2478,7 +2480,7 @@ expected =
 
 
         //*** getting ncoJson
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".ncoJson"); 
         results = String2.annotatedString(
             String2.directReadFromUtf8File(dir + tName));
@@ -2507,7 +2509,7 @@ expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
-expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
@@ -2678,7 +2680,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 
 
         //*** getting ncoJson with jsonp
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&.jsonp=myFunctionName", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&.jsonp=myFunctionName", dir, 
             eddTable.className() + "_charjp", ".ncoJson"); 
         results = String2.annotatedString(
             String2.directReadFromFile(dir + tName, String2.UTF_8));
@@ -2705,7 +2707,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
-expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
@@ -2876,7 +2878,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 
 
         //*** getting odvTxt
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_charODV", ".odvTxt"); 
         String2.log(">> odv file=" + dir + tName);
         results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName)); //Utf8
@@ -2922,7 +2924,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
             "Someday: make more changes to support it.");
 
         //*** getting tsv
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".tsv"); 
         results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
@@ -2941,7 +2943,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting tsvp
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".tsvp"); 
         results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
         //String2.log(results);
@@ -2959,7 +2961,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //*** getting xhtml
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".xhtml"); 
         results = String2.annotatedString(
             String2.directReadFromUtf8File(dir + tName));
@@ -2972,7 +2974,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<head>[10]\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />[10]\n" +
 "  <title>EDDTableFromNccsvFiles_char</title>[10]\n" +
-"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />[10]\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://127.0.0.1:8080/cwexperimental/images/erddap2.css\" />[10]\n" +
 "</head>[10]\n" +
 "<body>[10]\n" +
 "[10]\n" +
@@ -3003,8 +3005,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<th>degree_C</th>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T00:45:00Z</td>[10]\n" +
 "<td class=\"R\">28.0002</td>[10]\n" +
 "<td class=\"R\">-130.2576</td>[10]\n" +
@@ -3016,12 +3018,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">10.9</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T01:45:00Z</td>[10]\n" +
 "<td class=\"R\">28.0003</td>[10]\n" +
 "<td class=\"R\">-130.3472</td>[10]\n" +
-"<td>&#x20ac;</td>[10]\n" +
+"<td>[8364]</td>[10]\n" +
 "<td class=\"R\">0</td>[10]\n" +
 "<td class=\"R\">127</td>[10]\n" +
 "<td class=\"R\">-9007199254740992</td>[10]\n" +
@@ -3029,8 +3031,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td class=\"R\">10.0</td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T02:45:00Z</td>[10]\n" +
 "<td class=\"R\">28.0001</td>[10]\n" +
 "<td class=\"R\">-130.4305</td>[10]\n" +
@@ -3042,8 +3044,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T12:45:00Z</td>[10]\n" +
 "<td class=\"R\">27.9998</td>[10]\n" +
 "<td class=\"R\">-131.5578</td>[10]\n" +
@@ -3055,12 +3057,12 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T21:45:00Z</td>[10]\n" +
 "<td class=\"R\">28.0003</td>[10]\n" +
 "<td class=\"R\">-132.0014</td>[10]\n" +
-"<td>&#xfc;</td>[10]\n" +
+"<td>[252]</td>[10]\n" +
 "<td></td>[10]\n" +
 "<td></td>[10]\n" +
 "<td></td>[10]\n" +
@@ -3068,8 +3070,8 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "<td></td>[10]\n" +
 "</tr>[10]\n" +
 "<tr>[10]\n" +
-"<td>[160]a&#9;~&#xfc;,[10]\n" +
-"&#39;z&quot;&#x20ac;</td>[10]\n" +
+"<td>[160]a&#9;~[252],[10]\n" +
+"&#39;z&quot;[8364]</td>[10]\n" +
 "<td>2017-03-23T23:45:00Z</td>[10]\n" +
 "<td class=\"R\">28.0002</td>[10]\n" +
 "<td class=\"R\">-132.1591</td>[10]\n" +
@@ -3131,7 +3133,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +   //date in history changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" +
-"2021-08-10 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
+"2021-11-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3146,7 +3148,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-08-09T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-11-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3186,7 +3188,7 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "latitude,units,degrees_north\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,1977-11-03T12:00:00Z\\n2021-08-09T12:00:00Z\n" +  //stop time changes
+"time,actual_range,1977-11-03T12:00:00Z\\n2021-11-01T12:00:00Z\n" +  //stop time changes
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Centered Time\n" +
@@ -3284,11 +3286,11 @@ expected = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "*GLOBAL*,geospatial_vertical_positive,down\n" +
 "*GLOBAL*,geospatial_vertical_units,m\n" +  //date below changes
 "*GLOBAL*,history,\"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\\nThis dataset is a product of the TAO Project Office at NOAA/PMEL.\\n" + 
-  "2021-08-10 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
+  "2021-11-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.\\n";
 //  "2017-05-26T18:30:46Z (local files)\\n" + 
 //  "2017-05-26T18:30:46Z 
 expected2 = 
-"http://localhost:8080/cwexperimental/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/pmelTaoDySst.nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05\"\n" +
 "*GLOBAL*,infoUrl,https://www.pmel.noaa.gov/gtmba/mission\n" +
 "*GLOBAL*,institution,\"NOAA PMEL, TAO/TRITON, RAMA, PIRATA\"\n" +
 "*GLOBAL*,keywords,\"buoys, centered, daily, depth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, identifier, noaa, ocean, oceans, pirata, pmel, quality, rama, sea, sea_surface_temperature, source, station, surface, tao, temperature, time, triton\"\n" +
@@ -3303,7 +3305,7 @@ expected2 =
 "*GLOBAL*,subsetVariables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,summary,\"This dataset has daily Sea Surface Temperature (SST) data from the\\nTAO/TRITON (Pacific Ocean, https://www.pmel.noaa.gov/gtmba/ ),\\nRAMA (Indian Ocean, https://www.pmel.noaa.gov/gtmba/pmel-theme/indian-ocean-rama ), and\\nPIRATA (Atlantic Ocean, https://www.pmel.noaa.gov/gtmba/pirata/ )\\narrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\\nhttps://www.pmel.noaa.gov/gtmba/mission .\"\n" +
 "*GLOBAL*,testOutOfDate,now-3days\n" +
-"*GLOBAL*,time_coverage_end,2021-08-09T12:00:00Z\n" + //changes
+"*GLOBAL*,time_coverage_end,2021-11-01T12:00:00Z\n" + //changes
 "*GLOBAL*,time_coverage_start,1977-11-03T12:00:00Z\n" +
 "*GLOBAL*,title,\"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, 1977-present, Sea Surface Temperature\"\n" +
 "*GLOBAL*,Westernmost_Easting,0.0d\n" +
@@ -3425,7 +3427,7 @@ expected2 =
 /*        try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "testTestNccsvScalar"); 
 
-            String tName = edd.makeNewFileForDapQuery(null, null, 
+            String tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "longitude,latitude,time&time=%221992-01-01T00:00:00Z%22" +
                 "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0" +
                 "&distinct()&.draw=markers&.colorBar=|D||||", 

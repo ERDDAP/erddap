@@ -1237,7 +1237,7 @@ public class TestUtil {
         Test.ensureEqual(String2.getClipboardString(), "Test String2.setClipboardString.", "");
 
         //md5Hex
-        Test.ensureEqual(String2.md5Hex("This is a test01234.¿—"), "b62023b8dffda52f4b1ea48f2cee739e", "");
+        Test.ensureEqual(String2.md5Hex("This is a test01234.√Ä√ë"), "b62023b8dffda52f4b1ea48f2cee739e", "");
         Test.ensureEqual(String2.md5Hex(""),                       "d41d8cd98f00b204e9800998ecf8427e", "");
         Test.ensureEqual(String2.md5Hex(null),                     null, "");
 
@@ -1653,7 +1653,7 @@ public class TestUtil {
 
         //toNccsvString
         String2.log("test toNccsvString");
-        a = "\\ \f\n\r\t\"' z\u0000\uffffˇ";
+        a = "\\ \f\n\r\t\"' z\u0000\uffff√ø";
         b = "\"\\\\ \\f\\n\\r\\t\"\"' z\\u0000\\uffff\\u00ff\"";
         Test.ensureEqual(String2.toNccsvDataString(a),   b, "");
 
@@ -1712,7 +1712,7 @@ public class TestUtil {
         Test.ensureEqual(String2.extractCaptureGroup("bedad",  "b(.+?)d.*",  1), "e", "b"); //reluctant
 
         //utf8 conversions
-        String os = " s\\\n\t√\u20ac ";
+        String os = " s\\\n\t√É\u20ac ";
         byte bar[] = String2.stringToUtf8Bytes(os);
         Test.ensureEqual(String2.toCSSVString(bar), "32, 115, 92, 10, 9, -61, -125, -30, -126, -84, 32", "");
         s = String2.utf8BytesToString(bar); 
@@ -1973,11 +1973,11 @@ public class TestUtil {
 
         //modifyToBeASCII
         String2.log("test modifyToBeASCII");
-        Test.ensureEqual(String2.modifyToBeASCII("\ta\bA\n1-_.¿…–›°ˇ"), "\ta\bA\n1-_.AEDY!y", "a");
+        Test.ensureEqual(String2.modifyToBeASCII("\ta\bA\n1-_.√Ä√â√ê√ù¬°√ø"), "\ta\bA\n1-_.AEDY!y", "a");
 
         //modifyToBeFileNameSafe
         String2.log("test modifyToBeFileNameSafe");
-        String hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?¿…–›°ˇ";
+        String hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?√Ä√â√ê√ù¬°√ø";
         expected = "_a_A_1-_._AEDY_y";
         Test.ensureTrue(!String2.isFileNameSafe(hard), "a");
         Test.ensureTrue(String2.isFileNameSafe(                expected),  "b");
@@ -1992,15 +1992,15 @@ public class TestUtil {
         Test.ensureEqual(String2.isVariableNameSafe(""),   false, "");
         Test.ensureEqual(String2.isVariableNameSafe("_"),  true,  "");
         Test.ensureEqual(String2.isVariableNameSafe("a"),  true,  "");
-        Test.ensureEqual(String2.isVariableNameSafe("¿"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("√Ä"),  true,  "");
         Test.ensureEqual(String2.isVariableNameSafe("."),  false, "");
         Test.ensureEqual(String2.isVariableNameSafe("\u0100"),  false, ""); //A macron
         Test.ensureEqual(String2.isVariableNameSafe("__"),  true,  "");
         Test.ensureEqual(String2.isVariableNameSafe("aa"),  true,  "");
-        Test.ensureEqual(String2.isVariableNameSafe("¿¿"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("√Ä√Ä"),  true,  "");
         Test.ensureEqual(String2.isVariableNameSafe("_."),  false,  "");
         Test.ensureEqual(String2.isVariableNameSafe("a."),  false,  "");
-        Test.ensureEqual(String2.isVariableNameSafe("¿."),  false,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("√Ä."),  false,  "");
 
         //isJsonpNameSafe  (doesn't allow >255/unicode)
         String2.log("test isJsonpNameSafe");
@@ -2008,7 +2008,7 @@ public class TestUtil {
         Test.ensureEqual(String2.isJsonpNameSafe(""),   false, "");
         Test.ensureEqual(String2.isJsonpNameSafe("_"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a"),  true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe(" "),  false, "");
         Test.ensureEqual(String2.isJsonpNameSafe("."),  false, "");
         Test.ensureEqual(String2.isJsonpNameSafe("9"),  false, "");
@@ -2016,22 +2016,22 @@ public class TestUtil {
         Test.ensureEqual(String2.isJsonpNameSafe("__"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("aa"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a9"),  true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿¿"),  true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿ "),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä√Ä"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä "),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("_."),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a."),  false,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿."),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä."),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a. "), false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a.."), false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a.9"), false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("_._"), true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿.¿"), true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("¿.¿._a9"), true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä.√Ä"), true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("√Ä.√Ä._a9"), true,  "");
 
         //modifyToBeVariableNameSafe
         String2.log("test modifyToBeVariableNameSafe");
-        hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?¿…–›°ˇ";
-        expected = "_a_A_1_¿…–›_ˇ";
+        hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?√Ä√â√ê√ù¬°√ø";
+        expected = "_a_A_1_√Ä√â√ê√ù_√ø";
         Test.ensureEqual(String2.modifyToBeVariableNameSafe(hard), expected,   "c");
         Test.ensureEqual(String2.modifyToBeVariableNameSafe(null), "_null",    "");
         Test.ensureEqual(String2.modifyToBeVariableNameSafe(""),   "_",        "");
@@ -2125,6 +2125,12 @@ public class TestUtil {
         Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "bb", "b", true).toString(), "AbabaB", "");
         sb = new StringBuilder("AbBbBaBBaB");
         Test.ensureEqual(String2.repeatedlyReplaceAll(sb, "c",  "c", true).toString(), "AbBbBaBBaB", "");
+
+        //regexReplaceAll
+        sb = new StringBuilder(
+            "test1 &term1; <kbd>&amp;justLettersNumbers3;</kbd> and <kbd>&amp;good;</kbd> but not &amp;bad; or <kbd>&amp;other_char;</kbd> or <kbd>&amp;noCloseSemi</kbd>!");
+        Test.ensureEqual(String2.regexReplaceAll(sb, "<kbd>(&amp;)[a-zA-Z0-9]+;</kbd>", 1, "&").toString(), 
+            "test1 &term1; <kbd>&justLettersNumbers3;</kbd> and <kbd>&good;</kbd> but not &amp;bad; or <kbd>&amp;other_char;</kbd> or <kbd>&amp;noCloseSemi</kbd>!", "");
 
         //canonical
         s = "twopart";
@@ -2268,14 +2274,14 @@ public class TestUtil {
    
         //toByteArray(s)
         String2.log("test toByteArray(s)");
-        s = "ABCDEFGHIJKLMNOP¿¡¬";
+        s = "ABCDEFGHIJKLMNOP√Ä√Å√Ç";
         Test.ensureEqual(String2.toCSSVString(String2.toByteArray(s)),
             "65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, -64, -63, -62",
             "a");
 
         //toByteArray(sb)
         String2.log("test toByteArray(s)");
-        sb = new StringBuilder("ABCDEFGHIJKLMNOP¿¡¬");
+        sb = new StringBuilder("ABCDEFGHIJKLMNOP√Ä√Å√Ç");
         Test.ensureEqual(String2.toCSSVString(String2.toByteArray(sb)),
             "65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, -64, -63, -62",
             "a");
@@ -2820,7 +2826,7 @@ public class TestUtil {
         Test.ensureEqual(String2.encodeFileNameSafe("."), ".", "");
         Test.ensureEqual(String2.encodeFileNameSafe("aBc"), "aBc", "");
         Test.ensureEqual(String2.encodeFileNameSafe(
-            "-._ abxA&∞\u1234"), 
+            "-._ abxA&¬∞\u1234"), 
             "-._x20abx78Ax26xb0xx1234", "");
         Test.ensureEqual(String2.encodeFileNameSafe(
             "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
@@ -2837,7 +2843,7 @@ public class TestUtil {
         Test.ensureEqual(String2.encodeMatlabNameSafe("max_length"), "max78_length", "");
         Test.ensureEqual(String2.encodeMatlabNameSafe("max!length"), "max78x21length", "");
         Test.ensureEqual(String2.encodeMatlabNameSafe(
-            "1-._ xA&∞\u1234"), 
+            "1-._ xA&¬∞\u1234"), 
             "x31x2dx2e_x20x78Ax26xb0xx1234", "");
         Test.ensureEqual(String2.encodeMatlabNameSafe(
             "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
@@ -2861,8 +2867,8 @@ public class TestUtil {
 
         //toVariableName
         String2.log("test String2.toVariableName");
-        Test.ensureEqual(String2.toVariableName("abc d…f (ghi) ;jk"),  "abcDefGhiJk", "");
-        Test.ensureEqual(String2.toVariableName("AB« DEF (GHI) ;JK"),  "abcDefGhiJk", "");
+        Test.ensureEqual(String2.toVariableName("abc d√âf (ghi) ;jk"),  "abcDefGhiJk", "");
+        Test.ensureEqual(String2.toVariableName("AB√á DEF (GHI) ;JK"),  "abcDefGhiJk", "");
         Test.ensureEqual(String2.toVariableName(" abc def (ghi) _;jk"), "abcDefGhiJk", "");
         Test.ensureEqual(String2.toVariableName(" 2BC DEF (GHI) _;JK"), "a2BcDefGhiJk", "");
         Test.ensureEqual(String2.toVariableName(null), "null", "");
@@ -6170,9 +6176,9 @@ expected =
         Test.ensureTrue(File2.simpleDelete(tTempDir), "");
 
         //ensurePrintable
-        Test.ensurePrintable("test123\n\t ~°ˇ", "ensurePrintable");
+        Test.ensurePrintable("test123\n\t ~¬°√ø", "ensurePrintable");
         try {
-            Test.ensurePrintable("test123\n\t ~°ˇí", "ensurePrintable");
+            Test.ensurePrintable("test123\n\t ~¬°√ø‚Äô", "ensurePrintable");
             Test.error(String2.ERROR + ": previous line should have failed.");
         } catch (Exception e) {
         }
@@ -6352,12 +6358,12 @@ expected =
         }
 
         //speed test
-        find = "9charniÒo"; //search has utf8-able char
+        find = "9charni√±o"; //search has utf8-able char
         findBytes = String2.stringToUtf8Bytes(find);
         s = "<att>The TAO/TRITON array consists of approximately 70 moorings in the \n" +
 "Tropical Pacific Ocean, telemetering oceanographic and \n" +
 "meteorological data to shore in real-time via the Argos satellite \n" +
-"system.  The array is a major component of the El NiÒo/Southern \n" +
+"system.  The array is a major component of the El Ni√±o/Southern \n" +
 "Oscillation (ENSO) Observing System, the Global Climate Observing \n" +
 "System (GCOS) and the Global Ocean Observing System (GOOS). \n" +
 "Support is provided primarily by the United States (National \n" +
@@ -6516,7 +6522,7 @@ expected =
             } else {
                 //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));  too inaccurate to be useful
                 Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                Test.ensureTrue(memoryInUse < 40 * Math2.BytesPerMB, //2021-11-16 increased because of translated messages.xml
                     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
             }
             Test.ensureEqual(String2.canonicalSize(),             canSize,            
@@ -6526,8 +6532,8 @@ expected =
 
         }   
         //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
-        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 50, 
-            "Unexpected memoryInUse=" + Math2.getMemoryInUse() + "MB (usually 46MB)");
+        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 75, 
+            "Unexpected memoryInUse=" + (Math2.getMemoryInUse() / Math2.BytesPerMB) + "MB (usually 69MB)"); //2021-11-16 increased because of translated messages.xml
     }
 
     /**
@@ -6592,7 +6598,7 @@ expected =
             } else {
                 //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));   too inaccurate to be useful
                 Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                Test.ensureTrue(memoryInUse < 50 * Math2.BytesPerMB, 
                     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
             }
             Test.ensureEqual(String2.canonicalSize(),             canSize, 
@@ -6602,8 +6608,8 @@ expected =
         }   
         //for (int j = 0; j < sa.length; j++) String2.log(">> " + sa[j]);
 
-        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 50, 
-            "Unexpected memoryInUse=" + Math2.getMemoryInUse() + "MB (usually 46MB)");
+        Test.ensureTrue(Math2.getMemoryInUse() / Math2.BytesPerMB <= 90, 
+            "Unexpected memoryInUse=" + (Math2.getMemoryInUse() / Math2.BytesPerMB) + "MB (usually 73MB)");
 
     }
 

@@ -184,7 +184,7 @@ EDStatic.standardLicense);
 "\n" +
 "We also included a field for the Name Used as Valid (thanks to Emily Capuli) for a species in a given reference (not shown in the BIBLIOGRAPHY window but is available from the REFERENCE INFORMATION window through the All species treated button).\n" +
 "\n" +
-"This close integration of synonyms and references ensures that publications remain attached to the proper biological species, even if the scientific name changes. It also allows us to print automatically updated lists of nomenclatural changes for our references, from Linnaeus (1758) onwards (see ‘Nomenclatural Changes’, below).");
+"This close integration of synonyms and references ensures that publications remain attached to the proper biological species, even if the scientific name changes. It also allows us to print automatically updated lists of nomenclatural changes for our references, from Linnaeus (1758) onwards (see â€˜Nomenclatural Changesâ€™, below).");
                 gatts.set("title", "FishBase 2004, Bibliography");
 
             //BRAINS
@@ -211,7 +211,7 @@ EDStatic.standardLicense);
 "</tr>\n";
                 gatts.set("reference", startReference +
 "\n" +
-"Albert, J., R. Froese, R. Bauchot and H. Ito. 1999. Diversity of brain size in fishes: preliminary analysis of a database including 1174 species in 45 orders, p. 647-656. In B. Séret and J.-Y. Sire (eds.) Proceedings of the 5th Indo-Pacific Fisheries Conference, Noumea, New Caledonia, 3-8 November 1997. Soc. Fr. Ichthyol., Paris, France.\n" +
+"Albert, J., R. Froese, R. Bauchot and H. Ito. 1999. Diversity of brain size in fishes: preliminary analysis of a database including 1174 species in 45 orders, p. 647-656. In B. SÃ©ret and J.-Y. Sire (eds.) Proceedings of the 5th Indo-Pacific Fisheries Conference, Noumea, New Caledonia, 3-8 November 1997. Soc. Fr. Ichthyol., Paris, France.\n" +
 "\n" +
 "Bauchot, M.L. and R. Bauchot. 1986. Encephalization in tropical teleost fishes and its correlation with their locomotory habits, p. 678-690. In T. Uyeno, R. Arai, T. Taniuchi and K. Matsuura (eds.) Indo-Pacific Fish Biology: Proceedings of the Second International Conference on Indo-Pacific Fishes. Ichthyological Society of Japan, Tokyo.\n" +
 "\n" +
@@ -227,9 +227,9 @@ EDStatic.standardLicense);
                 gatts.set("summary", 
 "Most fishes have small brains, at least when compared with warm-blooded vertebrates. However, holding this against them would be as silly as trying to draw inference about the worth of different groups of people from the (mismeasured) size of their brains (Gould 1981).\n" +
 "\n" +
-"Rather, we should realize that fish have evolved the brain size they need, and then use the brain size difference among species of fish to draw inferences on their ‘needs’, i.e., on their niche (see, e.g., Bauchot et al. 1989). The brain size database assembled by Roland Bauchot and his collaborators and kindly made available for inclusion as a table of FishBase allows inferences of this sort. The following describes, based on Bauchot and Bauchot (1986), how this database was created.\n" +
+"Rather, we should realize that fish have evolved the brain size they need, and then use the brain size difference among species of fish to draw inferences on their â€˜needsâ€™, i.e., on their niche (see, e.g., Bauchot et al. 1989). The brain size database assembled by Roland Bauchot and his collaborators and kindly made available for inclusion as a table of FishBase allows inferences of this sort. The following describes, based on Bauchot and Bauchot (1986), how this database was created.\n" +
 "\n" +
-"Over 2,800 brains were dissected from over 900 species of teleost fishes (see Fig. 49). Many of the fishes were collected at tropical and subtropical localities such as the Hawaiian and Marshall Islands, New Caledonia, Queensland, Australia, the Philippines, southwest India, Mauritius and Réunion, Gulf of Oman, northern Red Sea, Senegal and the Caribbean, but also in France and the North Atlantic. All fish were weighed before removal of the brain and their standard and/or total length taken. The brain was cut from the spinal cord at the first spinal nerves, the meninges and blood vessels removed, blotted and weighed, and then preserved in Bouin solution.");
+"Over 2,800 brains were dissected from over 900 species of teleost fishes (see Fig. 49). Many of the fishes were collected at tropical and subtropical localities such as the Hawaiian and Marshall Islands, New Caledonia, Queensland, Australia, the Philippines, southwest India, Mauritius and RÃ©union, Gulf of Oman, northern Red Sea, Senegal and the Caribbean, but also in France and the North Atlantic. All fish were weighed before removal of the brain and their standard and/or total length taken. The brain was cut from the spinal cord at the first spinal nerves, the meninges and blood vessels removed, blotted and weighed, and then preserved in Bouin solution.");
                 gatts.set("title", "FishBase 2004, Brains");
 
             //BROODSTOCK
@@ -394,11 +394,11 @@ EDStatic.standardLicense);
 "\n" +
 "Lewis, R.J. and M.J. Holmes. 1993. Origin and transfer of toxins involved in ciguatera. Comp. Biochem. Physiol. 160C(3): 615-628.\n" +
 "\n" +
-"National Research Council (NRC). 1999. From monsoons to microbes: understanding the ocean’s role in human health. National Academy Press, Washington, D.C. 132 p.\n" +
+"National Research Council (NRC). 1999. From monsoons to microbes: understanding the oceanâ€™s role in human health. National Academy Press, Washington, D.C. 132 p.\n" +
 "\n" +
 "Olsen, D.A., D.W. Nellis and R.S. Wood. 1984. Ciguatera in the Eastern Caribbean. Mar. Fish. Rev. 46(1): 13-18.\n" +
 "\n" +
-"Sadovy, Y. 1999. Ciguatera – a continuing problem for Hong Kong’s consumers, live reef fish traders and high-value target species. SPC Live Reef Fish Info. Bull. No. 6. (December 1999):3-4.\n" +
+"Sadovy, Y. 1999. Ciguatera â€“ a continuing problem for Hong Kongâ€™s consumers, live reef fish traders and high-value target species. SPC Live Reef Fish Info. Bull. No. 6. (December 1999):3-4.\n" +
 "\n" +
 "Tosteson, T.R., D.L. Ballantine and H.D. Durst. 1988. Seasonal frequency of ciguatoxic barracuda in Southwest Puerto Rico. Toxicon. 26(9):795-801.");
                 gatts.set("subsetVariables", 
@@ -475,15 +475,15 @@ EDStatic.standardLicense);
                 gatts.set("reference", startReference +
 "Berlin, B. 1992. Ethnobiological classifications: principles of categorization of plants and animals in traditional societies. Princeton University Press, Princeton. 335 p.\n" +
 "\n" +
-"Bingen, H. von. 1286. Das Buch von den Fischen. Edited by P. Riethe, 1991. Otto Müller Verlag, Salzburg. 150 p.\n" +
+"Bingen, H. von. 1286. Das Buch von den Fischen. Edited by P. Riethe, 1991. Otto MÃ¼ller Verlag, Salzburg. 150 p.\n" +
 "\n" +
 "Brewer, D.J. and R.F. Freeman. 1989. Fish and fishing in ancient Egypt. Aris and Philips, Warminster, England. 109 p.\n" +
 "\n" +
-"Coppola, S.R., W. Fischer, L. Garibaldi, N. Scialabba and K.E. Carpenter. 1994. SPECIESDAB: Global species database for fishery purposes. User’s manual. FAO Computerized Information Series (Fisheries) No. 9. rome, FAO. 103 p.\n" +
+"Coppola, S.R., W. Fischer, L. Garibaldi, N. Scialabba and K.E. Carpenter. 1994. SPECIESDAB: Global species database for fishery purposes. Userâ€™s manual. FAO Computerized Information Series (Fisheries) No. 9. rome, FAO. 103 p.\n" +
 "\n" +
 "Cotte, M.J. 1944. Poissons et animaux aquatiques au temps de Pline. Paul Lechevalier, Paris. 265 p.\n" +
 "\n" +
-"Foale, S. 1998. What’s in a name? An analysis of the West Nggela (Solomon Islands) fish taxonomy. SPC Trad. Mar. Resour. Manage. Knowl. Info. Bull. 9:3-19.\n" +
+"Foale, S. 1998. Whatâ€™s in a name? An analysis of the West Nggela (Solomon Islands) fish taxonomy. SPC Trad. Mar. Resour. Manage. Knowl. Info. Bull. 9:3-19.\n" +
 "\n" +
 "Froese, R. 1990. FishBase: an information system to support fisheries and aquaculture research. Fishbyte 8(3):21-24.\n" +
 "\n" +
@@ -491,7 +491,7 @@ EDStatic.standardLicense);
 "\n" +
 "Grimes, B., Editor. 1992. Ethnologue: Languages of the world. 12th ed. Summer Institute of Linguistics, Dallas, Texas. 938 p.\n" +
 "\n" +
-"Herre, A.W.C.T. and A.F. Umali. 1948. English and local common names of Philippine fishes. U.S. Dept. of Interior and Fish and Wildlife Serv. Circular No. 14. U.S. Gov’t. Printing Office, Washington. 128 p.\n" +
+"Herre, A.W.C.T. and A.F. Umali. 1948. English and local common names of Philippine fishes. U.S. Dept. of Interior and Fish and Wildlife Serv. Circular No. 14. U.S. Govâ€™t. Printing Office, Washington. 128 p.\n" +
 "\n" +
 "Hunn, E. 1980. Sahaptin fish classification. Northw. Anthropol. Res. Notes 14(1):1-19.\n" +
 "\n" +
@@ -503,7 +503,7 @@ EDStatic.standardLicense);
 "\n" +
 "Mohsin, A.K.M., M.A. Ambak and M.M.A. Salam. 1993. Malay, English and scientific names of the fishes of Malaysia. Faculty of Fisheries and Marine Science, Universiti Pertanian Malaysia, Selangor Darul Ehsan, Malaysia, Occas. Publ. 11.\n" +
 "\n" +
-"Negedly, R., Compiler. 1990. Elsevier’s dictionary of fishery, processing, fish and shellfish names of the world. Elsevier Science Publishers, Amsterdam, The Netherlands. 623 p.\n" +
+"Negedly, R., Compiler. 1990. Elsevierâ€™s dictionary of fishery, processing, fish and shellfish names of the world. Elsevier Science Publishers, Amsterdam, The Netherlands. 623 p.\n" +
 "\n" +
 "Organisation for Economic Co-operation and Development. 1990. Multilingual dictionary of fish and fish products. Fishing News Books, Oxford.\n" +
 "\n" +
@@ -521,9 +521,9 @@ EDStatic.standardLicense);
 "\n" +
 "Robins, C.R., R.M. Bailey, C.E. Bond, J.R. Brooker, E.A. Lachner, R.N. Lea and W.B. Scott. 1991b. World fishes important to North Americans. Exclusive of species from continental waters of the United States and Canada. Am. Fish. Soc. Spec. Publ. 21, 243 p.\n" +
 "\n" +
-"Ruhlen, M. 1991. A guide to the world’s languages. Vol. 1: Classification. With a postscript on recent developments. Stanford University Press, Stanford. 433 p.\n" +
+"Ruhlen, M. 1991. A guide to the worldâ€™s languages. Vol. 1: Classification. With a postscript on recent developments. Stanford University Press, Stanford. 433 p.\n" +
 "\n" +
-"Sanches, J.G. 1989. Nomenclatura portuguesa de organismos aquaticos. Publicações Avulsas do I.N.I.P. No. 14, Lisboa. 322 p.\n" +
+"Sanches, J.G. 1989. Nomenclatura portuguesa de organismos aquaticos. PublicaÃ§Ãµes Avulsas do I.N.I.P. No. 14, Lisboa. 322 p.\n" +
 "\n" +
 "Thompson, D.W. 1947. A glossary of Greek fishes. Oxford University Press, London. 302 p.\n" +
 "\n" +
@@ -535,7 +535,7 @@ EDStatic.standardLicense);
                 gatts.set("summary", 
 "Common names are all that most people know about most fish. Claiming that the common names of fish are one of their most important attributes is an understatement. In fact, common names are all that most people know about most fish as shown by the fact that most people accessing FishBase on the Internet do so by common name.\n" +
 "\n" +
-"Hence, FishBase would not be complete without common names. This fact has been considered very early in the design of FishBase (Froese 1990) and has resulted in the compilation of over 107,000 common names, probably the largest collection of its kind. It has taken us a long time, to realize, however, that each pair of ‘country’ and ‘language’ fields uniquely define a culture, and that a large fraction of what the people belonging to a certain culture know about fishes (i.e., local knowledge) can therefore be captured through the COMMON NAMES table including these fields. ");
+"Hence, FishBase would not be complete without common names. This fact has been considered very early in the design of FishBase (Froese 1990) and has resulted in the compilation of over 107,000 common names, probably the largest collection of its kind. It has taken us a long time, to realize, however, that each pair of â€˜countryâ€™ and â€˜languageâ€™ fields uniquely define a culture, and that a large fraction of what the people belonging to a certain culture know about fishes (i.e., local knowledge) can therefore be captured through the COMMON NAMES table including these fields. ");
                 gatts.set("title", "FishBase 2004, Common Names");
 
             //COUNTRY
@@ -733,7 +733,7 @@ EDStatic.standardLicense);
                 gatts.set("reference", startReference +
 "Allen, G.R. 1989. Freshwater fishes of Australia. T.F.H. Publications, Neptune City, New Jersey. 240 p.\n" +
 "\n" +
-"FAO. 1995. FAO yearbook: Fishery statistics – Catches and landings 1993. Vol. 76. Food and Agriculture Organization of the United Nations, Rome, Italy. 687 p.\n" +
+"FAO. 1995. FAO yearbook: Fishery statistics â€“ Catches and landings 1993. Vol. 76. Food and Agriculture Organization of the United Nations, Rome, Italy. 687 p.\n" +
 "\n" +
 "Randall, J.E., G.R. Allen and R.C. Steene. 1997. Fishes of the Great Barrier Reef and Coral Sea. Revised and expanded edition. Crawford House Publishing Pty. Ltd. Bathurst, NSW Australia. 557 p.\n" +
 "\n" +
@@ -841,13 +841,13 @@ EDStatic.standardLicense);
 "<td>Profile</td>\n" +
 "</tr>\n";
                 gatts.set("reference", startReference +
-"Daget, J., J.-P. Gosse, G.G. Teugels and D.F.E. Thys van den Audenaerde, Editors. 1984. Checklist of the freshwater fishes of Africa (CLOFFA). Off. Rech. Scient. Tech. Outre-Mer, Paris, and Musée Royal de l’Afrique Centrale, Tervuren. 410 p.\n" +
+"Daget, J., J.-P. Gosse, G.G. Teugels and D.F.E. Thys van den Audenaerde, Editors. 1984. Checklist of the freshwater fishes of Africa (CLOFFA). Off. Rech. Scient. Tech. Outre-Mer, Paris, and MusÃ©e Royal de lâ€™Afrique Centrale, Tervuren. 410 p.\n" +
 "\n" +
-"Daget, J., J.C. Hureau, C. Karrer, A. Post and L. Saldanha, Editors. 1990. Check-list of the fishes of the eastern tropical Atlantic (CLOFETA). Junta Nacional de Investigaçao Cientifica e Tecnológica, Lisbon, Europ. Ichthyol. Union, Paris and UNESCO, Paris. 519 p.\n" +
+"Daget, J., J.C. Hureau, C. Karrer, A. Post and L. Saldanha, Editors. 1990. Check-list of the fishes of the eastern tropical Atlantic (CLOFETA). Junta Nacional de InvestigaÃ§ao Cientifica e TecnolÃ³gica, Lisbon, Europ. Ichthyol. Union, Paris and UNESCO, Paris. 519 p.\n" +
 "\n" +
 "Eschmeyer, W.N., Editor. 1998. Catalog of fishes. Special Publication, California Academy of Sciences, San Francisco. 3 vols. 2905 p.\n" +
 "\n" +
-"FAO. 1995. FAO yearbook: Fishery statistics – Catches and landings 1993. Vol. 76. Food and Agriculture Organization of the United Nations, Rome, Italy. 687 p.\n" +
+"FAO. 1995. FAO yearbook: Fishery statistics â€“ Catches and landings 1993. Vol. 76. Food and Agriculture Organization of the United Nations, Rome, Italy. 687 p.\n" +
 "\n" +
 "FAO-FIDI. 1994. International Standard Statistical Classification of Aquatic Animals and Plants (ISSCAAP). Fishery Information, Data and Statistics Service, Fisheries Department, FAO, Rome, Italy.\n" +
 "\n" +
@@ -869,9 +869,9 @@ EDStatic.standardLicense);
 "\n" +
 "Randall, J.E. 2000. Revision of the Indo-Pacific labrid fishes of the genus Stethojulis, with descriptions of two new species. Indo-Pac. Fish. 31:42 p.\n" +
 "\n" +
-"Shao, K.-T., S.-C. Shen, T.-S. Chiu and C.-S. Tzeng. 1992. Distribution and database of fishes in Taiwan, p. 173-206. In C.-Y. Peng (ed.) Collections of research studies on ‘Survey of Taiwan biological resources and information management’. Vol. 2. Institute of Botany, Academia Sinica, Taiwan.\n" +
+"Shao, K.-T., S.-C. Shen, T.-S. Chiu and C.-S. Tzeng. 1992. Distribution and database of fishes in Taiwan, p. 173-206. In C.-Y. Peng (ed.) Collections of research studies on â€˜Survey of Taiwan biological resources and information managementâ€™. Vol. 2. Institute of Botany, Academia Sinica, Taiwan.\n" +
 "\n" +
-"Smith, M.M. and P.C. Heemstra, Editors. 1995. Revised edition of Smith’s sea fishes. Springer-Verlag, Berlin. 1047 p.\n" +
+"Smith, M.M. and P.C. Heemstra, Editors. 1995. Revised edition of Smithâ€™s sea fishes. Springer-Verlag, Berlin. 1047 p.\n" +
 "\n" +
 "Smith-Vaniz, W.F., B.B. Collette and B.E. Luckhurst. 1999. Fishes of Bermuda: history, zoogeography, annotated checklist, and identification keys. ASIH Spec. Publ. No. 4. 424 p.\n");
                 gatts.set("subsetVariables", 

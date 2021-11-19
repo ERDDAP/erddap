@@ -362,7 +362,7 @@ public class EDDTableFromOBIS extends EDDTable{
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tLonMin in source units (use Double.NaN if not known).
-     *    [I use eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true); below to get it.]
+     *    [I use eddTable.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true); below to get it.]
      * @param tLonMax see tLonMin description.
      * @param tLatMin see tLonMin description.
      * @param tLatMax see tLonMin description.
@@ -575,13 +575,14 @@ public class EDDTableFromOBIS extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //get the sourceDapQuery (a query that the source can handle)
@@ -589,7 +590,7 @@ public class EDDTableFromOBIS extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -612,7 +613,7 @@ public class EDDTableFromOBIS extends EDDTable{
                 resultsVariables.get(0));
             table.removeColumn(2);
             table.removeColumn(0);
-            standardizeResultsTable(requestUrl, userDapQuery, table);
+            standardizeResultsTable(language, requestUrl, userDapQuery, table);
             tableWriter.writeAllAndFinish(table);
             return;
         }
@@ -693,7 +694,7 @@ public class EDDTableFromOBIS extends EDDTable{
         table.setColumnName(table.findColumnNumber("LON"),   "darwin:Longitude");
         table.setColumnName(table.findColumnNumber("LAT"),   "darwin:Latitude");
         table.setColumnName(table.findColumnNumber("DEPTH"), "darwin:MinimumDepth");
-        standardizeResultsTable(requestUrl, userDapQuery, table);
+        standardizeResultsTable(language, requestUrl, userDapQuery, table);
         tableWriter.writeAllAndFinish(table);
     }
 
@@ -874,6 +875,7 @@ expected =
      */
     public static void testRutgers() throws Throwable {
         testVerboseOn();
+        int language = 0;
         DigirHelper.verbose = true;
         DigirHelper.reallyVerbose = true;
         //TableXmlHandler.verbose = true;
@@ -890,12 +892,12 @@ expected =
         EDDTable obis = (EDDTable)oneFromDatasetsXml(null, "rutgersGhmp"); //should work
 
         //getEmpiricalMinMax just do once
-        //globecBottle.getEmpiricalMinMax("2002-07-01", "2002-09-01", false, true);
+        //globecBottle.getEmpiricalMinMax(language, "2002-07-01", "2002-09-01", false, true);
         //if (true) System.exit(1);
 
         //.das     das isn't affected by userDapQuery
         userDapQuery = "&Genus=\"Macrocystis\""; 
-        tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".das"); 
         results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
@@ -1154,7 +1156,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         Test.ensureEqual(results.substring(tpo), expected, "");
 
         //.csv        
-        tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1187,7 +1189,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.csv           String =
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Macrocystis\"" +
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
-        tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1231,7 +1233,7 @@ so standardize results table removes all but 1 record.
         //.csv    similar test        String > <
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Macrocystis\"&Species>\"inte\"&Species<=\"intf\"" +
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
-        tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1240,7 +1242,7 @@ so standardize results table removes all but 1 record.
         //.csv   similar test        String regex
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Macrocystis\"&Species=~\"(zztop|integ.*)\"" +
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
-        tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1259,6 +1261,7 @@ so standardize results table removes all but 1 record.
      */
     public static void testFishbase() throws Throwable {
         testVerboseOn();
+        int language = 0;
         DigirHelper.verbose = true;
         DigirHelper.reallyVerbose = true;
         TableXmlHandler.verbose = true;
@@ -1270,7 +1273,7 @@ so standardize results table removes all but 1 record.
         try {
         EDDTable fishbase = (EDDTable)oneFromDatasetsXml(null, "fishbaseObis"); //should work
         userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
-        tName = fishbase.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = fishbase.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             fishbase.className() + "FishBaseGraph", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1285,7 +1288,7 @@ so standardize results table removes all but 1 record.
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //data for mapExample
-        tName = fishbase.makeNewFileForDapQuery(null, null, "longitude,latitude&Genus=Carcharodon&longitude!=NaN", 
+        tName = fishbase.makeNewFileForDapQuery(language, null, null, "longitude,latitude&Genus=Carcharodon&longitude!=NaN", 
             EDStatic.fullTestCacheDirectory, fishbase.className() + "Map", ".csv");
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1331,6 +1334,7 @@ so standardize results table removes all but 1 record.
      */
     public static void testSeamap() throws Throwable {
         testVerboseOn();
+        int language = 0;
         DigirHelper.verbose = true;
         DigirHelper.reallyVerbose = true;
         TableXmlHandler.verbose = true;
@@ -1413,7 +1417,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         try {
             EDDTable dukeSeamap = (EDDTable)oneFromDatasetsXml(null, "dukeSeamap"); 
             userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
-            tName = dukeSeamap.makeNewFileForDapQuery(null, null, userDapQuery, 
+            tName = dukeSeamap.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, dukeSeamap.className() + "duke", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1439,6 +1443,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
     public static void testArgos() throws Throwable {
         
         testVerboseOn();
+        int language = 0;
         DigirHelper.verbose = true;
         DigirHelper.reallyVerbose = true;
         TableXmlHandler.verbose = true;
@@ -1449,7 +1454,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
 
         EDDTable argos = (EDDTable)oneFromDatasetsXml(null, "aadcArgos"); 
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01"; 
-        tName = argos.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = argos.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             argos.className() + "Argos", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);

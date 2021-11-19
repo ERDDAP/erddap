@@ -82,7 +82,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
         //make the stationTable (expected columns and no others) 
         //which is a subset of the subsetVariables table (which may have extra cols like 'datum')
-        stationTable = subsetVariablesDataTable(user);  //exception if trouble
+        stationTable = subsetVariablesDataTable(0, user);  //exception if trouble
         int nCols = stationTable.nColumns();
         String keepCols[] = new String[]{"stationID", "stationName",  "state",
             "dateEstablished", "shefID", "deployment", "longitude", "latitude"};
@@ -137,13 +137,14 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //make the sourceQuery
@@ -151,7 +152,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -194,12 +195,17 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
         //ensure the required constraints were specified
         if (!datumIsFixedValue && (datum == null || datum.length() == 0))
-            throw new SimpleException(
-                EDStatic.queryError + "For this dataset, all queries must include a \"datum=\" constraint.");
+            throw new SimpleException(EDStatic.bilingual(language,                
+                EDStatic.queryErrorAr[0]        + "For this dataset, all queries must include a \"datum=\" constraint.",
+                EDStatic.queryErrorAr[language] + "For this dataset, all queries must include a \"datum=\" constraint."));
         if (Double.isNaN(beginSeconds))
-            throw new SimpleException(EDStatic.queryError + "Missing time>= constraint.");
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + "Missing time>= constraint.",
+                EDStatic.queryErrorAr[language] + "Missing time>= constraint."));
         if (Double.isNaN(endSeconds))
-            throw new SimpleException(EDStatic.queryError + "If present, the time<= constraint must be valid.");
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + "If present, the time<= constraint must be valid.",
+                EDStatic.queryErrorAr[language] + "If present, the time<= constraint must be valid."));
         String beginTime = Calendar2.epochSecondsToIsoStringTZ(beginSeconds).substring(0, 16);  //no seconds
         String endTime   = Calendar2.epochSecondsToIsoStringTZ(  endSeconds).substring(0, 16);
         if (beginSeconds > endSeconds)
@@ -410,7 +416,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                     }
 
                     //String2.log("\npost table=\n" + table.dataToString());
-                    standardizeResultsTable(requestUrl, userDapQuery, table);
+                    standardizeResultsTable(language, requestUrl, userDapQuery, table);
 
                     if (table.nRows() > 0) {
                         tableWriter.writeSome(table);
@@ -1026,6 +1032,7 @@ These datasets were hard to work with:
     public static void testNosCoops(String idRegex) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiServiceNOS.testNosCoopsWL\n");
         testVerboseOn();
+        int language = 0;
         //EDD.debugMode=true;
         String results, query, tName, expected;
         //(0, 11) causes all of these to end in 'T'
@@ -1062,7 +1069,7 @@ These datasets were hard to work with:
 
             query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + yesterday + 
                 "21:00&time<=" + yesterday + "22:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =   //this changes every day
@@ -1093,7 +1100,7 @@ These datasets were hard to work with:
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsWLR1"); 
             query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + yesterday + 
                 "21:00&time<=" + yesterday + "21:10";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1130,7 +1137,7 @@ These datasets were hard to work with:
             String daysAgo = daysAgo40;
             query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo + "21:00" +
                                                          "&time<=" + daysAgo + "22:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //changes every day
@@ -1166,7 +1173,7 @@ These datasets were hard to work with:
             String daysAgo = daysAgo40;
             query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAgo + 
                                                     "14:00&time<=" + daysAgo + "23:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1203,7 +1210,7 @@ These datasets were hard to work with:
             String daysAgo = daysAgo72;
             query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAgo + 
                                                     "00:00&time<=" + daysAgo + "23:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //number of lines in results varies
@@ -1237,7 +1244,7 @@ These datasets were hard to work with:
             String daysAhead = daysAhead5;
             query = "&stationID=\"8454000\"&time>=" + daysAhead + 
                                      "00:00&time<=" + daysAhead + "23:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //number of lines in results varies
@@ -1272,7 +1279,7 @@ These datasets were hard to work with:
             String daysAhead = daysAhead5;
             query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAhead + 
                                                     "00:00&time<=" + daysAhead + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1313,7 +1320,7 @@ These datasets were hard to work with:
             String daysAhead = daysAhead5;
             query = "&stationID=\"8454000\"&time>=" + daysAhead + 
                                      "00:00&time<=" + daysAhead + "10:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1351,7 +1358,7 @@ These datasets were hard to work with:
             String daysAgo = yesterday;
             query = "&stationID=\"8454000\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1389,7 +1396,7 @@ These datasets were hard to work with:
             String daysAgo = yesterday;
             query = "&stationID=\"8454000\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1432,7 +1439,7 @@ These datasets were hard to work with:
             String daysAgo = daysAgo20;
             query = "&stationID=\"" + id + "\"&time>=" + daysAgo + 
                                         "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1470,7 +1477,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = daysAgo70; //yesterday;
             query = "&stationID=\"9752619\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "00:54";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1507,7 +1514,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = daysAgo5; //yesterday;
             query = "&stationID=\"9063063\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1545,7 +1552,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = "2010-10-24T"; //yesterday;
             query = "&stationID=\"8454000\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1583,7 +1590,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = yesterday;
             query = "&stationID=\"8454000\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1622,7 +1629,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = "2010-10-24T"; //yesterday;
             query = "&stationID=\"8737005\"&time>=" + daysAgo + 
                                      "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1655,7 +1662,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             String daysAgo = "2010-11-21T"; //yesterday;
             query = "&stationID=\"db0301\"&time>=" + daysAgo + 
                                     "00:00&time<=" + daysAgo + "01:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1690,7 +1697,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsWLVDM"); 
             query = "&stationID=\"1612340\"&datum=\"MLLW\"&time>=" + daysAgo72 + 
                 "00:00&time<=" + daysAgo70 + "00:00";             
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 

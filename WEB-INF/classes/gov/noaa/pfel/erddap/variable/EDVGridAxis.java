@@ -542,16 +542,18 @@ public class EDVGridAxis extends EDV {
 
     /**
      * This returns a human-oriented description of the spacing of this EDVGridAxis. (May be negative.)
+     *
+     * @param language the index of the selected language
      */
-    public String spacingDescription() {
+    public String spacingDescription(int language) {
         boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
         if (sourceValues().size() == 1) 
-            return "(" + EDStatic.EDDGridJustOneValue + ")";
+            return "(" + EDStatic.EDDGridJustOneValueAr[language] + ")";
         String s = isTimeStamp? 
             Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000) : 
             "" + Math2.floatToDouble(averageSpacing());
         return s + " (" +
-            (isEvenlySpaced()? EDStatic.EDDGridEven : EDStatic.EDDGridUneven) +
+            (isEvenlySpaced()? EDStatic.EDDGridEvenAr[language] : EDStatic.EDDGridUnevenAr[language]) +
             ")";
     }
 
@@ -559,8 +561,10 @@ public class EDVGridAxis extends EDV {
      * This returns HTML suitable for a tooltip for this dimension.
      * The range will be from firstDestinationValue to lastDestinationValue 
      * (which is different from min to max if !ascending).
+     *
+     * @param language the index of the selected language
      */
-    public String htmlRangeTooltip() {
+    public String htmlRangeTooltip(int language) {
         String tUnits = units();
         PrimitiveArray tSourceValues = sourceValues(); //work with stable local reference
         boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
@@ -578,7 +582,7 @@ public class EDVGridAxis extends EDV {
             "ranging from " + destinationToString(firstDestinationValue()) + 
                      " to " + destinationToString(lastDestinationValue()) + " " + tUnits + "<br>" +
             "with " + 
-                (isEvenlySpaced()? EDStatic.EDDGridEven : EDStatic.EDDGridUneven) + 
+                (isEvenlySpaced()? EDStatic.EDDGridEvenAr[language] : EDStatic.EDDGridUnevenAr[language]) + 
                 " spacing " + (isEvenlySpaced()? "" : "~") +
                 "= " + tSpacing;
     }
