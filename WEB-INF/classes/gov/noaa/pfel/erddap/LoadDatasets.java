@@ -681,44 +681,44 @@ public class LoadDatasets extends Thread {
                 } else if (tags.equals("<erddapDatasets><standardContact>")) {
                 } else if (tags.equals("<erddapDatasets></standardContact>")) {
                     String ts = xmlReader.content();
-                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_standardContact;
+                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_standardContactAr[0];
                     ts = String2.replaceAll(ts, "&adminEmail;", SSR.getSafeEmailAddress(EDStatic.adminEmail));
-                    EDStatic.standardContact = ts; //swap into place
+                    EDStatic.standardContactAr[0] = ts; //swap into place
                     String2.log("standardContact was set.");
 
                 } else if (tags.equals("<erddapDatasets><standardDataLicenses>")) {
                 } else if (tags.equals("<erddapDatasets></standardDataLicenses>")) {
                     String ts = xmlReader.content();
-                    EDStatic.standardDataLicenses = String2.isSomething(ts)? ts : 
-                        EDStatic.DEFAULT_standardDataLicenses;
+                    EDStatic.standardDataLicensesAr[0] = String2.isSomething(ts)? ts : 
+                        EDStatic.DEFAULT_standardDataLicensesAr[0];
                     String2.log("standardDataLicenses was set.");
 
                 } else if (tags.equals("<erddapDatasets><standardDisclaimerOfEndorsement>")) {
                 } else if (tags.equals("<erddapDatasets></standardDisclaimerOfEndorsement>")) {
                     String ts = xmlReader.content();
-                    EDStatic.standardDisclaimerOfEndorsement = String2.isSomething(ts)? ts : 
-                        EDStatic.DEFAULT_standardDisclaimerOfEndorsement;
+                    EDStatic.standardDisclaimerOfEndorsementAr[0] = String2.isSomething(ts)? ts : 
+                        EDStatic.DEFAULT_standardDisclaimerOfEndorsementAr[0];
                     String2.log("standardDisclaimerOfEndorsement was set.");
 
                 } else if (tags.equals("<erddapDatasets><standardDisclaimerOfExternalLinks>")) {
                 } else if (tags.equals("<erddapDatasets></standardDisclaimerOfExternalLinks>")) {
                     String ts = xmlReader.content();
-                    EDStatic.standardDisclaimerOfExternalLinks = String2.isSomething(ts)? ts : 
-                        EDStatic.DEFAULT_standardDisclaimerOfExternalLinks;
+                    EDStatic.standardDisclaimerOfExternalLinksAr[0] = String2.isSomething(ts)? ts : 
+                        EDStatic.DEFAULT_standardDisclaimerOfExternalLinksAr[0];
                     String2.log("standardDisclaimerOfExternalLinks was set.");
 
                 } else if (tags.equals("<erddapDatasets><standardGeneralDisclaimer>")) {
                 } else if (tags.equals("<erddapDatasets></standardGeneralDisclaimer>")) {
                     String ts = xmlReader.content();
-                    EDStatic.standardGeneralDisclaimer = String2.isSomething(ts)? ts : 
-                        EDStatic.DEFAULT_standardGeneralDisclaimer;
+                    EDStatic.standardGeneralDisclaimerAr[0] = String2.isSomething(ts)? ts : 
+                        EDStatic.DEFAULT_standardGeneralDisclaimerAr[0];
                     String2.log("standardGeneralDisclaimer was set.");
 
                 } else if (tags.equals("<erddapDatasets><standardPrivacyPolicy>")) {
                 } else if (tags.equals("<erddapDatasets></standardPrivacyPolicy>")) {
                     String ts = xmlReader.content();
-                    EDStatic.standardPrivacyPolicy = String2.isSomething(ts)? ts : 
-                        EDStatic.DEFAULT_standardPrivacyPolicy;
+                    EDStatic.standardPrivacyPolicyAr[0] = String2.isSomething(ts)? ts : 
+                        EDStatic.DEFAULT_standardPrivacyPolicyAr[0];
                     String2.log("standardPrivacyPolicy was set.");
 
                 } else if (tags.equals("<erddapDatasets><startHeadHtml5>")) {
@@ -735,25 +735,23 @@ public class LoadDatasets extends Thread {
                 } else if (tags.equals("<erddapDatasets><startBodyHtml5>")) {
                 } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
                     String ts = xmlReader.content();
-                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_startBodyHtml;
+                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
                     EDStatic.ampLoginInfoPo = ts.indexOf(EDStatic.ampLoginInfo); //may be -1
-                    EDStatic.startBodyHtml = ts; //swap into place
+                    EDStatic.startBodyHtmlAr[0] = ts; //swap into place
                     String2.log("startBodyHtml5 was set.");
 
                 } else if (tags.equals("<erddapDatasets><theShortDescriptionHtml>")) {
                 } else if (tags.equals("<erddapDatasets></theShortDescriptionHtml>")) {
                     String ts = xmlReader.content();
-                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_theShortDescriptionHtml;
-                    ts = String2.replaceAll(ts, "[standardShortDescriptionHtml]", EDStatic.standardShortDescriptionHtml);
-                    ts = String2.replaceAll(ts, "&resultsFormatExamplesHtml;",    EDStatic.resultsFormatExamplesHtml);
-                    EDStatic.theShortDescriptionHtml = ts; //swap into place
+                    ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_theShortDescriptionHtmlAr[0];
+                    EDStatic.theShortDescriptionHtmlAr[0] = ts; //swap into place
                     String2.log("theShortDescriptionHtml was set.");
 
                 } else if (tags.equals("<erddapDatasets><endBodyHtml5>")) {
                 } else if (tags.equals("<erddapDatasets></endBodyHtml5>")) {
                     String ts = xmlReader.content();
-                    EDStatic.endBodyHtml = String2.replaceAll(
-                        String2.isSomething(ts)? ts : EDStatic.DEFAULT_endBodyHtml,
+                    EDStatic.endBodyHtmlAr[0] = String2.replaceAll(
+                        String2.isSomething(ts)? ts : EDStatic.DEFAULT_endBodyHtmlAr[0],
                         "&erddapVersion;", EDStatic.erddapVersion);
                     String2.log("endBodyHtml5 was set.");
 
@@ -1054,7 +1052,7 @@ public class LoadDatasets extends Thread {
 
                     contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     contentSB.append(stars + "\nTallied Usage Information\n\n");
-                    contentSB.append(EDStatic.tally.toString(50));
+                    contentSB.append(EDStatic.tally.toString(50)); 
                     EDStatic.addCommonStatistics(contentSB);
 
                     contentSB.append("\n" + stars + 
@@ -1083,6 +1081,7 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Home Page (since last daily report)");
                     EDStatic.tally.remove("Info (since last daily report)");
                     EDStatic.tally.remove("Info File Type (since last daily report)");
+                    EDStatic.tally.remove("Language (since last daily report)");
                     EDStatic.tally.remove("Large Request, IP address (since last daily report)");
                     EDStatic.tally.remove("Log in attempt blocked temporarily (since last daily report)");
                     EDStatic.tally.remove("Log in failed (since last daily report)");
@@ -1180,9 +1179,11 @@ public class LoadDatasets extends Thread {
 
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
+                    sb.append(EDStatic.tally.toString("Large Request, IP address (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", 50));
+                    sb.append(EDStatic.tally.toString("Request refused: not authorized (since last Major LoadDatasets)", 50)); //datasetID (not IP address)
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Allowed) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Blacklisted) (since last Major LoadDatasets)", 50));
                     sb.append(EDStatic.tally.toString("Requester's IP Address (Failed) (since last Major LoadDatasets)", 50));

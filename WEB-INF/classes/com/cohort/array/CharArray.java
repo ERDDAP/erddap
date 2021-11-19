@@ -1293,7 +1293,7 @@ public class CharArray extends PrimitiveArray {
      * See also the XDR standard (http://tools.ietf.org/html/rfc4506#section-4.11).
      * Just 8 bits are stored: there is no utf or other unicode support.
      * See DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit.
-     * Ah: dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode.
+     * Ah: dods.dap.DString reader assumes ISO-8859-1, which is first page of unicode (is it?!).
      *
      * @param dos
      * @param c

@@ -393,6 +393,7 @@ public class EDDTableAggregateRows extends EDDTable{
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -404,7 +405,7 @@ public class EDDTableAggregateRows extends EDDTable{
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
         //update the children
         boolean anyChange = false;
@@ -416,8 +417,8 @@ public class EDDTableAggregateRows extends EDDTable{
             tMax[dvi] = PAOne.fromDouble(Double.NaN);
         }
         for (int c = 0; c < nChildren; c++) {
-            EDDTable tChild = getChild(c);
-            if (tChild.lowUpdate(msg, startUpdateMillis))
+            EDDTable tChild = getChild(language, c);
+            if (tChild.lowUpdate(language, msg, startUpdateMillis))
                 anyChange = true;
 
             //just update all dataVariable's destinationMin/Max
@@ -464,13 +465,14 @@ public class EDDTableAggregateRows extends EDDTable{
     }
 
     /** This gets the specified child dataset, whether local fromErddap or otherwise. */
-    private EDDTable getChild(int c) {
+    private EDDTable getChild(int language, int c) {
         EDDTable tChild = children[c];
         if (tChild == null) {
             tChild = erddap.tableDatasetHashMap.get(localChildrenID[c]);
             if (tChild == null) {
                 EDD.requestReloadASAP(localChildrenID[c]);
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                throw new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(underlying local child[" + c + "] datasetID=" + localChildrenID[c] + 
                     " not found)"); 
             }
@@ -484,13 +486,14 @@ public class EDDTableAggregateRows extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //tableWriter
@@ -505,7 +508,7 @@ public class EDDTableAggregateRows extends EDDTable{
                 //* each child handles standardizeResultsTable and applies constraints.
                 //* each child has the same destination names and units for the same vars.
                 //* this will call tableWriter.finish(), but it will be ignored
-                getChild(c).getDataForDapQuery(EDStatic.loggedInAsSuperuser, 
+                getChild(language, c).getDataForDapQuery(language, EDStatic.loggedInAsSuperuser, 
                     requestUrl, userDapQuery, tableWriter); 
 
                 //no more data?
@@ -543,9 +546,10 @@ public class EDDTableAggregateRows extends EDDTable{
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, id);
         String dir = EDStatic.fullTestCacheDirectory;
         int tPo;
+        int language = 0;
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "1", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -702,7 +706,7 @@ expected =
         Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results);      
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -724,7 +728,7 @@ expected =
 
         //query station info
         query = "prefix,station,latitude,longitude&distinct()";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfo", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -738,7 +742,7 @@ expected =
 
         //query station info, lon<-80
         query = "prefix,station,latitude,longitude&distinct()&longitude<-80";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfoLT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -749,7 +753,7 @@ expected =
 
         //query station info, lon>-80
         query = "prefix,station,latitude,longitude&distinct()&longitude>-80";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfoGT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -762,7 +766,7 @@ expected =
 
         //query data
         query = "&time=2014-01-01";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -776,7 +780,7 @@ expected =
 
         //query data, lon<-80
         query = "&time=2014-01-01&longitude<-80";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "dataLT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -787,7 +791,7 @@ expected =
 
         //query data, lon >-80
         query = "&time=2014-01-01&longitude>-80";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "dataGT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -800,7 +804,7 @@ expected =
 
         //query data, prefix=4103
         query = "&time=2014-01-01&prefix=4103";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4103", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -811,7 +815,7 @@ expected =
 
         //query data, prefix=4102
         query = "&time=2014-01-01&prefix=4102";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4102", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -825,7 +829,7 @@ expected =
 
         //test metadata is from child0: query data, prefix=4103
         query = "&time=2014-01-01&prefix=4103";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4103", ".nc"); 
         results = NcHelper.ncdump(dir + tName, "");
         expected = 
@@ -846,7 +850,7 @@ expected =
 
         //test metadata is from child0: query data, prefix=4102
         query = "&time=2014-01-01&prefix=4102";
-        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4102", ".nc"); 
         results = NcHelper.ncdump(dir + tName, "");
         expected = 
@@ -869,7 +873,7 @@ expected =
         results = "";
         try {
             query = "&longitude<-90"; //quick reject
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "errorLT90", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
@@ -884,7 +888,7 @@ expected =
         results = "";
         try {
             query = "&wtmp=23.12345"; //look through every row of data: no matching data
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "errorWtmp", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {

@@ -28,7 +28,7 @@
       <a title="National Marine Fisheries Service" rel="bookmark"
       href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
-      href="https://swfsc.noaa.gov">SWFSC</a> 
+      href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
       href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
@@ -65,7 +65,8 @@
    title="This link to an external website does not constitute an endorsement."></a>,
 all-Java (servlet), web application that
 runs in a web application server 
-(for example, Tomcat). This web page is mostly for people ("ERDDAP administrators")
+(for example, Tomcat (recommended), or Jetty (it works, but we don't support it)). 
+This web page is mostly for people ("ERDDAP administrators")
 who want to set up their own ERDDAP installation at their own website.
 
 <h2><a class="selfLink" id="why" href="#why" rel="bookmark">Why use ERDDAP to distribute your data?</a></h2>
@@ -302,10 +303,7 @@ Joint Research Centre of the European Commission)
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
   (Ocean Observatories Initiative)
-<br><a rel="bookmark" href="https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"
-  >OOI / Uncabled Data<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
+<br>OOI / Uncabled Data <!-- <a rel="bookmark" href="https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"> -->  
   <!-- 2017-10-19 They made it public. 2020-10-21 Jessica Austin -->
 <li>Princeton, Hydrometeorology Research Group
   <!-- 2017-05-17 James Smith  was http://hydromet-thredds.princeton.edu:8000/erddap/index.html-->
@@ -394,7 +392,7 @@ and post your question there.
 <!-- ******* -->
 <h2><a class="selfLink" id="initialSetup" href="#initialSetup" rel="bookmark"
 >How To Do the Initial Setup of ERDDAP on Your Server</a></h2>
-ERDDAP can run on any server that supports Java and Tomcat (and perhaps other application servers).  
+ERDDAP can run on any server that supports Java and Tomcat (and other application servers like Jetty, but we don't support them).  
 ERDDAP has been tested on Linux (including on Amazon's AWS), Mac, and Windows computers.   
 <ul>
 <li><strong>Amazon</strong> -- If you are installing
@@ -452,15 +450,6 @@ or Mac server instead.
       title="This link to an external website does not constitute an endorsement."></a>
     and so is no longer supported by Oracle or AdoptOpenJDK. 
 
-    <p>An exception to the comments above is: 
-    As of Aug 2019, for us using Cassandra on Windows 10, Cassandra works well
-    with 64-bit versions of Oracle's Java 8 
-    (<a rel="help" href="https://java.com/en/download/manual.jsp">downloads available here<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>), 
-    but not with AdoptOpenJdk 8 
-    (where it throws an EXCEPTION_ACCESS_VIOLATION). YMMV
-
     <br>&nbsp;
 
 <li><a class="selfLink" id="tomcat" href="#tomcat" rel="bookmark">Set up</a> 
@@ -470,7 +459,7 @@ or Mac server instead.
     <br>Tomcat is the most widely used Java Application Server, 
       which is Java software that stands between the operating system's network services 
       and Java server software like ERDDAP.  It is Free and Open Source Software (FOSS).
-    <p>You can use another Java Application Server, but we only test with and support
+    <p>You can use another Java Application Server (e.g., Jetty), but we only test with and support
     Tomcat.
     <br>&nbsp;
     <ul>
@@ -831,16 +820,14 @@ or Mac server instead.
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
     >Other Directory:</a> For Red Hat Enterprise Linux (RHEL) or for other situations where
     you aren't allowed to modify the Tomcat directory 
-    or where you want/need to put the ERDDAP content directory in some other location for some other reason, 
-    unzip erddapContent.zip into the desired directory (to which only tomcat has access)
+    or where you want/need to put the ERDDAP content directory in some other location for some other reason 
+    (for example, if you use Jetty instead of Tomcat), 
+    unzip erddapContent.zip into the desired directory (to which only user=tomcat has access)
     and set the erddapContentDirectory system property 
     (e.g., <kbd>erddapContentDirectory=~tomcat/content/erddap</kbd>)
     so ERDDAP can find this new content directory.
 
   <p>[Some previous versions are also available:  
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddapContent.zip">2.00b</a>
-    (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-06-26)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.01/erddapContent.zip">2.01</a>
     (19,652 bytes, MD5=86DC8F13E660A6B2BEDBC7A61BD202C4, dated 2019-07-02)
@@ -943,9 +930,6 @@ or Mac server instead.
     and elevation data needed to create maps.
 
   <p>[Some previous versions are also available.
-    <br><a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.00b/erddap.war">2.00b</a>
-    (512,875,729 bytes, MD5=B5FA224EDDB0BC8F2B257B0FF7F6936D, dated 2019-06-26)
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.01/erddap.war">2.01</a>
     (512,870,608 bytes, MD5=C6F73778DE68082C71EA76B1D2AFA254, dated 2019-07-02)
@@ -2558,14 +2542,16 @@ but sometimes you just need more memory.
 
 
 <li><strong><a class="selfLink" id="requestsFailed" href="#requestsFailed" rel="bookmark">Unusual Activity: >25% of requests failed</a></strong>  
-<br>You will probably get an email from ERDDAP periodically with the subject 
-"Unusual Activity: >25% of requests failed". It is worth figuring out what is going wrong.
-The only way to figure out what is going wrong is to read the 
-[bigParentDirectory]/logs/<a rel="help" href="#log">log.txt</a> file and search for "error". 
-For each error message, look just above it to find the line where the original request is logged.
-The line starts with "{{{{#" and includes the user's IP number and the actual request.
+<br>As part of every reloadDatasets, which is usually every 15 minutes, 
+ERDDAP looks at the percentage of requests which failed since the last reloadDatasets. 
+If it is &gt;25%, ERDDAP sends an email to the ERDDAP administrator with the
+subject "Unusual Activity: >25% of requests failed". 
+That email includes a tally near the bottom entitled "Requester's IP Address (Failed) (since last Major LoadDatasets)". 
+Search for that. It tells you the IP address of the computers making the most failed requests. 
+You can then search for those IP addresses in the [bigParentDirectory]/logs/<a rel="help" href="#log">log.txt</a> file
+and see what type of requests they are making. 
 
-<p>Use the user's IP number (for example, with 
+<p>You can use the user's IP number (for example, with 
 <a rel="help" href="https://whatismyipaddress.com/ip-lookup"
                    >https://whatismyipaddress.com/ip-lookup<img 
       src="../images/external.png" alt=" (external link)" 
@@ -2574,14 +2560,18 @@ to try to figure out who or what the user is.
 Sometimes that will tell you pretty accurately who the user is (e.g., it's a search engine's web crawler).
 Most of the time it just gives you a clue 
 (e.g., it's an amazonaws computer, it's from some university, 
-it's someone in Washington State (no offense intended; I like Washington)).
+it's someone in some specific city).
 
 <p>By looking at the actual request, the IP number, and the error message 
 (all from <a rel="help" href="#log">log.txt</a>) for
 a series of errors, you can usually figure out basically what is going wrong.
-In my experience, there are three common causes of lots of failed requests:
+In my experience, there are four common causes of lots of failed requests:
 
-<p>1) A search engine is naively trying the URLs listed in ERDDAP web pages and 
+<p>1) The requests are malicious (e.g., looking for security weaknesses, 
+  or making requests and then cancelling them before they are completed). 
+  You should use &lt;requestBlacklist&gt; in datasets.xml to blacklist those IP addresses.   
+
+<p>2) A search engine is naively trying the URLs listed in ERDDAP web pages and 
 ISO 19115 documents. For example, there are many places which list the base OPeNDAP URL, for example,
 https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST, to which the user is 
 supposed to add a file type (e.g., .das, .dds, .html). 
@@ -2591,14 +2581,14 @@ tries to fill out forms in order to get to "hidden" web pages.
 But the search engines often do a bad job of this, leading to failures. 
 The solution is: create a <a rel="help" href="#robots">robots.txt</a> file.
 
-<p>2) Some user is running a script that is repeatedly asking for something that isn't there. 
+<p>3) Some user is running a script that is repeatedly asking for something that isn't there. 
 Maybe it is a dataset that used to exist, but is gone now (temporarily or permanently).
 Scripts often don't expect this and so don't deal with it intelligently. 
 So the script just keeps making requests and the requests keep failing.  
 If you can guess who the user is (from the IP number above), contact them 
 and tell them the dataset is no longer available and ask them to change their script.
 
-<p>3) Something is really wrong with some dataset. Usually, ERDDAP will 
+<p>4) Something is really wrong with some dataset. Usually, ERDDAP will 
 make the troubled dataset inactive. Sometimes it doesn't, so all the requests
 to it just lead to errors. If so, fix the problem with the dataset or (if you can't)
 set the dataset to 
@@ -3502,15 +3492,15 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dat
 >EDDTableFromDatabase security</a>.
 
 <li>Security Audit -- 
-I (Bob) tried repeatedly since 2010 to get NOAA IT security to do a security 
-audit of ERDDAP. They have repeatedly refused. At one point, they said they
-only do that for software developed in the DC area.
-Fortunately, in 2012, a group in USGS started to use ERDDAP. 
-In early 2013, they hired the security firm Acunetix to do a security scan of ERDDAP.
-They found some problems.
-I fixed some of them and gave reasons for why the other issues were false alerts. 
-They redid the scan. If you would like to see the report and my responses 
-(which USGS accepted), please email <kbd>bob dot simons at noaa dot gov</kbd>.
+Although NOAA IT security refused our requests for scans for years, they now routinely scan my (Bob's) ERDDAP installation.
+Although the initial scans found some problems that I then fixed,
+subsequent scans haven't found problems with ERDDAP. 
+The scans worry about a lot of things: notably, since tabledap requests look like SQL requests, 
+they worry about SQL injection vulnerabilities. But those concerns are unfounded because
+ERDDAP always parses and validates queries and then separately builds the SQL query in a 
+way that avoids injection vulnerabilities. The other thing they sometimes complain about
+is that our Java version or Tomcat versions aren't as up-to-date as they want, so we update them in response.
+I previously offered to show people the security reports, but I'm now told I can't do that. 
 
 </ul>
 
@@ -4944,12 +4934,12 @@ add the project below and give credit where credit is due.]
 
 <li>CoastWatch Browser
   <br>ERDDAP uses code from the 
-    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
-    project from the
+    CoastWatch Browser 
+    <!-- DECOMMISSIONED: <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> -->
+    project (now decomissioned) from the
     <a rel="bookmark" href="https://coastwatch.noaa.gov">NOAA CoastWatch</a>
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
-    (license:  
-    <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
+    (license: copyrighted open source).
   That project was initiated and managed by Dave Foley, a former Coordinator of the NOAA CoastWatch 
   West Coast Regional Node.  
   All of the CoastWatch Browser code was written by Bob Simons.
@@ -5225,7 +5215,7 @@ add the project below and give credit where credit is due.]
 
     <br>Cassandra's cassandra-driver-core.jar requires (and so ERDDAP includes):
     <ul>
-    <li><a rel="help" href="https://code.google.com/p/guava-libraries/">guava.jar<img 
+    <li><a rel="help" href="https://github.com/google/guava">guava.jar<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
       (license: <a rel="bookmark" href="https://code.google.com/p/guava-libraries/">Apache 2.0<img 
@@ -5341,10 +5331,10 @@ add the project below and give credit where credit is due.]
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
   <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGridFromMergeIRFiles.java</a> was written and contributed by
-   Jonathan Lafite and Philippe Makowski of 
-   <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+   Jonathan Lafite and Philippe Makowski of R.Tech Engineering
+   <!-- <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
+      title="This link to an external website does not constitute an endorsement."></a> -->
    (license: copyrighted open source). Thank you, Jonathan and Philippe!
   <br>&nbsp;
 
@@ -5380,9 +5370,18 @@ add the project below and give credit where credit is due.]
 <li>Borderless Marker Types
   <br>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
     Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
-    Thank you Marco Alba.
-<!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
+    Thank you, Marco Alba.
   <br>&nbsp;
+
+<li>Translations of messages.xml
+  <br>The initial version of the code in TranslateMessages.java which uses
+    Google's translation service to translate messages.xml into various languages
+    was written by Qi Zeng, who was working as a Google Summer of Code intern. 
+    Thank you, Qi.
+    
+  <br>&nbsp;
+<!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
+
 </ul>
 
 <p>We are also very grateful for all of the software and websites that we use when developing ERDDAP, 
@@ -5462,7 +5461,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.14
+<p>ERDDAP, Version 2.15
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

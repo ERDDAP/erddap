@@ -305,12 +305,12 @@ public class ScriptMath  {
         return Math.round(a);
     }
 
-    /** Returns d × 2scaleFactor rounded as if performed by a single correctly rounded floating-point multiply to a member of the double value set. */
+    /** Returns d Ã— 2scaleFactor rounded as if performed by a single correctly rounded floating-point multiply to a member of the double value set. */
     public static double scalb(double d, int scaleFactor) {
         return Math.scalb(d, scaleFactor);
     }
 
-    /** Returns f × 2scaleFactor rounded as if performed by a single correctly rounded floating-point multiply to a member of the float value set. */
+    /** Returns f Ã— 2scaleFactor rounded as if performed by a single correctly rounded floating-point multiply to a member of the float value set. */
     public static float scalb(float f, int scaleFactor) {
         return Math.scalb(f, scaleFactor);
     }

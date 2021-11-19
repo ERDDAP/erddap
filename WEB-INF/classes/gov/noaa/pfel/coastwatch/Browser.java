@@ -3622,11 +3622,11 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     You can put '~' at the beginning of an <kbd><i>endDateValue</i></kbd>\n" +
                 "     (for example, <kbd>~2006-04-11T01:17:33</kbd>), to get the closest available data.\n" +
                 "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5Â°W.\n" +
                 "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
                 "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
-                "     in the range -180° to 180°, or 0° to 360°,\n" +
+                "     in the range -180Â° to 180Â°, or 0Â° to 360Â°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br>The program does the best it can with invalid \n" +
@@ -3646,17 +3646,17 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     <kbd>maxLat</kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
                 "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5Â°E. \n" +
                 "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>minLatValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25Â°S. \n" +
                 "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75Â°N. \n" +
                 "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
@@ -3839,9 +3839,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "   <br>The <kbd><i>endTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
                 "<li><kbd><i>lonValue</i></kbd> is the desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5Â°W.\n" +
                 "   <br>You can specify <kbd><i>lonValue</i></kbd>\n" +
-                "     in the range -180° to 180°, or 0° to 360°,\n" +
+                "     in the range -180Â° to 180Â°, or 0Â° to 360Â°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br><kbd><i>lonValue</i></kbd> and <kbd><i>latValue</i></kbd> must be within the data's range.\n" +
@@ -3851,7 +3851,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     a box. Thus the data for a given x,y point may be from a grid point just\n" +
                 "     outside of the range you request.\n" +
                 "<li><kbd><i>latValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25Â°S. \n" +
                 "<li><kbd><i>fileTypeValue</i></kbd> is the type of data file that you want to download.\n" +
                 "   <br>To see a list of options, use <kbd>fileType=</kbd> at the end of a query.\n" +
                 "   <br>The file type <kbd>.ncHeader</kbd> is the ncdump-style file header showing all the metadata, but no data.\n" +
@@ -3923,11 +3923,11 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "<li>[ ] is notation to denote an optional part of the query.\n" + //sp is needed for CencoosCurrents Browser's font
                 "<li><kbd><i>italics</i></kbd> is notation to denote a value specific to your query.\n" +
                 "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5Â°W.\n" +
                 "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
                 "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
-                "     in the range -180° to 180°, or 0° to 360°,\n" +
+                "     in the range -180Â° to 180Â°, or 0Â° to 360Â°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br>The resulting grid is created by adjusting the desired min/max lon/lat values and nLon,nLat value\n" +
@@ -3936,17 +3936,17 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     <kbd>maxLat</kbd> are optional, their use\n" +
                 "     is STRONGLY RECOMMENDED to minimize the download time.\n" +
                 "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5Â°E. \n" +
                 "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>minLatValue</i></kbd> is the minimum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25Â°S. \n" +
                 "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired latitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75Â°N. \n" +
                 "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
@@ -4107,11 +4107,11 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "   <br>The <kbd><i>endTimeValue</i></kbd> will be part of the name of the file that you download,\n" +
                 "     but with the dashes, the 'T', and the colons removed.\n" +
                 "<li><kbd><i>minLonValue</i></kbd> is the minimum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>-135.5</kbd> represents 135.5°W.\n" +
+                "   For example, <kbd>-135.5</kbd> represents 135.5Â°W.\n" +
                 "   <br><kbd>minLon=<i>minLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum longitude for this program (" + oneOf.regionMinX() + ").\n" +
                 "   <br>You can specify <kbd><i>minLonValue</i></kbd> and <kbd><i>maxLonValue</i></kbd>\n" +
-                "     in the range -180° to 180°, or 0° to 360°,\n" +
+                "     in the range -180Â° to 180Â°, or 0Â° to 360Â°,\n" +
                 "     regardless of the range of the original data. The program will automatically\n" +
                 "     extract and, if necessary, convert the data to your desired range.\n" +
                 "   <br>To get the data for a single station, use the station's longitude for <kbd>minLon</kbd>\n" +
@@ -4120,17 +4120,17 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "     <a href=\"" + url + "?edit=" + screen20 + "\">\n" + //doesn't work for CencoosCurrents
                 "     <kbd>Edit: " + screen + "</kbd></a> section of the CoastWatch Browser.\n" +
                 "<li><kbd><i>maxLonValue</i></kbd> is the maximum desired longitude (x axis) value, in decimal degrees East. \n" +
-                "   For example, <kbd>127.5</kbd> represents 127.5°E. \n" +
+                "   For example, <kbd>127.5</kbd> represents 127.5Â°E. \n" +
                 "   <br><kbd>maxLon=<i>maxLonValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum longitude for this program (" + oneOf.regionMaxX() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>minLatValue</i></kbd> is the minimum desired longitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>-22.25</kbd> represents 22.25°S. \n" +
+                "   For example, <kbd>-22.25</kbd> represents 22.25Â°S. \n" +
                 "   <br><kbd>minLat=<i>minLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the minimum latitude for this program (" + oneOf.regionMinY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +
                 "<li><kbd><i>maxLatValue</i></kbd> is the maximum desired longitude (y axis) value, in decimal degrees North. \n" +
-                "   For example, <kbd>40.75</kbd> represents 40.75°N. \n" +
+                "   For example, <kbd>40.75</kbd> represents 40.75Â°N. \n" +
                 "   <br><kbd>maxLat=<i>maxLatValue</i></kbd> doesn't have to be in your query;\n" +
                 "     the default value is the maximum latitude for this program (" + oneOf.regionMaxY() + ").\n" +
                 "   <br>See the comments above for <kbd><i>minLonValue</i></kbd>.\n" +

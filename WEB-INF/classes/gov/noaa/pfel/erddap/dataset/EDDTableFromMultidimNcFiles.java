@@ -1207,6 +1207,7 @@ String expected =
     public static void testBasic(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testBasic() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1220,7 +1221,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1685,7 +1686,7 @@ expected=
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1750,7 +1751,7 @@ expected=
         //.csv    for one lat,lon 26.587,154.853
         userDapQuery = "" +
             "&longitude=154.853&latitude=26.587";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1771,7 +1772,7 @@ expected=
         //.csv    for one lat,lon      via lon > <
         userDapQuery = "" +
             "&longitude>154.852&longitude<=154.854";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1791,7 +1792,7 @@ expected=
 
         //.csv for test requesting scalar var        
         userDapQuery = "data_type&data_type=~\".*go.*\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1803,7 +1804,7 @@ expected=
 
         //.csv for test requesting distinct        
         userDapQuery = "pres&pres>10&pres<10.5&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2694,6 +2695,7 @@ String expected =
     public static void testTreatDimensionsAs(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testTreatDimensionsAs() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -2706,7 +2708,7 @@ String expected =
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //.das
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2981,7 +2983,7 @@ expected =
         Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
         //.dds
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3009,7 +3011,7 @@ expected =
 
         //.csv
         //"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=1.3201056e9", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=1.3201056e9", dir, 
             eddTable.className() + "_treatDimensionsAs1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3019,7 +3021,7 @@ expected =
 "2011-11-01T00:00:00Z,1,NaN,NaN,52.33,-35.219,9.2,1,R,-1.6,0,R,985.6,0,R\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = eddTable.makeNewFileForDapQuery(null, null, "&time=1.3437756e9", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=1.3437756e9", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3039,6 +3041,7 @@ expected =
     public static void testTreatDimensionsAs2(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testTreatDimensionsAs2() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3051,7 +3054,7 @@ expected =
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //.das
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3477,7 +3480,7 @@ expected =
         Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
         //.dds
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3518,7 +3521,7 @@ expected =
 
         //.csv
         //"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
-        tName = eddTable.makeNewFileForDapQuery(null, null, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "&time=\"2017-10-01T00:00:00Z\"", //in quotes
             dir, eddTable.className() + "_treatDimensionsAs21", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -3531,12 +3534,12 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //all data
-        //tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        //tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
         //    dir, eddTable.className() + "_treatDimensionsAs22", ".csv"); 
         //results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 
-        tName = eddTable.makeNewFileForDapQuery(null, null, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             //!!! INTERESTING TEST. Originally, specific max iso time fails 
             //because it is to nearest second and actual max is off by tiny amount
             //I added a little fudge to the test to make it to the nearest second.
@@ -3564,6 +3567,7 @@ expected =
     public static void testLongAndNetcdf4() throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testLongAndNetcdf4() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3578,7 +3582,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3816,7 +3820,7 @@ expected=
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3846,7 +3850,7 @@ expected=
 
         //.csv    
         userDapQuery = "&time<=2016-09-28T00:03";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3860,7 +3864,7 @@ expected=
 
         //.csv    constrain long
         userDapQuery = "&error_flag2!=4202496";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3874,7 +3878,7 @@ expected=
 
         //.csv for test requesting distinct        
         userDapQuery = "error_flag2&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1distinct", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -3887,7 +3891,7 @@ expected=
 
         //make nc3 
         userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Longnc3", ".nc"); 
         results = NcHelper.ncdump(dir + tName, true);
         //String2.log(results);
@@ -4016,7 +4020,7 @@ expected =
         Test.ensureTrue(String2.indexOf(dataFileTypeNames, ".nc4") >= 0, "Enable .nc4?");
 
         userDapQuery = "feature_type_instance,latitude,longitude,error_flag3&time<=2016-09-28T00:03";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Longnc4", ".nc4"); 
         results = NcHelper.ncdump(dir + tName, "");
         //String2.log(results);
@@ -4034,6 +4038,7 @@ expected =
     public static void testW1M3A(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testW1M3A() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -4085,7 +4090,7 @@ expected =
 
         //reported problem
         userDapQuery = "time,depth,TEMP&time>=2011-01-03T00&time<=2011-01-03T03";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4118,6 +4123,7 @@ expected =
     public static void testCharAsString(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromMultidimNcFiles.testCharAsString() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -4134,7 +4140,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4583,7 +4589,7 @@ expected=
         //  and all .*_QC (_FillValue=' ') e.g., time_qc, position_qc, profile_pres_qc, pres_qc.
 
         //dds
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_1", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4643,7 +4649,7 @@ expected=
         //view some data
         userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
             "&cycle_number<3";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4657,7 +4663,7 @@ expected=
         //adding  &direction="A"  should yield the same results   
         userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
             "&cycle_number<3&direction=\"A\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4666,7 +4672,7 @@ expected=
         //test distinct for a char var
         userDapQuery = "position_qc" +
             "&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_4", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4681,7 +4687,7 @@ expected=
 
         //test > char var
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_5", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4700,7 +4706,7 @@ expected=
 
         //test = for a char var
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_6", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4726,7 +4732,7 @@ expected=
         //  and all .*_QC (_FillValue=' ') e.g., time_qc, position_qc, profile_pres_qc, pres_qc.
 
         //dds
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_1b", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected =
@@ -4786,7 +4792,7 @@ expected=
         //view some data
         userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
             "&cycle_number<3";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_2b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4800,7 +4806,7 @@ expected=
         //adding  &direction="A"  should yield the same results   
         userDapQuery = "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc" +
             "&cycle_number<3&direction=\"A\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -4809,7 +4815,7 @@ expected=
         //test distinct for a char var
         userDapQuery = "position_qc" +
             "&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_4b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4825,7 +4831,7 @@ expected=
 
         //test > char var
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_5b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -4844,7 +4850,7 @@ expected=
 
         //test = for a char var
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_6c", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 

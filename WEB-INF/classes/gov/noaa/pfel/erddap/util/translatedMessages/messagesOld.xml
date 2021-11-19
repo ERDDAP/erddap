@@ -12,14 +12,18 @@ If the English message appears as one long line (with no newlines), please make 
 translation one line also.
 
 HTML or Not?
-If the English message has HTML tags, then it is safe to use HTML tags; otherwise, it isn't.
-If the message uses HTML tags, please use the same tags in the translation.
+All tags that use HTML start with CDATA.
+So if a tag starts with CDATA, it is safe to use HTML tags; otherwise, it isn't.
+If the message uses HTML tags, please use the same HTML tags in the translation.
 
 MessageFormat Placeholders
 Many messages use Java MessageFormat-style substitution placeholders like {0} and {1}.
 In these messages, any single quote ' must be escaped as ''.
 See https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 
+&pseudoEntity; is used when the term shouldn't be translated, often because it is a 
+stand-in for something that will be swapped into place.
+The translation system REQUIRES that "pseudoEntity" only use [a-zA-Z0-9].
 -->
 <erddapMessages>
 
@@ -31,15 +35,15 @@ This is also repeated in messages2.xml in
 This has special embedded entities &headingType; (h2 or h3) and &externalLinkHtml; .
 -->
 <acceptEncodingHtml><![CDATA[
-<&headingType;><a class="selfLink" id="compression" href="#compression" rel="bookmark">Requesting Compressed Files</a></&headingType;> 
+&headingType;<a class="selfLink" id="compression" href="#compression" rel="bookmark">Requesting Compressed Files</a>&sheadingType;
 ERDDAP doesn't offer results stored in compressed (e.g., .zip or .gzip) files.
 Instead, ERDDAP looks for
 <a href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/">accept-encoding&externalLinkHtml;</a>
 in the HTTP GET request header sent
-by the client.  If a supported compression type ("gzip", "x-gzip", or "deflate") is found
+by the client.  If a supported compression type (gzip, x-gzip, or deflate) is found
 in the accept-encoding list, ERDDAP includes "content&#8209;encoding" in the HTTP response
 header and compresses the data as it transmits it.
-It is up to the client program to look for "content-encoding" and decompress the data accordingly.
+It is up to the client program to look for <kbd>content-encoding</kbd> and decompress the data accordingly.
 Requesting compression is optional, but compressed responses are often 3-10 times faster,
 so this is a big time savings if you are downloading lots of large files.
 (Note that there is no benefit
@@ -58,6 +62,8 @@ to requesting compressed .png files since the files' contents are already compre
 </ul>
 ]]></acceptEncodingHtml>
 
+<accessRestful>Accessing ERDDAP's RESTful Web Services</accessRestful>
+<acronyms>Acronyms</acronyms>
 <addConstraints>You can add tabledap-like constraints to requests to this web page,
 for example,</addConstraints>
 
@@ -71,13 +77,17 @@ Optional: If you specify an attribute value here,
 <br>to the list of requested variables.
 ]]></addVarWhere>
 
+<additionalLinks><![CDATA[
+  If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot gov</kbd>.
+  ]]></additionalLinks>
+
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
 <admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution, testOutOfDate</admSubsetVariables>
 <admSummary>This dataset is a table which has a row of information for each dataset currently active in this ERDDAP.</admSummary>
 <admTitle>The List of All Active Datasets in this ERDDAP</admTitle>
 
-<!-- (a)ll(D)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
+<!-- (a)ll (d)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
 <advl_datasetID>Dataset ID</advl_datasetID>
 <advc_accessible>Some datasets are public. Some may be private and perhaps not accessible to you.</advc_accessible>
 <advl_accessible>Accessible</advl_accessible>
@@ -112,8 +122,8 @@ Optional: If you specify an attribute value here,
 <advl_sos>Base URL of SOS Service</advl_sos>
 <advl_wcs>Base URL of WCS Service</advl_wcs>
 <advl_wms>Base URL of WMS Service</advl_wms>
-<advc_files>The /files/ services lets you browse and download source files.</advc_files>
-<advl_files>Base URL of /files/ Service</advl_files>
+<advc_files>The "files" service lets you browse and download source files.</advc_files>
+<advl_files>Base URL of "files" Service</advl_files>
 <advc_fgdc>The FGDC .xml document has geographic metadata.</advc_fgdc>
 <advl_fgdc>URL of FGDC Document</advl_fgdc>
 <advc_iso19115>The ISO 19115 .xml document has geographic metadata.</advc_iso19115>
@@ -268,6 +278,8 @@ Did you often submit identical requests in a short period of time?
 Did you submit a large number of invalid requests?
 If you are ready to avoid these problems, please email {0} to request to be taken off of the blacklist.</blacklistMsg>
 
+<BroughtToYouBy>Brought to you by</BroughtToYouBy>
+
 <!-- These messages are related to Search by Category. -->
 <categoryTitleHtml>Search for Datasets by Category</categoryTitleHtml>
 <categoryHtml><![CDATA[
@@ -281,7 +293,30 @@ Datasets can be categorized in different ways by the values of various metadata 
 <categoryNotAnOption>When attribute="{0}", value="{1}" is not an option.</categoryNotAnOption>
 
 <caughtInterrupted>caught currentThread().isInterrupted().</caughtInterrupted>
-
+<cdmDataTypeHelp><![CDATA[
+CDM is Unidata's Common Data Model, a way of categorizing datasets
+<br>based on the geometry of the dataset. Pick the cdm_data_type which
+<br>is most appropriate:
+<br>&bull; Use <kbd>Grid</kbd> for all gridded datasets.
+<br>&bull; Use <kbd>Point</kbd> for a dataset with unrelated points.
+<br>&nbsp;&nbsp;Example: whale sightings, or stranded marine mammal sightings.
+<br>&bull; Use <kbd>Profile</kbd> for data from multiple depths at one or more longitude,
+<br>&nbsp;&nbsp;latitude locations.
+<br>&nbsp;&nbsp;Example: CTD's if not associated with a <kbd>TimeSeries</kbd> or <kbd>Trajectory</kbd>.
+<br>&bull; Use <kbd>TimeSeries</kbd> for data from a set of stations with fixed longitude,
+<br>&nbsp;&nbsp;latitude(,altitude).
+<br>&nbsp;&nbsp;Examples: moored buoys, or stations.
+<br>&bull; Use <kbd>TimeSeriesProfile</kbd> for profiles from a set of stations.
+<br>&nbsp;&nbsp;Examples: stations with CTD's.
+<br>&bull; Use <kbd>Trajectory</kbd> for data from a set of longitude,latitude(,altitude)
+<br>&nbsp;&nbsp;paths called trajectories.
+<br>&nbsp;&nbsp;Examples: ships, surface gliders, or tagged animals.
+<br>&bull; Use <kbd>TrajectoryProfile</kbd> for profiles along trajectories.
+<br>&nbsp;&nbsp;Examples: ships + CTD's, or profiling gliders.
+<br>&bull; Use <kbd>Other</kbd> if the dataset doesn't have latitude,longitude data or if
+<br>&nbsp;&nbsp;no other type is appropriate.
+<br>&nbsp;&nbsp;Examples: laboratory analyses, or fish landings by port name (if no lat,lon).
+]]></cdmDataTypeHelp>
 
 <!-- This message is used as a tooltip for the "access" links on HTML pages
 whenever a table of datasets is displayed (e.g., when you do a full text search for datasets).
@@ -301,21 +336,55 @@ a table of datasets is displayed (e.g., when you do a full text search for datas
 -->
 <clickInfo>Click to see a list of this dataset's variables and the complete list of metadata attributes.</clickInfo>
 
-<clickToSubmit>Click to submit the form to the server.</clickToSubmit>
+<clickToSubmit>Click to submit the information in this form to the server.</clickToSubmit>
 
 <comboBoxAlt>Hover here to see a list of options. Click on an option to select it.</comboBoxAlt>
 
+<convert>Convert</convert>
+<convertBypass><![CDATA[
+Or, <a rel="help" href="#computerProgram">bypass this web page</a>
+and do conversions from within a computer program, script, or web page.
+]]></convertBypass>
+
+<convertToAFullName><![CDATA[<strong>Convert from {0} to a full name.</strong>]]></convertToAFullName>
+<convertToAnAcronym><![CDATA[<strong>Convert from {0} to an acronym.</strong>]]></convertToAnAcronym>
+
+<convertToACountyName><![CDATA[<strong>Convert from {0} to a county name.</strong>]]></convertToACountyName>
+<convertToAFIPSCode><![CDATA[<strong>Convert from {0} to a 5-digit FIPS code.</strong>]]></convertToAFIPSCode>
+
+<convertToGCMD><![CDATA[<strong>Convert the CF Standard Name {0} into GCMD Science Keywords</strong>]]></convertToGCMD>
+<convertToCFStandardNames><![CDATA[<strong>Convert the GCMD Science Keyword {0} into CF Standard Names.</strong>]]></convertToCFStandardNames>
+
+<convertToNumericTime><![CDATA[<strong>Convert from a string time {0} into a numeric time using units = {1}]]></convertToNumericTime>
+<convertToStringTime><![CDATA[<strong>Convert from a numeric time {0} into a string time.</strong>]]></convertToStringTime>
+<convertAnyStringTime><![CDATA[<strong>Convert any common string time {0} into an ISO 8601 string time.</strong>]]></convertAnyStringTime>
+<convertToProperTimeUnits><![CDATA[<strong>Convert a UDUNITS-like time units string {0} into a proper UDUNITS time units string.</strong>]]></convertToProperTimeUnits>
+
+<convertFromUDUNITSToUCUM><![CDATA[<strong>Convert from UDUNITS to UCUM</strong>]]></convertFromUDUNITSToUCUM>
+<convertFromUCUMToUDUNITS><![CDATA[<strong>Convert from UCUM to UDUNITS</strong>]]></convertFromUCUMToUDUNITS>
+<convertToUCUM><![CDATA[<strong>Convert to UCUM</strong>]]></convertToUCUM>
+<convertToUDUNITS><![CDATA[<strong>Convert to UDUNITS</strong>]]></convertToUDUNITS>
+<convertStandardizeUDUNITS><![CDATA[<strong>Standardize UDUNITS</strong>]]></convertStandardizeUDUNITS>
+
+<convertToFullName><![CDATA[<strong>Convert from {0} to a full name.</strong>]]></convertToFullName>
+<convertToVariableName><![CDATA[<strong>Convert from {0} to a variable name.</strong>]]></convertToVariableName>
+
+
+<converterWebService>ERDDAP offers several converters as web pages and as web services:</converterWebService>
+
 <!-- These HTML messages are used to describe the "convert" options in general and individually. -->
-<convertOceanicAtmosphericAcronyms>Convert a Common Oceanic/Atmospheric Acronym to/from a Full Name</convertOceanicAtmosphericAcronyms>
+<convertOAAcronyms>Oceanic/Atmospheric Acronyms</convertOAAcronyms>
+
+<convertOAAcronymsToFrom>Convert a Common Oceanic/Atmospheric Acronym to/from a Full Name</convertOAAcronymsToFrom>
 
 <!-- Don't change the examples (from defaultN...). -->
-<convertOceanicAtmosphericAcronymsIntro><![CDATA[
+<convertOAAcronymsIntro><![CDATA[
 This web page lets you convert a common oceanic/atmospheric acronym to/from a full name.
 For example, the acronym "NOAA" converts to the full name "National Oceanic and Atmospheric Administration".
 <br>&nbsp;
-]]></convertOceanicAtmosphericAcronymsIntro>
+]]></convertOAAcronymsIntro>
 
-<convertOceanicAtmosphericAcronymsNotes><![CDATA[
+<convertOAAcronymsNotes><![CDATA[
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notes</strong></a>
 <ul>
 <li><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">DISCLAIMER OF LIABILITY</a> -
@@ -343,10 +412,10 @@ For example, the acronym "NOAA" converts to the full name "National Oceanic and 
   acronym or make a correction, please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
-]]></convertOceanicAtmosphericAcronymsNotes>
+]]></convertOAAcronymsNotes>
 
 <!-- Don't change the examples (from defaultN, ...). -->
-<convertOceanicAtmosphericAcronymsService><![CDATA[
+<convertOAAcronymsService><![CDATA[
 <p>&nbsp;<hr>
 <h2><a class="selfLink" id="computerProgram" href="#computerProgram" rel="help">Want To Do Oceanic/Atmospheric Acronym Conversions from within a Computer Program, Script, or Web Page?</a></h2>
 If you change the extension of this web page''s URL from .html to .txt,
@@ -382,18 +451,19 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
     <a rel="help" href="https://www.url-encode-decode.com/">websites that percent encode and decode for you<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
-]]></convertOceanicAtmosphericAcronymsService>
+]]></convertOAAcronymsService>
 
-<convertOceanicAtmosphericVariableNames>Convert a Common Oceanic/Atmospheric Variable Name to/from a Full Name</convertOceanicAtmosphericVariableNames>
+<convertOAVariableNames>Oceanic/Atmospheric Variable Names</convertOAVariableNames>
+<convertOAVariableNamesToFrom>Convert a Common Oceanic/Atmospheric Variable Name to/from a Full Name</convertOAVariableNamesToFrom>
 
 <!-- Don't change the examples (from defaultN...). -->
-<convertOceanicAtmosphericVariableNamesIntro><![CDATA[
+<convertOAVariableNamesIntro><![CDATA[
 This web page lets you convert a common oceanic/atmospheric variable name to/from a full name.
 For example, the variable name "sst" converts to the full name "Sea Surface Temperature".
 <br>&nbsp;
-]]></convertOceanicAtmosphericVariableNamesIntro>
+]]></convertOAVariableNamesIntro>
 
-<convertOceanicAtmosphericVariableNamesNotes><![CDATA[
+<convertOAVariableNamesNotes><![CDATA[
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notes</strong></a>
 <ul>
 <li><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">DISCLAIMER OF LIABILITY</a> -
@@ -421,10 +491,10 @@ For example, the variable name "sst" converts to the full name "Sea Surface Temp
   please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
-]]></convertOceanicAtmosphericVariableNamesNotes>
+]]></convertOAVariableNamesNotes>
 
 <!-- Don't change the examples (from defaultN, ...). -->
-<convertOceanicAtmosphericVariableNamesService><![CDATA[
+<convertOAVariableNamesService><![CDATA[
 <p>&nbsp;<hr>
 <h2><a class="selfLink" id="computerProgram" href="#computerProgram" rel="help">Want To Do Oceanic/Atmospheric Variable Name Conversions from within a Computer Program, Script, or Web Page?</a></h2>
 If you change the extension of this web page''s URL from .html to .txt,
@@ -452,7 +522,7 @@ href="{0}/convert/oceanicAtmosphericVariableNames.txt?fullName=Sea%20Surface%20T
   >websites that percent encode and decode for you<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
-]]></convertOceanicAtmosphericVariableNamesService>
+]]></convertOAVariableNamesService>
 
 <convertFipsCounty>Convert a FIPS County Code to/from a County Name</convertFipsCounty>
 
@@ -582,14 +652,14 @@ As such, it is particularly useful for researchers working with animal track dat
 This converter takes in a table with latitude, longitude, and time columns 
 (and perhaps other columns) and 
 returns a table with additional columns with interpolated values based on 
-the user-specified Request CSV with datasetID/variable/algorithm/nearby 
+the user-specified Request CSV with <kbd>datasetID/variableName/algorithm/nearby</kbd>
 combinations (for example,
-<span class="nowrap"><kbd>{0}</kbd> ).</span> 
+<span class="nowrap"><kbd>{0}</kbd>).</span> 
 In all cases, for each latitude, longitude, and time point that you provide, the converter
 finds the specified number of nearby values from the specified datasetID/variable,
 then applies the specified algorithm to create the interpolated value.
 
-<p>Few people will routinely use this web page. Instead, most users will write and/or use
+<p>Few people will routinely use this web page. Instead, most users of this service will write and/or use
 a script which uses this web page''s <a rel="help" href="#computerProgram">underlying web service</a>.
 ]]></convertInterpolateIntro>
 
@@ -597,13 +667,13 @@ a script which uses this web page''s <a rel="help" href="#computerProgram">under
 <convertInterpolateTLLTableHelp><![CDATA[
 Please enter a table with at least three columns: time (with any common time format,
 <br>but preferably the ISO 8601:2004 "extended" format <kbd>yyyy-MM-ddTHH:mm:ssZ</kbd>,
-<br>for example, <kbd>2020-06-12T06:17:00Z</kbd> ), latitude (with units=degrees_north), 
+<br>for example, <kbd>2020-06-12T06:17:00Z</kbd>), latitude (with units=degrees_north), 
 <br>and longitude (with units=degrees_east).  The table can have up to 100 rows.
 ]]></convertInterpolateTLLTableHelp>
 
 <convertInterpolateDatasetIDVariable>Request CSV:</convertInterpolateDatasetIDVariable>
 <convertInterpolateDatasetIDVariableHelp><![CDATA[
-Please specify a comma separated list of datasetIDs/variableName/algorithm/nearby 
+Please specify a comma separated list of <kbd>datasetID/variableName/algorithm/nearby</kbd>
 <br>values, for example <kbd>{0}</kbd> .
 ]]></convertInterpolateDatasetIDVariableHelp>
 
@@ -620,8 +690,8 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   and fitness for a particular purpose, or assumes any legal liability for the accuracy,
   completeness, or usefulness, of any information at this website.
   <br>&nbsp;
-<li>If a specified datasetID and/or variable isn't currently available,
-  or if the algorithm or nearby value is invalid,
+<li>If a specified <kbd>datasetID</kbd> and/or <kbd>variable</kbd> isn't currently available,
+  or if the <kbd>algorithm</kbd> or <kbd>nearby</kbd> value is invalid,
   this returns an error message.
   <br>&nbsp;
 <li>The <kbd>algorithm</kbd> options are:
@@ -643,8 +713,8 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
     This handles NaN values and only returns NaN for a point if all 4 nearby points are NaNs.
-    For this algorithm, the only allowed value of <kbd>nearby</kbd> is 4. 
-    This algorithm is the default. If you don't specify an algorithm, <kbd>Bilinear/4</kbd> will be used.
+    For this <kbd>algorithm</kbd>, the only allowed value of <kbd>nearby</kbd> is 4. 
+    This <kbd>algorithm</kbd> is the default. If you don't specify an <kbd>algorithm</kbd> <kbd>Bilinear/4</kbd> will be used.
 
   <li><kbd>Mean</kbd>  
     <br>This returns the mean of the non-NaN, <kbd>nearby</kbd> dataset values. 
@@ -661,8 +731,8 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   <li><kbd>Scaled</kbd>  
     <br>This returns the scaled, inverse distance squared interpolation 
     of the non-NaN, <kbd>nearby</kbd> dataset values (Y). 
-    <br>The weight for each nearby dataset value is w = (1 - D/Dmax)<sup>2</sup> / (D/Dmax)
-    , where D is the distance (Davis, 1986, eq 5.68, page 371).
+    <br>The weight for each nearby dataset value is w = (1 - D/Dmax)<sup>2</sup> / (D/Dmax),
+    where D is the distance (Davis, 1986, eq 5.68, page 371).
     <br>Thus, the furthest nearby dataset value gets weight=0.
     <br>Each interpolated point is E = &sum;(w Y)/&sum;(w)
     <br>If a nearby dataset point has a distance of 0, that point's value is used as the interpolated value.
@@ -671,8 +741,8 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   <li><kbd>InverseDistance</kbd>  
     <br>This returns the inverse distance interpolation 
     of the non-NaN, <kbd>nearby</kbd> data values (Y). 
-    <br>The weight for each nearby data value is w = 1/D
-    , where D is the distance (Davis, 1986, eq 5.67, page 367).
+    <br>The weight for each nearby data value is w = 1/D,
+    where D is the distance (Davis, 1986, eq 5.67, page 367).
     <br>Each interpolated value is E = &sum;(w Y)/&sum;(w)   
     <br>If a nearby dataset point has a distance of 0, that point's value is used as the interpolated value.
     <br>This does the calculations with doubles and returns doubles, regardless of the variable's data type.
@@ -691,22 +761,22 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   </ul>
   &nbsp;
   <br>All of the algorithms that calculate distances 
-  (Nearest, Bilinear, Scaled and all InverseDistance algorithms),
+  (<kbd>Nearest</kbd>, <kbd>Bilinear</kbd>, <kbd>Scaled</kbd> and all InverseDistance algorithms),
   calculate the distances in index space, not with the actual time, latitude, and longitude values.
   Thus, this gives equal weight to one latitude index unit and one longitude index unit (and
   if 3D, to one time index unit). 
-  If this is inappropriate for a given datasetID/variable,
-  use one of the other algorithm options or see
+  If this is inappropriate for a given <kbd>datasetID</kbd>/<kbd>variable</kbd>,
+  use one of the other <kbd>algorithm</kbd> options or see
   <a rel="help" href="#NotWhatYouWant">Not what you want?</a> below.
   <br>&nbsp;
-<li><kbd>nearby</kbd> specifies the number of points to be used by the algorithm. 
+<li><kbd>nearby</kbd> specifies the number of points to be used by the <kbd>algorithm</kbd>. 
   <br>Only certain numbers are allowed. 
-  For all algorithm options, there are 2D and 3D options for <kbd>nearby</kbd>.
+  For all <kbd>algorithm</kbd> options, there are 2D and 3D options for <kbd>nearby</kbd>.
   The 2D options (4, 16, and 36, corresponding to 2D squares with sides that 
   are 1, 2, or 3 index values long (2<sup>2</sup>, 4<sup>2</sup>, 6<sup>2</sup>)) include nearby points in the 2D latitude/longitude plane.
   The 3D options (8, 64, and 216, corresponding to 3D cubes with edges that 
   are 1, 2, or 3 index values long (2<sup>3</sup>, 4<sup>3</sup>, 6<sup>3</sup>)) include nearby points in 3D latitude/longitude/time space.
-  The <kbd>algorithm=Nearest</kbd> option also supports a <kbd>nearby</kbd> value of 1,
+  The <kbd>algorithm</kbd>=<kbd>Nearest</kbd> option also supports a <kbd>nearby</kbd> value of 1,
   which only looks at the nearest data point in the 2D plane.
   <p>If a given longitude, latitude, time point is outside of a dataset's range,
     the resulting data value will be NaN. However, if adding or subtracting 
@@ -731,21 +801,21 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   <br>&nbsp;
 <li>Missing Data Values  
   <br>If a dataset has no missing values, then a simple
-  algorithm like <kbd>Bilinear</kbd> yields reliably good results. But
+  <kbd>algorithm</kbd> like <kbd>Bilinear</kbd> yields reliably good results. But
   when the dataset has missing values, the result can be a biased value
   or a missing value. In this common situation, you may prefer to choose
-  the <kbd>Scaled</kbd> algorithm or one of the <kbd>InverseDistance</kbd>
-  algorithms and a larger number of <kbd>nearby</kbd> points. These
+  the <kbd>Scaled</kbd> <kbd>algorithm</kbd> or one of the <kbd>InverseDistance</kbd>
+  <kbd>algorithm</kbd>s and a larger number of <kbd>nearby</kbd> points. These
   algorithms are better at dealing with missing values and are less likely
   to return a missing value.
   <br>&nbsp;
 <li>In the response table, the names of the new columns are created by 
-  taking each part of the datasetID/variable/algorithm/nearby CSV 
-  (e.g., <kbd>jplMURSST41/analysed_sst/Bilinear/4</kbd> ) and changing the /'s to _'s
-  (e..g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd> )
+  taking each part of the <kbd>datasetID/variableName/algorithm/nearby</kbd> CSV 
+  (e.g., <kbd>jplMURSST41/analysed_sst/Bilinear/4</kbd>) and changing the /'s to _'s
+  (e..g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>)
   so that they are valid variable names in all types of data files
   <br>&nbsp;
-<li>In the response table, except for <kbd>algorithm=Nearest</kbd> (which returns the original data type),
+<li>In the response table, except for <kbd>algorithm</kbd>=<kbd>Nearest</kbd> (which returns the original data type),
   the interpolated values are returned as doubles, not the original data type.
   Missing values are returned as NaN, never a missing_value stand in.
   <br>&nbsp;
@@ -781,10 +851,10 @@ Please specify a comma separated list of datasetIDs/variableName/algorithm/nearb
   <br>You can change the default Request CSV by 
   by adding/editing the &lt;convertInterpolateRequestCSVExample&gt; tag in
   datasets.xml.
-  Similarly, you can change the list of datasetID/variable options
+  Similarly, you can change the list of <kbd>datasetID</kbd>/<kbd>variable</kbd> options
   by adding/editing the &lt;convertInterpolateDatasetIDVariableList&gt; tag in
   datasets.xml, which can have a comma-separated list of suggested 
-  datasetID/variable combinations. 
+  <kbd>datasetID</kbd>/<kbd>variable</kbd> combinations. 
 </ul>
 ]]></convertInterpolateNotes>
 
@@ -802,16 +872,7 @@ or script, and submitting the URL directly to ERDDAP.
 <li>The File type in the form becomes the file type of the request.
 </ul>
 A sample request URL is
-<pre><a rel="help"
-    href="{0}/convert/interpolate.htmlTable?TimeLatLonTable=time%2Clatitude%2Clongitude%0A2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A&requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4"
->{0}/convert/interpolate.htmlTable?TimeLatLonTable=
-time%2Clatitude%2Clongitude%0A
-2020-01-01T06%3A00%3A00Z%2C35.580%2C-122.550%0A
-2020-01-01T12%3A00%3A00Z%2C35.576%2C-122.553%0A
-2020-01-01T18%3A00%3A00Z%2C35.572%2C-122.568%0A
-2020-01-02T00%3A00%3A00Z%2C35.569%2C-122.571%0A
-&requestCSV=jplMURSST41%2Fanalysed_sst%2FBilinear%2F4</a> 
-</pre>
+{0}
 (That has line breaks inserted to make it easier to read, but it is really just one long line.)
 
 <p><a class="selfLink" id="URLLength" href="#URLLength" rel="help"
@@ -854,12 +915,12 @@ to/from a
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
 Usually, there are more than one GCMD Science Keywords associated with a given
-CF Standard Name, and vice versa.  For example, converting the CF Standard Name<kbd>
-<br>&nbsp;&nbsp;air_pressure</kbd> 
+CF Standard Name, and vice versa.  For example, converting the CF Standard Name
+<br>&nbsp;&nbsp;<kbd>air_pressure</kbd> 
 <br>into GCMD Science Keywords leads to<pre>
   Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements
   Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure
-  Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure.</pre>
+  Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure</pre>
 This is useful if, for example, you have a dataset with CF Standard Names
 and want to add GCMD Science Keywords to the dataset's <kbd>keywords</kbd> metadata.
 <br>&nbsp;
@@ -936,11 +997,6 @@ Percent Encoding - The parameter values in the URL (the parts after ''='' signs)
 
 
 <convertTime>Convert a String Time to/from a Numeric Time</convertTime>
-
-<convertTimeBypass><![CDATA[
-Or, <a rel="help" href="#computerProgram">bypass this web page</a>
-and do time conversions from within a computer program, script, or web page.
-]]></convertTimeBypass>
 
 
 <convertTimeReference><![CDATA[
@@ -1046,7 +1102,7 @@ is assumed to be already in Zulu time.
   
 <li><a class="selfLink" id="precision" href="#precision" rel="help">Precision</a> - 
 ERDDAP deals with time internally as 
-"seconds since 1970-00-00T00:00:00Z", 
+"seconds since 1970-01-01T00:00:00Z", 
 ignoring <a rel="help" href="#leapSeconds">leap seconds</a>, stored as double precision floating point numbers. Thus,
 most time data can be stored very precisely (roughly to the nearest microsecond,
 but progressively less precisely very far in the past or future).  
@@ -1067,7 +1123,7 @@ or seconds) is not shown, the absent value is assumed to be 0 (except for
 day-of-month, which is assumed to be 1).
 
 <li><a class="selfLink" id="consistentUnits" href="#consistentUnits" rel="help">Consistent Units</a> - Using the same units for time
-("seconds since 1970-00-00T00:00:00Z")
+("seconds since 1970-01-01T00:00:00Z")
 for all datasets allows times from different datasets to be compared easily. 
 Seconds are the 
 <a rel="help" href="https://en.wikipedia.org/wiki/International_System_of_Units"
@@ -1076,13 +1132,13 @@ Seconds are the
     title="This link to an external website does not constitute an endorsement."></a>
     base unit of time.
 1970-01-01T00:00:00Z is the start of the Unix epoch, which is widely used by computer 
-operating systems.  "seconds since 1970-00-00T00:00:00Z" are widely used and are 
+operating systems.  "seconds since 1970-01-01T00:00:00Z" are widely used and are 
 often called
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix time<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     or epoch seconds.  The use of the units string 
-"seconds since 1970-00-00T00:00:00Z" makes Unix time compatible with
+"seconds since 1970-01-01T00:00:00Z" makes Unix time compatible with
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
 >UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
@@ -1228,7 +1284,7 @@ seconds can''t be predicted.
 
 <li><a class="selfLink" id="leapSeconds" href="#leapSeconds" rel="help">Leap Seconds</a> - 
 Like Unix time and UDUNITS, ERDDAP''s 
-"seconds since 1970-00-00T00:00:00Z" is a numeric encoding (which doesn''t use leap
+"seconds since 1970-01-01T00:00:00Z" is a numeric encoding (which doesn''t use leap
 seconds) of UTC time (which does use leap seconds). When converting string times 
 to/from numeric times, ERDDAP, like Unix time and UDUNITS, ignores leap seconds. 
 Yet, ERDDAP, Unix time, and UDUNITS numeric times all say they use UTC.  
@@ -1599,7 +1655,7 @@ But there are a few difficulties and special cases:
 </tr>
 <tr>
   <td>different types of degrees</td>
-  <td>UDUNITS treats degF, degC, degK, degree_north, degree_east, degree_west,
+  <td>UDUNITS treats degF, degC, degK, degree_north, degree_east, degree_west, 
     degree_true, and their aliases as separate units.
     Some standards (e.g.,
     <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
@@ -1635,42 +1691,42 @@ But there are a few difficulties and special cases:
     <br>"seconds since 1970-01-01T00:00:00Z".</td>
 </tr>
 <tr>
-  <td>C</td>
-  <td>"C" means Coulomb, but is often mistakenly used to mean "degree_C".
-  <td>"C" means Coulomb.  Degrees Celsius is identified via "Cel".</td>
-  <td>C is converted to Cel, on the theory that C was used incorrectly.</td>
-  <td>C is left as C.</td>
+  <td>&C;</td>
+  <td>"&C;" means Coulomb, but is often mistakenly used to mean <kbd>degree_C</kbd>.
+  <td>"&C;" means Coulomb.  Degrees Celsius is identified via <kbd>Cel</kbd>.</td>
+  <td>"&C;" is converted to <kbd>Cel</kbd>, on the theory that &C; was used incorrectly.</td>
+  <td>"&C;" is left as "&C;".</td>
 </tr>
 <tr>
-  <td>g</td>
-  <td>In UDUNITS-1, g means free-fall (although it is often mistakenly used to mean "gram").
-    <br>In UDUNITS-2, g means gram.</td>
-  <td>g means gram.  [g] means free-fall.</td>
-  <td>Nothing is done.  g in UDUNITS is assumed to mean gram.</td>
-  <td>g is converted to "gram".</td>
+  <td>&g;</td>
+  <td>In UDUNITS-1, &g; means free-fall (although it is often mistakenly used to mean "gram").
+    <br>In UDUNITS-2, &g; means gram.</td>
+  <td>&g; means gram.  [&g;] means free-fall.</td>
+  <td>Nothing is done.  &g; in UDUNITS is assumed to mean gram.</td>
+  <td>&g; is converted to "gram".</td>
 </tr>
 <tr>
-  <td>F</td>
-  <td>F means Fahrenheit.</td>
-  <td>F means farad.</td>
-  <td>F is converted to [degF].</td>
-  <td>F is converted to "farad".</td>
+  <td>&F;</td>
+  <td>&F; means Fahrenheit.</td>
+  <td>&F; means farad.</td>
+  <td>&F; is converted to [degF].</td>
+  <td>&F; is converted to "farad".</td>
 </tr>
 <tr>
-  <td>NTU (Nephelometric Turbidity Unit)</td>
-  <td>NTU is not defined.</td>
-  <td>NTU is not defined.</td>
-  <td>NTU is converted to {ntu} following the UCUM method for noting the name of
+  <td>&NTU; (Nephelometric Turbidity Unit)</td>
+  <td>&NTU; is not defined.</td>
+  <td>&NTU; is not defined.</td>
+  <td>&NTU; is converted to {&NTU;} following the UCUM method for noting the name of
     dimensionless (arbitrary) units.</td>
-  <td>{ntu} is converted to NTU.</td>
+  <td>{&NTU;} is converted to &NTU;.</td>
 </tr>
 <tr>
-  <td>PSU (Practical Salinity Units)</td>
-  <td>PSU is not defined.</td>
-  <td>PSU is not defined.</td>
-  <td>PSU and psu are converted to {PSU} following the UCUM method for noting the name of
+  <td>&PSU; (Practical Salinity Units)</td>
+  <td>&PSU; is not defined.</td>
+  <td>&PSU; is not defined.</td>
+  <td>&PSU; and &PSU; are converted to {&PSU;} following the UCUM method for noting the name of
     dimensionless (arbitrary) units.</td>
-  <td>{PSU} is converted to PSU, because the CF-recommended 1e-3 is not a useful or correct description.</td>
+  <td>{&PSU;} is converted to &PSU;, because the CF-recommended 1e-3 is not a useful or correct description.</td>
 </tr>
 <tr>
   <td>Comments and Non-standard Terms</td>
@@ -1699,6 +1755,8 @@ On this ERDDAP, the default for most/all datasets is {1}.
 <convertUnitsNotes><![CDATA[
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notes:</strong></a>
 <ul>
+<li>On this ERDDAP, most/all datasets use &unitsStandard;.
+<li>In tabledap requests, you can <a href="#unitsFilter">request UDUNITS or UCUM</a>.
 <li>Always check the results from the converters.
 <li>This isn't a validator. 
   If the UDUNITS or UCUM units string is valid, the converter should return
@@ -1760,7 +1818,7 @@ Two common standards for writing units of measure are:
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a> 
   data files. For example,
-  UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
+  UDUNITS has many options for degrees Celsius, including <kbd>degree_C</kbd> and <kbd>degC</kbd>.
   <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM<img 
     src="../images/external.png" alt=" (external link)" 
@@ -1931,7 +1989,180 @@ location).
 <dataAccessNotAllowed>[Sorry. That data can't be downloaded.]</dataAccessNotAllowed>
 
 <databaseUnableToConnect>Unable to connect to database.</databaseUnableToConnect>
+<dataProviderForm>Data Provider Form</dataProviderForm>
+<dataProviderFormP1>Data Provider Form - Part 1</dataProviderFormP1>
+<dataProviderFormP2>Data Provider Form - Part 2</dataProviderFormP2>
+<dataProviderFormP3>Data Provider Form - Part 3</dataProviderFormP3>
+<dataProviderFormP4>Data Provider Form - Part 4</dataProviderFormP4>
+<dataProviderFormDone>Data Provider Form - Done</dataProviderFormDone>
+<dataProviderFormSuccess><![CDATA[
+Success! As you see, when you move/hover your mouse over
+<br>these question mark icons, you will see helpful hints
+<br>and term definitions.
+]]></dataProviderFormSuccess>
 
+<dataProviderFormShortDescription>The Data Provider Form is for people who have data and want it to be served by this ERDDAP.
+It collects basic information about the dataset and emails it to this ERDDAP's administrator.</dataProviderFormShortDescription>
+<dataProviderFormLongDescriptionHTML><![CDATA[
+This Data Provider Form is for people who have data and want it to be served by this ERDDAP.
+The overview of the process is:
+<ol>
+<li>You fill out a 4-part form. When you finish a part,
+  the information you just entered is
+  sent to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<li>The ERDDAP administrator will contact you to figure out the best way to
+  transfer the data and to work out other details.
+  &nbsp;
+</ol>
+
+<h2>Things You Need To Know</h2>
+<strong>The Goal</strong>
+<br>The goal of this form is to help you create a description of your dataset
+  ("metadata"), so that someone who knows nothing about this dataset will be
+  able to find the dataset when they search for this type of dataset,
+  understand the dataset, use the data properly, and give you credit
+  for having created the dataset.
+<p><strong>Don't skim.</strong>
+<br>Please work your way down this document, reading everything carefully. Don't skim.
+  If you skip over some important point, it will just be twice as much
+  work for you (and me) later.
+<p><strong>Do your best.</strong>
+<br>This is the first pass at creating metadata for this dataset.
+  The ERDDAP administrator will edit this and work with you to improve it.
+  It is even easy to change the metadata after the dataset is in ERDDAP.
+  But, it is better to get this right the first time.
+  Please focus, read carefully, be patient, be diligent, and do your best.
+<p><strong>Helpful Hint Icons</strong> &htmlTooltipImage;
+<br>If you move/hover your mouse over these question mark icons,
+  you will see helpful hints and term definitions.
+  Try it now with the icon above.
+  There are lots of these icons on this web page and in ERDDAP in general.
+  The information they contain is essential for filling out this form properly.
+<p><strong>How much time will this take?</strong>
+<br>It takes an hour to do a really good job with this form,
+  less if you have all the needed information handy.
+<p><strong>Running out of time?</strong>
+<br>If you run out of time before you finish all 4 parts, just leave the
+  tab open in your browser so you can come back and finish it later.
+  There is no time limit for finishing all 4 parts.
+<p><strong>Large Number of Datasets?</strong>
+<br>If you have structured information (for example, ISO 19115 files) for a large
+  number of datasets, there are probably ways that we can work together to
+  (semi-)automate the process of getting the datasets into ERDDAP.
+  Please email the administrator of this ERDDAP
+  (<kbd>&safeEmail;</kbd>)
+  to discuss the options.
+<p><strong>Need help?</strong>
+<br>If you have questions or need help while filling out this form,
+  please send an email to the administrator of this ERDDAP
+  (<kbd>&safeEmail;</kbd>).
+  <br>&nbsp;
+
+
+<p><a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">
+    <span style="font-size:xx-large; line-height:130%;"><strong>Click Here for Part 1 (of 4) of the
+<br>Data Provider Form</strong></span></a>
+]]></dataProviderFormLongDescriptionHTML>
+
+<dataProviderFormPart1><![CDATA[
+This is part 1 (of 4) of the Data Provider Form.
+<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<br>&nbsp;
+]]></dataProviderFormPart1>
+
+<dataProviderFormPart2Header><![CDATA[
+This is part 2 (of 4) of the Data Provider Form
+<br>from &fromInfo;.
+<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<br>&nbsp;
+]]></dataProviderFormPart2Header>
+
+<dataProviderFormPart2GlobalMetadata><![CDATA[
+<h2>Global Metadata</h2>
+Global metadata is information about the entire dataset. It is a set of
+<kbd>attribute=value</kbd> pairs, for example,
+<br><kbd>title=Spray Gliders, Scripps Institution of Oceanography</kbd>
+<p>.nc files &mdash; If your data is in .nc files that already have some metadata,
+just provide the information below for attributes that aren't in your files
+or where you want to change the attribute's value.
+]]></dataProviderFormPart2GlobalMetadata>
+
+<dataProviderContactInfo><![CDATA[
+<h2>Your Contact Information</h2>
+This will be used by the ERDDAP administrator to contact you.
+This won't go in the dataset's metadata or be made public.
+<p>What is your name? 
+&widgetYourName;
+  <br>What is your email address? 
+&widgetEmailAddress;
+  <br>This dataset submission's timestamp is &tTimestamp;.
+]]>
+</dataProviderContactInfo>
+
+<dataProviderData><![CDATA[
+<h2>The Data</h2>
+ERDDAP deals with a dataset in one of two ways: as gridded data or as tabular data.
+
+<p><strong>Gridded Data</strong>
+<br>ERDDAP can serve data from various types of data files
+(and from OPeNDAP servers like Hyrax, THREDDS, GrADS, ERDDAP) that contain multi-dimensional
+gridded data, for example, Level 3 sea surface temperature data (from a satellite) with
+three dimensions: [time][latitude][longitude].
+<p>The data for a gridded dataset can be stored in one file or many files
+(typically with one time point per file).
+<p>If your dataset is already served via an OPeNDAP server,
+skip this form and just email the dataset's OPeNDAP URL
+to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<p>How is your gridded data stored?
+&widgetGriddedOptions;
+
+<p><strong>Tabular Data</strong>
+<br>ERDDAP can also serve data that can be <i>represented</i> as a single, database-like
+table, where there is a column for each type of data and a row for each observation.
+This includes:
+<ul>
+<li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a> that is currently stored in a relational database.
+  <br>Please read the information about the
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
+  dataset type in ERDDAP, especially the initial ~2 screens of information which
+  talk about the need to create a denormalized table. That may sound crazy. Please
+  trust enough to read the rationale for this.
+  <br>&nbsp;
+<li>All <i>in situ</i> data.
+  <br>Examples: a time series from an instrument or several similar instruments,
+  profile data from a CTD or a group of CTD's,
+  or data collected during a ship's cruise (the similar cuises over several years).
+  <br>&nbsp;
+<li>Non-geospatial data that can be represented as a table of data.
+  <br>Examples: data from a laboratory experiment, genetic sequence data,
+  or a list of bibliographic references.
+  <br>&nbsp;
+<li>Collections of other types of files (for example, image or audio files).
+  <br>ERDDAP can present the file names in a table and let users
+  view or download the files.
+</ul>
+The data for a tabular dataset can be stored in one file or many files
+(typically with data for one station, one glider, one animal, or one cruise per file).
+We recommend making one dataset with all of the data that is very similar,
+and not a lot of separate datasets.
+For example, you might make one dataset with data from a group of moored buoys,
+a group of gliders, a group of animals, or a group of cruises (for example, annually on one line).
+<p>How is your tabular data stored? &widgetTabularOptions;
+
+<p><strong>Frequency of Changes</strong>
+<br>Some datasets get new data frequently. Some datasets will never be changed.
+<br>How often will this data be changed?
+&widgetFrequencyOptions;
+<br>&nbsp;
+]]></dataProviderData>
+<dataProviderSubmit><![CDATA[
+<h2>Finished with part 1?</h2>
+Click &widgetSubmitButton;
+to send this information to the ERDDAP administrator and move on to part 2 (of 4).
+]]></dataProviderSubmit>
+<dataProviderFixProblem><![CDATA[
+<br>Please fix these problems, then 'Submit' this part of the form again.
+]]></dataProviderFixProblem>
 <DEFAULT_commonStandardNames>air_potential_temperature,
 air_pressure,
 air_pressure_at_sea_level,
@@ -2074,6 +2305,8 @@ that value will be used for Constraint #1.
 of this dataset by selecting combinations of distinct values.
 ]]></distinctValuesTooltip>
 
+<documentation>Documentation</documentation>
+
 <!-- This uses &ssUse; and &erddapUrl; -->
 <doWithGraphs><![CDATA[
 <br>&nbsp;
@@ -2083,7 +2316,7 @@ Well, you can do anything you want with your graphs, of course.
 But some things you might not have considered are:
 <ul>
 <li>Web page authors can
-  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/embed.html"
+  <a rel="help" href="&erddapUrl;/images/embed.html"
     >embed a graph of the latest data in a web page</a>
   using HTML &lt;img&gt; tags.
 &ssUse;
@@ -2091,13 +2324,325 @@ But some things you might not have considered are:
 </ul>
 ]]></doWithGraphs>
 
+<!-- DPF = Data Provider Form-->
+<dpf_submit><![CDATA[
+<h2>Finished with part &partNumberA;?</h2>
+Click &widgetSubmitButton; to send this information to the ERDDAP administrator and move on to part &partNumberB; (of 4).    
+]]></dpf_submit>
+<dpf_fixProblem><![CDATA[
+<br>Please fix these problems, then 'Submit' this part of the form again.
+]]></dpf_fixProblem>
+<dpf_yourName>Your Name</dpf_yourName>
+<dpf_emailAddress>Email Address</dpf_emailAddress>
+<dpf_Timestamp>Timestamp</dpf_Timestamp>
+<dpf_frequency>Frequency</dpf_frequency>
+<dpf_title>title</dpf_title>
+<dpf_titleTooltip><![CDATA[
+This is a short (&lt;=80 characters) description of the dataset. For example,
+<br><kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>
+]]></dpf_titleTooltip>
+
+<dpf_summary>summary</dpf_summary>
+<dpf_summaryTooltip><![CDATA[
+This is a paragraph describing the dataset.  (&lt;=500 characters)
+<br>The summary should answer these questions:
+<br>&bull; Who created the dataset?
+<br>&bull; What information was collected?
+<br>&bull; When was the data collected?
+<br>&bull; Where was it collected?
+<br>&bull; Why was it collected?
+<br>&bull; How was it collected?
+]]></dpf_summaryTooltip>
+
+<dpf_creatorName>creator_name</dpf_creatorName>
+<dpf_creatorNameTooltip><![CDATA[
+This is the name of the primary person, group, institution,
+<br>or position that created the data. For example,
+<br><kbd>John Smith</kbd>
+]]></dpf_creatorNameTooltip>
+
+<dpf_creatorType>creator_type</dpf_creatorType>
+<dpf_creatorTypeTooltip><![CDATA[
+This identifies the creator_name (above) as a person,
+<br>group, institution, or position.
+]]></dpf_creatorTypeTooltip>
+
+<dpf_creatorEmail>creator_email</dpf_creatorEmail>
+<dpf_creatorEmailTooltip><![CDATA[
+This is the best contact email address for the creator of this data.
+<br>Use your judgment &mdash; the creator_email might be for a
+<br>different entity than the creator_name.
+<br>For example, <kbd>your.name@yourOrganization.org</kbd>
+]]></dpf_creatorEmailTooltip>
+
+<dpf_institution>institution</dpf_institution>
+<dpf_institutionTooltip><![CDATA[
+This is the short/abbreviated form of the name of the primary
+<br>organization that created the data. For example,
+<br><kbd>NOAA NMFS SWFSC</kbd>
+]]></dpf_institutionTooltip>
+
+<dpf_infoUrl>infoUrl</dpf_infoUrl>
+<dpf_infoUrlTooltip><![CDATA[
+This is a URL with information about this dataset.
+<br>For example, <kbd>https://spray.ucsd.edu</kbd>
+<br>If there is no URL related to the dataset, provide
+<br>a URL for the group or organization.
+]]></dpf_infoUrlTooltip>
+
+<dpf_license>license</dpf_license>
+<dpf_licenseTooltip><![CDATA[
+This is the license and disclaimer for use of this data.
+<br>ERDDAP has a standard license, which you can use via <kbd>[standard]</kbd>
+<br>You can either add to that or replace it. (&lt;=500 characters)
+<br>The text of the standard license is: &standardLicense;
+<br><kbd>
+]]></dpf_licenseTooltip>
+
+<dpf_howYouStoreData><![CDATA[
+<br>&bull; Error: Please specify (below) how your gridded or tabular data is stored.
+]]></dpf_howYouStoreData>
+<dpf_provideIfAvailable>Please provide the information if it is available for your dataset.</dpf_provideIfAvailable>
+
+<dpf_acknowledgement>acknowledgement</dpf_acknowledgement>
+<dpf_acknowledgementTooltip><![CDATA[
+Optional: This is the place to acknowledge various types of support for
+<br>the project that produced this data. (&lt;=350 characters) For example,
+<br><kbd>This project received additional funding from the NOAA
+<br>Climate and Global Change Program.</kbd>
+]]></dpf_acknowledgementTooltip>
+
+<dpf_history>history</dpf_history>
+<dpf_historyTooltip><![CDATA[
+Optional: This is a list of the actions (one per line) which led to the creation of this data.
+<br>Ideally, each line includes a timestamp and a description of the action. (&lt;=500 characters) For example,
+<br><kbd>Datafiles are downloaded ASAP from https://oceandata.sci.gsfc.nasa.gov/MODISA/L3SMI/ to NOAA NMFS SWFSC ERD.
+<br>NOAA NMFS SWFSC ERD (erd.data@noaa.gov) uses NCML to add the time dimension and slightly modify the metadata.</kbd>
+]]></dpf_historyTooltip>
+
+<dpf_idTooltip><![CDATA[
+Optional: This is an identifier for the dataset, as provided by
+<br>its naming authority. The combination of "naming authority"
+<br>and the "id" should be globally unique, but the id can be
+<br>globally unique by itself also. IDs can be URLs, URNs, DOIs,
+<br>meaningful text strings, a local key, or any other unique
+<br>string of characters. The id should not include white space
+<br>characters.
+<br>For example, <kbd>CMC0.2deg-CMC-L4-GLOB-v2.0</kbd>
+]]></dpf_idTooltip>
+
+<dpf_namingAuthority>naming_authority</dpf_namingAuthority>
+<dpf_namingAuthorityTooltip><![CDATA[
+Optional: This is the organization that provided the id (above) for the dataset.
+<br>The naming authority should be uniquely specified by this attribute.
+<br>We recommend using reverse-DNS naming for the naming authority;
+<br>URIs are also acceptable.
+<br>For example, <kbd>org.ghrsst</kbd>")
+]]></dpf_namingAuthorityTooltip>
+
+<dpf_productVersion>product_version</dpf_productVersion>
+<dpf_productVersionTooltip><![CDATA[
+Optional: This is the version identifier of this data. For example, if you
+<br>plan to add new data yearly, you might use the year as the version identifier.
+<br>For example, <kbd>2014</kbd>
+]]></dpf_productVersionTooltip>
+
+<dpf_references>references</dpf_references>
+<dpf_referencesTooltip><![CDATA[
+Optional: This is one or more published or web-based references
+<br>that describe the data or methods used to produce it. URL's and
+<br>DOI's are recommend. (&lt;=500 characters) For example,
+<br><kbd>Hu, C., Lee Z., and Franz, B.A. (2012). Chlorophyll-a
+<br>algorithms for oligotrophic oceans: A novel approach
+<br>based on three-band reflectance difference, J. Geophys.
+<br>Res., 117, C01011, doi:10.1029/2011JC007395.</kbd>
+]]></dpf_referencesTooltip>
+
+<dpf_comment>comment</dpf_comment>
+<dpf_commentTooltip><![CDATA[
+Optional: This is miscellaneous information about the data, not
+<br>captured elsewhere. (&lt;=350 characters) For example,
+<br><kbd>No animals were harmed during the collection of this data.</kbd>
+]]></dpf_commentTooltip>
+
+<dpf_dataTypeHelp><![CDATA[
+This is the data type and precision of this variable.
+<br>If the data file uses a specific type (for example, in a .nc file),
+<br>&nbsp;&nbsp;specify that type here.
+<br>If the data file doesn't use a specific type (for example, in a .csv file),
+<br>&nbsp;&nbsp;specify the type that should be used in ERDDAP.
+<br>&bull; Use <kbd>(unknown)</kbd> if you don't know.
+<br>&bull; <kbd>String</kbd> is a series of characters.
+<br>&nbsp;&nbsp;(For databases, ERDDAP treats all non-numeric data types as Strings.)
+<br>&bull; <kbd>boolean</kbd> is either true or false. ERDDAP will convert these to bytes, 1 or 0.
+<br>&bull; <kbd>byte</kbd> is an 8 bit signed integer, +/-127
+<br>&bull; <kbd>short</kbd> is a 16 bit signed integer, +/-32,767
+<br>&bull; <kbd>int</kbd> is a 32 bit signed integer, +/-2,147,483,647
+<br>&bull; <kbd>long</kbd> is a 64 bit signed integer, +/- ~1e19
+<br>&bull; <kbd>float</kbd> is a 32 bit floating point number (up to 7 significant digits)
+<br>&bull; <kbd>double</kbd> is a 64 bit floating point number (up to 17 significant digits)
+]]></dpf_dataTypeHelp>
+
+<dpf_ioosCategory>ioos_category</dpf_ioosCategory>
+<dpf_ioosCategoryHelp><![CDATA[
+Pick the ioos_category which is most appropriate for this variable.
+<br>&bull; Use <kbd>Location</kbd> for place names and for longitude, latitude,
+<br>&nbsp;&nbsp;altitude, and depth.
+<br>&bull; Use <kbd>Time</kbd> for date/time.
+<br>&bull; Use <kbd>Taxonomy</kbd> for species names.
+<br>&bull; Use <kbd>Identifier</kbd> for cruise names, ship names, line names,
+<br>&nbsp;&nbsp;station names, equipment types, serial numbers, etc.
+<br>&bull; Use <kbd>Ocean Color</kbd> for chlorophyll.
+<br>&bull; Use <kbd>Other</kbd> if no other category in the list is close.
+<br>&bull; Use <kbd>Unknown</kbd> if you really don't know.
+]]></dpf_ioosCategoryHelp>
+
+<dpf_part3Header><![CDATA[
+This is part 3 (of 4) of the Data Provider Form
+<br>from &fromInfo;.
+<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<br>&nbsp;
+]]></dpf_part3Header>
+
+<dpf_variableMetadata><![CDATA[
+<h2>Variable Metadata</h2>
+Variable metadata is information that is specific to a given variable within
+the dataset. It is a set of <kbd>attribute=value</kbd> pairs, for example,
+<kbd>units=degree_C</kbd> .
+
+<p><strong>Fewer Or More Than 10 Variables</strong>
+<br>There are slots on this form for 10 variables.
+<br>If your dataset has 10 or fewer variables, just use the slots that you need.
+<br>If your dataset has more than 10 variables, then for each group of 10 variables:
+<ol>
+<li>Identify the group: This is the &widgetSelectGroup; group of 10 variables.
+<li>Fill out the form below for that group of 10 variables.
+<li>Click "I'm finished!" below to submit the information for that group of 10 variables.
+<li>If this isn't the last group, then on the next web page (for Part 4 of this form),
+  press your browser's Back button so that you can fill out this part of the form
+  (Part 3) for the next group of 10 variables.
+</ol>
+
+<p><strong>.nc Files</strong>
+<br>If your data is in .nc files that already have some metadata,
+just provide the information below for attributes that aren't in your files
+or where you want to change the attribute's value.
+]]></dpf_variableMetadata>
+
+<dpf_sourceName>sourceName</dpf_sourceName>
+<dpf_sourceNameTooltip><![CDATA[
+This is the name of this variable currently used by the data source.
+<br>For example, <kbd>wt</kbd>
+<br>This is case-sensitive.
+]]></dpf_sourceNameTooltip>
+
+<dpf_destinationName>destinationName</dpf_destinationName>
+<dpf_destinationNameTooltip><![CDATA[
+Optional: You can specify a new, different name for this variable.
+<br>This new name is the one that will be shown to users in ERDDAP.
+<br>For example, <kbd>waterTemp</kbd>
+<br>This is case-sensitive.
+<br>This MUST start with a letter (A-Z, a-z) and MUST be followed by
+<br>0 or more characters (A-Z, a-z, 0-9, and _).
+<br>&bull; Use <kbd>latitude</kbd> for the main latitude variable.
+<br>&bull; Use <kbd>longitude</kbd> for the main longitude variable.
+<br>&bull; Use <kbd>altitude</kbd> if the variable measures height above sea level.
+<br>&bull; Use <kbd>depth</kbd> if the variable measures distance below sea level.
+<br>&bull; Use <kbd>time</kbd> for the main date/time variable.
+<br>&bull; Otherwise, it is up to you. If you want to use the sourceName
+<br>&nbsp;&nbsp;as the destinationName, leave this blank.
+]]></dpf_destinationNameTooltip>
+
+<dpf_longName>long_name</dpf_longName>
+<dpf_longNameTooltip><![CDATA[
+This is a longer, written-out version of the destinationName.
+<br>For example, <kbd>Water Temperature</kbd>
+<br>Among other uses, it will be used as an axis title on graphs.
+<br>Capitalize each word in the long_name.
+<br>Don't include the units. (ERDDAP will add units when creating
+<br>&nbsp;&nbsp;an axis title.)
+]]></dpf_longNameTooltip>
+
+<dpf_standardName>standard_name</dpf_standardName>
+<dpf_standardNameTooltip><![CDATA[
+Optional: This is the name from the CF Standard Name Table
+<br>&nbsp;&nbsp;which is most appropriate for this variable.
+<br>For example, <kbd>sea_water_temperature</kbd>.
+<br>Some common standard_names are listed in the dropdown list at right.
+<br>If you don't already know, or if no CF Standard Name is appropriate,
+<br>&nbsp;&nbsp;just leave this blank. We'll fill it in.
+]]></dpf_standardNameTooltip>
+
+<dpf_dataType>dataType</dpf_dataType>
+
+<dpf_fillValue>_FillValue</dpf_fillValue>
+<dpf_fillValueTooltip><![CDATA[
+For numeric variables, this is the value that is used in the
+<br>data file to indicate a missing value for this variable.
+<br>For example, <kbd>-999</kbd> .
+<br>If the _FillValue is NaN, use <kbd>NaN</kbd> .
+<br>For String variables, leave this blank.
+]]></dpf_fillValueTooltip>
+
+<dpf_units>units</dpf_units>
+<dpf_unitsTooltip><![CDATA[
+These are the units of this variable. For example, <kbd>degree_C</kbd>
+<br>This is <strong>required</strong> for numeric variables, but not used for most String variables.
+<br>&bull; For temperature, use <kbd>degree_C</kbd> or <kbd>degree_F</kbd> .
+<br>&bull; For counts of things, use <kbd>count</kbd>.
+<br>&bull; For latitude variables, use <kbd>degrees_north</kbd> .
+<br>&bull; For longitude variables, use <kbd>degrees_east</kbd> .
+<br>&bull; For String date/time variables, paste a sample date/time value here.
+<br>&nbsp;&nbsp;We'll convert it to UDUnits.
+<br>&bull; For numeric date/time variables, describe the values as <kbd><i>units</i> since <i>basetime</i></kbd>.
+<br>&nbsp;&nbsp;For example, <kbd>days since 2010-01-01</kbd>
+<br>&bull; For all other variables, use UDUNITs unit names if you know them;
+<br>&nbsp;&nbsp;otherwise, use whatever units you already know.
+]]></dpf_unitsTooltip>
+
+<dpf_range>range</dpf_range>
+<dpf_rangeTooltip><![CDATA[
+For numeric variables, this specifies the typical range of values.
+<br>For example, <kbd>minimum=32.0</kbd> and <kbd>maximum=37.0</kbd> .
+<br>The range should include about 98% of the values.
+<br>These should be round numbers. This isn't precise.
+<br>If you don't know the typical range of values, leave this blank.
+<br>For String variables, leave this blank.
+]]></dpf_rangeTooltip>
+
+<dpf_part4Header><![CDATA[
+This is part 4 (of 4) of the Data Provider Form
+<br>from &fromInfo;.
+<br>Need help? Send an email to the administrator of this ERDDAP (<kbd>&safeEmail;</kbd>).
+<br>&nbsp; 
+]]></dpf_part4Header>
+<dpf_otherComment><![CDATA[
+<h2>Other Comments</h2>
+Optional: If there are other things you think the ERDDAP administrator
+should know about this dataset, please add them here.
+This won't go in the dataset's metadata or be made public. (&lt;500 characters)
+]]></dpf_otherComment>
+<dpf_finishPart4><![CDATA[
+<h2>Finished with part 4?</h2>
+Click &widgetSubmitButton; to send this information to the ERDDAP administrator and move on to the "You're done!" page.
+]]></dpf_finishPart4>
+
+<dpf_congratulation><![CDATA[
+<h2>You're done! Congratulations! Thank you!</h2>
+The ERDDAP administrator will email you soon to figure out the best way transfer
+the data and to work out other details.
+This dataset submission's timestamp is &tTimestamp;.
+<p>You can <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html?yourName=&tYourName;&amp;emailAddress=&tEmailAddress;">submit another dataset</a>
+or go back to the <a rel="bookmark" href="&tErddapUrl;/index.html">ERDDAP home page</a>.
+]]></dpf_congratulation>
+
 <!-- Dataset Table (e.g., a list of datasets) -->
-<dtAccessible><![CDATA[<strong>Is this dataset accessible to you?</strong>
-  <br>"public" = Yes. It is accessible to anyone (logged in or not logged in).]]></dtAccessible>
-<dtAccessibleYes><![CDATA[<br>"yes" = You are logged in and have the appropriate role.]]></dtAccessibleYes>
-<dtAccessibleNo><![CDATA[<br>"no" = You are logged in but don't have the appropriate role.]]></dtAccessibleNo>
-<dtAccessibleLogIn><![CDATA[<br>"log in" = Currently, no. It may become accessible if you log in.]]></dtAccessibleLogIn>
-<dtAccessibleGraphs><![CDATA[<br>"graphs" = You have access to graphs and metadata, but not the actual data.]]></dtAccessibleGraphs>
+<dtAccessible><![CDATA[<strong>Is this dataset accessible to you?</strong>]]></dtAccessible>
+<dtAccessiblePublic>Yes. It is accessible to anyone (logged in or not logged in).></dtAccessiblePublic>
+<dtAccessibleYes>You are logged in and have the appropriate role.></dtAccessibleYes>
+<dtAccessibleNo>You are logged in but don't have the appropriate role.></dtAccessibleNo>
+<dtAccessibleLogIn>Currently, no. It may become accessible if you log in.></dtAccessibleLogIn>
+<dtAccessibleGraphs>You have access to graphs and metadata, but not the actual data.></dtAccessibleGraphs>
 <dtLogIn>Click to log in and try to make this dataset accessible.</dtLogIn>
 <dtDAF>Click to see a {0} Data Access Form for this dataset so that you can request data.</dtDAF>
 <dtFiles>Click to browse and download the source data files for this dataset.</dtFiles>
@@ -2107,6 +2652,7 @@ But some things you might not have considered are:
 <dtWCS>Click to find out about getting data and/or maps via this dataset's Web Coverage Service.</dtWCS>
 <dtWMS>Click to find out about making maps of this data via this dataset's Web Map Service.</dtWMS>
 
+<EasierAccessToScientificData>Easier access to scientific data</EasierAccessToScientificData>
 <!-- The EDD messages are displayed on the tabledap and griddap Data Access Forms. -->
 <EDDClickOnSubmitHtml><![CDATA[Click on <kbd>Submit</kbd>.]]></EDDClickOnSubmitHtml>
 <EDDDatasetID>Dataset ID</EDDDatasetID>
@@ -2385,7 +2931,7 @@ axisVariable[0] values are searched.
 <br>and internal special characters must be backslash encoded:
 <br>encode \ as \\, " as \", newline as \n, and tab as \t.]]></EDDTableStringConstraintTooltip>
 
-<EDDTableTimeConstraintTooltip><![CDATA[Optional: Enter an ISO-formatted time (e.g., 2008-07-04T12:30:00Z)
+<EDDTableTimeConstraintTooltip><![CDATA[Optional: Enter an ISO-8601-formatted time (e.g., 2008-07-04T12:30:00Z)
 <br>to make a constraint for this variable.]]></EDDTableTimeConstraintTooltip>
 
 <EDDTableConstraintTooltip><![CDATA[
@@ -2454,10 +3000,35 @@ If you want the examples to point to your ERDDAP, the easiest method is:
      Note the Matlab notation datasetName.variableName.  -->
 <EDDTableMatlabPlotExample>plot(pmelTaoDySst.time, pmelTaoDySst.T_25)</EDDTableMatlabPlotExample>
 
-<EDDTableFromHttpGetDatasetDescription>This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</EDDTableFromHttpGetDatasetDescription>
+<EDDTableFromHttpGetDatasetDescription><![CDATA[This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.]]></EDDTableFromHttpGetDatasetDescription>
 <EDDTableFromHttpGetAuthorDescription>The values in this column identify the author who added each row of data to the dataset.</EDDTableFromHttpGetAuthorDescription>
 <EDDTableFromHttpGetTimestampDescription>The values in this column are added by ERDDAP to identify when each row of data was added to the data file.</EDDTableFromHttpGetTimestampDescription>
-
+<erddapIs><![CDATA[
+ERDDAP is a data server that gives you a simple, consistent way to download 
+subsets of scientific datasets in common file formats and make graphs and maps. 
+]]></erddapIs>
+<erddapVersionHTML><![CDATA[
+  <h2><a class="selfLink" id="version" href="#version" rel="bookmark">ERDDAP Version</a></h2>
+  If you want to use a new feature on a remote ERDDAP, you can find out if the new
+  feature is available by sending a request to determine the ERDDAP's version
+  number, for example,
+  <br>&versionLink;
+  <br>ERDDAP will send a text response with the ERDDAP version number of that ERDDAP.
+  For example:
+  <br>&versionResponse;
+  <br>If you get an <kbd>HTTP 404 Not-Found</kbd> error message, treat the ERDDAP as version
+  1.22 or lower.
+  <p>Or, you can request the version_string, which may have additional information.
+  For example,
+  <br>&versionStringLink;
+  <br>ERDDAP will send a text response with the ERDDAP version_string of that ERDDAP.
+  It will be a floating point number (the version number)
+  with an optional suffix of '_' plus additional ASCII text (no spaces or control characters).
+  For example:
+  <br>&versionStringResponse;
+  <br>If you get an <kbd>HTTP 404 Not-Found</kbd> error message, treat the ERDDAP as version
+  1.80 or lower.
+  ]]></erddapVersionHTML>
 
 <!-- These messages are displayed when an error message is shown. -->
 <errorTitle>Error</errorTitle>
@@ -2556,8 +3127,8 @@ than elsewhere in ERDDAP!
 You might prefer using the dataset's Data Access Form instead.
 ]]></filesWarning>
 <filesDocumentation><![CDATA[
-ERDDAP's "files" system lets you browse a virtual file system and download 
-source data files. Hopefully, this is a familiar, easy system that you can use with your
+ERDDAP's "files" system lets you browse a virtual file system and download source
+data files. Hopefully, this is a familiar, easy system that you can use with your
 favorite web browser or, if you prefer, from a command line program like 
 <a rel="help" href="#curl">curl</a>.
 
@@ -2569,7 +3140,7 @@ understand that some users actually do want an entire dataset, or at least the s
 which is found in a subset of the source data files.  If that's you, then the "files"
 system may be for you. One advantage of the "files" system is that you can see each
 file's size (in bytes) and Last Modified time (Zulu time zone), 
-so it is easy to see if a file has been changed.
+so it is easy to see if a file has been changed. 
 <br>&nbsp;
 
 <h3>Table of Contents</h3>
@@ -2641,7 +3212,7 @@ include:
 <li>The ERDDAP administrator chose not to make the source data files available.
 </ul>
 If the source files for a dataset that you want aren't available, you can email 
-the administrator of this ERDDAP, &adminEmail;,
+the administrator of this ERDDAP, <kbd>&adminEmail;</kbd>,
 to request that they be made available, but there is usually a reason why they aren't
 already available.
 <br>&nbsp;
@@ -2676,8 +3247,8 @@ use ERDDAP in many new ways. To install curl:
   <a rel="bookmark" href="https://curl.haxx.se/download.html">download curl<img
     src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
     title="This link to an external website does not constitute an endorsement."></a>
-  and install it.  To get to a command line in Windows, click on "Start" and type 
-  "cmd" into the search text field.
+  and install it.  To get to a command line in Windows, click on the Windows icon and type 
+  <kbd>cmd</kbd> into the search text field.
   ("Win32 - Generic, Win32, binary (without SSL)" worked for me in Windows 7.)
 </ul>
 <strong>Please be kind to other ERDDAP users: run just one script or curl command at a time.</strong>
@@ -2725,7 +3296,7 @@ enabled:
     them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.
 Fortunately, these are almost never in "files" filenames.
 Then, in the erddapUrl, replace a zero-padded number (for example <kbd>01</kbd>) with a 
-range of values (for example, <kbd>[01-15]</kbd> ), or replace a substring (for example <kbd>41008</kbd>) with a list of values (for example, <kbd>{41008,41009,41010}</kbd> ).
+range of values (for example, <kbd>[01-15]</kbd>), or replace a substring (for example <kbd>41008</kbd>) with a list of values (for example, <kbd>{41008,41009,41010}</kbd>).
 The <kbd>#1</kbd> within the output fileName causes the current value of the range or 
 list to be put into the output fileName. For example, 
 <pre>curl --compressed "https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
@@ -2902,7 +3473,7 @@ Fortunately, there are lots of software tools for working with the various file 
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a> 
     and
-     <a rel="help" href="http://meteora.ucsd.edu/~pierce/ncview_home_page.html">Ncview<img
+     <a rel="help" href="https://www.psc.edu/resources/software/ncview/">Ncview<img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="This link to an external website does not constitute an endorsement."></a>
     (which can also be installed
@@ -3036,9 +3607,9 @@ Sometimes it's worth it for reading small samples of remote files, notably audio
 But the more times you need access to the file, the more efficient it is to 
 just download the file and then work with the local file.
 
-<p>ERDDAP's /files/ system refuses all byte range requests to .nc and .hdf files, 
+<p>ERDDAP's "files" system refuses all byte range requests to .nc and .hdf files, 
 so don't even try to use Netcdf-java/c, ncview, Ferret, or other software tools to connect to 
-.nc or .hdf files served by ERDDAP's /files/ system as if they were local files. 
+.nc or .hdf files served by ERDDAP's "files" system as if they were local files. 
 These requests are blocked because this approach is horribly inefficient 
 and often causes other problems. 
 Instead:
@@ -3047,10 +3618,12 @@ Instead:
   (which have /griddap/ or /tabledap/ in the URL). That's what DAP is for.
 <li>Or, use the dataset's Data Access Form to request a subset of data.
 <li>Or, if you need the entire file or repeated access over a long period of time,
-  use curl, wget, or your browser to download the entire file from the /files/ system,
+  use curl, wget, or your browser to download the entire file from the "files" system,
   then access the data from your local copy of the file.
 </ul>
 ]]></filesDocumentation>
+
+<FIPSCountyCodes>FIPS County Codes</FIPSCountyCodes>
 
 <functions>Server-side Functions</functions>
 
@@ -3135,10 +3708,14 @@ For example, orderByMax("stationID, time/1day") will create a group for each
 stationID for each day, and will calculate and return the mean of the other variables.
 ]]></functionOrderByTooltip>
 
-<functionOrderByExtra>For orderByClosest, specify the interval (using the format n[timeUnits], e.g., 1 hour) here.
-&lt;br&gt;For orderByLimit, specify the maximum number of rows per group here.</functionOrderByExtra>
-<functionOrderBySort>This slot is the {0} important orderBy... slot.
-&lt;br&gt;Pick a variable from the dropdown list at right and/or modify the text in this text field.</functionOrderBySort>
+<functionOrderByExtra><![CDATA[
+For orderByClosest, specify the interval (using the format n[timeUnits], e.g., 1 hour) here.
+<br>For orderByLimit, specify the maximum number of rows per group here.
+]]></functionOrderByExtra>
+<functionOrderBySort><![CDATA[
+This slot is the {0} important orderBy... slot.
+<br>Pick a variable from the dropdown list at right and/or modify the text in this text field.
+]]></functionOrderBySort>
 <functionOrderBySort1>most</functionOrderBySort1>
 <functionOrderBySort2>second most</functionOrderBySort2>
 <functionOrderBySort3>third most</functionOrderBySort3>
@@ -3189,6 +3766,7 @@ In order to make this ERDDAP's data more accessible to ArcGIS users, this part o
 -->
 <getStartedHtml><![CDATA[<span class="standoutColor">Start Using ERDDAP:<br>&nbsp;&nbsp;&nbsp;&nbsp;Search for Interesting Datasets</span>]]></getStartedHtml>
 
+<help>Help</help>
 <!-- This prevents naive requests for large amounts of data in an HtmlTable
 from crashing the user's browser.      
 This is used to override TableWriterHtmlTable.htmlTableMaxMB.
@@ -3198,10 +3776,11 @@ If this limit is reached, the table is truncated and <someDataNotDisplayed> is d
 IE on Windows XP is painfully slow.
 -->
 <htmlTableMaxMB>15</htmlTableMaxMB>
-<htmlTableMaxMessage>
-To avoid crashing your browser, some additional data was not displayed.&lt;br /&gt;
-You can avoid this by further constraining your request, so the response has less data.&lt;br /&gt;
-Or, download a file which can be viewed in a program which can handle large files (e.g., a .csv file in a text editor).&lt;br /&gt;</htmlTableMaxMessage>
+<htmlTableMaxMessage><![CDATA[
+To avoid crashing your browser, some additional data was not displayed.
+<br>You can avoid this by further constraining your request, so the response has less data.
+<br>Or, download a file which can be viewed in a program which can handle large files (e.g., a .csv file in a text editor).
+]]></htmlTableMaxMessage>
 
 <!-- The ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries*, and stateBoundaries*
 files must be in SSR.getContextDirectory() + "WEB-INF/ref/".
@@ -3220,6 +3799,129 @@ Widths are in the ratio 2:3:6, which allows display of 3, 2, or 1 per row in a g
 -->
 <imageWidths>240, 360, 720</imageWidths>
 <imageHeights>320, 440, 800</imageHeights>
+
+<imagesEmbed><![CDATA[
+
+<div class="standard_width"> 
+
+<!-- &nbsp;
+<br><button type="button" onClick="history.go(-1);return true;">Back</button> -->
+
+<h1 style="text-align:center;">Embed a Graph in a Web Page</h1> 
+If you are a web page author, you can embed an ERDDAP Make A Graph image URL directly 
+in one of your web pages with an HTML 
+<a rel="help" href="https://www.w3schools.com/tags/tag_img.asp">&lt;img&gt; tag<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>.
+<ol>
+<li>In ERDDAP, <!-- not a link; encourage users to use the erddap installation that got them here -->
+   search for a dataset of interest.
+  <br>&nbsp;
+<li>Click on the dataset's <kbd>graph</kbd> link to see the Make A Graph web page.
+  <br>&nbsp;
+<li>Modify the graph until it looks like you want it to.
+  <br>&nbsp;
+<li>Specify the <kbd>File Type</kbd> (for example, .png) and get the URL 
+  from the <kbd>view the URL</kbd> textfield.
+  <br>&nbsp;
+<li>You can make additional changes to the image by adding other commands to the URL.   For example, you can add commands to specify any image size, remove excess
+  whitespace at the bottom of the image, and/or
+  choose to view the graph without the legend. See the 
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands">griddap documentation</a> or
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands">tabledap documentation</a>.
+  <br>&nbsp;
+<li>In preparation for using the URL in the HTML &lt;img&gt; tag, 
+  you must encode all instances of <kbd>&amp;</kbd> in the URL as <kbd>&amp;amp;</kbd> .
+  <br>&nbsp;
+<li><a class="selfLink" id="PercentEncoded" href="#PercentEncoded" rel="bookmark">In preparation for using the URL</a>
+    in the HTML &lt;img&gt; tag, you must  
+    <a rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encode<img 
+    src="../images/external.png" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> the special characters in the query part of the
+    URL (other than the initial '&amp;' and the main '='
+    in constraints) into the form %HH, 
+    where HH is the 2 digit hexadecimal value of the character.
+    Usually, you just need to convert a few of the punctuation characters: % into %25, 
+    &amp; into %26, &quot; into %22, &lt; into %3C, = into %3D, &gt; into %3E, + into %2B,
+    | into %7C, [ into %5B, ] into %5D, space into %20, 
+    and convert all characters above #127 into their UTF-8 form and then percent encode
+    each byte of the UTF-8 form into the %HH format (ask a programmer for help).
+    <br>For example, <kbd>&amp;stationID&gt;="41004"</kbd>
+    <br>becomes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<kbd>&amp;stationID%3E=%2241004%22</kbd>
+    <br>Note that percent encoding is generally required when you access ERDDAP
+      via software other than a browser. Browsers usually handle percent encoding for you.
+    <br>In some situations, you need to percent encode all characters other than
+    A-Za-z0-9_-!.~'()*, but still don't percent encode the initial '&amp;' or the main '='
+    in constraints.
+    <br>Programming languages have tools to do this (for example, see Java's
+      <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    and JavaScript's
+      <a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent()<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>) 
+      and there are
+    <br><a rel="help" href="https://www.url-encode-decode.com/">web sites that percent encode/decode for you<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+  <br>&nbsp;
+<li>For gridded datasets, you may change the time dimension's value in the
+  URL to <kbd>(last)</kbd> so that
+  the image will always show data for the latest date/time instead of a 
+  specific date/time.
+  <p>Or, for tabular datasets, you may change the time constraint in the URL 
+   to something like
+  <kbd>time&gt;now-2days</kbd> 
+  so that the image will always show the data from 2 days ago until now.
+  (<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">more information</a>)
+  <p>Or, for tabular datasets, you may change the time constraint in the URL 
+   to something like
+  <kbd>time&gt;max(time)-2days</kbd> 
+  so that the image will always show the last 2 days worth of data from the dataset.
+  (<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#max">more information</a>)
+<li>Make an img tag in your HTML document which refers to that modified URL, 
+  for example
+
+<pre>
+&lt;img src="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;amp;.draw=surface&amp;amp;.vars=longitude%7Clatitude%7Csst&amp;amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C" alt="SST, Blended, West US (Experimental, 5 Day Composite)"&gt;</pre>
+
+<p>Or, if you want to be fancy, here is an example that includes "largest" and "edit" links. 
+Note that the URLs have different file extensions (.largePng, .graph, and .png).
+
+<pre>
+&lt;a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.largePng?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;amp;.draw=surface&amp;amp;.vars=longitude%7Clatitude%7Csst&amp;amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C"&gt;largest&lt;/a&gt;
+&lt;a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.graph?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;amp;.draw=surface&amp;amp;.vars=longitude%7Clatitude%7Csst&amp;amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C"&gt;edit image / download data&lt;/a&gt;
+&lt;br&gt;
+&lt;img src="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;amp;.draw=surface&amp;amp;.vars=longitude%7Clatitude%7Csst&amp;amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C" alt="SST, Blended, West US (Experimental, 5 Day Composite)"&gt;
+</pre>
+
+<p>That example makes these links and this image:
+<p><a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.largePng?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;.draw=surface&amp;.vars=longitude%7Clatitude%7Csst&amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C">largest</a>
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.graph?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;.draw=surface&amp;.vars=longitude%7Clatitude%7Csst&amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C">edit image / download data</a>
+<br>
+<img src="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;.draw=surface&amp;.vars=longitude%7Clatitude%7Csst&amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C" alt="ERDDAP: SST, Blended, West US (Experimental, 5 Day Composite)">
+</ol>
+
+
+<!-- ******* -->
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
+Questions, comments, suggestions?  Please send an email to 
+  <kbd>bob dot simons at noaa dot gov</kbd>
+and include the ERDDAP URL directly related to your question or comment.
+
+<p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Or,
+you can join the ERDDAP Google Group / Mailing List</a> by visiting
+<a class="N" rel="help"
+href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap<img 
+  src="../images/external.png" alt=" (external link)" 
+  title="This link to an external web site does not constitute an endorsement."/></a> 
+and clicking on "Apply for membership". 
+Once you are a member, you can post your question there
+or search to see if the question has already been asked and answered. 
+
+</div>
+]]></imagesEmbed>
 
 <!-- text for the right-hand side of index.html -->
 <indexViewAll>View a List of All {0} Datasets</indexViewAll>
@@ -3246,24 +3948,36 @@ You can bypass ERDDAP''s web pages and use ERDDAP''s RESTful web services
 (for example, for searching for datasets, for downloading data, for making maps)
 directly from any computer program (for example, Matlab, R, or a program that you write)
 and even from web pages (via HTML image tags or JavaScript).  
-<a rel="help" href="{0}/rest.html">REST documentation</a>
+<a rel="help" href="{0}/rest.html">RESTful Web Services documentation</a>
 ]]></indexDescribeServices>
 
 <infoAboutFrom>Information about {0}, from {1}</infoAboutFrom>
 <infoTableTitleHtml>The Dataset's Variables and Attributes</infoTableTitleHtml>
 <infoRequestForm>{0}/info requests must be in the form {0}/info/[datasetID]/index[fileType] .</infoRequestForm>
+<information>Information</information>
 
-<inotifyFix>This may be the problem that is solvable in Linux by calling (as root):
+<inotifyFix>This may be the problem that is solvable in Linux by calling:
 {0}
 Or, use higher numbers if the problem persists.
 The default for watches is 8192. The default for instances is 128.</inotifyFix>
 <!-- do not translate -->
 <inotifyFixCommands>
-  echo fs.inotify.max_user_watches=65536 | tee -a /etc/sysctl.conf
-  echo fs.inotify.max_user_instances=1024 | tee -a /etc/sysctl.conf
-  sysctl -p
+  sudo sysctl fs.inotify.max_user_watches=65536
+  sudo sysctl fs.inotify.max_user_instances=1024
+  sudo sysctl -p
 </inotifyFixCommands>
+<interpolate>Interpolate</interpolate>
 
+<javaProgramsHTML><![CDATA[
+  <h2><a class="selfLink" id="JavaPrograms" href="#JavaPrograms" rel="bookmark">Using ERDDAP as a Data Source within Your Java Program</a></h2>
+  As described above, since Java programs can access data available on the web, you can
+  write a Java program that accesses data from any publicly accessible ERDDAP installation.
+  
+  <p>Or, since ERDDAP is an all-open source program, you can also set up your own copy of
+  ERDDAP on your own server (publicly accessible or not) to serve your own data. Your Java
+  programs can get data from that copy of ERDDAP. See
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Set Up Your Own ERDDAP</a>.
+  ]]></javaProgramsHTML>
 
 <!-- The justGenerateAndView messages are used for the justGenerateAndView button
 on the Data Access Forms.
@@ -3305,7 +4019,9 @@ For more information on forming the URLs, click on the <kbd>Bypass this form</kb
 to see the &protocolName; documentation.
 ]]></justGenerateAndViewGraphUrlTooltip>
 
+<keywords>Keywords</keywords>
 <langCode>en-US</langCode>
+
 <!-- This appears on the erddap/legal.html web page after the General Disclaimer. 
 You can replace any of the [standardParts] with your own HTML. 
 [standardContact] references the adminEmail. -->
@@ -3316,7 +4032,16 @@ You can replace any of the [standardParts] with your own HTML.
 [standardDataLicenses]
 [standardContact]
 ]]></legal>
+<legalNotices><![CDATA[ 
+<a rel="bookmark" href="#disclaimers">Disclaimers</a> |
+<a rel="bookmark" href="#privacyPolicy">Privacy Policy</a> |
+<a rel="bookmark" href="#dataLicenses">Data Licenses</a> |
+<a rel="bookmark" href="#contact">Contact</a>
 
+<h2><a class="selfLink" id="disclaimers" href="#disclaimers" rel="bookmark">Disclaimers</a></h2>
+]]></legalNotices>
+
+<legalNoticesTitle>Legal Notices</legalNoticesTitle>
 
 <!-- The title for the map's legend (or nothing if you don't want a legendTitle).
 At ERD, we don't use this. You can use legendTitle1 and/or legendTitle2 (the second line).
@@ -3329,6 +4054,7 @@ The default is nothing (unused).
 <legendTitle2></legendTitle2>
 
 <license>License</license>
+<likeThis>like this</likeThis>
 
 <!-- e.g., {0}=WMS or listAll -->
 <listOfDatasets>List of {0} Datasets</listOfDatasets>
@@ -3337,6 +4063,20 @@ The default is nothing (unused).
 <LogIn>Log In</LogIn>
 <login>log in</login>
 
+<loginHTML><![CDATA[
+  <h2><a class="selfLink" id="login" href="#login" rel="bookmark">Log in to access private datasets.</a></h2>
+  Many ERDDAP installations don't have authentication enabled and thus
+  don't provide any way for users to login, nor do they have any private datasets.
+  <p>Some ERDDAP installations do have authentication enabled.
+  Currently, ERDDAP only supports authentication via Google-managed email accounts,
+  which includes email accounts at NOAA and many universities.
+  If an ERDDAP has authentication enabled, anyone with a Google-managed email account
+  can log in, but they will only have access to the private datasets
+  that the ERDDAP administrator has explicitly authorized them to access.
+  For instructions on logging into ERDDAP from a browser or via a script, see
+  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Access to Private Datasets in ERDDAP</a>.
+  ]]></loginHTML>
+  
 <loginAttemptBlocked>
 ERROR: Login attempts for {0} are being temporarily blocked after 3 failed attempts.
 Wait {1} minutes, then try again.
@@ -3510,7 +4250,7 @@ If a cached web page says you aren't logged in, reload the page.
   <br>&nbsp;
 <li>Try logging out, then logging in again.
   <br>&nbsp;
-&second;
+&secondPart;
 <li>Contact the administrator of this ERDDAP: &adminContact;.
   It is possible that some datasets are not currently available or that you don't 
       have permission to access them.
@@ -3887,17 +4627,52 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noXxxItsTabular>it's a tabular dataset</noXxxItsTabular>
 
 <oneRequestAtATime>Please make just one request at a time.</oneRequestAtATime>
+<openSearchDescription><![CDATA[
+<p><a rel="bookmark" href="https://github.com/dewitt/opensearch#what-is-opensearch">&niceProtocol;
+    &externalLinkHtml;</a>
+is a standard way for search engines at other websites to search this
+ERDDAP for interesting datasets.
+<ul>
+<li>To set up your website's search engine to search for datasets via
+    &niceProtocol;,
+  point your &niceProtocol; client to the &niceProtocol;
+     service description document at
+  <br><a href="&descriptionUrl;">&descriptionUrl;</a>
+  <br>&nbsp;
+<li>A sample &niceProtocol; request for an Atom response is
+  <br><a href="&sampleUrl;&#x26;format=atom">&sampleUrl;&#x26;format=atom</a>
+  <br>&nbsp;
+<li>A sample &niceProtocol; request for an RSS response is
+  <br><a href="&sampleUrl;&#x26;format=rss">&sampleUrl;&#x26;format=rss</a>
+</ul>
 
+<p>If you aren't setting up a website that uses &niceProtocol;, please use ERDDAP's regular
+search options on the right hand side of
+  <a rel="start" href="&tErddapUrl;/index.html">ERDDAP's home page</a>.
+Developers of computer programs and JavaScripted web pages can access ERDDAP's regular
+search options as
+  <a rel="help" href="&tErddapUrl;"/rest.html">RESTful services</a>.
+</div>
+]]></openSearchDescription>
 <optional>Optional</optional>
 <options>Options</options>
 
+<orAListOfValues>or a List of Values</orAListOfValues>
 <orRefineSearchWith>Or, refine this search with</orRefineSearchWith>
 <orSearchWith>Or, search for datasets with</orSearchWith>
 <orComma>Or,</orComma>
+<otherFeatures>Other Features</otherFeatures>
 
+<outOfDateDatasets>Out-Of-Date Datasets</outOfDateDatasets>
 <outOfDateHtml>The Out-Of-Date Datasets web page displays a list of near-real-time datasets, ranked by how out-of-date they are.</outOfDateHtml>
 
-
+<outOfDateKeepTrack><![CDATA[
+  <li>ERDDAP has a system to keep track of 
+    <a rel="help" href="&tErddapUrl;/outOfDateDatasets.html">Out-Of-Date Datasets</a>. 
+    See the Options at the bottom of that web page.
+  <br>&nbsp;
+  ]]></outOfDateKeepTrack>
+  
 <!--pageFirst>first</pageFirst>
 <pagePrevious>previous</pagePrevious>
 <pageCurrent>current</pageCurrent>
@@ -4014,11 +4789,333 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 
 <rangesFromTo>{0} ranges from {1} to {2}.</rangesFromTo>
 
+<required>Required</required>
 <resetTheForm>Reset the form to the default values.</resetTheForm>
 <resetTheFormWas>The form has been reset to the default values.</resetTheFormWas>
 
 <resourceNotFound>Resource not found:</resourceNotFound>
+<restfulWebServices>RESTful Web Services</restfulWebServices>
 
+<restfulHTML><![CDATA[
+ERDDAP is both:
+<ul>
+<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">A web application
+    &externalLinkHtml;</a>
+    &ndash; a web page with a form that humans with browsers can use (in this case, to get data, graphs, or information about datasets).
+<br>&nbsp;
+<li><a rel="help" href="https://en.wikipedia.org/wiki/Web_service">A RESTful web service 
+    &externalLinkHtml;</a>
+&ndash; a URL that computer programs can use (in this case, to get data, graphs, and information about datasets).
+</ul>
+For every ERDDAP web page with a form that you as a human with a browser can use, there is a 
+corresponding ERDDAP web service that is designed to be easy for computer programs and scripts to use.
+For example, humans can use this URL to do a Full Text Search for interesting datasets: 
+<br><a href="&htmlQueryUrl;">&htmlQueryUrl;</a>
+<br>By changing the file extension in the URL from .html to .json (or .csv, or .htmlTable, or .jsonlCSV1, or .xhtml, ...): 
+<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
+<br>we get a URL that a computer program or JavaScript script can use to get the same 
+information in a more computer-program-friendly format like 
+<a rel="help" href="https://www.json.org/">JSON
+    &externalLinkHtml;</a>.
+
+<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">Build Things on Top of ERDDAP</a></h3>
+There are many features in ERDDAP that can be used by computer programs or scripts 
+that you write. You can use them to build other web applications or web services on 
+top of ERDDAP, making ERDDAP do most of the work! 
+So if you have an idea for a better interface to the data that ERDDAP serves or a web 
+page that needs an easy way to access data, we encourage you to build your own
+web application, web service, or web page and use ERDDAP as the foundation. 
+Your system can get data, graphs, and other information from ERD's ERDDAP or from
+other ERDDAP installations, or you can 
+<!-- setup always from coastwatch's erddap --> 
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">set up your own ERDDAP server</a>,
+  which can be
+publicly accessible or just privately accessible.
+
+
+<h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL Requests</a></h3>
+Requests for user-interface information from ERDDAP (for example, search results) 
+use the web's universal standard for requests: 
+<a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs 
+    &externalLinkHtml;</a>
+sent via 
+<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET
+    &externalLinkHtml;</a>.
+This is the same mechanism that your browser uses when you fill out a form
+on a web page and click on <kbd>Submit</kbd> 
+To use HTTP GET, you generate a specially formed URL (which may include a query)
+and send it with HTTP GET.  You can form these URLs by hand and enter them in
+the address text field of your browser (for example,
+<br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
+<br>Or, you can write a computer program or web page script to create a URL, send it,
+and get the response.  URLs via HTTP GET were chosen because
+<ul>
+<li> They are simple to use.
+<li> They work well.
+<li> They are universally supported (in browsers, computer languages, operating system
+  tools, etc).
+<li> They are a foundation of
+<a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">Representational State Transfer (REST)
+    &externalLinkHtml;</a> and
+<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services">Resource Oriented Architecture (ROA)
+    &externalLinkHtml;</a>
+<li> They facilitate using the World Wide Web as a big distributed application,
+  for example via
+  <a rel="help" href="https://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29">mashups
+    &externalLinkHtml;</a>
+  <a rel="help" href="https://en.wikipedia.org/wiki/Ajax_%28programming%29">AJAX applications
+    &externalLinkHtml;</a>
+<li> They are <a rel="help" href="https://en.wikipedia.org/wiki/Stateless_protocol">stateless
+    &externalLinkHtml;</a>
+  as is ERDDAP, which makes the system simpler.
+<li> A URL completely define a given request, so you can bookmark it in your browser,
+  write it in your notes, email it to a friend, etc.
+</ul>
+
+<h3><a class="selfLink" id="PercentEncode" href="#PercentEncode" rel="bookmark">Percent Encoding</a></h3>
+In URLs, some characters are not allowed (for example, spaces) and other characters
+have special meanings (for example, '&amp;' separates key=value pairs in a query).
+When you fill out a form on a web page and click on Submit, your browser automatically
+<a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encodes
+    &externalLinkHtml;</a>
+  the special characters in the URL (for example, space becomes %20), for example,
+<br><a href="&htmlQueryUrlWithSpaces;">&htmlQueryUrlWithSpaces;</a>
+<br>But if your computer program or script generates the URLs, it probably needs to do the percent
+encoding itself.  If so, then probably all characters other than A-Za-z0-9_-!.~'()*
+in the query's values (the parts after the '=' signs) need to be encoded
+as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20. 
+Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded
+(ask a programmer for help). Programming languages have tools to do this (for example, see Java's
+<a rel="help" href="https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html">java.net.URLEncoder
+    &externalLinkHtml;</a> and JavaScript's
+<a rel="help" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent">encodeURIComponent()
+    &externalLinkHtml;</a>) and there are
+<a class="N" rel="help" href="https://www.url-encode-decode.com">websites that percent encode/decode for you
+    &externalLinkHtml;</a>
+
+
+<h3><a class="selfLink" id="responses" href="#responses" rel="bookmark">Response File Types</a></h3>
+Although humans using browsers want to receive user-interface results (for example,
+search results) as HTML documents, computer programs often prefer to get results in
+simple, easily parsed, less verbose documents.  ERDDAP can return user-interface
+results as a table of data in these common, computer-program friendly, file types:
+<ul>
+<li>.csv - a comma-separated ASCII text table.
+    (<a rel="help" href="https://en.wikipedia.org/wiki/Comma-separated_values">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.htmlTable - an .html web page with the data in a table.
+    (<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.itx - an Igor Text File with a wave for each column of data.
+    (<a rel="help" href="https://www.wavemetrics.net/doc/igorman/II-09%20Data%20Import%20Export.pdf">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.json - a table-like JSON file.
+    (<a rel="help" href="https://www.json.org/">more&nbsp;information
+    &externalLinkHtml;</a> or
+    <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#json">ERDDAP-specific information</a>)
+<li>.jsonlCSV1 - a "Better than CSV" JSON Lines file with column names on the first line.
+    (<a rel="help" href="https://jsonlines.org/">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.jsonlCSV - a "Better than CSV" JSON Lines file with no column names.
+    (<a rel="help" href="https://jsonlines.org/">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.jsonlKVP - a JSON Lines file with Key:Value pairs.
+    (<a rel="help" href="https://jsonlines.org/">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.mat - a MATLAB binary file.
+    (<a rel="help" href="https://www.mathworks.com/">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.nc - a flat, table-like, NetCDF-3 binary file.
+    (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.nccsv - a flat, table-like, NetCDF-like, ASCII CSV file.
+    (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.tsv - a tab-separated ASCII text table.
+    (<a rel="help" href="https://jkorpela.fi/TSV.html">more&nbsp;information
+    &externalLinkHtml;</a>)
+<li>.xhtml - an XHTML (XML) file with the data in a table.
+    (<a rel="help" href="https://www.w3schools.com/html/html_tables.asp">more&nbsp;information
+    &externalLinkHtml;</a>)
+</ul>
+In every results table format (except .jsonlKVP, where column names are on every row):
+<ul>
+<li>Each column has a column name and one type of information.
+<li>The first row of the table has the column names.
+<li>Subsequent rows have the information you requested.
+</ul>
+<p>The content in these plain file types is also slightly different from the .html
+response &mdash; it is intentionally bare-boned so that it is easier for a computer
+program to work with.
+
+<p><a class="selfLink" id="DataStructure" href="#DataStructure" rel="bookmark">A Consistent Data Structure for the Responses</a>
+<br>All of the user-interface services described on this page can return a table of
+data in any of the common file formats listed above. Hopefully, you can write
+just one procedure to parse a table of data in one of the formats. Then you can
+re-use that procedure to parse the response from any of these services.  This
+should make it easier to deal with ERDDAP.
+
+
+<p><a class="selfLink" id="csvIssues" href="#csvIssues" rel="bookmark">.csv</a> and .tsv Details<ul>
+<li>If a datum in a .csv file has internal double quotes or commas, ERDDAP follows the
+  .csv specification strictly: it puts double quotes around the datum and doubles
+  the internal double quotes.
+<li>Special characters in a .csv or .tsv file are encoded like
+  <a rel="help" href="https://www.json.org/">JSON
+    &externalLinkHtml;</a>
+    backslash-encoded characters:
+    \n (newline), \\ (backslash), \f (formfeed), \t (tab), \r (carriage return)
+  or with the \u<i>hhhh</i> syntax.
+</ul>
+
+
+<p><a class="selfLink" id="jsonp" href="#jsonp" rel="bookmark">jsonp</a>
+<br>Requests for .json files may now include an optional
+<a href="https://niryariv.wordpress.com/2009/05/05/jsonp-quickly/">jsonp
+    &externalLinkHtml;</a> request by
+adding "&amp;.jsonp=<i>functionName</i>" to the end of the query.  Basically, this tells
+ERDDAP to add "<i>functionName</i>(" to the beginning of the response and ")" to the
+end of the response. The first character of <i>functionName</i> must be an ISO 8859 letter or "_".
+Each optional subsequent character must be an ISO 8859 letter, "_", a digit, or ".".
+If originally there was no query, leave off the "&amp;" in your query.
+
+
+<p>griddap and tabledap Offer Different File Types
+<br>The file types listed above are file types ERDDAP can use to respond to
+user-interface types of requests (for example, search requests). ERDDAP supports
+a different set of file types for scientific data (for example, satellite and buoy
+data) requests (see the
+  <a rel="help" href="&tErddapUrl;/griddap/documentation.html#fileType">griddap</a> and
+  <a rel="help" href="&tErddapUrl;/tabledap/documentation.html#fileType">tabledap</a>
+  documentation).
+
+
+&acceptEncodingHtmlh3tErddapUrl;
+
+
+<h3><a class="selfLink" id="accessUrls" href="#accessUrls" rel="bookmark">Access URLs for ERDDAP's Services</a></h3>
+ERDDAP has these URL access points for computer programs:
+<ul>
+<li>To get the list of the <strong>main resource access URLs</strong>, use
+<br>&plainLinkExamples1;
+<br>&nbsp;
+<li>To get the current list of <strong>all datasets</strong>, use
+<br>&plainLinkExamples2;
+<br>&nbsp;
+<li>To get <strong>metadata</strong> for a specific data set
+  (the list of variables and their attributes), use
+  <br>&tErddapUrl;/info/<i>datasetID</i>/index<i>.fileType</i>
+  <br>for example,
+  <br>&plainLinkExamples3;
+  <br>&nbsp;
+<li>To get the results of <strong>full text searches</strong> for datasets
+  (using "searchFor=wind%20speed" as the example), use
+  <br>&plainLinkExamples4;
+  <br>(Your program or script may need to
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent-encode
+    &externalLinkHtml;</a>
+    the value in the query.)
+  <br>&nbsp;
+  <br>Or, use the
+    <a rel="bookmark" href="&tErddapUrl;/opensearch1.1/index.html">OpenSearch 1.1</a>
+    standard to do a full text search for datasets.
+  <br>&nbsp;
+<li>To get the results of <strong>advanced searches</strong> for datasets
+  (using "searchFor=wind%20speed" as the example), use
+  <br>&plainLinkExamples5;
+  <br>But experiment with
+    <a href="&tErddapUrl;/search/advanced.html?&encodedDefaultPIppQuery;">&advancedSearch;</a>
+    in a browser to figure out all of the optional parameters.
+  (Your program or script may need to
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent-encode
+    &externalLinkHtml;</a>
+    the value in the query.)
+  <br>&nbsp;
+<li>To get the list of <strong>categoryAttributes</strong>
+  (for example, institution, long_name, standard_name), use
+  <br>&plainLinkExamples6;
+  <br>&nbsp;
+<li>To get the list of <strong>categories for a specific categoryAttribute</strong>
+  (using "standard_name" as the example), use
+  <br>&plainLinkExamples7;
+  <br>&nbsp;
+<li>To get the list of <strong>datasets in a specific category</strong>
+  (using "standard_name=time" as the example), use
+  <br>&plainLinkExamples8;
+]]></restfulHTML>
+
+<restfulHTMLContinued><![CDATA[
+  <br>&nbsp;
+  </ul>
+  <li><a class="selfLink" id="GriddapAndTabledap" href="#GriddapAndTabledap" rel="bookmark">Griddap and tabledap</a> have many web services that you can use.
+    <ul>
+    <li>The Data Access Forms are just simple web pages to generate URLs which
+      request <strong>data</strong> (for example, satellite and buoy data).  The data can be in any of
+      several common file formats. Your program can generate these URLs directly.
+      For more information, see the
+      <a rel="help" href="&tErddapUrl;/griddap/documentation.html">griddap documentation</a> and
+      <a rel="help" href="&tErddapUrl;/tabledap/documentation.html">tabledap documentation</a>.
+      <br>&nbsp;
+    <li>The Make A Graph pages are just simple web pages to generate URLs which
+      request <strong>graphs</strong> of a subset of the data.  The graphs can be in any of several
+      common file formats.  Your program can generate these URLs directly. For
+      more information, see the
+        <a rel="help" href="&tErddapUrl;/griddap/documentation.html">griddap documentation</a> and
+        <a rel="help" href="&tErddapUrl;/tabledap/documentation.html">tabledap documentation</a>.
+      <br>&nbsp;
+    <li>To get a <strong>dataset's structure</strong>, including variable names and data types,
+      use a standard OPeNDAP
+        <a rel="help" href="&dataFiletypeInfo1;">.dds
+      &externalLinkHtml;</a>
+        resquest. For example,
+      <br><a href="&griddapExample;.dds">&griddapExample;.dds</a> (gridded data) or
+      <br><a href="&tabledapExample;.dds">&tabledapExample;.dds</a> (tabular data).
+      <br>&nbsp;
+    <li>To get a <strong>dataset's metadata</strong>, use a standard OPeNDAP
+        <a rel="help" href="&dataFiletypeInfo2;">.das
+      &externalLinkHtml;</a>
+        resquest.
+      For example,
+      <br><a href="&griddapExample;.das">&griddapExample;.das</a> (gridded data) or
+      <br><a href="&tabledapExample;.das">&tabledapExample;.das</a> (tabular data).
+      <br>&nbsp;
+    <li>ERDDAP has a special tabular dataset called
+        <a href="&tErddapUrl;/tabledap/allDatasets.html"><strong>allDatasets</strong></a>
+      which has data about all of the datasets currently available in
+      this ERDDAP.  There is a row for each dataset. There are columns with
+      different types of information (for example, datasetID, title, summary,
+      institution, license, Data Access Form URL, Make A Graph URL).
+      Because this is a tabledap dataset,
+      you can use a tabledap data request to request
+      specific columns and rows which match the constraints, and you can
+      get the response in whichever response file type you prefer,
+      for example, .html, .xhtml, .csv, .json, .jsonlCSV1, .jsonlCSV, or .jsonlKVP.
+      <br>&nbsp;
+    </ul>
+  ]]></restfulHTMLContinued>
+  <restfulGetAllDataset><![CDATA[
+  <br>&nbsp;
+  <li>To get the current list of <strong>all datasets available via a specific protocol</strong>,
+  <ul>
+  <li>For griddap: use
+  <br>&plainLinkExamples1;
+  <li>For tabledap: use
+  <br>&plainLinkExamples2;
+  ]]></restfulGetAllDataset>
+  <restfulProtocols><![CDATA[
+  <li><a class="selfLink" id="OtherProtocols" href="#OtherProtocols" rel="bookmark">
+      ERDDAP's other protocols</a> also have web services that you can use.
+  See
+  <ul>
+  ]]></restfulProtocols>
+  <forSOSUse>For SOS: use</forSOSUse>
+  <forWCSUse>For WCS: use</forWCSUse>
+  <forWMSUse>For WMS: use</forWMSUse>
+  <SOSDocumentation>ERDDAP's SOS documentation</SOSDocumentation>
+  <WCSDocumentation>ERDDAP's WCS documentation</WCSDocumentation>
+  <WMSDocumentation>ERDDAP's WMS documentation</WMSDocumentation>
+  <findOutChange>so that your computer program can find out if a dataset has changed.</findOutChange>
+  
 <requestFormatExamplesHtml><![CDATA[
 (for example,
   <a rel="help" href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET<img 
@@ -4164,10 +5261,10 @@ and
 <!-- {0}=plainFileType of a search query, {1}=the sample query. -->
 <searchWithQuery>A {0} search request must include a query, for example, "{1}".</searchWithQuery>
 
-<!-- Yes, '' is correct.  {0}=erddapUrl {1}=lowercaseProtocol {2}=documentation.html (so it isn't translated) {3}=uppercaseProtocol -->
+<!-- Yes, '' is correct.  {0}=url {1}=uppercaseProtocol -->
 <seeProtocolDocumentation><![CDATA[
 For details, see
-<a rel="help" href="{0}/{1}/{2}"> ERDDAP''s&nbsp;{3}&nbsp;Documentation</a>.
+<a rel="help" href="{0}">ERDDAP''s&nbsp;{1}&nbsp;Documentation</a>.
 ]]></seeProtocolDocumentation>
 
 <selectNext>Select the next item.</selectNext>
@@ -4183,7 +5280,28 @@ actual_max, actual_min, actual_range,
 data_max, data_min, data_range, missing_value,
 valid_max, valid_min, valid_range</signedToUnsignedAttNames>
 
+<slideSorter>Slide Sorter</slideSorter>
+
+<SOS>Sensor Observation Service (SOS)</SOS>
+
 <sosDescriptionHtml>The Sensor Observation Service (SOS) lets you request data via the SOS protocol.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</sosDescriptionHtml>
+
+<sosOverview1><![CDATA[
+<h2>Overview</h2>
+In addition to making data available via 
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> and
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a>,
+ERDDAP makes some datasets
+<br>available via ERDDAP's Sensor Observation Service (SOS) web service.
+<p>
+]]></sosOverview1>
+
+<sosOverview2><![CDATA[
+<p>See the
+<a rel="bookmark" href="&tErddapUrl;/sos/index.html?&encodedDefaultPIppQuery;">list of datasets available via SOS</a>
+at this ERDDAP installation.
+<br>The SOS web pages listed there for each dataset have further documentation and sample requests.
+]]></sosOverview2>
 
 <sosLongDescriptionHtml><![CDATA[
 ERDDAP's Sensor Observation Service (SOS) lets you request data via the SOS protocol.
@@ -4278,7 +5396,7 @@ Questions, comments, suggestions?  Please send an email to <kbd>&adminEmail;</kb
 <hr>
 <h2><a class="selfLink" id="dataLicenses" href="#dataLicenses" rel="help">Data Licenses / Data Usage Restrictions</a></h2>
 The data from some datasets may be subject to usage limitations or restrictions. See the dataset's
-<kbd>license</kbd> metadata, which can be found on the dataset's Data Access Form (.html), 
+&license; metadata, which can be found on the dataset's Data Access Form (.html), 
 Make A Graph (.graph), and Dataset Attribute Structure (.das) web pages.
 ]]></standardDataLicenses>
 
@@ -4336,19 +5454,38 @@ ERDDAP follows
   >NOAA's Privacy Policy Guidelines</a>.
 ]]></standardPrivacyPolicy>
 
+<status>Status</status>
+
 <statusHtml>The Status web page is a quick way to check the current status/health
 of this ERDDAP, including a list of datasets which failed to load.</statusHtml>
 
 
 <!-- Text for the Submit button on various forms. -->
 <submit>Submit</submit>
-<submitTooltip>Submit this form and start downloading the data.</submitTooltip>
+<submitTooltip>Submit the information on this form and start downloading the data.</submitTooltip>
 
+<subscriptionOfferRss><![CDATA[
+  <li><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP</a> offers 
+  <a rel="help" href="&tErddapUrl;/information.html#subscriptions">RSS subscriptions</a>,
+  so that your computer program can find out if a dataset has changed.
+  <br>&nbsp;
+  ]]></subscriptionOfferRss>
+  <subscriptionOfferUrl><![CDATA[
+  <li>ERDDAP offers 
+      <a rel="help" href="&tErddapUrl;/information.html#subscriptions">email/URL subscriptions</a>,
+      which notify your computer program whenever a dataset changes.
+    <br>&nbsp;
+  ]]></subscriptionOfferUrl>
+  
 <subscriptionsTitle>Subscriptions</subscriptionsTitle>
 <subscriptionAdd>Add a new subscription</subscriptionAdd>
 <subscriptionValidate>Validate a subscription</subscriptionValidate>
 <subscriptionList>List your subscriptions</subscriptionList>
 <subscriptionRemove>Remove a subscription</subscriptionRemove>
+<subscriptionEmailList><![CDATA[
+    <strong>Or, you can request an email with a
+    <a class="N" rel="bookmark" href="&subListUrl;">list of your valid and pending subscriptions</a>.</strong>
+    ]]></subscriptionEmailList>
 
 <subscription0Html><![CDATA[
 ERDDAP has an email/URL subscription system so that you can be notified immediately whenever
@@ -4380,6 +5517,7 @@ with ERDDAP''s RSS subscription service.
   (see ERDDAP''s <a rel="license" href="{0}/legal.html">DISCLAIMERS</a>). 
 </ul>
 ]]></subscription2Html>
+
 
 <subscriptionAbuse><![CDATA[
 <p><span class="warningColor">Don't abuse this system by entering someone else's email address or a fake email address!</span>
@@ -4494,8 +5632,7 @@ You will click on a link in the email that ERDDAP sends you after you request to
 
 <!-- This is the short description of ERDDAP, which is used on the middle of the
 left side of ERDDAP's home page.
-This can refer to &convertTimeReference;, &erddapUrl;, 
-&requestFormatExamplesHtml; &resultsFormatExamplesHtml; &wmsManyDatasets;
+This can refer to &erddapUrl; 
 [Bob, see options in c:/content/gov/noaa/pfel/erddap/index1|2|3.html .]
 was <span class="highlightColor"></span>
 -->
@@ -4528,7 +5665,7 @@ make it easier for you to get scientific data.-->
   <br>&nbsp;
 
 <li>ERDDAP offers an easy-to-use, consistent way to request data: via the OPeNDAP standard.
-&wmsManyDatasets;
+  <br>&wmsManyDatasets;
   <br>&nbsp;
 
 <li>ERDDAP returns data in the common file format of your choice.
@@ -4598,7 +5735,7 @@ or via the source files or database.
 Then, people will have another way to access your data
 and will be able to download the data in additional file formats
 or as graphs or maps.
-ERDDAP has been installed by over 85 organizations in at least 14 countries.
+ERDDAP has been installed by over 90 organizations in at least 14 countries.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">NOAA's Data Access Procedural Directive<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4621,7 +5758,7 @@ For more information, see https://en.wikipedia.org/wiki/Favicon .
 You can use your own favicon.ico file by putting it in (tomcat)/content/erddap/images. 
 
 *** If your CSS style includes links to files (e.g., images), that style
-information must be inline in the style tag below, after the 'import' line, 
+information must be inline in the style tag below, after the "import" line, 
 not in the .css file.  
 Put all of the (e.g., image) files in the <tomcat>/content/erddap/images
 directory (or a subdirectory) and reference them below starting with
@@ -4657,17 +5794,17 @@ information.
       style="vertical-align:middle;"></a></td> 
     <td style="text-align:left; font-size:x-large; color:#FFFFFF; ">
       <strong>ERDDAP</strong>
-      <br><small><small><small>Easier access to scientific data</small></small></small>
+      <br><small><small><small>&EasierAccessToScientificData;</small></small></small>
       </td> 
     <td style="text-align:right; font-size:small;"> 
-      &loginInfo; &nbsp; &nbsp;
-      <br>Brought to you by 
+      &loginInfo; | &language; &nbsp; &nbsp;
+      <br>&BroughtToYouBy; 
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark"
       href="https://www.noaa.gov">NOAA</a>  
       <a title="National Marine Fisheries Service" rel="bookmark"
       href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
-      href="https://swfsc.noaa.gov">SWFSC</a> 
+      href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
       href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
@@ -4678,8 +5815,7 @@ information.
 
 <!-- This is the short description of ERDDAP, which is used on the middle of the 
 left side of ERDDAP's home page. 
-This can refer to &erddapUrl;, &requestFormatExamplesHtml;
-&resultsFormatExamplesHtml; and [standardShortDescriptionHtml] (from 
+This can refer to &erddapUrl;, [theShort1], [theShort2], and [standardShortDescriptionHtml] (from 
 [tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml ). 
 If your ERDDAP can use https, all referenced image files, etc. 
   must be in [tomcat]/content/erddap/images or a subdirectory
@@ -4691,14 +5827,15 @@ All of the information in [standardShortDescriptionHtml] is also contained in
 -->
 <theShortDescriptionHtml><![CDATA[
 <h1>ERDDAP</h1>
-ERDDAP is a data server that gives you a simple, consistent way to download 
-subsets of scientific datasets in common file formats and make graphs and maps. 
+&erddapIs;
+&thisParticularErddap;
+[standardShortDescriptionHtml]
+]]></theShortDescriptionHtml>
+
+<thisParticularErddap><![CDATA[
 This particular ERDDAP installation has oceanographic data
 (for example, data from satellites and buoys).
-
-[standardShortDescriptionHtml]
-
-]]></theShortDescriptionHtml>
+]]></thisParticularErddap>
 
 <!-- You can change other things, but please keep "ERDDAP, Version &erddapVersion;" and 
      these references to the Disclaimers and Privacy Policy. -->
@@ -4855,8 +5992,13 @@ src="{0}/images/external.png" alt=" (external link)"
 title="This link to an external website does not constitute an endorsement." /></a>.
 ]]></tabledapVideoIntro>
 
+<theDatasetID>The datasetID</theDatasetID>
+<theKey>The key</theKey>
+<theSubscriptionID>The subscriptionID</theSubscriptionID>
+<theUrlAction>The URL/Action</theUrlAction>
+
 <!-- This is the long description of ERDDAP, which is used on the Background Information web page.
-This can refer to &erddapUrl;, &requestFormatExamplesHtml; &ssUse and &resultsFormatExamplesHtml; .
+This can refer to &erddapUrl;, &ssUse; .
 -->
 <theLongDescriptionHtml><![CDATA[
 ERDDAP is a data server that gives you a simple, consistent way to download 
@@ -4913,8 +6055,8 @@ there are problems ...
 <ul>
 <li>Interesting datasets are hard to find because they are at many different websites.
   <br>&nbsp;
-<li>Each site requires a different protocol to request the data
-  &requestFormatExamplesHtml;.
+<li>Each site requires a different protocol to request the data:
+  <br>&requestFormatExamplesHtml;.
   <br>&nbsp;
 <li>Each site returns the data in a different format (for example, XML, SOAP+XML, OPeNDAP binary
   data stream, ASCII text, HDF 4, HDF 5, NetCDF, ...) and it isn't the common file format
@@ -4977,7 +6119,7 @@ can serve many types of scientific data, not just oceanographic data.</a></stron
   <br>ERDDAP is a data server that was written at
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
       <a title="National Marine Fisheries Service" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
-      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://swfsc.noaa.gov">SWFSC</a>
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
       <a title="Environmental Research Division" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>.
     The ERDDAP server at ERD serves oceanographic data,
     but ERDDAP (the program) can access and serve any gridded or tabular data.
@@ -5056,7 +6198,7 @@ offers several ways to search for interesting datasets.</a></strong>
 
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP sends results in common data file formats.</a></strong>
   <br>The results can be returned in any of several common data file formats
-  &resultsFormatExamplesHtml;,
+  &requestFormatExamplesHtml;,
   instead of just the original format or just the OPeNDAP transfer format (which has no
   standard file manifestation). These files are created on-the-fly.
   Since there are few internal data structures, it is easy to add additional file-type drivers.
@@ -5131,7 +6273,7 @@ offers several ways to search for interesting datasets.</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
     data files. For example,
-    UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
+    UDUNITS has many options for degrees Celsius, including <kbd>degree_C</kbd> and <kbd>degC</kbd>.
     <br>&nbsp;
   <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5190,7 +6332,7 @@ offers several ways to search for interesting datasets.</a></strong>
   Some special uses of these images are:
   <ul>
   <li>Web page authors can
-    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph with the latest data in a web page</a> using an
+    <a rel="help" href="&erddapUrl;/images/embed.html">embed a graph with the latest data in a web page</a> using an
     HTML &lt;img&gt; tag.
 &ssUse;
   <!--li>Anyone can use or make
@@ -5208,10 +6350,10 @@ offers several ways to search for interesting datasets.</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
      in the HTTP GET request header sent by the client.
-  If a supported compression type ("gzip", "x-gzip", or "deflate") is found in the
-  accept-encoding list, ERDDAP includes "content-encoding" in the HTTP response header
+  If a supported compression type (gzip, x-gzip, or deflate) is found in the
+  accept-encoding list, ERDDAP includes <kbd>content-encoding</kbd> in the HTTP response header
   and compresses the data as it transmits it.
-  It is up to the client program to look for "content-encoding" and decompress the data.
+  It is up to the client program to look for <kbd>content-encoding</kbd> and decompress the data.
   Compressed responses are often 3-10 times faster, although there is no benefit 
   to requesting compressed .png files since the files' contents are already compressed. 
   Browsers and OPeNDAP clients do this by default. They request compressed data and
@@ -5579,7 +6721,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">download, ins
 <strong>for free</strong> to distribute their scientific data.  
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
->Over 85 organizations in at least 14 countries use ERDDAP</a>. Maybe there is such a thing as a free lunch.
+>Over 90 organizations in at least 14 countries use ERDDAP</a>. Maybe there is such a thing as a free lunch.
 
 <p>ERDDAP is a Java program. The source code
 for every version is on 
@@ -5797,6 +6939,8 @@ do not necessarily reflect any position of the Government or the National Oceani
 
 <Then>Then</Then>
 
+<twoClickMapDefaultTooltip>Specify a rectangle by clicking on two diagonal corners.  Do it again if needed.</twoClickMapDefaultTooltip>
+
 <!-- This is a way to override ERDDAP's Standardize UDUnits converter
 by providing specific conversions. 
 standardizeUdunits has triplets of lines: before, after, and blank.
@@ -5812,6 +6956,8 @@ degrees +N
 degrees_north
 
 </standardizeUdunits>
+
+<time>Time</time>
 
 <timeoutOtherRequests>Timeout waiting for your other requests to process.</timeoutOtherRequests>
 
@@ -6088,6 +7234,9 @@ https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 https://mur.jpl.nasa.gov
 https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1
 
+http://meteora.ucsd.edu/~pierce/ncview_home_page.html
+https://www.psc.edu/resources/software/ncview/
+
 www.unidata.ucar.edu/software/thredds/current/netcdf-java/ncml/
 docs.unidata.ucar.edu/netcdf-java/current/userguide/ncml_overview.html
 
@@ -6127,9 +7276,6 @@ https://podaac.jpl.nasa.gov
 http://podaac-opendap.jpl.nasa.gov
 https://opendap.jpl.nasa.gov
 
-https://swfsc.noaa.gov/PRD/
-https://swfsc.noaa.gov/main.aspx?Division=PRD&amp;ParentMenuId=147&amp;id=1221
-
 https://pyoceans.github.io/erddapy/
 https://github.com/ioos/erddapy#--erddapy
 
@@ -6145,8 +7291,23 @@ https://www.rvdata.us
 https://sfbeams.sfsu.edu/
 https://coastalobservations.sfsu.edu
 
+https://swfsc.noaa.gov/erd.aspx
+https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
+
 https://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200
 https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/textblock.aspx?Division=FED&amp;ParentMenuId=54&amp;id=16833
+https://www.fisheries.noaa.gov/about/fisheries-ecology-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/PRD/
+https://www.fisheries.noaa.gov/about/marine-mammal-and-turtle-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/main.aspx?Division=PRD&amp;ParentMenuId=147&amp;id=1221
+https://www.fisheries.noaa.gov/about/marine-mammal-and-turtle-division-southwest-fisheries-science-center
+
+https://swfsc.noaa.gov/GroundfishAnalysis/
+https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
@@ -6910,9 +8071,6 @@ https://www.slf4j.org
 http://www.stevens.edu
 https://www.stevens.edu
 
-http://www.swfsc.noaa.gov
-https://swfsc.noaa.gov
-
 http://www.udel.edu
 https://www.udel.edu
 
@@ -7056,17 +8214,41 @@ This can't be nothing. So if you want nothing, enter a gibberish word that will
 never be an attribute name. -->
 <updateUrlsSkipAttributes>sourceUrl</updateUrlsSkipAttributes>
 
+<variableNames>Variable Names</variableNames>
+
 <viewAllDatasetsHtml>View a List of All Datasets</viewAllDatasetsHtml>
 
 <waitThenTryAgain>There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)</waitThenTryAgain>
 
 <warning>WARNING!</warning>
-
+<units>Units</units>
 <unknownDatasetID>Currently unknown datasetID={0}</unknownDatasetID>
 <unknownProtocol>Unknown protocol={0}</unknownProtocol>
 <unsupportedFileType>Unsupported fileType={0}</unsupportedFileType>
 
+<usingGriddap>Using griddap to Request Data and Graphs from Gridded Datasets</usingGriddap>
+<usingTabledap>Using tabledap to Request Data and Graphs from Tabular Datasets</usingTabledap>
+
+<WCS>Web Coverage Service (WCS)</WCS>
 <wcsDescriptionHtml>The Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</wcsDescriptionHtml>
+
+<wcsOverview1><![CDATA[
+<h2>Overview</h2>
+In addition to making data available via 
+<a rel="bookmark" href="&tErddapUrl;/griddap/index.html?&encodedDefaultPIppQuery;">gridddap</a> and
+<a rel="bookmark" href="&tErddapUrl;/tabledap/index.html?&encodedDefaultPIppQuery;">tabledap</a>,
+ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.
+
+<p>See the
+<a rel="bookmark" href="&tErddapUrl;/wcs/index.html?&encodedDefaultPIppQuery;">list of datasets available via WCS</a>
+at this ERDDAP installation.
+]]></wcsOverview1>
+
+<wcsOverview2><![CDATA[
+<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.
+See this <a rel="bookmark" href="https://en.wikipedia.org/wiki/Web_Coverage_Service#WCS_Implementations">
+  list of WCS clients (and servers) &externalLinkHtml;</a>
+]]></wcsOverview2>
 
 <wcsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.
@@ -7115,10 +8297,323 @@ creation and display of registered and superimposed map-like views of informatio
 simultaneously from multiple remote and heterogeneous sources."
 ]]></wmsLongDescriptionHtml>
 
+<WMSDocumentation1><![CDATA[
+<h2>Three Ways to Make Maps with WMS</h2>
+<ol>
+<li> <strong>In theory, anyone can download, install, and use WMS client software.</strong>
+  <br>Some clients are: 
+    <a rel="bookmark" href="https://www.esri.com/software/arcgis/">ArcGIS
+    &externalLinkHtml;</a> and
+    <a rel="bookmark" href="http://udig.refractions.net//">uDig
+    &externalLinkHtml;</a>. 
+  To make these work, you would install the software on your computer.
+  Then, you would enter the URL of the WMS service into the client.
+
+  For example, in ArcGIS (not yet fully working because it doesn't handle time!), use
+  "Arc Catalog : Add Service : Arc Catalog Servers Folder : GIS Servers : Add WMS Server".
+  In ERDDAP, each dataset has its own WMS service, which is located at
+  <br>&tErddapUrl;/wms/<i>datasetID</i>/&WMSSERVER;?
+  <br>For example: <strong>&e0;</strong>
+  <br>(Some WMS client programs don't want the <strong>?</strong> at the end of that URL.)
+&datasetListRef;
+  <p><strong>In practice,</strong> we haven't found any WMS clients that properly handle dimensions
+  other than longitude and latitude (e.g., time), a feature which is specified by the WMS
+  specification and which is utilized by most datasets in ERDDAP's WMS servers.
+  You may find that using a dataset's &makeAGraphRef;
+     form and selecting the .kml file type
+  (an OGC standard) to load images into <a rel="bookmark" href="https://www.google.com/earth/">Google Earth
+    &externalLinkHtml;</a> provides a good (non-WMS) map client.
+&makeAGraphListRef;
+<li> <strong>Web page authors can embed a WMS client in a web page.</strong>
+  <br>For example, ERDDAP uses 
+    <a rel="bookmark" href="https://leafletjs.com">Leaflet
+    &externalLinkHtml;</a>, which is a very versatile WMS client, for the WMS page for each ERDDAP dataset (&likeThis;).
+&datasetListRef;
+  Leaflet doesn't automatically deal with dimensions other than longitude and latitude
+  (e.g., time), so you will have to write JavaScript (or other scripting code) to do that.
+  (Adventurous JavaScript programmers can look at the Source Code from a web page &likeThis;.)
+  <p>Another commonly used JavaScript WMS client is
+    <a rel="bookmark" href="https://openlayers.org/">OpenLayers
+    &externalLinkHtml;</a>.
+<li> <strong>A person with a browser or a computer program can generate special WMS URLs.</strong>
+  <br>For example:
+  <ul>
+  <li>To get an image with a map with an opaque background:
+    <br><a href="&tWmsOpaqueExample130;">&tWmsOpaqueExample130Replaced;</a>
+  <li>To get an image with a map with a transparent background:
+    <br><a href="&tWmsTransparentExample130;">&tWmsTransparentExample130Replaced;</a>
+  </ul>
+&datasetListRef;
+  <br><strong>See the details below.</strong>
+  <p><strong>In practice, it is easier, more versatile,
+  and more efficient to use a dataset's &makeAGraphRef; web page</strong>
+  than to use WMS for this purpose.
+<br>&makeAGraphListRef; 
+</ol>
+]]></WMSDocumentation1>
+
+<WMSGetCapabilities><![CDATA[
+<h2><a class="selfLink" id="GetCapabilities" href="#GetCapabilities" rel="bookmark">Forming GetCapabilities URLs</a></h2>
+A GetCapabilities request returns an XML document which provides background information
+  about the service and basic information about all of the data available from this
+  service. For this dataset, for WMS version 1.3.0, use
+  <br><a href="&tWmsGetCapabilities130;">&tWmsGetCapabilities130;</a>
+  <p>The supported parameters for a GetCapabilities request are:
+<table class="erd commonBGColor nowrap" style="width:100%;">
+  <tr>
+    <th><i>name=value</i><sup>*</sup></th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>&serviceWMS;</td>
+    <td>Required.</td>
+  </tr>
+  <tr>
+    <td>&version;=<i>version</i></td>
+    <td>Currently, ERDDAP's WMS supports "1.1.0", "1.1.1", and "1.3.0".
+      <br>This parameter is optional. The default is "1.3.0".</td>
+  </tr>
+  <tr>
+    <td>&requestGetCapabilities;</td>
+    <td>Required.</td>
+  </tr>
+  </table>
+  <sup>*</sup> Parameter names are case-insensitive.
+  <br>Parameter values are case sensitive and must be
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded
+    &externalLinkHtml;</a>:
+    all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where
+    HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.
+    Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded
+    (ask a programmer for help). There are
+    "<a class="N" rel="help" href="https://www.url-encode-decode.com">websites that percent encode/decode for you
+    &externalLinkHtml;</a>.
+  <br>The parameters may be in any order in the URL, separated by '&amp;' .
+  <br>&nbsp;
+]]></WMSGetCapabilities>
+
+<WMSGetMap><![CDATA[
+<h2><a class="selfLink" id="GetMap" href="#GetMap" rel="bookmark">Forming GetMap URLs</a></h2>
+  A person with a browser or a computer program can generate a special URL to request a map.
+  The URL must be in the form
+  <br>&tErddapUrl;/wms/<i>datasetID</i>/&WMSSERVER;?<i>query</i>
+  <br>The query for a WMS GetMap request consists of several <i>parameterName=value</i>, separated by '&amp;'.
+  For example,
+  <br><a href="&tWmsOpaqueExample130;">&tWmsOpaqueExample130Replaced;</a>
+  <br>The <a class="selfLink" id="parameters" href="#parameters" rel="bookmark">parameter</a> options for the GetMap request are:
+  <br>&nbsp;
+    <!--necessary for the blank line before the table (not <p>)-->
+<table class="erd commonBGColor" style="width:100%; ">
+  <tr>
+    <th><i>name=value</i><sup>*</sup></th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td class="N">&serviceWMS;</td>
+    <td>Required.</td>
+  </tr>
+  <tr>
+    <td>&version;=<i>version</i></td>
+    <td>Request version.
+      Currently, ERDDAP's WMS supports "1.1.0", "1.1.1", and "1.3.0".  Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&requestGetMap;</td>
+    <td>Request name.  Required.</td>
+  </tr>
+  <tr>
+    <td>&layers;=<i>layer_list</i></td>
+    <td>Comma-separated list of one or more map layers.
+        Layers are drawn in the order they occur in the list.
+        Currently in ERDDAP's WMS, the layer names from datasets are named <i>datasetID</i>
+    &WMSSEPARATOR; <i>variableName</i> .
+        In ERDDAP's WMS, there are five layers not based on ERDDAP datasets:
+        <ul>
+        <li> "Land" may be drawn BEFORE (as an under layer) or AFTER (as a land mask) layers from grid datasets.
+        <li> "Coastlines" usually should be drawn AFTER layers from grid datasets.
+        <li> "LakesAndRivers" draws lakes and rivers. This usually should be drawn AFTER layers from grid datasets.
+        <li> "Nations" draws national political boundaries. This usually should be drawn AFTER layers from grid datasets.
+        <li> "States" draws state political boundaries. This usually should be drawn AFTER layers from grid datasets.
+        </ul>         
+        Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&styles;=<i>style_list</i></td>
+    <td>Comma-separated list of one rendering style per requested layer.
+      Currently in ERDDAP's WMS, the only style offered for each layer is the default style,
+      which is specified via "" (nothing).
+      For example, if you request 3 layers, you can use "styles=,,".
+      Or, even easier, you can request the default style for all layers via "styles=". 
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td class="N">1.1.0: srs=<i>namespace:identifier</i>
+<br>1.1.1: srs=<i>namespace:identifier</i>
+<br>1.3.0: crs=<i>namespace:identifier</i></td>
+    <td>Coordinate reference system.
+        <br>Currently in ERDDAP's WMS 1.1.0, the only valid SRS is EPSG:4326.
+        <br>Currently in ERDDAP's WMS 1.1.1, the only valid SRS is EPSG:4326.
+        <br>Currently in ERDDAP's WMS 1.3.0, the only valid CRS's are CRS:84 and EPSG:4326,
+        <br>Required.
+    </td>
+  </tr>
+  <tr>
+    <td>bbox=<i>4commaSeparatedValues</i></td>
+    <td>Bounding box corners in SRS/CRS units.
+      For version=1.3.0 with CRS=EPSG:4326, the 4 values are: minLat,minLon,maxLat,maxLon.
+      For all other situations, the 4 values are: minLon,minLat,maxLon,maxLat.
+      (The reverse order! Yes, it's bizarre. Welcome to the world of OGC!)
+      ERDDAP supports requests within the dataset's longitude (perhaps 0 to 360, perhaps -180 to 180)
+      and latitude range. Most WMS clients assume longitude values are in the range -180 to 180.
+      If ERDDAP offers a variant of a dataset with longitude -180 to 180, use it for WMS requests.
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&width;=<i>output_width</i></td>
+    <td>Width in pixels of map picture. Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&height;=<i>output_height</i></td>
+    <td>Height in pixels of map picture. Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&format;=<i>output_format</i></td>
+    <td>Output format of map.  Currently in ERDDAP's WMS, only image/png is valid.
+      Required.
+    </td>
+  </tr>
+  <tr>
+    <td>&transparentTRUEFALSE;</td>
+    <td>Background transparency of map.  Optional (default=&FALSE;).
+      If &TRUE;, any part of the image using the BGColor will be made transparent.
+    </td>
+  </tr>
+  <tr>
+    <td>&bgcolor;=<i>color_value</i></td>
+    <td>Hexadecimal 0xRRGGBB color value for the background color. Optional (default=0xFFFFFF, white).
+      If transparent=true, we recommend &bgcolor;=0x808080 (gray), since white is in some color palettes.
+    </td>
+  </tr>
+  <tr>
+    <td>&exceptions;=<i>exception_format</i></td>
+    <td>The format for WMS exception responses.  Optional.
+      <br>Currently, ERDDAP's WMS 1.1.0 and 1.1.1 supports
+          "application/vnd.ogc.se_xml" (the default),
+      <br>"application/vnd.ogc.se_blank" (a blank image) and
+          "application/vnd.ogc.se_inimage" (the error in an image).
+      <br>Currently, ERDDAP's WMS 1.3.0 supports "XML" (the default),
+          "BLANK" (a blank image), and
+      <br>"INIMAGE" (the error in an image).
+    </td>
+  </tr>
+  <tr>
+    <td>&time;=<i>time</i></td>
+    <td>Time value of layer desired, specified in ISO 8601 format: yyyy-MM-ddTHH:mm:ssZ .
+      Currently in ERDDAP's WMS, you can only specify one time value per request.
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.
+      <br>In ERDDAP's WMS, the default value is the last value in the dataset's 1D time array.
+      <br>In ERDDAP's WMS, "current" is interpreted as the last available time (recent or not).
+      <br>Optional (in ERDDAP's WMS, the default is the last value, whether it is recent or not).
+    </td>
+  </tr>
+  <tr>
+    <td>&elevation;=<i>elevation</i></td>
+    <td>Elevation of layer desired.
+      Currently in ERDDAP's WMS, you can only specify one elevation value per request.
+      <br>In ERDDAP's WMS, this is used for the altitude or depth (converted to altitude) dimension (if any).
+      (in meters, positive=up)
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.
+      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude or depth array).
+    </td>
+  </tr>
+  <tr>
+    <td>dim_<i>name</i>=<i>value</i></td>
+    <!--see WMS 1.3.0 spec section C.-->
+    <td>Value of other dimensions as appropriate.
+      Currently in ERDDAP's WMS, you can only specify one value per dimension per request.
+      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude, non-depth dimensions.
+      <br>The name of a dimension will be "dim_" plus the dataset's name for the dimension, for example "dim_model".
+      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.
+      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dimension's 1D array).
+    </td>
+  </tr>
+</table>
+<!--WMS 1.3.0 spec section 6.8.1-->
+  <sup>*</sup> Parameter names are case insensitive.
+  <br>Parameter values are case sensitive and must be
+    <a class="N" rel="help" href="https://en.wikipedia.org/wiki/Percent-encoding">percent encoded
+    &externalLinkHtml;</a>:
+  all characters in query values other than A-Za-z0-9_-!.~'()* must be encoded as %HH, where
+  HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.
+  Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded
+    (ask a programmer for help). There are
+<a class="N" rel="help" href="https://www.url-encode-decode.com">websites that percent encode/decode for you
+    &externalLinkHtml;</a>.
+  <br>The parameters may be in any order in the URL, separated by '&amp;' .
+<p>(Revised from Table 8 of the WMS 1.3.0 specification)
+]]></WMSGetMap>
+
+<WMSNotes><![CDATA[
+<h3><a class="selfLink" id="notes" href="#notes" rel="bookmark">Notes</a></h3>
+<ul>
+<!--These WMS requirements are also in setupDatasetXml.-->
+<li><a class="selfLink" id="DatasetRequirements" href="#DatasetRequirements" rel="bookmark"><strong>Dataset Requirements:</strong></a>
+  The main requirements for a variable to be accessible via
+  ERDDAP's WMS server are:
+  <ul>
+  <li>The dataset must be an EDDGrid... dataset.
+  <li>The data variable MUST be a gridded variable.
+  <li>The data variable MUST have longitude and latitude axis variables. (Other axis variables 
+      are OPTIONAL.)
+  <li>There MUST be some longitude values between -180 and 180.
+  <li>The
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">
+        colorBarMinimum and colorBarMaximum attributes</a>
+      MUST be specified. (Other color bar
+    attributes are OPTIONAL.)
+  </ul>
+<li><strong>Grid data layers:</strong> In ERDDAP's WMS, all data variables in grid datasets that use
+  longitude and latitude dimensions are available via WMS.
+  Each such variable is available as a WMS layer, with the name <i>datasetID</i>
+    &WMSSEPARATOR; <i>variableName</i>.
+  Each such layer is transparent (i.e., data values are represented as a range of colors
+  and missing values are represented by transparent pixels).
+<li><strong>Table data layers:</strong> Currently in ERDDAP's WMS, data variables in table datasets are
+  not available via WMS.
+<li><strong>Dimensions:</strong> A consequence of the WMS design is that the TIME, ELEVATION, and other 
+  dimension values that you specify in a GetMap request apply to all of the layers.
+  There is no way to specify different values for different layers.
+
+<!--"<li><strong>Longitude:</strong> The supported CRS values only support longitude values from -180 to 180.
+//"   But some ERDDAP datasets have longitude values 0 to 360.
+//"   Currently in ERDDAP's WMS, those datasets are only available from longitude 0 to 180 in WMS.-->
+
+<li><strong>Strict?</strong> The table above specifies how a client should form a GetMap request.
+  In practice, ERDDAP's WMS tries to be as lenient as possible when processing GetMap
+  requests, since many current clients don't follow the specification. However, if you
+  are forming GetMap URLs, we encourage you to try to follow the specification.
+<li><strong>Why are there separate WMS servers for each dataset?</strong> Because the GetCapabilities
+  document lists all values of all dimensions for each dataset, the information for each
+  dataset can be voluminous (easily 300 KB). If all of the gridded datasets (currently ~1000) at the
+  ERDDAP main site were to be included in one WMS, the resulting GetCapabilities document
+  would be huge (~300 MB) which would take a long time to download (causing many people
+  think something was wrong and give up) and would overwhelm most client software.
+<!--//"   However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at
+//"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?-->
+</ul>
+]]></WMSNotes>
+
 <wmsManyDatasets><![CDATA[
 Many datasets can also be accessed via ERDDAP's Web Map Service (WMS).
 ]]></wmsManyDatasets>
 
+<yourEmailAddress>Your email address</yourEmailAddress>
 <zoomIn>Zoom In</zoomIn>
 <zoomOut>Zoom Out</zoomOut>
 

@@ -47,10 +47,10 @@ public class TableWriterDods extends TableWriter {
      *     The ouputStream is not procured until there is data to be written.
      * @param tSequenceName  e.g., "erd_opendap_globec_bottle"
      */
-    public TableWriterDods(EDD tEdd, String tNewHistory, 
+    public TableWriterDods(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource, String tSequenceName) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         sequenceName = tSequenceName;
     }
 

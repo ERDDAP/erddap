@@ -50,10 +50,10 @@ public class TableWriterNccsv extends TableWriter {
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
      */
-    public TableWriterNccsv(EDD tEdd, String tNewHistory, 
+    public TableWriterNccsv(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
     }
 
     /**
@@ -210,10 +210,10 @@ public class TableWriterNccsv extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource tOutputStreamSource) throws Throwable {
 
-        TableWriterNccsv twn = new TableWriterNccsv(tEdd, 
+        TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, 
             tNewHistory, tOutputStreamSource);
         twn.writeAllAndFinish(table);
     }

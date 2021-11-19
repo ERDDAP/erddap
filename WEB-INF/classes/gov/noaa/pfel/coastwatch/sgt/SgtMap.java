@@ -575,13 +575,13 @@ public class SgtMap  {
             //determine appropriate axis lengths to best fill available space
             //note  graphHeight/yRange = graphWidth/xRange
             //Standard: for US+Mex, assuming imageHeightInches = 4"
-            //      (4-.25-.2)/28°     = graphWidth/30°  -> graphWidth = 3.80"
+            //      (4-.25-.2)/28Â°     = graphWidth/30Â°  -> graphWidth = 3.80"
             //   so imageWidthInches should be 0.25 + 3.80 + 2.65" (for stuff at right) = 6.7"
             //Small: for US+Mex, assuming imageHeightInches = 2.5"
-            //      (2.5-.25-.2)/28°     = graphWidth/30°  -> graphWidth = 2.20"
+            //      (2.5-.25-.2)/28Â°     = graphWidth/30Â°  -> graphWidth = 2.20"
             //   so imageWidthInches should be 0.25 + 2.20 + 2.65" (for stuff at right) = 5.10"
             //Large: for US+Mex, assuming imageHeightInches = 7"
-            //      (7-.25-.2)/28°     = graphWidth/30°  -> graphWidth = 7.02"
+            //      (7-.25-.2)/28Â°     = graphWidth/30Â°  -> graphWidth = 7.02"
             //   so imageWidthInches should be 0.25 + 7.02 + 2.65" (for stuff at right) = 9.92"
             double graphULX = fontScale * 0.25;   //relative to baseULXYPixel
             double graphULY = fontScale * 0.2;
@@ -1411,7 +1411,7 @@ public class SgtMap  {
                     xAxis.setNumberSmallTics(nSmallTics); 
                     xAxis.setLabelInterval(1);
                     xAxis.setLabelFont(labelFont); 
-                    xAxis.setLabelFormat("%g°");
+                    xAxis.setLabelFormat("%gÂ°");
                     xAxis.setLabelHeightP(axisLabelHeight);
                     xAxis.setSmallTicHeightP(fontScale * .02);
                     xAxis.setLargeTicHeightP(fontScale * .05);
@@ -1436,7 +1436,7 @@ public class SgtMap  {
                     yAxis.setNumberSmallTics(nSmallTics); 
                     yAxis.setLabelInterval(1);
                     yAxis.setLabelFont(labelFont); 
-                    yAxis.setLabelFormat("%g°");
+                    yAxis.setLabelFormat("%gÂ°");
                     yAxis.setLabelHeightP(axisLabelHeight);
                     yAxis.setSmallTicHeightP(fontScale * .02);
                     yAxis.setLargeTicHeightP(fontScale * .05);
@@ -2462,7 +2462,7 @@ public class SgtMap  {
         xAxis.setNumberSmallTics(nSmallTics); 
         xAxis.setLabelInterval(1);
         xAxis.setLabelFont(myLabelFont); 
-        xAxis.setLabelFormat("%g°");
+        xAxis.setLabelFormat("%gÂ°");
         xAxis.setLabelHeightP(.12);
         xAxis.setSmallTicHeightP(.02);
         xAxis.setLargeTicHeightP(.05);
@@ -2481,7 +2481,7 @@ public class SgtMap  {
         yAxis.setNumberSmallTics(nSmallTics); 
         yAxis.setLabelInterval(1);
         yAxis.setLabelFont(myLabelFont); 
-        yAxis.setLabelFormat("%g°");
+        yAxis.setLabelFormat("%gÂ°");
         yAxis.setLabelHeightP(.12);
         yAxis.setSmallTicHeightP(.02);
         yAxis.setLargeTicHeightP(.05);

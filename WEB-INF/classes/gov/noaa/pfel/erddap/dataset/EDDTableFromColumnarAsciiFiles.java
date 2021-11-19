@@ -2292,6 +2292,7 @@ boolean columnar = false;  // are there any? how detect?
      */
     public static void testGenerateDatasetsXmlFromEML() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         int which = 6;
         String emlDir = "/u00/data/points/lterSbc/";  
@@ -3075,7 +3076,7 @@ String expected =
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");
 
         String userDapQuery = "";
-        String tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, 
+        String tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_eml_1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -3101,6 +3102,7 @@ String expected =
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         Attributes externalAddAttributes = new Attributes();
         externalAddAttributes.add("title", "New Title!");
@@ -3313,7 +3315,7 @@ String expected =
             "destinationNames");
 
         String userDapQuery = "";
-        String tName = edd.makeNewFileForDapQuery(null, null, userDapQuery, 
+        String tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -3342,6 +3344,7 @@ String expected =
     public static void testBasic() throws Throwable {
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.testBasic()\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3354,7 +3357,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\nEDDTableFromColumnarAsciiFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3458,7 +3461,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3486,7 +3489,7 @@ expected =
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3508,7 +3511,7 @@ expected =
 
         //only subsetVars
         userDapQuery = "fileName,five";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_sv", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         expected = 
@@ -3528,7 +3531,7 @@ expected =
 
         //subset of variables, constrain boolean and five
         userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_conbool", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         expected = 
@@ -3557,6 +3560,7 @@ expected =
     public static void testGlerl() throws Throwable {
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.testGlerl()\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -3600,7 +3604,7 @@ expected =
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3625,7 +3629,7 @@ expected =
         //make sure 1 and only 1 row of data for each year
         for (int year = 1994; year <= 2015; year++) {
             userDapQuery = "&time=\"" + year + "-11-01\"";
-            tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
                 eddTable.className() + "_" + year, ".nc"); 
             Table table = new Table();
             table.readFlatNc(testDir + tName, null, 0); //standardizeWhat=0
@@ -3640,7 +3644,7 @@ expected =
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -3668,6 +3672,7 @@ expected =
      */
     public static void testGlerl2() throws Throwable {
         String2.log("\n*** EDDTableFromColumnarAsciiFiles.testGlerl2()\n");
+        int language = 0;
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -3697,7 +3702,7 @@ expected =
 
         //.csv    for all
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);

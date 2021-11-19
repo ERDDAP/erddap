@@ -53,14 +53,15 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName-safe fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
-    public TableWriterAllWithMetadata(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterAllWithMetadata(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt) {
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt);
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt);
     }
 
 

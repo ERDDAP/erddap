@@ -2686,7 +2686,7 @@ String expected2 =
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT SeaWinds, 0.125°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "\n" +
 "  data:\n" +
@@ -2902,7 +2902,7 @@ expected2 =
 "  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters. (This is a monthly composite.)\";\n" +
 "  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
 "  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-"  :title = \"Wind, QuikSCAT SeaWinds, 0.125°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
+"  :title = \"Wind, QuikSCAT SeaWinds, 0.125Â°, Global, Science Quality, 1999-2009 (Monthly)\";\n" +
 "  :Westernmost_Easting = 0.0; // double\n" +
 "}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);

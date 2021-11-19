@@ -180,6 +180,7 @@ public class EDStatic {
      * <br>2.12 released on 2021-05-14
      * <br>2.13 none
      * <br>2.14 released on 2021-07-02
+     * <br>2.15 released on 2021-11-19
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -322,31 +323,34 @@ public static boolean developmentMode = false;
     public static int    slowDownTroubleMillis  = DEFAULT_slowDownTroubleMillis;
     public static int    unusualActivity        = DEFAULT_unusualActivity;
 
-    public static String  //these are set by setup.xml (deprecated) and/or datasets.xml (v2.00+)
-        standardShortDescriptionHtml, 
+    //not translated
+    public static String  //these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)    
         DEFAULT_standardLicense,
-        DEFAULT_standardContact,
-        DEFAULT_standardDataLicenses,
-        DEFAULT_standardDisclaimerOfEndorsement,
-        DEFAULT_standardDisclaimerOfExternalLinks,
-        DEFAULT_standardGeneralDisclaimer,
-        DEFAULT_standardPrivacyPolicy,
+        standardLicense,
         DEFAULT_startHeadHtml, //see xxx() methods
-        DEFAULT_startBodyHtml, 
-        DEFAULT_theShortDescriptionHtml,
-        DEFAULT_endBodyHtml, 
+        startHeadHtml; //see xxx() methods
+
+    //translated
+    public static String[]  //these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)    
+        DEFAULT_standardContactAr,
+        DEFAULT_standardDataLicensesAr,
+        DEFAULT_standardDisclaimerOfEndorsementAr,
+        DEFAULT_standardDisclaimerOfExternalLinksAr,
+        DEFAULT_standardGeneralDisclaimerAr,
+        DEFAULT_standardPrivacyPolicyAr,
+        DEFAULT_startBodyHtmlAr, 
+        DEFAULT_theShortDescriptionHtmlAr,
+        DEFAULT_endBodyHtmlAr, 
  
-        standardLicense, 
-        standardContact,
-        standardDataLicenses,
-        standardDisclaimerOfEndorsement,
-        standardDisclaimerOfExternalLinks,
-        standardGeneralDisclaimer,
-        standardPrivacyPolicy,
-        startHeadHtml, //see xxx() methods
-        startBodyHtml, 
-        theShortDescriptionHtml, 
-        endBodyHtml;
+        standardContactAr,
+        standardDataLicensesAr,
+        standardDisclaimerOfEndorsementAr,
+        standardDisclaimerOfExternalLinksAr,
+        standardGeneralDisclaimerAr,
+        standardPrivacyPolicyAr,
+        startBodyHtmlAr, 
+        theShortDescriptionHtmlAr, 
+        endBodyHtmlAr;
     public static String //in messages.xml and perhaps in datasets.xml (v2.00+)
         commonStandardNames[],
         DEFAULT_commonStandardNames[];
@@ -682,294 +686,15 @@ public static boolean developmentMode = false;
 
     /** These values are loaded from the [contentDirectory]messages.xml file (if present)
         or .../classes/gov/noaapfel/erddap/util/messages.xml. */
-    private static String
-        acceptEncodingHtml,
-        filesDocumentation;
-    public static String 
-        accessRESTFUL,
-        acronyms,
-        addConstraints,
-        addVarWhereAttName,
-        addVarWhereAttValue,
-        addVarWhere,
-        additionalLinks,
+
+    //NOT TRANSLATED
+    public static String
         admKeywords,
         admSubsetVariables,
-        admSummary,
-        admTitle,
         advl_datasetID,
-        advc_accessible,
-        advl_accessible,
-        advl_institution,
-        advc_dataStructure,
-        advl_dataStructure,
-        advr_dataStructure,
-        advl_cdm_data_type,
         advr_cdm_data_type,
-        advl_class,
         advr_class,
-        advl_title,
-        advl_minLongitude,
-        advl_maxLongitude,
-        advl_longitudeSpacing,
-        advl_minLatitude,
-        advl_maxLatitude,
-        advl_latitudeSpacing,
-        advl_minAltitude,
-        advl_maxAltitude,
-        advl_minTime,
-        advc_maxTime,
-        advl_maxTime,
-        advl_timeSpacing,
-        advc_griddap,
-        advl_griddap,
-        advl_subset,
-        advc_tabledap,
-        advl_tabledap,
-        advl_MakeAGraph,
-        advc_sos,
-        advl_sos,
-        advl_wcs,
-        advl_wms,
-        advc_files,
-        advl_files,
-        advc_fgdc,
-        advl_fgdc,
-        advc_iso19115,
-        advl_iso19115,
-        advc_metadata,
-        advl_metadata,
-        advl_sourceUrl,
-        advl_infoUrl,
-        advl_rss,
-        advc_email,
-        advl_email,
-        advl_summary,
-        advc_testOutOfDate,
-        advl_testOutOfDate,
-        advc_outOfDate,
-        advl_outOfDate,
-        advn_outOfDate,
-
-        advancedSearch,
-        advancedSearchResults,
-        advancedSearchDirections,
-        advancedSearchTooltip,
-        advancedSearchBounds,
-        advancedSearchMinLat,
-        advancedSearchMaxLat,
-        advancedSearchMinLon,
-        advancedSearchMaxLon,
-        advancedSearchMinMaxLon,
-        advancedSearchMinTime,
-        advancedSearchMaxTime,
-        advancedSearchClear,
-        advancedSearchClearHelp,
-        advancedSearchCategoryTooltip,
-        advancedSearchRangeTooltip,
-        advancedSearchMapTooltip,
-        advancedSearchLonTooltip,
-        advancedSearchTimeTooltip,
-        advancedSearchWithCriteria,
-        advancedSearchFewerCriteria,
-        advancedSearchNoCriteria,
-        advancedSearchErrorHandling,
-        autoRefresh,
-        blacklistMsg,
-        categoryTitleHtml,
-        categoryHtml,
-        category3Html,
-        categoryPickAttribute,
-        categorySearchHtml,
-        categorySearchDifferentHtml,
-        categoryClickHtml,
-        categoryNotAnOption,
-        caughtInterrupted,
-        cdmDataTypeHelp,
-        clickAccess,
-        clickBackgroundInfo,
-        clickERDDAP,
-        clickInfo,
-        clickToSubmit,
-        converterWebService,
-        convertOceanicAtmosphericAcronyms,
-        convertOceanicAtmosphericAcronymsIntro,
-        convertOceanicAtmosphericAcronymsNotes,
-        convertOceanicAtmosphericAcronymsService,
-        convertOceanicAtmosphericVariableNames,        
-        convertOceanicAtmosphericVariableNamesIntro,
-        convertOceanicAtmosphericVariableNamesNotes,
-        convertOceanicAtmosphericVariableNamesService,
-        convertFipsCounty,        
-        convertFipsCountyIntro,
-        convertFipsCountyNotes,
-        convertFipsCountyService,
-        convertHtml,
-        convertInterpolate,             
-        convertInterpolateIntro,
-        convertInterpolateTLLTable,
-        convertInterpolateTLLTableHelp,
-        convertInterpolateDatasetIDVariable,
-        convertInterpolateDatasetIDVariableHelp,
-        convertInterpolateNotes,
-        convertInterpolateService,
-        convertKeywords,          
-        convertKeywordsCfTooltip,
-        convertKeywordsGcmdTooltip,
-        convertKeywordsIntro,
-        convertKeywordsNotes,
-        convertKeywordsService,
-        convertTime,         
-        convertTimeBypass,
-        convertTimeReference,
-        convertTimeIntro,
-        convertTimeNotes,
-        convertTimeService,
-        convertTimeNumberTooltip,
-        convertTimeStringTimeTooltip,
-        convertTimeUnitsTooltip,
-        convertTimeUnitsHelp,
-        convertTimeIsoFormatError,
-        convertTimeNoSinceError,
-        convertTimeNumberError,
-        convertTimeNumericTimeError,
-        convertTimeParametersError,
-        convertTimeStringFormatError,
-        convertTimeTwoTimeError,
-        convertTimeUnitsError,
-        convertUnits,             
-        convertUnitsComparison,   
-        convertUnitsFilter,
-        convertUnitsIntro,
-        convertUnitsNotes,
-        convertUnitsService,
-        convertURLs,             
-        convertURLsIntro,
-        convertURLsNotes,
-        convertURLsService,
-        cookiesHelp,
-        daf,
-        dafGridBypassTooltip,
-        dafGridTooltip,
-        dafTableBypassTooltip,
-        dafTableTooltip,
-        dasTitle,
-        dataAccessNotAllowed,
-        databaseUnableToConnect,
-        dataProviderFormSuccess,
-        dataProviderFormShortDescription,
-        dataProviderFormLongDescriptionHTML,
-        dataProviderFormPart1,
-        dataProviderFormPart2Header,
-        dataProviderFormPart2GlobalMetadata,
-        dataProviderContactInfo,
-        dataProviderData,
-
-        dpf_submit,
-        dpf_fixProblem,
-        dpf_yourName,
-        dpf_emailAddress,
-        dpf_Timestamp,
-        dpf_frequency,
-        dpf_title,
-        dpf_titleTooltip,
-        dpf_summary,
-        dpf_summaryTooltip,
-        dpf_creatorName,
-        dpf_creatorNameTooltip,
-        dpf_creatorType,
-        dpf_creatorTypeTooltip,
-        dpf_creatorEmail,
-        dpf_creatorEmailTooltip,
-        dpf_institution,
-        dpf_institutionTooltip,
-        dpf_infoUrl,
-        dpf_infoUrlTooltip,
-        dpf_license,
-        dpf_licenseTooltip,
-        dpf_howYouStoreData,
-        dpf_required,
-        dpf_optional,
-        dpf_provideIfAvaliable,
-        dpf_acknowledgement,
-        dpf_acknowledgementTooltip,
-        dpf_history,
-        dpf_historyTooltip,
-        dpf_idTooltip,
-        dpf_namingAuthority,
-        dpf_namingAuthorityTooltip,
-        dpf_productVersion,
-        dpf_productVersionTooltip,
-        dpf_references,
-        dpf_referencesTooltip,
-        dpf_comment,
-        dpf_commentTooltip,
-        dpf_dataTypeHelp,
-        dpf_ioosCategory,
-        dpf_ioosCategoryHelp,
-        dpf_part3Header,
-        dpf_variableMetadata,
-        dpf_sourceName,
-        dpf_sourceNameTooltip,
-        dpf_destinationName,
-        dpf_destinationNameTooltip,
-        dpf_longName,
-        dpf_longNameTooltip,
-        dpf_standardName,
-        dpf_standardNameTooltip,
-        dpf_dataType,
-        dpf_fillValue,
-        dpf_fillValueTooltip,
-        dpf_units,
-        dpf_unitsTooltip,
-        dpf_range,
-        dpf_rangeTooltip,
-        dpf_part4Header,
-        dpf_otherComment,
-        dpf_finishPart4,
-        dpf_congratulation,
-
-        disabled,
-        distinctValuesTooltip,
-        doWithGraphs,
-
-        dtAccessible,
-        dtAccessibleYes,
-        dtAccessibleGraphs,
-        dtAccessibleNo,
-        dtAccessibleLogIn,
-        dtLogIn,
-        dtDAF,
-        dtFiles,
-        dtMAG,
-        dtSOS,
-        dtSubset,
-        dtWCS,
-        dtWMS,
-
-        EDDDatasetID,
-        EDDFgdc,
-        EDDFgdcMetadata,
-        EDDFiles,
-        EDDIso19115,
-        EDDIso19115Metadata,
-        EDDMetadata,
-        EDDBackground,
-        EDDClickOnSubmitHtml,
-        EDDInstitution,
-        EDDInformation,
-        EDDSummary,
-        EDDDatasetTitle,
-        EDDDownloadData,
-        EDDMakeAGraph,
-        EDDMakeAMap,
-        EDDFileType,
-        EDDFileTypeInformation,
-        EDDSelectFileType,
-        EDDMinimum,
-        EDDMaximum,
-        EDDConstraint,
-
+        advr_dataStructure,
         EDDChangedWasnt,
         EDDChangedDifferentNVar,
         EDDChanged2Different,
@@ -980,655 +705,957 @@ public static boolean developmentMode = false;
         EDDChangedAxes1Different,
         EDDChangedNoValue,
         EDDChangedTableToGrid,
-
+        EDDFgdc,
+        EDDIso19115,
         EDDSimilarDifferentNVar,
         EDDSimilarDifferent,
-
-        EDDGridDapDescription,
-        EDDGridDapLongDescription,
-        EDDGridDownloadDataTooltip,
-        EDDGridDimension,
-        EDDGridDimensionRanges,
-        EDDGridFirst,
-        EDDGridLast,
-        EDDGridStart,
-        EDDGridStop,
-        EDDGridStartStopTooltip,
-        EDDGridStride,
-        EDDGridNValues,
-        EDDGridNValuesHtml,
-        EDDGridSpacing,
-        EDDGridJustOneValue,
-        EDDGridEven,
-        EDDGridUneven,
-        EDDGridDimensionTooltip,
-        EDDGridDimensionFirstTooltip,
-        EDDGridDimensionLastTooltip,
-        EDDGridVarHasDimTooltip,
-        EDDGridSSSTooltip,
-        EDDGridStartTooltip,
-        EDDGridStopTooltip,
-        EDDGridStrideTooltip,
-        EDDGridSpacingTooltip,
-        EDDGridDownloadTooltip,
-        EDDGridGridVariableHtml,
-
-        EDDTableConstraints,
-        EDDTableTabularDatasetTooltip,
-        EDDTableVariable,
-        EDDTableCheckAll,
-        EDDTableCheckAllTooltip,
-        EDDTableUncheckAll,
-        EDDTableUncheckAllTooltip,
-        EDDTableMinimumTooltip,
-        EDDTableMaximumTooltip,
-        EDDTableCheckTheVariables,
-        EDDTableSelectAnOperator,
-        EDDTableFromEDDGridSummary,
-        EDDTableOptConstraint1Html,
-        EDDTableOptConstraint2Html,
-        EDDTableOptConstraintVar,
-        EDDTableNumericConstraintTooltip,
-        EDDTableStringConstraintTooltip,
-        EDDTableTimeConstraintTooltip,
-        EDDTableConstraintTooltip,
-        EDDTableSelectConstraintTooltip,
-        EDDTableDapDescription,
-        EDDTableDapLongDescription,
-        EDDTableDownloadDataTooltip,
-
-        erddapVersionHTML,
-        errorTitle,
-        errorRequestUrl,
-        errorRequestQuery,
-        errorTheError,
-        errorCopyFrom,
-        errorFileNotFound,
-        errorFileNotFoundImage,
-        errorInternal,
-        errorJsonpFunctionName,
-        errorJsonpNotAllowed,
-        errorMoreThan2GB,
-        errorNotFound,
-        errorNotFoundIn,
-        errorOdvLLTGrid,
-        errorOdvLLTTable,
-        errorOnWebPage,
-        errorXWasntSpecified,
-        errorXWasTooLong,
-        extensionsNoRangeRequests[],
-        externalLink,
-        externalWebSite,
-        fileHelp_asc,
-        fileHelp_csv,
-        fileHelp_csvp,
-        fileHelp_csv0,
-        fileHelp_dataTable,
-        fileHelp_das,
-        fileHelp_dds,
-        fileHelp_dods,
-        fileHelpGrid_esriAscii,
-        fileHelpTable_esriCsv,
-        fileHelp_fgdc,
-        fileHelp_geoJson,
-        fileHelp_graph,
-        fileHelpGrid_help,
-        fileHelpTable_help,
-        fileHelp_html,
-        fileHelp_htmlTable,
-        fileHelp_iso19115,
-        fileHelp_itxGrid,
-        fileHelp_itxTable,
-        fileHelp_json,
-        fileHelp_jsonlCSV1,
-        fileHelp_jsonlCSV,
-        fileHelp_jsonlKVP,
-        fileHelp_mat,
-        fileHelpGrid_nc3,
-        fileHelpGrid_nc4,
-        fileHelpTable_nc3,
-        fileHelpTable_nc4,
-        fileHelp_nc3Header,
-        fileHelp_nc4Header,
-        fileHelp_nccsv,
-        fileHelp_nccsvMetadata,
-        fileHelp_ncCF,
-        fileHelp_ncCFHeader,
-        fileHelp_ncCFMA,
-        fileHelp_ncCFMAHeader,
-        fileHelp_ncml,
-        fileHelp_ncoJson,
-        fileHelpGrid_odvTxt,
-        fileHelpTable_odvTxt,
-        fileHelp_subset,
-        fileHelp_timeGaps,
-        fileHelp_tsv,
-        fileHelp_tsvp,
-        fileHelp_tsv0,
-        fileHelp_wav,
-        fileHelp_xhtml,
-        fileHelp_geotif,  //graphical
-        fileHelpGrid_kml,
-        fileHelpTable_kml,
-        fileHelp_smallPdf,
-        fileHelp_pdf,
-        fileHelp_largePdf,
-        fileHelp_smallPng,
-        fileHelp_png,
-        fileHelp_largePng,
-        fileHelp_transparentPng,
-        filesDescription,
-        filesSort,
-        filesWarning,
-        findOutChange,
-        FIPSCountryCode,
-        forSOSUse,
-        forWCSUse,
-        forWMSUse,
-        functions,
-        functionTooltip,
-        functionDistinctCheck,
-        functionDistinctTooltip,
-        functionOrderByExtra,
-        functionOrderByTooltip,
-        functionOrderBySort,
-        functionOrderBySort1,
-        functionOrderBySort2,
-        functionOrderBySort3,
-        functionOrderBySort4,
-        functionOrderBySortLeast,
-        functionOrderBySortRowMax,
-        generatedAt,
-        geoServicesDescription,
-        getStartedHtml,
-        htmlTableMaxMessage,
-
-        hpn_information,
-        hpn_legalNotices,
-        hpn_dataProviderForm,
-        hpn_dataProviderFormP1,
-        hpn_dataProviderFormP2,
-        hpn_dataProviderFormP3,
-        hpn_dataProviderFormP4,
-        hpn_dataProviderFormDone,
-        hpn_status,
-        hpn_restfulWebService,
-        hpn_documentation,
-        hpn_help,
-        hpn_files,
-        hpn_SOS,
-        hpn_WCS,
-        hpn_slideSorter,
-        hpn_add,
-        hpn_list,
-        hpn_validate,
-        hpn_remove,
-        hpn_convert,
-        hpn_fipsCounty,
-        hpn_OAAcronyms,
-        hpn_OAVariableNames,
-        hpn_keywords,
-        hpn_time,
-        hpn_units,
-
-        imageDataCourtesyOf,
-        indexViewAll,
-        indexSearchWith,
-        indexDevelopersSearch,
-        indexProtocol,
-        indexDescription,
-        indexDatasets,
-        indexDocumentation,
-        indexRESTfulSearch,        
-        indexAllDatasetsSearch,        
-        indexOpenSearch,        
-        indexServices,
-        indexDescribeServices,
-        indexMetadata,
-        indexWAF1,
-        indexWAF2,
-        indexConverters,
-        indexDescribeConverters,
-        infoAboutFrom,
-        infoTableTitleHtml,
-        infoRequestForm,
-        inotifyFix,
+        extensionsNoRangeRequests[],  //an array of extensions (not translated)
         inotifyFixCommands,
-        interpolate,
-        javaProgramsHTML,
-        justGenerateAndView,
-        justGenerateAndViewTooltip,
-        justGenerateAndViewUrl,
-        justGenerateAndViewGraphUrlTooltip,
-        keywords_word,
-        langCode,
         legal,
-        legalNotices,
-        license,
-        listAll,
-        listOfDatasets,
-        LogIn,
-        login,
-        loginHTML,
-        loginAttemptBlocked,
-        loginDescribeCustom,
-        loginDescribeEmail,
-        loginDescribeGoogle,
-        loginDescribeOrcid,
-        loginDescribeOauth2,
-        loginErddap,
-        loginCanNot,
-        loginAreNot,
-        loginToLogIn,
-        loginEmailAddress,
-        loginYourEmailAddress,
-        loginUserName,
-        loginPassword,
-        loginUserNameAndPassword,
-        loginGoogleSignIn,
-        loginGoogleSignIn2,
-        loginOrcidSignIn,
-        loginOpenID,
-        loginOpenIDOr,
-        loginOpenIDCreate,
-        loginOpenIDFree,
-        loginOpenIDSame,
-        loginAs,
-        loginPartwayAs,
-        loginFailed,
-        loginSucceeded,
-        loginInvalid,
-        loginNot,
-        loginBack,
-        loginProblemExact,
-        loginProblemExpire,
-        loginProblemGoogleAgain,
-        loginProblemOrcidAgain,
-        loginProblemOauth2Again,
-        loginProblemSameBrowser,
-        loginProblem3Times,
-        loginProblems,
-        loginProblemsAfter,
-        loginPublicAccess,
-        LogOut,
-        logout,
-        logoutOpenID,
-        logoutSuccess,
-        mag,
-        magAxisX,
-        magAxisY,
-        magAxisColor,
-        magAxisStickX,
-        magAxisStickY,
-        magAxisVectorX,
-        magAxisVectorY,
-        magAxisHelpGraphX,
-        magAxisHelpGraphY,
-        magAxisHelpMarkerColor,
-        magAxisHelpSurfaceColor,
-        magAxisHelpStickX,
-        magAxisHelpStickY,
-        magAxisHelpMapX,
-        magAxisHelpMapY,
-        magAxisHelpVectorX,
-        magAxisHelpVectorY,
-        magAxisVarHelp,
-        magAxisVarHelpGrid,
-        magConstraintHelp,
-        magDocumentation,
-        magDownload,
-        magDownloadTooltip,
-        magFileType,
-        magGraphType,
-        magGraphTypeTooltipGrid,
-        magGraphTypeTooltipTable,
-        magGS,
-        magGSMarkerType,
-        magGSSize,
-        magGSColor,
-        magGSColorBar,
-        magGSColorBarTooltip,
-        magGSContinuity,
-        magGSContinuityTooltip,
-        magGSScale,
-        magGSScaleTooltip,
-        magGSMin,
-        magGSMinTooltip,
-        magGSMax,
-        magGSMaxTooltip,
-        magGSNSections,
-        magGSNSectionsTooltip,
-        magGSLandMask,
-        magGSLandMaskTooltipGrid,
-        magGSLandMaskTooltipTable,
-        magGSVectorStandard,
-        magGSVectorStandardTooltip,
-        magGSYAscendingTooltip,
-        magGSYAxisMin,
-        magGSYAxisMax,
-        magGSYRangeMinTooltip,
-        magGSYRangeMaxTooltip,
-        magGSYRangeTooltip,
-        magGSYScaleTooltip,
-        magItemFirst,
-        magItemPrevious,
-        magItemNext,
-        magItemLast,
-        magJust1Value,
-        magRange,
-        magRangeTo,
-        magRedraw,
-        magRedrawTooltip,
-        magTimeRange,
-        magTimeRangeFirst,
-        magTimeRangeBack,
-        magTimeRangeForward,
-        magTimeRangeLast,
-        magTimeRangeTooltip,
-        magTimeRangeTooltip2,
-        magTimesVary,
-        magViewUrl,
-        magZoom,
-        magZoomCenter,
-        magZoomCenterTooltip,
-        magZoomIn,
-        magZoomInTooltip,
-        magZoomOut,
-        magZoomOutTooltip,
-        magZoomALittle,
-        magZoomData,
-        magZoomOutData,
-        magGridTooltip,
-        magTableTooltip,        
-        metadataDownload,
-        moreInformation,
-        nMatching1,
-        nMatching,
-        nMatchingAlphabetical,
-        nMatchingMostRelevant,
-        nMatchingPage,
-        nMatchingCurrent,
-        noDataFixedValue,
-        noDataNoLL,
-        noDatasetWith,
-        noPage1,
-        noPage2,
-        notAllowed,
-        notAuthorized,
-        notAuthorizedForData,
-        notAvailable,
-        note,
-        noXxx,
-        noXxxBecause,
-        noXxxBecause2,
-        noXxxNotActive,
-        noXxxNoAxis1,
-        noXxxNoColorBar,
-        noXxxNoCdmDataType,
-        noXxxNoLL,
-        noXxxNoLLEvenlySpaced,
-        noXxxNoLLGt1,
-        noXxxNoLLT,
-        noXxxNoLonIn180,
-        noXxxNoNonString,
-        noXxxNo2NonString,
-        noXxxNoStation,
-        noXxxNoStationID,
-        noXxxNoSubsetVariables,
-        noXxxNoOLLSubsetVariables,
-        noXxxNoMinMax,
-        noXxxItsGridded,
-        noXxxItsTabular,
-        oneRequestAtATime,
-        openSearchDescription,
-        optional,
-        options,
-        orRefineSearchWith,
-        orSearchWith,
-        orComma,
-        outOfDateKeepTrack,
-        outOfDateHtml,
-        palettes[],
-        palettes0[],
+        palettes[],  //an array of palettes
+        palettes0[], //the array of palettes with a blank [0] item inserted
         paletteSections[] = {
             "","2","3","4","5","6","7","8","9",
             "10","11","12","13","14","15","16","17","18","19",
             "20","21","22","23","24","25","26","27","28","29",
             "30","31","32","33","34","35","36","37","38","39", "40"},
-        patientData,
-        patientYourGraph,
-        percentEncode,
-        pickADataset,
-        protocolSearchHtml,
-        protocolSearch2Html,
-        protocolClick,
-
-        queryError,
-        queryError180,
-        queryError1Value,
-        queryError1Var,
-        queryError2Var,
-        queryErrorActualRange,
-        queryErrorAdjusted,
-        queryErrorAscending,
-        queryErrorConstraintNaN,
-        queryErrorEqualSpacing,
-        queryErrorExpectedAt,
-        queryErrorFileType,
-        queryErrorInvalid,
-        queryErrorLL,
-        queryErrorLLGt1,
-        queryErrorLLT,
-        queryErrorNeverTrue,
-        queryErrorNeverBothTrue,
-        queryErrorNotAxis,
-        queryErrorNotExpectedAt,
-        queryErrorNotFoundAfter,
-        queryErrorOccursTwice,
-        queryErrorOrderByVariable,
-        queryErrorUnknownVariable,
-
-        queryErrorGrid1Axis,
-        queryErrorGridAmp,
-        queryErrorGridDiagnostic,
-        queryErrorGridBetween,
-        queryErrorGridLessMin,
-        queryErrorGridGreaterMax,
-        queryErrorGridMissing,
-        queryErrorGridNoAxisVar,
-        queryErrorGridNoDataVar,
-        queryErrorGridNotIdentical,
-        queryErrorGridSLessS,
-        queryErrorLastEndP,
-        queryErrorLastExpected,
-        queryErrorLastUnexpected,
-        queryErrorLastPMInvalid,
-        queryErrorLastPMInteger,        
-        rangesFromTo,
-        resetTheForm,
-        resetTheFormWas,
-        resourceNotFound,
-        restfulWebServices,
-        restfulHTML,
-        restfulHTMLContinued,
-        restfulGetAllDataset,
-        restfulProtocols,
-        SOSDocumentation,
-        WCSDocumentation,
-        WMSDocumentation,
-        requestFormatExamplesHtml,
-        resultsFormatExamplesHtml,
-        resultsOfSearchFor,
-        restfulInformationFormats,
-        restfulViaService,
-        rows,
-        rssNo,
-        searchTitle,
-        searchDoFullTextHtml,
-        searchFullTextHtml,
-        searchHintsLuceneTooltip, 
-        searchHintsOriginalTooltip, 
-        searchHintsTooltip, 
-        searchButton,
-        searchClickTip,
-        searchMultipleERDDAPs, 
-        searchMultipleERDDAPsDescription, 
-        searchNotAvailable,
-        searchTip,
-        searchSpelling,
-        searchFewerWords,
-        searchWithQuery,
-        seeProtocolDocumentation,
-        selectNext,
-        selectPrevious,
-        shiftXAllTheWayLeft,
-        shiftXLeft,
-        shiftXRight,
-        shiftXAllTheWayRight,
-        sosDescriptionHtml,
-        sosLongDescriptionHtml,
-        sosOverview1,
-        sosOverview2,
         sparqlP01toP02pre,
-        sparqlP01toP02post,
-        ssUse,
-        ssUsePlain,
-        ssBePatient, 
-        ssInstructionsHtml,
-        statusHtml,
-        submit,
-        submitTooltip,
-        subscriptionOfferRss,
-        subscriptionOfferUrl,
-        subscriptionsTitle,
-        subscriptionAdd,
-        subscriptionAddHtml,
-        subscriptionValidate,
-        subscriptionValidateHtml,
-        subscriptionList,
-        subscriptionListHtml,
-        subscriptionRemove,
-        subscriptionRemoveHtml,
-        subscriptionAbuse,
-        subscriptionAddError,
-        subscriptionAdd2,
-        subscriptionAddSuccess,
-        subscriptionEmail,
-        subscriptionEmailOnBlacklist,
-        subscriptionEmailInvalid,
-        subscriptionEmailTooLong,
-        subscriptionEmailUnspecified,
-        subscription0Html, 
-        subscription1Html, 
-        subscription2Html, 
-        subscriptionIDInvalid,
-        subscriptionIDTooLong,
-        subscriptionIDUnspecified,
-        subscriptionKeyInvalid,
-        subscriptionKeyUnspecified,
-        subscriptionListError,
-        subscriptionListSuccess,
-        subscriptionRemoveError,
-        subscriptionRemove2,
-        subscriptionRemoveSuccess,
-        subscriptionRSS,
-        subscriptionsNotAvailable,
-        subscriptionUrlHtml,
-        subscriptionUrlInvalid,
-        subscriptionUrlTooLong,        
-        subscriptionValidateError,
-        subscriptionValidateSuccess,
-        subset,
-        subsetSelect,
-        subsetNMatching,
-        subsetInstructions,
-        subsetOption,
-        subsetOptions,
-        subsetRefineMapDownload,
-        subsetRefineSubsetDownload,
-        subsetClickResetClosest,
-        subsetClickResetLL,
-        subsetMetadata,
-        subsetCount,
-        subsetPercent,
-        subsetViewSelect,
-        subsetViewSelectDistinctCombos,
-        subsetViewSelectRelatedCounts,
-        subsetWhen,
-        subsetWhenNoConstraints,
-        subsetWhenCounts,
-        subsetComboClickSelect,
-        subsetNVariableCombos,
-        subsetShowingAllRows,
-        subsetShowingNRows,
-        subsetChangeShowing,
-        subsetNRowsRelatedData,
-        subsetViewRelatedChange,
-        subsetTotalCount,
-        subsetView,
-        subsetViewCheck,
-        subsetViewCheck1,
-        subsetViewDistinctMap,
-        subsetViewRelatedMap,
-        subsetViewDistinctDataCounts,
-        subsetViewDistinctData,
-        subsetViewRelatedDataCounts,
-        subsetViewRelatedData,
-        subsetViewDistinctMapTooltip,
-        subsetViewRelatedMapTooltip,
-        subsetViewDistinctDataCountsTooltip,
-        subsetViewDistinctDataTooltip,
-        subsetViewRelatedDataCountsTooltip,
-        subsetViewRelatedDataTooltip,
-        subsetWarn,                    
-        subsetWarn10000,
-        subsetTooltip,
-        subsetNotSetUp,
-        subsetLongNotShown,
+        sparqlP01toP02post;
 
-        tabledapVideoIntro,
-        Then,
-        time,
-        timeoutOtherRequests,
-        units,
-        unknownDatasetID,
-        unknownProtocol,
-        unsupportedFileType,
-        updateUrlsFrom[],
-        updateUrlsTo[],
-        updateUrlsSkipAttributes[],
-        variableNames,
-        viewAllDatasetsHtml,
-        waitThenTryAgain,
-        warning,
+    //TRANSLATED
+    private static String[]  //private to force use via methods, e.g., acceptEncodingHtml()
+        acceptEncodingHtmlAr,
+        filesDocumentationAr;
+    public static String[] 
+        accessRESTFULAr,
+        acronymsAr,
+        addConstraintsAr,
+        addVarWhereAttNameAr,
+        addVarWhereAttValueAr,
+        addVarWhereAr,
+        additionalLinksAr,
+        admSummaryAr,
+        admTitleAr,
+        advc_accessibleAr,
+        advl_accessibleAr,
+        advl_institutionAr,
+        advc_dataStructureAr,
+        advl_dataStructureAr,
+        advl_cdm_data_typeAr,
+        advl_classAr,
+        advl_titleAr,
+        advl_minLongitudeAr,
+        advl_maxLongitudeAr,
+        advl_longitudeSpacingAr,
+        advl_minLatitudeAr,
+        advl_maxLatitudeAr,
+        advl_latitudeSpacingAr,
+        advl_minAltitudeAr,
+        advl_maxAltitudeAr,
+        advl_minTimeAr,
+        advc_maxTimeAr,
+        advl_maxTimeAr,
+        advl_timeSpacingAr,
+        advc_griddapAr,
+        advl_griddapAr,
+        advl_subsetAr,
+        advc_tabledapAr,
+        advl_tabledapAr,
+        advl_MakeAGraphAr,
+        advc_sosAr,
+        advl_sosAr,
+        advl_wcsAr,
+        advl_wmsAr,
+        advc_filesAr,
+        advl_filesAr,
+        advc_fgdcAr,
+        advl_fgdcAr,
+        advc_iso19115Ar,
+        advl_iso19115Ar,
+        advc_metadataAr,
+        advl_metadataAr,
+        advl_sourceUrlAr,
+        advl_infoUrlAr,
+        advl_rssAr,
+        advc_emailAr,
+        advl_emailAr,
+        advl_summaryAr,
+        advc_testOutOfDateAr,
+        advl_testOutOfDateAr,
+        advc_outOfDateAr,
+        advl_outOfDateAr,
+        advn_outOfDateAr,
 
-        wcsDescriptionHtml,
-        wcsLongDescriptionHtml,
-        wcsOverview1,
-        wcsOverview2,
+        advancedSearchAr,
+        advancedSearchResultsAr,
+        advancedSearchDirectionsAr,
+        advancedSearchTooltipAr,
+        advancedSearchBoundsAr,
+        advancedSearchMinLatAr,
+        advancedSearchMaxLatAr,
+        advancedSearchMinLonAr,
+        advancedSearchMaxLonAr,
+        advancedSearchMinMaxLonAr,
+        advancedSearchMinTimeAr,
+        advancedSearchMaxTimeAr,
+        advancedSearchClearAr,
+        advancedSearchClearHelpAr,
+        advancedSearchCategoryTooltipAr,
+        advancedSearchRangeTooltipAr,
+        advancedSearchMapTooltipAr,
+        advancedSearchLonTooltipAr,
+        advancedSearchTimeTooltipAr,
+        advancedSearchWithCriteriaAr,
+        advancedSearchFewerCriteriaAr,
+        advancedSearchNoCriteriaAr,
+        advancedSearchErrorHandlingAr,
+        autoRefreshAr,
+        blacklistMsgAr,
+        BroughtToYouByAr,
+        categoryTitleHtmlAr,
+        categoryHtmlAr,
+        category3HtmlAr,
+        categoryPickAttributeAr,
+        categorySearchHtmlAr,
+        categorySearchDifferentHtmlAr,
+        categoryClickHtmlAr,
+        categoryNotAnOptionAr,
+        caughtInterruptedAr,
+        cdmDataTypeHelpAr,
+        clickAccessAr,
+        clickBackgroundInfoAr,
+        clickERDDAPAr,
+        clickInfoAr,
+        clickToSubmitAr,
+        convertAr,
+        convertBypassAr,
 
-        wmsDescriptionHtml,
-        WMSDocumentation1,
-        WMSGetCapabilities,
-        WMSGetMap,
-        WMSNotes,
-        wmsInstructions,
-        wmsLongDescriptionHtml,
-        wmsManyDatasets,
-            
-        zoomIn,
-        zoomOut;
+        convertToAFullNameAr,
+        convertToAnAcronymAr,
+        convertToACountyNameAr,
+        convertToAFIPSCodeAr,
+        convertToGCMDAr,
+        convertToCFStandardNamesAr,
+        convertToNumericTimeAr,
+        convertToStringTimeAr,
+        convertAnyStringTimeAr,
+        convertToProperTimeUnitsAr,
+        convertFromUDUNITSToUCUMAr,
+        convertFromUCUMToUDUNITSAr,
+        convertToUCUMAr,
+        convertToUDUNITSAr,
+        convertStandardizeUDUNITSAr,
+        convertToFullNameAr,
+        convertToVariableNameAr,
+
+        converterWebServiceAr,
+        convertOAAcronymsAr,
+        convertOAAcronymsToFromAr,
+        convertOAAcronymsIntroAr,
+        convertOAAcronymsNotesAr,
+        convertOAAcronymsServiceAr,
+        convertOAVariableNamesAr,        
+        convertOAVariableNamesToFromAr,        
+        convertOAVariableNamesIntroAr,
+        convertOAVariableNamesNotesAr,
+        convertOAVariableNamesServiceAr,
+        convertFipsCountyAr,        
+        convertFipsCountyIntroAr,
+        convertFipsCountyNotesAr,
+        convertFipsCountyServiceAr,
+        convertHtmlAr,
+        convertInterpolateAr,             
+        convertInterpolateIntroAr,
+        convertInterpolateTLLTableAr,
+        convertInterpolateTLLTableHelpAr,
+        convertInterpolateDatasetIDVariableAr,
+        convertInterpolateDatasetIDVariableHelpAr,
+        convertInterpolateNotesAr,
+        convertInterpolateServiceAr,
+        convertKeywordsAr,          
+        convertKeywordsCfTooltipAr,
+        convertKeywordsGcmdTooltipAr,
+        convertKeywordsIntroAr,
+        convertKeywordsNotesAr,
+        convertKeywordsServiceAr,
+        convertTimeAr,         
+        convertTimeReferenceAr,
+        convertTimeIntroAr,
+        convertTimeNotesAr,
+        convertTimeServiceAr,
+        convertTimeNumberTooltipAr,
+        convertTimeStringTimeTooltipAr,
+        convertTimeUnitsTooltipAr,
+        convertTimeUnitsHelpAr,
+        convertTimeIsoFormatErrorAr,
+        convertTimeNoSinceErrorAr,
+        convertTimeNumberErrorAr,
+        convertTimeNumericTimeErrorAr,
+        convertTimeParametersErrorAr,
+        convertTimeStringFormatErrorAr,
+        convertTimeTwoTimeErrorAr,
+        convertTimeUnitsErrorAr,
+        convertUnitsAr,             
+        convertUnitsComparisonAr,   
+        convertUnitsFilterAr,
+        convertUnitsIntroAr,
+        convertUnitsNotesAr,
+        convertUnitsServiceAr,
+        convertURLsAr,             
+        convertURLsIntroAr,
+        convertURLsNotesAr,
+        convertURLsServiceAr,
+        cookiesHelpAr,
+        dafAr,
+        dafGridBypassTooltipAr,
+        dafGridTooltipAr,
+        dafTableBypassTooltipAr,
+        dafTableTooltipAr,
+        dasTitleAr,
+        dataAccessNotAllowedAr,
+        databaseUnableToConnectAr,
+        dataProviderFormAr,
+        dataProviderFormP1Ar,
+        dataProviderFormP2Ar,
+        dataProviderFormP3Ar,
+        dataProviderFormP4Ar,
+        dataProviderFormDoneAr,
+        dataProviderFormSuccessAr,
+        dataProviderFormShortDescriptionAr,
+        dataProviderFormLongDescriptionHTMLAr,
+        dataProviderFormPart1Ar,
+        dataProviderFormPart2HeaderAr,
+        dataProviderFormPart2GlobalMetadataAr,
+        dataProviderContactInfoAr,
+        dataProviderDataAr,
+        documentationAr,
+
+        dpf_submitAr,
+        dpf_fixProblemAr,
+        dpf_yourNameAr,
+        dpf_emailAddressAr,
+        dpf_TimestampAr,
+        dpf_frequencyAr,
+        dpf_titleAr,
+        dpf_titleTooltipAr,
+        dpf_summaryAr,
+        dpf_summaryTooltipAr,
+        dpf_creatorNameAr,
+        dpf_creatorNameTooltipAr,
+        dpf_creatorTypeAr,
+        dpf_creatorTypeTooltipAr,
+        dpf_creatorEmailAr,
+        dpf_creatorEmailTooltipAr,
+        dpf_institutionAr,
+        dpf_institutionTooltipAr,
+        dpf_infoUrlAr,
+        dpf_infoUrlTooltipAr,
+        dpf_licenseAr,
+        dpf_licenseTooltipAr,
+        dpf_howYouStoreDataAr,
+        dpf_provideIfAvailableAr,
+        dpf_acknowledgementAr,
+        dpf_acknowledgementTooltipAr,
+        dpf_historyAr,
+        dpf_historyTooltipAr,
+        dpf_idTooltipAr,
+        dpf_namingAuthorityAr,
+        dpf_namingAuthorityTooltipAr,
+        dpf_productVersionAr,
+        dpf_productVersionTooltipAr,
+        dpf_referencesAr,
+        dpf_referencesTooltipAr,
+        dpf_commentAr,
+        dpf_commentTooltipAr,
+        dpf_dataTypeHelpAr,
+        dpf_ioosCategoryAr,
+        dpf_ioosCategoryHelpAr,
+        dpf_part3HeaderAr,
+        dpf_variableMetadataAr,
+        dpf_sourceNameAr,
+        dpf_sourceNameTooltipAr,
+        dpf_destinationNameAr,
+        dpf_destinationNameTooltipAr,
+        dpf_longNameAr,
+        dpf_longNameTooltipAr,
+        dpf_standardNameAr,
+        dpf_standardNameTooltipAr,
+        dpf_dataTypeAr,
+        dpf_fillValueAr,
+        dpf_fillValueTooltipAr,
+        dpf_unitsAr,
+        dpf_unitsTooltipAr,
+        dpf_rangeAr,
+        dpf_rangeTooltipAr,
+        dpf_part4HeaderAr,
+        dpf_otherCommentAr,
+        dpf_finishPart4Ar,
+        dpf_congratulationAr,
+
+        disabledAr,
+        distinctValuesTooltipAr,
+        doWithGraphsAr,
+
+        dtAccessibleAr,
+        dtAccessiblePublicAr,
+        dtAccessibleYesAr,
+        dtAccessibleGraphsAr,
+        dtAccessibleNoAr,
+        dtAccessibleLogInAr,
+        dtLogInAr,
+        dtDAFAr,
+        dtFilesAr,
+        dtMAGAr,
+        dtSOSAr,
+        dtSubsetAr,
+        dtWCSAr,
+        dtWMSAr,
+
+        EasierAccessToScientificDataAr,
+        EDDDatasetIDAr,
+        EDDFgdcMetadataAr,
+        EDDFilesAr,
+        EDDIso19115MetadataAr,
+        EDDMetadataAr,
+        EDDBackgroundAr,
+        EDDClickOnSubmitHtmlAr,
+        EDDInstitutionAr,
+        EDDInformationAr,
+        EDDSummaryAr,
+        EDDDatasetTitleAr,
+        EDDDownloadDataAr,
+        EDDMakeAGraphAr,
+        EDDMakeAMapAr,
+        EDDFileTypeAr,
+        EDDFileTypeInformationAr,
+        EDDSelectFileTypeAr,
+        EDDMinimumAr,
+        EDDMaximumAr,
+        EDDConstraintAr,
+
+        EDDGridDapDescriptionAr,
+        EDDGridDapLongDescriptionAr,
+        EDDGridDownloadDataTooltipAr,
+        EDDGridDimensionAr,
+        EDDGridDimensionRangesAr,
+        EDDGridFirstAr,
+        EDDGridLastAr,
+        EDDGridStartAr,
+        EDDGridStopAr,
+        EDDGridStartStopTooltipAr,
+        EDDGridStrideAr,
+        EDDGridNValuesAr,
+        EDDGridNValuesHtmlAr,
+        EDDGridSpacingAr,
+        EDDGridJustOneValueAr,
+        EDDGridEvenAr,
+        EDDGridUnevenAr,
+        EDDGridDimensionTooltipAr,
+        EDDGridDimensionFirstTooltipAr,
+        EDDGridDimensionLastTooltipAr,
+        EDDGridVarHasDimTooltipAr,
+        EDDGridSSSTooltipAr,
+        EDDGridStartTooltipAr,
+        EDDGridStopTooltipAr,
+        EDDGridStrideTooltipAr,
+        EDDGridSpacingTooltipAr,
+        EDDGridDownloadTooltipAr,
+        EDDGridGridVariableHtmlAr,
+
+        EDDTableConstraintsAr,
+        EDDTableTabularDatasetTooltipAr,
+        EDDTableVariableAr,
+        EDDTableCheckAllAr,
+        EDDTableCheckAllTooltipAr,
+        EDDTableUncheckAllAr,
+        EDDTableUncheckAllTooltipAr,
+        EDDTableMinimumTooltipAr,
+        EDDTableMaximumTooltipAr,
+        EDDTableCheckTheVariablesAr,
+        EDDTableSelectAnOperatorAr,
+        EDDTableFromEDDGridSummaryAr,
+        EDDTableOptConstraint1HtmlAr,
+        EDDTableOptConstraint2HtmlAr,
+        EDDTableOptConstraintVarAr,
+        EDDTableNumericConstraintTooltipAr,
+        EDDTableStringConstraintTooltipAr,
+        EDDTableTimeConstraintTooltipAr,
+        EDDTableConstraintTooltipAr,
+        EDDTableSelectConstraintTooltipAr,
+        EDDTableDapDescriptionAr,
+        EDDTableDapLongDescriptionAr,
+        EDDTableDownloadDataTooltipAr,
+
+        erddapIsAr,
+        erddapVersionHTMLAr,
+        errorTitleAr,
+        errorRequestUrlAr,
+        errorRequestQueryAr,
+        errorTheErrorAr,
+        errorCopyFromAr,
+        errorFileNotFoundAr,
+        errorFileNotFoundImageAr,
+        errorInternalAr,
+        errorJsonpFunctionNameAr,
+        errorJsonpNotAllowedAr,
+        errorMoreThan2GBAr,
+        errorNotFoundAr,
+        errorNotFoundInAr,
+        errorOdvLLTGridAr,
+        errorOdvLLTTableAr,
+        errorOnWebPageAr,
+        externalLinkAr,
+        externalWebSiteAr,
+        fileHelp_ascAr,
+        fileHelp_csvAr,
+        fileHelp_csvpAr,
+        fileHelp_csv0Ar,
+        fileHelp_dataTableAr,
+        fileHelp_dasAr,
+        fileHelp_ddsAr,
+        fileHelp_dodsAr,
+        fileHelpGrid_esriAsciiAr,
+        fileHelpTable_esriCsvAr,
+        fileHelp_fgdcAr,
+        fileHelp_geoJsonAr,
+        fileHelp_graphAr,
+        fileHelpGrid_helpAr,
+        fileHelpTable_helpAr,
+        fileHelp_htmlAr,
+        fileHelp_htmlTableAr,
+        fileHelp_iso19115Ar,
+        fileHelp_itxGridAr,
+        fileHelp_itxTableAr,
+        fileHelp_jsonAr,
+        fileHelp_jsonlCSV1Ar,
+        fileHelp_jsonlCSVAr,
+        fileHelp_jsonlKVPAr,
+        fileHelp_matAr,
+        fileHelpGrid_nc3Ar,
+        fileHelpGrid_nc4Ar,
+        fileHelpTable_nc3Ar,
+        fileHelpTable_nc4Ar,
+        fileHelp_nc3HeaderAr,
+        fileHelp_nc4HeaderAr,
+        fileHelp_nccsvAr,
+        fileHelp_nccsvMetadataAr,
+        fileHelp_ncCFAr,
+        fileHelp_ncCFHeaderAr,
+        fileHelp_ncCFMAAr,
+        fileHelp_ncCFMAHeaderAr,
+        fileHelp_ncmlAr,
+        fileHelp_ncoJsonAr,
+        fileHelpGrid_odvTxtAr,
+        fileHelpTable_odvTxtAr,
+        fileHelp_subsetAr,
+        fileHelp_timeGapsAr,
+        fileHelp_tsvAr,
+        fileHelp_tsvpAr,
+        fileHelp_tsv0Ar,
+        fileHelp_wavAr,
+        fileHelp_xhtmlAr,
+        fileHelp_geotifAr,  //graphical
+        fileHelpGrid_kmlAr,
+        fileHelpTable_kmlAr,
+        fileHelp_smallPdfAr,
+        fileHelp_pdfAr,
+        fileHelp_largePdfAr,
+        fileHelp_smallPngAr,
+        fileHelp_pngAr,
+        fileHelp_largePngAr,
+        fileHelp_transparentPngAr,
+        filesDescriptionAr,
+        filesSortAr,
+        filesWarningAr,
+        findOutChangeAr,
+        FIPSCountyCodesAr,
+        forSOSUseAr,
+        forWCSUseAr,
+        forWMSUseAr,
+        functionsAr,
+        functionTooltipAr,
+        functionDistinctCheckAr,
+        functionDistinctTooltipAr,
+        functionOrderByExtraAr,
+        functionOrderByTooltipAr,
+        functionOrderBySortAr,
+        functionOrderBySort1Ar,
+        functionOrderBySort2Ar,
+        functionOrderBySort3Ar,
+        functionOrderBySort4Ar,
+        functionOrderBySortLeastAr,
+        functionOrderBySortRowMaxAr,
+        generatedAtAr,
+        geoServicesDescriptionAr,
+        getStartedHtmlAr,
+        helpAr,
+        htmlTableMaxMessageAr,
+
+        imageDataCourtesyOfAr,
+        imagesEmbedAr,
+        indexViewAllAr,
+        indexSearchWithAr,
+        indexDevelopersSearchAr,
+        indexProtocolAr,
+        indexDescriptionAr,
+        indexDatasetsAr,
+        indexDocumentationAr,
+        indexRESTfulSearchAr,        
+        indexAllDatasetsSearchAr,        
+        indexOpenSearchAr,        
+        indexServicesAr,
+        indexDescribeServicesAr,
+        indexMetadataAr,
+        indexWAF1Ar,
+        indexWAF2Ar,
+        indexConvertersAr,
+        indexDescribeConvertersAr,
+        infoAboutFromAr,
+        infoTableTitleHtmlAr,
+        infoRequestFormAr,
+        informationAr,
+        inotifyFixAr,
+        interpolateAr,
+        javaProgramsHTMLAr,
+        justGenerateAndViewAr,
+        justGenerateAndViewTooltipAr,
+        justGenerateAndViewUrlAr,
+        justGenerateAndViewGraphUrlTooltipAr,
+        keywordsAr,
+        langCodeAr,
+        legalNoticesAr,
+        legalNoticesTitleAr,
+        licenseAr,
+        likeThisAr,
+        listAllAr,
+        listOfDatasetsAr,
+        LogInAr,
+        loginAr,
+        loginHTMLAr,
+        loginAttemptBlockedAr,
+        loginDescribeCustomAr,
+        loginDescribeEmailAr,
+        loginDescribeGoogleAr,
+        loginDescribeOrcidAr,
+        loginDescribeOauth2Ar,
+        loginErddapAr,
+        loginCanNotAr,
+        loginAreNotAr,
+        loginToLogInAr,
+        loginEmailAddressAr,
+        loginYourEmailAddressAr,
+        loginUserNameAr,
+        loginPasswordAr,
+        loginUserNameAndPasswordAr,
+        loginGoogleSignInAr,
+        loginGoogleSignIn2Ar,
+        loginOrcidSignInAr,
+        loginOpenIDAr,
+        loginOpenIDOrAr,
+        loginOpenIDCreateAr,
+        loginOpenIDFreeAr,
+        loginOpenIDSameAr,
+        loginAsAr,
+        loginPartwayAsAr,
+        loginFailedAr,
+        loginSucceededAr,
+        loginInvalidAr,
+        loginNotAr,
+        loginBackAr,
+        loginProblemExactAr,
+        loginProblemExpireAr,
+        loginProblemGoogleAgainAr,
+        loginProblemOrcidAgainAr,
+        loginProblemOauth2AgainAr,
+        loginProblemSameBrowserAr,
+        loginProblem3TimesAr,
+        loginProblemsAr,
+        loginProblemsAfterAr,
+        loginPublicAccessAr,
+        LogOutAr,
+        logoutAr,
+        logoutOpenIDAr,
+        logoutSuccessAr,
+        magAr,
+        magAxisXAr,
+        magAxisYAr,
+        magAxisColorAr,
+        magAxisStickXAr,
+        magAxisStickYAr,
+        magAxisVectorXAr,
+        magAxisVectorYAr,
+        magAxisHelpGraphXAr,
+        magAxisHelpGraphYAr,
+        magAxisHelpMarkerColorAr,
+        magAxisHelpSurfaceColorAr,
+        magAxisHelpStickXAr,
+        magAxisHelpStickYAr,
+        magAxisHelpMapXAr,
+        magAxisHelpMapYAr,
+        magAxisHelpVectorXAr,
+        magAxisHelpVectorYAr,
+        magAxisVarHelpAr,
+        magAxisVarHelpGridAr,
+        magConstraintHelpAr,
+        magDocumentationAr,
+        magDownloadAr,
+        magDownloadTooltipAr,
+        magFileTypeAr,
+        magGraphTypeAr,
+        magGraphTypeTooltipGridAr,
+        magGraphTypeTooltipTableAr,
+        magGSAr,
+        magGSMarkerTypeAr,
+        magGSSizeAr,
+        magGSColorAr,
+        magGSColorBarAr,
+        magGSColorBarTooltipAr,
+        magGSContinuityAr,
+        magGSContinuityTooltipAr,
+        magGSScaleAr,
+        magGSScaleTooltipAr,
+        magGSMinAr,
+        magGSMinTooltipAr,
+        magGSMaxAr,
+        magGSMaxTooltipAr,
+        magGSNSectionsAr,
+        magGSNSectionsTooltipAr,
+        magGSLandMaskAr,
+        magGSLandMaskTooltipGridAr,
+        magGSLandMaskTooltipTableAr,
+        magGSVectorStandardAr,
+        magGSVectorStandardTooltipAr,
+        magGSYAscendingTooltipAr,
+        magGSYAxisMinAr,
+        magGSYAxisMaxAr,
+        magGSYRangeMinTooltipAr,
+        magGSYRangeMaxTooltipAr,
+        magGSYRangeTooltipAr,
+        magGSYScaleTooltipAr,
+        magItemFirstAr,
+        magItemPreviousAr,
+        magItemNextAr,
+        magItemLastAr,
+        magJust1ValueAr,
+        magRangeAr,
+        magRangeToAr,
+        magRedrawAr,
+        magRedrawTooltipAr,
+        magTimeRangeAr,
+        magTimeRangeFirstAr,
+        magTimeRangeBackAr,
+        magTimeRangeForwardAr,
+        magTimeRangeLastAr,
+        magTimeRangeTooltipAr,
+        magTimeRangeTooltip2Ar,
+        magTimesVaryAr,
+        magViewUrlAr,
+        magZoomAr,
+        magZoomCenterAr,
+        magZoomCenterTooltipAr,
+        magZoomInAr,
+        magZoomInTooltipAr,
+        magZoomOutAr,
+        magZoomOutTooltipAr,
+        magZoomALittleAr,
+        magZoomDataAr,
+        magZoomOutDataAr,
+        magGridTooltipAr,
+        magTableTooltipAr,        
+        metadataDownloadAr,
+        moreInformationAr,
+        nMatching1Ar,
+        nMatchingAr,
+        nMatchingAlphabeticalAr,
+        nMatchingMostRelevantAr,
+        nMatchingPageAr,
+        nMatchingCurrentAr,
+        noDataFixedValueAr,
+        noDataNoLLAr,
+        noDatasetWithAr,
+        noPage1Ar,
+        noPage2Ar,
+        notAllowedAr,
+        notAuthorizedAr,
+        notAuthorizedForDataAr,
+        notAvailableAr,
+        noteAr,
+        noXxxAr,
+        noXxxBecauseAr,
+        noXxxBecause2Ar,
+        noXxxNotActiveAr,
+        noXxxNoAxis1Ar,
+        noXxxNoColorBarAr,
+        noXxxNoCdmDataTypeAr,
+        noXxxNoLLAr,
+        noXxxNoLLEvenlySpacedAr,
+        noXxxNoLLGt1Ar,
+        noXxxNoLLTAr,
+        noXxxNoLonIn180Ar,
+        noXxxNoNonStringAr,
+        noXxxNo2NonStringAr,
+        noXxxNoStationAr,
+        noXxxNoStationIDAr,
+        noXxxNoSubsetVariablesAr,
+        noXxxNoOLLSubsetVariablesAr,
+        noXxxNoMinMaxAr,
+        noXxxItsGriddedAr,
+        noXxxItsTabularAr,
+        oneRequestAtATimeAr,
+        openSearchDescriptionAr,
+        optionalAr,
+        optionsAr,
+        orAListOfValuesAr,
+        orRefineSearchWithAr,
+        orSearchWithAr,
+        orCommaAr,
+        otherFeaturesAr,
+        outOfDateDatasetsAr,
+        outOfDateKeepTrackAr,
+        outOfDateHtmlAr,
+        patientDataAr,
+        patientYourGraphAr,
+        percentEncodeAr,
+        pickADatasetAr,
+        protocolSearchHtmlAr,
+        protocolSearch2HtmlAr,
+        protocolClickAr,
+
+        queryErrorAr,
+        queryError180Ar,
+        queryError1ValueAr,
+        queryError1VarAr,
+        queryError2VarAr,
+        queryErrorActualRangeAr,
+        queryErrorAdjustedAr,
+        queryErrorAscendingAr,
+        queryErrorConstraintNaNAr,
+        queryErrorEqualSpacingAr,
+        queryErrorExpectedAtAr,
+        queryErrorFileTypeAr,
+        queryErrorInvalidAr,
+        queryErrorLLAr,
+        queryErrorLLGt1Ar,
+        queryErrorLLTAr,
+        queryErrorNeverTrueAr,
+        queryErrorNeverBothTrueAr,
+        queryErrorNotAxisAr,
+        queryErrorNotExpectedAtAr,
+        queryErrorNotFoundAfterAr,
+        queryErrorOccursTwiceAr,
+        queryErrorOrderByVariableAr,
+        queryErrorUnknownVariableAr,
+
+        queryErrorGrid1AxisAr,
+        queryErrorGridAmpAr,
+        queryErrorGridDiagnosticAr,
+        queryErrorGridBetweenAr,
+        queryErrorGridLessMinAr,
+        queryErrorGridGreaterMaxAr,
+        queryErrorGridMissingAr,
+        queryErrorGridNoAxisVarAr,
+        queryErrorGridNoDataVarAr,
+        queryErrorGridNotIdenticalAr,
+        queryErrorGridSLessSAr,
+        queryErrorLastEndPAr,
+        queryErrorLastExpectedAr,
+        queryErrorLastUnexpectedAr,
+        queryErrorLastPMInvalidAr,
+        queryErrorLastPMIntegerAr,        
+        rangesFromToAr,
+        requiredAr,
+        resetTheFormAr,
+        resetTheFormWasAr,
+        resourceNotFoundAr,
+        restfulWebServicesAr,
+        restfulHTMLAr,
+        restfulHTMLContinuedAr,
+        restfulGetAllDatasetAr,
+        restfulProtocolsAr,
+        SOSDocumentationAr,
+        WCSDocumentationAr,
+        WMSDocumentationAr,
+        requestFormatExamplesHtmlAr,
+        resultsFormatExamplesHtmlAr,
+        resultsOfSearchForAr,
+        restfulInformationFormatsAr,
+        restfulViaServiceAr,
+        rowsAr,
+        rssNoAr,
+        searchTitleAr,
+        searchDoFullTextHtmlAr,
+        searchFullTextHtmlAr,
+        searchHintsLuceneTooltipAr, 
+        searchHintsOriginalTooltipAr, 
+        searchHintsTooltipAr, 
+        searchButtonAr,
+        searchClickTipAr,
+        searchMultipleERDDAPsAr, 
+        searchMultipleERDDAPsDescriptionAr, 
+        searchNotAvailableAr,
+        searchTipAr,
+        searchSpellingAr,
+        searchFewerWordsAr,
+        searchWithQueryAr,
+        seeProtocolDocumentationAr,
+        selectNextAr,
+        selectPreviousAr,
+        shiftXAllTheWayLeftAr,
+        shiftXLeftAr,
+        shiftXRightAr,
+        shiftXAllTheWayRightAr,
+        slideSorterAr,
+        SOSAr,
+        sosDescriptionHtmlAr,
+        sosLongDescriptionHtmlAr,
+        sosOverview1Ar,
+        sosOverview2Ar,
+        ssUseAr,
+        ssUsePlainAr,
+        ssBePatientAr, 
+        ssInstructionsHtmlAr,
+        standardShortDescriptionHtmlAr, 
+        statusAr,
+        statusHtmlAr,
+        submitAr,
+        submitTooltipAr,
+        subscriptionOfferRssAr,
+        subscriptionOfferUrlAr,
+        subscriptionsTitleAr,
+        subscriptionEmailListAr,
+        subscriptionAddAr,
+        subscriptionAddHtmlAr,
+        subscriptionValidateAr,
+        subscriptionValidateHtmlAr,
+        subscriptionListAr,
+        subscriptionListHtmlAr,
+        subscriptionRemoveAr,
+        subscriptionRemoveHtmlAr,
+        subscriptionAbuseAr,
+        subscriptionAddErrorAr,
+        subscriptionAdd2Ar,
+        subscriptionAddSuccessAr,
+        subscriptionEmailAr,
+        subscriptionEmailOnBlacklistAr,
+        subscriptionEmailInvalidAr,
+        subscriptionEmailTooLongAr,
+        subscriptionEmailUnspecifiedAr,
+        subscription0HtmlAr, 
+        subscription1HtmlAr, 
+        subscription2HtmlAr, 
+        subscriptionIDInvalidAr,
+        subscriptionIDTooLongAr,
+        subscriptionIDUnspecifiedAr,
+        subscriptionKeyInvalidAr,
+        subscriptionKeyUnspecifiedAr,
+        subscriptionListErrorAr,
+        subscriptionListSuccessAr,
+        subscriptionRemoveErrorAr,
+        subscriptionRemove2Ar,
+        subscriptionRemoveSuccessAr,
+        subscriptionRSSAr,
+        subscriptionsNotAvailableAr,
+        subscriptionUrlHtmlAr,
+        subscriptionUrlInvalidAr,
+        subscriptionUrlTooLongAr,        
+        subscriptionValidateErrorAr,
+        subscriptionValidateSuccessAr,
+        subsetAr,
+        subsetSelectAr,
+        subsetNMatchingAr,
+        subsetInstructionsAr,
+        subsetOptionAr,
+        subsetOptionsAr,
+        subsetRefineMapDownloadAr,
+        subsetRefineSubsetDownloadAr,
+        subsetClickResetClosestAr,
+        subsetClickResetLLAr,
+        subsetMetadataAr,
+        subsetCountAr,
+        subsetPercentAr,
+        subsetViewSelectAr,
+        subsetViewSelectDistinctCombosAr,
+        subsetViewSelectRelatedCountsAr,
+        subsetWhenAr,
+        subsetWhenNoConstraintsAr,
+        subsetWhenCountsAr,
+        subsetComboClickSelectAr,
+        subsetNVariableCombosAr,
+        subsetShowingAllRowsAr,
+        subsetShowingNRowsAr,
+        subsetChangeShowingAr,
+        subsetNRowsRelatedDataAr,
+        subsetViewRelatedChangeAr,
+        subsetTotalCountAr,
+        subsetViewAr,
+        subsetViewCheckAr,
+        subsetViewCheck1Ar,
+        subsetViewDistinctMapAr,
+        subsetViewRelatedMapAr,
+        subsetViewDistinctDataCountsAr,
+        subsetViewDistinctDataAr,
+        subsetViewRelatedDataCountsAr,
+        subsetViewRelatedDataAr,
+        subsetViewDistinctMapTooltipAr,
+        subsetViewRelatedMapTooltipAr,
+        subsetViewDistinctDataCountsTooltipAr,
+        subsetViewDistinctDataTooltipAr,
+        subsetViewRelatedDataCountsTooltipAr,
+        subsetViewRelatedDataTooltipAr,
+        subsetWarnAr,                    
+        subsetWarn10000Ar,
+        subsetTooltipAr,
+        subsetNotSetUpAr,
+        subsetLongNotShownAr,
+
+        tabledapVideoIntroAr,
+        theDatasetIDAr,
+        theKeyAr,
+        theSubscriptionIDAr,
+        theUrlActionAr,        
+        ThenAr,
+        thisParticularErddapAr,
+        timeAr,
+        timeoutOtherRequestsAr,
+        unitsAr,
+        unknownDatasetIDAr,
+        unknownProtocolAr,
+        unsupportedFileTypeAr,
+        updateUrlsFrom,            //not Ar. They were arrays before and now
+        updateUrlsTo,              //not Ar
+        updateUrlsSkipAttributes,  //not Ar
+        usingGriddapAr,
+        usingTabledapAr,
+
+        variableNamesAr,
+        viewAllDatasetsHtmlAr,
+        waitThenTryAgainAr,
+        warningAr,
+
+        WCSAr,
+        wcsDescriptionHtmlAr,
+        wcsLongDescriptionHtmlAr,
+        wcsOverview1Ar,
+        wcsOverview2Ar,
+
+        wmsDescriptionHtmlAr,
+        WMSDocumentation1Ar,
+        WMSGetCapabilitiesAr,
+        WMSGetMapAr,
+        WMSNotesAr,
+        wmsInstructionsAr,
+        wmsLongDescriptionHtmlAr,
+        wmsManyDatasetsAr,
+
+        yourEmailAddressAr,
+        zoomInAr,
+        zoomOutAr;
 
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
-    private static String theLongDescriptionHtml; //see the xxx() methods
+    private static String[] theLongDescriptionHtmlAr; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
-    //must be in the same order of translate.languageCodeList
-    public static final String[] languageList = {"English (default)", "Chinese", "German"};
-    //this differs from translate.languageCodeList because the index 0 is "en"
-    public static String[] fullLanguageCodeList;
+    public static int nLanguages = TranslateMessages.languageList.length;
     
-
-    public static int languageChosenIndex = 0;
 
     /** These are only created/used by GenerateDatasetsXml threads. 
      *  See the related methods below that create them.
@@ -1710,12 +1737,12 @@ public static boolean developmentMode = false;
         String2.unitTestBigDataDir = unitTestBigDataDir;
 
         //email  (do early on so email can be sent if trouble later in this method)
-        emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  null);
+        emailSmtpHost          = getSetupEVString(setup, ev, "emailSmtpHost",  (String)null);
         emailSmtpPort          = getSetupEVInt(   setup, ev, "emailSmtpPort",  25);
-        emailUserName          = getSetupEVString(setup, ev, "emailUserName",  null);
-        emailPassword          = getSetupEVString(setup, ev, "emailPassword",  null);
-        emailProperties        = getSetupEVString(setup, ev, "emailProperties",  null);
-        emailFromAddress       = getSetupEVString(setup, ev, "emailFromAddress", null);
+        emailUserName          = getSetupEVString(setup, ev, "emailUserName",  (String)null);
+        emailPassword          = getSetupEVString(setup, ev, "emailPassword",  (String)null);
+        emailProperties        = getSetupEVString(setup, ev, "emailProperties",  (String)null);
+        emailFromAddress       = getSetupEVString(setup, ev, "emailFromAddress", (String)null);
         emailEverythingToCsv   = getSetupEVString(setup, ev, "emailEverythingTo", "");  //won't be null
         emailDailyReportToCsv  = getSetupEVString(setup, ev, "emailDailyReportTo", ""); //won't be null
 
@@ -1909,7 +1936,7 @@ public static boolean developmentMode = false;
         fees                       = getSetupEVNotNothingString(setup, ev, "fees",                       errorInMethod);
         keywords                   = getSetupEVNotNothingString(setup, ev, "keywords",                   errorInMethod);
 
-        awsS3OutputBucketUrl       = getSetupEVString(          setup, ev, "awsS3OutputBucketUrl",       null);
+        awsS3OutputBucketUrl       = getSetupEVString(          setup, ev, "awsS3OutputBucketUrl",       (String)null);
         if (!String2.isSomething(awsS3OutputBucketUrl))
             awsS3OutputBucketUrl = null;
         if (awsS3OutputBucketUrl != null) {
@@ -1985,7 +2012,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
 
         authentication             = getSetupEVString(setup, ev,           "authentication",             "");
         datasetsRegex              = getSetupEVString(setup, ev,           "datasetsRegex",              ".*");
-        drawLandMask               = getSetupEVString(setup, ev,           "drawLandMask",               null);    //new name
+        drawLandMask               = getSetupEVString(setup, ev,           "drawLandMask",               (String)null);    //new name
         if (drawLandMask == null) //2014-08-28 changed defaults below to "under". It will be in v1.48
             drawLandMask           = getSetupEVString(setup, ev,           "drawLand",                   DEFAULT_drawLandMask); //old name. DEFAULT...="under"
         int tdlm = String2.indexOf(SgtMap.drawLandMask_OPTIONS, drawLandMask);
@@ -2002,9 +2029,9 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         fontFamily                 = getSetupEVString(setup, ev,           "fontFamily",                 "DejaVu Sans");
         graphBackgroundColor = new Color(String2.parseInt(
                                      getSetupEVString(setup, ev,           "graphBackgroundColor",       "" + DEFAULT_graphBackgroundColorInt)), true); //hasAlpha
-        googleClientID             = getSetupEVString(setup, ev,           "googleClientID",             null);
-        orcidClientID              = getSetupEVString(setup, ev,           "orcidClientID",              null);
-        orcidClientSecret          = getSetupEVString(setup, ev,           "orcidClientSecret",          null);
+        googleClientID             = getSetupEVString(setup, ev,           "googleClientID",             (String)null);
+        orcidClientID              = getSetupEVString(setup, ev,           "orcidClientID",              (String)null);
+        orcidClientSecret          = getSetupEVString(setup, ev,           "orcidClientSecret",          (String)null);
         googleEarthLogoFile        = getSetupEVNotNothingString(setup, ev, "googleEarthLogoFile",        errorInMethod);
         highResLogoImageFile       = getSetupEVNotNothingString(setup, ev, "highResLogoImageFile",       errorInMethod);
         listPrivateDatasets        = getSetupEVBoolean(setup, ev,          "listPrivateDatasets",        false);
@@ -2148,8 +2175,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         //**** messages.xml *************************************************************
         //This is read AFTER setup.xml. If that is a problem for something, defer reading it in setup and add it below.
         //Read static messages from messages(2).xml in contentDirectory.
-        String messagesFileName = contentDirectory + 
-            "messages" + (developmentMode? "2" : "") + ".xml";
+        String messagesFileName = contentDirectory + "messages.xml";
         if (File2.isFile(messagesFileName)) {
             String2.log("Using custom messages.xml from " + messagesFileName);
         } else {
@@ -2161,382 +2187,427 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
             String2.log("Using default messages.xml from  " + messagesFileName);
         }
         errorInMethod = "ERROR while reading messages.xml: ";
-        ResourceBundle2 messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
-
-        fullLanguageCodeList = new String[languageList.length];
-        fullLanguageCodeList[0] = "en";
-        for (int i = 1; i < fullLanguageCodeList.length; i++) {
-            fullLanguageCodeList[i] = translate.languageCodeList[i - 1];
-        }
-        ResourceBundle2[] messagesList = new ResourceBundle2[languageList.length];
-        //messagesList[0] is either the custom messages.xml or the one provided by Erddap
-        messagesList[0] = messages;
-        for (int i = 1; i < fullLanguageCodeList.length; i++) {
-            String translatedFilePath = String2.getClassPath() + //WEB-INF directory
-                "gov/noaa/pfel/erddap/util/translatedMessages/messages-" + 
-                fullLanguageCodeList[i] + ".xml";
-            messagesList[i] = ResourceBundle2.fromXml(XML.parseXml(translatedFilePath, false));
+        ResourceBundle2[] messagesAr = new ResourceBundle2[nLanguages];
+        //messagesAr[0] is either the custom messages.xml or the one provided by Erddap
+        messagesAr[0] = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
+       
+        for (int tl = 1; tl < nLanguages; tl++) {
+            String tName = "messages-" + TranslateMessages.languageCodeList[tl] + ".xml";
+            errorInMethod = "ERROR while reading " + tName + ": ";
+            messagesAr[tl] = ResourceBundle2.fromXml(XML.parseXml(
+                TranslateMessages.translatedMessagesDir + tName, false));
         }
         
         //read all the static Strings from messages.xml
-        acceptEncodingHtml         = messages.getNotNothingString("acceptEncodingHtml",         errorInMethod);
-        accessRESTFUL              = messages.getNotNothingString("accessRestful",              errorInMethod);
-        acronyms                   = messages.getNotNothingString("acronyms",                   errorInMethod);
-        addConstraints             = messages.getNotNothingString("addConstraints",             errorInMethod);
-        addVarWhereAttName         = messages.getNotNothingString("addVarWhereAttName",         errorInMethod);
-        addVarWhereAttValue        = messages.getNotNothingString("addVarWhereAttValue",        errorInMethod);
-        addVarWhere                = messages.getNotNothingString("addVarWhere",                errorInMethod);
-        additionalLinks            = messages.getNotNothingString("additionalLinks",            errorInMethod);
-        admKeywords                = messages.getNotNothingString("admKeywords",                errorInMethod);
-        admSubsetVariables         = messages.getNotNothingString("admSubsetVariables",         errorInMethod);
-        admSummary                 = messages.getNotNothingString("admSummary",                 errorInMethod);
-        admTitle                   = messages.getNotNothingString("admTitle",                   errorInMethod);
-        advl_datasetID             = messages.getNotNothingString("advl_datasetID",             errorInMethod);
-        advc_accessible            = messages.getNotNothingString("advc_accessible",            errorInMethod);
-        advl_accessible            = messages.getNotNothingString("advl_accessible",            errorInMethod);
-        advl_institution           = messages.getNotNothingString("advl_institution",           errorInMethod);
-        advc_dataStructure         = messages.getNotNothingString("advc_dataStructure",         errorInMethod);
-        advl_dataStructure         = messages.getNotNothingString("advl_dataStructure",         errorInMethod);
-        advr_dataStructure         = messages.getNotNothingString("advr_dataStructure",         errorInMethod);
-        advl_cdm_data_type         = messages.getNotNothingString("advl_cdm_data_type",         errorInMethod);
-        advr_cdm_data_type         = messages.getNotNothingString("advr_cdm_data_type",         errorInMethod);
-        advl_class                 = messages.getNotNothingString("advl_class",                 errorInMethod);
-        advr_class                 = messages.getNotNothingString("advr_class",                 errorInMethod);
-        advl_title                 = messages.getNotNothingString("advl_title",                 errorInMethod);
-        advl_minLongitude          = messages.getNotNothingString("advl_minLongitude",          errorInMethod);
-        advl_maxLongitude          = messages.getNotNothingString("advl_maxLongitude",          errorInMethod);
-        advl_longitudeSpacing      = messages.getNotNothingString("advl_longitudeSpacing",      errorInMethod);
-        advl_minLatitude           = messages.getNotNothingString("advl_minLatitude",           errorInMethod);
-        advl_maxLatitude           = messages.getNotNothingString("advl_maxLatitude",           errorInMethod);
-        advl_latitudeSpacing       = messages.getNotNothingString("advl_latitudeSpacing",       errorInMethod);
-        advl_minAltitude           = messages.getNotNothingString("advl_minAltitude",           errorInMethod);
-        advl_maxAltitude           = messages.getNotNothingString("advl_maxAltitude",           errorInMethod);
-        advl_minTime               = messages.getNotNothingString("advl_minTime",               errorInMethod);
-        advc_maxTime               = messages.getNotNothingString("advc_maxTime",               errorInMethod);
-        advl_maxTime               = messages.getNotNothingString("advl_maxTime",               errorInMethod);
-        advl_timeSpacing           = messages.getNotNothingString("advl_timeSpacing",           errorInMethod);
-        advc_griddap               = messages.getNotNothingString("advc_griddap",               errorInMethod);
-        advl_griddap               = messages.getNotNothingString("advl_griddap",               errorInMethod);
-        advl_subset                = messages.getNotNothingString("advl_subset",                errorInMethod);
-        advc_tabledap              = messages.getNotNothingString("advc_tabledap",              errorInMethod);
-        advl_tabledap              = messages.getNotNothingString("advl_tabledap",              errorInMethod);
-        advl_MakeAGraph            = messages.getNotNothingString("advl_MakeAGraph",            errorInMethod);
-        advc_sos                   = messages.getNotNothingString("advc_sos",                   errorInMethod);
-        advl_sos                   = messages.getNotNothingString("advl_sos",                   errorInMethod);
-        advl_wcs                   = messages.getNotNothingString("advl_wcs",                   errorInMethod);
-        advl_wms                   = messages.getNotNothingString("advl_wms",                   errorInMethod);
-        advc_files                 = messages.getNotNothingString("advc_files",                 errorInMethod);
-        advl_files                 = messages.getNotNothingString("advl_files",                 errorInMethod);
-        advc_fgdc                  = messages.getNotNothingString("advc_fgdc",                  errorInMethod);
-        advl_fgdc                  = messages.getNotNothingString("advl_fgdc",                  errorInMethod);
-        advc_iso19115              = messages.getNotNothingString("advc_iso19115",              errorInMethod);
-        advl_iso19115              = messages.getNotNothingString("advl_iso19115",              errorInMethod);
-        advc_metadata              = messages.getNotNothingString("advc_metadata",              errorInMethod);
-        advl_metadata              = messages.getNotNothingString("advl_metadata",              errorInMethod);
-        advl_sourceUrl             = messages.getNotNothingString("advl_sourceUrl",             errorInMethod);
-        advl_infoUrl               = messages.getNotNothingString("advl_infoUrl",               errorInMethod);
-        advl_rss                   = messages.getNotNothingString("advl_rss",                   errorInMethod);
-        advc_email                 = messages.getNotNothingString("advc_email",                 errorInMethod);
-        advl_email                 = messages.getNotNothingString("advl_email",                 errorInMethod);
-        advl_summary               = messages.getNotNothingString("advl_summary",               errorInMethod);
-        advc_testOutOfDate         = messages.getNotNothingString("advc_testOutOfDate",         errorInMethod);
-        advl_testOutOfDate         = messages.getNotNothingString("advl_testOutOfDate",         errorInMethod);
-        advc_outOfDate             = messages.getNotNothingString("advc_outOfDate",             errorInMethod);
-        advl_outOfDate             = messages.getNotNothingString("advl_outOfDate",             errorInMethod);
-        advn_outOfDate             = messages.getNotNothingString("advn_outOfDate",             errorInMethod);
-        advancedSearch             = messages.getNotNothingString("advancedSearch",             errorInMethod);
-        advancedSearchResults      = messages.getNotNothingString("advancedSearchResults",      errorInMethod);
-        advancedSearchDirections   = messages.getNotNothingString("advancedSearchDirections",   errorInMethod);
-        advancedSearchTooltip      = messages.getNotNothingString("advancedSearchTooltip",      errorInMethod);
-        advancedSearchBounds       = messages.getNotNothingString("advancedSearchBounds",       errorInMethod);
-        advancedSearchMinLat       = messages.getNotNothingString("advancedSearchMinLat",       errorInMethod);
-        advancedSearchMaxLat       = messages.getNotNothingString("advancedSearchMaxLat",       errorInMethod);
-        advancedSearchMinLon       = messages.getNotNothingString("advancedSearchMinLon",       errorInMethod);
-        advancedSearchMaxLon       = messages.getNotNothingString("advancedSearchMaxLon",       errorInMethod);
-        advancedSearchMinMaxLon    = messages.getNotNothingString("advancedSearchMinMaxLon",    errorInMethod);
-        advancedSearchMinTime      = messages.getNotNothingString("advancedSearchMinTime",      errorInMethod);
-        advancedSearchMaxTime      = messages.getNotNothingString("advancedSearchMaxTime",      errorInMethod);
-        advancedSearchClear        = messages.getNotNothingString("advancedSearchClear",        errorInMethod);
-        advancedSearchClearHelp    = messages.getNotNothingString("advancedSearchClearHelp",    errorInMethod);
-        advancedSearchCategoryTooltip=messages.getNotNothingString("advancedSearchCategoryTooltip", errorInMethod);
-        advancedSearchRangeTooltip = messages.getNotNothingString("advancedSearchRangeTooltip", errorInMethod);
-        advancedSearchMapTooltip   = messages.getNotNothingString("advancedSearchMapTooltip",   errorInMethod);
-        advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   errorInMethod);
-        advancedSearchTimeTooltip  = messages.getNotNothingString("advancedSearchTimeTooltip",  errorInMethod);
-        advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
-        advancedSearchFewerCriteria= messages.getNotNothingString("advancedSearchFewerCriteria",errorInMethod);
-        advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
-        advancedSearchErrorHandling= messages.getNotNothingString("advancedSearchErrorHandling",errorInMethod);
-        autoRefresh                = messages.getNotNothingString("autoRefresh",                errorInMethod);
-        blacklistMsg               = messages.getNotNothingString("blacklistMsg",               errorInMethod);
-        PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          errorInMethod);
-        PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  errorInMethod);
-        PrimitiveArray.ArrayAtInsert       = messages.getNotNothingString("ArrayAtInsert",      errorInMethod);
-        PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          errorInMethod);
-        PrimitiveArray.ArrayDifferentSize  = messages.getNotNothingString("ArrayDifferentSize", errorInMethod);
-        PrimitiveArray.ArrayDifferentValue = messages.getNotNothingString("ArrayDifferentValue",errorInMethod);
-        PrimitiveArray.ArrayDiffString     = messages.getNotNothingString("ArrayDiffString",    errorInMethod);
-        PrimitiveArray.ArrayMissingValue   = messages.getNotNothingString("ArrayMissingValue",  errorInMethod);
-        PrimitiveArray.ArrayNotAscending   = messages.getNotNothingString("ArrayNotAscending",  errorInMethod);
-        PrimitiveArray.ArrayNotDescending  = messages.getNotNothingString("ArrayNotDescending", errorInMethod);
-        PrimitiveArray.ArrayNotEvenlySpaced= messages.getNotNothingString("ArrayNotEvenlySpaced",errorInMethod);
-        PrimitiveArray.ArrayRemove         = messages.getNotNothingString("ArrayRemove",        errorInMethod);
-        PrimitiveArray.ArraySubsetStart    = messages.getNotNothingString("ArraySubsetStart",   errorInMethod);
-        PrimitiveArray.ArraySubsetStride   = messages.getNotNothingString("ArraySubsetStride",  errorInMethod);
-        categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          errorInMethod);
-        categoryHtml               = messages.getNotNothingString("categoryHtml",               errorInMethod);
-        category3Html              = messages.getNotNothingString("category3Html",              errorInMethod);
-        categoryPickAttribute      = messages.getNotNothingString("categoryPickAttribute",      errorInMethod);
-        categorySearchHtml         = messages.getNotNothingString("categorySearchHtml",         errorInMethod);
-        categorySearchDifferentHtml= messages.getNotNothingString("categorySearchDifferentHtml",errorInMethod);
-        categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          errorInMethod);
-        categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        errorInMethod);
-        caughtInterrupted    = " " + messages.getNotNothingString("caughtInterrupted",          errorInMethod);
-        cdmDataTypeHelp            = messages.getNotNothingString("cdmDataTypeHelp",            errorInMethod);
-        clickAccess                = messages.getNotNothingString("clickAccess",                errorInMethod);
-        clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        errorInMethod);
-        clickERDDAP                = messages.getNotNothingString("clickERDDAP",                errorInMethod);
-        clickInfo                  = messages.getNotNothingString("clickInfo",                  errorInMethod);
-        clickToSubmit              = messages.getNotNothingString("clickToSubmit",              errorInMethod);
-        HtmlWidgets.comboBoxAlt    = messages.getNotNothingString("comboBoxAlt",                errorInMethod);
-        converterWebService        = messages.getNotNothingString("converterWebService",        errorInMethod);
-        convertOceanicAtmosphericAcronyms             = messages.getNotNothingString("convertOceanicAtmosphericAcronyms",             errorInMethod);
-        convertOceanicAtmosphericAcronymsIntro        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsIntro",        errorInMethod);
-        convertOceanicAtmosphericAcronymsNotes        = messages.getNotNothingString("convertOceanicAtmosphericAcronymsNotes",        errorInMethod);
-        convertOceanicAtmosphericAcronymsService      = messages.getNotNothingString("convertOceanicAtmosphericAcronymsService",      errorInMethod);
-        convertOceanicAtmosphericVariableNames        = messages.getNotNothingString("convertOceanicAtmosphericVariableNames",        errorInMethod);
-        convertOceanicAtmosphericVariableNamesIntro   = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesIntro",   errorInMethod);
-        convertOceanicAtmosphericVariableNamesNotes   = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesNotes",   errorInMethod);
-        convertOceanicAtmosphericVariableNamesService = messages.getNotNothingString("convertOceanicAtmosphericVariableNamesService", errorInMethod);
-        convertFipsCounty          = messages.getNotNothingString("convertFipsCounty",          errorInMethod);
-        convertFipsCountyIntro     = messages.getNotNothingString("convertFipsCountyIntro",     errorInMethod);
-        convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     errorInMethod);
-        convertFipsCountyService   = messages.getNotNothingString("convertFipsCountyService",   errorInMethod);
-        convertHtml                = messages.getNotNothingString("convertHtml",                errorInMethod);
-        convertInterpolate         = messages.getNotNothingString("convertInterpolate",         errorInMethod);
-        convertInterpolateIntro    = messages.getNotNothingString("convertInterpolateIntro",    errorInMethod);
-        convertInterpolateTLLTable = messages.getNotNothingString("convertInterpolateTLLTable", errorInMethod);
-        convertInterpolateTLLTableHelp
-                                   = messages.getNotNothingString("convertInterpolateTLLTableHelp",              errorInMethod);
-        convertInterpolateDatasetIDVariable 
-                                   = messages.getNotNothingString("convertInterpolateDatasetIDVariable",     errorInMethod);
-        convertInterpolateDatasetIDVariableHelp
-                                   = messages.getNotNothingString("convertInterpolateDatasetIDVariableHelp", errorInMethod);
-        convertInterpolateNotes    = messages.getNotNothingString("convertInterpolateNotes",    errorInMethod);
-        convertInterpolateService  = messages.getNotNothingString("convertInterpolateService",  errorInMethod);
-        convertKeywords            = messages.getNotNothingString("convertKeywords",            errorInMethod);
-        convertKeywordsCfTooltip   = messages.getNotNothingString("convertKeywordsCfTooltip",   errorInMethod);
-        convertKeywordsGcmdTooltip = messages.getNotNothingString("convertKeywordsGcmdTooltip", errorInMethod);
-        convertKeywordsIntro       = messages.getNotNothingString("convertKeywordsIntro",       errorInMethod);
-        convertKeywordsNotes       = messages.getNotNothingString("convertKeywordsNotes",       errorInMethod);
-        convertKeywordsService     = messages.getNotNothingString("convertKeywordsService",     errorInMethod);
-        convertTime                = messages.getNotNothingString("convertTime",                errorInMethod);
-        convertTimeBypass          = messages.getNotNothingString("convertTimeBypass",          errorInMethod);
-        convertTimeReference       = messages.getNotNothingString("convertTimeReference",       errorInMethod);
-        convertTimeIntro           = messages.getNotNothingString("convertTimeIntro",           errorInMethod);
-        convertTimeNotes           = messages.getNotNothingString("convertTimeNotes",           errorInMethod);
-        convertTimeService         = messages.getNotNothingString("convertTimeService",         errorInMethod);
-        convertTimeNumberTooltip   = messages.getNotNothingString("convertTimeNumberTooltip",   errorInMethod);
-        convertTimeStringTimeTooltip=messages.getNotNothingString("convertTimeStringTimeTooltip",errorInMethod);
-        convertTimeUnitsTooltip    = messages.getNotNothingString("convertTimeUnitsTooltip",    errorInMethod);
-        convertTimeUnitsHelp       = messages.getNotNothingString("convertTimeUnitsHelp",       errorInMethod);
-        convertTimeIsoFormatError  = messages.getNotNothingString("convertTimeIsoFormatError",  errorInMethod);
-        convertTimeNoSinceError    = messages.getNotNothingString("convertTimeNoSinceError",    errorInMethod);
-        convertTimeNumberError     = messages.getNotNothingString("convertTimeNumberError",     errorInMethod);
-        convertTimeNumericTimeError= messages.getNotNothingString("convertTimeNumericTimeError",errorInMethod);
-        convertTimeParametersError = messages.getNotNothingString("convertTimeParametersError", errorInMethod);
-        convertTimeStringFormatError=messages.getNotNothingString("convertTimeStringFormatError",errorInMethod);
-        convertTimeTwoTimeError    = messages.getNotNothingString("convertTimeTwoTimeError",    errorInMethod);
-        convertTimeUnitsError      = messages.getNotNothingString("convertTimeUnitsError",      errorInMethod);
-        convertUnits               = messages.getNotNothingString("convertUnits",               errorInMethod);
-        convertUnitsComparison     = messages.getNotNothingString("convertUnitsComparison",     errorInMethod);
-        convertUnitsFilter         = messages.getNotNothingString("convertUnitsFilter",         errorInMethod);
-        convertUnitsIntro          = messages.getNotNothingString("convertUnitsIntro",          errorInMethod);
-        convertUnitsNotes          = messages.getNotNothingString("convertUnitsNotes",          errorInMethod);
-        convertUnitsService        = messages.getNotNothingString("convertUnitsService",        errorInMethod);
-        convertURLs                = messages.getNotNothingString("convertURLs",                errorInMethod);
-        convertURLsIntro           = messages.getNotNothingString("convertURLsIntro",           errorInMethod);
-        convertURLsNotes           = messages.getNotNothingString("convertURLsNotes",           errorInMethod);
-        convertURLsService         = messages.getNotNothingString("convertURLsService",         errorInMethod);
-        cookiesHelp                = messages.getNotNothingString("cookiesHelp",                errorInMethod);
-        daf                        = messages.getNotNothingString("daf",                        errorInMethod);
-        dafGridBypassTooltip       = messages.getNotNothingString("dafGridBypassTooltip",       errorInMethod);
-        dafGridTooltip             = messages.getNotNothingString("dafGridTooltip",             errorInMethod);
-        dafTableBypassTooltip      = messages.getNotNothingString("dafTableBypassTooltip",      errorInMethod);
-        dafTableTooltip            = messages.getNotNothingString("dafTableTooltip",            errorInMethod);
-        dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
-        dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
-        databaseUnableToConnect    = messages.getNotNothingString("databaseUnableToConnect",    errorInMethod);
-        dataProviderFormSuccess    = messages.getNotNothingString("dataProviderFormSuccess",    errorInMethod);
-        dataProviderFormShortDescription = messages.getNotNothingString("dataProviderFormShortDescription", errorInMethod);
-        dataProviderFormLongDescriptionHTML = messages.getNotNothingString("dataProviderFormLongDescriptionHTML", errorInMethod);
-        disabled                   = messages.getNotNothingString("disabled",                   errorInMethod);
-        dataProviderFormPart1      = messages.getNotNothingString("dataProviderFormPart1",      errorInMethod);
-        dataProviderFormPart2Header = messages.getNotNothingString("dataProviderFormPart2Header", errorInMethod);
-        dataProviderFormPart2GlobalMetadata = messages.getNotNothingString("dataProviderFormPart2GlobalMetadata", errorInMethod);
-        dataProviderContactInfo    = messages.getNotNothingString("dataProviderContactInfo",    errorInMethod);
-        dataProviderData           = messages.getNotNothingString("dataProviderData",           errorInMethod);
+        errorInMethod = "ERROR while reading from all the messages.xml files: ";
+        acceptEncodingHtmlAr         = getNotNothingString(messagesAr, "acceptEncodingHtml",         errorInMethod);
+        accessRESTFULAr              = getNotNothingString(messagesAr, "accessRestful",              errorInMethod);
+        acronymsAr                   = getNotNothingString(messagesAr, "acronyms",                   errorInMethod);
+        addConstraintsAr             = getNotNothingString(messagesAr, "addConstraints",             errorInMethod);
+        addVarWhereAttNameAr         = getNotNothingString(messagesAr, "addVarWhereAttName",         errorInMethod);
+        addVarWhereAttValueAr        = getNotNothingString(messagesAr, "addVarWhereAttValue",        errorInMethod);
+        addVarWhereAr                = getNotNothingString(messagesAr, "addVarWhere",                errorInMethod);
+        additionalLinksAr            = getNotNothingString(messagesAr, "additionalLinks",            errorInMethod);
+        admKeywords                = messagesAr[0].getNotNothingString("admKeywords",                errorInMethod);
+        admSubsetVariables         = messagesAr[0].getNotNothingString("admSubsetVariables",         errorInMethod);
+        admSummaryAr                 = getNotNothingString(messagesAr, "admSummary",                 errorInMethod);
+        admTitleAr                   = getNotNothingString(messagesAr, "admTitle",                   errorInMethod);
+        advl_datasetID             = messagesAr[0].getNotNothingString("advl_datasetID",             errorInMethod);
+        advc_accessibleAr            = getNotNothingString(messagesAr, "advc_accessible",            errorInMethod);
+        advl_accessibleAr            = getNotNothingString(messagesAr, "advl_accessible",            errorInMethod);
+        advl_institutionAr           = getNotNothingString(messagesAr, "advl_institution",           errorInMethod);
+        advc_dataStructureAr         = getNotNothingString(messagesAr, "advc_dataStructure",         errorInMethod);
+        advl_dataStructureAr         = getNotNothingString(messagesAr, "advl_dataStructure",         errorInMethod);
+        advr_dataStructure         = messagesAr[0].getNotNothingString("advr_dataStructure",         errorInMethod);
+        advl_cdm_data_typeAr         = getNotNothingString(messagesAr, "advl_cdm_data_type",         errorInMethod);
+        advr_cdm_data_type         = messagesAr[0].getNotNothingString("advr_cdm_data_type",         errorInMethod);
+        advl_classAr                 = getNotNothingString(messagesAr, "advl_class",                 errorInMethod);
+        advr_class                 = messagesAr[0].getNotNothingString("advr_class",                 errorInMethod);
+        advl_titleAr                 = getNotNothingString(messagesAr, "advl_title",                 errorInMethod);
+        advl_minLongitudeAr          = getNotNothingString(messagesAr, "advl_minLongitude",          errorInMethod);
+        advl_maxLongitudeAr          = getNotNothingString(messagesAr, "advl_maxLongitude",          errorInMethod);
+        advl_longitudeSpacingAr      = getNotNothingString(messagesAr, "advl_longitudeSpacing",      errorInMethod);
+        advl_minLatitudeAr           = getNotNothingString(messagesAr, "advl_minLatitude",           errorInMethod);
+        advl_maxLatitudeAr           = getNotNothingString(messagesAr, "advl_maxLatitude",           errorInMethod);
+        advl_latitudeSpacingAr       = getNotNothingString(messagesAr, "advl_latitudeSpacing",       errorInMethod);
+        advl_minAltitudeAr           = getNotNothingString(messagesAr, "advl_minAltitude",           errorInMethod);
+        advl_maxAltitudeAr           = getNotNothingString(messagesAr, "advl_maxAltitude",           errorInMethod);
+        advl_minTimeAr               = getNotNothingString(messagesAr, "advl_minTime",               errorInMethod);
+        advc_maxTimeAr               = getNotNothingString(messagesAr, "advc_maxTime",               errorInMethod);
+        advl_maxTimeAr               = getNotNothingString(messagesAr, "advl_maxTime",               errorInMethod);
+        advl_timeSpacingAr           = getNotNothingString(messagesAr, "advl_timeSpacing",           errorInMethod);
+        advc_griddapAr               = getNotNothingString(messagesAr, "advc_griddap",               errorInMethod);
+        advl_griddapAr               = getNotNothingString(messagesAr, "advl_griddap",               errorInMethod);
+        advl_subsetAr                = getNotNothingString(messagesAr, "advl_subset",                errorInMethod);
+        advc_tabledapAr              = getNotNothingString(messagesAr, "advc_tabledap",              errorInMethod);
+        advl_tabledapAr              = getNotNothingString(messagesAr, "advl_tabledap",              errorInMethod);
+        advl_MakeAGraphAr            = getNotNothingString(messagesAr, "advl_MakeAGraph",            errorInMethod);
+        advc_sosAr                   = getNotNothingString(messagesAr, "advc_sos",                   errorInMethod);
+        advl_sosAr                   = getNotNothingString(messagesAr, "advl_sos",                   errorInMethod);
+        advl_wcsAr                   = getNotNothingString(messagesAr, "advl_wcs",                   errorInMethod);
+        advl_wmsAr                   = getNotNothingString(messagesAr, "advl_wms",                   errorInMethod);
+        advc_filesAr                 = getNotNothingString(messagesAr, "advc_files",                 errorInMethod);
+        advl_filesAr                 = getNotNothingString(messagesAr, "advl_files",                 errorInMethod);
+        advc_fgdcAr                  = getNotNothingString(messagesAr, "advc_fgdc",                  errorInMethod);
+        advl_fgdcAr                  = getNotNothingString(messagesAr, "advl_fgdc",                  errorInMethod);
+        advc_iso19115Ar              = getNotNothingString(messagesAr, "advc_iso19115",              errorInMethod);
+        advl_iso19115Ar              = getNotNothingString(messagesAr, "advl_iso19115",              errorInMethod);
+        advc_metadataAr              = getNotNothingString(messagesAr, "advc_metadata",              errorInMethod);
+        advl_metadataAr              = getNotNothingString(messagesAr, "advl_metadata",              errorInMethod);
+        advl_sourceUrlAr             = getNotNothingString(messagesAr, "advl_sourceUrl",             errorInMethod);
+        advl_infoUrlAr               = getNotNothingString(messagesAr, "advl_infoUrl",               errorInMethod);
+        advl_rssAr                   = getNotNothingString(messagesAr, "advl_rss",                   errorInMethod);
+        advc_emailAr                 = getNotNothingString(messagesAr, "advc_email",                 errorInMethod);
+        advl_emailAr                 = getNotNothingString(messagesAr, "advl_email",                 errorInMethod);
+        advl_summaryAr               = getNotNothingString(messagesAr, "advl_summary",               errorInMethod);
+        advc_testOutOfDateAr         = getNotNothingString(messagesAr, "advc_testOutOfDate",         errorInMethod);
+        advl_testOutOfDateAr         = getNotNothingString(messagesAr, "advl_testOutOfDate",         errorInMethod);
+        advc_outOfDateAr             = getNotNothingString(messagesAr, "advc_outOfDate",             errorInMethod);
+        advl_outOfDateAr             = getNotNothingString(messagesAr, "advl_outOfDate",             errorInMethod);
+        advn_outOfDateAr             = getNotNothingString(messagesAr, "advn_outOfDate",             errorInMethod);
+        advancedSearchAr             = getNotNothingString(messagesAr, "advancedSearch",             errorInMethod);
+        advancedSearchResultsAr      = getNotNothingString(messagesAr, "advancedSearchResults",      errorInMethod);
+        advancedSearchDirectionsAr   = getNotNothingString(messagesAr, "advancedSearchDirections",   errorInMethod);
+        advancedSearchTooltipAr      = getNotNothingString(messagesAr, "advancedSearchTooltip",      errorInMethod);
+        advancedSearchBoundsAr       = getNotNothingString(messagesAr, "advancedSearchBounds",       errorInMethod);
+        advancedSearchMinLatAr       = getNotNothingString(messagesAr, "advancedSearchMinLat",       errorInMethod);
+        advancedSearchMaxLatAr       = getNotNothingString(messagesAr, "advancedSearchMaxLat",       errorInMethod);
+        advancedSearchMinLonAr       = getNotNothingString(messagesAr, "advancedSearchMinLon",       errorInMethod);
+        advancedSearchMaxLonAr       = getNotNothingString(messagesAr, "advancedSearchMaxLon",       errorInMethod);
+        advancedSearchMinMaxLonAr    = getNotNothingString(messagesAr, "advancedSearchMinMaxLon",    errorInMethod);
+        advancedSearchMinTimeAr      = getNotNothingString(messagesAr, "advancedSearchMinTime",      errorInMethod);
+        advancedSearchMaxTimeAr      = getNotNothingString(messagesAr, "advancedSearchMaxTime",      errorInMethod);
+        advancedSearchClearAr        = getNotNothingString(messagesAr, "advancedSearchClear",        errorInMethod);
+        advancedSearchClearHelpAr    = getNotNothingString(messagesAr, "advancedSearchClearHelp",    errorInMethod);
+        advancedSearchCategoryTooltipAr=getNotNothingString(messagesAr, "advancedSearchCategoryTooltip", errorInMethod);
+        advancedSearchRangeTooltipAr = getNotNothingString(messagesAr, "advancedSearchRangeTooltip", errorInMethod);
+        advancedSearchMapTooltipAr   = getNotNothingString(messagesAr, "advancedSearchMapTooltip",   errorInMethod);
+        advancedSearchLonTooltipAr   = getNotNothingString(messagesAr, "advancedSearchLonTooltip",   errorInMethod);
+        advancedSearchTimeTooltipAr  = getNotNothingString(messagesAr, "advancedSearchTimeTooltip",  errorInMethod);
+        advancedSearchWithCriteriaAr = getNotNothingString(messagesAr, "advancedSearchWithCriteria", errorInMethod);
+        advancedSearchFewerCriteriaAr= getNotNothingString(messagesAr, "advancedSearchFewerCriteria",errorInMethod);
+        advancedSearchNoCriteriaAr   = getNotNothingString(messagesAr, "advancedSearchNoCriteria",   errorInMethod);
+        advancedSearchErrorHandlingAr= getNotNothingString(messagesAr, "advancedSearchErrorHandling",errorInMethod);
+        PrimitiveArray.ArrayAddN           = messagesAr[0].getNotNothingString("ArrayAddN",          errorInMethod);
+        PrimitiveArray.ArrayAppendTables   = messagesAr[0].getNotNothingString("ArrayAppendTables",  errorInMethod);
+        PrimitiveArray.ArrayAtInsert       = messagesAr[0].getNotNothingString("ArrayAtInsert",      errorInMethod);
+        PrimitiveArray.ArrayDiff           = messagesAr[0].getNotNothingString("ArrayDiff",          errorInMethod);
+        PrimitiveArray.ArrayDifferentSize  = messagesAr[0].getNotNothingString("ArrayDifferentSize", errorInMethod);
+        PrimitiveArray.ArrayDifferentValue = messagesAr[0].getNotNothingString("ArrayDifferentValue",errorInMethod);
+        PrimitiveArray.ArrayDiffString     = messagesAr[0].getNotNothingString("ArrayDiffString",    errorInMethod);
+        PrimitiveArray.ArrayMissingValue   = messagesAr[0].getNotNothingString("ArrayMissingValue",  errorInMethod);
+        PrimitiveArray.ArrayNotAscending   = messagesAr[0].getNotNothingString("ArrayNotAscending",  errorInMethod);
+        PrimitiveArray.ArrayNotDescending  = messagesAr[0].getNotNothingString("ArrayNotDescending", errorInMethod);
+        PrimitiveArray.ArrayNotEvenlySpaced= messagesAr[0].getNotNothingString("ArrayNotEvenlySpaced",errorInMethod);
+        PrimitiveArray.ArrayRemove         = messagesAr[0].getNotNothingString("ArrayRemove",        errorInMethod);
+        PrimitiveArray.ArraySubsetStart    = messagesAr[0].getNotNothingString("ArraySubsetStart",   errorInMethod);
+        PrimitiveArray.ArraySubsetStride   = messagesAr[0].getNotNothingString("ArraySubsetStride",  errorInMethod);
+        autoRefreshAr                = getNotNothingString(messagesAr, "autoRefresh",                errorInMethod);
+        blacklistMsgAr               = getNotNothingString(messagesAr, "blacklistMsg",               errorInMethod);
+        BroughtToYouByAr             = getNotNothingString(messagesAr, "BroughtToYouBy",             errorInMethod);
 
-        dpf_submit                 = messages.getNotNothingString("dpf_submit",                 errorInMethod);
-        dpf_fixProblem             = messages.getNotNothingString("dpf_fixProblem",             errorInMethod);
-        dpf_yourName               = messages.getNotNothingString("dpf_yourName",               errorInMethod);
-        dpf_emailAddress           = messages.getNotNothingString("dpf_emailAddress",           errorInMethod);
-        dpf_Timestamp              = messages.getNotNothingString("dpf_Timestamp",              errorInMethod);
-        dpf_frequency              = messages.getNotNothingString("dpf_frequency",              errorInMethod);
-        dpf_title                  = messages.getNotNothingString("dpf_title",                  errorInMethod);
-        dpf_titleTooltip           = messages.getNotNothingString("dpf_titleTooltip",           errorInMethod);
-        dpf_summary                = messages.getNotNothingString("dpf_summary",                errorInMethod);
-        dpf_summaryTooltip         = messages.getNotNothingString("dpf_summaryTooltip",         errorInMethod);
-        dpf_creatorName            = messages.getNotNothingString("dpf_creatorName",            errorInMethod);
-        dpf_creatorNameTooltip     = messages.getNotNothingString("dpf_creatorNameTooltip",     errorInMethod);
-        dpf_creatorType            = messages.getNotNothingString("dpf_creatorType",            errorInMethod);
-        dpf_creatorTypeTooltip     = messages.getNotNothingString("dpf_creatorTypeTooltip",     errorInMethod);
-        dpf_creatorEmail           = messages.getNotNothingString("dpf_creatorEmail",           errorInMethod);
-        dpf_creatorEmailTooltip    = messages.getNotNothingString("dpf_creatorEmailTooltip",    errorInMethod);
-        dpf_institution            = messages.getNotNothingString("dpf_institution",            errorInMethod);
-        dpf_institutionTooltip     = messages.getNotNothingString("dpf_institutionTooltip",     errorInMethod);
-        dpf_infoUrl                = messages.getNotNothingString("dpf_infoUrl",                errorInMethod);
-        dpf_infoUrlTooltip         = messages.getNotNothingString("dpf_infoUrlTooltip",         errorInMethod);
-        dpf_license                = messages.getNotNothingString("dpf_license",                errorInMethod);
-        dpf_licenseTooltip         = messages.getNotNothingString("dpf_licenseTooltip",         errorInMethod);
-        dpf_howYouStoreData        = messages.getNotNothingString("dpf_howYouStoreData",        errorInMethod);
-        dpf_required               = messages.getNotNothingString("dpf_required",               errorInMethod);
-        dpf_optional               = messages.getNotNothingString("dpf_optional",               errorInMethod);
-        dpf_provideIfAvaliable     = messages.getNotNothingString("dpf_provideIfAvaliable",     errorInMethod);
-        dpf_acknowledgement        = messages.getNotNothingString("dpf_acknowledgement",        errorInMethod);
-        dpf_acknowledgementTooltip = messages.getNotNothingString("dpf_acknowledgementTooltip", errorInMethod);
-        dpf_history                = messages.getNotNothingString("dpf_history",                errorInMethod);
-        dpf_historyTooltip         = messages.getNotNothingString("dpf_historyTooltip",         errorInMethod);
-        dpf_idTooltip              = messages.getNotNothingString("dpf_idTooltip",              errorInMethod);
-        dpf_namingAuthority        = messages.getNotNothingString("dpf_namingAuthority",        errorInMethod);
-        dpf_namingAuthorityTooltip = messages.getNotNothingString("dpf_namingAuthorityTooltip", errorInMethod);
-        dpf_productVersion         = messages.getNotNothingString("dpf_productVersion",         errorInMethod);
-        dpf_productVersionTooltip  = messages.getNotNothingString("dpf_productVersionTooltip",  errorInMethod);
-        dpf_references              = messages.getNotNothingString("dpf_references",              errorInMethod);
-        dpf_referencesTooltip      = messages.getNotNothingString("dpf_referencesTooltip",      errorInMethod);
-        dpf_comment                = messages.getNotNothingString("dpf_comment",                errorInMethod);
-        dpf_commentTooltip         = messages.getNotNothingString("dpf_commentTooltip",         errorInMethod);
-        dpf_dataTypeHelp           = messages.getNotNothingString("dpf_dataTypeHelp",           errorInMethod);
-        dpf_ioosCategory           = messages.getNotNothingString("dpf_ioosCategory",           errorInMethod);
-        dpf_ioosCategoryHelp       = messages.getNotNothingString("dpf_ioosCategoryHelp",       errorInMethod);
-        dpf_part3Header            = messages.getNotNothingString("dpf_part3Header",            errorInMethod);
-        dpf_variableMetadata       = messages.getNotNothingString("dpf_variableMetadata",       errorInMethod);
-        dpf_sourceName             = messages.getNotNothingString("dpf_sourceName",             errorInMethod);
-        dpf_sourceNameTooltip      = messages.getNotNothingString("dpf_sourceNameTooltip",      errorInMethod);
-        dpf_destinationName        = messages.getNotNothingString("dpf_destinationName",        errorInMethod);
-        dpf_destinationNameTooltip = messages.getNotNothingString("dpf_destinationNameTooltip", errorInMethod);
-        dpf_longName               = messages.getNotNothingString("dpf_longName",               errorInMethod);
-        dpf_longNameTooltip        = messages.getNotNothingString("dpf_longNameTooltip",        errorInMethod);
-        dpf_standardName           = messages.getNotNothingString("dpf_standardName",           errorInMethod);
-        dpf_standardNameTooltip    = messages.getNotNothingString("dpf_standardNameTooltip",    errorInMethod);
-        dpf_dataType               = messages.getNotNothingString("dpf_dataType",               errorInMethod);
-        dpf_fillValue              = messages.getNotNothingString("dpf_fillValue",              errorInMethod);
-        dpf_fillValueTooltip       = messages.getNotNothingString("dpf_fillValueTooltip",       errorInMethod);
-        dpf_units                  = messages.getNotNothingString("dpf_units",                  errorInMethod);
-        dpf_unitsTooltip           = messages.getNotNothingString("dpf_unitsTooltip",           errorInMethod);
-        dpf_range                  = messages.getNotNothingString("dpf_range",                  errorInMethod);
-        dpf_rangeTooltip           = messages.getNotNothingString("dpf_rangeTooltip",           errorInMethod);
-        dpf_part4Header            = messages.getNotNothingString("dpf_part4Header",            errorInMethod);
-        dpf_otherComment           = messages.getNotNothingString("dpf_otherComment",           errorInMethod);
-        dpf_finishPart4            = messages.getNotNothingString("dpf_finishPart4",            errorInMethod);
-        dpf_congratulation         = messages.getNotNothingString("dpf_congratulation",         errorInMethod);
+        categoryTitleHtmlAr          = getNotNothingString(messagesAr, "categoryTitleHtml",          errorInMethod);
+        categoryHtmlAr               = getNotNothingString(messagesAr, "categoryHtml",               errorInMethod);
+        category3HtmlAr              = getNotNothingString(messagesAr, "category3Html",              errorInMethod);
+        categoryPickAttributeAr      = getNotNothingString(messagesAr, "categoryPickAttribute",      errorInMethod);
+        categorySearchHtmlAr         = getNotNothingString(messagesAr, "categorySearchHtml",         errorInMethod);
+        categorySearchDifferentHtmlAr= getNotNothingString(messagesAr, "categorySearchDifferentHtml",errorInMethod);
+        categoryClickHtmlAr          = getNotNothingString(messagesAr, "categoryClickHtml",          errorInMethod);
+        categoryNotAnOptionAr        = getNotNothingString(messagesAr, "categoryNotAnOption",        errorInMethod);
+        caughtInterruptedAr          = getNotNothingString(messagesAr, "caughtInterrupted",          errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            caughtInterruptedAr[tl] = " " + caughtInterruptedAr[tl];
 
+        cdmDataTypeHelpAr            = getNotNothingString(messagesAr, "cdmDataTypeHelp",            errorInMethod);
 
-        distinctValuesTooltip      = messages.getNotNothingString("distinctValuesTooltip",      errorInMethod);
-        doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
+        clickAccessAr                = getNotNothingString(messagesAr, "clickAccess",                errorInMethod);
+        clickBackgroundInfoAr        = getNotNothingString(messagesAr, "clickBackgroundInfo",        errorInMethod);
+        clickERDDAPAr                = getNotNothingString(messagesAr, "clickERDDAP",                errorInMethod);
+        clickInfoAr                  = getNotNothingString(messagesAr, "clickInfo",                  errorInMethod);
+        clickToSubmitAr              = getNotNothingString(messagesAr, "clickToSubmit",              errorInMethod);
+        HtmlWidgets.comboBoxAltAr    = getNotNothingString(messagesAr, "comboBoxAlt",                errorInMethod);
+        convertAr                    = getNotNothingString(messagesAr, "convert",                    errorInMethod);
+        convertBypassAr              = getNotNothingString(messagesAr, "convertBypass",              errorInMethod);
 
-        dtAccessible               = messages.getNotNothingString("dtAccessible",               errorInMethod);
-        dtAccessibleYes            = messages.getNotNothingString("dtAccessibleYes",            errorInMethod);
-        dtAccessibleGraphs         = messages.getNotNothingString("dtAccessibleGraphs",         errorInMethod);
-        dtAccessibleNo             = messages.getNotNothingString("dtAccessibleNo",             errorInMethod);
-        dtAccessibleLogIn          = messages.getNotNothingString("dtAccessibleLogIn",          errorInMethod);
-        dtLogIn                    = messages.getNotNothingString("dtLogIn",                    errorInMethod);
-        dtDAF                      = messages.getNotNothingString("dtDAF",                      errorInMethod);
-        dtFiles                    = messages.getNotNothingString("dtFiles",                    errorInMethod);
-        dtMAG                      = messages.getNotNothingString("dtMAG",                      errorInMethod);
-        dtSOS                      = messages.getNotNothingString("dtSOS",                      errorInMethod);
-        dtSubset                   = messages.getNotNothingString("dtSubset",                   errorInMethod);
-        dtWCS                      = messages.getNotNothingString("dtWCS",                      errorInMethod);
-        dtWMS                      = messages.getNotNothingString("dtWMS",                      errorInMethod);
+        convertToAFullNameAr         = getNotNothingString(messagesAr, "convertToAFullName",         errorInMethod);
+        convertToAnAcronymAr         = getNotNothingString(messagesAr, "convertToAnAcronym",         errorInMethod);
+        convertToACountyNameAr       = getNotNothingString(messagesAr, "convertToACountyName",       errorInMethod);
+        convertToAFIPSCodeAr         = getNotNothingString(messagesAr, "convertToAFIPSCode",         errorInMethod);
+        convertToGCMDAr              = getNotNothingString(messagesAr, "convertToGCMD",              errorInMethod);
+        convertToCFStandardNamesAr   = getNotNothingString(messagesAr, "convertToCFStandardNames",   errorInMethod);
+        convertToNumericTimeAr       = getNotNothingString(messagesAr, "convertToNumericTime",       errorInMethod);
+        convertToStringTimeAr        = getNotNothingString(messagesAr, "convertToStringTime",        errorInMethod);
+        convertAnyStringTimeAr       = getNotNothingString(messagesAr, "convertAnyStringTime",       errorInMethod);
+        convertToProperTimeUnitsAr   = getNotNothingString(messagesAr, "convertToProperTimeUnits",   errorInMethod);
+        convertFromUDUNITSToUCUMAr   = getNotNothingString(messagesAr, "convertFromUDUNITSToUCUM",   errorInMethod);
+        convertFromUCUMToUDUNITSAr   = getNotNothingString(messagesAr, "convertFromUCUMToUDUNITS",   errorInMethod);
+        convertToUCUMAr              = getNotNothingString(messagesAr, "convertToUCUM",              errorInMethod);
+        convertToUDUNITSAr           = getNotNothingString(messagesAr, "convertToUDUNITS",           errorInMethod);
+        convertStandardizeUDUNITSAr  = getNotNothingString(messagesAr, "convertStandardizeUDUNITS",  errorInMethod);
+        convertToFullNameAr          = getNotNothingString(messagesAr, "convertToFullName",          errorInMethod);
+        convertToVariableNameAr      = getNotNothingString(messagesAr, "convertToVariableName",      errorInMethod);
+
+        converterWebServiceAr        = getNotNothingString(messagesAr, "converterWebService",        errorInMethod);
+        convertOAAcronymsAr          = getNotNothingString(messagesAr, "convertOAAcronyms",          errorInMethod);
+        convertOAAcronymsToFromAr    = getNotNothingString(messagesAr, "convertOAAcronymsToFrom",    errorInMethod);
+        convertOAAcronymsIntroAr     = getNotNothingString(messagesAr, "convertOAAcronymsIntro",     errorInMethod);
+        convertOAAcronymsNotesAr     = getNotNothingString(messagesAr, "convertOAAcronymsNotes",     errorInMethod);
+        convertOAAcronymsServiceAr   = getNotNothingString(messagesAr, "convertOAAcronymsService",   errorInMethod);
+        convertOAVariableNamesAr     = getNotNothingString(messagesAr, "convertOAVariableNames",     errorInMethod);
+        convertOAVariableNamesToFromAr=getNotNothingString(messagesAr, "convertOAVariableNamesToFrom",errorInMethod);
+        convertOAVariableNamesIntroAr= getNotNothingString(messagesAr, "convertOAVariableNamesIntro",errorInMethod);
+        convertOAVariableNamesNotesAr= getNotNothingString(messagesAr, "convertOAVariableNamesNotes",errorInMethod);
+        convertOAVariableNamesServiceAr=getNotNothingString(messagesAr,"convertOAVariableNamesService",errorInMethod);
+        convertFipsCountyAr          = getNotNothingString(messagesAr, "convertFipsCounty",          errorInMethod);
+        convertFipsCountyIntroAr     = getNotNothingString(messagesAr, "convertFipsCountyIntro",     errorInMethod);
+        convertFipsCountyNotesAr     = getNotNothingString(messagesAr, "convertFipsCountyNotes",     errorInMethod);
+        convertFipsCountyServiceAr   = getNotNothingString(messagesAr, "convertFipsCountyService",   errorInMethod);
+        convertHtmlAr                = getNotNothingString(messagesAr, "convertHtml",                errorInMethod);
+        convertInterpolateAr         = getNotNothingString(messagesAr, "convertInterpolate",         errorInMethod);
+        convertInterpolateIntroAr    = getNotNothingString(messagesAr, "convertInterpolateIntro",    errorInMethod);
+        convertInterpolateTLLTableAr = getNotNothingString(messagesAr, "convertInterpolateTLLTable", errorInMethod);
+        convertInterpolateTLLTableHelpAr
+                                     = getNotNothingString(messagesAr, "convertInterpolateTLLTableHelp",          errorInMethod);
+        convertInterpolateDatasetIDVariableAr 
+                                     = getNotNothingString(messagesAr, "convertInterpolateDatasetIDVariable",     errorInMethod);
+        convertInterpolateDatasetIDVariableHelpAr
+                                     = getNotNothingString(messagesAr, "convertInterpolateDatasetIDVariableHelp", errorInMethod);
+        convertInterpolateNotesAr    = getNotNothingString(messagesAr, "convertInterpolateNotes",    errorInMethod);
+        convertInterpolateServiceAr  = getNotNothingString(messagesAr, "convertInterpolateService",  errorInMethod);
+        convertKeywordsAr            = getNotNothingString(messagesAr, "convertKeywords",            errorInMethod);
+        convertKeywordsCfTooltipAr   = getNotNothingString(messagesAr, "convertKeywordsCfTooltip",   errorInMethod);
+        convertKeywordsGcmdTooltipAr = getNotNothingString(messagesAr, "convertKeywordsGcmdTooltip", errorInMethod);
+        convertKeywordsIntroAr       = getNotNothingString(messagesAr, "convertKeywordsIntro",       errorInMethod);
+        convertKeywordsNotesAr       = getNotNothingString(messagesAr, "convertKeywordsNotes",       errorInMethod);
+        convertKeywordsServiceAr     = getNotNothingString(messagesAr, "convertKeywordsService",     errorInMethod);
+
+        convertTimeAr                = getNotNothingString(messagesAr, "convertTime",                errorInMethod);
+        convertTimeReferenceAr       = getNotNothingString(messagesAr, "convertTimeReference",       errorInMethod);
+        convertTimeIntroAr           = getNotNothingString(messagesAr, "convertTimeIntro",           errorInMethod);
+        convertTimeNotesAr           = getNotNothingString(messagesAr, "convertTimeNotes",           errorInMethod);
+        convertTimeServiceAr         = getNotNothingString(messagesAr, "convertTimeService",         errorInMethod);
+        convertTimeNumberTooltipAr   = getNotNothingString(messagesAr, "convertTimeNumberTooltip",   errorInMethod);
+        convertTimeStringTimeTooltipAr=getNotNothingString(messagesAr, "convertTimeStringTimeTooltip",errorInMethod);
+        convertTimeUnitsTooltipAr    = getNotNothingString(messagesAr, "convertTimeUnitsTooltip",    errorInMethod);
+        convertTimeUnitsHelpAr       = getNotNothingString(messagesAr, "convertTimeUnitsHelp",       errorInMethod);
+        convertTimeIsoFormatErrorAr  = getNotNothingString(messagesAr, "convertTimeIsoFormatError",  errorInMethod);
+        convertTimeNoSinceErrorAr    = getNotNothingString(messagesAr, "convertTimeNoSinceError",    errorInMethod);
+        convertTimeNumberErrorAr     = getNotNothingString(messagesAr, "convertTimeNumberError",     errorInMethod);
+        convertTimeNumericTimeErrorAr= getNotNothingString(messagesAr, "convertTimeNumericTimeError",errorInMethod);
+        convertTimeParametersErrorAr = getNotNothingString(messagesAr, "convertTimeParametersError", errorInMethod);
+        convertTimeStringFormatErrorAr=getNotNothingString(messagesAr, "convertTimeStringFormatError",errorInMethod);
+        convertTimeTwoTimeErrorAr    = getNotNothingString(messagesAr, "convertTimeTwoTimeError",    errorInMethod);
+        convertTimeUnitsErrorAr      = getNotNothingString(messagesAr, "convertTimeUnitsError",      errorInMethod);
+        convertUnitsAr               = getNotNothingString(messagesAr, "convertUnits",               errorInMethod);
+        convertUnitsComparisonAr     = getNotNothingString(messagesAr, "convertUnitsComparison",     errorInMethod);
+        convertUnitsFilterAr         = getNotNothingString(messagesAr, "convertUnitsFilter",         errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) {
+            convertUnitsComparisonAr[tl] = convertUnitsComparisonAr[tl]
+                .replaceAll("&C;",   "C")   //these handled this way be cause you can't just avoid translating all words with 'C'
+                .replaceAll("&g;",   "g")   //"
+                .replaceAll("&F;",   "F")   //"
+                .replaceAll("&NTU;", "NTU")
+                .replaceAll("&ntu;", "ntu")
+                .replaceAll("&PSU;", "PSU")
+                .replaceAll("&psu;", "psu");
+        }
+
+        convertUnitsIntroAr          = getNotNothingString(messagesAr, "convertUnitsIntro",          errorInMethod);
+        convertUnitsNotesAr          = getNotNothingString(messagesAr, "convertUnitsNotes",          errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            convertUnitsNotesAr[tl] = convertUnitsNotesAr[tl]
+                .replace("&unitsStandard;", EDStatic.units_standard);
+        convertUnitsServiceAr        = getNotNothingString(messagesAr, "convertUnitsService",        errorInMethod);
+        convertURLsAr                = getNotNothingString(messagesAr, "convertURLs",                errorInMethod);
+        convertURLsIntroAr           = getNotNothingString(messagesAr, "convertURLsIntro",           errorInMethod);
+        convertURLsNotesAr           = getNotNothingString(messagesAr, "convertURLsNotes",           errorInMethod);
+        convertURLsServiceAr         = getNotNothingString(messagesAr, "convertURLsService",         errorInMethod);
+        cookiesHelpAr                = getNotNothingString(messagesAr, "cookiesHelp",                errorInMethod);
+        dafAr                        = getNotNothingString(messagesAr, "daf",                        errorInMethod);
+        dafGridBypassTooltipAr       = getNotNothingString(messagesAr, "dafGridBypassTooltip",       errorInMethod);
+        dafGridTooltipAr             = getNotNothingString(messagesAr, "dafGridTooltip",             errorInMethod);
+        dafTableBypassTooltipAr      = getNotNothingString(messagesAr, "dafTableBypassTooltip",      errorInMethod);
+        dafTableTooltipAr            = getNotNothingString(messagesAr, "dafTableTooltip",            errorInMethod);
+        dasTitleAr                   = getNotNothingString(messagesAr, "dasTitle",                   errorInMethod);
+        dataAccessNotAllowedAr       = getNotNothingString(messagesAr, "dataAccessNotAllowed",       errorInMethod);
+        databaseUnableToConnectAr    = getNotNothingString(messagesAr, "databaseUnableToConnect",    errorInMethod);
+        dataProviderFormAr           = getNotNothingString(messagesAr, "dataProviderForm",           errorInMethod);
+        dataProviderFormP1Ar         = getNotNothingString(messagesAr, "dataProviderFormP1",         errorInMethod);
+        dataProviderFormP2Ar         = getNotNothingString(messagesAr, "dataProviderFormP2",         errorInMethod);
+        dataProviderFormP3Ar         = getNotNothingString(messagesAr, "dataProviderFormP3",         errorInMethod);
+        dataProviderFormP4Ar         = getNotNothingString(messagesAr, "dataProviderFormP4",         errorInMethod);
+        dataProviderFormDoneAr       = getNotNothingString(messagesAr, "dataProviderFormDone",       errorInMethod);
+        dataProviderFormSuccessAr    = getNotNothingString(messagesAr, "dataProviderFormSuccess",    errorInMethod);
+        dataProviderFormShortDescriptionAr = getNotNothingString(messagesAr, "dataProviderFormShortDescription", errorInMethod);
+        dataProviderFormLongDescriptionHTMLAr = getNotNothingString(messagesAr, "dataProviderFormLongDescriptionHTML", errorInMethod);
+        disabledAr                   = getNotNothingString(messagesAr, "disabled",                   errorInMethod);
+        dataProviderFormPart1Ar      = getNotNothingString(messagesAr, "dataProviderFormPart1",      errorInMethod);
+        dataProviderFormPart2HeaderAr = getNotNothingString(messagesAr, "dataProviderFormPart2Header", errorInMethod);
+        dataProviderFormPart2GlobalMetadataAr = getNotNothingString(messagesAr, "dataProviderFormPart2GlobalMetadata", errorInMethod);
+        dataProviderContactInfoAr    = getNotNothingString(messagesAr, "dataProviderContactInfo",    errorInMethod);
+        dataProviderDataAr           = getNotNothingString(messagesAr, "dataProviderData",           errorInMethod);
+        documentationAr              = getNotNothingString(messagesAr, "documentation",              errorInMethod);
+
+        dpf_submitAr                 = getNotNothingString(messagesAr, "dpf_submit",                 errorInMethod);
+        dpf_fixProblemAr             = getNotNothingString(messagesAr, "dpf_fixProblem",             errorInMethod);
+        dpf_yourNameAr               = getNotNothingString(messagesAr, "dpf_yourName",               errorInMethod);
+        dpf_emailAddressAr           = getNotNothingString(messagesAr, "dpf_emailAddress",           errorInMethod);
+        dpf_TimestampAr              = getNotNothingString(messagesAr, "dpf_Timestamp",              errorInMethod);
+        dpf_frequencyAr              = getNotNothingString(messagesAr, "dpf_frequency",              errorInMethod);
+        dpf_titleAr                  = getNotNothingString(messagesAr, "dpf_title",                  errorInMethod);
+        dpf_titleTooltipAr           = getNotNothingString(messagesAr, "dpf_titleTooltip",           errorInMethod);
+        dpf_summaryAr                = getNotNothingString(messagesAr, "dpf_summary",                errorInMethod);
+        dpf_summaryTooltipAr         = getNotNothingString(messagesAr, "dpf_summaryTooltip",         errorInMethod);
+        dpf_creatorNameAr            = getNotNothingString(messagesAr, "dpf_creatorName",            errorInMethod);
+        dpf_creatorNameTooltipAr     = getNotNothingString(messagesAr, "dpf_creatorNameTooltip",     errorInMethod);
+        dpf_creatorTypeAr            = getNotNothingString(messagesAr, "dpf_creatorType",            errorInMethod);
+        dpf_creatorTypeTooltipAr     = getNotNothingString(messagesAr, "dpf_creatorTypeTooltip",     errorInMethod);
+        dpf_creatorEmailAr           = getNotNothingString(messagesAr, "dpf_creatorEmail",           errorInMethod);
+        dpf_creatorEmailTooltipAr    = getNotNothingString(messagesAr, "dpf_creatorEmailTooltip",    errorInMethod);
+        dpf_institutionAr            = getNotNothingString(messagesAr, "dpf_institution",            errorInMethod);
+        dpf_institutionTooltipAr     = getNotNothingString(messagesAr, "dpf_institutionTooltip",     errorInMethod);
+        dpf_infoUrlAr                = getNotNothingString(messagesAr, "dpf_infoUrl",                errorInMethod);
+        dpf_infoUrlTooltipAr         = getNotNothingString(messagesAr, "dpf_infoUrlTooltip",         errorInMethod);
+        dpf_licenseAr                = getNotNothingString(messagesAr, "dpf_license",                errorInMethod);
+        dpf_licenseTooltipAr         = getNotNothingString(messagesAr, "dpf_licenseTooltip",         errorInMethod);
+        dpf_howYouStoreDataAr        = getNotNothingString(messagesAr, "dpf_howYouStoreData",        errorInMethod);
+        dpf_provideIfAvailableAr     = getNotNothingString(messagesAr, "dpf_provideIfAvailable",     errorInMethod);
+        dpf_acknowledgementAr        = getNotNothingString(messagesAr, "dpf_acknowledgement",        errorInMethod);
+        dpf_acknowledgementTooltipAr = getNotNothingString(messagesAr, "dpf_acknowledgementTooltip", errorInMethod);
+        dpf_historyAr                = getNotNothingString(messagesAr, "dpf_history",                errorInMethod);
+        dpf_historyTooltipAr         = getNotNothingString(messagesAr, "dpf_historyTooltip",         errorInMethod);
+        dpf_idTooltipAr              = getNotNothingString(messagesAr, "dpf_idTooltip",              errorInMethod);
+        dpf_namingAuthorityAr        = getNotNothingString(messagesAr, "dpf_namingAuthority",        errorInMethod);
+        dpf_namingAuthorityTooltipAr = getNotNothingString(messagesAr, "dpf_namingAuthorityTooltip", errorInMethod);
+        dpf_productVersionAr         = getNotNothingString(messagesAr, "dpf_productVersion",         errorInMethod);
+        dpf_productVersionTooltipAr  = getNotNothingString(messagesAr, "dpf_productVersionTooltip",  errorInMethod);
+        dpf_referencesAr             = getNotNothingString(messagesAr, "dpf_references",              errorInMethod);
+        dpf_referencesTooltipAr      = getNotNothingString(messagesAr, "dpf_referencesTooltip",      errorInMethod);
+        dpf_commentAr                = getNotNothingString(messagesAr, "dpf_comment",                errorInMethod);
+        dpf_commentTooltipAr         = getNotNothingString(messagesAr, "dpf_commentTooltip",         errorInMethod);
+        dpf_dataTypeHelpAr           = getNotNothingString(messagesAr, "dpf_dataTypeHelp",           errorInMethod);
+        dpf_ioosCategoryAr           = getNotNothingString(messagesAr, "dpf_ioosCategory",           errorInMethod);
+        dpf_ioosCategoryHelpAr       = getNotNothingString(messagesAr, "dpf_ioosCategoryHelp",       errorInMethod);
+        dpf_part3HeaderAr            = getNotNothingString(messagesAr, "dpf_part3Header",            errorInMethod);
+        dpf_variableMetadataAr       = getNotNothingString(messagesAr, "dpf_variableMetadata",       errorInMethod);
+        dpf_sourceNameAr             = getNotNothingString(messagesAr, "dpf_sourceName",             errorInMethod);
+        dpf_sourceNameTooltipAr      = getNotNothingString(messagesAr, "dpf_sourceNameTooltip",      errorInMethod);
+        dpf_destinationNameAr        = getNotNothingString(messagesAr, "dpf_destinationName",        errorInMethod);
+        dpf_destinationNameTooltipAr = getNotNothingString(messagesAr, "dpf_destinationNameTooltip", errorInMethod);
+
+        dpf_longNameAr               = getNotNothingString(messagesAr, "dpf_longName",               errorInMethod);
+        dpf_longNameTooltipAr        = getNotNothingString(messagesAr, "dpf_longNameTooltip",        errorInMethod);
+        dpf_standardNameAr           = getNotNothingString(messagesAr, "dpf_standardName",           errorInMethod);
+        dpf_standardNameTooltipAr    = getNotNothingString(messagesAr, "dpf_standardNameTooltip",    errorInMethod);
+        dpf_dataTypeAr               = getNotNothingString(messagesAr, "dpf_dataType",               errorInMethod);
+        dpf_fillValueAr              = getNotNothingString(messagesAr, "dpf_fillValue",              errorInMethod);
+        dpf_fillValueTooltipAr       = getNotNothingString(messagesAr, "dpf_fillValueTooltip",       errorInMethod);
+        dpf_unitsAr                  = getNotNothingString(messagesAr, "dpf_units",                  errorInMethod);
+        dpf_unitsTooltipAr           = getNotNothingString(messagesAr, "dpf_unitsTooltip",           errorInMethod);
+        dpf_rangeAr                  = getNotNothingString(messagesAr, "dpf_range",                  errorInMethod);
+        dpf_rangeTooltipAr           = getNotNothingString(messagesAr, "dpf_rangeTooltip",           errorInMethod);
+        dpf_part4HeaderAr            = getNotNothingString(messagesAr, "dpf_part4Header",            errorInMethod);
+        dpf_otherCommentAr           = getNotNothingString(messagesAr, "dpf_otherComment",           errorInMethod);
+        dpf_finishPart4Ar            = getNotNothingString(messagesAr, "dpf_finishPart4",            errorInMethod);
+        dpf_congratulationAr         = getNotNothingString(messagesAr, "dpf_congratulation",         errorInMethod);
+
+        distinctValuesTooltipAr      = getNotNothingString(messagesAr, "distinctValuesTooltip",      errorInMethod);
+        doWithGraphsAr               = getNotNothingString(messagesAr, "doWithGraphs",               errorInMethod);
+
+        dtAccessibleAr               = getNotNothingString(messagesAr, "dtAccessible",               errorInMethod);
+        dtAccessiblePublicAr         = getNotNothingString(messagesAr, "dtAccessiblePublic",         errorInMethod);
+        dtAccessibleYesAr            = getNotNothingString(messagesAr, "dtAccessibleYes",            errorInMethod);
+        dtAccessibleGraphsAr         = getNotNothingString(messagesAr, "dtAccessibleGraphs",         errorInMethod);
+        dtAccessibleNoAr             = getNotNothingString(messagesAr, "dtAccessibleNo",             errorInMethod);
+        dtAccessibleLogInAr          = getNotNothingString(messagesAr, "dtAccessibleLogIn",          errorInMethod);
+        dtLogInAr                    = getNotNothingString(messagesAr, "dtLogIn",                    errorInMethod);
+        dtDAFAr                      = getNotNothingString(messagesAr, "dtDAF",                      errorInMethod);
+        dtFilesAr                    = getNotNothingString(messagesAr, "dtFiles",                    errorInMethod);
+        dtMAGAr                      = getNotNothingString(messagesAr, "dtMAG",                      errorInMethod);
+        dtSOSAr                      = getNotNothingString(messagesAr, "dtSOS",                      errorInMethod);
+        dtSubsetAr                   = getNotNothingString(messagesAr, "dtSubset",                   errorInMethod);
+        dtWCSAr                      = getNotNothingString(messagesAr, "dtWCS",                      errorInMethod);
+        dtWMSAr                      = getNotNothingString(messagesAr, "dtWMS",                      errorInMethod);
         
-        EDDDatasetID               = messages.getNotNothingString("EDDDatasetID",               errorInMethod);
-        EDDFgdc                    = messages.getNotNothingString("EDDFgdc",                    errorInMethod);
-        EDDFgdcMetadata            = messages.getNotNothingString("EDDFgdcMetadata",            errorInMethod);
-        EDDFiles                   = messages.getNotNothingString("EDDFiles",                   errorInMethod);
-        EDDIso19115                = messages.getNotNothingString("EDDIso19115",                errorInMethod);
-        EDDIso19115Metadata        = messages.getNotNothingString("EDDIso19115Metadata",        errorInMethod);
-        EDDMetadata                = messages.getNotNothingString("EDDMetadata",                errorInMethod);
-        EDDBackground              = messages.getNotNothingString("EDDBackground",              errorInMethod);
-        EDDClickOnSubmitHtml       = messages.getNotNothingString("EDDClickOnSubmitHtml",       errorInMethod);
-        EDDInformation             = messages.getNotNothingString("EDDInformation",             errorInMethod);
-        EDDInstitution             = messages.getNotNothingString("EDDInstitution",             errorInMethod);
-        EDDSummary                 = messages.getNotNothingString("EDDSummary",                 errorInMethod);
-        EDDDatasetTitle            = messages.getNotNothingString("EDDDatasetTitle",            errorInMethod);
-        EDDDownloadData            = messages.getNotNothingString("EDDDownloadData",            errorInMethod);
-        EDDMakeAGraph              = messages.getNotNothingString("EDDMakeAGraph",              errorInMethod);
-        EDDMakeAMap                = messages.getNotNothingString("EDDMakeAMap",                errorInMethod);
-        EDDFileType                = messages.getNotNothingString("EDDFileType",                errorInMethod);
-        EDDFileTypeInformation     = messages.getNotNothingString("EDDFileTypeInformation",     errorInMethod);
-        EDDSelectFileType          = messages.getNotNothingString("EDDSelectFileType",          errorInMethod);
-        EDDMinimum                 = messages.getNotNothingString("EDDMinimum",                 errorInMethod);
-        EDDMaximum                 = messages.getNotNothingString("EDDMaximum",                 errorInMethod);
-        EDDConstraint              = messages.getNotNothingString("EDDConstraint",              errorInMethod);
+        EasierAccessToScientificDataAr     = getNotNothingString(messagesAr, "EasierAccessToScientificData",     errorInMethod);
+        EDDDatasetIDAr               = getNotNothingString(messagesAr, "EDDDatasetID",               errorInMethod);
+        EDDFgdc                    = messagesAr[0].getNotNothingString("EDDFgdc",                    errorInMethod);
+        EDDFgdcMetadataAr            = getNotNothingString(messagesAr, "EDDFgdcMetadata",            errorInMethod);
+        EDDFilesAr                   = getNotNothingString(messagesAr, "EDDFiles",                   errorInMethod);
+        EDDIso19115                = messagesAr[0].getNotNothingString("EDDIso19115",                errorInMethod);
+        EDDIso19115MetadataAr        = getNotNothingString(messagesAr, "EDDIso19115Metadata",        errorInMethod);
+        EDDMetadataAr                = getNotNothingString(messagesAr, "EDDMetadata",                errorInMethod);
+        EDDBackgroundAr              = getNotNothingString(messagesAr, "EDDBackground",              errorInMethod);
+        EDDClickOnSubmitHtmlAr       = getNotNothingString(messagesAr, "EDDClickOnSubmitHtml",       errorInMethod);
+        EDDInformationAr             = getNotNothingString(messagesAr, "EDDInformation",             errorInMethod);
+        EDDInstitutionAr             = getNotNothingString(messagesAr, "EDDInstitution",             errorInMethod);
+        EDDSummaryAr                 = getNotNothingString(messagesAr, "EDDSummary",                 errorInMethod);
+        EDDDatasetTitleAr            = getNotNothingString(messagesAr, "EDDDatasetTitle",            errorInMethod);
+        EDDDownloadDataAr            = getNotNothingString(messagesAr, "EDDDownloadData",            errorInMethod);
+        EDDMakeAGraphAr              = getNotNothingString(messagesAr, "EDDMakeAGraph",              errorInMethod);
+        EDDMakeAMapAr                = getNotNothingString(messagesAr, "EDDMakeAMap",                errorInMethod);
+        EDDFileTypeAr                = getNotNothingString(messagesAr, "EDDFileType",                errorInMethod);
+        EDDFileTypeInformationAr     = getNotNothingString(messagesAr, "EDDFileTypeInformation",     errorInMethod);
+        EDDSelectFileTypeAr          = getNotNothingString(messagesAr, "EDDSelectFileType",          errorInMethod);
+        EDDMinimumAr                 = getNotNothingString(messagesAr, "EDDMinimum",                 errorInMethod);
+        EDDMaximumAr                 = getNotNothingString(messagesAr, "EDDMaximum",                 errorInMethod);
+        EDDConstraintAr              = getNotNothingString(messagesAr, "EDDConstraint",              errorInMethod);
 
-        EDDChangedWasnt            = messages.getNotNothingString("EDDChangedWasnt",            errorInMethod);
-        EDDChangedDifferentNVar    = messages.getNotNothingString("EDDChangedDifferentNVar",    errorInMethod);
-        EDDChanged2Different       = messages.getNotNothingString("EDDChanged2Different",       errorInMethod);
-        EDDChanged1Different       = messages.getNotNothingString("EDDChanged1Different",       errorInMethod);
-        EDDChangedCGADifferent     = messages.getNotNothingString("EDDChangedCGADifferent",     errorInMethod);
-        EDDChangedAxesDifferentNVar= messages.getNotNothingString("EDDChangedAxesDifferentNVar",errorInMethod);
-        EDDChangedAxes2Different   = messages.getNotNothingString("EDDChangedAxes2Different",   errorInMethod);
-        EDDChangedAxes1Different   = messages.getNotNothingString("EDDChangedAxes1Different",   errorInMethod);
-        EDDChangedNoValue          = messages.getNotNothingString("EDDChangedNoValue",          errorInMethod);
-        EDDChangedTableToGrid      = messages.getNotNothingString("EDDChangedTableToGrid",      errorInMethod);
+        EDDChangedWasnt              = messagesAr[0].getNotNothingString("EDDChangedWasnt",            errorInMethod);
+        EDDChangedDifferentNVar      = messagesAr[0].getNotNothingString("EDDChangedDifferentNVar",    errorInMethod);
+        EDDChanged2Different         = messagesAr[0].getNotNothingString("EDDChanged2Different",       errorInMethod);
+        EDDChanged1Different         = messagesAr[0].getNotNothingString("EDDChanged1Different",       errorInMethod);
+        EDDChangedCGADifferent       = messagesAr[0].getNotNothingString("EDDChangedCGADifferent",     errorInMethod);
+        EDDChangedAxesDifferentNVar  = messagesAr[0].getNotNothingString("EDDChangedAxesDifferentNVar",errorInMethod);
+        EDDChangedAxes2Different     = messagesAr[0].getNotNothingString("EDDChangedAxes2Different",   errorInMethod);
+        EDDChangedAxes1Different     = messagesAr[0].getNotNothingString("EDDChangedAxes1Different",   errorInMethod);
+        EDDChangedNoValue            = messagesAr[0].getNotNothingString("EDDChangedNoValue",          errorInMethod);
+        EDDChangedTableToGrid        = messagesAr[0].getNotNothingString("EDDChangedTableToGrid",      errorInMethod);
 
-        EDDSimilarDifferentNVar    = messages.getNotNothingString("EDDSimilarDifferentNVar",    errorInMethod);
-        EDDSimilarDifferent        = messages.getNotNothingString("EDDSimilarDifferent",        errorInMethod);
+        EDDSimilarDifferentNVar      = messagesAr[0].getNotNothingString("EDDSimilarDifferentNVar",    errorInMethod);
+        EDDSimilarDifferent          = messagesAr[0].getNotNothingString("EDDSimilarDifferent",        errorInMethod);
 
-        EDDGridDownloadTooltip     = messages.getNotNothingString("EDDGridDownloadTooltip",     errorInMethod);
-        EDDGridDapDescription      = messages.getNotNothingString("EDDGridDapDescription",      errorInMethod);
-        EDDGridDapLongDescription  = messages.getNotNothingString("EDDGridDapLongDescription",  errorInMethod);
-        EDDGridDownloadDataTooltip = messages.getNotNothingString("EDDGridDownloadDataTooltip", errorInMethod);
-        EDDGridDimension           = messages.getNotNothingString("EDDGridDimension",           errorInMethod);
-        EDDGridDimensionRanges     = messages.getNotNothingString("EDDGridDimensionRanges",     errorInMethod);
-        EDDGridFirst               = messages.getNotNothingString("EDDGridFirst",               errorInMethod);
-        EDDGridLast                = messages.getNotNothingString("EDDGridLast",                errorInMethod);
-        EDDGridStart               = messages.getNotNothingString("EDDGridStart",               errorInMethod);
-        EDDGridStop                = messages.getNotNothingString("EDDGridStop",                errorInMethod);
-        EDDGridStartStopTooltip    = messages.getNotNothingString("EDDGridStartStopTooltip",    errorInMethod);
-        EDDGridStride              = messages.getNotNothingString("EDDGridStride",              errorInMethod);
-        EDDGridNValues             = messages.getNotNothingString("EDDGridNValues",             errorInMethod);
-        EDDGridNValuesHtml         = messages.getNotNothingString("EDDGridNValuesHtml",         errorInMethod);
-        EDDGridSpacing             = messages.getNotNothingString("EDDGridSpacing",             errorInMethod);
-        EDDGridJustOneValue        = messages.getNotNothingString("EDDGridJustOneValue",        errorInMethod);
-        EDDGridEven                = messages.getNotNothingString("EDDGridEven",                errorInMethod);
-        EDDGridUneven              = messages.getNotNothingString("EDDGridUneven",              errorInMethod);
-        EDDGridDimensionTooltip    = messages.getNotNothingString("EDDGridDimensionTooltip",    errorInMethod);
-        EDDGridDimensionFirstTooltip=messages.getNotNothingString("EDDGridDimensionFirstTooltip", errorInMethod);
-        EDDGridDimensionLastTooltip =messages.getNotNothingString("EDDGridDimensionLastTooltip",  errorInMethod);
-        EDDGridVarHasDimTooltip    = messages.getNotNothingString("EDDGridVarHasDimTooltip",    errorInMethod);
-        EDDGridSSSTooltip          = messages.getNotNothingString("EDDGridSSSTooltip",          errorInMethod);
-        EDDGridStartTooltip        = messages.getNotNothingString("EDDGridStartTooltip",        errorInMethod);
-        EDDGridStopTooltip         = messages.getNotNothingString("EDDGridStopTooltip",         errorInMethod);
-        EDDGridStrideTooltip       = messages.getNotNothingString("EDDGridStrideTooltip",       errorInMethod);
-        EDDGridSpacingTooltip      = messages.getNotNothingString("EDDGridSpacingTooltip",      errorInMethod);
-        EDDGridGridVariableHtml    = messages.getNotNothingString("EDDGridGridVariableHtml",    errorInMethod);
+        EDDGridDownloadTooltipAr     = getNotNothingString(messagesAr, "EDDGridDownloadTooltip",     errorInMethod);
+        EDDGridDapDescriptionAr      = getNotNothingString(messagesAr, "EDDGridDapDescription",      errorInMethod);
+        EDDGridDapLongDescriptionAr  = getNotNothingString(messagesAr, "EDDGridDapLongDescription",  errorInMethod);
+        EDDGridDownloadDataTooltipAr = getNotNothingString(messagesAr, "EDDGridDownloadDataTooltip", errorInMethod);
+        EDDGridDimensionAr           = getNotNothingString(messagesAr, "EDDGridDimension",           errorInMethod);
+        EDDGridDimensionRangesAr     = getNotNothingString(messagesAr, "EDDGridDimensionRanges",     errorInMethod);
+        EDDGridFirstAr               = getNotNothingString(messagesAr, "EDDGridFirst",               errorInMethod);
+        EDDGridLastAr                = getNotNothingString(messagesAr, "EDDGridLast",                errorInMethod);
+        EDDGridStartAr               = getNotNothingString(messagesAr, "EDDGridStart",               errorInMethod);
+        EDDGridStopAr                = getNotNothingString(messagesAr, "EDDGridStop",                errorInMethod);
+        EDDGridStartStopTooltipAr    = getNotNothingString(messagesAr, "EDDGridStartStopTooltip",    errorInMethod);
+        EDDGridStrideAr              = getNotNothingString(messagesAr, "EDDGridStride",              errorInMethod);
+        EDDGridNValuesAr             = getNotNothingString(messagesAr, "EDDGridNValues",             errorInMethod);
+        EDDGridNValuesHtmlAr         = getNotNothingString(messagesAr, "EDDGridNValuesHtml",         errorInMethod);
+        EDDGridSpacingAr             = getNotNothingString(messagesAr, "EDDGridSpacing",             errorInMethod);
+        EDDGridJustOneValueAr        = getNotNothingString(messagesAr, "EDDGridJustOneValue",        errorInMethod);
+        EDDGridEvenAr                = getNotNothingString(messagesAr, "EDDGridEven",                errorInMethod);
+        EDDGridUnevenAr              = getNotNothingString(messagesAr, "EDDGridUneven",              errorInMethod);
+        EDDGridDimensionTooltipAr    = getNotNothingString(messagesAr, "EDDGridDimensionTooltip",    errorInMethod);
+        EDDGridDimensionFirstTooltipAr=getNotNothingString(messagesAr, "EDDGridDimensionFirstTooltip", errorInMethod);
+        EDDGridDimensionLastTooltipAr =getNotNothingString(messagesAr, "EDDGridDimensionLastTooltip",  errorInMethod);
+        EDDGridVarHasDimTooltipAr    = getNotNothingString(messagesAr, "EDDGridVarHasDimTooltip",    errorInMethod);
+        EDDGridSSSTooltipAr          = getNotNothingString(messagesAr, "EDDGridSSSTooltip",          errorInMethod);
+        EDDGridStartTooltipAr        = getNotNothingString(messagesAr, "EDDGridStartTooltip",        errorInMethod);
+        EDDGridStopTooltipAr         = getNotNothingString(messagesAr, "EDDGridStopTooltip",         errorInMethod);
+        EDDGridStrideTooltipAr       = getNotNothingString(messagesAr, "EDDGridStrideTooltip",       errorInMethod);
+        EDDGridSpacingTooltipAr      = getNotNothingString(messagesAr, "EDDGridSpacingTooltip",      errorInMethod);
+        EDDGridGridVariableHtmlAr    = getNotNothingString(messagesAr, "EDDGridGridVariableHtml",    errorInMethod);
 
         //default EDDGrid...Example
-        EDDGridErddapUrlExample    = messages.getNotNothingString("EDDGridErddapUrlExample",    errorInMethod);
-        EDDGridIdExample           = messages.getNotNothingString("EDDGridIdExample",           errorInMethod);
-        EDDGridDimensionExample    = messages.getNotNothingString("EDDGridDimensionExample",    errorInMethod);
-        EDDGridNoHyperExample      = messages.getNotNothingString("EDDGridNoHyperExample",      errorInMethod);
-        EDDGridDimNamesExample     = messages.getNotNothingString("EDDGridDimNamesExample",     errorInMethod);
-        EDDGridDataTimeExample     = messages.getNotNothingString("EDDGridDataTimeExample",     errorInMethod);
-        EDDGridDataValueExample    = messages.getNotNothingString("EDDGridDataValueExample",    errorInMethod);
-        EDDGridDataIndexExample    = messages.getNotNothingString("EDDGridDataIndexExample",    errorInMethod);
-        EDDGridGraphExample        = messages.getNotNothingString("EDDGridGraphExample",        errorInMethod);
-        EDDGridMapExample          = messages.getNotNothingString("EDDGridMapExample",          errorInMethod);
-        EDDGridMatlabPlotExample   = messages.getNotNothingString("EDDGridMatlabPlotExample",   errorInMethod);
+        EDDGridErddapUrlExample      = messagesAr[0].getNotNothingString("EDDGridErddapUrlExample",  errorInMethod);
+        EDDGridIdExample             = messagesAr[0].getNotNothingString("EDDGridIdExample",         errorInMethod);
+        EDDGridDimensionExample      = messagesAr[0].getNotNothingString("EDDGridDimensionExample",  errorInMethod);
+        EDDGridNoHyperExample        = messagesAr[0].getNotNothingString("EDDGridNoHyperExample",    errorInMethod);
+        EDDGridDimNamesExample       = messagesAr[0].getNotNothingString("EDDGridDimNamesExample",   errorInMethod);
+        EDDGridDataTimeExample       = messagesAr[0].getNotNothingString("EDDGridDataTimeExample",   errorInMethod);
+        EDDGridDataValueExample      = messagesAr[0].getNotNothingString("EDDGridDataValueExample",  errorInMethod);
+        EDDGridDataIndexExample      = messagesAr[0].getNotNothingString("EDDGridDataIndexExample",  errorInMethod);
+        EDDGridGraphExample          = messagesAr[0].getNotNothingString("EDDGridGraphExample",      errorInMethod);
+        EDDGridMapExample            = messagesAr[0].getNotNothingString("EDDGridMapExample",        errorInMethod);
+        EDDGridMatlabPlotExample     = messagesAr[0].getNotNothingString("EDDGridMatlabPlotExample", errorInMethod);
 
         //admin provides EDDGrid...Example
         EDDGridErddapUrlExample    = getSetupEVString(setup, ev, "EDDGridErddapUrlExample",    EDDGridErddapUrlExample);
@@ -2568,44 +2639,40 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         EDDGridMapExampleHA        = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDGridMapExample)); 
 
 
-        EDDTableConstraints             = messages.getNotNothingString("EDDTableConstraints",        errorInMethod);
-        EDDTableDapDescription          = messages.getNotNothingString("EDDTableDapDescription",     errorInMethod);
-        EDDTableDapLongDescription      = messages.getNotNothingString("EDDTableDapLongDescription", errorInMethod);
-        EDDTableDownloadDataTooltip     = messages.getNotNothingString("EDDTableDownloadDataTooltip",   errorInMethod);
-        EDDTableTabularDatasetTooltip   = messages.getNotNothingString("EDDTableTabularDatasetTooltip", errorInMethod);
-        EDDTableVariable                = messages.getNotNothingString("EDDTableVariable",           errorInMethod);
-        EDDTableCheckAll                = messages.getNotNothingString("EDDTableCheckAll",           errorInMethod);
-        EDDTableCheckAllTooltip         = messages.getNotNothingString("EDDTableCheckAllTooltip",    errorInMethod);
-        EDDTableUncheckAll              = messages.getNotNothingString("EDDTableUncheckAll",         errorInMethod);
-        EDDTableUncheckAllTooltip       = messages.getNotNothingString("EDDTableUncheckAllTooltip",  errorInMethod);
-        EDDTableMinimumTooltip          = messages.getNotNothingString("EDDTableMinimumTooltip",     errorInMethod);
-        EDDTableMaximumTooltip          = messages.getNotNothingString("EDDTableMaximumTooltip",     errorInMethod);
-        EDDTableCheckTheVariables       = messages.getNotNothingString("EDDTableCheckTheVariables",  errorInMethod);
-        EDDTableSelectAnOperator        = messages.getNotNothingString("EDDTableSelectAnOperator",   errorInMethod);
-        EDDTableFromEDDGridSummary      = messages.getNotNothingString("EDDTableFromEDDGridSummary", errorInMethod);
-        EDDTableOptConstraint1Html      = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
-        EDDTableOptConstraint2Html      = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
-        EDDTableOptConstraintVar        = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
-        EDDTableNumericConstraintTooltip= messages.getNotNothingString("EDDTableNumericConstraintTooltip", errorInMethod);
-        EDDTableStringConstraintTooltip = messages.getNotNothingString("EDDTableStringConstraintTooltip",  errorInMethod);
-        EDDTableTimeConstraintTooltip   = messages.getNotNothingString("EDDTableTimeConstraintTooltip",    errorInMethod);
-        EDDTableConstraintTooltip       = messages.getNotNothingString("EDDTableConstraintTooltip",        errorInMethod);
-        EDDTableSelectConstraintTooltip = messages.getNotNothingString("EDDTableSelectConstraintTooltip",  errorInMethod);
+        EDDTableConstraintsAr             = getNotNothingString(messagesAr, "EDDTableConstraints",        errorInMethod);
+        EDDTableDapDescriptionAr          = getNotNothingString(messagesAr, "EDDTableDapDescription",     errorInMethod);
+        EDDTableDapLongDescriptionAr      = getNotNothingString(messagesAr, "EDDTableDapLongDescription", errorInMethod);
+        EDDTableDownloadDataTooltipAr     = getNotNothingString(messagesAr, "EDDTableDownloadDataTooltip",   errorInMethod);
+        EDDTableTabularDatasetTooltipAr   = getNotNothingString(messagesAr, "EDDTableTabularDatasetTooltip", errorInMethod);
+        EDDTableVariableAr                = getNotNothingString(messagesAr, "EDDTableVariable",           errorInMethod);
+        EDDTableCheckAllAr                = getNotNothingString(messagesAr, "EDDTableCheckAll",           errorInMethod);
+        EDDTableCheckAllTooltipAr         = getNotNothingString(messagesAr, "EDDTableCheckAllTooltip",    errorInMethod);
+        EDDTableUncheckAllAr              = getNotNothingString(messagesAr, "EDDTableUncheckAll",         errorInMethod);
+        EDDTableUncheckAllTooltipAr       = getNotNothingString(messagesAr, "EDDTableUncheckAllTooltip",  errorInMethod);
+        EDDTableMinimumTooltipAr          = getNotNothingString(messagesAr, "EDDTableMinimumTooltip",     errorInMethod);
+        EDDTableMaximumTooltipAr          = getNotNothingString(messagesAr, "EDDTableMaximumTooltip",     errorInMethod);
+        EDDTableCheckTheVariablesAr       = getNotNothingString(messagesAr, "EDDTableCheckTheVariables",  errorInMethod);
+        EDDTableSelectAnOperatorAr        = getNotNothingString(messagesAr, "EDDTableSelectAnOperator",   errorInMethod);
+        EDDTableFromEDDGridSummaryAr      = getNotNothingString(messagesAr, "EDDTableFromEDDGridSummary", errorInMethod);
+        EDDTableOptConstraint1HtmlAr      = getNotNothingString(messagesAr, "EDDTableOptConstraint1Html", errorInMethod);
+        EDDTableOptConstraint2HtmlAr      = getNotNothingString(messagesAr, "EDDTableOptConstraint2Html", errorInMethod);
+        EDDTableOptConstraintVarAr        = getNotNothingString(messagesAr, "EDDTableOptConstraintVar",   errorInMethod);
+        EDDTableNumericConstraintTooltipAr= getNotNothingString(messagesAr, "EDDTableNumericConstraintTooltip", errorInMethod);
+        EDDTableStringConstraintTooltipAr = getNotNothingString(messagesAr, "EDDTableStringConstraintTooltip",  errorInMethod);
+        EDDTableTimeConstraintTooltipAr   = getNotNothingString(messagesAr, "EDDTableTimeConstraintTooltip",    errorInMethod);
+        EDDTableConstraintTooltipAr       = getNotNothingString(messagesAr, "EDDTableConstraintTooltip",        errorInMethod);
+        EDDTableSelectConstraintTooltipAr = getNotNothingString(messagesAr, "EDDTableSelectConstraintTooltip",  errorInMethod);
 
         //default EDDGrid...Example
-        EDDTableErddapUrlExample   = messages.getNotNothingString("EDDTableErddapUrlExample",   errorInMethod);
-        EDDTableIdExample          = messages.getNotNothingString("EDDTableIdExample",          errorInMethod);
-        EDDTableVariablesExample   = messages.getNotNothingString("EDDTableVariablesExample",   errorInMethod);
-        EDDTableConstraintsExample = messages.getNotNothingString("EDDTableConstraintsExample", errorInMethod);
-        EDDTableDataValueExample   = messages.getNotNothingString("EDDTableDataValueExample",   errorInMethod);
-        EDDTableDataTimeExample    = messages.getNotNothingString("EDDTableDataTimeExample",    errorInMethod);
-        EDDTableGraphExample       = messages.getNotNothingString("EDDTableGraphExample",       errorInMethod);
-        EDDTableMapExample         = messages.getNotNothingString("EDDTableMapExample",         errorInMethod);
-        EDDTableMatlabPlotExample  = messages.getNotNothingString("EDDTableMatlabPlotExample",  errorInMethod);
-
-        EDDTableFromHttpGetDatasetDescription   = messages.getNotNothingString("EDDTableFromHttpGetDatasetDescription",   errorInMethod);
-        EDDTableFromHttpGetAuthorDescription    = messages.getNotNothingString("EDDTableFromHttpGetAuthorDescription",    errorInMethod);
-        EDDTableFromHttpGetTimestampDescription = messages.getNotNothingString("EDDTableFromHttpGetTimestampDescription", errorInMethod);
+        EDDTableErddapUrlExample   = messagesAr[0].getNotNothingString("EDDTableErddapUrlExample",   errorInMethod);
+        EDDTableIdExample          = messagesAr[0].getNotNothingString("EDDTableIdExample",          errorInMethod);
+        EDDTableVariablesExample   = messagesAr[0].getNotNothingString("EDDTableVariablesExample",   errorInMethod);
+        EDDTableConstraintsExample = messagesAr[0].getNotNothingString("EDDTableConstraintsExample", errorInMethod);
+        EDDTableDataValueExample   = messagesAr[0].getNotNothingString("EDDTableDataValueExample",   errorInMethod);
+        EDDTableDataTimeExample    = messagesAr[0].getNotNothingString("EDDTableDataTimeExample",    errorInMethod);
+        EDDTableGraphExample       = messagesAr[0].getNotNothingString("EDDTableGraphExample",       errorInMethod);
+        EDDTableMapExample         = messagesAr[0].getNotNothingString("EDDTableMapExample",         errorInMethod);
+        EDDTableMatlabPlotExample  = messagesAr[0].getNotNothingString("EDDTableMatlabPlotExample",  errorInMethod);
 
         //admin provides EDDGrid...Example
         EDDTableErddapUrlExample   = getSetupEVString(setup, ev, "EDDTableErddapUrlExample",   EDDTableErddapUrlExample);
@@ -2632,678 +2699,757 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         EDDTableGraphExampleHA       = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableGraphExample));
         EDDTableMapExampleHA         = XML.encodeAsHTMLAttribute(SSR.pseudoPercentEncode(EDDTableMapExample));
 
-        errorTitle                 = messages.getNotNothingString("errorTitle",                 errorInMethod);
-        erddapVersionHTML          = messages.getNotNothingString("erddapVersionHTML",          errorInMethod);
-        errorRequestUrl            = messages.getNotNothingString("errorRequestUrl",            errorInMethod);
-        errorRequestQuery          = messages.getNotNothingString("errorRequestQuery",          errorInMethod);
-        errorTheError              = messages.getNotNothingString("errorTheError",              errorInMethod);
-        errorCopyFrom              = messages.getNotNothingString("errorCopyFrom",              errorInMethod);
-        errorFileNotFound          = messages.getNotNothingString("errorFileNotFound",          errorInMethod);
-        errorFileNotFoundImage     = messages.getNotNothingString("errorFileNotFoundImage",     errorInMethod);
-        errorInternal              = messages.getNotNothingString("errorInternal",              errorInMethod) + " ";
-        errorJsonpFunctionName     = messages.getNotNothingString("errorJsonpFunctionName",     errorInMethod);
-        errorJsonpNotAllowed       = messages.getNotNothingString("errorJsonpNotAllowed",       errorInMethod);
-        errorMoreThan2GB           = messages.getNotNothingString("errorMoreThan2GB",           errorInMethod);
-        errorNotFound              = messages.getNotNothingString("errorNotFound",              errorInMethod);
-        errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            errorInMethod);
-        errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            errorInMethod);
-        errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           errorInMethod);
-        errorOnWebPage             = messages.getNotNothingString("errorOnWebPage",             errorInMethod);
-        errorXWasntSpecified       = messages.getNotNothingString("errorXWasntSpecified",       errorInMethod);
-        HtmlWidgets.errorXWasntSpecified = errorXWasntSpecified;
-        errorXWasTooLong           = messages.getNotNothingString("errorXWasTooLong",           errorInMethod);
-        HtmlWidgets.errorXWasTooLong = errorXWasTooLong;
-        extensionsNoRangeRequests  = StringArray.arrayFromCSV(
-                                     messages.getNotNothingString("extensionsNoRangeRequests",  errorInMethod),
-                                     ",", true, false); //trim, keepNothing
-        externalLink         = " " + messages.getNotNothingString("externalLink",               errorInMethod);
-        externalWebSite            = messages.getNotNothingString("externalWebSite",            errorInMethod);
-        fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               errorInMethod);
-        fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               errorInMethod);
-        fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              errorInMethod);
-        fileHelp_csv0              = messages.getNotNothingString("fileHelp_csv0",              errorInMethod);
-        fileHelp_dataTable         = messages.getNotNothingString("fileHelp_dataTable",         errorInMethod);
-        fileHelp_das               = messages.getNotNothingString("fileHelp_das",               errorInMethod);
-        fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               errorInMethod);
-        fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              errorInMethod);
-        fileHelpGrid_esriAscii     = messages.getNotNothingString("fileHelpGrid_esriAscii",     errorInMethod);
-        fileHelpTable_esriCsv      = messages.getNotNothingString("fileHelpTable_esriCsv",      errorInMethod);
-        fileHelp_fgdc              = messages.getNotNothingString("fileHelp_fgdc",              errorInMethod);
-        fileHelp_geoJson           = messages.getNotNothingString("fileHelp_geoJson",           errorInMethod);
-        fileHelp_graph             = messages.getNotNothingString("fileHelp_graph",             errorInMethod);
-        fileHelpGrid_help          = messages.getNotNothingString("fileHelpGrid_help",          errorInMethod);
-        fileHelpTable_help         = messages.getNotNothingString("fileHelpTable_help",         errorInMethod);
-        fileHelp_html              = messages.getNotNothingString("fileHelp_html",              errorInMethod);
-        fileHelp_htmlTable         = messages.getNotNothingString("fileHelp_htmlTable",         errorInMethod);
-        fileHelp_iso19115          = messages.getNotNothingString("fileHelp_iso19115",          errorInMethod);
-        fileHelp_itxGrid           = messages.getNotNothingString("fileHelp_itxGrid",           errorInMethod);
-        fileHelp_itxTable          = messages.getNotNothingString("fileHelp_itxTable",          errorInMethod);
-        fileHelp_json              = messages.getNotNothingString("fileHelp_json",              errorInMethod);
-        fileHelp_jsonlCSV1         = messages.getNotNothingString("fileHelp_jsonlCSV1",         errorInMethod);
-        fileHelp_jsonlCSV          = messages.getNotNothingString("fileHelp_jsonlCSV",          errorInMethod);
-        fileHelp_jsonlKVP          = messages.getNotNothingString("fileHelp_jsonlKVP",          errorInMethod);
-        fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               errorInMethod);
-        fileHelpGrid_nc3           = messages.getNotNothingString("fileHelpGrid_nc3",           errorInMethod);
-        fileHelpGrid_nc4           = messages.getNotNothingString("fileHelpGrid_nc4",           errorInMethod);
-        fileHelpTable_nc3          = messages.getNotNothingString("fileHelpTable_nc3",          errorInMethod);
-        fileHelpTable_nc4          = messages.getNotNothingString("fileHelpTable_nc4",          errorInMethod);
-        fileHelp_nc3Header         = messages.getNotNothingString("fileHelp_nc3Header",         errorInMethod);
-        fileHelp_nc4Header         = messages.getNotNothingString("fileHelp_nc4Header",         errorInMethod);
-        fileHelp_nccsv             = messages.getNotNothingString("fileHelp_nccsv",             errorInMethod);
-        fileHelp_nccsvMetadata     = messages.getNotNothingString("fileHelp_nccsvMetadata",     errorInMethod);
-        fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              errorInMethod);
-        fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        errorInMethod);
-        fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            errorInMethod);
-        fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      errorInMethod);
-        fileHelp_ncml              = messages.getNotNothingString("fileHelp_ncml",              errorInMethod);
-        fileHelp_ncoJson           = messages.getNotNothingString("fileHelp_ncoJson",           errorInMethod);
-        fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        errorInMethod);
-        fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       errorInMethod);
-        fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            errorInMethod);
-        fileHelp_timeGaps          = messages.getNotNothingString("fileHelp_timeGaps",          errorInMethod);
-        fileHelp_tsv               = messages.getNotNothingString("fileHelp_tsv",               errorInMethod);
-        fileHelp_tsvp              = messages.getNotNothingString("fileHelp_tsvp",              errorInMethod);
-        fileHelp_tsv0              = messages.getNotNothingString("fileHelp_tsv0",              errorInMethod);
-        fileHelp_wav               = messages.getNotNothingString("fileHelp_wav",               errorInMethod);
-        fileHelp_xhtml             = messages.getNotNothingString("fileHelp_xhtml",             errorInMethod);
-        fileHelp_geotif            = messages.getNotNothingString("fileHelp_geotif",            errorInMethod);
-        fileHelpGrid_kml           = messages.getNotNothingString("fileHelpGrid_kml",           errorInMethod);
-        fileHelpTable_kml          = messages.getNotNothingString("fileHelpTable_kml",          errorInMethod);
-        fileHelp_smallPdf          = messages.getNotNothingString("fileHelp_smallPdf",          errorInMethod);
-        fileHelp_pdf               = messages.getNotNothingString("fileHelp_pdf",               errorInMethod);
-        fileHelp_largePdf          = messages.getNotNothingString("fileHelp_largePdf",          errorInMethod);
-        fileHelp_smallPng          = messages.getNotNothingString("fileHelp_smallPng",          errorInMethod);
-        fileHelp_png               = messages.getNotNothingString("fileHelp_png",               errorInMethod);
-        fileHelp_largePng          = messages.getNotNothingString("fileHelp_largePng",          errorInMethod);
-        fileHelp_transparentPng    = messages.getNotNothingString("fileHelp_transparentPng",    errorInMethod);
-        filesDescription           = messages.getNotNothingString("filesDescription",           errorInMethod);
-        filesDocumentation         = messages.getNotNothingString("filesDocumentation",         errorInMethod);
-        filesSort                  = messages.getNotNothingString("filesSort",                  errorInMethod);
-        filesWarning               = messages.getNotNothingString("filesWarning",               errorInMethod);
-        findOutChange              = messages.getNotNothingString("findOutChange",              errorInMethod);
-        FIPSCountryCode            = messages.getNotNothingString("FIPSCountryCode",            errorInMethod);
-        forSOSUse                  = messages.getNotNothingString("forSOSUse",                  errorInMethod);
-        forWCSUse                  = messages.getNotNothingString("forWCSUse",                  errorInMethod);
-        forWMSUse                  = messages.getNotNothingString("forWMSUse",                  errorInMethod);
-        functions                  = messages.getNotNothingString("functions",                  errorInMethod);
-        functionTooltip            = messages.getNotNothingString("functionTooltip",            errorInMethod);
-        functionTooltip            = MessageFormat.format(functionTooltip, "distinct()");
-        functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      errorInMethod);
-        functionDistinctTooltip    = messages.getNotNothingString("functionDistinctTooltip",    errorInMethod);
-        functionDistinctTooltip    = MessageFormat.format(functionDistinctTooltip, "distinct()");
-        functionOrderByExtra       = messages.getNotNothingString("functionOrderByExtra",       errorInMethod);
-        functionOrderByTooltip     = messages.getNotNothingString("functionOrderByTooltip",     errorInMethod);
-        functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        errorInMethod);
-        functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       errorInMethod);
-        functionOrderBySort2       = messages.getNotNothingString("functionOrderBySort2",       errorInMethod);
-        functionOrderBySort3       = messages.getNotNothingString("functionOrderBySort3",       errorInMethod);
-        functionOrderBySort4       = messages.getNotNothingString("functionOrderBySort4",       errorInMethod);
-        functionOrderBySortLeast   = messages.getNotNothingString("functionOrderBySortLeast",   errorInMethod);
-        functionOrderBySortRowMax  = messages.getNotNothingString("functionOrderBySortRowMax",  errorInMethod);
-        generatedAt                = messages.getNotNothingString("generatedAt",                errorInMethod);
-        geoServicesDescription     = messages.getNotNothingString("geoServicesDescription",     errorInMethod);
-        getStartedHtml             = messages.getNotNothingString("getStartedHtml",             errorInMethod);
-        TableWriterHtmlTable.htmlTableMaxMB     = messages.getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);                                   
-        htmlTableMaxMessage        = messages.getNotNothingString("htmlTableMaxMessage",        errorInMethod);
+        EDDTableFromHttpGetDatasetDescription   = XML. decodeEntities( //because this is used as plain text
+                                                  messagesAr[0].getNotNothingString("EDDTableFromHttpGetDatasetDescription",   errorInMethod));
+        EDDTableFromHttpGetAuthorDescription    = messagesAr[0].getNotNothingString("EDDTableFromHttpGetAuthorDescription",    errorInMethod);
+        EDDTableFromHttpGetTimestampDescription = messagesAr[0].getNotNothingString("EDDTableFromHttpGetTimestampDescription", errorInMethod);
 
-        hpn_information            = messages.getNotNothingString("hpn_information",           errorInMethod);
-        hpn_legalNotices           = messages.getNotNothingString("hpn_legalNotices",          errorInMethod);
-        hpn_dataProviderForm       = messages.getNotNothingString("hpn_dataProviderForm",      errorInMethod);
-        hpn_dataProviderFormP1     = messages.getNotNothingString("hpn_dataProviderFormP1",    errorInMethod);
-        hpn_dataProviderFormP2     = messages.getNotNothingString("hpn_dataProviderFormP2",    errorInMethod);
-        hpn_dataProviderFormP3     = messages.getNotNothingString("hpn_dataProviderFormP3",    errorInMethod);
-        hpn_dataProviderFormP4     = messages.getNotNothingString("hpn_dataProviderFormP4",    errorInMethod);
-        hpn_dataProviderFormDone   = messages.getNotNothingString("hpn_dataProviderFormDone",  errorInMethod);
-        hpn_status                 = messages.getNotNothingString("hpn_status",                errorInMethod);
-        hpn_restfulWebService      = messages.getNotNothingString("hpn_restfulWebService",     errorInMethod);
-        hpn_documentation          = messages.getNotNothingString("hpn_documentation",         errorInMethod);
-        hpn_help                   = messages.getNotNothingString("hpn_help",                  errorInMethod);
-        hpn_files                  = messages.getNotNothingString("hpn_files",                 errorInMethod);
-        hpn_SOS                    = messages.getNotNothingString("hpn_SOS",                   errorInMethod);
-        hpn_WCS                    = messages.getNotNothingString("hpn_WCS",                   errorInMethod);
-        hpn_slideSorter            = messages.getNotNothingString("hpn_slideSorter",           errorInMethod);
-        hpn_add                    = messages.getNotNothingString("hpn_add",                   errorInMethod);
-        hpn_list                   = messages.getNotNothingString("hpn_list",                  errorInMethod);
-        hpn_validate               = messages.getNotNothingString("hpn_validate",              errorInMethod);
-        hpn_remove                 = messages.getNotNothingString("hpn_remove",                errorInMethod);
-        hpn_convert                = messages.getNotNothingString("hpn_convert",               errorInMethod);
-        hpn_fipsCounty             = messages.getNotNothingString("hpn_fipsCounty",            errorInMethod);
-        hpn_OAAcronyms             = messages.getNotNothingString("hpn_OAAcronyms",            errorInMethod);
-        hpn_OAVariableNames        = messages.getNotNothingString("hpn_OAVariableNames",       errorInMethod);
-        hpn_keywords               = messages.getNotNothingString("hpn_keywords",              errorInMethod);
-        hpn_time                   = messages.getNotNothingString("hpn_time",                  errorInMethod);
-        hpn_units                  = messages.getNotNothingString("hpn_units",                 errorInMethod);
+        errorTitleAr                 = getNotNothingString(messagesAr, "errorTitle",                 errorInMethod);
+        erddapIsAr                   = getNotNothingString(messagesAr, "erddapIs",                   errorInMethod);
+        erddapVersionHTMLAr          = getNotNothingString(messagesAr, "erddapVersionHTML",          errorInMethod);
+        errorRequestUrlAr            = getNotNothingString(messagesAr, "errorRequestUrl",            errorInMethod);
+        errorRequestQueryAr          = getNotNothingString(messagesAr, "errorRequestQuery",          errorInMethod);
+        errorTheErrorAr              = getNotNothingString(messagesAr, "errorTheError",              errorInMethod);
+        errorCopyFromAr              = getNotNothingString(messagesAr, "errorCopyFrom",              errorInMethod);
+        errorFileNotFoundAr          = getNotNothingString(messagesAr, "errorFileNotFound",          errorInMethod);
+        errorFileNotFoundImageAr     = getNotNothingString(messagesAr, "errorFileNotFoundImage",     errorInMethod);
+        errorInternalAr              = getNotNothingString(messagesAr, "errorInternal",              errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            errorInternalAr[tl]      += " ";
 
-        imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        errorInMethod);
-        imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  errorInMethod), ','));
-        imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", errorInMethod), ','));
-        indexViewAll               = messages.getNotNothingString("indexViewAll",               errorInMethod);
-        indexSearchWith            = messages.getNotNothingString("indexSearchWith",            errorInMethod);
-        indexDevelopersSearch      = messages.getNotNothingString("indexDevelopersSearch",      errorInMethod);
-        indexProtocol              = messages.getNotNothingString("indexProtocol",              errorInMethod);
-        indexDescription           = messages.getNotNothingString("indexDescription",           errorInMethod);
-        indexDatasets              = messages.getNotNothingString("indexDatasets",              errorInMethod);
-        indexDocumentation         = messages.getNotNothingString("indexDocumentation",         errorInMethod);
-        indexRESTfulSearch         = messages.getNotNothingString("indexRESTfulSearch",         errorInMethod);
-        indexAllDatasetsSearch     = messages.getNotNothingString("indexAllDatasetsSearch",     errorInMethod);
-        indexOpenSearch            = messages.getNotNothingString("indexOpenSearch",            errorInMethod);
-        indexServices              = messages.getNotNothingString("indexServices",              errorInMethod);
-        indexDescribeServices      = messages.getNotNothingString("indexDescribeServices",      errorInMethod);
-        indexMetadata              = messages.getNotNothingString("indexMetadata",              errorInMethod);
-        indexWAF1                  = messages.getNotNothingString("indexWAF1",                  errorInMethod);
-        indexWAF2                  = messages.getNotNothingString("indexWAF2",                  errorInMethod);
-        indexConverters            = messages.getNotNothingString("indexConverters",            errorInMethod);
-        indexDescribeConverters    = messages.getNotNothingString("indexDescribeConverters",    errorInMethod);
-        infoAboutFrom              = messages.getNotNothingString("infoAboutFrom",              errorInMethod);
-        infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         errorInMethod);
-        infoRequestForm            = messages.getNotNothingString("infoRequestForm",            errorInMethod);
-        inotifyFix                 = messages.getNotNothingString("inotifyFix",                 errorInMethod);
-        inotifyFixCommands         = messages.getNotNothingString("inotifyFixCommands",         errorInMethod);
-        inotifyFix                 = MessageFormat.format(inotifyFix, inotifyFixCommands);
-        interpolate                = messages.getNotNothingString("interpolate",                errorInMethod);
-        javaProgramsHTML           = messages.getNotNothingString("javaProgramsHTML",           errorInMethod);
-        justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
-        justGenerateAndViewTooltip = messages.getNotNothingString("justGenerateAndViewTooltip", errorInMethod);
-        justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
-        justGenerateAndViewGraphUrlTooltip = messages.getNotNothingString("justGenerateAndViewGraphUrlTooltip", errorInMethod);
-        keywords_word              = messages.getNotNothingString("keywords",                   errorInMethod);
-        langCode                   = messages.getNotNothingString("langCode",                   errorInMethod);
-        legal                      = messages.getNotNothingString("legal",                      errorInMethod);
-        legal                      =   getSetupEVString(setup, ev,"legal",                      legal); //optionally in setup.xml
-        legalNotices               = messages.getNotNothingString("legalNotices",               errorInMethod);
-        legendTitle1               = messages.getString(          "legendTitle1",               "");
-        legendTitle1               =   getSetupEVString(setup, ev,"legendTitle1",               legendTitle1); //optionally in setup.xml
-        legendTitle2               = messages.getString(          "legendTitle2",               "");
-        legendTitle2               =   getSetupEVString(setup, ev,"legendTitle2",               legendTitle2); //optionally in setup.xml
+        errorJsonpFunctionNameAr     = getNotNothingString(messagesAr, "errorJsonpFunctionName",     errorInMethod);
+        errorJsonpNotAllowedAr       = getNotNothingString(messagesAr, "errorJsonpNotAllowed",       errorInMethod);
+        errorMoreThan2GBAr           = getNotNothingString(messagesAr, "errorMoreThan2GB",           errorInMethod);
+        errorNotFoundAr              = getNotNothingString(messagesAr, "errorNotFound",              errorInMethod);
+        errorNotFoundInAr            = getNotNothingString(messagesAr, "errorNotFoundIn",            errorInMethod);
+        errorOdvLLTGridAr            = getNotNothingString(messagesAr, "errorOdvLLTGrid",            errorInMethod);
+        errorOdvLLTTableAr           = getNotNothingString(messagesAr, "errorOdvLLTTable",           errorInMethod);
+        errorOnWebPageAr             = getNotNothingString(messagesAr, "errorOnWebPage",             errorInMethod);
+        HtmlWidgets.errorXWasntSpecifiedAr       
+                                     = getNotNothingString(messagesAr, "errorXWasntSpecified",       errorInMethod);
+        HtmlWidgets.errorXWasTooLongAr=getNotNothingString(messagesAr, "errorXWasTooLong",           errorInMethod);
+        extensionsNoRangeRequests    = StringArray.arrayFromCSV(
+                                     messagesAr[0].getNotNothingString("extensionsNoRangeRequests",  errorInMethod), ",", true, false); //trim, keepNothing
 
-        license                    = messages.getNotNothingString("license",                    errorInMethod);
-        listAll                    = messages.getNotNothingString("listAll",                    errorInMethod);
-        listOfDatasets             = messages.getNotNothingString("listOfDatasets",             errorInMethod);
-        LogIn                      = messages.getNotNothingString("LogIn",                      errorInMethod);
-        login                      = messages.getNotNothingString("login",                      errorInMethod);
-        loginHTML                  = messages.getNotNothingString("loginHTML",                  errorInMethod);
-        loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        errorInMethod);
-        loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        errorInMethod);
-        loginDescribeEmail         = messages.getNotNothingString("loginDescribeEmail",         errorInMethod);
-        loginDescribeGoogle        = messages.getNotNothingString("loginDescribeGoogle",        errorInMethod);
-        loginDescribeOrcid         = messages.getNotNothingString("loginDescribeOrcid",         errorInMethod);
-        loginDescribeOauth2        = messages.getNotNothingString("loginDescribeOauth2",        errorInMethod);
-        loginCanNot                = messages.getNotNothingString("loginCanNot",                errorInMethod);
-        loginAreNot                = messages.getNotNothingString("loginAreNot",                errorInMethod);
-        loginToLogIn               = messages.getNotNothingString("loginToLogIn",               errorInMethod);
-        loginEmailAddress          = messages.getNotNothingString("loginEmailAddress",          errorInMethod);
-        loginYourEmailAddress      = messages.getNotNothingString("loginYourEmailAddress",      errorInMethod);
-        loginUserName              = messages.getNotNothingString("loginUserName",              errorInMethod);
-        loginPassword              = messages.getNotNothingString("loginPassword",              errorInMethod);
-        loginUserNameAndPassword   = messages.getNotNothingString("loginUserNameAndPassword",   errorInMethod);
-        loginGoogleSignIn          = messages.getNotNothingString("loginGoogleSignIn",          errorInMethod);
-        loginGoogleSignIn2         = messages.getNotNothingString("loginGoogleSignIn2",         errorInMethod);
-        loginOrcidSignIn           = messages.getNotNothingString("loginOrcidSignIn",           errorInMethod);
-        loginErddap                = messages.getNotNothingString("loginErddap",                errorInMethod);
-        loginOpenID                = messages.getNotNothingString("loginOpenID",                errorInMethod);
-        loginOpenIDOr              = messages.getNotNothingString("loginOpenIDOr",              errorInMethod);
-        loginOpenIDCreate          = messages.getNotNothingString("loginOpenIDCreate",          errorInMethod);
-        loginOpenIDFree            = messages.getNotNothingString("loginOpenIDFree",            errorInMethod);
-        loginOpenIDSame            = messages.getNotNothingString("loginOpenIDSame",            errorInMethod);
-        loginAs                    = messages.getNotNothingString("loginAs",                    errorInMethod);
-        loginPartwayAs             = messages.getNotNothingString("loginPartwayAs",             errorInMethod);
-        loginFailed                = messages.getNotNothingString("loginFailed",                errorInMethod);
-        loginSucceeded             = messages.getNotNothingString("loginSucceeded",             errorInMethod);
-        loginInvalid               = messages.getNotNothingString("loginInvalid",               errorInMethod);
-        loginNot                   = messages.getNotNothingString("loginNot",                   errorInMethod);
-        loginBack                  = messages.getNotNothingString("loginBack",                  errorInMethod);
-        loginProblemExact          = messages.getNotNothingString("loginProblemExact",          errorInMethod);
-        loginProblemExpire         = messages.getNotNothingString("loginProblemExpire",         errorInMethod);
-        loginProblemGoogleAgain    = messages.getNotNothingString("loginProblemGoogleAgain",    errorInMethod);
-        loginProblemOrcidAgain     = messages.getNotNothingString("loginProblemOrcidAgain",     errorInMethod);
-        loginProblemOauth2Again    = messages.getNotNothingString("loginProblemOauth2Again",    errorInMethod);
-        loginProblemSameBrowser    = messages.getNotNothingString("loginProblemSameBrowser",    errorInMethod);
-        loginProblem3Times         = messages.getNotNothingString("loginProblem3Times",         errorInMethod);
-        loginProblems              = messages.getNotNothingString("loginProblems",              errorInMethod);
-        loginProblemsAfter         = messages.getNotNothingString("loginProblemsAfter",         errorInMethod);
-        loginPublicAccess          = messages.getNotNothingString("loginPublicAccess",          errorInMethod);
-        LogOut                     = messages.getNotNothingString("LogOut",                     errorInMethod);
-        logout                     = messages.getNotNothingString("logout",                     errorInMethod);
-        logoutOpenID               = messages.getNotNothingString("logoutOpenID",               errorInMethod);
-        logoutSuccess              = messages.getNotNothingString("logoutSuccess",              errorInMethod);
-        mag                        = messages.getNotNothingString("mag",                        errorInMethod);
-        magAxisX                   = messages.getNotNothingString("magAxisX",                   errorInMethod);
-        magAxisY                   = messages.getNotNothingString("magAxisY",                   errorInMethod);
-        magAxisColor               = messages.getNotNothingString("magAxisColor",               errorInMethod);
-        magAxisStickX              = messages.getNotNothingString("magAxisStickX",              errorInMethod);
-        magAxisStickY              = messages.getNotNothingString("magAxisStickY",              errorInMethod);
-        magAxisVectorX             = messages.getNotNothingString("magAxisVectorX",             errorInMethod);
-        magAxisVectorY             = messages.getNotNothingString("magAxisVectorY",             errorInMethod);
-        magAxisHelpGraphX          = messages.getNotNothingString("magAxisHelpGraphX",          errorInMethod);
-        magAxisHelpGraphY          = messages.getNotNothingString("magAxisHelpGraphY",          errorInMethod);
-        magAxisHelpMarkerColor     = messages.getNotNothingString("magAxisHelpMarkerColor",     errorInMethod);
-        magAxisHelpSurfaceColor    = messages.getNotNothingString("magAxisHelpSurfaceColor",    errorInMethod);
-        magAxisHelpStickX          = messages.getNotNothingString("magAxisHelpStickX",          errorInMethod);
-        magAxisHelpStickY          = messages.getNotNothingString("magAxisHelpStickY",          errorInMethod);
-        magAxisHelpMapX            = messages.getNotNothingString("magAxisHelpMapX",            errorInMethod);
-        magAxisHelpMapY            = messages.getNotNothingString("magAxisHelpMapY",            errorInMethod);
-        magAxisHelpVectorX         = messages.getNotNothingString("magAxisHelpVectorX",         errorInMethod);
-        magAxisHelpVectorY         = messages.getNotNothingString("magAxisHelpVectorY",         errorInMethod);
-        magAxisVarHelp             = messages.getNotNothingString("magAxisVarHelp",             errorInMethod);
-        magAxisVarHelpGrid         = messages.getNotNothingString("magAxisVarHelpGrid",         errorInMethod);
-        magConstraintHelp          = messages.getNotNothingString("magConstraintHelp",          errorInMethod);
-        magDocumentation           = messages.getNotNothingString("magDocumentation",           errorInMethod);
-        magDownload                = messages.getNotNothingString("magDownload",                errorInMethod);
-        magDownloadTooltip         = messages.getNotNothingString("magDownloadTooltip",         errorInMethod);
-        magFileType                = messages.getNotNothingString("magFileType",                errorInMethod);
-        magGraphType               = messages.getNotNothingString("magGraphType",               errorInMethod);
-        magGraphTypeTooltipGrid    = messages.getNotNothingString("magGraphTypeTooltipGrid",    errorInMethod);
-        magGraphTypeTooltipTable   = messages.getNotNothingString("magGraphTypeTooltipTable",   errorInMethod);
-        magGS                      = messages.getNotNothingString("magGS",                      errorInMethod);
-        magGSMarkerType            = messages.getNotNothingString("magGSMarkerType",            errorInMethod);
-        magGSSize                  = messages.getNotNothingString("magGSSize",                  errorInMethod);
-        magGSColor                 = messages.getNotNothingString("magGSColor",                 errorInMethod);
-        magGSColorBar              = messages.getNotNothingString("magGSColorBar",              errorInMethod);
-        magGSColorBarTooltip       = messages.getNotNothingString("magGSColorBarTooltip",       errorInMethod);
-        magGSContinuity            = messages.getNotNothingString("magGSContinuity",            errorInMethod);
-        magGSContinuityTooltip     = messages.getNotNothingString("magGSContinuityTooltip",     errorInMethod);
-        magGSScale                 = messages.getNotNothingString("magGSScale",                 errorInMethod);
-        magGSScaleTooltip          = messages.getNotNothingString("magGSScaleTooltip",          errorInMethod);
-        magGSMin                   = messages.getNotNothingString("magGSMin",                   errorInMethod);
-        magGSMinTooltip            = messages.getNotNothingString("magGSMinTooltip",            errorInMethod);
-        magGSMax                   = messages.getNotNothingString("magGSMax",                   errorInMethod);
-        magGSMaxTooltip            = messages.getNotNothingString("magGSMaxTooltip",            errorInMethod);
-        magGSNSections             = messages.getNotNothingString("magGSNSections",             errorInMethod);
-        magGSNSectionsTooltip      = messages.getNotNothingString("magGSNSectionsTooltip",      errorInMethod);
-        magGSLandMask              = messages.getNotNothingString("magGSLandMask",              errorInMethod);
-        magGSLandMaskTooltipGrid   = messages.getNotNothingString("magGSLandMaskTooltipGrid",   errorInMethod);
-        magGSLandMaskTooltipTable  = messages.getNotNothingString("magGSLandMaskTooltipTable",  errorInMethod);
-        magGSVectorStandard        = messages.getNotNothingString("magGSVectorStandard",        errorInMethod);
-        magGSVectorStandardTooltip = messages.getNotNothingString("magGSVectorStandardTooltip", errorInMethod);
-        magGSYAscendingTooltip     = messages.getNotNothingString("magGSYAscendingTooltip",     errorInMethod);
-        magGSYAxisMin              = messages.getNotNothingString("magGSYAxisMin",              errorInMethod);
-        magGSYAxisMax              = messages.getNotNothingString("magGSYAxisMax",              errorInMethod);
-        magGSYRangeMinTooltip      = messages.getNotNothingString("magGSYRangeMinTooltip",      errorInMethod); 
-        magGSYRangeMaxTooltip      = messages.getNotNothingString("magGSYRangeMaxTooltip",      errorInMethod);
-        magGSYRangeTooltip         = messages.getNotNothingString("magGSYRangeTooltip",         errorInMethod);        
-        magGSYScaleTooltip         = messages.getNotNothingString("magGSYScaleTooltip",         errorInMethod);        
-        magItemFirst               = messages.getNotNothingString("magItemFirst",               errorInMethod);
-        magItemPrevious            = messages.getNotNothingString("magItemPrevious",            errorInMethod);
-        magItemNext                = messages.getNotNothingString("magItemNext",                errorInMethod);
-        magItemLast                = messages.getNotNothingString("magItemLast",                errorInMethod);
-        magJust1Value              = messages.getNotNothingString("magJust1Value",              errorInMethod);
-        magRange                   = messages.getNotNothingString("magRange",                   errorInMethod);
-        magRangeTo                 = messages.getNotNothingString("magRangeTo",                 errorInMethod);
-        magRedraw                  = messages.getNotNothingString("magRedraw",                  errorInMethod);
-        magRedrawTooltip           = messages.getNotNothingString("magRedrawTooltip",           errorInMethod);
-        magTimeRange               = messages.getNotNothingString("magTimeRange",               errorInMethod);
-        magTimeRangeFirst          = messages.getNotNothingString("magTimeRangeFirst",          errorInMethod);
-        magTimeRangeBack           = messages.getNotNothingString("magTimeRangeBack",           errorInMethod);
-        magTimeRangeForward        = messages.getNotNothingString("magTimeRangeForward",        errorInMethod);
-        magTimeRangeLast           = messages.getNotNothingString("magTimeRangeLast",           errorInMethod);
-        magTimeRangeTooltip        = messages.getNotNothingString("magTimeRangeTooltip",        errorInMethod);
-        magTimeRangeTooltip2       = messages.getNotNothingString("magTimeRangeTooltip2",       errorInMethod);
-        magTimesVary               = messages.getNotNothingString("magTimesVary",               errorInMethod);
-        magViewUrl                 = messages.getNotNothingString("magViewUrl",                 errorInMethod);
-        magZoom                    = messages.getNotNothingString("magZoom",                    errorInMethod);
-        magZoomCenter              = messages.getNotNothingString("magZoomCenter",              errorInMethod);
-        magZoomCenterTooltip       = messages.getNotNothingString("magZoomCenterTooltip",       errorInMethod);
-        magZoomIn                  = messages.getNotNothingString("magZoomIn",                  errorInMethod);
-        magZoomInTooltip           = messages.getNotNothingString("magZoomInTooltip",           errorInMethod);
-        magZoomOut                 = messages.getNotNothingString("magZoomOut",                 errorInMethod);
-        magZoomOutTooltip          = messages.getNotNothingString("magZoomOutTooltip",          errorInMethod);
-        magZoomALittle             = messages.getNotNothingString("magZoomALittle",             errorInMethod);
-        magZoomData                = messages.getNotNothingString("magZoomData",                errorInMethod);
-        magZoomOutData             = messages.getNotNothingString("magZoomOutData",             errorInMethod);
-        magGridTooltip             = messages.getNotNothingString("magGridTooltip",             errorInMethod);
-        magTableTooltip            = messages.getNotNothingString("magTableTooltip",            errorInMethod);
-        Math2.memory               = messages.getNotNothingString("memory",                     errorInMethod);
-        Math2.memoryTooMuchData    = messages.getNotNothingString("memoryTooMuchData",          errorInMethod);
-        Math2.memoryArraySize      = messages.getNotNothingString("memoryArraySize",            errorInMethod);
-      Math2.memoryThanCurrentlySafe= messages.getNotNothingString("memoryThanCurrentlySafe",    errorInMethod);
-        Math2.memoryThanSafe       = messages.getNotNothingString("memoryThanSafe",             errorInMethod);
-        metadataDownload           = messages.getNotNothingString("metadataDownload",           errorInMethod);
-        moreInformation            = messages.getNotNothingString("moreInformation",            errorInMethod);
-        MustBe.THERE_IS_NO_DATA    = messages.getNotNothingString("MustBeThereIsNoData",        errorInMethod);
-        MustBe.NotNull             = messages.getNotNothingString("MustBeNotNull",              errorInMethod);
-        MustBe.NotEmpty            = messages.getNotNothingString("MustBeNotEmpty",             errorInMethod);
-        MustBe.InternalError       = messages.getNotNothingString("MustBeInternalError",        errorInMethod);
-        MustBe.OutOfMemoryError    = messages.getNotNothingString("MustBeOutOfMemoryError",     errorInMethod);
-        nMatching1                 = messages.getNotNothingString("nMatching1",                 errorInMethod);
-        nMatching                  = messages.getNotNothingString("nMatching",                  errorInMethod);
-        nMatchingAlphabetical      = messages.getNotNothingString("nMatchingAlphabetical",      errorInMethod);
-        nMatchingMostRelevant      = messages.getNotNothingString("nMatchingMostRelevant",      errorInMethod);
-        nMatchingPage              = messages.getNotNothingString("nMatchingPage",              errorInMethod);
-        nMatchingCurrent           = messages.getNotNothingString("nMatchingCurrent",           errorInMethod);
-        noDataFixedValue           = messages.getNotNothingString("noDataFixedValue",           errorInMethod);
-        noDataNoLL                 = messages.getNotNothingString("noDataNoLL",                 errorInMethod);
-        noDatasetWith              = messages.getNotNothingString("noDatasetWith",              errorInMethod);
-        noPage1                    = messages.getNotNothingString("noPage1",                    errorInMethod);
-        noPage2                    = messages.getNotNothingString("noPage2",                    errorInMethod);
-        notAllowed                 = messages.getNotNothingString("notAllowed",                 errorInMethod);
-        notAuthorized              = messages.getNotNothingString("notAuthorized",              errorInMethod);
-        notAuthorizedForData       = messages.getNotNothingString("notAuthorizedForData",       errorInMethod);
-        notAvailable               = messages.getNotNothingString("notAvailable",               errorInMethod);
-        note                       = messages.getNotNothingString("note",                       errorInMethod);
-        noXxx                      = messages.getNotNothingString("noXxx",                      errorInMethod);
-        noXxxBecause               = messages.getNotNothingString("noXxxBecause",               errorInMethod);
-        noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              errorInMethod);
-        noXxxNotActive             = messages.getNotNothingString("noXxxNotActive",             errorInMethod);
-        noXxxNoAxis1               = messages.getNotNothingString("noXxxNoAxis1",               errorInMethod);
-        noXxxNoCdmDataType         = messages.getNotNothingString("noXxxNoCdmDataType",         errorInMethod);
-        noXxxNoColorBar            = messages.getNotNothingString("noXxxNoColorBar",            errorInMethod);
-        noXxxNoLL                  = messages.getNotNothingString("noXxxNoLL",                  errorInMethod);
-        noXxxNoLLEvenlySpaced      = messages.getNotNothingString("noXxxNoLLEvenlySpaced",      errorInMethod);
-        noXxxNoLLGt1               = messages.getNotNothingString("noXxxNoLLGt1",               errorInMethod);
-        noXxxNoLLT                 = messages.getNotNothingString("noXxxNoLLT",                 errorInMethod);
-        noXxxNoLonIn180            = messages.getNotNothingString("noXxxNoLonIn180",            errorInMethod);
-        noXxxNoNonString           = messages.getNotNothingString("noXxxNoNonString",           errorInMethod);
-        noXxxNo2NonString          = messages.getNotNothingString("noXxxNo2NonString",          errorInMethod);
-        noXxxNoStation             = messages.getNotNothingString("noXxxNoStation",             errorInMethod);
-        noXxxNoStationID           = messages.getNotNothingString("noXxxNoStationID",           errorInMethod);
-        noXxxNoSubsetVariables     = messages.getNotNothingString("noXxxNoSubsetVariables",     errorInMethod);
-        noXxxNoOLLSubsetVariables  = messages.getNotNothingString("noXxxNoOLLSubsetVariables",  errorInMethod);
-        noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              errorInMethod);
-        noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            errorInMethod);
-        noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            errorInMethod);
-        oneRequestAtATime          = messages.getNotNothingString("oneRequestAtATime",          errorInMethod);
-        openSearchDescription      = messages.getNotNothingString("openSearchDescription",      errorInMethod);
-        optional                   = messages.getNotNothingString("optional",                   errorInMethod);
-        options                    = messages.getNotNothingString("options",                    errorInMethod);
-        orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         errorInMethod);
-        orRefineSearchWith += " ";
-        orSearchWith               = messages.getNotNothingString("orSearchWith",               errorInMethod);
-        orSearchWith += " ";
-        orComma                    = messages.getNotNothingString("orComma",                    errorInMethod);
-        orComma += " ";
-        outOfDateKeepTrack         = messages.getNotNothingString("outOfDateKeepTrack",         errorInMethod);
-        outOfDateHtml              = messages.getNotNothingString("outOfDateHtml",              errorInMethod);
-        palettes                   = String2.split(messages.getNotNothingString("palettes",     errorInMethod), ',');
+        externalLinkAr               = getNotNothingString(messagesAr, "externalLink",               errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            externalLinkAr[tl]       = " " + externalLinkAr[tl];
+
+        externalWebSiteAr            = getNotNothingString(messagesAr, "externalWebSite",            errorInMethod);
+        fileHelp_ascAr               = getNotNothingString(messagesAr, "fileHelp_asc",               errorInMethod);
+        fileHelp_csvAr               = getNotNothingString(messagesAr, "fileHelp_csv",               errorInMethod);
+        fileHelp_csvpAr              = getNotNothingString(messagesAr, "fileHelp_csvp",              errorInMethod);
+        fileHelp_csv0Ar              = getNotNothingString(messagesAr, "fileHelp_csv0",              errorInMethod);
+        fileHelp_dataTableAr         = getNotNothingString(messagesAr, "fileHelp_dataTable",         errorInMethod);
+        fileHelp_dasAr               = getNotNothingString(messagesAr, "fileHelp_das",               errorInMethod);
+        fileHelp_ddsAr               = getNotNothingString(messagesAr, "fileHelp_dds",               errorInMethod);
+        fileHelp_dodsAr              = getNotNothingString(messagesAr, "fileHelp_dods",              errorInMethod);
+        fileHelpGrid_esriAsciiAr     = getNotNothingString(messagesAr, "fileHelpGrid_esriAscii",     errorInMethod);
+        fileHelpTable_esriCsvAr      = getNotNothingString(messagesAr, "fileHelpTable_esriCsv",      errorInMethod);
+        fileHelp_fgdcAr              = getNotNothingString(messagesAr, "fileHelp_fgdc",              errorInMethod);
+        fileHelp_geoJsonAr           = getNotNothingString(messagesAr, "fileHelp_geoJson",           errorInMethod);
+        fileHelp_graphAr             = getNotNothingString(messagesAr, "fileHelp_graph",             errorInMethod);
+        fileHelpGrid_helpAr          = getNotNothingString(messagesAr, "fileHelpGrid_help",          errorInMethod);
+        fileHelpTable_helpAr         = getNotNothingString(messagesAr, "fileHelpTable_help",         errorInMethod);
+        fileHelp_htmlAr              = getNotNothingString(messagesAr, "fileHelp_html",              errorInMethod);
+        fileHelp_htmlTableAr         = getNotNothingString(messagesAr, "fileHelp_htmlTable",         errorInMethod);
+        fileHelp_iso19115Ar          = getNotNothingString(messagesAr, "fileHelp_iso19115",          errorInMethod);
+        fileHelp_itxGridAr           = getNotNothingString(messagesAr, "fileHelp_itxGrid",           errorInMethod);
+        fileHelp_itxTableAr          = getNotNothingString(messagesAr, "fileHelp_itxTable",          errorInMethod);
+        fileHelp_jsonAr              = getNotNothingString(messagesAr, "fileHelp_json",              errorInMethod);
+        fileHelp_jsonlCSV1Ar         = getNotNothingString(messagesAr, "fileHelp_jsonlCSV1",         errorInMethod);
+        fileHelp_jsonlCSVAr          = getNotNothingString(messagesAr, "fileHelp_jsonlCSV",          errorInMethod);
+        fileHelp_jsonlKVPAr          = getNotNothingString(messagesAr, "fileHelp_jsonlKVP",          errorInMethod);
+        fileHelp_matAr               = getNotNothingString(messagesAr, "fileHelp_mat",               errorInMethod);
+        fileHelpGrid_nc3Ar           = getNotNothingString(messagesAr, "fileHelpGrid_nc3",           errorInMethod);
+        fileHelpGrid_nc4Ar           = getNotNothingString(messagesAr, "fileHelpGrid_nc4",           errorInMethod);
+        fileHelpTable_nc3Ar          = getNotNothingString(messagesAr, "fileHelpTable_nc3",          errorInMethod);
+        fileHelpTable_nc4Ar          = getNotNothingString(messagesAr, "fileHelpTable_nc4",          errorInMethod);
+        fileHelp_nc3HeaderAr         = getNotNothingString(messagesAr, "fileHelp_nc3Header",         errorInMethod);
+        fileHelp_nc4HeaderAr         = getNotNothingString(messagesAr, "fileHelp_nc4Header",         errorInMethod);
+        fileHelp_nccsvAr             = getNotNothingString(messagesAr, "fileHelp_nccsv",             errorInMethod);
+        fileHelp_nccsvMetadataAr     = getNotNothingString(messagesAr, "fileHelp_nccsvMetadata",     errorInMethod);
+        fileHelp_ncCFAr              = getNotNothingString(messagesAr, "fileHelp_ncCF",              errorInMethod);
+        fileHelp_ncCFHeaderAr        = getNotNothingString(messagesAr, "fileHelp_ncCFHeader",        errorInMethod);
+        fileHelp_ncCFMAAr            = getNotNothingString(messagesAr, "fileHelp_ncCFMA",            errorInMethod);
+        fileHelp_ncCFMAHeaderAr      = getNotNothingString(messagesAr, "fileHelp_ncCFMAHeader",      errorInMethod);
+        fileHelp_ncmlAr              = getNotNothingString(messagesAr, "fileHelp_ncml",              errorInMethod);
+        fileHelp_ncoJsonAr           = getNotNothingString(messagesAr, "fileHelp_ncoJson",           errorInMethod);
+        fileHelpGrid_odvTxtAr        = getNotNothingString(messagesAr, "fileHelpGrid_odvTxt",        errorInMethod);
+        fileHelpTable_odvTxtAr       = getNotNothingString(messagesAr, "fileHelpTable_odvTxt",       errorInMethod);
+        fileHelp_subsetAr            = getNotNothingString(messagesAr, "fileHelp_subset",            errorInMethod);
+        fileHelp_timeGapsAr          = getNotNothingString(messagesAr, "fileHelp_timeGaps",          errorInMethod);
+        fileHelp_tsvAr               = getNotNothingString(messagesAr, "fileHelp_tsv",               errorInMethod);
+        fileHelp_tsvpAr              = getNotNothingString(messagesAr, "fileHelp_tsvp",              errorInMethod);
+        fileHelp_tsv0Ar              = getNotNothingString(messagesAr, "fileHelp_tsv0",              errorInMethod);
+        fileHelp_wavAr               = getNotNothingString(messagesAr, "fileHelp_wav",               errorInMethod);
+        fileHelp_xhtmlAr             = getNotNothingString(messagesAr, "fileHelp_xhtml",             errorInMethod);
+        fileHelp_geotifAr            = getNotNothingString(messagesAr, "fileHelp_geotif",            errorInMethod);
+        fileHelpGrid_kmlAr           = getNotNothingString(messagesAr, "fileHelpGrid_kml",           errorInMethod);
+        fileHelpTable_kmlAr          = getNotNothingString(messagesAr, "fileHelpTable_kml",          errorInMethod);
+        fileHelp_smallPdfAr          = getNotNothingString(messagesAr, "fileHelp_smallPdf",          errorInMethod);
+        fileHelp_pdfAr               = getNotNothingString(messagesAr, "fileHelp_pdf",               errorInMethod);
+        fileHelp_largePdfAr          = getNotNothingString(messagesAr, "fileHelp_largePdf",          errorInMethod);
+        fileHelp_smallPngAr          = getNotNothingString(messagesAr, "fileHelp_smallPng",          errorInMethod);
+        fileHelp_pngAr               = getNotNothingString(messagesAr, "fileHelp_png",               errorInMethod);
+        fileHelp_largePngAr          = getNotNothingString(messagesAr, "fileHelp_largePng",          errorInMethod);
+        fileHelp_transparentPngAr    = getNotNothingString(messagesAr, "fileHelp_transparentPng",    errorInMethod);
+        filesDescriptionAr           = getNotNothingString(messagesAr, "filesDescription",           errorInMethod);
+        filesDocumentationAr         = getNotNothingString(messagesAr, "filesDocumentation",         errorInMethod);
+        filesSortAr                  = getNotNothingString(messagesAr, "filesSort",                  errorInMethod);
+        filesWarningAr               = getNotNothingString(messagesAr, "filesWarning",               errorInMethod);
+        findOutChangeAr              = getNotNothingString(messagesAr, "findOutChange",              errorInMethod);
+        FIPSCountyCodesAr            = getNotNothingString(messagesAr, "FIPSCountyCodes",            errorInMethod);
+        forSOSUseAr                  = getNotNothingString(messagesAr, "forSOSUse",                  errorInMethod);
+        forWCSUseAr                  = getNotNothingString(messagesAr, "forWCSUse",                  errorInMethod);
+        forWMSUseAr                  = getNotNothingString(messagesAr, "forWMSUse",                  errorInMethod);
+        functionsAr                  = getNotNothingString(messagesAr, "functions",                  errorInMethod);
+        functionTooltipAr            = getNotNothingString(messagesAr, "functionTooltip",            errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            functionTooltipAr[tl]    = MessageFormat.format(functionTooltipAr[tl], "distinct()");
+
+        functionDistinctCheckAr      = getNotNothingString(messagesAr, "functionDistinctCheck",      errorInMethod);
+        functionDistinctTooltipAr    = getNotNothingString(messagesAr, "functionDistinctTooltip",    errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            functionDistinctTooltipAr[tl] = MessageFormat.format(functionDistinctTooltipAr[tl], "distinct()");
+
+        functionOrderByExtraAr       = getNotNothingString(messagesAr, "functionOrderByExtra",       errorInMethod);
+        functionOrderByTooltipAr     = getNotNothingString(messagesAr, "functionOrderByTooltip",     errorInMethod);
+        functionOrderBySortAr        = getNotNothingString(messagesAr, "functionOrderBySort",        errorInMethod);
+        functionOrderBySort1Ar       = getNotNothingString(messagesAr, "functionOrderBySort1",       errorInMethod);
+        functionOrderBySort2Ar       = getNotNothingString(messagesAr, "functionOrderBySort2",       errorInMethod);
+        functionOrderBySort3Ar       = getNotNothingString(messagesAr, "functionOrderBySort3",       errorInMethod);
+        functionOrderBySort4Ar       = getNotNothingString(messagesAr, "functionOrderBySort4",       errorInMethod);
+        functionOrderBySortLeastAr   = getNotNothingString(messagesAr, "functionOrderBySortLeast",   errorInMethod);
+        functionOrderBySortRowMaxAr  = getNotNothingString(messagesAr, "functionOrderBySortRowMax",  errorInMethod);
+        generatedAtAr                = getNotNothingString(messagesAr, "generatedAt",                errorInMethod);
+        geoServicesDescriptionAr     = getNotNothingString(messagesAr, "geoServicesDescription",     errorInMethod);
+        getStartedHtmlAr             = getNotNothingString(messagesAr, "getStartedHtml",             errorInMethod);
+        helpAr                       = getNotNothingString(messagesAr, "help",                       errorInMethod);
+        TableWriterHtmlTable.htmlTableMaxMB = messagesAr[0].getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);                                   
+        htmlTableMaxMessageAr        = getNotNothingString(messagesAr, "htmlTableMaxMessage",        errorInMethod);
+
+        imageDataCourtesyOfAr        = getNotNothingString(messagesAr, "imageDataCourtesyOf",        errorInMethod);
+        imageWidths                  = String2.toIntArray(String2.split(messagesAr[0].getNotNothingString("imageWidths",  errorInMethod), ','));
+        imageHeights                 = String2.toIntArray(String2.split(messagesAr[0].getNotNothingString("imageHeights", errorInMethod), ','));
+        imagesEmbedAr                = getNotNothingString(messagesAr, "imagesEmbed",                errorInMethod);
+        indexViewAllAr               = getNotNothingString(messagesAr, "indexViewAll",               errorInMethod);
+        indexSearchWithAr            = getNotNothingString(messagesAr, "indexSearchWith",            errorInMethod);
+        indexDevelopersSearchAr      = getNotNothingString(messagesAr, "indexDevelopersSearch",      errorInMethod);
+        indexProtocolAr              = getNotNothingString(messagesAr, "indexProtocol",              errorInMethod);
+        indexDescriptionAr           = getNotNothingString(messagesAr, "indexDescription",           errorInMethod);
+        indexDatasetsAr              = getNotNothingString(messagesAr, "indexDatasets",              errorInMethod);
+        indexDocumentationAr         = getNotNothingString(messagesAr, "indexDocumentation",         errorInMethod);
+        indexRESTfulSearchAr         = getNotNothingString(messagesAr, "indexRESTfulSearch",         errorInMethod);
+        indexAllDatasetsSearchAr     = getNotNothingString(messagesAr, "indexAllDatasetsSearch",     errorInMethod);
+        indexOpenSearchAr            = getNotNothingString(messagesAr, "indexOpenSearch",            errorInMethod);
+        indexServicesAr              = getNotNothingString(messagesAr, "indexServices",              errorInMethod);
+        indexDescribeServicesAr      = getNotNothingString(messagesAr, "indexDescribeServices",      errorInMethod);
+        indexMetadataAr              = getNotNothingString(messagesAr, "indexMetadata",              errorInMethod);
+        indexWAF1Ar                  = getNotNothingString(messagesAr, "indexWAF1",                  errorInMethod);
+        indexWAF2Ar                  = getNotNothingString(messagesAr, "indexWAF2",                  errorInMethod);
+        indexConvertersAr            = getNotNothingString(messagesAr, "indexConverters",            errorInMethod);
+        indexDescribeConvertersAr    = getNotNothingString(messagesAr, "indexDescribeConverters",    errorInMethod);
+        infoAboutFromAr              = getNotNothingString(messagesAr, "infoAboutFrom",              errorInMethod);
+        infoTableTitleHtmlAr         = getNotNothingString(messagesAr, "infoTableTitleHtml",         errorInMethod);
+        infoRequestFormAr            = getNotNothingString(messagesAr, "infoRequestForm",            errorInMethod);
+        informationAr                = getNotNothingString(messagesAr, "information",                errorInMethod);
+        inotifyFixAr                 = getNotNothingString(messagesAr, "inotifyFix",                 errorInMethod);
+        inotifyFixCommands         = messagesAr[0].getNotNothingString("inotifyFixCommands",         errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            inotifyFixAr[tl]         = MessageFormat.format(inotifyFixAr[tl], inotifyFixCommands);
+        interpolateAr                = getNotNothingString(messagesAr, "interpolate",                errorInMethod);
+        javaProgramsHTMLAr           = getNotNothingString(messagesAr, "javaProgramsHTML",           errorInMethod);
+        justGenerateAndViewAr        = getNotNothingString(messagesAr, "justGenerateAndView",        errorInMethod);
+        justGenerateAndViewTooltipAr = getNotNothingString(messagesAr, "justGenerateAndViewTooltip", errorInMethod);
+        justGenerateAndViewUrlAr     = getNotNothingString(messagesAr, "justGenerateAndViewUrl",     errorInMethod);
+        justGenerateAndViewGraphUrlTooltipAr = getNotNothingString(messagesAr, "justGenerateAndViewGraphUrlTooltip", errorInMethod);
+        keywordsAr                   = getNotNothingString(messagesAr, "keywords",                   errorInMethod);
+        langCodeAr                   = getNotNothingString(messagesAr, "langCode",                   errorInMethod);
+
+        legal                      = messagesAr[0].getNotNothingString("legal",                      errorInMethod);
+        legal                        = getSetupEVString(setup, ev,     "legal",                      legal);          //optionally in setup.xml
+        legalNoticesAr               = getNotNothingString(messagesAr, "legalNotices",               errorInMethod);
+        legalNoticesTitleAr          = getNotNothingString(messagesAr, "legalNoticesTitle",          errorInMethod);
+
+        legendTitle1                 = messagesAr[0].getString(        "legendTitle1",               "");
+        legendTitle2                 = messagesAr[0].getString(        "legendTitle2",               "");
+        legendTitle1                 = getSetupEVString(setup, ev,     "legendTitle1",               legendTitle1);   //optionally in setup.xml
+        legendTitle2                 = getSetupEVString(setup, ev,     "legendTitle2",               legendTitle2);   //optionally in setup.xml
+
+        licenseAr                    = getNotNothingString(messagesAr, "license",                    errorInMethod);
+        likeThisAr                   = getNotNothingString(messagesAr, "likeThis",                   errorInMethod);
+        listAllAr                    = getNotNothingString(messagesAr, "listAll",                    errorInMethod);
+        listOfDatasetsAr             = getNotNothingString(messagesAr, "listOfDatasets",             errorInMethod);
+        LogInAr                      = getNotNothingString(messagesAr, "LogIn",                      errorInMethod);
+        loginAr                      = getNotNothingString(messagesAr, "login",                      errorInMethod);
+        loginHTMLAr                  = getNotNothingString(messagesAr, "loginHTML",                  errorInMethod);
+        loginAttemptBlockedAr        = getNotNothingString(messagesAr, "loginAttemptBlocked",        errorInMethod);
+        loginDescribeCustomAr        = getNotNothingString(messagesAr, "loginDescribeCustom",        errorInMethod);
+        loginDescribeEmailAr         = getNotNothingString(messagesAr, "loginDescribeEmail",         errorInMethod);
+        loginDescribeGoogleAr        = getNotNothingString(messagesAr, "loginDescribeGoogle",        errorInMethod);
+        loginDescribeOrcidAr         = getNotNothingString(messagesAr, "loginDescribeOrcid",         errorInMethod);
+        loginDescribeOauth2Ar        = getNotNothingString(messagesAr, "loginDescribeOauth2",        errorInMethod);
+        loginCanNotAr                = getNotNothingString(messagesAr, "loginCanNot",                errorInMethod);
+        loginAreNotAr                = getNotNothingString(messagesAr, "loginAreNot",                errorInMethod);
+        loginToLogInAr               = getNotNothingString(messagesAr, "loginToLogIn",               errorInMethod);
+        loginEmailAddressAr          = getNotNothingString(messagesAr, "loginEmailAddress",          errorInMethod);
+        loginYourEmailAddressAr      = getNotNothingString(messagesAr, "loginYourEmailAddress",      errorInMethod);
+        loginUserNameAr              = getNotNothingString(messagesAr, "loginUserName",              errorInMethod);
+        loginPasswordAr              = getNotNothingString(messagesAr, "loginPassword",              errorInMethod);
+        loginUserNameAndPasswordAr   = getNotNothingString(messagesAr, "loginUserNameAndPassword",   errorInMethod);
+        loginGoogleSignInAr          = getNotNothingString(messagesAr, "loginGoogleSignIn",          errorInMethod);
+        loginGoogleSignIn2Ar         = getNotNothingString(messagesAr, "loginGoogleSignIn2",         errorInMethod);
+        loginOrcidSignInAr           = getNotNothingString(messagesAr, "loginOrcidSignIn",           errorInMethod);
+        loginErddapAr                = getNotNothingString(messagesAr, "loginErddap",                errorInMethod);
+        loginOpenIDAr                = getNotNothingString(messagesAr, "loginOpenID",                errorInMethod);
+        loginOpenIDOrAr              = getNotNothingString(messagesAr, "loginOpenIDOr",              errorInMethod);
+        loginOpenIDCreateAr          = getNotNothingString(messagesAr, "loginOpenIDCreate",          errorInMethod);
+        loginOpenIDFreeAr            = getNotNothingString(messagesAr, "loginOpenIDFree",            errorInMethod);
+        loginOpenIDSameAr            = getNotNothingString(messagesAr, "loginOpenIDSame",            errorInMethod);
+        loginAsAr                    = getNotNothingString(messagesAr, "loginAs",                    errorInMethod);
+        loginPartwayAsAr             = getNotNothingString(messagesAr, "loginPartwayAs",             errorInMethod);
+        loginFailedAr                = getNotNothingString(messagesAr, "loginFailed",                errorInMethod);
+        loginSucceededAr             = getNotNothingString(messagesAr, "loginSucceeded",             errorInMethod);
+        loginInvalidAr               = getNotNothingString(messagesAr, "loginInvalid",               errorInMethod);
+        loginNotAr                   = getNotNothingString(messagesAr, "loginNot",                   errorInMethod);
+        loginBackAr                  = getNotNothingString(messagesAr, "loginBack",                  errorInMethod);
+        loginProblemExactAr          = getNotNothingString(messagesAr, "loginProblemExact",          errorInMethod);
+        loginProblemExpireAr         = getNotNothingString(messagesAr, "loginProblemExpire",         errorInMethod);
+        loginProblemGoogleAgainAr    = getNotNothingString(messagesAr, "loginProblemGoogleAgain",    errorInMethod);
+        loginProblemOrcidAgainAr     = getNotNothingString(messagesAr, "loginProblemOrcidAgain",     errorInMethod);
+        loginProblemOauth2AgainAr    = getNotNothingString(messagesAr, "loginProblemOauth2Again",    errorInMethod);
+        loginProblemSameBrowserAr    = getNotNothingString(messagesAr, "loginProblemSameBrowser",    errorInMethod);
+        loginProblem3TimesAr         = getNotNothingString(messagesAr, "loginProblem3Times",         errorInMethod);
+        loginProblemsAr              = getNotNothingString(messagesAr, "loginProblems",              errorInMethod);
+        loginProblemsAfterAr         = getNotNothingString(messagesAr, "loginProblemsAfter",         errorInMethod);
+        loginPublicAccessAr          = getNotNothingString(messagesAr, "loginPublicAccess",          errorInMethod);
+        LogOutAr                     = getNotNothingString(messagesAr, "LogOut",                     errorInMethod);
+        logoutAr                     = getNotNothingString(messagesAr, "logout",                     errorInMethod);
+        logoutOpenIDAr               = getNotNothingString(messagesAr, "logoutOpenID",               errorInMethod);
+        logoutSuccessAr              = getNotNothingString(messagesAr, "logoutSuccess",              errorInMethod);
+        magAr                        = getNotNothingString(messagesAr, "mag",                        errorInMethod);
+        magAxisXAr                   = getNotNothingString(messagesAr, "magAxisX",                   errorInMethod);
+        magAxisYAr                   = getNotNothingString(messagesAr, "magAxisY",                   errorInMethod);
+        magAxisColorAr               = getNotNothingString(messagesAr, "magAxisColor",               errorInMethod);
+        magAxisStickXAr              = getNotNothingString(messagesAr, "magAxisStickX",              errorInMethod);
+        magAxisStickYAr              = getNotNothingString(messagesAr, "magAxisStickY",              errorInMethod);
+        magAxisVectorXAr             = getNotNothingString(messagesAr, "magAxisVectorX",             errorInMethod);
+        magAxisVectorYAr             = getNotNothingString(messagesAr, "magAxisVectorY",             errorInMethod);
+        magAxisHelpGraphXAr          = getNotNothingString(messagesAr, "magAxisHelpGraphX",          errorInMethod);
+        magAxisHelpGraphYAr          = getNotNothingString(messagesAr, "magAxisHelpGraphY",          errorInMethod);
+        magAxisHelpMarkerColorAr     = getNotNothingString(messagesAr, "magAxisHelpMarkerColor",     errorInMethod);
+        magAxisHelpSurfaceColorAr    = getNotNothingString(messagesAr, "magAxisHelpSurfaceColor",    errorInMethod);
+        magAxisHelpStickXAr          = getNotNothingString(messagesAr, "magAxisHelpStickX",          errorInMethod);
+        magAxisHelpStickYAr          = getNotNothingString(messagesAr, "magAxisHelpStickY",          errorInMethod);
+        magAxisHelpMapXAr            = getNotNothingString(messagesAr, "magAxisHelpMapX",            errorInMethod);
+        magAxisHelpMapYAr            = getNotNothingString(messagesAr, "magAxisHelpMapY",            errorInMethod);
+        magAxisHelpVectorXAr         = getNotNothingString(messagesAr, "magAxisHelpVectorX",         errorInMethod);
+        magAxisHelpVectorYAr         = getNotNothingString(messagesAr, "magAxisHelpVectorY",         errorInMethod);
+        magAxisVarHelpAr             = getNotNothingString(messagesAr, "magAxisVarHelp",             errorInMethod);
+        magAxisVarHelpGridAr         = getNotNothingString(messagesAr, "magAxisVarHelpGrid",         errorInMethod);
+        magConstraintHelpAr          = getNotNothingString(messagesAr, "magConstraintHelp",          errorInMethod);
+        magDocumentationAr           = getNotNothingString(messagesAr, "magDocumentation",           errorInMethod);
+        magDownloadAr                = getNotNothingString(messagesAr, "magDownload",                errorInMethod);
+        magDownloadTooltipAr         = getNotNothingString(messagesAr, "magDownloadTooltip",         errorInMethod);
+        magFileTypeAr                = getNotNothingString(messagesAr, "magFileType",                errorInMethod);
+        magGraphTypeAr               = getNotNothingString(messagesAr, "magGraphType",               errorInMethod);
+        magGraphTypeTooltipGridAr    = getNotNothingString(messagesAr, "magGraphTypeTooltipGrid",    errorInMethod);
+        magGraphTypeTooltipTableAr   = getNotNothingString(messagesAr, "magGraphTypeTooltipTable",   errorInMethod);
+        magGSAr                      = getNotNothingString(messagesAr, "magGS",                      errorInMethod);
+        magGSMarkerTypeAr            = getNotNothingString(messagesAr, "magGSMarkerType",            errorInMethod);
+        magGSSizeAr                  = getNotNothingString(messagesAr, "magGSSize",                  errorInMethod);
+        magGSColorAr                 = getNotNothingString(messagesAr, "magGSColor",                 errorInMethod);
+        magGSColorBarAr              = getNotNothingString(messagesAr, "magGSColorBar",              errorInMethod);
+        magGSColorBarTooltipAr       = getNotNothingString(messagesAr, "magGSColorBarTooltip",       errorInMethod);
+        magGSContinuityAr            = getNotNothingString(messagesAr, "magGSContinuity",            errorInMethod);
+        magGSContinuityTooltipAr     = getNotNothingString(messagesAr, "magGSContinuityTooltip",     errorInMethod);
+        magGSScaleAr                 = getNotNothingString(messagesAr, "magGSScale",                 errorInMethod);
+        magGSScaleTooltipAr          = getNotNothingString(messagesAr, "magGSScaleTooltip",          errorInMethod);
+        magGSMinAr                   = getNotNothingString(messagesAr, "magGSMin",                   errorInMethod);
+        magGSMinTooltipAr            = getNotNothingString(messagesAr, "magGSMinTooltip",            errorInMethod);
+        magGSMaxAr                   = getNotNothingString(messagesAr, "magGSMax",                   errorInMethod);
+        magGSMaxTooltipAr            = getNotNothingString(messagesAr, "magGSMaxTooltip",            errorInMethod);
+        magGSNSectionsAr             = getNotNothingString(messagesAr, "magGSNSections",             errorInMethod);
+        magGSNSectionsTooltipAr      = getNotNothingString(messagesAr, "magGSNSectionsTooltip",      errorInMethod);
+        magGSLandMaskAr              = getNotNothingString(messagesAr, "magGSLandMask",              errorInMethod);
+        magGSLandMaskTooltipGridAr   = getNotNothingString(messagesAr, "magGSLandMaskTooltipGrid",   errorInMethod);
+        magGSLandMaskTooltipTableAr  = getNotNothingString(messagesAr, "magGSLandMaskTooltipTable",  errorInMethod);
+        magGSVectorStandardAr        = getNotNothingString(messagesAr, "magGSVectorStandard",        errorInMethod);
+        magGSVectorStandardTooltipAr = getNotNothingString(messagesAr, "magGSVectorStandardTooltip", errorInMethod);
+        magGSYAscendingTooltipAr     = getNotNothingString(messagesAr, "magGSYAscendingTooltip",     errorInMethod);
+        magGSYAxisMinAr              = getNotNothingString(messagesAr, "magGSYAxisMin",              errorInMethod);
+        magGSYAxisMaxAr              = getNotNothingString(messagesAr, "magGSYAxisMax",              errorInMethod);
+        magGSYRangeMinTooltipAr      = getNotNothingString(messagesAr, "magGSYRangeMinTooltip",      errorInMethod); 
+        magGSYRangeMaxTooltipAr      = getNotNothingString(messagesAr, "magGSYRangeMaxTooltip",      errorInMethod);
+        magGSYRangeTooltipAr         = getNotNothingString(messagesAr, "magGSYRangeTooltip",         errorInMethod);        
+        magGSYScaleTooltipAr         = getNotNothingString(messagesAr, "magGSYScaleTooltip",         errorInMethod);        
+        magItemFirstAr               = getNotNothingString(messagesAr, "magItemFirst",               errorInMethod);
+        magItemPreviousAr            = getNotNothingString(messagesAr, "magItemPrevious",            errorInMethod);
+        magItemNextAr                = getNotNothingString(messagesAr, "magItemNext",                errorInMethod);
+        magItemLastAr                = getNotNothingString(messagesAr, "magItemLast",                errorInMethod);
+        magJust1ValueAr              = getNotNothingString(messagesAr, "magJust1Value",              errorInMethod);
+        magRangeAr                   = getNotNothingString(messagesAr, "magRange",                   errorInMethod);
+        magRangeToAr                 = getNotNothingString(messagesAr, "magRangeTo",                 errorInMethod);
+        magRedrawAr                  = getNotNothingString(messagesAr, "magRedraw",                  errorInMethod);
+        magRedrawTooltipAr           = getNotNothingString(messagesAr, "magRedrawTooltip",           errorInMethod);
+        magTimeRangeAr               = getNotNothingString(messagesAr, "magTimeRange",               errorInMethod);
+        magTimeRangeFirstAr          = getNotNothingString(messagesAr, "magTimeRangeFirst",          errorInMethod);
+        magTimeRangeBackAr           = getNotNothingString(messagesAr, "magTimeRangeBack",           errorInMethod);
+        magTimeRangeForwardAr        = getNotNothingString(messagesAr, "magTimeRangeForward",        errorInMethod);
+        magTimeRangeLastAr           = getNotNothingString(messagesAr, "magTimeRangeLast",           errorInMethod);
+        magTimeRangeTooltipAr        = getNotNothingString(messagesAr, "magTimeRangeTooltip",        errorInMethod);
+        magTimeRangeTooltip2Ar       = getNotNothingString(messagesAr, "magTimeRangeTooltip2",       errorInMethod);
+        magTimesVaryAr               = getNotNothingString(messagesAr, "magTimesVary",               errorInMethod);
+        magViewUrlAr                 = getNotNothingString(messagesAr, "magViewUrl",                 errorInMethod);
+        magZoomAr                    = getNotNothingString(messagesAr, "magZoom",                    errorInMethod);
+        magZoomCenterAr              = getNotNothingString(messagesAr, "magZoomCenter",              errorInMethod);
+        magZoomCenterTooltipAr       = getNotNothingString(messagesAr, "magZoomCenterTooltip",       errorInMethod);
+        magZoomInAr                  = getNotNothingString(messagesAr, "magZoomIn",                  errorInMethod);
+        magZoomInTooltipAr           = getNotNothingString(messagesAr, "magZoomInTooltip",           errorInMethod);
+        magZoomOutAr                 = getNotNothingString(messagesAr, "magZoomOut",                 errorInMethod);
+        magZoomOutTooltipAr          = getNotNothingString(messagesAr, "magZoomOutTooltip",          errorInMethod);
+        magZoomALittleAr             = getNotNothingString(messagesAr, "magZoomALittle",             errorInMethod);
+        magZoomDataAr                = getNotNothingString(messagesAr, "magZoomData",                errorInMethod);
+        magZoomOutDataAr             = getNotNothingString(messagesAr, "magZoomOutData",             errorInMethod);
+        magGridTooltipAr             = getNotNothingString(messagesAr, "magGridTooltip",             errorInMethod);
+        magTableTooltipAr            = getNotNothingString(messagesAr, "magTableTooltip",            errorInMethod);
+
+        Math2.memory                 = messagesAr[0].getNotNothingString("memory",                     errorInMethod);
+        Math2.memoryTooMuchData      = messagesAr[0].getNotNothingString("memoryTooMuchData",          errorInMethod);
+        Math2.memoryArraySize        = messagesAr[0].getNotNothingString("memoryArraySize",            errorInMethod);
+        Math2.memoryThanCurrentlySafe= messagesAr[0].getNotNothingString("memoryThanCurrentlySafe",    errorInMethod);
+        Math2.memoryThanSafe         = messagesAr[0].getNotNothingString("memoryThanSafe",             errorInMethod);
+
+        metadataDownloadAr           = getNotNothingString(messagesAr,   "metadataDownload",           errorInMethod);
+        moreInformationAr            = getNotNothingString(messagesAr,   "moreInformation",            errorInMethod);
+
+        MustBe.THERE_IS_NO_DATA      = messagesAr[0].getNotNothingString("MustBeThereIsNoData",        errorInMethod);
+        MustBe.NotNull               = messagesAr[0].getNotNothingString("MustBeNotNull",              errorInMethod);
+        MustBe.NotEmpty              = messagesAr[0].getNotNothingString("MustBeNotEmpty",             errorInMethod);
+        MustBe.InternalError         = messagesAr[0].getNotNothingString("MustBeInternalError",        errorInMethod);
+        MustBe.OutOfMemoryError      = messagesAr[0].getNotNothingString("MustBeOutOfMemoryError",     errorInMethod);
+
+        nMatching1Ar                 = getNotNothingString(messagesAr, "nMatching1",                 errorInMethod);
+        nMatchingAr                  = getNotNothingString(messagesAr, "nMatching",                  errorInMethod);
+        nMatchingAlphabeticalAr      = getNotNothingString(messagesAr, "nMatchingAlphabetical",      errorInMethod);
+        nMatchingMostRelevantAr      = getNotNothingString(messagesAr, "nMatchingMostRelevant",      errorInMethod);
+        nMatchingPageAr              = getNotNothingString(messagesAr, "nMatchingPage",              errorInMethod);
+        nMatchingCurrentAr           = getNotNothingString(messagesAr, "nMatchingCurrent",           errorInMethod);
+        noDataFixedValueAr           = getNotNothingString(messagesAr, "noDataFixedValue",           errorInMethod);
+        noDataNoLLAr                 = getNotNothingString(messagesAr, "noDataNoLL",                 errorInMethod);
+        noDatasetWithAr              = getNotNothingString(messagesAr, "noDatasetWith",              errorInMethod);
+        noPage1Ar                    = getNotNothingString(messagesAr, "noPage1",                    errorInMethod);
+        noPage2Ar                    = getNotNothingString(messagesAr, "noPage2",                    errorInMethod);
+        notAllowedAr                 = getNotNothingString(messagesAr, "notAllowed",                 errorInMethod);
+        notAuthorizedAr              = getNotNothingString(messagesAr, "notAuthorized",              errorInMethod);
+        notAuthorizedForDataAr       = getNotNothingString(messagesAr, "notAuthorizedForData",       errorInMethod);
+        notAvailableAr               = getNotNothingString(messagesAr, "notAvailable",               errorInMethod);
+        noteAr                       = getNotNothingString(messagesAr, "note",                       errorInMethod);
+        noXxxAr                      = getNotNothingString(messagesAr, "noXxx",                      errorInMethod);
+        noXxxBecauseAr               = getNotNothingString(messagesAr, "noXxxBecause",               errorInMethod);
+        noXxxBecause2Ar              = getNotNothingString(messagesAr, "noXxxBecause2",              errorInMethod);
+        noXxxNotActiveAr             = getNotNothingString(messagesAr, "noXxxNotActive",             errorInMethod);
+        noXxxNoAxis1Ar               = getNotNothingString(messagesAr, "noXxxNoAxis1",               errorInMethod);
+        noXxxNoCdmDataTypeAr         = getNotNothingString(messagesAr, "noXxxNoCdmDataType",         errorInMethod);
+        noXxxNoColorBarAr            = getNotNothingString(messagesAr, "noXxxNoColorBar",            errorInMethod);
+        noXxxNoLLAr                  = getNotNothingString(messagesAr, "noXxxNoLL",                  errorInMethod);
+        noXxxNoLLEvenlySpacedAr      = getNotNothingString(messagesAr, "noXxxNoLLEvenlySpaced",      errorInMethod);
+        noXxxNoLLGt1Ar               = getNotNothingString(messagesAr, "noXxxNoLLGt1",               errorInMethod);
+        noXxxNoLLTAr                 = getNotNothingString(messagesAr, "noXxxNoLLT",                 errorInMethod);
+        noXxxNoLonIn180Ar            = getNotNothingString(messagesAr, "noXxxNoLonIn180",            errorInMethod);
+        noXxxNoNonStringAr           = getNotNothingString(messagesAr, "noXxxNoNonString",           errorInMethod);
+        noXxxNo2NonStringAr          = getNotNothingString(messagesAr, "noXxxNo2NonString",          errorInMethod);
+        noXxxNoStationAr             = getNotNothingString(messagesAr, "noXxxNoStation",             errorInMethod);
+        noXxxNoStationIDAr           = getNotNothingString(messagesAr, "noXxxNoStationID",           errorInMethod);
+        noXxxNoSubsetVariablesAr     = getNotNothingString(messagesAr, "noXxxNoSubsetVariables",     errorInMethod);
+        noXxxNoOLLSubsetVariablesAr  = getNotNothingString(messagesAr, "noXxxNoOLLSubsetVariables",  errorInMethod);
+        noXxxNoMinMaxAr              = getNotNothingString(messagesAr, "noXxxNoMinMax",              errorInMethod);
+        noXxxItsGriddedAr            = getNotNothingString(messagesAr, "noXxxItsGridded",            errorInMethod);
+        noXxxItsTabularAr            = getNotNothingString(messagesAr, "noXxxItsTabular",            errorInMethod);
+        oneRequestAtATimeAr          = getNotNothingString(messagesAr, "oneRequestAtATime",          errorInMethod);
+        openSearchDescriptionAr      = getNotNothingString(messagesAr, "openSearchDescription",      errorInMethod);
+        optionalAr                   = getNotNothingString(messagesAr, "optional",                   errorInMethod);
+        optionsAr                    = getNotNothingString(messagesAr, "options",                    errorInMethod);
+        orAListOfValuesAr            = getNotNothingString(messagesAr, "orAListOfValues",            errorInMethod);
+        orRefineSearchWithAr         = getNotNothingString(messagesAr, "orRefineSearchWith",         errorInMethod);
+        orSearchWithAr               = getNotNothingString(messagesAr, "orSearchWith",               errorInMethod);
+        orCommaAr                    = getNotNothingString(messagesAr, "orComma",                    errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) {
+            orRefineSearchWithAr[tl] += " ";
+            orSearchWithAr[tl] += " ";
+            orCommaAr[tl] += " ";
+        }
+        otherFeaturesAr              = getNotNothingString(messagesAr, "otherFeatures",              errorInMethod);
+        outOfDateDatasetsAr          = getNotNothingString(messagesAr, "outOfDateDatasets",          errorInMethod);
+        outOfDateHtmlAr              = getNotNothingString(messagesAr, "outOfDateHtml",              errorInMethod);
+        outOfDateKeepTrackAr         = getNotNothingString(messagesAr, "outOfDateKeepTrack",         errorInMethod);
+
+        //just one set of palettes info (from messagesAr[0])
+        palettes                    = String2.split(messagesAr[0].getNotNothingString("palettes",   errorInMethod), ',');
         DEFAULT_palettes = palettes; //used by LoadDatasets if palettes tag is empty
         DEFAULT_palettes_set = String2.stringArrayToSet(palettes);
         palettes0 = new String[palettes.length + 1];
         palettes0[0] = "";
         System.arraycopy(palettes, 0, palettes0, 1, palettes.length);
-        patientData                = messages.getNotNothingString("patientData",                errorInMethod);
-        patientYourGraph           = messages.getNotNothingString("patientYourGraph",           errorInMethod);
-        pdfWidths                  = String2.toIntArray(String2.split(messages.getNotNothingString("pdfWidths",  errorInMethod), ','));
-        pdfHeights                 = String2.toIntArray(String2.split(messages.getNotNothingString("pdfHeights", errorInMethod), ','));
-        percentEncode              = messages.getNotNothingString("percentEncode",              errorInMethod);
-        pickADataset               = messages.getNotNothingString("pickADataset",               errorInMethod);
-        protocolSearchHtml         = messages.getNotNothingString("protocolSearchHtml",         errorInMethod);
-        protocolSearch2Html        = messages.getNotNothingString("protocolSearch2Html",        errorInMethod);
-        protocolClick              = messages.getNotNothingString("protocolClick",              errorInMethod);
-        queryError                 = messages.getNotNothingString("queryError",                 errorInMethod) + " ";
-        Table.QUERY_ERROR = queryError;
-        queryError180              = messages.getNotNothingString("queryError180",              errorInMethod);
-        queryError1Value           = messages.getNotNothingString("queryError1Value",           errorInMethod);
-        queryError1Var             = messages.getNotNothingString("queryError1Var",             errorInMethod);
-        queryError2Var             = messages.getNotNothingString("queryError2Var",             errorInMethod);
-        queryErrorActualRange      = messages.getNotNothingString("queryErrorActualRange",      errorInMethod);
-        queryErrorAdjusted         = messages.getNotNothingString("queryErrorAdjusted",         errorInMethod);
-        queryErrorAscending        = messages.getNotNothingString("queryErrorAscending",        errorInMethod);
-        queryErrorConstraintNaN    = messages.getNotNothingString("queryErrorConstraintNaN",    errorInMethod);
-        queryErrorEqualSpacing     = messages.getNotNothingString("queryErrorEqualSpacing",     errorInMethod);
-        queryErrorExpectedAt       = messages.getNotNothingString("queryErrorExpectedAt",       errorInMethod);
-        queryErrorFileType         = messages.getNotNothingString("queryErrorFileType",         errorInMethod);
-        queryErrorInvalid          = messages.getNotNothingString("queryErrorInvalid",          errorInMethod);
-        queryErrorLL               = messages.getNotNothingString("queryErrorLL",               errorInMethod);
-        queryErrorLLGt1            = messages.getNotNothingString("queryErrorLLGt1",            errorInMethod);
-        queryErrorLLT              = messages.getNotNothingString("queryErrorLLT",              errorInMethod);
-        queryErrorNeverTrue        = messages.getNotNothingString("queryErrorNeverTrue",        errorInMethod);
-        queryErrorNeverBothTrue    = messages.getNotNothingString("queryErrorNeverBothTrue",    errorInMethod);
-        queryErrorNotAxis          = messages.getNotNothingString("queryErrorNotAxis",          errorInMethod);
-        queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    errorInMethod);
-        queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    errorInMethod);
-        queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      errorInMethod);
-        Table.ORDER_BY_CLOSEST_ERROR=messages.getNotNothingString("queryErrorOrderByClosest",   errorInMethod);
-        Table.ORDER_BY_LIMIT_ERROR = messages.getNotNothingString("queryErrorOrderByLimit",     errorInMethod);
-        Table.ORDER_BY_MEAN_ERROR  = messages.getNotNothingString("queryErrorOrderByMean",      errorInMethod);
-        queryErrorOrderByVariable  = messages.getNotNothingString("queryErrorOrderByVariable",  errorInMethod);
-        queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  errorInMethod);
 
-        queryErrorGrid1Axis        = messages.getNotNothingString("queryErrorGrid1Axis",        errorInMethod);
-        queryErrorGridAmp          = messages.getNotNothingString("queryErrorGridAmp",          errorInMethod);
-        queryErrorGridDiagnostic   = messages.getNotNothingString("queryErrorGridDiagnostic",   errorInMethod);
-        queryErrorGridBetween      = messages.getNotNothingString("queryErrorGridBetween",      errorInMethod);
-        queryErrorGridLessMin      = messages.getNotNothingString("queryErrorGridLessMin",      errorInMethod);
-        queryErrorGridGreaterMax   = messages.getNotNothingString("queryErrorGridGreaterMax",   errorInMethod);
-        queryErrorGridMissing      = messages.getNotNothingString("queryErrorGridMissing",      errorInMethod);
-        queryErrorGridNoAxisVar    = messages.getNotNothingString("queryErrorGridNoAxisVar",    errorInMethod);
-        queryErrorGridNoDataVar    = messages.getNotNothingString("queryErrorGridNoDataVar",    errorInMethod);
-        queryErrorGridNotIdentical = messages.getNotNothingString("queryErrorGridNotIdentical", errorInMethod);
-        queryErrorGridSLessS       = messages.getNotNothingString("queryErrorGridSLessS",       errorInMethod);
-        queryErrorLastEndP         = messages.getNotNothingString("queryErrorLastEndP",         errorInMethod);
-        queryErrorLastExpected     = messages.getNotNothingString("queryErrorLastExpected",     errorInMethod);
-        queryErrorLastUnexpected   = messages.getNotNothingString("queryErrorLastUnexpected",   errorInMethod);
-        queryErrorLastPMInvalid    = messages.getNotNothingString("queryErrorLastPMInvalid",    errorInMethod);
-        queryErrorLastPMInteger    = messages.getNotNothingString("queryErrorLastPMInteger",    errorInMethod);        
-        questionMarkImageFile      = messages.getNotNothingString("questionMarkImageFile",      errorInMethod);
-        questionMarkImageFile      =   getSetupEVString(setup, ev,"questionMarkImageFile",      questionMarkImageFile); //optional
-        rangesFromTo               = messages.getNotNothingString("rangesFromTo",               errorInMethod);
-        requestFormatExamplesHtml  = messages.getNotNothingString("requestFormatExamplesHtml",  errorInMethod);
-        resetTheForm               = messages.getNotNothingString("resetTheForm",               errorInMethod);
-        resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            errorInMethod);
-        resourceNotFound           = messages.getNotNothingString("resourceNotFound",           errorInMethod);
-        resourceNotFound += " ";
-        restfulWebServices         = messages.getNotNothingString("restfulWebServices",         errorInMethod);
-        restfulHTML                = messages.getNotNothingString("restfulHTML",                errorInMethod);
-        restfulHTMLContinued       = messages.getNotNothingString("restfulHTMLContinued",       errorInMethod);
-        restfulGetAllDataset       = messages.getNotNothingString("restfulGetAllDataset",       errorInMethod);
-        restfulProtocols           = messages.getNotNothingString("restfulProtocols",           errorInMethod);
-        SOSDocumentation           = messages.getNotNothingString("SOSDocumentation",           errorInMethod);
-        WCSDocumentation           = messages.getNotNothingString("WCSDocumentation",           errorInMethod);
-        WMSDocumentation           = messages.getNotNothingString("WMSDocumentation",           errorInMethod);
-        resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  errorInMethod);
-        resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         errorInMethod);
-        restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  errorInMethod);
-        restfulViaService          = messages.getNotNothingString("restfulViaService",          errorInMethod);
-        rows                       = messages.getNotNothingString("rows",                       errorInMethod);
-        rssNo                      = messages.getNotNothingString("rssNo",                      errorInMethod);
-        searchTitle                = messages.getNotNothingString("searchTitle",                errorInMethod);
-        searchDoFullTextHtml       = messages.getNotNothingString("searchDoFullTextHtml",       errorInMethod);
-        searchFullTextHtml         = messages.getNotNothingString("searchFullTextHtml",         errorInMethod);
-        searchButton               = messages.getNotNothingString("searchButton",               errorInMethod);
-        searchClickTip             = messages.getNotNothingString("searchClickTip",             errorInMethod);
-        searchHintsLuceneTooltip   = messages.getNotNothingString("searchHintsLuceneTooltip",   errorInMethod);
-        searchHintsOriginalTooltip = messages.getNotNothingString("searchHintsOriginalTooltip", errorInMethod);
-        searchHintsTooltip         = messages.getNotNothingString("searchHintsTooltip",         errorInMethod);
-        searchMultipleERDDAPs      = messages.getNotNothingString("searchMultipleERDDAPs",      errorInMethod);
-        searchMultipleERDDAPsDescription = messages.getNotNothingString("searchMultipleERDDAPsDescription", errorInMethod);
-        searchNotAvailable         = messages.getNotNothingString("searchNotAvailable",         errorInMethod);
-        searchTip                  = messages.getNotNothingString("searchTip",                  errorInMethod);
-        searchSpelling             = messages.getNotNothingString("searchSpelling",             errorInMethod);
-        searchFewerWords           = messages.getNotNothingString("searchFewerWords",           errorInMethod);
-        searchWithQuery            = messages.getNotNothingString("searchWithQuery",            errorInMethod);
-        selectNext                 = messages.getNotNothingString("selectNext",                 errorInMethod);
-        selectPrevious             = messages.getNotNothingString("selectPrevious",             errorInMethod);
-        shiftXAllTheWayLeft        = messages.getNotNothingString("shiftXAllTheWayLeft",        errorInMethod);
-        shiftXLeft                 = messages.getNotNothingString("shiftXLeft",                 errorInMethod);
-        shiftXRight                = messages.getNotNothingString("shiftXRight",                errorInMethod);
-        shiftXAllTheWayRight       = messages.getNotNothingString("shiftXAllTheWayRight",       errorInMethod);
+        patientDataAr                = getNotNothingString(messagesAr, "patientData",                errorInMethod);
+        patientYourGraphAr           = getNotNothingString(messagesAr, "patientYourGraph",           errorInMethod);
+
+        pdfWidths                    = String2.toIntArray(String2.split(messagesAr[0].getNotNothingString("pdfWidths",  errorInMethod), ','));
+        pdfHeights                   = String2.toIntArray(String2.split(messagesAr[0].getNotNothingString("pdfHeights", errorInMethod), ','));
+
+        percentEncodeAr              = getNotNothingString(messagesAr, "percentEncode",              errorInMethod);
+        pickADatasetAr               = getNotNothingString(messagesAr, "pickADataset",               errorInMethod);
+        protocolSearchHtmlAr         = getNotNothingString(messagesAr, "protocolSearchHtml",         errorInMethod);
+        protocolSearch2HtmlAr        = getNotNothingString(messagesAr, "protocolSearch2Html",        errorInMethod);
+        protocolClickAr              = getNotNothingString(messagesAr, "protocolClick",              errorInMethod);
+        queryErrorAr                 = getNotNothingString(messagesAr, "queryError",                 errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            queryErrorAr[tl] += " ";
+        Table.QUERY_ERROR = queryErrorAr[0];
+        queryError180Ar              = getNotNothingString(messagesAr, "queryError180",              errorInMethod);
+        queryError1ValueAr           = getNotNothingString(messagesAr, "queryError1Value",           errorInMethod);
+        queryError1VarAr             = getNotNothingString(messagesAr, "queryError1Var",             errorInMethod);
+        queryError2VarAr             = getNotNothingString(messagesAr, "queryError2Var",             errorInMethod);
+        queryErrorActualRangeAr      = getNotNothingString(messagesAr, "queryErrorActualRange",      errorInMethod);
+        queryErrorAdjustedAr         = getNotNothingString(messagesAr, "queryErrorAdjusted",         errorInMethod);
+        queryErrorAscendingAr        = getNotNothingString(messagesAr, "queryErrorAscending",        errorInMethod);
+        queryErrorConstraintNaNAr    = getNotNothingString(messagesAr, "queryErrorConstraintNaN",    errorInMethod);
+        queryErrorEqualSpacingAr     = getNotNothingString(messagesAr, "queryErrorEqualSpacing",     errorInMethod);
+        queryErrorExpectedAtAr       = getNotNothingString(messagesAr, "queryErrorExpectedAt",       errorInMethod);
+        queryErrorFileTypeAr         = getNotNothingString(messagesAr, "queryErrorFileType",         errorInMethod);
+        queryErrorInvalidAr          = getNotNothingString(messagesAr, "queryErrorInvalid",          errorInMethod);
+        queryErrorLLAr               = getNotNothingString(messagesAr, "queryErrorLL",               errorInMethod);
+        queryErrorLLGt1Ar            = getNotNothingString(messagesAr, "queryErrorLLGt1",            errorInMethod);
+        queryErrorLLTAr              = getNotNothingString(messagesAr, "queryErrorLLT",              errorInMethod);
+        queryErrorNeverTrueAr        = getNotNothingString(messagesAr, "queryErrorNeverTrue",        errorInMethod);
+        queryErrorNeverBothTrueAr    = getNotNothingString(messagesAr, "queryErrorNeverBothTrue",    errorInMethod);
+        queryErrorNotAxisAr          = getNotNothingString(messagesAr, "queryErrorNotAxis",          errorInMethod);
+        queryErrorNotExpectedAtAr    = getNotNothingString(messagesAr, "queryErrorNotExpectedAt",    errorInMethod);
+        queryErrorNotFoundAfterAr    = getNotNothingString(messagesAr, "queryErrorNotFoundAfter",    errorInMethod);
+        queryErrorOccursTwiceAr      = getNotNothingString(messagesAr, "queryErrorOccursTwice",      errorInMethod);
+
+        Table.ORDER_BY_CLOSEST_ERROR = messagesAr[0].getNotNothingString("queryErrorOrderByClosest",   errorInMethod);
+        Table.ORDER_BY_LIMIT_ERROR   = messagesAr[0].getNotNothingString("queryErrorOrderByLimit",     errorInMethod);
+        Table.ORDER_BY_MEAN_ERROR    = messagesAr[0].getNotNothingString("queryErrorOrderByMean",      errorInMethod);
+
+        queryErrorOrderByVariableAr  = getNotNothingString(messagesAr, "queryErrorOrderByVariable",  errorInMethod);
+        queryErrorUnknownVariableAr  = getNotNothingString(messagesAr, "queryErrorUnknownVariable",  errorInMethod);
+
+        queryErrorGrid1AxisAr        = getNotNothingString(messagesAr, "queryErrorGrid1Axis",        errorInMethod);
+        queryErrorGridAmpAr          = getNotNothingString(messagesAr, "queryErrorGridAmp",          errorInMethod);
+        queryErrorGridDiagnosticAr   = getNotNothingString(messagesAr, "queryErrorGridDiagnostic",   errorInMethod);
+        queryErrorGridBetweenAr      = getNotNothingString(messagesAr, "queryErrorGridBetween",      errorInMethod);
+        queryErrorGridLessMinAr      = getNotNothingString(messagesAr, "queryErrorGridLessMin",      errorInMethod);
+        queryErrorGridGreaterMaxAr   = getNotNothingString(messagesAr, "queryErrorGridGreaterMax",   errorInMethod);
+        queryErrorGridMissingAr      = getNotNothingString(messagesAr, "queryErrorGridMissing",      errorInMethod);
+        queryErrorGridNoAxisVarAr    = getNotNothingString(messagesAr, "queryErrorGridNoAxisVar",    errorInMethod);
+        queryErrorGridNoDataVarAr    = getNotNothingString(messagesAr, "queryErrorGridNoDataVar",    errorInMethod);
+        queryErrorGridNotIdenticalAr = getNotNothingString(messagesAr, "queryErrorGridNotIdentical", errorInMethod);
+        queryErrorGridSLessSAr       = getNotNothingString(messagesAr, "queryErrorGridSLessS",       errorInMethod);
+        queryErrorLastEndPAr         = getNotNothingString(messagesAr, "queryErrorLastEndP",         errorInMethod);
+        queryErrorLastExpectedAr     = getNotNothingString(messagesAr, "queryErrorLastExpected",     errorInMethod);
+        queryErrorLastUnexpectedAr   = getNotNothingString(messagesAr, "queryErrorLastUnexpected",   errorInMethod);
+        queryErrorLastPMInvalidAr    = getNotNothingString(messagesAr, "queryErrorLastPMInvalid",    errorInMethod);
+        queryErrorLastPMIntegerAr    = getNotNothingString(messagesAr, "queryErrorLastPMInteger",    errorInMethod);
+        
+        questionMarkImageFile       = messagesAr[0].getNotNothingString("questionMarkImageFile",      errorInMethod);
+        questionMarkImageFile       = getSetupEVString(setup, ev,       "questionMarkImageFile",      questionMarkImageFile); //optional
+
+        rangesFromToAr               = getNotNothingString(messagesAr, "rangesFromTo",               errorInMethod);
+        requiredAr                   = getNotNothingString(messagesAr, "required",                   errorInMethod);
+        requestFormatExamplesHtmlAr  = getNotNothingString(messagesAr, "requestFormatExamplesHtml",  errorInMethod);
+        resetTheFormAr               = getNotNothingString(messagesAr, "resetTheForm",               errorInMethod);
+        resetTheFormWasAr            = getNotNothingString(messagesAr, "resetTheFormWas",            errorInMethod);
+        resourceNotFoundAr           = getNotNothingString(messagesAr, "resourceNotFound",           errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++)
+            resourceNotFoundAr[tl] += " ";
+        restfulWebServicesAr         = getNotNothingString(messagesAr, "restfulWebServices",         errorInMethod);
+        restfulHTMLAr                = getNotNothingString(messagesAr, "restfulHTML",                errorInMethod);
+        restfulHTMLContinuedAr       = getNotNothingString(messagesAr, "restfulHTMLContinued",       errorInMethod);
+        restfulGetAllDatasetAr       = getNotNothingString(messagesAr, "restfulGetAllDataset",       errorInMethod);
+        restfulProtocolsAr           = getNotNothingString(messagesAr, "restfulProtocols",           errorInMethod);
+        SOSDocumentationAr           = getNotNothingString(messagesAr, "SOSDocumentation",           errorInMethod);
+        WCSDocumentationAr           = getNotNothingString(messagesAr, "WCSDocumentation",           errorInMethod);
+        WMSDocumentationAr           = getNotNothingString(messagesAr, "WMSDocumentation",           errorInMethod);
+        resultsFormatExamplesHtmlAr  = getNotNothingString(messagesAr, "resultsFormatExamplesHtml",  errorInMethod);
+        resultsOfSearchForAr         = getNotNothingString(messagesAr, "resultsOfSearchFor",         errorInMethod);
+        restfulInformationFormatsAr  = getNotNothingString(messagesAr, "restfulInformationFormats",  errorInMethod);
+        restfulViaServiceAr          = getNotNothingString(messagesAr, "restfulViaService",          errorInMethod);
+        rowsAr                       = getNotNothingString(messagesAr, "rows",                       errorInMethod);
+        rssNoAr                      = getNotNothingString(messagesAr, "rssNo",                      errorInMethod);
+        searchTitleAr                = getNotNothingString(messagesAr, "searchTitle",                errorInMethod);
+        searchDoFullTextHtmlAr       = getNotNothingString(messagesAr, "searchDoFullTextHtml",       errorInMethod);
+        searchFullTextHtmlAr         = getNotNothingString(messagesAr, "searchFullTextHtml",         errorInMethod);
+        searchButtonAr               = getNotNothingString(messagesAr, "searchButton",               errorInMethod);
+        searchClickTipAr             = getNotNothingString(messagesAr, "searchClickTip",             errorInMethod);
+        searchHintsLuceneTooltipAr   = getNotNothingString(messagesAr, "searchHintsLuceneTooltip",   errorInMethod);
+        searchHintsOriginalTooltipAr = getNotNothingString(messagesAr, "searchHintsOriginalTooltip", errorInMethod);
+        searchHintsTooltipAr         = getNotNothingString(messagesAr, "searchHintsTooltip",         errorInMethod);
+        searchMultipleERDDAPsAr      = getNotNothingString(messagesAr, "searchMultipleERDDAPs",      errorInMethod);
+        searchMultipleERDDAPsDescriptionAr 
+                                     = getNotNothingString(messagesAr, "searchMultipleERDDAPsDescription", errorInMethod);
+        searchNotAvailableAr         = getNotNothingString(messagesAr, "searchNotAvailable",         errorInMethod);
+        searchTipAr                  = getNotNothingString(messagesAr, "searchTip",                  errorInMethod);
+        searchSpellingAr             = getNotNothingString(messagesAr, "searchSpelling",             errorInMethod);
+        searchFewerWordsAr           = getNotNothingString(messagesAr, "searchFewerWords",           errorInMethod);
+        searchWithQueryAr            = getNotNothingString(messagesAr, "searchWithQuery",            errorInMethod);
+        selectNextAr                 = getNotNothingString(messagesAr, "selectNext",                 errorInMethod);
+        selectPreviousAr             = getNotNothingString(messagesAr, "selectPrevious",             errorInMethod);
+        shiftXAllTheWayLeftAr        = getNotNothingString(messagesAr, "shiftXAllTheWayLeft",        errorInMethod);
+        shiftXLeftAr                 = getNotNothingString(messagesAr, "shiftXLeft",                 errorInMethod);
+        shiftXRightAr                = getNotNothingString(messagesAr, "shiftXRight",                errorInMethod);
+        shiftXAllTheWayRightAr       = getNotNothingString(messagesAr, "shiftXAllTheWayRight",       errorInMethod);
+
         Attributes.signedToUnsignedAttNames = StringArray.arrayFromCSV(
-                                     messages.getNotNothingString("signedToUnsignedAttNames",   errorInMethod));
-        seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
-        seeProtocolDocumentation   = MessageFormat.format(seeProtocolDocumentation, "documentation.html"); //so it isn't translated
-        sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
-        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod);
-        sosOverview1               = messages.getNotNothingString("sosOverview1",               errorInMethod); 
-        sosOverview2               = messages.getNotNothingString("sosOverview2",               errorInMethod);  
-        sparqlP01toP02pre          = messages.getNotNothingString("sparqlP01toP02pre",          errorInMethod); 
-        sparqlP01toP02post         = messages.getNotNothingString("sparqlP01toP02post",         errorInMethod); 
-        ssUse                      = messages.getNotNothingString("ssUse",                      errorInMethod);
-        ssUsePlain                 = XML.removeHTMLTags(ssUse);
-        ssBePatient                = messages.getNotNothingString("ssBePatient",                errorInMethod);
-        ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         errorInMethod);
+                                     messagesAr[0].getNotNothingString("signedToUnsignedAttNames",   errorInMethod));
 
-        statusHtml                 = messages.getNotNothingString("statusHtml",                 errorInMethod);
-        submit                     = messages.getNotNothingString("submit",                     errorInMethod);
-        submitTooltip              = messages.getNotNothingString("submitTooltip",              errorInMethod);
-        subscriptionOfferRss        = messages.getNotNothingString("subscriptionOfferRss",        errorInMethod);
-        subscriptionOfferUrl        = messages.getNotNothingString("subscriptionOfferUrl",        errorInMethod);
-        subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         errorInMethod);
-        subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            errorInMethod);
-        subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       errorInMethod);
-        subscriptionList           = messages.getNotNothingString("subscriptionList",           errorInMethod);
-        subscriptionRemove         = messages.getNotNothingString("subscriptionRemove",         errorInMethod);
-        subscription0Html          = messages.getNotNothingString("subscription0Html",          errorInMethod);
-        subscription1Html          = messages.getNotNothingString("subscription1Html",          errorInMethod);
-        subscription2Html          = messages.getNotNothingString("subscription2Html",          errorInMethod);
-        subscriptionAbuse          = messages.getNotNothingString("subscriptionAbuse",          errorInMethod);
-        subscriptionAddError       = messages.getNotNothingString("subscriptionAddError",       errorInMethod);
-        subscriptionAddHtml        = messages.getNotNothingString("subscriptionAddHtml",        errorInMethod);
-        subscriptionAdd2           = messages.getNotNothingString("subscriptionAdd2",           errorInMethod);
-        subscriptionAddSuccess     = messages.getNotNothingString("subscriptionAddSuccess",     errorInMethod);
-        subscriptionEmail          = messages.getNotNothingString("subscriptionEmail",          errorInMethod);
-        subscriptionEmailOnBlacklist=messages.getNotNothingString("subscriptionEmailOnBlacklist",errorInMethod);
-        subscriptionEmailInvalid   = messages.getNotNothingString("subscriptionEmailInvalid",   errorInMethod);
-        subscriptionEmailTooLong   = messages.getNotNothingString("subscriptionEmailTooLong",   errorInMethod);
-        subscriptionEmailUnspecified=messages.getNotNothingString("subscriptionEmailUnspecified",errorInMethod);
-        subscriptionIDInvalid      = messages.getNotNothingString("subscriptionIDInvalid",      errorInMethod);
-        subscriptionIDTooLong      = messages.getNotNothingString("subscriptionIDTooLong",      errorInMethod);
-        subscriptionIDUnspecified  = messages.getNotNothingString("subscriptionIDUnspecified",  errorInMethod);
-        subscriptionKeyInvalid     = messages.getNotNothingString("subscriptionKeyInvalid",     errorInMethod);
-        subscriptionKeyUnspecified = messages.getNotNothingString("subscriptionKeyUnspecified", errorInMethod);
-        subscriptionListError      = messages.getNotNothingString("subscriptionListError",      errorInMethod);
-        subscriptionListHtml       = messages.getNotNothingString("subscriptionListHtml",       errorInMethod);
-        subscriptionListSuccess    = messages.getNotNothingString("subscriptionListSuccess",    errorInMethod);
-        subscriptionRemoveError    = messages.getNotNothingString("subscriptionRemoveError",    errorInMethod);
-        subscriptionRemoveHtml     = messages.getNotNothingString("subscriptionRemoveHtml",     errorInMethod);
-        subscriptionRemove2        = messages.getNotNothingString("subscriptionRemove2",        errorInMethod);
-        subscriptionRemoveSuccess  = messages.getNotNothingString("subscriptionRemoveSuccess",  errorInMethod);
-        subscriptionRSS            = messages.getNotNothingString("subscriptionRSS",            errorInMethod);
-        subscriptionsNotAvailable  = messages.getNotNothingString("subscriptionsNotAvailable",  errorInMethod);
-        subscriptionUrlHtml        = messages.getNotNothingString("subscriptionUrlHtml",        errorInMethod);
-        subscriptionUrlInvalid     = messages.getNotNothingString("subscriptionUrlInvalid",     errorInMethod);
-        subscriptionUrlTooLong     = messages.getNotNothingString("subscriptionUrlTooLong",     errorInMethod);
-        subscriptionValidateError  = messages.getNotNothingString("subscriptionValidateError",  errorInMethod);
-        subscriptionValidateHtml   = messages.getNotNothingString("subscriptionValidateHtml",   errorInMethod);
-        subscriptionValidateSuccess= messages.getNotNothingString("subscriptionValidateSuccess",errorInMethod);
-        subset                     = messages.getNotNothingString("subset",                     errorInMethod);
-        subsetSelect               = messages.getNotNothingString("subsetSelect",               errorInMethod);
-        subsetNMatching            = messages.getNotNothingString("subsetNMatching",            errorInMethod);
-        subsetInstructions         = messages.getNotNothingString("subsetInstructions",         errorInMethod);
-        subsetOption               = messages.getNotNothingString("subsetOption",               errorInMethod);
-        subsetOptions              = messages.getNotNothingString("subsetOptions",              errorInMethod);
-        subsetRefineMapDownload    = messages.getNotNothingString("subsetRefineMapDownload",    errorInMethod);
-        subsetRefineSubsetDownload = messages.getNotNothingString("subsetRefineSubsetDownload", errorInMethod);
-        subsetClickResetClosest    = messages.getNotNothingString("subsetClickResetClosest",    errorInMethod);
-        subsetClickResetLL         = messages.getNotNothingString("subsetClickResetLL",         errorInMethod);
-        subsetMetadata             = messages.getNotNothingString("subsetMetadata",             errorInMethod);
-        subsetCount                = messages.getNotNothingString("subsetCount",                errorInMethod);
-        subsetPercent              = messages.getNotNothingString("subsetPercent",              errorInMethod);
-        subsetViewSelect           = messages.getNotNothingString("subsetViewSelect",           errorInMethod);
-        subsetViewSelectDistinctCombos= messages.getNotNothingString("subsetViewSelectDistinctCombos",errorInMethod);
-        subsetViewSelectRelatedCounts = messages.getNotNothingString("subsetViewSelectRelatedCounts", errorInMethod);
-        subsetWhen                 = messages.getNotNothingString("subsetWhen",                 errorInMethod);
-        subsetWhenNoConstraints    = messages.getNotNothingString("subsetWhenNoConstraints",    errorInMethod);
-        subsetWhenCounts           = messages.getNotNothingString("subsetWhenCounts",           errorInMethod);
-        subsetComboClickSelect     = messages.getNotNothingString("subsetComboClickSelect",     errorInMethod);
-        subsetNVariableCombos      = messages.getNotNothingString("subsetNVariableCombos",      errorInMethod);
-        subsetShowingAllRows       = messages.getNotNothingString("subsetShowingAllRows",       errorInMethod);
-        subsetShowingNRows         = messages.getNotNothingString("subsetShowingNRows",         errorInMethod);
-        subsetChangeShowing        = messages.getNotNothingString("subsetChangeShowing",        errorInMethod);
-        subsetNRowsRelatedData     = messages.getNotNothingString("subsetNRowsRelatedData",     errorInMethod);
-        subsetViewRelatedChange    = messages.getNotNothingString("subsetViewRelatedChange",    errorInMethod);
-        subsetTotalCount           = messages.getNotNothingString("subsetTotalCount",           errorInMethod);
-        subsetView                 = messages.getNotNothingString("subsetView",                 errorInMethod);
-        subsetViewCheck            = messages.getNotNothingString("subsetViewCheck",            errorInMethod);
-        subsetViewCheck1           = messages.getNotNothingString("subsetViewCheck1",           errorInMethod);
-        subsetViewDistinctMap      = messages.getNotNothingString("subsetViewDistinctMap",      errorInMethod);
-        subsetViewRelatedMap       = messages.getNotNothingString("subsetViewRelatedMap",       errorInMethod);
-        subsetViewDistinctDataCounts= messages.getNotNothingString("subsetViewDistinctDataCounts",errorInMethod);
-        subsetViewDistinctData     = messages.getNotNothingString("subsetViewDistinctData",     errorInMethod);
-        subsetViewRelatedDataCounts= messages.getNotNothingString("subsetViewRelatedDataCounts",errorInMethod);
-        subsetViewRelatedData      = messages.getNotNothingString("subsetViewRelatedData",      errorInMethod);
-        subsetViewDistinctMapTooltip       = messages.getNotNothingString("subsetViewDistinctMapTooltip",       errorInMethod);
-        subsetViewRelatedMapTooltip        = messages.getNotNothingString("subsetViewRelatedMapTooltip",        errorInMethod);
-        subsetViewDistinctDataCountsTooltip= messages.getNotNothingString("subsetViewDistinctDataCountsTooltip",errorInMethod);
-        subsetViewDistinctDataTooltip      = messages.getNotNothingString("subsetViewDistinctDataTooltip",      errorInMethod);
-        subsetViewRelatedDataCountsTooltip = messages.getNotNothingString("subsetViewRelatedDataCountsTooltip", errorInMethod);
-        subsetViewRelatedDataTooltip       = messages.getNotNothingString("subsetViewRelatedDataTooltip",       errorInMethod);
-        subsetWarn                 = messages.getNotNothingString("subsetWarn",                 errorInMethod);                    
-        subsetWarn10000            = messages.getNotNothingString("subsetWarn10000",            errorInMethod);
-        subsetTooltip              = messages.getNotNothingString("subsetTooltip",              errorInMethod);
-        subsetNotSetUp             = messages.getNotNothingString("subsetNotSetUp",             errorInMethod);
-        subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         errorInMethod);
+        seeProtocolDocumentationAr   = getNotNothingString(messagesAr, "seeProtocolDocumentation",   errorInMethod);
 
-        tabledapVideoIntro         = messages.getNotNothingString("tabledapVideoIntro",         errorInMethod);
-        theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
-        time                       = messages.getNotNothingString("time",                       errorInMethod);
-        Then                       = messages.getNotNothingString("Then",                       errorInMethod);
-        timeoutOtherRequests       = messages.getNotNothingString("timeoutOtherRequests",       errorInMethod);
+        slideSorterAr                = getNotNothingString(messagesAr, "slideSorter",                errorInMethod);
+        SOSAr                        = getNotNothingString(messagesAr, "SOS",                        errorInMethod);
+        sosDescriptionHtmlAr         = getNotNothingString(messagesAr, "sosDescriptionHtml",         errorInMethod);
+        sosLongDescriptionHtmlAr     = getNotNothingString(messagesAr, "sosLongDescriptionHtml",     errorInMethod);
+        sosOverview1Ar               = getNotNothingString(messagesAr, "sosOverview1",               errorInMethod); 
+        sosOverview2Ar               = getNotNothingString(messagesAr, "sosOverview2",               errorInMethod);  
+        sparqlP01toP02pre          = messagesAr[0].getNotNothingString("sparqlP01toP02pre",          errorInMethod); 
+        sparqlP01toP02post         = messagesAr[0].getNotNothingString("sparqlP01toP02post",         errorInMethod); 
+        ssUseAr                      = getNotNothingString(messagesAr, "ssUse",                      errorInMethod);
+        ssUsePlainAr                 = getNotNothingString(messagesAr, "ssUse",                      errorInMethod); //start with this
+        for (int tl = 0; tl < nLanguages; tl++)
+            ssUsePlainAr[tl]         = XML.removeHTMLTags(ssUsePlainAr[tl]);
 
-        units                      = messages.getNotNothingString("units",                      errorInMethod);
-        unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
-        unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
-        unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
+        ssBePatientAr                = getNotNothingString(messagesAr, "ssBePatient",                errorInMethod);
+        ssInstructionsHtmlAr         = getNotNothingString(messagesAr, "ssInstructionsHtml",         errorInMethod);
+
+        statusAr                     = getNotNothingString(messagesAr, "status",                     errorInMethod);
+        statusHtmlAr                 = getNotNothingString(messagesAr, "statusHtml",                 errorInMethod);
+        submitAr                     = getNotNothingString(messagesAr, "submit",                     errorInMethod);
+        submitTooltipAr              = getNotNothingString(messagesAr, "submitTooltip",              errorInMethod);
+        subscriptionOfferRssAr       = getNotNothingString(messagesAr, "subscriptionOfferRss",       errorInMethod);
+        subscriptionOfferUrlAr       = getNotNothingString(messagesAr, "subscriptionOfferUrl",       errorInMethod);
+        subscriptionsTitleAr         = getNotNothingString(messagesAr, "subscriptionsTitle",         errorInMethod);
+        subscriptionEmailListAr      = getNotNothingString(messagesAr, "subscriptionEmailList",      errorInMethod);
+        subscriptionAddAr            = getNotNothingString(messagesAr, "subscriptionAdd",            errorInMethod);
+        subscriptionValidateAr       = getNotNothingString(messagesAr, "subscriptionValidate",       errorInMethod);
+        subscriptionListAr           = getNotNothingString(messagesAr, "subscriptionList",           errorInMethod);
+        subscriptionRemoveAr         = getNotNothingString(messagesAr, "subscriptionRemove",         errorInMethod);
+        subscription0HtmlAr          = getNotNothingString(messagesAr, "subscription0Html",          errorInMethod);
+        subscription1HtmlAr          = getNotNothingString(messagesAr, "subscription1Html",          errorInMethod);
+        subscription2HtmlAr          = getNotNothingString(messagesAr, "subscription2Html",          errorInMethod);
+        subscriptionAbuseAr          = getNotNothingString(messagesAr, "subscriptionAbuse",          errorInMethod);
+        subscriptionAddErrorAr       = getNotNothingString(messagesAr, "subscriptionAddError",       errorInMethod);
+        subscriptionAddHtmlAr        = getNotNothingString(messagesAr, "subscriptionAddHtml",        errorInMethod);
+        subscriptionAdd2Ar           = getNotNothingString(messagesAr, "subscriptionAdd2",           errorInMethod);
+        subscriptionAddSuccessAr     = getNotNothingString(messagesAr, "subscriptionAddSuccess",     errorInMethod);
+        subscriptionEmailAr          = getNotNothingString(messagesAr, "subscriptionEmail",          errorInMethod);
+        subscriptionEmailOnBlacklistAr=getNotNothingString(messagesAr, "subscriptionEmailOnBlacklist",errorInMethod);
+        subscriptionEmailInvalidAr   = getNotNothingString(messagesAr, "subscriptionEmailInvalid",   errorInMethod);
+        subscriptionEmailTooLongAr   = getNotNothingString(messagesAr, "subscriptionEmailTooLong",   errorInMethod);
+        subscriptionEmailUnspecifiedAr=getNotNothingString(messagesAr, "subscriptionEmailUnspecified",errorInMethod);
+        subscriptionIDInvalidAr      = getNotNothingString(messagesAr, "subscriptionIDInvalid",      errorInMethod);
+        subscriptionIDTooLongAr      = getNotNothingString(messagesAr, "subscriptionIDTooLong",      errorInMethod);
+        subscriptionIDUnspecifiedAr  = getNotNothingString(messagesAr, "subscriptionIDUnspecified",  errorInMethod);
+        subscriptionKeyInvalidAr     = getNotNothingString(messagesAr, "subscriptionKeyInvalid",     errorInMethod);
+        subscriptionKeyUnspecifiedAr = getNotNothingString(messagesAr, "subscriptionKeyUnspecified", errorInMethod);
+        subscriptionListErrorAr      = getNotNothingString(messagesAr, "subscriptionListError",      errorInMethod);
+        subscriptionListHtmlAr       = getNotNothingString(messagesAr, "subscriptionListHtml",       errorInMethod);
+        subscriptionListSuccessAr    = getNotNothingString(messagesAr, "subscriptionListSuccess",    errorInMethod);
+        subscriptionRemoveErrorAr    = getNotNothingString(messagesAr, "subscriptionRemoveError",    errorInMethod);
+        subscriptionRemoveHtmlAr     = getNotNothingString(messagesAr, "subscriptionRemoveHtml",     errorInMethod);
+        subscriptionRemove2Ar        = getNotNothingString(messagesAr, "subscriptionRemove2",        errorInMethod);
+        subscriptionRemoveSuccessAr  = getNotNothingString(messagesAr, "subscriptionRemoveSuccess",  errorInMethod);
+        subscriptionRSSAr            = getNotNothingString(messagesAr, "subscriptionRSS",            errorInMethod);
+        subscriptionsNotAvailableAr  = getNotNothingString(messagesAr, "subscriptionsNotAvailable",  errorInMethod);
+        subscriptionUrlHtmlAr        = getNotNothingString(messagesAr, "subscriptionUrlHtml",        errorInMethod);
+        subscriptionUrlInvalidAr     = getNotNothingString(messagesAr, "subscriptionUrlInvalid",     errorInMethod);
+        subscriptionUrlTooLongAr     = getNotNothingString(messagesAr, "subscriptionUrlTooLong",     errorInMethod);
+        subscriptionValidateErrorAr  = getNotNothingString(messagesAr, "subscriptionValidateError",  errorInMethod);
+        subscriptionValidateHtmlAr   = getNotNothingString(messagesAr, "subscriptionValidateHtml",   errorInMethod);
+        subscriptionValidateSuccessAr= getNotNothingString(messagesAr, "subscriptionValidateSuccess",errorInMethod);
+        subsetAr                     = getNotNothingString(messagesAr, "subset",                     errorInMethod);
+        subsetSelectAr               = getNotNothingString(messagesAr, "subsetSelect",               errorInMethod);
+        subsetNMatchingAr            = getNotNothingString(messagesAr, "subsetNMatching",            errorInMethod);
+        subsetInstructionsAr         = getNotNothingString(messagesAr, "subsetInstructions",         errorInMethod);
+        subsetOptionAr               = getNotNothingString(messagesAr, "subsetOption",               errorInMethod);
+        subsetOptionsAr              = getNotNothingString(messagesAr, "subsetOptions",              errorInMethod);
+        subsetRefineMapDownloadAr    = getNotNothingString(messagesAr, "subsetRefineMapDownload",    errorInMethod);
+        subsetRefineSubsetDownloadAr = getNotNothingString(messagesAr, "subsetRefineSubsetDownload", errorInMethod);
+        subsetClickResetClosestAr    = getNotNothingString(messagesAr, "subsetClickResetClosest",    errorInMethod);
+        subsetClickResetLLAr         = getNotNothingString(messagesAr, "subsetClickResetLL",         errorInMethod);
+        subsetMetadataAr             = getNotNothingString(messagesAr, "subsetMetadata",             errorInMethod);
+        subsetCountAr                = getNotNothingString(messagesAr, "subsetCount",                errorInMethod);
+        subsetPercentAr              = getNotNothingString(messagesAr, "subsetPercent",              errorInMethod);
+        subsetViewSelectAr           = getNotNothingString(messagesAr, "subsetViewSelect",           errorInMethod);
+        subsetViewSelectDistinctCombosAr= getNotNothingString(messagesAr, "subsetViewSelectDistinctCombos",errorInMethod);
+        subsetViewSelectRelatedCountsAr = getNotNothingString(messagesAr, "subsetViewSelectRelatedCounts", errorInMethod);
+        subsetWhenAr                 = getNotNothingString(messagesAr, "subsetWhen",                 errorInMethod);
+        subsetWhenNoConstraintsAr    = getNotNothingString(messagesAr, "subsetWhenNoConstraints",    errorInMethod);
+        subsetWhenCountsAr           = getNotNothingString(messagesAr, "subsetWhenCounts",           errorInMethod);
+        subsetComboClickSelectAr     = getNotNothingString(messagesAr, "subsetComboClickSelect",     errorInMethod);
+        subsetNVariableCombosAr      = getNotNothingString(messagesAr, "subsetNVariableCombos",      errorInMethod);
+        subsetShowingAllRowsAr       = getNotNothingString(messagesAr, "subsetShowingAllRows",       errorInMethod);
+        subsetShowingNRowsAr         = getNotNothingString(messagesAr, "subsetShowingNRows",         errorInMethod);
+        subsetChangeShowingAr        = getNotNothingString(messagesAr, "subsetChangeShowing",        errorInMethod);
+        subsetNRowsRelatedDataAr     = getNotNothingString(messagesAr, "subsetNRowsRelatedData",     errorInMethod);
+        subsetViewRelatedChangeAr    = getNotNothingString(messagesAr, "subsetViewRelatedChange",    errorInMethod);
+        subsetTotalCountAr           = getNotNothingString(messagesAr, "subsetTotalCount",           errorInMethod);
+        subsetViewAr                 = getNotNothingString(messagesAr, "subsetView",                 errorInMethod);
+        subsetViewCheckAr            = getNotNothingString(messagesAr, "subsetViewCheck",            errorInMethod);
+        subsetViewCheck1Ar           = getNotNothingString(messagesAr, "subsetViewCheck1",           errorInMethod);
+        subsetViewDistinctMapAr      = getNotNothingString(messagesAr, "subsetViewDistinctMap",      errorInMethod);
+        subsetViewRelatedMapAr       = getNotNothingString(messagesAr, "subsetViewRelatedMap",       errorInMethod);
+        subsetViewDistinctDataCountsAr= getNotNothingString(messagesAr, "subsetViewDistinctDataCounts",errorInMethod);
+        subsetViewDistinctDataAr     = getNotNothingString(messagesAr, "subsetViewDistinctData",     errorInMethod);
+        subsetViewRelatedDataCountsAr= getNotNothingString(messagesAr, "subsetViewRelatedDataCounts",errorInMethod);
+        subsetViewRelatedDataAr      = getNotNothingString(messagesAr, "subsetViewRelatedData",      errorInMethod);
+        subsetViewDistinctMapTooltipAr       = getNotNothingString(messagesAr, "subsetViewDistinctMapTooltip",       errorInMethod);
+        subsetViewRelatedMapTooltipAr        = getNotNothingString(messagesAr, "subsetViewRelatedMapTooltip",        errorInMethod);
+        subsetViewDistinctDataCountsTooltipAr= getNotNothingString(messagesAr, "subsetViewDistinctDataCountsTooltip",errorInMethod);
+        subsetViewDistinctDataTooltipAr      = getNotNothingString(messagesAr, "subsetViewDistinctDataTooltip",      errorInMethod);
+        subsetViewRelatedDataCountsTooltipAr = getNotNothingString(messagesAr, "subsetViewRelatedDataCountsTooltip", errorInMethod);
+        subsetViewRelatedDataTooltipAr       = getNotNothingString(messagesAr, "subsetViewRelatedDataTooltip",       errorInMethod);
+        subsetWarnAr                 = getNotNothingString(messagesAr, "subsetWarn",                 errorInMethod);                    
+        subsetWarn10000Ar            = getNotNothingString(messagesAr, "subsetWarn10000",            errorInMethod);
+        subsetTooltipAr              = getNotNothingString(messagesAr, "subsetTooltip",              errorInMethod);
+        subsetNotSetUpAr             = getNotNothingString(messagesAr, "subsetNotSetUp",             errorInMethod);
+        subsetLongNotShownAr         = getNotNothingString(messagesAr, "subsetLongNotShown",         errorInMethod);
+
+        tabledapVideoIntroAr         = getNotNothingString(messagesAr, "tabledapVideoIntro",         errorInMethod);
+        theDatasetIDAr               = getNotNothingString(messagesAr, "theDatasetID",               errorInMethod);
+        theKeyAr                     = getNotNothingString(messagesAr, "theKey",                     errorInMethod);
+        theSubscriptionIDAr          = getNotNothingString(messagesAr, "theSubscriptionID",          errorInMethod);
+        theUrlActionAr               = getNotNothingString(messagesAr, "theUrlAction",               errorInMethod);
+        theLongDescriptionHtmlAr     = getNotNothingString(messagesAr, "theLongDescriptionHtml",     errorInMethod);
+        timeAr                       = getNotNothingString(messagesAr, "time",                       errorInMethod);
+        ThenAr                       = getNotNothingString(messagesAr, "Then",                       errorInMethod);
+        thisParticularErddapAr       = getNotNothingString(messagesAr, "thisParticularErddap",       errorInMethod);
+        timeoutOtherRequestsAr       = getNotNothingString(messagesAr, "timeoutOtherRequests",       errorInMethod);
+        HtmlWidgets.twoClickMapDefaultTooltipAr
+                                     = getNotNothingString(messagesAr, "twoClickMapDefaultTooltip",  errorInMethod);
+
+        unitsAr                      = getNotNothingString(messagesAr, "units",                      errorInMethod);
+        unknownDatasetIDAr           = getNotNothingString(messagesAr, "unknownDatasetID",           errorInMethod);
+        unknownProtocolAr            = getNotNothingString(messagesAr, "unknownProtocol",            errorInMethod);
+        unsupportedFileTypeAr        = getNotNothingString(messagesAr, "unsupportedFileType",        errorInMethod);
         String tStandardizeUdunits[] = String2.split(
-                                     messages.getNotNothingString("standardizeUdunits",         errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
+                                     messagesAr[0].getNotNothingString("standardizeUdunits",         errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
         String tUcumToUdunits[]    = String2.split(
-                                     messages.getNotNothingString("ucumToUdunits",              errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
+                                     messagesAr[0].getNotNothingString("ucumToUdunits",              errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
         String tUdunitsToUcum[]    = String2.split(
-                                     messages.getNotNothingString("udunitsToUcum",              errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
+                                     messagesAr[0].getNotNothingString("udunitsToUcum",              errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
         String tUpdateUrls[]       = String2.split(
-                                     messages.getNotNothingString("updateUrls",                 errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
+                                     messagesAr[0].getNotNothingString("updateUrls",                 errorInMethod) + "\n", '\n'); // +\n\n since xml content is trimmed.
 
         updateUrlsSkipAttributes   = StringArray.arrayFromCSV(
-                                     messages.getNotNothingString("updateUrlsSkipAttributes",   errorInMethod));
+                                     messagesAr[0].getNotNothingString("updateUrlsSkipAttributes",   errorInMethod));
         
-        variableNames              = messages.getNotNothingString("variableNames",              errorInMethod);
-        viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        errorInMethod);
-        waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           errorInMethod);
-        gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
-        warning                    = messages.getNotNothingString("warning",                    errorInMethod);
-        wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         errorInMethod);
-        wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     errorInMethod);
-        wcsOverview1               = messages.getNotNothingString("wcsOverview1",               errorInMethod);
-        wcsOverview2               = messages.getNotNothingString("wcsOverview2",               errorInMethod);
-        wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         errorInMethod);
-        wmsInstructions            = messages.getNotNothingString("wmsInstructions",            errorInMethod); 
-        wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     errorInMethod); 
-        wmsManyDatasets            = messages.getNotNothingString("wmsManyDatasets",            errorInMethod); 
-        WMSDocumentation1          = messages.getNotNothingString("WMSDocumentation1",          errorInMethod);
-        WMSGetCapabilities         = messages.getNotNothingString("WMSGetCapabilities",         errorInMethod);
-        WMSGetMap                  = messages.getNotNothingString("WMSGetMap",                  errorInMethod);
-        WMSNotes                   = messages.getNotNothingString("WMSNotes",                   errorInMethod);
+        usingGriddapAr               = getNotNothingString(messagesAr, "usingGriddap",               errorInMethod);
+        usingTabledapAr              = getNotNothingString(messagesAr, "usingTabledap",              errorInMethod);
+        variableNamesAr              = getNotNothingString(messagesAr, "variableNames",              errorInMethod);
+        viewAllDatasetsHtmlAr        = getNotNothingString(messagesAr, "viewAllDatasetsHtml",        errorInMethod);
+        waitThenTryAgainAr           = getNotNothingString(messagesAr, "waitThenTryAgain",           errorInMethod);
+        gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgainAr[0];
+        warningAr                    = getNotNothingString(messagesAr, "warning",                    errorInMethod);
+        WCSAr                        = getNotNothingString(messagesAr, "WCS",                        errorInMethod);
+        wcsDescriptionHtmlAr         = getNotNothingString(messagesAr, "wcsDescriptionHtml",         errorInMethod);
+        wcsLongDescriptionHtmlAr     = getNotNothingString(messagesAr, "wcsLongDescriptionHtml",     errorInMethod);
+        wcsOverview1Ar               = getNotNothingString(messagesAr, "wcsOverview1",               errorInMethod);
+        wcsOverview2Ar               = getNotNothingString(messagesAr, "wcsOverview2",               errorInMethod);
+        wmsDescriptionHtmlAr         = getNotNothingString(messagesAr, "wmsDescriptionHtml",         errorInMethod);
+        wmsInstructionsAr            = getNotNothingString(messagesAr, "wmsInstructions",            errorInMethod); 
+        wmsLongDescriptionHtmlAr     = getNotNothingString(messagesAr, "wmsLongDescriptionHtml",     errorInMethod); 
+        wmsManyDatasetsAr            = getNotNothingString(messagesAr, "wmsManyDatasets",            errorInMethod); 
+        WMSDocumentation1Ar          = getNotNothingString(messagesAr, "WMSDocumentation1",          errorInMethod);
+        WMSGetCapabilitiesAr         = getNotNothingString(messagesAr, "WMSGetCapabilities",         errorInMethod);
+        WMSGetMapAr                  = getNotNothingString(messagesAr, "WMSGetMap",                  errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) {
+            WMSGetCapabilitiesAr[tl] = WMSGetCapabilitiesAr[tl]   //some things should stay in English
+                .replaceAll("&serviceWMS;",     "service=WMS")
+                .replaceAll("&version;",        "version")
+                .replaceAll("&requestGetCapabilities;",  "request=GetCapabilities");
+            WMSGetMapAr[tl] = WMSGetMapAr[tl]   //lots of things should stay in English
+                .replaceAll("&WMSSERVER;",      EDD.WMS_SERVER)
+                .replaceAll("&WMSSEPARATOR;",   Character.toString(EDD.WMS_SEPARATOR))
+                .replaceAll("&serviceWMS;",     "service=WMS")
+                .replaceAll("&version;",        "version")
+                .replaceAll("&requestGetMap;",  "request=GetMap")
+                .replaceAll("&TRUE;",           "TRUE")
+                .replaceAll("&FALSE;",          "FALSE")
+                .replaceAll("&layers;",         "layers")
+                .replaceAll("&styles;",         "styles")
+                .replaceAll("&width;",          "width")
+                .replaceAll("&height;",         "height")
+                .replaceAll("&format;",         "format" )
+                .replaceAll("&transparentTRUEFALSE;",  "transparent=<i>TRUE|FALSE</i>")
+                .replaceAll("&bgcolor;",        "bgcolor")
+                .replaceAll("&exceptions;",     "exceptions")
+                .replaceAll("&time;",           "time")
+                .replaceAll("&elevation;",      "elevation");
+        }
 
-        zoomIn                     = messages.getNotNothingString("zoomIn",                     errorInMethod); 
-        zoomOut                    = messages.getNotNothingString("zoomOut",                    errorInMethod); 
+        WMSNotesAr                   = getNotNothingString(messagesAr, "WMSNotes",                   errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) 
+            EDStatic.WMSNotesAr[tl] = EDStatic.WMSNotesAr[tl].replace( "&WMSSEPARATOR;", Character.toString(EDD.WMS_SEPARATOR));
 
-        blacklistMsg = MessageFormat.format(blacklistMsg, adminEmail);
-        standardShortDescriptionHtml = messages.getNotNothingString("standardShortDescriptionHtml",errorInMethod);
-        standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&convertTimeReference;", convertersActive? convertTimeReference : "");
-        standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&wmsManyDatasets;", wmsActive? wmsManyDatasets : "");
-        DEFAULT_commonStandardNames        = String2.canonical(StringArray.arrayFromCSV(
-                                             messages.getNotNothingString("DEFAULT_commonStandardNames",errorInMethod)));
-                commonStandardNames        = DEFAULT_commonStandardNames;
-        DEFAULT_standardLicense            = messages.getNotNothingString("standardLicense",            errorInMethod);
-                standardLicense            = getSetupEVString(setup, ev,  "standardLicense",            DEFAULT_standardLicense);
-        DEFAULT_standardContact            = messages.getNotNothingString("standardContact",            errorInMethod);
-                standardContact            = getSetupEVString(setup, ev,  "standardContact",            DEFAULT_standardContact);
-                standardContact            = String2.replaceAll(standardContact, "&adminEmail;", SSR.getSafeEmailAddress(adminEmail));
-        DEFAULT_standardDataLicenses       = messages.getNotNothingString("standardDataLicenses",       errorInMethod);
-                standardDataLicenses       = getSetupEVString(setup, ev,  "standardDataLicenses",       DEFAULT_standardDataLicenses);
-        DEFAULT_standardDisclaimerOfExternalLinks=messages.getNotNothingString("standardDisclaimerOfExternalLinks", errorInMethod);
-                standardDisclaimerOfExternalLinks=getSetupEVString(setup, ev,  "standardDisclaimerOfExternalLinks", DEFAULT_standardDisclaimerOfExternalLinks);
-        DEFAULT_standardDisclaimerOfEndorsement  =messages.getNotNothingString("standardDisclaimerOfEndorsement",   errorInMethod);
-                standardDisclaimerOfEndorsement  =getSetupEVString(setup, ev,  "standardDisclaimerOfEndorsement",   DEFAULT_standardDisclaimerOfEndorsement);
-        DEFAULT_standardGeneralDisclaimer  = messages.getNotNothingString("standardGeneralDisclaimer",  errorInMethod);
-                standardGeneralDisclaimer  = getSetupEVString(setup, ev,  "standardGeneralDisclaimer",  DEFAULT_standardGeneralDisclaimer);
-        DEFAULT_standardPrivacyPolicy      = messages.getNotNothingString("standardPrivacyPolicy",      errorInMethod);
-                standardPrivacyPolicy      = getSetupEVString(setup, ev,  "standardPrivacyPolicy",      DEFAULT_standardPrivacyPolicy);
+        yourEmailAddressAr           = getNotNothingString(messagesAr, "yourEmailAddress",           errorInMethod); 
+        zoomInAr                     = getNotNothingString(messagesAr, "zoomIn",                     errorInMethod); 
+        zoomOutAr                    = getNotNothingString(messagesAr, "zoomOut",                    errorInMethod); 
 
-        DEFAULT_startHeadHtml              = messages.getNotNothingString("startHeadHtml5",           errorInMethod);
-        DEFAULT_startHeadHtml              = DEFAULT_startHeadHtml.replace("&langCode;", langCode);
-                startHeadHtml              = getSetupEVString(setup, ev,  "startHeadHtml5",           DEFAULT_startHeadHtml);
-        DEFAULT_startBodyHtml              = messages.getNotNothingString("startBodyHtml5",           errorInMethod);
-                startBodyHtml              = getSetupEVString(setup, ev,  "startBodyHtml5",           DEFAULT_startBodyHtml);
-        ampLoginInfoPo = startBodyHtml.indexOf(ampLoginInfo); 
-        DEFAULT_theShortDescriptionHtml    = messages.getNotNothingString("theShortDescriptionHtml",  errorInMethod);
-                theShortDescriptionHtml    = getSetupEVString(setup, ev,  "theShortDescriptionHtml",  DEFAULT_theShortDescriptionHtml);
-                theShortDescriptionHtml    = String2.replaceAll(theShortDescriptionHtml, "[standardShortDescriptionHtml]", standardShortDescriptionHtml);
-                theShortDescriptionHtml    = String2.replaceAll(theShortDescriptionHtml, "&requestFormatExamplesHtml;",    requestFormatExamplesHtml);
-        DEFAULT_endBodyHtml                = messages.getNotNothingString("endBodyHtml5",             errorInMethod);
-                endBodyHtml                = getSetupEVString(setup, ev,  "endBodyHtml5",             DEFAULT_endBodyHtml);
-                endBodyHtml                = String2.replaceAll(endBodyHtml, "&erddapVersion;", erddapVersion);
+
+        for (int tl = 0; tl < nLanguages; tl++) {
+            blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], adminEmail);
+        }
+
+        standardShortDescriptionHtmlAr = getNotNothingString(messagesAr, "standardShortDescriptionHtml", errorInMethod);
+        for (int tl = 0; tl < nLanguages; tl++) {
+            standardShortDescriptionHtmlAr[tl] = String2.replaceAll(standardShortDescriptionHtmlAr[tl], "&convertTimeReference;", convertersActive? convertTimeReferenceAr[tl] : "");
+            standardShortDescriptionHtmlAr[tl] = String2.replaceAll(standardShortDescriptionHtmlAr[tl], "&wmsManyDatasets;",      wmsActive?        wmsManyDatasetsAr[tl]      : "");
+        }
+
+        //just one
+        DEFAULT_commonStandardNames                = String2.canonical(StringArray.arrayFromCSV(
+                                                     messagesAr[0].getNotNothingString("DEFAULT_commonStandardNames",errorInMethod)));
+                commonStandardNames                = DEFAULT_commonStandardNames;
+        DEFAULT_standardLicense                    = messagesAr[0].getNotNothingString("standardLicense",            errorInMethod);
+                standardLicense                    = getSetupEVString(setup, ev,       "standardLicense",            DEFAULT_standardLicense);
+
+        //[language]
+        DEFAULT_standardContactAr                  = getNotNothingString(messagesAr, "standardContact",            errorInMethod);
+                standardContactAr                  = getSetupEVString(setup, ev,     "standardContact",            DEFAULT_standardContactAr);
+        DEFAULT_standardDataLicensesAr             = getNotNothingString(messagesAr, "standardDataLicenses",       errorInMethod);
+                standardDataLicensesAr             = getSetupEVString(setup, ev,     "standardDataLicenses",       DEFAULT_standardDataLicensesAr);
+        DEFAULT_standardDisclaimerOfExternalLinksAr= getNotNothingString(messagesAr, "standardDisclaimerOfExternalLinks", errorInMethod);
+                standardDisclaimerOfExternalLinksAr= getSetupEVString(setup, ev,     "standardDisclaimerOfExternalLinks", DEFAULT_standardDisclaimerOfExternalLinksAr);
+        DEFAULT_standardDisclaimerOfEndorsementAr  = getNotNothingString(messagesAr, "standardDisclaimerOfEndorsement",   errorInMethod);
+                standardDisclaimerOfEndorsementAr  = getSetupEVString(setup, ev,     "standardDisclaimerOfEndorsement",   DEFAULT_standardDisclaimerOfEndorsementAr);
+        DEFAULT_standardGeneralDisclaimerAr        = getNotNothingString(messagesAr, "standardGeneralDisclaimer",  errorInMethod);
+                standardGeneralDisclaimerAr        = getSetupEVString(setup, ev,     "standardGeneralDisclaimer",  DEFAULT_standardGeneralDisclaimerAr);
+        DEFAULT_standardPrivacyPolicyAr            = getNotNothingString(messagesAr, "standardPrivacyPolicy",      errorInMethod);
+                standardPrivacyPolicyAr            = getSetupEVString(setup, ev,     "standardPrivacyPolicy",      DEFAULT_standardPrivacyPolicyAr);
+
+        DEFAULT_startHeadHtml                    = messagesAr[0].getNotNothingString("startHeadHtml5",             errorInMethod);
+                startHeadHtml                      = getSetupEVString(setup, ev,     "startHeadHtml5",             DEFAULT_startHeadHtml);
+        DEFAULT_startBodyHtmlAr                    = getNotNothingString(messagesAr, "startBodyHtml5",             errorInMethod);
+                startBodyHtmlAr                    = getSetupEVString(setup, ev,     "startBodyHtml5",             DEFAULT_startBodyHtmlAr);
+        DEFAULT_theShortDescriptionHtmlAr          = getNotNothingString(messagesAr, "theShortDescriptionHtml",    errorInMethod);
+                theShortDescriptionHtmlAr          = getSetupEVString(setup, ev,     "theShortDescriptionHtml",    DEFAULT_theShortDescriptionHtmlAr);
+        DEFAULT_endBodyHtmlAr                      = getNotNothingString(messagesAr, "endBodyHtml5",               errorInMethod);
+                endBodyHtmlAr                      = getSetupEVString(setup, ev,     "endBodyHtml5",               DEFAULT_endBodyHtmlAr);
+
+
         //ensure HTML5
         Test.ensureTrue(startHeadHtml.startsWith("<!DOCTYPE html>"),
-            "<startHeadHtml> must start with \"<!DOCTYPE html>\".");
+            "<startHeadHtml5> must start with \"<!DOCTYPE html>\".");
+        for (int tl = 0; tl < nLanguages; tl++) {
+            DEFAULT_standardDataLicensesAr[tl]     = String2.replaceAll(DEFAULT_standardDataLicensesAr[tl], "&license;", "<kbd>license</kbd>"); //so not translated
+                    standardDataLicensesAr[tl]     = String2.replaceAll(        standardDataLicensesAr[tl], "&license;", "<kbd>license</kbd>");
+            standardContactAr[tl]                  = String2.replaceAll(standardContactAr[tl], "&adminEmail;", SSR.getSafeEmailAddress(adminEmail));
+            startBodyHtmlAr[tl]                    = String2.replaceAll(startBodyHtmlAr[tl], "&erddapVersion;", erddapVersion);
+            endBodyHtmlAr[tl]                      = String2.replaceAll(endBodyHtmlAr[tl], "&erddapVersion;", erddapVersion);
+
+        }
 
         Test.ensureEqual(imageWidths.length,  3, "imageWidths.length must be 3.");
         Test.ensureEqual(imageHeights.length, 3, "imageHeights.length must be 3.");
@@ -3413,27 +3559,29 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 //        File2.delete(testNc4Name);
 */
 
-        searchHintsTooltip = 
-            "<div class=\"standard_max_width\">" +
-            searchHintsTooltip + "\n" +
-            (useLuceneSearchEngine? searchHintsLuceneTooltip : searchHintsOriginalTooltip) +
-            "</div>";
-        advancedSearchDirections = String2.replaceAll(advancedSearchDirections, "&searchButton;", searchButton);
-
         String tEmail = SSR.getSafeEmailAddress(adminEmail);
-        filesDocumentation = String2.replaceAll(filesDocumentation, "&adminEmail;", tEmail); 
+        for (int tl = 0; tl < nLanguages; tl++) {
+            searchHintsTooltipAr[tl] = 
+                "<div class=\"standard_max_width\">" +
+                searchHintsTooltipAr[tl] + "\n" +
+                (useLuceneSearchEngine? searchHintsLuceneTooltipAr[tl] : searchHintsOriginalTooltipAr[tl]) +
+                "</div>";
+            advancedSearchDirectionsAr[tl] = String2.replaceAll(advancedSearchDirectionsAr[tl], "&searchButton;", searchButtonAr[tl]);
 
-        loginProblems      = String2.replaceAll(loginProblems,      "&cookiesHelp;",   cookiesHelp);
-        loginProblems      = String2.replaceAll(loginProblems,      "&adminContact;",  adminContact()) + "\n\n"; 
-        loginProblemsAfter = String2.replaceAll(loginProblemsAfter, "&adminContact;",  adminContact()) + "\n\n"; 
-        loginPublicAccess += "\n"; 
-        logoutSuccess += "\n"; 
+            loginProblemsAr[tl]      = String2.replaceAll(loginProblemsAr[tl],      "&cookiesHelp;",   cookiesHelpAr[tl]);
+            loginProblemsAr[tl]      = String2.replaceAll(loginProblemsAr[tl],      "&adminContact;",  adminContact()) + "\n\n"; 
+            loginProblemsAfterAr[tl] = String2.replaceAll(loginProblemsAfterAr[tl], "&adminContact;",  adminContact()) + "\n\n"; 
+            loginPublicAccessAr[tl] += "\n"; 
+            logoutSuccessAr[tl] += "\n"; 
 
-        doWithGraphs = String2.replaceAll(doWithGraphs, "&ssUse;", slideSorterActive? ssUse : "");
+            filesDocumentationAr[tl] = String2.replaceAll(filesDocumentationAr[tl], "&adminEmail;", tEmail); 
+ 
+            doWithGraphsAr[tl] = String2.replaceAll(doWithGraphsAr[tl], "&ssUse;", slideSorterActive? ssUseAr[tl] : "");
 
-        theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&ssUse;", slideSorterActive? ssUse : "");
-        theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&requestFormatExamplesHtml;", requestFormatExamplesHtml);
-        theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&resultsFormatExamplesHtml;", resultsFormatExamplesHtml);
+            theLongDescriptionHtmlAr[tl] = String2.replaceAll(theLongDescriptionHtmlAr[tl], "&ssUse;",                     slideSorterActive? ssUseAr[tl] : "");
+            theLongDescriptionHtmlAr[tl] = String2.replaceAll(theLongDescriptionHtmlAr[tl], "&requestFormatExamplesHtml;", requestFormatExamplesHtmlAr[tl]);
+            theLongDescriptionHtmlAr[tl] = String2.replaceAll(theLongDescriptionHtmlAr[tl], "&resultsFormatExamplesHtml;", resultsFormatExamplesHtmlAr[tl]);
+        }
 
         try {
             computerName = System.getenv("COMPUTERNAME");  //windows 
@@ -3476,6 +3624,19 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     /**
+     * This does getNotNothingString for each messages[].
+     */
+    private static String[] getNotNothingString(ResourceBundle2 messages[], 
+        String name, String errorInMethod) {
+
+        int nMessages = messages.length;
+        String ar[] = new String[nMessages];
+        for (int i = 0; i < nMessages; i++)
+            ar[i] = messages[i].getNotNothingString(name, errorInMethod + "When language=" + i + ", "); 
+        return ar;
+    }
+
+    /**
      * This gets a string from setup.xml or environmentalVariables (preferred).
      * 
      * @param setup from setup.xml
@@ -3494,7 +3655,31 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         return setup.getString(paramName, tDefault);
     }
 
-        /**
+    /**
+     * A variant of getSetupEVString that works with an array of tDefault.
+     * 
+     * @param setup from setup.xml
+     * @param ev from System.getenv()
+     * @param paramName  If present in ev, it will be ERDDAP_paramName.
+     * @param tDefault the default value
+     * @return the desired value (or the default if it isn't defined anywhere)
+     */
+    private static String[] getSetupEVString(ResourceBundle2 setup, Map<String,String>ev, 
+        String paramName, String tDefault[]) {
+        String value = ev.get("ERDDAP_" + paramName);
+        int n = tDefault.length;
+        if (String2.isSomething(value)) {
+            String2.log("got " + paramName + " from ERDDAP_" + paramName);
+            for (int i = 0; i < n; i++)
+                tDefault[i] = value;
+            return tDefault;
+        }
+        for (int i = 0; i < n; i++)
+            tDefault[i] = setup.getString(paramName, tDefault[i]);
+        return tDefault;
+    }
+
+    /**
      * This will read translated tags from messages.xml and all messages-langCode.xml
      * @param messages The Array of ResourceBundle2 objects of messages.xml files
      * @param tagName The tagName of the corresponding text
@@ -3680,18 +3865,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * If loggedInAs is null, this returns erddapUrl, else erddapHttpsUrl
      *  (neither has slash at end).
      *
+     * @param language the index of the selected language
      * @param loggedInAs
      * @return If loggedInAs == null, this returns erddapUrl, else erddapHttpsUrl
      *  (neither has slash at end).
      */
-    public static String erddapUrl(String loggedInAs) {
-        
-        // if (languageChosenIndex == 0) {
-        //     return loggedInAs == null? erddapUrl : erddapHttpsUrl;
-        // } else {
-        //     return loggedInAs == null? erddapUrl + "/" + fullLanguageCodeList[languageChosenIndex] : erddapHttpsUrl + "/" + fullLanguageCodeList[languageChosenIndex];
-        // }
-        return loggedInAs == null? erddapUrl : erddapHttpsUrl;  //works because of loggedInAsHttps
+    public static String erddapUrl(String loggedInAs, int language) {       
+        return (loggedInAs == null? erddapUrl : erddapHttpsUrl) +  //works because of loggedInAsHttps
+            (language == 0? "" : "/" + TranslateMessages.languageCodeList[language]);
     }
 
     /**
@@ -3738,37 +3919,41 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This returns the html needed to display the external.png image 
      * with the warning that the link is to an external website.
      *
+     * @param language the index of the selected language
      * @param tErddapUrl
      * @return the html needed to display the external.png image and messages.
      */
-    public static String externalLinkHtml(String tErddapUrl) {
+    public static String externalLinkHtml(int language, String tErddapUrl) {
         return 
             "<img\n" +
             "    src=\"" + tErddapUrl + "/images/external.png\" " +
-                "alt=\"" + externalLink + "\"\n" + 
-            "    title=\"" + externalWebSite + "\">";
+                "alt=\"" + externalLinkAr[language] + "\"\n" + 
+            "    title=\"" + externalWebSiteAr[language] + "\">";
     }
 
     /** 
      * This returns the html documentation for acceptEncoding.
      *
+     * @param language the index of the selected language
      * @param headingType  e.g., h2 or h3
      * @param tErddapUrl
      * @return the html needed to document acceptEncodig.
      */
-    public static String acceptEncodingHtml(String headingType, String tErddapUrl) {
-        String s = String2.replaceAll(acceptEncodingHtml, "&headingType;",      headingType);
-        return     String2.replaceAll(s,                  "&externalLinkHtml;", externalLinkHtml(tErddapUrl));
+    public static String acceptEncodingHtml(int language, String headingType, String tErddapUrl) {
+        String s = String2.replaceAll(acceptEncodingHtmlAr[language], "&headingType;",      "<" +  headingType + ">");
+        s        = String2.replaceAll(s,                              "&sheadingType;",     "</" + headingType + ">");
+        return     String2.replaceAll(s,                              "&externalLinkHtml;", externalLinkHtml(language, tErddapUrl));
     }
 
     /** 
      * This returns the html documentation for the /files/ system.
      *
+     * @param language the index of the selected language
      * @param tErddapUrl
      * @return the html needed to document acceptEncodig.
      */
-    public static String filesDocumentation(String tErddapUrl) {
-        return String2.replaceAll(filesDocumentation, "&acceptEncodingHtml;", acceptEncodingHtml("h3", tErddapUrl));
+    public static String filesDocumentation(int language, String tErddapUrl) {
+        return String2.replaceAll(filesDocumentationAr[language], "&acceptEncodingHtml;", acceptEncodingHtml(language, "h3", tErddapUrl));
     }
 
     /**
@@ -3786,14 +3971,35 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This is used by html web page generating methods to 
      * return the You Are Here html for a ERDDAP/protocol.
      * 
+     * @param language the index of the selected language
      * @param loggedInAs 
      * @param protocol e.g., tabledap
      * @return the You Are Here html for this EDD subclass.
      */
-    public static String youAreHere(String loggedInAs, String protocol) {
+    public static String youAreHere(int language, String loggedInAs, String protocol) {
         return 
-            "\n<h1 class=\"nowrap\">" + erddapHref(erddapUrl(loggedInAs)) +
+            "\n<h1 class=\"nowrap\">" + erddapHref(language, erddapUrl(loggedInAs, language)) +
             " &gt; " + protocol + "</h1>\n";
+    }
+
+    /**
+     * This is used by html web page generating methods to 
+     * return the You Are Here html for a ERDDAP/protocol/sub .
+     * 
+     * @param language the index of the selected language
+     * @param loggedInAs 
+     * @param protocol   e.g., subscriptions
+     * @param protocolNameAr  subscriptionsTitleAr
+     * @param current 
+     * @return the You Are Here html for this EDD subclass.
+     */
+    public static String youAreHere(int language, String loggedInAs, String protocol, 
+        String protocolNameAr[], String current) {
+        String tErddapUrl = erddapUrl(loggedInAs, language);
+        return 
+            "\n<h1 class=\"nowrap\">" + erddapHref(language, tErddapUrl) +
+            " &gt; <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + protocol + "\">" + protocolNameAr[language] + "</a>" +
+            " &gt; " + current + "</h1>\n";
     }
 
     /** This returns a not-yet-HTML-encoded protocol URL.
@@ -3812,15 +4018,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This is used by html web page generating methods to 
      * return the You Are Here html for ERDDAP/protocol/datasetID.
      * 
+     * @param language the index of the selected language
      * @param loggedInAs
      * @param protocol e.g., tabledap  (must be the same case as in the URL so the link will work)
      * @param datasetID e.g., erdGlobecBottle
      * @return the You Are Here html for this EDD subclass.
      */
-    public static String youAreHere(String loggedInAs, String protocol, String datasetID) {
-        String tErddapUrl = erddapUrl(loggedInAs);
+    public static String youAreHere(int language, String loggedInAs, String protocol, String datasetID) {
+        String tErddapUrl = erddapUrl(loggedInAs, language);
         return 
-            "\n<h1 class=\"nowrap\">" + erddapHref(tErddapUrl) +
+            "\n<h1 class=\"nowrap\">" + erddapHref(language, tErddapUrl) +
             "\n &gt; <a rel=\"contents\" " +
                 "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) +
                 "\">" + protocol + "</a>" +
@@ -3831,15 +4038,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This is used by html web page generating methods to 
      * return the You Are Here html for ERDDAP/protocol with a helpful information.
      * 
+     * @param language the index of the selected language
      * @param loggedInAs
      * @param protocol e.g., tabledap
      * @param htmlHelp 
      * @return the You Are Here html for this EDD subclass.
      */
-    public static String youAreHereWithHelp(String loggedInAs, String protocol, String htmlHelp) {
-        String tErddapUrl = erddapUrl(loggedInAs);
+    public static String youAreHereWithHelp(int language, String loggedInAs, String protocol, String htmlHelp) {
+        String tErddapUrl = erddapUrl(loggedInAs, language);
         return 
-            "\n<h1 class=\"nowrap\">" + erddapHref(tErddapUrl) + 
+            "\n<h1 class=\"nowrap\">" + erddapHref(language, tErddapUrl) + 
             "\n &gt; " + protocol + 
             "\n" + htmlTooltipImage(loggedInAs, htmlHelp) +
             "\n</h1>\n";
@@ -3855,12 +4063,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @param htmlHelp 
      * @return the You Are Here html for this EDD subclass.
      */
-    public static String youAreHereWithHelp(String loggedInAs, String protocol, 
+    public static String youAreHereWithHelp(int language, String loggedInAs, String protocol, 
         String datasetID, String htmlHelp) {
 
-        String tErddapUrl = erddapUrl(loggedInAs);
+        String tErddapUrl = erddapUrl(loggedInAs, language);
         return 
-            "\n<h1 class=\"nowrap\">" + erddapHref(tErddapUrl) + 
+            "\n<h1 class=\"nowrap\">" + erddapHref(language, tErddapUrl) + 
             "\n &gt; <a rel=\"contents\" " +
                 "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
@@ -3880,13 +4088,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @param category e.g., Temperature
      * @return the You Are Here html for this EDD subclass.
      */
-    /*public static String youAreHere(String loggedInAs, String protocol, 
+    /*public static String youAreHere(int language, String loggedInAs, String protocol, 
         String attribute, String category) {
 
-        String tErddapUrl = erddapUrl(loggedInAs);
+        String tErddapUrl = erddapUrl(loggedInAs, language);
         String attributeUrl = tErddapUrl + "/" + protocol + "/" + attribute + "/index.html"; //+?defaultPIppQuery
         return 
-            "\n<h1>" + erddapHref(tErddapUrl) + 
+            "\n<h1>" + erddapHref(language, tErddapUrl) + 
             "\n &gt; <a href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
             "\n &gt; <a href=\"" + XML.encodeAsHTMLAttribute(attributeUrl) + "\">" + attribute + "</a>" +
@@ -4159,12 +4367,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     /**
      * This tests if the ipAddress is on the blacklist (and calls sendLowError if it is).
      *
+     * @param language the index of the selected language
      * @param ipAddress the requester's ipAddress
      * @param requestNumber The requestNumber assigned to this request by doGet().
      * @param response so the response can be sent the error
      * @return true if user is on the blacklist.
      */
-    public static boolean isOnBlacklist(String ipAddress, int requestNumber, HttpServletResponse response) {
+    public static boolean isOnBlacklist(int language, String ipAddress, int requestNumber, HttpServletResponse response) {
         //refuse request? e.g., to fend of a Denial of Service attack or an overzealous web robot
 
         //for testing:
@@ -4189,7 +4398,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             tally.add("Requester's IP Address (Blacklisted) (since startup)", ipAddress);
             String2.log("}}}}#" + requestNumber + " Requester is on the datasets.xml requestBlacklist.");
             lowSendError(requestNumber, response, HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
-                blacklistMsg);
+                blacklistMsgAr[language]);
             return true;
         }
         return false;
@@ -4297,7 +4506,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(String2.getDistributionStatistics(taskThreadSucceededDistribution24)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since startup):\n");
         sb.append(String2.getDistributionStatistics(taskThreadSucceededDistributionTotal)); sb.append('\n');
-        sb.append('\n');
+        sb.append(EDStatic.tally.toString("Language (since last daily report)", 50)); //added v2.15
+        sb.append(EDStatic.tally.toString("Language (since startup)", 50));
 
         sb.append(SgtMap.topographyStats() + "\n");
         sb.append(GSHHS.statsString() + "\n");
@@ -4380,6 +4590,78 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static void setUserHashMap(HashMap tUserHashMap) {
         userHashMap = tUserHashMap;
+    }
+
+    /**
+     * This uses MessageFormat.format to format the message (usually an error) in English
+     * and, if language&gt;0, in another language (separated by a newline).
+     *
+     * @param language the index of the selected language
+     * @param messageAr the message array with {0} substitution locations
+     * @param sub0 the text to be substituted into the message
+     */
+    public static String bilingualMessageFormat(int language, String messageAr[],
+        String sub0) {
+        return MessageFormat.format(messageAr[0], sub0) +
+            (language > 0? 
+               "\n" + MessageFormat.format(messageAr[language], sub0) : "");
+    }
+
+    /**
+     * This uses MessageFormat.format to format the message (usually an error) in English
+     * and, if language&gt;0, in another language (separated by a newline).
+     *
+     * @param language the index of the selected language
+     * @param messageAr the message array with {0} and {1} substitution locations
+     * @param sub0 the text to be substituted into the message
+     * @param sub1 the text to be substituted into the message
+     */
+    public static String bilingualMessageFormat(int language, String messageAr[],
+        String sub0, String sub1) {
+        return MessageFormat.format(messageAr[0], sub0, sub1) +
+            (language > 0? 
+               "\n" + MessageFormat.format(messageAr[language], sub0, sub1) : "");
+    }
+
+    /**
+     * If language=0, this returns eng. If language&gt;0, this returns eng+(space if needed)+other.
+     * This is mostly used so that error messages can be bilingual.
+     *
+     * @param language the index of the selected language
+     * @param ar  An EDStatic ...Ar variable
+     * @return If language=0, this returns eng. If language&gt;0, this returns eng+(space if needed)+other.
+     */
+    public static String simpleBilingual(int language, String ar[]) {
+        return language == 0? ar[0] :
+            String2.periodSpaceConcat(ar[0], ar[language]);
+    }
+
+    /**
+     * If language=0, this returns eng. If language&gt;0, this returns eng+newline+other.
+     * This is mostly used so that error messages can be bilingual.
+     *
+     * @param language the index of the selected language
+     * @param eng
+     * @param other
+     * @return If language=0, this returns eng. If language&gt;0, this returns eng+newline+other.
+     */
+    public static String bilingual(int language, String eng, String other) {
+        return eng +
+            (language > 0? "\n" + other : "");
+    }
+
+    /**
+     * If language=0, this returns ar0[0]+ar1[0]. If language&gt;0, this returns ar0[0]+ar1[0]+newline+ar0[language]+ar1[language].
+     * This is mostly used so that error messages can be bilingual.
+     *
+     * @param language the index of the selected language
+     * @param eng
+     * @param other
+     * @return If language=0, this returns ar0[0]+ar1[0]. If language&gt;0, this returns ar0[0]+ar1[0]+newline+ar0[language]+ar1[language].
+     */
+    public static String bilingual(int language, String ar0[], String ar1[]) {
+        return ar0[0] + ar1[0] +
+            (language > 0? "\n" + ar0[language] + ar1[language] : "");
     }
 
     /**
@@ -4480,6 +4762,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * call this to send Http UNAUTHORIZED error.
      * (was: redirectToLogin: redirect him to the login page).
      *
+     * @param language the index of the selected language
      * @param requestNumber The requestNumber assigned to this request by doGet().
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetID  or use "" for general login.
@@ -4489,7 +4772,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *   allows graphics|metadata requests from the public.
      * @throws Throwable (notably ClientAbortException)
      */
-    public static void sendHttpUnauthorizedError(int requestNumber, String loggedInAs, 
+    public static void sendHttpUnauthorizedError(int language, int requestNumber, String loggedInAs, 
         HttpServletResponse response, String datasetID, 
         boolean graphsAccessibleToPublic) throws Throwable {
 
@@ -4502,8 +4785,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             if (datasetID != null && datasetID.length() > 0) 
                 message = MessageFormat.format(
                     graphsAccessibleToPublic?
-                        EDStatic.notAuthorizedForData :
-                        EDStatic.notAuthorized, 
+                        EDStatic.notAuthorizedForDataAr[language] :
+                        EDStatic.notAuthorizedAr[language], 
                     loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
                     datasetID);
 
@@ -4526,20 +4809,21 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * <p>This is safe to use this after outputStream has been written to -- 
      *     this won't make a session if the user doesn't have one.
      *
+     * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
      */
-    public static String getLoginHtml(String loggedInAs) {
+    public static String getLoginHtml(int language, String loggedInAs) {
         if (authentication.equals("")) {
             //user can't log in
             return "";
         } else {
             return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)?  //ie not logged in
                 //always use the erddapHttpsUrl for login/logout pages
-                "<a href=\"" + erddapHttpsUrl + "/login.html\">" + login + "</a>" :
+                "<a href=\"" + erddapHttpsUrl + "/login.html\">" + loginAr[language] + "</a>" :
                 "<a href=\"" + erddapHttpsUrl + "/login.html\"><strong>" + XML.encodeAsHTML(loggedInAs) + "</strong></a> | \n" + 
-                "<a href=\"" + erddapHttpsUrl + "/logout.html\">" + logout + "</a>";
+                "<a href=\"" + erddapHttpsUrl + "/logout.html\">" + logoutAr[language] + "</a>";
         }
     }
 
@@ -4550,12 +4834,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * <p>This is safe to use this after outputStream has been written to -- 
      *     this won't make a session if the user doesn't have one.
      *
+     * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
+     * @param endOfRequest  The part after "http.../erddap/".
+     * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
      */
-    public static String startBodyHtml(String loggedInAs) {
-        return startBodyHtml(loggedInAs, "");
+    public static String startBodyHtml(int language, String loggedInAs,  
+        String endOfRequest, String queryString) {
+        return startBodyHtml(language, loggedInAs, endOfRequest, queryString, "");
     }
 
     /**
@@ -4565,63 +4853,96 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * <p>This is safe to use this after outputStream has been written to -- 
      *     this won't make a session if the user doesn't have one.
      *
+     * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
+     * @param endOfRequest The part after "http.../erddap/".
+     * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
      * @param otherBody other content for the &lt;body&gt; tag, e.g., " onload=\"myFunction()\"".
      *   
      */
-    public static String startBodyHtml(String loggedInAs, String otherBody) {
-        String s = startBodyHtml;
+    public static String startBodyHtml(int language, String loggedInAs,
+        String endOfRequest, String queryString, String otherBody) {
+        String s = startBodyHtmlAr[0];  //It's hard for admins to customized this for all languages. So for now, just use language=0.
+        s = String2.replaceAll(s, "&EasierAccessToScientificData;", EasierAccessToScientificDataAr[language]);
+        s = String2.replaceAll(s, "&BroughtToYouBy;",               BroughtToYouByAr[language]);
         if (String2.isSomething(otherBody)) 
             s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
-        if (ampLoginInfoPo >= 0) {
-            s = startBodyHtml.substring(0, ampLoginInfoPo) +
-                getLoginHtml(loggedInAs) +
-                startBodyHtml.substring(ampLoginInfoPo + ampLoginInfo.length());
-        }
+        s = String2.replaceAll(s, ampLoginInfo, getLoginHtml(language, loggedInAs));
+        HtmlWidgets widgets = new HtmlWidgets();
+        s = String2.replaceAll(s, "&language;", String2.isSomething(endOfRequest)? //isSomething should never be false, but it's safer this way
+            widgets.select("language", "Select the language for all web pages in ERDDAP.",
+                1, TranslateMessages.languageList, TranslateMessages.languageCodeList, language, 
+                "onchange=\"window.location.href='" + baseUrl(loggedInAs) + "/" + warName + "/' + " +
+                    "(this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + '" +  //e.g., de
+                    XML.encodeAsHTMLAttribute(endOfRequest + questionQuery(queryString)) + "';\"",  //query string is already percent encoded. 
+                false, "") :
+            ""); //we could also redirect to erddap/index.html but that loses the user's place (and this should never happen)
+
         //String2.log(">> EDStatic startBodyHtml=" + s);
-        return String2.replaceAll(s, "&erddapUrl;", erddapUrl(loggedInAs));
+        return String2.replaceAll(s, "&erddapUrl;", erddapUrl(loggedInAs, language));
     }
 
     /**
-     * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs)  (erddapUrl, or erddapHttpsUrl if user is logged in)
+     * The endBody HTML.
+     *
+     * @param language the index of the selected language
+     * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs, language)  (erddapUrl, or erddapHttpsUrl if user is logged in)
      */
-    public static String endBodyHtml(String tErddapUrl) {
+    public static String endBodyHtml(int language, String tErddapUrl) {
         HtmlWidgets widget = new HtmlWidgets();
-        return String2.replaceAll(endBodyHtml, "&erddapUrl;", tErddapUrl)
-            .replace("&HTMLselect;",""
-                // Erddap supports the changing the language mode by changing the url
-                // changing it with a select needs additional configuration
-                // "<form name=\"lang\">\n" + //no action
-                // widget.select("language", "", 1, languageList, languageChosenIndex, 
-                //     ")")
-                // + widget.button("submit", "LangSubmit", "", "Submit", "")
-                // + widget.endForm()
-            );
+        return String2.replaceAll(endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
     }
-    public static String legal(String tErddapUrl) {
+
+    /**
+     * The content of the legal web page.
+     *
+     * @param language the index of the selected language
+     * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs, language)  (erddapUrl, or erddapHttpsUrl if user is logged in)
+     */
+    public static String legal(int language, String tErddapUrl) {
         StringBuilder tsb = new StringBuilder(legal);
-        String2.replaceAll(tsb, "[standardContact]",                   standardContact                   + "\n\n"); 
-        String2.replaceAll(tsb, "[standardDataLicenses]",              standardDataLicenses              + "\n\n"); 
-        String2.replaceAll(tsb, "[standardDisclaimerOfExternalLinks]", standardDisclaimerOfExternalLinks + "\n\n"); 
-        String2.replaceAll(tsb, "[standardDisclaimerOfEndorsement]",   standardDisclaimerOfEndorsement   + "\n\n"); 
-        String2.replaceAll(tsb, "[standardPrivacyPolicy]",             standardPrivacyPolicy             + "\n\n"); 
+        String2.replaceAll(tsb, "[standardContact]",                   standardContactAr[language]                   + "\n\n"); 
+        String2.replaceAll(tsb, "[standardDataLicenses]",              standardDataLicensesAr[language]              + "\n\n"); 
+        String2.replaceAll(tsb, "[standardDisclaimerOfExternalLinks]", standardDisclaimerOfExternalLinksAr[language] + "\n\n"); 
+        String2.replaceAll(tsb, "[standardDisclaimerOfEndorsement]",   standardDisclaimerOfEndorsementAr[language]   + "\n\n"); 
+        String2.replaceAll(tsb, "[standardPrivacyPolicy]",             standardPrivacyPolicyAr[language]             + "\n\n"); 
         String2.replaceAll(tsb, "&erddapUrl;",                         tErddapUrl); 
         return tsb.toString();
     }
 
-    /** @param addToTitle has not yet been encodeAsHTML(addToTitle). */
-    public static String startHeadHtml(          String tErddapUrl, String addToTitle) {
+    /** 
+     * The HTML for the start of the head section of each web page.
+     *
+     * @param language the index of the selected language
+     * @param addToTitle has not yet been encodeAsHTML(addToTitle). 
+     */
+    public static String startHeadHtml(int language,  String tErddapUrl, String addToTitle) {
         String ts = startHeadHtml;
+
         if (addToTitle.length() > 0)
             ts = String2.replaceAll(ts, "</title>", " - " + XML.encodeAsHTML(addToTitle) + "</title>"); 
-        return String2.replaceAll(ts,    "&erddapUrl;", tErddapUrl); 
-        }
-    public static String theLongDescriptionHtml(   String tErddapUrl) {return String2.replaceAll(theLongDescriptionHtml,  "&erddapUrl;", tErddapUrl); }
-    public static String theShortDescriptionHtml(  String tErddapUrl) {return String2.replaceAll(theShortDescriptionHtml, "&erddapUrl;", tErddapUrl); }
-    public static String erddapHref(               String tErddapUrl) {
-        return "<a title=\"" + clickERDDAP + "\" \n" +
+        ts     = String2.replaceAll(ts, "&langCode;", langCodeAr[language]);
+        return   String2.replaceAll(ts, "&erddapUrl;", tErddapUrl); 
+    }
+
+    public static String theLongDescriptionHtml(int language, String tErddapUrl) {
+        return String2.replaceAll(theLongDescriptionHtmlAr[language], "&erddapUrl;", tErddapUrl); 
+    }
+
+    public static String theShortDescriptionHtml(int language, String tErddapUrl) {
+        String s = theShortDescriptionHtmlAr[0]; //from datasets.xml or messages.xml.  Always use English, but parts (most) will be translated.
+        s = String2.replaceAll(s, "&erddapIs;", erddapIsAr[language]);
+        s = String2.replaceAll(s, "&thisParticularErddap;", thisParticularErddapAr[language]);
+        s = String2.replaceAll(s, "[standardShortDescriptionHtml]", standardShortDescriptionHtmlAr[language]);
+        s = String2.replaceAll(s, "&requestFormatExamplesHtml;", requestFormatExamplesHtmlAr[language]);
+        s = String2.replaceAll(s, "&erddapUrl;", tErddapUrl); //do last
+        return s; 
+    }
+
+    public static String erddapHref(int language, String tErddapUrl) {
+        return "<a title=\"" + clickERDDAPAr[language] + "\" \n" +
             "rel=\"start\" " +
             "href=\"" + tErddapUrl + "/index.html\">" + ProgramName + "</a>"; 
     }
@@ -4657,12 +4978,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * catch the exception in doGet try/catch and append error message 
      * since original outputstream and writer (which own/control the gzip stream) 
      * aren't available.
+     *
+     * @param language the index of the selected language
      */
-    public static String htmlForException(Throwable t) {
+    public static String htmlForException(int language, Throwable t) {
         String message = MustBe.throwableToShortString(t);
         return 
             "<p>&nbsp;<hr>\n" +
-            "<p><span class=\"warningColor\"><strong>" + errorOnWebPage + "</strong></span>\n" +
+            "<p><span class=\"warningColor\"><strong>" + errorOnWebPageAr[language] + "</strong></span>\n" +
             "<pre>" + XML.encodeAsPreHTML(message, 100) +
             "</pre><hr><p>&nbsp;<p>\n";
     }
@@ -5300,13 +5623,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This returns the .jsonp=[functionName] part of the request (percent encoded) or "".
      * If not "", it will have "&" at the end.
      *
+     * @param language the index of the selected language
      * @param request
      * @return the .jsonp=[functionName] part of the request (percent encoded) or "".
      *   If not "", it will have "&" at the end.
      *   If the query has a syntax error, this returns "".
      *   If the !String2.isJsonpNameSafe(functionName), this throws a SimpleException.
      */
-    public static String passThroughJsonpQuery(HttpServletRequest request) {
+    public static String passThroughJsonpQuery(int language, HttpServletRequest request) {
         String jsonp = "";
         try {
             String parts[] = Table.getDapQueryParts(request.getQueryString()); //decoded.  Does some validity checking.
@@ -5315,7 +5639,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 return "";
             String functionName = jsonp.substring(7); //it will be because it starts with .jsonp=
             if (!String2.isJsonpNameSafe(functionName))
-                throw new SimpleException(errorJsonpFunctionName); 
+                throw new SimpleException(EDStatic.bilingual(language,
+                    errorJsonpFunctionNameAr[0], 
+                    errorJsonpFunctionNameAr[language])); 
             return ".jsonp=" + SSR.minimalPercentEncode(functionName) + "&";
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
@@ -5395,34 +5721,38 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         return new int[]{page, itemsPerPage, startIndex, lastPage};
     }
 
-    /** This returns the error String[2] if a search yielded no matches.
+    /** 
+     * This returns the error String[2] if a search yielded no matches.
      *
+     * @param language the index of the selected language
      */
-    public static String[] noSearchMatch(String searchFor) {
+    public static String[] noSearchMatch(int language, String searchFor) {
         if (searchFor == null)
             searchFor = "";
         return new String[] {
             MustBe.THERE_IS_NO_DATA,
-            (searchFor.length()     >  0? searchSpelling + " " : "") +
-            (searchFor.indexOf(' ') >= 0? searchFewerWords : "")};
+            (searchFor.length()     >  0? searchSpellingAr[language] + " " : "") +
+            (searchFor.indexOf(' ') >= 0? searchFewerWordsAr[language] : "")};
     }
 
     /** 
      * This returns the error String[2] if page &gt; lastPage.
      *
+     * @param language the index of the selected language
      * @param page
      * @param lastPage
      * @return String[2] with the two Strings
      */
-    public static String[] noPage(int page, int lastPage) {
+    public static String[] noPage(int language, int page, int lastPage) {
         return new String[]{
-            MessageFormat.format(noPage1, "" + page, "" + lastPage),
-            MessageFormat.format(noPage2, "" + page, "" + lastPage)};
+            MessageFormat.format(noPage1Ar[language], "" + page, "" + lastPage),
+            MessageFormat.format(noPage2Ar[language], "" + page, "" + lastPage)};
     }
 
     /**
      * This returns the nMatchingDatasets HTML message, with paging options.
      *
+     * @param language the index of the selected language
      * @param nMatches   this must be 1 or more
      * @param page
      * @param lastPage
@@ -5431,17 +5761,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *    e.g., https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=temperature%20wind
      * @return string with HTML content
      */
-    public static String nMatchingDatasetsHtml(int nMatches, int page, int lastPage,
+    public static String nMatchingDatasetsHtml(int language, int nMatches, int page, int lastPage,
         boolean relevant, String urlWithQuery) {
 
         if (nMatches == 1)
-            return nMatching1;
+            return nMatching1Ar[language];
 
         StringBuilder results = new StringBuilder(
             MessageFormat.format(
                 relevant?
-                    nMatchingMostRelevant :
-                    nMatchingAlphabetical,
+                    nMatchingMostRelevantAr[language] :
+                    nMatchingAlphabeticalAr[language],
                 "" + nMatches) + "\n");
 
         if (lastPage > 1) {
@@ -5477,7 +5807,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "...\n");
             if (page >= 3)            sb.append(
                 url0 + (page>2? prev : bmrk) +           url1 + (page - 1) + url2 + (page - 1) + url3);
-            sb.append("&nbsp;" + page + "&nbsp;(" + EDStatic.nMatchingCurrent + ")&nbsp;\n"); //always show current page
+            sb.append("&nbsp;" + page + "&nbsp;(" + EDStatic.nMatchingCurrentAr[language] + ")&nbsp;\n"); //always show current page
             if (page <= lastPage - 2) sb.append(
                 url0 + (page<lastPage-1? next : bmrk) +  url1 + (page + 1) + url2 + (page + 1) + url3);
             if (page <= lastPage - 3) sb.append(
@@ -5487,7 +5817,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             //append to results
             results.append("&nbsp;&nbsp;" +
-                MessageFormat.format(nMatchingPage, 
+                MessageFormat.format(nMatchingPageAr[language], 
                     "" + page, "" + lastPage, sb.toString()) + 
                 "\n");
         }
@@ -5794,6 +6124,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * Given a throwable t, this sends an appropriate HTTP error code and a DAP-formatted dods-error response message.
      * Most users will call return in their method after calling this since the response is committed and closed.
      *
+     * NOTE that these search for English words in the Throwable, so depend on
+     * the English version of the text being present.
+     * 
      * @param requestNumber The requestNumber assigned to this request by doGet().
      * @param request The user's request.
      * @param response The response to be written to.
@@ -5820,12 +6153,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             //log the error            
             String tErrorLC = tError.toLowerCase();
-            if (tError.indexOf(resourceNotFound) >= 0 ||
+            if (tError.indexOf(resourceNotFoundAr[0]) >= 0 ||
                 tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) { //check this first, since may also be Query error
                 errorNo = HttpServletResponse.SC_NOT_FOUND;  //http error 404  (might succeed later)
                 //I wanted to use 204 No Content or 205 (similar) but browsers don't show any change for these codes
 
-            } else if (tError.indexOf(queryError) >= 0) {
+            } else if (tError.indexOf(queryErrorAr[0]) >= 0) {
                 errorNo = HttpServletResponse.SC_BAD_REQUEST; //http error 400 (won't succeed later)
 
             } else if (tError.indexOf(REQUESTED_RANGE_NOT_SATISFIABLE) >= 0) {
@@ -5944,7 +6277,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "    code=" + errorNo + ";\n" +
                 "    message=" + String2.toJson(msg, 65536, false) + ";\n" +
                 "}\n";
-            if (msg.indexOf(blacklistMsg) < 0)
+            if (msg.indexOf(blacklistMsgAr[0]) < 0)
                 String2.log("*** lowSendError for request #" + requestNumber + 
                     ": isCommitted=" + (response == null || response.isCommitted()) + 
                     " fullMessage=\n" +

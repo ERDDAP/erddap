@@ -705,10 +705,10 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         String tName, results, expected, dapQuery;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
-
+        int language = 0;
 
         //.dds
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -726,7 +726,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //*** .das
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -768,7 +768,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    String history \"" + today;
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"channel_1, data, elapsedTime, local, source, time\";\n" +
@@ -827,14 +827,14 @@ expected = "http://localhost:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "2014-11-19T00:20:00Z,3.5923125,-9758\n" +
 "2014-11-19T00:20:00Z,3.592322916666667,-9800\n" +
 "2014-11-19T00:20:00Z,3.5923333333333334,-9568\n";
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, edd.className() + "_", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //*** data
         dapQuery = "channel_1[0][0:(15)]";  //15 seconds
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, edd.className() + "_", ".wav"); 
         Table table = new Table();
         table.readAudioFile(dir + tName, true, true);

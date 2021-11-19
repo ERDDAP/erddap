@@ -410,13 +410,14 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public abstract void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public abstract void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable;
 
 

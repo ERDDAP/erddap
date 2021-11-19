@@ -240,7 +240,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -497,6 +497,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -510,7 +511,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -547,7 +548,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                     "  datasetStartsAt=" + currentDatasetStartsAt + 
                     "  localStart=" + childConstraints.get(0) +
                     "  localStop=" + childConstraints.get(2));
-                PrimitiveArray[] tResults = childDatasets[currentDataset].getSourceData(null, null,
+                PrimitiveArray[] tResults = childDatasets[currentDataset].getSourceData(language, null, null,
                     tDataVariables, childConstraints);
                 //childDataset has already checked that axis values are as *it* expects          
                 if (cumResults == null) {
@@ -582,6 +583,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -591,7 +593,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         try {
@@ -626,7 +628,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             for (int child = 0; child < nChild; child++) {
                 EDD edd = childDatasets[child];
                 if (tID.equals(edd.datasetID())) 
-                    return edd.accessibleViaFilesFileTable(nextPath);
+                    return edd.accessibleViaFilesFileTable(language, nextPath);
             }
             //or it isn't
             String2.log("ERROR: " + tID + " isn't a child's datasetID.");
@@ -641,11 +643,12 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-    public String accessibleViaFilesGetLocal(String relativeFileName) {
+    public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         if (!accessibleViaFiles)
             return null;
         String msg = datasetID() + " accessibleViaFilesGetLocal(" + relativeFileName + "): ";
@@ -666,7 +669,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             for (int c = 0; c < nChild; c++) {
                 if (childID.equals(childDatasets[c].datasetID())) {
                     //then redirect request to that child
-                    return childDatasets[c].accessibleViaFilesGetLocal(relativeFileName2);
+                    return childDatasets[c].accessibleViaFilesGetLocal(language, relativeFileName2);
                 }
             }
             String2.log(msg + "childID=" + childID + " not found.");
@@ -1014,7 +1017,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
-"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk), 0.25&#xb0;</att>\n" +
+"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5) (month 19880101 v11l35flk), 0.25°</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
@@ -1216,18 +1219,18 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String2.log("\n****************** EDDGridAggregateExistingDimension.testBasic() *****************\n");
         testVerboseOn();
         String name, tName, userDapQuery, results, expected, error;
-
+        int language = 0;
 
         //*** NDBC  is also IMPORTANT UNIQUE TEST of >1 variable in a file
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, "ndbcCWind41002");       
 
         //min max
-        EDV edv = gridDataset.findAxisVariableByDestinationName("longitude");
+        EDV edv = gridDataset.findAxisVariableByDestinationName(0, "longitude");
         Test.ensureEqual(edv.destinationMinDouble(), -75.42, "");
         Test.ensureEqual(edv.destinationMaxDouble(), -75.42, "");
 
         String ndbcDapQuery = "wind_speed[1:5][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1242,7 +1245,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_speed[1:5][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className(), ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         int dataPo = results.indexOf("data:");
@@ -1374,7 +1377,7 @@ expected =
         Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_direction[1:5][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "2", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1389,7 +1392,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_speed[1:5][0][0],wind_direction[1:5][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "3", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1404,7 +1407,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         ndbcDapQuery = "wind_direction[1:5][0][0],wind_speed[1:5][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "4", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1418,7 +1421,7 @@ expected =
 "1989-06-13T16:50:00Z,32.27,-75.42,235,13.6\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "4", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         dataPo = results.indexOf("data:");
@@ -1472,7 +1475,7 @@ expected =
 
         //test seam of two datasets
         ndbcDapQuery = "wind_direction[22232:22239][0][0],wind_speed[22232:22239][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "5", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1491,7 +1494,7 @@ expected =
 
         //test seam of two datasets   with stride
         ndbcDapQuery = "wind_direction[22232:2:22239][0][0],wind_speed[22232:2:22239][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "6", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1508,7 +1511,7 @@ expected =
         //test last data value (it causes a few problems -- including different axis values)
         ndbcDapQuery = "wind_direction[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]," +
                            "wind_speed[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]";
-        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "7", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1531,8 +1534,9 @@ expected =
         String2.log("\n****************** EDDGridAggregateExistingDimension.testRtofs() *****************\n");
         testVerboseOn();
         String tName, results, expected;
+        int language = 0;
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "RTOFSWOC1");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "time", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_rtofs", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);

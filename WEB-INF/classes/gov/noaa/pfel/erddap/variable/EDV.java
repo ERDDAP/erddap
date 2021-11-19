@@ -1661,12 +1661,12 @@ will show NaN).
 
 
     /**
-     * This converts a deg°[min'[sec"]][D] into decimal degrees.
+     * This converts a degÂ°[min'[sec"]][D] into decimal degrees.
      * deg, min, or sec can be a decimal value.
      * [min'[sec"]], [sec"], '[D]' is optional.
      * A 'D'irection value of E or N is ignored, but W or S is treated as *-1.
      *
-     * @param location deg°[min'[sec"]][D]
+     * @param location degÂ°[min'[sec"]][D]
      * @return the location as decimal degrees (or NaN if invalid)
      */
     public static double toDecimalDegrees(String location) {
@@ -1688,7 +1688,7 @@ will show NaN).
         int len = location.length();
 
         //just degrees?
-        int degPo = location.indexOf('°');
+        int degPo = location.indexOf('Â°');
         if (degPo < 0)
             degPo = len;
         if (degPo >= len - 1) 
@@ -1802,10 +1802,10 @@ will show NaN).
         Test.ensureEqual(toDecimalDegrees("2.2E"), 2.2, "");
         Test.ensureEqual(toDecimalDegrees("3.3S"), -3.3, "");
         Test.ensureEqual(toDecimalDegrees("4.4N"), 4.4, "");
-        Test.ensureEqual(toDecimalDegrees("1°2.3'W"), -(1 + 2.3/60.0), "");
-        Test.ensureEqual(toDecimalDegrees("4°5.6'"),    4 + 5.6/60.0, "");
-        Test.ensureEqual(toDecimalDegrees("1°2'3.4\"S"), -(1 + 2/60.0 + 3.4/3600.0), "");
-        Test.ensureEqual(toDecimalDegrees("4°5'6.7\""),    4 + 5/60.0 + 6.7/3600.0, "");
+        Test.ensureEqual(toDecimalDegrees("1Â°2.3'W"), -(1 + 2.3/60.0), "");
+        Test.ensureEqual(toDecimalDegrees("4Â°5.6'"),    4 + 5.6/60.0, "");
+        Test.ensureEqual(toDecimalDegrees("1Â°2'3.4\"S"), -(1 + 2/60.0 + 3.4/3600.0), "");
+        Test.ensureEqual(toDecimalDegrees("4Â°5'6.7\""),    4 + 5/60.0 + 6.7/3600.0, "");
 
         Test.ensureEqual(suggestLongName("real-time temp", "rt", null), "Real-time Temp", "");
         Test.ensureEqual(suggestLongName("real_time_temp", "rt", null), "Real Time Temp", "");

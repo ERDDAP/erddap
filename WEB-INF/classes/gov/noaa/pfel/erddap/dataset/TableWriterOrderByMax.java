@@ -42,6 +42,7 @@ public class TableWriterOrderByMax extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -50,12 +51,12 @@ public class TableWriterOrderByMax extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByMax(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByMax(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
-        String err = EDStatic.queryError + 
+        String err = EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
             "No column names were specified for 'orderByMax'.";
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
             throw new SimpleException(err);

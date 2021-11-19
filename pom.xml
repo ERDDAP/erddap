@@ -30,6 +30,7 @@ since this is impossible for AWS S3 dependencies without Maven.
       //add -e for full error messages
       //add -X for debug messages
       cd /programs/mavenERDDAP/ERDDAP   //pom.xml is there
+      set "JAVA_HOME=C:\programs\jdk8u292-b10"
       mvn clean               //removes previously generated .class files and ...
       mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
       mvn dependency:analyze  //Identifies excess or missing dependencies/.jars.
@@ -40,7 +41,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 * Temporarily rename tomcat/webapps/cwexperimental/WEB-INF/lib to today's date: /libYYYYMMDD
 
 * Use 7zip to extract all .jar files 
-    from inside C:\programs\mavenERDDAP\ERDDAP\target\ERDDAP-...-SNAPSHOT.war    WEB-INF/lib directory
+    from inside C:\programs\mavenERDDAP\ERDDAP\target\ERDDAP-...-SNAPSHOT\WEB-INF\lib directory
     to   tomcat/webapps/cwexperimental/WEB-INF/lib
     The vast majority of .jars are from the AWS S3 dependency.
 
@@ -53,21 +54,21 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.14-SNAPSHOT</version>
+    <version>2.15-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
     <url>https://coastwatch.pfeg.noaa.gov/erddap/index.html</url>
 
     <properties>
-        <project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <repositories>
         <repository>
             <id>unidata-releases</id>
             <name>UNIDATA Releases</name>
-            <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-releases/</url>
         </repository>
     </repositories>
 
@@ -115,6 +116,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromBMDE.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromMWFS.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNOS.javaINACTIVE</exclude>
+                        <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNcSequenceFiles.javaNOT_FINISHED</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromNWISDV.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostDatabase.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/erddap/dataset/EDDTableFromPostNcFiles.javaINACTIVE</exclude>
@@ -129,7 +131,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.3.2</version>
             </plugin>
 
             <!-- https://mvnrepository.com/artifact/org.apache.tomcat.maven/tomcat8-maven-plugin -->
@@ -155,7 +157,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <plugin>
@@ -173,7 +175,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.4.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -187,17 +189,10 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.16.94</version>
+              <version>2.17.81</version>
               <type>pom</type>
               <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>libraries-bom</artifactId>
-                <version>20.7.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-              </dependency>
         </dependencies>
 
     </dependencyManagement>
@@ -223,8 +218,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         </dependency>   -->
 
 
-        <!-- 
-             https://mvnrepository.com/artifact/gnu-regexp/gnu-regexp
+        <!-- https://mvnrepository.com/artifact/gnu-regexp/gnu-regexp
              This is needed for dods.dap code I wasn't compiling but Maven does.  
              'provided' lets it compile here but then doesn't include the .jar in /lib in .war.
              -->
@@ -248,7 +242,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 
         <!-- https://mvnrepository.com/artifact/com.lowagie/itext 
              This is the pdf writer.
-             Newer version is available, but license now gpl?!
+             Newer version is available, but license now gpl! So stick to 1.3.1
              -->
         <dependency>
             <groupId>com.lowagie</groupId>
@@ -268,7 +262,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>8.9.0</version>
+            <version>8.11.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -276,7 +270,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>8.9.0</version>
+            <version>8.11.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -332,7 +326,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
-            <version>1.20</version>
+            <version>1.21</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/jaxen/jaxen 
@@ -343,7 +337,9 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>1.2.0</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
+        <!-- https://artifacts.unidata.ucar.edu/service/rest/repository/browse/unidata-releases/edu/ucar/netcdfAll/
+             which gets jars from repository=https://artifacts.unidata.ucar.edu/repository/unidata-releases/ as specified above
+             This is not up-to-date: https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
              This is the netcdf-java library. -->
         <dependency>
             <groupId>edu.ucar</groupId>
@@ -374,7 +370,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.22</version>
+            <version>42.3.1</version>
         </dependency>
 
 
@@ -409,7 +405,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.1.24</version>
+            <version>4.2.4</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -417,7 +413,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.65.Final</version>
+            <version>4.1.70.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -449,7 +445,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.16.94</version>
+          <version>2.17.81</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -457,32 +453,35 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.16.94</version>
+            <version>2.17.81</version>
         </dependency>
         
         <!-- Added by Qi for translation purpose -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>libraries-bom</artifactId>
-            <version>20.6.0</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-         </dependency>
-         <!-- https://mvnrepository.com/artifact/com.google.http-client/google-http-client -->
-        <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client</artifactId>
-            <version>1.39.2</version>
+            <version>2.1.7</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.http-client/google-http-client-gson -->
+        <!-- Added by Bob for translation project -->
+        <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client-gson</artifactId>
-            <version>1.39.2</version>
+            <groupId>com.google.auth</groupId>
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+            <version>1.3.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
+        <dependency>
+            <groupId>com.google.api</groupId>
+            <artifactId>gax</artifactId>
+            <version>2.7.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-cloud-translate-v3</artifactId>
+            <version>2.1.7</version>
+        </dependency>
+
     </dependencies>
 </project>

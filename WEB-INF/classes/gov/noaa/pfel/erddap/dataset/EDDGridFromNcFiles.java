@@ -121,6 +121,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
     public static void testGenerateDatasetsXml() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml");
+        int language = 0; 
 
         String results = generateDatasetsXml(
             EDStatic.unitTestDataDir + "erdQSwind1day/", 
@@ -382,6 +383,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
     public static void testGenerateDatasetsXml2() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml2");
+        int language = 0; 
         String results = generateDatasetsXml(
             String2.unitTestBigDataDir + "geosgrib/", ".*", 
             String2.unitTestBigDataDir + "geosgrib/multi_1.glo_30m.all.grb2",
@@ -595,6 +597,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
     public static void testGenerateDatasetsXml3() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml3");
+        int language = 0; 
 
         String sDir = "/u00/satellite/PH2/sstd/1day/";
         String sRegex = "[12].*\\.nc";
@@ -1082,6 +1085,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml4");
         reallyVerbose = true;
+        int language = 0; 
 
         //takes a long time and no longer useful
         //String2.pressEnterToContinue(
@@ -1418,6 +1422,7 @@ expected =
     public static void testGenerateDatasetsXml5() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml5");
+        int language = 0; 
         reallyVerbose = true;
         String results, gdxResults, expected;
 
@@ -1815,6 +1820,7 @@ expected =
         reallyVerbose = true;
         boolean oDebug = debugMode;
         debugMode = true;
+        int language = 0; 
 
         //takes a long time and no longer useful
         //String2.pressEnterToContinue(
@@ -1926,6 +1932,7 @@ expected =
         reallyVerbose = true;
         boolean oDebug = debugMode;
         debugMode = true;
+        int language = 0; 
         String dir = "/data/justin/";
         String fileRegex = "test\\.h5";  //sample_file.h5 has 128bit int so null pointer in netcdf-java
 
@@ -1952,6 +1959,7 @@ expected =
     public static void testGenerateDatasetsXmlAwsS3() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlAwsS3");
+        int language = 0; 
 
         try {
         String cacheFromUrl = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS"; //intentionally left off trailing /
@@ -2167,6 +2175,7 @@ expected =
     public static void testGenerateDatasetsXmlPrivateAwsS3(boolean deleteCachedFiles) throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlPrivateAwsS3()");
+        int language = 0; 
 
         try {
         String cacheFromUrl = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day"; //intentionally left off trailing /
@@ -2452,6 +2461,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testAwsS3() *****************\n");
 
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -2465,7 +2475,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2607,7 +2617,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2630,7 +2640,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "tasmin[1127][(40):100:(43)][(260):100:(263)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2675,7 +2685,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "tasmin[(2099-12-16T12:00:00Z)][(24.0625):(49.92916665632)][(234.97916666666998):" +
             "(293.51249997659)]&.draw=surface&.vars=longitude|latitude|tasmin" +
             "&.colorBar=|||||&.land=under",
@@ -2694,6 +2704,7 @@ expected =
 
         testVerboseOn();
         EDStatic.reallyVerbose = true;
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -2715,8 +2726,8 @@ expected =
         }
 
         if (deleteCachedFiles) {
-            String2.log("\nWaiting 25s for download tasks to finish...\n");
-            Math2.sleep(25000); //allow tasks to finish
+            String2.log("\nWaiting 90s for download tasks to finish...\n");
+            Math2.sleep(90000); //allow tasks to finish
             String2.log("\ntasks 2 of 2 should have finished. Now reloading the dataset. Now reloading dataset (in 5 seconds)...");
             Math2.sleep(5000); //allow tasks to finish
             eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
@@ -2727,7 +2738,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2889,7 +2900,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "x_wind[1][0][(40):2:(41)][(200):2:(201)],y_wind[1][0][(40):2:(41)][(200):2:(201)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_privateAwsS3", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -2923,6 +2934,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testNccsv() *****************\n");
 
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -2934,7 +2946,7 @@ expected =
 
         //*** test getting .nccsvMetadata for entire dataset
         String2.log("\n*** .nccsvMetadata for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_nccsvMeta", ".nccsvMetadata"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3072,7 +3084,7 @@ expected =
         //.nccsv  just axis values
         String2.log("\n*** .nccsv just axis values\n");       
         userDapQuery = "latitude[0:100:700],longitude[0:10:100]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_nccsvAxis", ".nccsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3107,7 +3119,7 @@ expected =
 
 expected = 
 //"T22:48:36Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n2017-04-18T22:48:36Z
-"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?latitude[0:100:700],longitude[0:10:100]\"\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?latitude[0:100:700],longitude[0:10:100]\"\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\n" +
 "*GLOBAL*,institution,\"NOAA CoastWatch, West Coast Node\"\n" +
 "*GLOBAL*,keywords,Earth Science > Oceans > Ocean Winds > Surface Winds\n" +
@@ -3179,7 +3191,7 @@ expected =
         //.nccsv  data values
         String2.log("\n*** .nccsv data values\n");       
         userDapQuery = "x_wind[0][0][0:100:400][0:10:30],y_wind[0][0][0:100:400][0:10:30]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_nccsvData", ".nccsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3214,7 +3226,7 @@ expected =
 
 expected = 
 //"T23:00:11Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n2017-04-18T23:00:11Z
-"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?x_wind[0][0][0:100:400][0:10:30],y_wind[0][0][0:100:400][0:10:30]\"\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.nccsv?x_wind[0][0][0:100:400][0:10:30],y_wind[0][0][0:100:400][0:10:30]\"\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\n" +
 "*GLOBAL*,institution,\"NOAA CoastWatch, West Coast Node\"\n" +
 "*GLOBAL*,keywords,Earth Science > Oceans > Ocean Winds > Surface Winds\n" +
@@ -3346,6 +3358,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testNc() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        int language = 0; 
         String error = "";
         EDVGridAxis edvga;
         String id = "testGriddedNcFiles";
@@ -3356,7 +3369,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3479,7 +3492,7 @@ today;
 //            + " https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
-expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"Earth Science > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -3514,7 +3527,7 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3559,7 +3572,7 @@ expected = " http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3588,7 +3601,7 @@ String csvExpected =
         //.csvp  with data from one file
         String2.log("\n*** .nc test read from one file  .csvp\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csvp"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3602,7 +3615,7 @@ csvExpected;
         //.csv0  with data from one file
         String2.log("\n*** .nc test read from one file  .csv0\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv0"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3615,7 +3628,7 @@ csvExpected;
         //.csv  with data from several files
         String2.log("\n*** .nc test read from several files\n");       
         userDapQuery = "y_wind[(1199448000):3:(1.1999664e9)][0][(36.5)][(230)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3633,7 +3646,7 @@ csvExpected;
         //.tsv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3662,7 +3675,7 @@ String tsvExpected =
         //.tsvp  with data from one file
         String2.log("\n*** .nc test read from one file  .tsvp\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsvp"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3676,7 +3689,7 @@ tsvExpected;
         //.tsv0  with data from one file
         String2.log("\n*** .nc test read from one file  .tsv0\n");       
         userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_Data1", ".tsv0"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3703,6 +3716,7 @@ tsvExpected;
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0; 
 
         //generateDatasetsXml
         
@@ -3714,7 +3728,7 @@ tsvExpected;
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_42", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3838,7 +3852,7 @@ expected =
         Test.ensureEqual(tResults, expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_42", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3864,7 +3878,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .grb test read from one file\n");       
         userDapQuery = "wind_speed[(4e8):10:(5e8)][0][(36.5)][(200):5:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribData1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -3900,6 +3914,7 @@ expected =
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0; 
 
         String2.log(NcHelper.ncdump(String2.unitTestBigDataDir + 
             "geosgrib/multi_1.glo_30m.all.grb2", "-h"));
@@ -3912,7 +3927,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb2 test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_42", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4257,7 +4272,7 @@ expected=
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_42", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4377,7 +4392,7 @@ expected=
         //.csv  with data from one file
         String2.log("\n*** .grb test read from one file\n");       
         userDapQuery = "Wind_speed[0][(30)][(200):5:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribData1_42", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4417,6 +4432,7 @@ expected=
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0; 
 
         //generateDatasetsXml
         
@@ -4428,7 +4444,7 @@ expected=
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_43", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4519,7 +4535,7 @@ today;
 //+ " (local files)\n" +
 //today + 
 expected = 
-"http://localhost:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
 "    String keywords \"Earth Science > Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -4553,7 +4569,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_43", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4579,7 +4595,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .grb test read from one file\n");       
         userDapQuery = "wind_speed[(4e8):10:(5e8)][0][(36.5)][(200):5:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribData1_43", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4615,6 +4631,7 @@ expected =
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0; 
 
         //generateDatasetsXml
         //file dir is EDStatic.unitTestDataDir: /erddapTest/
@@ -4626,7 +4643,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .grb2 test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_43", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -4899,7 +4916,7 @@ today;
 //+ " (local files)\n" +
 //today + 
 expected= 
-"http://localhost:8080/cwexperimental/griddap/testGrib2_43.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testGrib2_43.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"Earth Science > Atmosphere > Atmospheric Winds > Surface Winds, Earth Science > Oceans > Ocean Waves > Wave Height, Earth Science > Oceans > Ocean Waves > Wave Speed/Direction\";\n" +
@@ -4935,7 +4952,7 @@ expected=
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribEntire_43", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -5055,7 +5072,7 @@ expected=
         //.csv  with data from one file
         String2.log("\n*** .grb test read from one file\n");       
         userDapQuery = "Wind_speed_surface[0][(30)][(200):5:(238)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_GribData1_43", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -5113,6 +5130,7 @@ expected=
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        int language = 0; 
 
         //generateDatasetsXml
         
@@ -5124,7 +5142,7 @@ expected=
 
         //*** test getting das for entire dataset
         String2.log("\n*** EDDGridFromNcFiles.testCwHdf test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfEntire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -5187,7 +5205,7 @@ today;
 //today + 
     
 expected =
-" http://localhost:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
+" http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"NOAA CoastWatch\";\n" +
 "    String keywords \"Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
@@ -5218,7 +5236,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfEntire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -5247,7 +5265,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** EDDGridFromNcFiles.testCwHdf test read from one file\n");       
         userDapQuery = "sst[600:2:606][500:503]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfData1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -5289,6 +5307,7 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testSpeed\n" +
             "THIS REQUIRES THE testGriddedNcFiles DATASET TO BE IN LOCALHOST ERDDAP!!!\n" +
             SgtUtil.isBufferedImageAccelerated() + "\n");
+        int language = 0; 
         //gc and sleep to give computer time to catch up from previous tests
         for (int i = 0; i < 4; i++) 
             Math2.gc(5000);
@@ -5447,6 +5466,7 @@ expected =
     public static void testNcml() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testNcml");
+        int language = 0; 
 
         //2013-10-25 netcdf-java's reading of the source HDF4 file changed dramatically.
         //  Attributes that had internal spaces now have underscores.
@@ -5565,6 +5585,7 @@ expected =
         String userDapQuery = "ECEF_X" + aq + ",IB_time" + aq;
         String fName = "testTimePrecisionMillis";
         String tName, results, ts, expected;
+        int language = 0;
         int po;
 
         //Yes. EDDGrid.parseAxisBrackets parses ISO 8601 times to millis precision.
@@ -5578,7 +5599,7 @@ expected =
         //  (only occurred if vars had different precisions and not first var was requested,
         //  and if less precision mattered (e.g., double->float lost info))  
         // (SEE NOTES 2014-10-20)
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5613,7 +5634,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5629,7 +5650,7 @@ expected =
         //.dods  hard to test
 
         //.htmlTable
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5675,7 +5696,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5696,7 +5717,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.jsonlCSV1  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".jsonlCSV1"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5709,7 +5730,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.jsonlCSV  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".jsonlCSV"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5721,7 +5742,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.jsonlKVP  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".jsonlKVP"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5736,7 +5757,7 @@ expected =
 //!!! but need to test to ensure not rounding to the nearest second
 
         //.nc  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".nc"); 
         results = NcHelper.ncdump(tDir + tName, "");
         expected = 
@@ -5758,7 +5779,7 @@ expected =
 
         //.odvTxt
         /* can't test because it needs lon lat values
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5767,7 +5788,7 @@ expected =
         */
 
         //.xhtml  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -5828,12 +5849,13 @@ expected =
             "shorts[1:2],ints[1:2],floats[1:2],doubles[1:2],Strings[1:2]";
         String fName = "testSimpleTestNc";
         String tName, results, ts, expected;
+        int language = 0; 
         int po;
 
         String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
 
         //all  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             fName, ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5846,7 +5868,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.asc  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5966,7 +5988,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -5979,7 +6001,7 @@ expected =
         //.dods  hard to test
 
         //.htmlTable
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6042,7 +6064,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6063,7 +6085,7 @@ expected =
 //!!! but need to test to ensure not rounding to the nearest second
 
         //.nc  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".nc"); 
         results = NcHelper.ncdump(tDir + tName, "");
         expected = 
@@ -6186,7 +6208,7 @@ expected =
 
         //.odvTxt
         /* can't test because it needs lon lat values
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -6195,7 +6217,7 @@ expected =
         */
 
         //.xhtml  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6206,7 +6228,7 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>testSimpleTestNc</title>\n" +
-"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://127.0.0.1:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
 "<body>\n" +
 "\n" +
@@ -6270,7 +6292,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test time on x and y axis
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "hours[(1970-01-02):(1970-01-05)]&.draw=linesAndMarkers" +
             "&.vars=days|hours|&.marker=5|5&.color=0x000000&.colorBar=|||||",
             tDir, fName,  ".png"); 
@@ -6293,12 +6315,13 @@ expected =
         String userDapQuery = "bytes[2:3],doubles[2:3],Strings[2:3]";
         String fName = "testSimpleTestNc2";
         String tName, results, ts, expected;
+        int language = 0; 
         int po;
 
         String2.log(NcHelper.ncdump(EDStatic.unitTestDataDir + "simpleTest.nc", ""));
 
         //.asc  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -6341,7 +6364,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -6354,7 +6377,7 @@ expected =
         //.dods  doesn't write strings
 
         //.htmlTable
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6389,7 +6412,7 @@ expected =
         Test.ensureEqual(ts, expected, "\nresults=\n" + results);
 
         //.json  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6410,7 +6433,7 @@ expected =
 //!!! but need to test to ensure not rounding to the nearest second
 
         //.nc  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".nc"); 
         results = NcHelper.ncdump(tDir + tName, "");
         expected = 
@@ -6480,7 +6503,7 @@ expected =
 
         //.odvTxt
         /* can't test because it needs lon lat values
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
         results = String2.directReadFrom88591File(tDir + tName);
         expected = 
@@ -6489,7 +6512,7 @@ expected =
         */
 
         //.xhtml  
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
         results = String2.directReadFromUtf8File(tDir + tName);
         expected = 
@@ -6500,7 +6523,7 @@ expected =
 "<head>\n" +
 "  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
 "  <title>testSimpleTestNc2</title>\n" +
-"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://localhost:8080/cwexperimental/images/erddap2.css\" />\n" +
+"  <link rel=\"stylesheet\" type=\"text/css\" href=\"http://127.0.0.1:8080/cwexperimental/images/erddap2.css\" />\n" +
 "</head>\n" +
 "<body>\n" +
 "\n" +
@@ -6545,6 +6568,7 @@ expected =
         String dir = "c:/data/rtech/";
         String regex = "MT.*\\.hdf";
         String fileName = "MT1_L2-FLUX-SCASL1A2-1.06_2015-01-01T01-42-24_V1-00.hdf";
+        int language = 0; 
         String2.log(NcHelper.ncdump(dir + fileName, "-h"));
 
         String results = generateDatasetsXml(dir, regex, dir + fileName,
@@ -6581,10 +6605,11 @@ expected =
         String axisQuery = "time[]";
         String dataQuery = "x_wind[][][100][100]";
         String tName, results, expected;
+        int language = 0; 
 
         //*** read the original data
         String2.log("\n*** read original data\n");       
-        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
             eddGrid.className() + "_update_1a", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         String originalExpectedAxis = 
@@ -6610,7 +6635,7 @@ expected =
         String oldMaxTime   = "2008-01-10T12:00:00Z";
         String oldMaxMillis = "1.1999664E9";
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddGrid.className() + "_update_1d", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         String originalExpectedData = 
@@ -6643,12 +6668,12 @@ expected =
         try {
             String2.log("\n*** rename a data file so it doesn't match regex\n");       
             File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz", "erdQSwind1day_20080101_03.nc.gz2");
-            for (int i = 0; i < 5; i++) {
-                String2.log("after rename .nc.gz to .nc.gz2, update #" + i + " " + eddGrid.update());
+            for (int i = 0; i < 10; i++) {
+                String2.log("after rename .nc.gz to .nc.gz2, update #" + i + " " + eddGrid.update(language));
                 Math2.sleep(1000);
             }
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
                 eddGrid.className() + "_update_2a", ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
@@ -6663,7 +6688,7 @@ expected =
 "2008-01-10T12:00:00Z\n";      
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
                 eddGrid.className() + "_update_2d", ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
             expected = 
@@ -6693,20 +6718,20 @@ expected =
             //rename it back to original
             String2.log("\n*** rename it back to original\n");       
             File2.rename(dataDir, "erdQSwind1day_20080101_03.nc.gz2", "erdQSwind1day_20080101_03.nc.gz");
-            for (int i = 0; i < 5; i++) {
-                String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update());
+            for (int i = 0; i < 10; i++) {
+                String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update(language));
                 Math2.sleep(1000);
             }
         }
 
         //*** back to original
         String2.log("\n*** after back to original\n");       
-        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
             eddGrid.className() + "_update_3a", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddGrid.className() + "_update_3d", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
@@ -6733,17 +6758,17 @@ expected =
             } catch (Exception e) {
                 //rename will fail if file already in place
             }
-            for (int i = 0; i < 5; i++) {
-                String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update());
+            for (int i = 0; i < 10; i++) {
+                String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update(language));
                 Math2.sleep(1000);
             }
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
                 eddGrid.className() + "_update_4a", ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
                 eddGrid.className() + "_update_4d", ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
@@ -6768,21 +6793,21 @@ expected =
                 //put things back to initial state
                 File2.rename(dataDir, "bad.nc", "bad.notnc");
             } catch (Exception e) {
-                throw new RuntimeException("2020-05-15 This fails half(?) the time. Why? Because the original rename failed?");
+                throw new RuntimeException("2020-05-15 This fails often in TestAll, but not when run individually. Need longer timeouts?"); //2021-11-17 I doubled timeouts. Maybe that will help.
             }
-            for (int i = 0; i < 5; i++) {
-                String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update());
+            for (int i = 0; i < 10; i++) {
+                String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update(language));
                 Math2.sleep(1000);
             }
         }
 
         String2.log("\n*** after back to original again\n");       
-        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
             eddGrid.className() + "_update_5a", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddGrid.className() + "_update_5d", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
@@ -6802,7 +6827,7 @@ expected =
         long cumTime = 0;
         for (int i = 0; i < 1000; i++) {
             long time = System.currentTimeMillis();
-            eddGrid.update();
+            eddGrid.update(language);
             cumTime += (System.currentTimeMillis() - time);
             Math2.sleep(2); //updateEveryNMillis=1, so always a valid new update()
         }
@@ -6828,6 +6853,7 @@ expected =
         String axisQuery = "time[]";
         String dataQuery = "x_wind[][][100][100]";
         String tName, results, expected;
+        int language = 0; 
         int po;
 
         //expected values
@@ -6946,7 +6972,7 @@ expected =
 //2015-09-09T22:18:53Z http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day
 //2015-09-09T22:18:53Z 
     String originalDas2 = 
-"http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"Earth Science > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -7012,7 +7038,7 @@ expected =
         String2.log("\n*** read original data\n");     
         long oCreationTimeMillis = eddGrid.creationTimeMillis();
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_qr_1das", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
@@ -7020,12 +7046,12 @@ expected =
         po = results.indexOf(originalDas2.substring(0, 80));
         Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
             eddGrid.className() + "_qr_1a", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddGrid.className() + "_qr_1d", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
@@ -7056,7 +7082,7 @@ expected =
             //some responses are same
             Test.ensureEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 eddGrid.className() + "_qr_2das", ".das"); 
             results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
@@ -7064,7 +7090,7 @@ expected =
             po = results.indexOf(originalDas2.substring(0, 80));
             Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
 
-            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
                 eddGrid.className() + "_qr_2a", ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
@@ -7082,7 +7108,7 @@ expected =
 
             //but request for data should fail
             try {
-                tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+                tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
                     eddGrid.className() + "_qr_2d", ".csv"); 
                 results = String2.directReadFrom88591File(tDir + tName); //shouldn't happen. We expect fileNotFound.
             } catch (Throwable t2) {
@@ -7116,7 +7142,7 @@ expected =
         Test.ensureNotEqual(eddGrid.creationTimeMillis(), oCreationTimeMillis, "");
 
         //but everything else should be back to original
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_qr_3das", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
@@ -7124,12 +7150,12 @@ expected =
         po = results.indexOf(originalDas2.substring(0, 80));
         Test.ensureEqual(results.substring(po), originalDas2, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, axisQuery, tDir, 
             eddGrid.className() + "_qr_3a", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddGrid.className() + "_qr_3d", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
@@ -7161,6 +7187,7 @@ expected =
         String results, expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String dir = "https://opendap.jpl.nasa.gov/opendap/hyrax/allData/avhrr/L4/reynolds_er/v3b/monthly/netcdf/2014/";
+        int language = 0; 
 
         results = generateDatasetsXml( //dir is a HYRAX catalog.html URL!
             dir + "contents.html", 
@@ -7195,11 +7222,12 @@ expected =
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String id = "testRemoteHyraxFiles";
+        int language = 0; 
 
 /*
         //*** test getting das for entire dataset
         String2.log("\n*** testCwHdf test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfEntire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7293,7 +7321,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfEntire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7322,7 +7350,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** testCwHdf test read from one file\n");       
         userDapQuery = "sst[600:2:606][500:503]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_CwHdfData1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7363,6 +7391,7 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         //2018-08-08 used to work with /catalog/. Now needs /fileServer/
         String dir = "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/"; //catalog.html
+        int language = 0; 
 
 if (true) Test.knownProblem("2020-10-26 This needs a new test url. The current one is unreliable: " + dir);
 
@@ -7568,12 +7597,13 @@ String2.setClipboardString(results);
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         String id = "testRemoteThreddsFiles";  //from generateDatasetsXml above but different datasetID
+        int language = 0; 
       try {   
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id);
 
         //*** test getting das for entire dataset
         String2.log("\n*** test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_trtf", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7690,7 +7720,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_trtf", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7722,7 +7752,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** test read from one file\n");       
         userDapQuery = "sss[17][100:2:106][50:53]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_trtf", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7763,6 +7793,7 @@ expected =
     public static void testMatchAxisNDigits() throws Throwable {
 
         String2.log("\n *** EDDGridFromNcFiles.testMatchAxisNDigits() ***");
+        int language = 0; 
 
         //force reload files
         File2.delete("/data/_erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
@@ -7780,7 +7811,7 @@ expected =
 
         //there should be two time values
         String2.log("\n*** test all time values\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "time", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "time", 
             cDir, eddGrid.className() + "_tmnd0", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -7799,13 +7830,13 @@ expected =
         //*** even though the 2 files have slightly different axis values
         //    test that lats returned from requests are always the same
         String2.log("\n*** test get one lon, all lats\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][0][][0]", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][0][][0]", 
             cDir, eddGrid.className() + "_tmnd1", ".csv"); 
         table = new Table();
         table.readASCII(cDir + tName, 0, 2);
         pa1 = table.getColumn("latitude");
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[1][0][][0]", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[1][0][][0]", 
             cDir, eddGrid.className() + "_tmnd2", ".csv"); 
         table = new Table();
         table.readASCII(cDir + tName, 0, 2);
@@ -7817,13 +7848,13 @@ expected =
         //*** even though the 2 files have slightly different axis values
         //    test that lons returned from requests are always the same
         String2.log("\n*** test get one lat, all lons\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][0][0][]", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][0][0][]", 
             cDir, eddGrid.className() + "_tmnd3", ".csv"); 
         table = new Table();
         table.readASCII(cDir + tName, 0, 2);
         pa1 = table.getColumn("longitude");
 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[1][0][0][]", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[1][0][0][]", 
             cDir, eddGrid.className() + "_tmnd4", ".csv"); 
         table = new Table();
         table.readASCII(cDir + tName, 0, 2);
@@ -7849,6 +7880,7 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
         String fileDir = EDStatic.unitTestDataDir + "unsigned/";
         String fileName = "9km_aggregate__MODIS_AQUA_L3_SST_THERMAL_8DAY_9KM_DAYTIME.nc";
+        int language = 0; 
 
         //DumpString
         results = NcHelper.ncdump(fileDir + fileName, "-h");
@@ -8217,7 +8249,7 @@ expected =
 //45.000717 +2=> 47.000717 /7.17185E-4=> 65535
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -8331,7 +8363,7 @@ expected =
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -8361,7 +8393,7 @@ expected =
 
         //.csv data values
         userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -8395,7 +8427,7 @@ expected =
 
         //write to nc3 then ncump
         userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory + tName, "");
         String2.log(results);
@@ -8470,7 +8502,7 @@ expected =
 //"2020-06-11T16:26:03Z (local files)\n" +
 //"2020-06-11T16:26:03Z 
 expected = 
-"http://localhost:8080/cwexperimental/griddap/testUInt16File.nc?sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testUInt16File.nc?sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]\";\n" +
 "  :infoUrl = \"???\";\n" +
 "  :Input_Parameters = \"IFILE = /data3/sdpsoper/vdc/vpu2/workbuf/A20092652009272.L3b_8D_SST.main|OFILE = A20092652009272.L3m_8D_SST_9|PFILE = |PROD = sst|PALFILE = DEFAULT|RFLAG = ORIGINAL|MEAS = 1|STYPE = 0|DATAMIN = 0.000000|DATAMAX = 0.000000|LONWEST = -180.000000|LONEAST = 180.000000|LATSOUTH = -90.000000|LATNORTH = 90.000000|RESOLUTION = 9km|PROJECTION = RECT|GAP_FILL = 0|SEAM_LON = -180.000000|PRECISION=I\";\n" +
 "  :institution = \"???\";\n" +
@@ -8573,7 +8605,7 @@ expected =
 
         //display the image
         String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][][]&.land=under", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -8596,10 +8628,11 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDir = EDStatic.fullTestCacheDirectory;
         String testName = "EDDGridFromNcFiles_Axis0Time";
+        int language = 0; 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8747,7 +8780,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8770,7 +8803,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "chlorophyll[(1998-02-16T00:00:00Z)][(38):4:(37)][(-123.6):4:(-122.6)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8796,7 +8829,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(1998-02-16T00:00:00Z)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
@@ -8820,10 +8853,11 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDir = EDStatic.fullTestCacheDirectory;
         String testName = "EDDGridFromNcFiles_Axis0FileNameInt";
+        int language = 0; 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8941,7 +8975,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8964,7 +8998,7 @@ expected =
         //.csv  with int values
         String2.log("\n*** .nc test get myInt[]\n");       
         userDapQuery = "myInt";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_axis0", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -8978,7 +9012,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "chlorophyll[(32)][(38):4:(37)][(-123.6):4:(-122.6)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9004,7 +9038,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(32)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
@@ -9027,10 +9061,11 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDir = EDStatic.fullTestCacheDirectory;
         String testName = "EDDGridFromNcFiles_Axis0PathNameInt";
+        int language = 0; 
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9148,7 +9183,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9171,7 +9206,7 @@ expected =
         //.csv  with int values
         String2.log("\n*** .nc test get myInt[]\n");       
         userDapQuery = "myInt";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_axis0", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9185,7 +9220,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "chlorophyll[(32)][(38):4:(37)][(-123.6):4:(-122.6)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9211,7 +9246,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(32)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
@@ -9229,6 +9264,7 @@ expected =
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDVGridAxis edvga;
+        int language = 0; 
 
         //ncdump a source .nc file
         tName = "/u00/satellite/SW1/mday/S19980321998059.L3m_MO_CHL_chlor_a_9km.nc";
@@ -9244,7 +9280,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9363,7 +9399,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             tDir, testName + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9386,7 +9422,7 @@ expected =
         //.csv  with int values
         String2.log("\n*** .nc test get myDouble[]\n");       
         userDapQuery = "myDouble";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_axis0", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9400,7 +9436,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** .nc test read from one file\n");       
         userDapQuery = "chlorophyll[(1998032)][(38):4:(37)][(-123.6):4:(-122.6)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             tDir, testName + "_Data1", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -9426,7 +9462,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(1998032)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
         SSR.displayInBrowser("file://" + tDir + tName);
@@ -9446,6 +9482,7 @@ expected =
         String tName, results, tResults, expected, userDapQuery;
         int tPo;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0; 
 
         //test if netcdf java considers group name to have trailing slash
         NetcdfFile ncFile = NetcdfFiles.open(
@@ -9630,7 +9667,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroupsA_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -9749,7 +9786,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroupsA_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -9774,7 +9811,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** read all data\n");       
         userDapQuery = "";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroupsA_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10064,7 +10101,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10246,7 +10283,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10309,7 +10346,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** read all data\n");       
         userDapQuery = "";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10335,6 +10372,7 @@ expected =
         EDDGrid eddGrid; 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         String tDir = EDStatic.fullTestCacheDirectory;
+        int language = 0; 
 
         String fileDir = "/data/charles/";
         String fileRegex = "testGroups2\\.nc";  //just 1 file, don't aggregate
@@ -10517,7 +10555,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10627,7 +10665,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10676,7 +10714,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** read all data\n");       
         userDapQuery = "";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10880,7 +10918,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -10989,7 +11027,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -11038,7 +11076,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** read all data\n");       
         userDapQuery = "";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_testGroups2_Data1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -11094,6 +11132,7 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String error = "";
         int po;
+        int language = 0; 
         EDV edv;
 
         String id = "jplMURSST41";
@@ -11101,7 +11140,7 @@ expected =
         
         //test axes-only request
         userDapQuery = "time[(2002-06-02T09:00:00Z)],latitude[(-75):500:(75)],longitude[(-179.99):500:(180.0)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "IgorAxes", ".itx"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, '\r', '\n');
@@ -11233,7 +11272,7 @@ expected =
         //when plotted, should be tiny map of world with mvs for continents:
         //  /downloads/IgorTestJplMURSST41.png
         userDapQuery = "analysed_sst[(2002-06-02T09:00:00Z)][(-75):500:(75)][(-179.5):500:(179.5)],mask[(2002-06-02T09:00:00Z)][(-75):500:(75)][(-179.5):500:(179.5)]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "IgorGrid", ".itx"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, '\r', '\n');
@@ -11431,6 +11470,7 @@ expected =
         String error = "";
         EDVGridAxis edvga;
         //the test file is from ftp://podaac.jpl.nasa.gov/allData/aquarius/L2/V4/2011/237/
+        int language = 0; 
 
         String id = "testGroups";
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
@@ -11451,6 +11491,7 @@ expected =
         testVerboseOff();
         String fileName = EDStatic.unitTestDataDir + "nc/invalidShortened2.nc";
         String id = "testBadNcFile";
+        int language = 0; 
 
         //try to read it many times
         for (int i = 0; i <= 1000000; i++) {
@@ -11513,6 +11554,7 @@ expected =
         testVerboseOff();
         String fileName = EDStatic.unitTestDataDir + "nc/invalidShortened.nc"; //header is intact
         String id = "testBadNcFile";
+        int language = 0; 
 
         NetcdfFile ncFile = null; 
         try {
@@ -11557,6 +11599,7 @@ expected =
         String fullName = EDStatic.unitTestDataDir + 
             "erdQSwind1day/subfolder/erdQSwind1day_20080108_10.nc";
         long timestamp = File2.getLastModified(fullName); //orig 2009-01-07T11:55 local
+        int language = 0; 
         try {
             //restart local erddap
             String2.pressEnterToContinue(
@@ -11622,6 +11665,7 @@ expected =
      */
     public static void testBigRequestSpeed(int nTimePoints, String fileType, 
         int expectedBytes, int expectedTimeS) throws Throwable {
+        int language = 0; 
         testVerboseOn();
         Math2.gcAndWait();  //in a test
         Math2.gcAndWait();  //in a test
@@ -11638,7 +11682,7 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String tName;
 
-        //tName = eddGrid.makeNewFileForDapQuery(null, null, query,
+        //tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
         //    dir, eddGrid.className() + "_testBigRequest", fileType); 
 
         //debugMode AFTER first request
@@ -11650,7 +11694,7 @@ expected =
                 eddGrid.nThreads = Math.abs(i);
                 //time the second request
                 long time = System.currentTimeMillis();
-                tName = eddGrid.makeNewFileForDapQuery(null, null, query,
+                tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
                     dir, eddGrid.className() + "_testBigRequest2", fileType); 
                 msg = "  nThreads=" + eddGrid.nThreads + " size=" + File2.length(dir + tName) +  
                     " time=" + (System.currentTimeMillis() - time)/1000 + "s\n";
@@ -11681,6 +11725,7 @@ expected =
         FileVisitorDNLS.verbose = true;
         FileVisitorDNLS.reallyVerbose = true;
         FileVisitorDNLS.debugMode=true;
+        int language = 0; 
 
         boolean testMode = false;
         boolean tRecursive = true;
@@ -11764,6 +11809,7 @@ expected =
         boolean recursive = true;
         String tLocalDir = "/u00/data/points/testEDDGridCopyFiles/";
         String results, expected;
+        int language = 0; 
 
         //delete all cached files
         File2.deleteAllFiles(tLocalDir, true, true);
@@ -12014,6 +12060,7 @@ expected =
     public static void testCopyFiles(boolean deleteDataFiles) throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testCopyFiles(" + deleteDataFiles + ")\n" +
             "If deleteDataFiles is true, this requires erdMWchla1day in localhost ERDDAP.");
+        int language = 0; 
         testVerboseOn();
 FileVisitorDNLS.verbose = true;
 FileVisitorDNLS.reallyVerbose = true;
@@ -12052,7 +12099,7 @@ FileVisitorDNLS.debugMode = true;
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridCopyFiles  das and dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_copyFiles_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12184,7 +12231,7 @@ expected =
 
 
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_copyFiles_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12213,7 +12260,7 @@ expected =
         //.csv   
         userDapQuery = 
             "MWchla[(2002-07-09T12:00:00Z)][][0:1000:last][0:1000:last]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_copyFiles_data", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12252,6 +12299,7 @@ FileVisitorDNLS.debugMode = false;
     public static void testCacheFiles(boolean deleteDataFiles) throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testCacheFiles(" + deleteDataFiles + ")\n" +
             "This requires erdMWchla1day in localhost ERDDAP.");
+        int language = 0; 
         testVerboseOn();
 FileVisitorDNLS.verbose = true;
 FileVisitorDNLS.reallyVerbose = true;
@@ -12274,7 +12322,7 @@ FileVisitorDNLS.debugMode = true;
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridCacheFiles  das and dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_cacheFiles_Entire", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12406,7 +12454,7 @@ expected =
 
 
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_cacheFiles_Entire", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12434,7 +12482,7 @@ expected =
 
         //.csv that needs every file
         userDapQuery = "MWchla[0:last][][0][3000]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_cacheFiles_data", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12508,6 +12556,7 @@ FileVisitorDNLS.debugMode = false;
     public static void testFileName(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testFileName(" + deleteCachedDatasetInfo + ")");
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -12524,7 +12573,7 @@ FileVisitorDNLS.debugMode = false;
 
         //*** test getting das for entire dataset
         String2.log("\n****************** testFileName  das and dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testFileName", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12647,7 +12696,7 @@ expected =
 
 
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testFileName", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12672,7 +12721,7 @@ expected =
 
         //time values
         userDapQuery = "time[]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testFileName" + "Time", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12686,7 +12735,7 @@ expected =
 
         //.csv that needs every file
         userDapQuery = "chlorophyll[0:last][1600:1601][10]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testFileName", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12711,6 +12760,7 @@ expected =
     public static void testReplaceFromFileName(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testReplaceFromFileName(" + deleteCachedDatasetInfo + ")");
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -12727,7 +12777,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** testReplaceFromFileName  das and dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -12985,7 +13035,7 @@ expected =
 "    String time_coverage_end \"2020-12-31T12:00:00Z\";\n" +
 "    String time_coverage_resolution \"P1D\";\n" +
 "    String time_coverage_start \"1981-08-25T12:00:00Z\";\n" +
-"    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-present, Daytime (1 Day Composite)\";\n" +
+"    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417Â°, 1981-present, Daytime (1 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting -179.979;\n" +  //2021-03-08 was -179.9792
 "  }\n" +
 "}\n";
@@ -12997,7 +13047,7 @@ expected =
 
 
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13070,7 +13120,7 @@ expected =
 
         //time values
         userDapQuery = "time[]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testReplaceFromFileName" + "Time", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13090,7 +13140,7 @@ expected =
 
         //.csv that needs every file
         userDapQuery = "sea_surface_temperature[0:last][1600:1601][10]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testReplaceFromFileName", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13130,6 +13180,7 @@ expected =
         testVerboseOn();
         boolean oDebugMode = debugMode;
         debugMode = true;
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -13149,7 +13200,7 @@ expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** testMinimalReadSource  das and dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".das"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13406,7 +13457,7 @@ expected =
 "    String time_coverage_end \"2020-12-31T12:00:00Z\";\n" +
 "    String time_coverage_resolution \"P1D\";\n" +
 "    String time_coverage_start \"1981-08-25T12:00:00Z\";\n" +
-"    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417°, 1981-2018, Daytime (1 Day Composite)\";\n" +
+"    String title \"AVHRR Pathfinder Version 5.3 L3-Collated (L3C) SST, Global, 0.0417Â°, 1981-2018, Daytime (1 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting -179.979;\n" +
 "  }\n" +
 "}\n";
@@ -13417,7 +13468,7 @@ expected =
             expected, "results=\n" + results);
 
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".dds"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13490,7 +13541,7 @@ expected =
 
         //time values
         userDapQuery = "time[]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testMinimalReadSource" + "Time", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13510,7 +13561,7 @@ expected =
 
         //.csv that needs every file
         userDapQuery = "sea_surface_temperature[0:last][1600:1601][10]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddGrid.className() + "_testMinimalReadSource", ".csv"); 
         results = String2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
@@ -13567,6 +13618,7 @@ expected =
         String tDir = EDStatic.fullTestCacheDirectory;
         String tName, start, query, results, expected;
         EDDGrid eddGrid;
+        int language = 0; 
 
         //test default=linear
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day");
@@ -13577,7 +13629,7 @@ expected =
             start = "testLogAxis_ErrorXVarMustBeAxisVar";
             query = "sst[last-7:last][0][(25)][(242)]&.draw=lines&.vars=sst|time";
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query,
+                eddGrid.makeNewFileForDapQuery(language, null, null, query,
                     tDir, start + "DefaultIsLinear", ".png")); 
         }
 
@@ -13586,35 +13638,35 @@ expected =
             query = "sst[last-7:last][0][(25)][(242)]&.draw=lines&.vars=time|sst";
             /* */
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query,
+                eddGrid.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500||",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
                 tDir, start + "5_500DefaultIsAscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|true|Linear",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|true|log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|log",
                 tDir, start + "AscendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|false|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=1e-5|1e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
                 tDir, start + "HardIntraDecadeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=20.2|29||Log", //super hard intra-decade, no power of 10 in range
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=20.2|29||Log", //super hard intra-decade, no power of 10 in range
                 tDir, start + "SuperHardIntraDecadeLog", ".png")); 
             /* */
         }
@@ -13629,35 +13681,35 @@ expected =
             /* */
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query,
+                eddGrid.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500||",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
                 tDir, start + "5_500DefaultIsAscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|true|Linear",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|true|log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|log",
                 tDir, start + "AscendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|false|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=1e-5|1e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
                 tDir, start + "HardIntraDecadeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=191|199||Log", //super hard intra-decade, no power of 10 in range
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=191|199||Log", //super hard intra-decade, no power of 10 in range
                 tDir, start + "SuperHardIntraDecadeLog", ".png")); 
             /* */
         }
@@ -13669,40 +13721,40 @@ expected =
         if (whichChunk < 0 || whichChunk == 3) {
             start = "gridTestLogAxis_TimeChla_";
             String2.log(String2.directReadFrom88591File(tDir +  
-                eddGrid.makeNewFileForDapQuery(null, null, "chlorophyll[last][0][(50):(51)][(144):(145)]",
+                eddGrid.makeNewFileForDapQuery(language, null, null, "chlorophyll[last][0][(50):(51)][(144):(145)]",
                 tDir, start + "GetData", ".csv"))); 
             query = "chlorophyll[last-7:last][0][(50.7825885)][(144.016668)]&.draw=lines&.vars=time|chlorophyll";  //lat lon chosen for high chl values
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query,
+                eddGrid.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500||",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
                 tDir, start + "DefaultIsAscendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|true|Linear",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|true|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Log",
                 tDir, start + "AscendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5|500|false|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=1e-5|1e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5e-6|5e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
                 tDir, start + "WideRangeLog5", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.yRange=5e-6|5e5|false|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5|false|Log",
                 tDir, start + "WideRangeLog5", ".png")); 
             /* */
         }
@@ -13715,39 +13767,39 @@ expected =
             /* */
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query,
+                eddGrid.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500||",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
                 tDir, start + "DefaultIsAscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|true|Linear",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|true|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Log",
                 tDir, start + "AscendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5|500|false|Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=1e-5|1e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=5e-6|5e5||Log",
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
                 tDir, start + "WideRangeLog5", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
                 tDir, start + "HardIntraDecadeLog", ".png")); 
 
             SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(null, null, query + "&.xRange=205|229||Log", //super hard intra-decade, no power of 10 in range
+                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=205|229||Log", //super hard intra-decade, no power of 10 in range
                 tDir, start + "SuperHardIntraDecadeLog", ".png")); 
             /* */
         }
@@ -13762,6 +13814,7 @@ expected =
     public static void testDapErrors() throws Throwable {
         String baseRequest = "http://localhost:8080/cwexperimental/griddap/"; 
         String results, expected;
+        int language = 0; 
 
         String2.log("\n*** EDDGridFromNcFiles.testDapErrors()");
         String comment = "\n!!! These tests require erdBAssta5day and noaaPassiveAcoustic in localhost ERDDAP.";
@@ -13884,6 +13937,7 @@ expected =
     public static void testGenerateDatasetsXmlLong2() throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXmlLong2()");
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -14032,7 +14086,7 @@ expected =
         Test.ensureEqual(edd.title(), "Data from a local source.", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "VHMAX", "");
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             "VHMAX[(2019-07-03T00:00:00Z):1:(2019-07-03T00:00:00Z)][(25):1:(25.01)][(52):1:(52.01)]", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_TestLong2Grid", ".csv"); 
@@ -14058,6 +14112,7 @@ expected =
     public static void testUnsignedGrid() throws Throwable {
         String2.log("\n*** EDDGridFromNcFiles.testUnsignedGrid()");
         testVerboseOn();
+        int language = 0; 
 
         String name, tName, results, tResults, expected;
         String error = "";
@@ -14224,7 +14279,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.asc
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             dapQuery, //DataType=ubyte
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".asc"); 
@@ -14251,7 +14306,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.csv
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             dapQuery, //DataType=ubyte
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".csv"); 
@@ -14268,7 +14323,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.das
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14304,7 +14359,7 @@ expected =
 "    String grid_mapping_name \"latitude_longitude\";\n" +
 "    String history \"l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\n" +
 "[TODAY] (local files)\n" +
-"[TODAY] http://localhost:8080/cwexperimental/griddap/testUnsignedGrid.das\";\n" +
+"[TODAY] http://127.0.0.1:8080/cwexperimental/griddap/testUnsignedGrid.das\";\n" +
 "    String id \"V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\";\n" +
 "    String identifier_product_doi \"https://dx.doi.org\";\n" +
 "    String identifier_product_doi_authority \"https://dx.doi.org\";\n" +
@@ -14338,7 +14393,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.dds
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14357,7 +14412,7 @@ expected =
         //.esriAscii   //not available because no lat and lon
 
         //.htmlTable
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".htmlTable"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14408,7 +14463,7 @@ expected =
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);        
 
         //.itx
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".itx"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14449,7 +14504,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.json
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".json"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14472,7 +14527,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.jsonlCSV1
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".jsonlCSV1"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14487,7 +14542,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.jsonlCSV1
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".jsonlKVP"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14501,7 +14556,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.nccsv
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".nccsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14516,7 +14571,7 @@ expected =
 "*GLOBAL*,creator_url,https://oceandata.sci.gsfc.nasa.gov\n" +
 "*GLOBAL*,date_created,2017-11-18T01:49:38.000Z\n" +
 "*GLOBAL*,grid_mapping_name,latitude_longitude\n" +
-"*GLOBAL*,history,l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\\n[TODAY] (local files)\\n[TODAY] http://localhost:8080/cwexperimental/griddap/testUnsignedGrid.nccsv?palette[0][146:151]\n" +
+"*GLOBAL*,history,l3mapgen par=V20172742017304.L3m_MO_SNPP_CHL_chlor_a_4km.nc.param\\n[TODAY] (local files)\\n[TODAY] http://127.0.0.1:8080/cwexperimental/griddap/testUnsignedGrid.nccsv?palette[0][146:151]\n" +
 "*GLOBAL*,id,V20172742017304.L3b_MO_SNPP_CHL.nc/L3/V20172742017304.L3b_MO_SNPP_CHL.nc\n" +
 "*GLOBAL*,identifier_product_doi,https://dx.doi.org\n" +
 "*GLOBAL*,identifier_product_doi_authority,https://dx.doi.org\n" +
@@ -14571,13 +14626,13 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.ncml
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".ncml"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://localhost:8080/griddap/testUnsignedGrid\">\n" +
+"<netcdf xmlns=\"https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://127.0.0.1:8080/griddap/testUnsignedGrid\">\n" +
 "  <attribute name=\"_lastModified\" value=\"2017-11-18T01:49:38.000Z\" />\n" +
 "  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
 "  <attribute name=\"Conventions\" value=\"CF-1.6, COARDS, ACDD-1.3\" />\n" +
@@ -14640,7 +14695,7 @@ expected =
         //.odvTxt -- must have lat and lon
 
         //.tsv
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".tsv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14656,7 +14711,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.xhtml
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testUnsignedGrid", ".xhtml"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14721,6 +14776,7 @@ expected =
         String2.log("\n****************** EDDGridFromNcFiles.testNThreads() *****************\n");
 
         testVerboseOn();
+        int language = 0; 
         String tName, results,  expected, userDapQuery, tQuery;
         String error = "";
         String tDir = EDStatic.fullTestCacheDirectory;
@@ -14737,7 +14793,7 @@ expected =
 
             long tTime = System.currentTimeMillis();
             eddGrid.nThreads = Math.abs(nt);
-            tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
                 "taux[0:150][][(30)][(330)]", //around time=[210], it slows way down for awhile (something in Windows: virus check?)
                 tDir, "EDDGridFromNcFiles.testNThreads" + nt, ".csv"); 
             results = String2.directReadFrom88591File(tDir + tName);
@@ -14775,6 +14831,7 @@ expected =
 
         String name, tName, results, tResults, expected;
         String error = "";
+        int language = 0; 
         int po;
         EDV edv;        
         String id = "testStructure";  
@@ -14783,7 +14840,7 @@ expected =
         String dapQuery = ""; 
 
         //.csv
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructure", ".csv"); 
@@ -14804,7 +14861,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.csv subset
-        tName = edd.makeNewFileForDapQuery(null, null, "ArrayOfStructures_b_name[4:2:8]", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "ArrayOfStructures_b_name[4:2:8]", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructure_b", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14817,7 +14874,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.das
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructure", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14847,7 +14904,7 @@ expected =
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"COARDS, CF-1.6, ACDD-1.3\";\n" +
 "    String history \"[TODAY] (local files)\n" +
-"[TODAY] http://localhost:8080/cwexperimental/griddap/testStructure.das\";\n" +
+"[TODAY] http://127.0.0.1:8080/cwexperimental/griddap/testStructure.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"array, ArrayOfStructures|a_name, ArrayOfStructures|b_name, ArrayOfStructures|c_name, axis0, data, local, name, source, structures\";\n" +
@@ -14867,7 +14924,7 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
         //.dds
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructure", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -14907,6 +14964,7 @@ expected =
 
         String name, tName, results, tResults, expected;
         String error = "";
+        int language = 0; 
         int po;
         EDV edv;        
 
@@ -14920,7 +14978,7 @@ expected =
         EDD edd = oneFromDatasetsXml(null, id); 
 
         //.das
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructurePrivate", ".das"); 
         String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
@@ -14929,7 +14987,7 @@ expected =
             "Okay?");
 
         //.dds
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructurePrivate", ".dds"); 
         String2.log(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
@@ -14938,7 +14996,7 @@ expected =
             "Okay?");
 
         //.csv subset
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             "Yaw[0:500:3500],latitude[0:500:3500],longitude[0:500:3500]", 
             EDStatic.fullTestCacheDirectory, 
             edd.className() + "_testStructurePrivate", ".csv"); 
@@ -14961,6 +15019,7 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testFiles()\n");
         String tDir = EDStatic.fullTestCacheDirectory;
         String dapQuery, tName, start, query, results, expected;
+        int language = 0; 
         int po;
 
         try {
@@ -15180,6 +15239,7 @@ expected =
         testVerboseOn();
 
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        int language = 0;
         String error = "";
         EDVGridAxis edvga;
         String id = "testIslandShift";
@@ -15187,7 +15247,7 @@ expected =
         String tDir = EDStatic.fullTestCacheDirectory;
 
         for (int i = 1; i <= 4; i++) {
-            tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
                 "&.land=" + SgtMap.drawLandMask_OPTIONS[i],
                 tDir, "testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i], ".png"); 
             SSR.displayInBrowser("file://" + tDir + tName);

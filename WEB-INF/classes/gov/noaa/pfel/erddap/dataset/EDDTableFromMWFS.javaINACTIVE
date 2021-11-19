@@ -207,7 +207,7 @@ public class EDDTableFromMWFS extends EDDTable{
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
      *     will be converted to the EDStatic.standardLicense.
      * @param tLonMin in source units (use Double.NaN if not known).
-     *    [I use eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true); below to get it.]
+     *    [I use eddTable.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true); below to get it.]
      * @param tLonMax see tLonMin description.
      * @param tLatMin see tLonMin description.
      * @param tLatMax see tLonMin description.
@@ -357,13 +357,14 @@ public class EDDTableFromMWFS extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
         long getTime = System.currentTimeMillis();
 
@@ -546,7 +547,7 @@ public class EDDTableFromMWFS extends EDDTable{
                 .add("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary())
                 .add("license",       "[standard]"),
             //min/max lon lat alt gathered by looking at data for 2007-02-01 
-            // via eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true); below 
+            // via eddTable.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true); below 
             -97.22, -70.43,
             24.55, 38.48,
             0, 0,
@@ -578,6 +579,7 @@ public class EDDTableFromMWFS extends EDDTable{
         SSR.verbose = true;
         SSR.reallyVerbose = true;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        int language = 0;
         try {
 
 /*
@@ -637,7 +639,7 @@ time series data.</att>
         String error = "";
 
         //getEmpiricalMinMax   just do once
-        //mwfs.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true);
+        //mwfs.getEmpiricalMinMax(language, "2007-02-01", "2007-02-01", false, true);
         //if (true) System.exit(1);
 
         //a test based on their web page's example
@@ -646,7 +648,7 @@ time series data.</att>
         //BBOX is max lon, min lat, min lon, max lat  (!)
         //e.g.,  "&BBOX=-69.00,32.0,-72.00,42.30&TIME=2007-06-01T12:00Z,2007-06-01T14:00Z" + 
         //       "&TYPENAME=waterTemperature";
-        mwfs.getDataForDapQuery(null, "", "longitude,latitude,altitude,time,station_id,sea_water_temperature" +
+        mwfs.getDataForDapQuery(language, null, "", "longitude,latitude,altitude,time,station_id,sea_water_temperature" +
             "&longitude>=-72&longitude<=-69&latitude>=32&latitude<=42.3" +
             "&time>=2007-06-01T12:00&time<=2007-06-01T14:00", tw);
         Table table = tw.cumulativeTable();
@@ -670,7 +672,7 @@ time series data.</att>
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromMWFS.test das dds for entire dataset\n");
-        tName = mwfs.makeNewFileForDapQuery(null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".das"); 
+        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".das"); 
         results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = //see OpendapHelper.EOL for comments
@@ -778,7 +780,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     Test.ensureEqual(results, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = mwfs.makeNewFileForDapQuery(null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".dds"); 
+        tName = mwfs.makeNewFileForDapQuery(language, null, "", EDStatic.fullTestCacheDirectory, className + "_Entire", ".dds"); 
         results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
@@ -807,7 +809,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=2007-05-01&time<=2007-05-08"; 
         //2007-05-01 -> 1.1779776E9
         //2007-05-08 -> 1.1785824E9
-        tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
+        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
         results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //String2.log(results);
         expected = 
@@ -832,7 +834,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         if (doLongTest) {
             userDapQuery = "longitude,latitude,station_id,time,sea_water_temperature" +
                 "&longitude=" + tLon + "&latitude=" + tLat; 
-            tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
+            tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_station1", ".asc"); 
             results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
             //String2.log(results);
             expected = 
@@ -859,7 +861,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&time>=2007-05-01&time<=2007-05-01T00:59:00";
         //2007-05-01 -> 1.1779776E9
         //2007-05-01T00:59:00 -> 1.17798114E9
-        tName = mwfs.makeNewFileForDapQuery(null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_stations", ".asc"); 
+        tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_stations", ".asc"); 
         results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -885,7 +887,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results.substring(results.length() - 300));
 
         //data for mapExample
-        tName = mwfs.makeNewFileForDapQuery(null, "longitude,latitude&time>=2007-12-01&time<=2007-12-01T00:01:00", EDStatic.fullTestCacheDirectory, className + "Map", ".csv");
+        tName = mwfs.makeNewFileForDapQuery(language, null, "longitude,latitude&time>=2007-12-01&time<=2007-12-01T00:01:00", EDStatic.fullTestCacheDirectory, className + "Map", ".csv");
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 

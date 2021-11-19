@@ -497,6 +497,7 @@ String expected =
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromAudioFiles.testBasic() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -511,7 +512,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromAudioFiles  test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -560,7 +561,7 @@ String expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 expected =
-"http://localhost:8080/cwexperimental/tabledap/testTableWav.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testTableWav.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"channel, channel_1, data, elapsed, elapsedTime, local, source, time\";\n" +
@@ -587,7 +588,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -607,7 +608,7 @@ expected =
 
         //.csv   subset
         userDapQuery = "&time=2014-11-19T00:15:00Z&elapsedTime<=0.0001";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -628,7 +629,7 @@ expected =
 
         //.csv   subset   with constraints in reverse order 
         userDapQuery = "&elapsedTime<=0.0001&time=2014-11-19T00:15:00Z";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_2time", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -639,7 +640,7 @@ expected =
         userDapQuery = "channel_1&time=2014-11-19T00:15:00Z&elapsedTime<=15";
         tName = eddTable.className() + "test";
         File2.delete(dir + tName + ".wav");
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             tName, ".wav"); 
         Table table = new Table();
         table.readAudioFile(dir + tName, true, true); //readData, addElapsedTimeColumn

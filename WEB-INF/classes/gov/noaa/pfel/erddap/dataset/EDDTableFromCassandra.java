@@ -18,7 +18,7 @@ INSTALL CASSANDRA on Lenovo in 2021:
     decompressed into \programs\apache-cassandra-3.11.4      
   2018: downloaded apache-cassandra-3.11.3-bin.tar.gz
     decompressed into \programs\apache-cassandra-3.11.3
-* Run Cassandra 
+* Run Cassandra from DOS window
     cd \programs\apache-cassandra-2.1.22\bin\
     cassandra.bat -f
   To stop:
@@ -469,6 +469,7 @@ public class EDDTableFromCassandra extends EDDTable{
         long constructionStartMillis = System.currentTimeMillis();
         String errorInMethod = "Error in EDDTableFromCassandra(" + 
             tDatasetID + ") constructor:\n";
+        int language = 0; //for constructor
             
         //save some of the parameters
         className = "EDDTableFromCassandra"; 
@@ -690,11 +691,11 @@ public class EDDTableFromCassandra extends EDDTable{
 
         } else {
             //ask Cassandra
-            TableWriterAll twa = new TableWriterAll(null, null, //metadata not relevant
+            TableWriterAll twa = new TableWriterAll(language, null, null, //metadata not relevant
                 datasetDir(), "tPKDistinct");
             SimpleStatement statement = new SimpleStatement(cassQuery);
             Table table = makeEmptySourceTable(rvToResultsEDV, 1024); 
-            table = getDataForCassandraQuery(
+            table = getDataForCassandraQuery(language, 
                 EDStatic.loggedInAsSuperuser, "irrelevant", dapQuery, 
                 resultsDVI, rvToResultsEDV, session, statement, 
                 table, twa, new int[4]);
@@ -703,7 +704,7 @@ public class EDDTableFromCassandra extends EDDTable{
                     "Too many primary keys?! TableWriterAll said NoMoreDataPlease.");
             preStandardizeResultsTable(EDStatic.loggedInAsSuperuser, table); 
             if (table.nRows() > 0) {
-                standardizeResultsTable("irrelevant", dapQuery, table);
+                standardizeResultsTable(0, "irrelevant", dapQuery, table);
                 twa.writeSome(table);
             }
             twa.finish();
@@ -1068,13 +1069,14 @@ public class EDDTableFromCassandra extends EDDTable{
      * numbers are assured to be numbers). See
      * http://www.datastax.com/documentation/developer/java-driver/2.0/pdf/javaDriver20.pdf
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
        
         //get the sourceDapQuery (a query that the source can handle)
@@ -1082,7 +1084,7 @@ public class EDDTableFromCassandra extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             //timeStamp constraints other than regex are epochSeconds
             constraintVariables, constraintOps, constraintValues); 
@@ -1202,7 +1204,7 @@ public class EDDTableFromCassandra extends EDDTable{
         if (allConstraintsHandled && allRvAreInPkdTable) {
             if (verbose) String2.log("Request handled by partitionKeyDistinctTable.");
             preStandardizeResultsTable(loggedInAs, pkdTable); 
-            standardizeResultsTable(requestUrl, userDapQuery, pkdTable);
+            standardizeResultsTable(language, requestUrl, userDapQuery, pkdTable);
             tableWriter.writeSome(pkdTable);
             tableWriter.finish();
             return;
@@ -1310,7 +1312,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
             if (Thread.currentThread().isInterrupted())
                 throw new SimpleException("EDDTableFromCassandra.getDataForDapQuery" + 
-                    EDStatic.caughtInterrupted);
+                    EDStatic.caughtInterruptedAr[0]);
         
             //Make the BoundStatement
             //***!!! This method avoids CQL/SQL Injection Vulnerability !!!***
@@ -1382,7 +1384,7 @@ public class EDDTableFromCassandra extends EDDTable{
 
             //get the data
             //FUTURE: I think this could be parallelized. See EDDTableFromFiles.
-            table = getDataForCassandraQuery(loggedInAs, requestUrl, userDapQuery,
+            table = getDataForCassandraQuery(language, loggedInAs, requestUrl, userDapQuery,
                 resultsDVI, rvToResultsEDV, session, boundStatement, 
                 table, tableWriter, stats);
             if (tableWriter.noMoreDataPlease) 
@@ -1396,7 +1398,7 @@ public class EDDTableFromCassandra extends EDDTable{
             preStandardizeResultsTable(loggedInAs, table); 
             if (table.nRows() > 0) {
                 //String2.log("preStandardize=\n" + table.dataToString());
-                standardizeResultsTable(requestUrl, userDapQuery, table);
+                standardizeResultsTable(language, requestUrl, userDapQuery, table);
                 stats[3] += table.nRows();
                 tableWriter.writeSome(table); //ok if 0 rows
             }
@@ -1414,6 +1416,7 @@ public class EDDTableFromCassandra extends EDDTable{
      * This executes the query statement and may write some data to the tablewriter. 
      * This doesn't call tableWriter.finish();
      *
+     * @param language the index of the selected language
      * @param resultsDVI dataVariables[i] (DVI) for each resultsVariable
      * @param table May have some not-yet-tableWritten data when coming in.
      *   May have some not-yet-tableWritten data when returning.
@@ -1421,7 +1424,7 @@ public class EDDTableFromCassandra extends EDDTable{
      *    stats[3]+=nRowsAfterStandardize
      * @return the same or a different table (usually with some results rows)
      */
-    public Table getDataForCassandraQuery(
+    public Table getDataForCassandraQuery(int language, 
         String loggedInAs, String requestUrl, String userDapQuery, 
         int resultsDVI[], EDV rvToResultsEDV[],
         Session session, Statement statement, 
@@ -1621,7 +1624,7 @@ public class EDDTableFromCassandra extends EDDTable{
                 //String2.log(table.toString("rows",5));
                 preStandardizeResultsTable(loggedInAs, table); 
                 if (table.nRows() > 0) {
-                    standardizeResultsTable(requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
+                    standardizeResultsTable(language, requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
                     stats[3] += table.nRows();
                     tableWriter.writeSome(table); //okay if 0 rows
                 }
@@ -2518,6 +2521,7 @@ expected =
     public static void testBasic(boolean pauseBetweenTests) throws Throwable {
         String2.log("\n*** EDDTableFromCassandra.testBasic");
         testVerboseOn();
+        int language = 0;
         long cumTime = 0;
         String query;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -2534,7 +2538,7 @@ expected =
                     "\nDataset constructed.\n" +
                     "Paused to allow you to check the connectionProperty's."); 
 /* */
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = 
@@ -2566,7 +2570,7 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
             results = String2.directReadFrom88591File(dir + tName);
@@ -2713,7 +2717,7 @@ expected =
 
             //all     
             query = "";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2751,7 +2755,7 @@ expected =
 
             //subset   test sampletime ">=" handled correctly
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2769,7 +2773,7 @@ expected =
 
             //subset   test sampletime ">" handled correctly
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>2014-11-01T03:02:03Z";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2787,7 +2791,7 @@ expected =
             //subset   test secondary index: ctext '=' handled correctly
             //so erddap tells Cass to handle this constraint
             query = "deviceid,sampletime,ctext&ctext=\"text1\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2806,7 +2810,7 @@ expected =
             //  proves ctext '>=' not allowed
             //so this tests that erddap handles the constraint
             query = "deviceid,sampletime,ctext&ctext>=\"text3\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2824,7 +2828,7 @@ expected =
 
             //distinct()   subsetVariables
             query = "deviceid,cascii&deviceid=1001&distinct()";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2843,7 +2847,7 @@ expected =
 
             //orderBy()   subsetVariables
             query = "deviceid,sampletime,cascii&deviceid=1001&orderBy(\"cascii\")";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2863,7 +2867,7 @@ expected =
 
             //just keys   deviceid
             query = "deviceid,date&deviceid=1001";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2881,7 +2885,7 @@ expected =
             //no matching data (no matching keys)
             try {
                 query = "deviceid,sampletime&sampletime<2013-01-01";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -2901,7 +2905,7 @@ expected =
 
             //subset cint=-99
             query = "&cint=-99";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_intNaN", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2919,7 +2923,7 @@ expected =
 
             //subset cfloat=NaN
             query = "&cfloat=NaN";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_floatNaN", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2937,7 +2941,7 @@ expected =
 
             //subset cboolean=NaN
             query = "&cboolean=NaN";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_booleanNaN", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2952,7 +2956,7 @@ expected =
 
             //subset cboolean=1     
             query = "&cboolean=1";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_boolean1", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2969,7 +2973,7 @@ expected =
 
             //subset regex on set
             query = "&cset=~\".*set73.*\"";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_set73", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -2987,7 +2991,7 @@ expected =
             //no matching data (sampletime)
             try {
                 query = "&deviceid=1001&sampletime<2014-01-01";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3012,7 +3016,7 @@ expected =
             //&deviceid>=23065&time>=2014-05-15T02:00:00Z&time<=2014-05-16T00:00:05Z
             query = "sampletime,depth,u" +
             "&deviceid=1001&sampletime>=2014-11-01&sampletime<=2014-11-01T03";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_dup", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3034,7 +3038,7 @@ expected =
             //no matching data (erddap)
             try {
                 query = "&deviceid>1001&cascii=\"zztop\"";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3072,6 +3076,7 @@ expected =
         throws Throwable {
         String2.log("\n*** EDDTableFromCassandra.testMaxRequestFraction");
         testVerboseOn();
+        int language = 0;
         long cumTime = 0;
         String query = null;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -3089,7 +3094,7 @@ expected =
             //all    
             try {
                 query = "&deviceid>1000&cascii=\"zztop\"";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "frac", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3111,7 +3116,7 @@ expected =
             //still too much     
             try {
                 query = "&deviceid>1001&cascii=\"zztop\"";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "frac2", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3132,7 +3137,7 @@ expected =
 
             //subset  2/5  0.4 is okay
             query = "deviceid,sampletime,cascii&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_frac3", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3166,6 +3171,7 @@ expected =
     public static void testCass1Device(boolean pauseBetweenTests) throws Throwable {
         String2.log("\n*** EDDTableFromCassandra.testCass1Device");
         testVerboseOn();
+        int language = 0;
         long cumTime = 0;
         String query;
         String dir = EDStatic.fullTestCacheDirectory;
@@ -3182,7 +3188,7 @@ expected =
                     "\nDataset constructed.\n" +
                     "Paused to allow you to check the connectionProperty's."); 
 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = 
@@ -3214,7 +3220,7 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.dds 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
             results = String2.directReadFrom88591File(dir + tName);
@@ -3355,7 +3361,7 @@ expected =
 
             //all     
             query = "";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3385,7 +3391,7 @@ expected =
 
             //subset   test sampletime ">=" handled correctly
             query = "deviceid,sampletime,cmap&sampletime>=2014-11-01T03:02:03Z";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3403,7 +3409,7 @@ expected =
 
             //subset   test sampletime ">" handled correctly
             query = "deviceid,sampletime,cmap&sampletime>2014-11-01T03:02:03Z";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3420,7 +3426,7 @@ expected =
 
             //distinct()   subsetVariables
             query = "deviceid,cascii&distinct()";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3439,7 +3445,7 @@ expected =
 
             //orderBy()   subsetVariables
             query = "deviceid,sampletime,cascii&orderBy(\"cascii\")";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3459,7 +3465,7 @@ expected =
 
             //just keys   deviceid
             query = "deviceid,date";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3477,7 +3483,7 @@ expected =
             //no matching data (no matching keys)
             try {
                 query = "deviceid,sampletime&sampletime<2013-01-01";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3498,7 +3504,7 @@ expected =
             //no matching data (sampletime)
             try {
                 query = "&sampletime<2014-01-01";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3518,7 +3524,7 @@ expected =
             //no matching data (erddap)
             try {
                 query = "&cascii=\"zztop\"";
-                tName = tedd.makeNewFileForDapQuery(null, null, query,
+                tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
                 results = String2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
@@ -3555,6 +3561,7 @@ expected =
     public static void testStatic(boolean pauseBetweenTests) throws Throwable {
         String2.log("\n*** EDDTableFromCassandra.testStatic");
         testVerboseOn();
+        int language = 0;
         boolean oDebugMode = debugMode;
         debugMode = true;
         long cumTime = 0;
@@ -3574,7 +3581,7 @@ expected =
                     "Paused to allow you to check the connectionProperty's."); 
 
             //.dds
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected = 
@@ -3594,7 +3601,7 @@ expected =
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
   
             //.das 
-            tName = tedd.makeNewFileForDapQuery(null, null, "", 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
             results = String2.directReadFrom88591File(dir + tName);
@@ -3714,7 +3721,7 @@ expected =
 
             //all     
             query = "";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_staticAll", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3743,7 +3750,7 @@ expected =
 
             //distinct()   subsetVariables
             query = "deviceid,date,latitude,longitude&distinct()";
-            tName = tedd.makeNewFileForDapQuery(null, null, query,
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_staticDistinct", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3762,7 +3769,7 @@ expected =
             //static variables are NOT constrainable by Cassandra (even '=' queries)
             //so ERDDAP handles it
             query = "&latitude=34";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_staticCon1", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  
@@ -3781,7 +3788,7 @@ expected =
             //static variables are NOT constrainable by Cassandra (even '>' queries)
             //so ERDDAP handles it
             query = "&latitude>33.5";
-            tName = tedd.makeNewFileForDapQuery(null, null, query, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_staticCon2", ".csv"); 
             results = String2.directReadFrom88591File(dir + tName);
             expected =  

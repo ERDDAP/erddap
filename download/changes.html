@@ -28,7 +28,7 @@
       <a title="National Marine Fisheries Service" rel="bookmark"
       href="https://www.fisheries.noaa.gov">NMFS</a>  
       <a title="Southwest Fisheries Science Center" rel="bookmark"
-      href="https://swfsc.noaa.gov">SWFSC</a> 
+      href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a> 
       <a title="Environmental Research Division" rel="bookmark"
       href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>  
       &nbsp; &nbsp;
@@ -67,7 +67,7 @@ those great suggestions coming!
   with the specified charset.
 
 -->
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
 <h2><a class="selfLink" id="changes2.15" href="#changes2.15" rel="bookmark">Changes</a> 
@@ -75,13 +75,70 @@ in ERDDAP version 2.15 (released 2021-??-??)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>(none)
+  <li>ERDDAP has a new system to let user's specify the language to be used for all web pages.
+    If an ERDDAP installation is set up to use it, the list of languages will appear
+    in the upper right corner of every web page.
+    ERDDAP URL's from before this version continue to work and always return 
+    English content, as before.
+    <p>Not all text or all web pages were translated. There were time constraints
+    on this project that prevented Qi and Bob from getting to 100%.
+    <p>The obvious question is: why did you put so much effort into this when Chrome
+    will translate web pages on-the-fly? The answer is: this way, we get much more
+    control over how the translation is done. Notably, there are lots of words
+    that shouldn't be translated on the web pages, e.g., the names of variables,
+    parameters, units, and organizations. Much of the translation effort was identifying
+    words and phrases that shouldn't be translated. Also, the machine translations
+    tended to mangle certain types of HTML markup. Managing the translation
+    allowed us to minimize this problem.
+    <p>The translation project was done by Qi Zeng (a Google Summer of Code intern) and Bob Simons
+    using Google's Translation web service. It was a huge project. Thanks, Qi!
+  <li>BUG FIX: ERDDAP now allows ORCID ID's to have X as last digit. 
+    Thanks to Maurice Libes.
     <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
-  <li>NEW: 
-    Thanks to 
+  <li>TO DO: 
+    <ul>
+    <li>You need to make a few changes related to ERDDAP's new system 
+      to let users specify the language for web pages.
+      <ul>
+      <li>On the first line of your setup.xml and datasets.xml files, change to: <kbd>encoding="UTF-8"</kbd>
+        and change the document's encoding in your text editor so it is saved as a UTF-8 file.
+        GenerateDatasetsXml now assumes that the datasets.xml is a UTF-8 file.
+      <li>Programmers who compile ERDDAP:
+         All of ERDDAP .java files should be treated as UTF-8 files by default.
+         You may need to add "-encoding UTF-8" to the javac command line. (I did.)
+      <li>To enable this system (strongly recommended), in the &lt;startBodyHtml5&gt; 
+        tag that you specify in datasets.xml, change "&loginInfo;" into "&loginInfo; | &language;"
+        so that the list of languages appears in the upper right corner of every ERDDAP web page.
+      <li>ERDDAP only uses the &lt;startBodyHtml5&gt; tag that you specify in datasets.xml 
+        to specify the HTML content for the banner
+        at the top of every ERDDAP web page, no matter what language the user selects.
+        If you change that tag to use 
+        <br>"&EasierAccessToScientificData;" instead of "Easier access to scientific data" and
+        <br>"&BroughtToYouBy;" instead of "Brought to you by",
+        ERDDAP will use translated versions of those phrases in the banner.
+      <li>Similarly, the new default &theShortDescriptionHtml; in datasets.xml is <pre>
+&lt;theShortDescriptionHtml&gt;&lt;![CDATA[ 
+&lt;h1&gt;ERDDAP&lt;/h1&gt;
+&amp;erddapIs;
+&amp;thisParticularErddap;
+[standardShortDescriptionHtml]
+]]&gt;&lt;/theShortDescriptionHtml&gt;</pre>
+        The last 3 lines of content are things that will be substituted with translated text.
+        If you convert any of them (notably &amp;thisParticularErddap;) or all of them to explicit text
+        in datasets.xml (which has priority, if present) or messages.xml,
+        that text will appear no matter what language the user selects.
+        This is not perfect, but I figured that few administrators would want to edit
+        &lt;theShortDescriptionHtml&gt; in 35 different files to provide 35 different translated
+        versions of that tag.
+      </ul>
+    <br>&nbsp;
+
+  <li>CHANGED: Some errors are now handled slightly differently and so may
+    be added to the tally of "Failed Requests" on status.html and in the Daily Report Email.
+    So those numbers may be somewhat larger than before. 
     <br>&nbsp;
 
   <li>BUG FIX: GenerateDatasetsXml for EDDGridLon0360 and EDDGridLonPM180 
@@ -5127,10 +5184,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
     Sorry. Hopefully, the next version will be relatively soon (and much easier to upgrade to).
 
   <li>To avoid several security bugs in Java 6 update 23 and below, 
-      <a href="https://www.java.com/en/download/manual.jsp">download<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-      and install the latest version 
+      download and install the latest version 
     of Java (Java 6 update 24 or higher). 
     If you have a 64-bit operating system, please get a 64-bit version of Java.
 
@@ -6458,7 +6512,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.14
+<p>ERDDAP, Version 2.15
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
