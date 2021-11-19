@@ -59,7 +59,7 @@ public class TestSSR {
         */
 
         //percentDecode(String query) 
-        String s = "~`!@#$%^&*()_-+=|\\{[}]:;\"'<,>.?/ a\nA°1"; //after A is degree #176/B0
+        String s = "~`!@#$%^&*()_-+=|\\{[}]:;\"'<,>.?/ a\nAÂ°1"; //after A is degree #176/B0
         Test.ensureEqual(SSR.percentEncode(s),                  //it is utf-8'd then % encoded
             //note that I modified Java code so ' ' becomes %20, not +
             "%7E%60%21%40%23%24%25%5E%26*%28%29_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01",
@@ -68,12 +68,12 @@ public class TestSSR {
             "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22'%3C%2C%3E.%3F%2F%20a%0AA%C2%B01", "");
         Test.ensureEqual(SSR.percentDecode("%2B%20%3Aq*~%3F%3D%26%25"), "+ :q*~?=&%", "");
 
-        s = "AZaZ09 \t\r\n`";
+        s = "AZaz09 \t\r\n`";
         Test.ensureEqual(SSR.minimalPercentEncode(s), 
-            "AZaZ09%20%09%0D%0A%60", "");
+            "AZaz09%20%09%0D%0A%60", "");
         Test.ensureEqual(SSR.percentEncode(s), 
-            "AZaZ09%20%09%0D%0A%60", ""); 
-        Test.ensureEqual(SSR.percentDecode("AZaZ09%20%09%0D%0A%60"), s, "");
+            "AZaz09%20%09%0D%0A%60", ""); 
+        Test.ensureEqual(SSR.percentDecode("AZaz09%20%09%0D%0A%60"), s, "");
 
         s = "~!@#$%^&*()";
         Test.ensureEqual(SSR.minimalPercentEncode(s), 
@@ -381,7 +381,7 @@ public class TestSSR {
                     "mail.smtp.starttls.enable|true",
                     emailReplyToAddress, emailToAddresses,
                     "gmail email test", 
-                    "This is a gmail email test from TestSSR with embedded special characters < > & û.\nSecond line.");
+                    "This is a gmail email test from TestSSR with embedded special characters < > & Ã».\nSecond line.");
             } catch (Exception e) {
                 String2.pressEnterToContinue(MustBe.throwableToString(e)); 
             }

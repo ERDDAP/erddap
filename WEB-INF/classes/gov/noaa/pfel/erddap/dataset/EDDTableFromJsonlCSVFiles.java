@@ -547,7 +547,7 @@ String expected =
 
     /**
      * This does basic tests of this class.
-     * Note that ü in utf-8 is \xC3\xBC or [195][188]
+     * Note that Ã¼ in utf-8 is \xC3\xBC or [195][188]
      * Note that Euro is \\u20ac (and low byte is #172 is \\u00ac -- I worked to encode as '?')
      *
      * @throws Throwable if trouble
@@ -560,6 +560,7 @@ String expected =
         EDV edv;
         String dir = EDStatic.fullTestCacheDirectory;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        int language = 0;
 
         String id = "testJsonlCSV"; 
         if (deleteCachedDatasetInfo)
@@ -569,7 +570,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromJsonlCSVFiles  test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -649,7 +650,7 @@ String expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 expected =
-"http://localhost:8080/cwexperimental/tabledap/testJsonlCSV.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testJsonlCSV.das\";\n" +
 "    String infoUrl \"https://jsonlines.org/examples/\";\n" +
 "    String institution \"jsonlines.org\";\n" +
 "    String keywords \"data, latitude, local, long, longitude, sea, ship, source, sst, status, surface, temperature, test, testLong, time\";\n" +
@@ -679,7 +680,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -703,7 +704,7 @@ expected =
 
         //.csv  all data        
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -721,7 +722,7 @@ expected =
 
         //.csv   subset
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -733,7 +734,7 @@ expected =
 
         //.csv   subset based on string constraint
         userDapQuery = "&ship=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\""; //json formatted constraint
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1string", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -745,7 +746,7 @@ expected =
 
         //.csv   subset based on char constraint
         userDapQuery = "&status=\"\\u20ac\""; //json formatted constraint
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1char", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -757,7 +758,7 @@ expected =
 
         //.csv   subset based on long constraint
         userDapQuery = "&testLong=-1234567890123456";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1long", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -769,7 +770,7 @@ expected =
 
         //.csv   subset based on harder long constraint
         userDapQuery = "&testLong=-9223372036854775808";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1longb", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);

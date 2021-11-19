@@ -83,10 +83,11 @@ public class ArchiveADataset {
     /**
      * This is used when called from within a program.
      *
+     * @param language the index of the selected language
      * @param args if args has values, they are used to answer the questions.
      * @return the full name of the tgz file.
      */
-    public String doIt(String args[]) throws Throwable {
+    public String doIt(int language, String args[]) throws Throwable {
         GregorianCalendar gcZ = Calendar2.newGCalendarZulu();
         String isoTime     = Calendar2.formatAsISODateTimeTZ(gcZ);
         String compactTime = Calendar2.formatAsCompactDateTime(gcZ) + "Z";
@@ -270,7 +271,7 @@ public class ArchiveADataset {
                 IntArray constraints = new IntArray();
                 //test validity
                 for (int i = 0; i < dataVarsSA.size(); i++) {
-                    eddGrid.parseDataDapQuery(
+                    eddGrid.parseDataDapQuery(language, 
                         dataVarsSA.get(0) + get0,  //not getEverything, it might trigger too-much-data error
                         junk, constraints, false); //repair
                 }
@@ -290,7 +291,7 @@ public class ArchiveADataset {
                     "What subset do you want to archive");
 
                 //parse the constraints to test validity
-                eddGrid.parseDataDapQuery(
+                eddGrid.parseDataDapQuery(language, 
                     //pretend request is just for 1 var (I only care about the constraints)
                     dataVarsSA.get(0) + constraintsString, 
                     junk, constraints, false); //repair
@@ -350,11 +351,11 @@ public class ArchiveADataset {
                         throw new RuntimeException(error);
 
                     //save .das to archiveDir
-                    resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+                    resultName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
                         archiveDir, datasetID, ".das"); 
      
                     //save .dds to archiveDir
-                    resultName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+                    resultName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
                         archiveDir, datasetID, ".dds"); 
                  }
 
@@ -391,7 +392,7 @@ public class ArchiveADataset {
                     } else {
                         try {
                             String fullName = archiveDataDir + fileName + ".nc";
-                            eddGrid.saveAsNc(NetcdfFileFormat.NETCDF3,
+                            eddGrid.saveAsNc(language, NetcdfFileFormat.NETCDF3,
                                 "ArchiveADataset", //pseudo ipAddress
                                 baseRequestUrl + ".nc", query.toString(),                        
                                 fullName, true, 0); //keepUnusedAxes, lonAdjust
@@ -436,7 +437,7 @@ public class ArchiveADataset {
                 StringArray conVars    = new StringArray();
                 StringArray conOps     = new StringArray();
                 StringArray conValues  = new StringArray();
-                eddTable.parseUserDapQuery(
+                eddTable.parseUserDapQuery(language, 
                     dataVarsCSV, 
                     resultVars, conVars, conOps, conValues, false); //repair
 
@@ -449,7 +450,7 @@ public class ArchiveADataset {
                     "for example, &time>=2015-01-01&time<2015-02-01\n" +
                     "or press Enter for no constraints");
                 //parse dataVars+constraints to ensure valid
-                eddTable.parseUserDapQuery(
+                eddTable.parseUserDapQuery(language, 
                     dataVarsCSV + extraConstraints, 
                     resultVars, conVars, conOps, conValues, false); //repair
 
@@ -554,11 +555,11 @@ public class ArchiveADataset {
                         throw new RuntimeException(error);
 
                     //save .das to archiveDir
-                    resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
+                    resultName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
                         archiveDir, datasetID, ".das"); 
      
                     //save .dds to archiveDir
-                    resultName = eddTable.makeNewFileForDapQuery(null, null, "", 
+                    resultName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
                         archiveDir, datasetID, ".dds"); 
                 }
  
@@ -581,7 +582,7 @@ public class ArchiveADataset {
                         " tQuery=" + tQuery);
                     if (!dryRun) {
                         try {
-                            resultName = eddTable.makeNewFileForDapQuery(null, null, 
+                            resultName = eddTable.makeNewFileForDapQuery(language, null, null, 
                                 tQuery, archiveDataDir, datasetID, fileType); 
                             nDataFilesCreated++;
 
@@ -609,7 +610,7 @@ public class ArchiveADataset {
                 } else {
 
                     //get the list of subsetBy combinations
-                    resultName = eddTable.makeNewFileForDapQuery(null, null, 
+                    resultName = eddTable.makeNewFileForDapQuery(language, null, null, 
                         subsetByCSV + extraConstraints + "&distinct()", 
                         archiveDir, "combos", ".nc"); 
                     Table combos = new Table(); 
@@ -645,7 +646,7 @@ public class ArchiveADataset {
                         File2.makeDirectory(fullDir);
                         if (!dryRun) {
                             try {
-                                resultName = eddTable.makeNewFileForDapQuery(null, null, 
+                                resultName = eddTable.makeNewFileForDapQuery(language, null, null, 
                                     tQuery.toString(), fullDir, fileName, fileType); 
                                 nDataFilesCreated++;
 
@@ -791,9 +792,10 @@ public class ArchiveADataset {
 
     public static void testOriginalNcCF() throws Throwable {
         String2.log("*** ArchiveADataset.testOriginalNcCF()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "original",
             "tar.gz",
@@ -838,9 +840,10 @@ public class ArchiveADataset {
 
     public static void testBagItNcCF() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItNcCF()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "BagIt",
             "default", //tar.gz
@@ -936,9 +939,10 @@ public class ArchiveADataset {
     /** A test of NCEI-preferences */
     public static void testBagItNcCFMA() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItNcCFMA()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "BagIt",
             "tar.gz", 
@@ -1033,9 +1037,10 @@ public class ArchiveADataset {
 
     public static void testOriginalTrajectoryProfile() throws Throwable {
         String2.log("*** ArchiveADataset.testOriginalTrajectoryProfile()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             //"-verbose",  //verbose is really verbose for this test
             "original", 
             "tar.gz",
@@ -1081,9 +1086,10 @@ public class ArchiveADataset {
 
     public static void testBagItTrajectoryProfile() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItTrajectoryProfile()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             //"-verbose",  //verbose is really verbose for this test
             "bagit", 
             "zip",
@@ -1180,9 +1186,10 @@ public class ArchiveADataset {
 
     public static void testOriginalGridAll() throws Throwable {
         String2.log("*** ArchiveADataset.testOriginalGridAll()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "original", 
             "tar.gz",
@@ -1226,9 +1233,10 @@ public class ArchiveADataset {
 
     public static void testBagItGridAll() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItGridAll()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "BagIt", 
             "ZIP",
@@ -1321,9 +1329,10 @@ public class ArchiveADataset {
 
     public static void testOriginalGridSubset() throws Throwable {
         String2.log("*** ArchiveADataset.testOriginalGridSubset()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "original", 
             "tar.gz",
@@ -1365,9 +1374,10 @@ public class ArchiveADataset {
 
     public static void testBagItGridSubset() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItGridSubset()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "BagIt", 
             "zip",
@@ -1458,9 +1468,10 @@ public class ArchiveADataset {
 
     public static void testBagItGridSubset2() throws Throwable {
         String2.log("*** ArchiveADataset.testBagItGridSubset2()");
+        int language = 0;
 
         //make the targz
-        String targzName = (new ArchiveADataset()).doIt(new String[]{
+        String targzName = (new ArchiveADataset()).doIt(language, new String[]{
             "-verbose",
             "BagIt", 
             "tar.gz",
@@ -1610,7 +1621,7 @@ public class ArchiveADataset {
      * @param args if args has values, they are used to answer the questions.
      */
     public static void main(String args[]) throws Throwable {
-        (new ArchiveADataset()).doIt(args);
+        (new ArchiveADataset()).doIt(0, args);
         System.exit(0);
     }
 

@@ -248,7 +248,7 @@ public class EDDGridCopy extends EDDGrid {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -542,6 +542,7 @@ public class EDDGridCopy extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -555,11 +556,11 @@ public class EDDGridCopy extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
-        return localEdd.getSourceData(tDirTable, tFileTable, tDataVariables, tConstraints);
+        return localEdd.getSourceData(language, tDirTable, tFileTable, tDataVariables, tConstraints);
     }
 
     /**
@@ -587,23 +588,24 @@ public class EDDGridCopy extends EDDGrid {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
-        return localEdd.accessibleViaFilesFileTable(nextPath);
+        return localEdd.accessibleViaFilesFileTable(language, nextPath);
     }
 
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
          if (!accessibleViaFiles)
              return null;
-         return localEdd.accessibleViaFilesGetLocal(relativeFileName);
+         return localEdd.accessibleViaFilesGetLocal(language, relativeFileName);
      }
 
 
@@ -621,6 +623,7 @@ public class EDDGridCopy extends EDDGrid {
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         EDDGrid eddGrid = null;
+        int language = 0;
 
         try {
          
@@ -641,7 +644,7 @@ public class EDDGridCopy extends EDDGrid {
 
             //*** test getting das for entire dataset
             String2.log("\n*** .nc test das dds for entire dataset\n");
-            tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Entire", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -767,7 +770,7 @@ today;
 //today + 
 
 expected = 
-    " http://localhost:8080/cwexperimental/griddap/testGridCopy.das\";\n" + //different
+    " http://127.0.0.1:8080/cwexperimental/griddap/testGridCopy.das\";\n" + //different
     "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
     "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
     "    String keywords \"Earth Science > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -801,7 +804,7 @@ expected =
                 expected, "results=\n" + results);
             
             //*** test getting dds for entire dataset
-            tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Entire", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -846,7 +849,7 @@ expected =
             //.csv  with data from one file
             String2.log("\n*** .nc test read from one file\n");       
             userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
-            tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Data1", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -872,7 +875,7 @@ expected =
             //.csv  with data from several files
             String2.log("\n*** .nc test read from several files\n");       
             userDapQuery = "y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]";
-            tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Data1", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -911,6 +914,7 @@ expected =
         EDDGrid eddGrid = null;
         String tDatasetID = "testOnlySince";
         String copyDatasetDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
+        int language = 0;
 
         try {
             //delete all existing files
@@ -930,7 +934,7 @@ expected =
         eddGrid = (EDDGridCopy)oneFromDatasetsXml(null, tDatasetID);
 
         //*** look at the time values
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "time", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "time", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_time", ".csv"); 
         String2.log("\n" + String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
         String2.pressEnterToContinue(

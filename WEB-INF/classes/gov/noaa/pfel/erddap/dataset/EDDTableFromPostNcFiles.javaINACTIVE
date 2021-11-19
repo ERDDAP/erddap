@@ -178,13 +178,14 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      * preparedStatements (so String values are properly escaped and
      * numeric values are assured to be numeric values).
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         if (reallyVerbose) String2.log("EDDTableFromPostDatabase query=" + userDapQuery);
@@ -192,7 +193,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         userDapQuery = EDDTableFromPostDatabase.reviseDapQueryForPost(loggedInAs, userDapQuery);
 
         //then get the data
-        super.getDataForDapQuery(loggedInAs, requestUrl, userDapQuery, tableWriter);
+        super.getDataForDapQuery(language, loggedInAs, requestUrl, userDapQuery, tableWriter);
     }
 
     /**

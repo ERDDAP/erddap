@@ -30,22 +30,23 @@ public class TableWriterUnits extends TableWriter {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tOtherTableWriter the tableWriter that will receive the unique rows
      *   found by this tableWriter.
      * @param tFromUnits e.g., UDUNITS or UCUM
      * @param tToUnits e.g., UDUNITS or UCUM
      */
-    public TableWriterUnits(EDD tEdd, String tNewHistory, 
+    public TableWriterUnits(int tLanguage, EDD tEdd, String tNewHistory, 
         TableWriter tOtherTableWriter, String tFromUnits, String tToUnits) {
 
-        super(tEdd, tNewHistory, null);
+        super(tLanguage, tEdd, tNewHistory, null);
         otherTableWriter = tOtherTableWriter;
         fromUnits = tFromUnits;
         toUnits = tToUnits;
         if (otherTableWriter == null)
             throw new SimpleException("Internal error: " +
                 "otherTableWriter is null!");
-        checkFromToUnits(fromUnits, toUnits);
+        checkFromToUnits(language, fromUnits, toUnits);
     }
 
     /** 
@@ -55,14 +56,14 @@ public class TableWriterUnits extends TableWriter {
      * @param tToUnits e.g., UDUNITS or UCUM
      * @throws Exception if trouble
      */
-    public static void checkFromToUnits(String fromUnits, String toUnits) {
+    public static void checkFromToUnits(int language, String fromUnits, String toUnits) {
         if (fromUnits == null || !(fromUnits.equals("UDUNITS") || fromUnits.equals("UCUM")))
             throw new SimpleException("Setup error: " +
                 "fromUnits=" + fromUnits + 
                 " (usually from units_standard in setup.xml) must be UDUNITS or UCUM.");
 
         if (toUnits == null || !(toUnits.equals("UDUNITS") || toUnits.equals("UCUM")))
-            throw new SimpleException(EDStatic.queryError +
+            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                 "toUnits=" + fromUnits + " must be UDUNITS or UCUM.");
     }
 
@@ -86,7 +87,7 @@ public class TableWriterUnits extends TableWriter {
 
         //to save memory, this just does a feeble job (remove non-max rows from this partial table)
         //  and leaves perfect job to finish()
-        changeUnits(table, fromUnits, toUnits);
+        changeUnits(language, table, fromUnits, toUnits);
 
         //ensure the table's structure is the same as before
         ensureCompatible(table); //this stores everything that TableWriter needs
@@ -123,7 +124,7 @@ public class TableWriterUnits extends TableWriter {
             tCumulativeTable.removeAllRows();
             return;
         }
-        changeUnits(tCumulativeTable, fromUnits, toUnits);
+        changeUnits(language, tCumulativeTable, fromUnits, toUnits);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
     }
 
@@ -133,11 +134,11 @@ public class TableWriterUnits extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, Table tTable, 
+    public static void writeAllAndFinish(int language, EDD tEdd, Table tTable, 
         TableWriter tOtherTableWriter, String tFromUnits, String tToUnits) 
         throws Throwable {
 
-        changeUnits(tTable, tFromUnits, tToUnits);
+        changeUnits(language, tTable, tFromUnits, tToUnits);
         tOtherTableWriter.writeAllAndFinish(tTable);
     }
 
@@ -146,9 +147,9 @@ public class TableWriterUnits extends TableWriter {
      *
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
-    public static void changeUnits(Table table, String fromUnits, String toUnits) 
+    public static void changeUnits(int language, Table table, String fromUnits, String toUnits) 
             throws Throwable {
-        checkFromToUnits(fromUnits, toUnits);
+        checkFromToUnits(language, fromUnits, toUnits);
         boolean toUcum    = fromUnits.equals("UDUNITS") && toUnits.equals("UCUM");
         boolean toUdunits = fromUnits.equals("UCUM")    && toUnits.equals("UDUNITS");
         if (!toUcum && !toUdunits) //e.g., from UDUNITS to UDUNITS

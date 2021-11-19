@@ -1163,7 +1163,7 @@ cdmSuggestion() +
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromNcSequenceFiles.testNested\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1302,7 +1302,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1328,7 +1328,7 @@ expected =
         //.csv    for one lat,lon,time
         userDapQuery = "" +
             "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1Station", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1349,7 +1349,7 @@ expected =
         //.csv    for one lat,lon,time      via lon > <
         userDapQuery = "" +
             "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -1371,7 +1371,7 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&common_name=\"Red+abalone\"";
         long time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_eq", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
         results = String2.directReadFrom88591File(dir + tName);
@@ -1395,7 +1395,7 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&id!=\"San+Miguel+(Hare+Rock)\"&common_name=\"Red+abalone\"";
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_NE", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
         results = String2.directReadFrom88591File(dir + tName);
@@ -1418,7 +1418,7 @@ expected =
         userDapQuery = "" +
             "&time=2005-07-01&id>\"San+Miguel+(G\"&id<=\"San+Miguel+(I\"&common_name=\"Red+abalone\"";
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_gtlt", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
         results = String2.directReadFrom88591File(dir + tName);
@@ -1434,7 +1434,7 @@ expected =
         userDapQuery = "longitude,latitude,depth,time,id,species_name,size" + //no common_name
             "&time=2005-07-01&id=~\"(zztop|.*Hare+Rock.*)\"&common_name=\"Red+abalone\"";   //but common_name here
         time = System.currentTimeMillis();
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_regex", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
         results = String2.directReadFrom88591File(dir + tName);

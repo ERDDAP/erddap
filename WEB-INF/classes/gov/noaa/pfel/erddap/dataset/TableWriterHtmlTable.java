@@ -50,7 +50,7 @@ public class TableWriterHtmlTable extends TableWriter {
     public static int htmlTableMaxMB = 15;
 
     //set by constructor
-    protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml, 
+    protected String loggedInAs, endOfRequest, queryString, fileNameNoExt, preTableHtml, postTableHtml, 
         tErddapUrl, externalLinkHtml, questionMarkImageUrl;
     protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
     protected int totalRows = 0, rowsShown = 0;
@@ -73,6 +73,7 @@ public class TableWriterHtmlTable extends TableWriter {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tOutputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
@@ -97,15 +98,17 @@ public class TableWriterHtmlTable extends TableWriter {
      * @param tShowFirstNRows if &gt;= 0, this only shows the specified number of rows,
      *   then ignores the remaining rows.
      */
-    public TableWriterHtmlTable(EDD tEdd, String tNewHistory, String tLoggedInAs, 
-        OutputStreamSource tOutputStreamSource,        
+    public TableWriterHtmlTable(int tLanguage, EDD tEdd, String tNewHistory, String tLoggedInAs, 
+        String tEndOfRequest, String tQueryString, OutputStreamSource tOutputStreamSource,        
         boolean tWriteHeadAndBodyTags, String tFileNameNoExt, boolean tXhtmlMode,         
         String tPreTableHtml, String tPostTableHtml,
         boolean tEncode, boolean tWriteUnits, int tShowFirstNRows,
         String tQuestionMarkImageUrl) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         loggedInAs = tLoggedInAs;
+        endOfRequest = tEndOfRequest;
+        queryString = tQueryString;
         writeHeadAndBodyTags = tWriteHeadAndBodyTags;
         fileNameNoExt = tFileNameNoExt;
         xhtmlMode = tXhtmlMode;
@@ -114,8 +117,8 @@ public class TableWriterHtmlTable extends TableWriter {
         encode = tEncode;
         writeUnits = tWriteUnits;
         showFirstNRows = tShowFirstNRows >= 0? tShowFirstNRows : Integer.MAX_VALUE;
-        tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-        externalLinkHtml = EDStatic.externalLinkHtml(tErddapUrl);
+        tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
+        externalLinkHtml = EDStatic.externalLinkHtml(language, tErddapUrl);
         questionMarkImageUrl = tQuestionMarkImageUrl;
     }
 
@@ -154,7 +157,7 @@ public class TableWriterHtmlTable extends TableWriter {
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
-//Future: use try/catch and EDStatic.htmlForException(Exception e) ???
+//Future: use try/catch and EDStatic.htmlForException(language, Exception e) ???
 
         if (table.nRows() == 0) 
             return;
@@ -238,9 +241,9 @@ public class TableWriterHtmlTable extends TableWriter {
                         "</head>\n" +
                         "<body>\n");
                 else {
-                    writer.write(EDStatic.startHeadHtml(tErddapUrl, fileNameNoExt));
+                    writer.write(EDStatic.startHeadHtml(language, tErddapUrl, fileNameNoExt));
                     writer.write("\n</head>\n");
-                    writer.write(EDStatic.startBodyHtml(loggedInAs));
+                    writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString));
                     //writer.write(HtmlWidgets.BACK_BUTTON);
                     writer.write("&nbsp;<br>");
                 }
@@ -447,7 +450,7 @@ public class TableWriterHtmlTable extends TableWriter {
         //  isMBLimited and !allDataDisplayed
         if (isMBLimited &&  !allDataDisplayed) 
             writer.write("<span class=\"warningColor\">" + 
-                EDStatic.htmlTableMaxMessage + "</span>" +
+                EDStatic.htmlTableMaxMessageAr[language] + "</span>" +
                 (xhtmlMode? "<br />" : "<br>") +
                 "\n");  
 
@@ -459,7 +462,7 @@ public class TableWriterHtmlTable extends TableWriter {
                     "</body>\n" +
                     "</html>\n");
             else writer.write(
-                EDStatic.endBodyHtml(EDStatic.erddapUrl(loggedInAs)) +
+                EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language)) +
                 "\n</html>\n");
 
         writer.flush(); //essential
@@ -483,15 +486,15 @@ public class TableWriterHtmlTable extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, 
         String loggedInAs,
-        Table table, OutputStreamSource outputStreamSource,
+        Table table, String endOfRequest, String queryString, OutputStreamSource outputStreamSource,
         boolean writeHeadAndBodyTags, String fileNameNoExt, boolean xhtmlMode, 
         String preTableHtml, String postTableHtml,
         boolean encode, boolean writeUnits, int tShowFirstNRows) throws Throwable {
 
-        TableWriterHtmlTable tw = new TableWriterHtmlTable(tEdd, tNewHistory, 
-            loggedInAs, outputStreamSource,  
+        TableWriterHtmlTable tw = new TableWriterHtmlTable(language, tEdd, tNewHistory, 
+            loggedInAs, endOfRequest, queryString, outputStreamSource,  
             writeHeadAndBodyTags, fileNameNoExt, xhtmlMode, preTableHtml, postTableHtml, 
             encode, writeUnits, tShowFirstNRows,
             EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);

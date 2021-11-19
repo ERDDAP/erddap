@@ -58,13 +58,15 @@ public class AxisDataAccessor {
     /**
      * This is the constructor.
      *
+     * @param language the index of the selected language
      * @param tEDDGrid
      * @param tRequestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param tUserDapQuery  the part after the '?', still percentEncoded, may be null.
      * @param tConstraints
      * @throws Throwable if trouble
      */
-    public AxisDataAccessor(EDDGrid tEDDGrid, String tRequestUrl, String tUserDapQuery) throws Throwable {
+    public AxisDataAccessor(int language, EDDGrid tEDDGrid, String tRequestUrl, 
+        String tUserDapQuery) throws Throwable {
 
         eddGrid = tEDDGrid;
         userDapQuery = tUserDapQuery;
@@ -76,7 +78,7 @@ public class AxisDataAccessor {
         //parse the query    -- always for just 1 axis variable
         StringArray destinationNames = new StringArray();
         constraints = new IntArray();
-        eddGrid.parseAxisDapQuery(userDapQuery, destinationNames, constraints, false);
+        eddGrid.parseAxisDapQuery(language, userDapQuery, destinationNames, constraints, false);
         if (reallyVerbose) String2.log(
             "      requestedAxisVariables=" + destinationNames +
             "\n      constraints=" + constraints);
@@ -114,7 +116,7 @@ public class AxisDataAccessor {
         rAxisAttributes = new Attributes[nRAV];
         rAxisValues = new PrimitiveArray[nRAV];
         for (int av = 0; av < nRAV; av++) {
-            rAxisVariables[av] = eddGrid.findAxisVariableByDestinationName(destinationNames.get(av));
+            rAxisVariables[av] = eddGrid.findAxisVariableByDestinationName(language, destinationNames.get(av));
 
             //make axisValues
             //start with source (since immediately available)  

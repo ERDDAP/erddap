@@ -79,6 +79,7 @@ public class GridDataAccessor {
     public static boolean debugMode = false; 
 
     //things passed into the constructor
+    protected int language;
     protected EDDGrid eddGrid;
     protected String userDapQuery;
     protected boolean rowMajor;
@@ -123,9 +124,10 @@ public class GridDataAccessor {
      *    by the missing_value or _FillValue metadata) to NaNs.
      * @throws Throwable if trouble
      */
-    public GridDataAccessor(EDDGrid tEDDGrid, String tRequestUrl, String tUserDapQuery, 
+    public GridDataAccessor(int tLanguage, EDDGrid tEDDGrid, String tRequestUrl, String tUserDapQuery, 
         boolean tRowMajor, boolean tConvertToNaN) throws Throwable {
 
+        language = tLanguage;
         eddGrid = tEDDGrid;
         nThreads = eddGrid.nThreads >= 1 && eddGrid.nThreads < Integer.MAX_VALUE? 
             eddGrid.nThreads : EDStatic.nGridThreads; 
@@ -143,7 +145,7 @@ public class GridDataAccessor {
         //parse the query
         StringArray destinationNames = new StringArray();
         constraints = new IntArray();
-        eddGrid.parseDataDapQuery(userDapQuery, destinationNames, constraints, false);
+        eddGrid.parseDataDapQuery(language, userDapQuery, destinationNames, constraints, false);
         dataVariables = new EDV[destinationNames.size()];
         partialDataValues = new PrimitiveArray[destinationNames.size()];
         for (int dv = 0; dv < destinationNames.size(); dv++) {
@@ -623,7 +625,8 @@ public class GridDataAccessor {
             //anything else: rewrap it as WTTAE
             String2.log(MustBe.throwableToString(t));
             throw t instanceof WaitThenTryAgainException? t : 
-                new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(" + EDStatic.errorFromDataSource + tToString + ")", t); 
         }
         
@@ -722,7 +725,7 @@ class GetChunkCallable implements Callable {
 
             //get the data
             PrimitiveArray partialResults[] = null;
-            partialResults = gda.eddGrid.getSourceData(gda.tDirTable, gda.tFileTable, 
+            partialResults = gda.eddGrid.getSourceData(language, gda.tDirTable, gda.tFileTable, 
                 gda.dataVariables, partialConstraints);
 
             //there is similar code in GridDataAccessor and Table.decodeCharsAndStrings()
@@ -762,7 +765,8 @@ class GetChunkCallable implements Callable {
                 if (gda.avInDriver[av]) {
                     if (pa.size() != 1 ||
                         !Math2.almostEqual(9, pa.getDouble(0), avInDriverExpectedValues[av])) { //source values
-                        throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
+                        throw new WaitThenTryAgainException(
+                            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                             "\n(Details: GridDataAccessor.increment: partialResults[" + av +
                             "]=\"" + pa + "\" was expected to be " + 
                             avInDriverExpectedValues[av] + ".)");
@@ -772,7 +776,8 @@ class GetChunkCallable implements Callable {
                     pa = gda.axisVariables[av].toDestination(pa);
                     String tError = gda.axisValues[av].almostEqual(pa); //destination values
                     if (tError.length() > 0) 
-                        throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
+                        throw new WaitThenTryAgainException(
+                            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                             "\n(Details: GridDataAccessor.increment: partialResults[" + 
                             av + "] was not as expected.\n" + 
                             tError + ")");

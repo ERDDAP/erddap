@@ -1006,7 +1006,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash,
      *    which will be removed.
-     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/"
+     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID() + "/"
      *    which will be prepended.
      * @return a table with columns with DIRECTORY (always "/"), NAME,
      *    LASTMODIFIED (long epochMilliseconds), and SIZE (long) columns.
@@ -1028,7 +1028,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash,
      *    which will be removed.
-     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID() + "/"
+     * @param startOfUrl usually EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID() + "/"
      *    which will be prepended.
      * @return a table with columns with DIRECTORY (always "/"), NAME,
      *    LASTMODIFIED (double epochSeconds), and SIZE (doubles) columns.

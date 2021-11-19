@@ -1054,6 +1054,7 @@ String expected =
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromAwsXmlFiles.test() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1066,7 +1067,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromAwsXmlFiles test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1428,7 +1429,7 @@ String expected2 =
             expected2, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1491,7 +1492,7 @@ String expected2 =
         //.csv    for one lat,lon,time
         //46012 -122.879997    37.360001
         userDapQuery = "&fileName=~\"SNFLS|zztop\"";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);

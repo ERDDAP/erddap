@@ -43,6 +43,7 @@ public class TableWriterOrderByLimit extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -52,18 +53,18 @@ public class TableWriterOrderByLimit extends TableWriterAll {
      * @param tOrderByCsv the names of the columns to sort by (most to least important),
      *   with the time Interval as the last item.
      */
-    public TableWriterOrderByLimit(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByLimit(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_LIMIT_ERROR + 
-                " (no CSV)");
+            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_LIMIT_ERROR + " (no CSV)");
         String csv[] = String2.split(tOrderByCsv, ',');
         if (csv.length == 0)
-            throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_LIMIT_ERROR + 
-                " (CSV.length=0)");
+            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_LIMIT_ERROR + " (CSV.length=0)");
 
         //ensure the next to last value is numeric -- done later: by table.orderByLimit()
 
@@ -72,9 +73,8 @@ public class TableWriterOrderByLimit extends TableWriterAll {
         System.arraycopy(csv, 0, orderBy, 0, csv.length - 1);
         limitN = String2.parseInt(csv[csv.length - 1]);
         if (limitN <= 0 || limitN == Integer.MAX_VALUE)
-            throw new IllegalArgumentException(
-                EDStatic.queryError + Table.ORDER_BY_LIMIT_ERROR + 
-                " (limit=" + csv[csv.length - 1] + " must be a positive integer)"); 
+            throw new IllegalArgumentException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_LIMIT_ERROR + " (limit=" + csv[csv.length - 1] + " must be a positive integer)"); 
     }
 
 

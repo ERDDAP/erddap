@@ -1179,6 +1179,7 @@ String expected =
     public static void testBasic() throws Throwable {
 
         String2.log("\n*** EDDTableFromWFSFiles.testBasic");
+        int language = 0;
 
         //2021-06-25 server is gone. Initial query url is
 // https://kgs.uky.edu/usgin/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format="text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0"
@@ -1188,7 +1189,7 @@ String expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //*** .das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1552,7 +1553,7 @@ expected =
         
 
         //*** .dds
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1625,7 +1626,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&APINo=\"4700102422\"", 
             EDStatic.fullTestCacheDirectory, "kgsBoreTempWVTRUE", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);

@@ -189,8 +189,9 @@ public class SimpleXMLReader {
     }
     
     /**
-     * This returns if the current tag is an end tag
-     * @return if the current tag is an end tag
+     * This indicates if the current tag is an end tag.
+     *
+     * @return true if the current tag is an end tag
      */
     public boolean isEndTag() {
         if (topTag() == null) {
@@ -198,8 +199,10 @@ public class SimpleXMLReader {
         }
         return topTag().charAt(0) == '/';
     }
+
     /**
-     * Get the rawContent that occured before the last tag, i.e. keep CDATA and comment syntax
+     * Get the rawContent that occured before the last tag, i.e. keep CDATA and comment syntax.
+     *
      * @return the rawContent of a tag
      */
     public String rawContent() {

@@ -589,13 +589,14 @@ public class EDDTableFromDapSequence extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //get the sourceDapQuery (a query that the source can handle)
@@ -603,7 +604,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -710,11 +711,12 @@ public class EDDTableFromDapSequence extends EDDTable{
             //any other error is real trouble
             String2.log(MustBe.throwableToString(t));
             throw t instanceof WaitThenTryAgainException? t : 
-                new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(" + EDStatic.errorFromDataSource + tToString + ")", t); 
         }
         //String2.log(table.toString());
-        standardizeResultsTable(requestUrl, userDapQuery, table);
+        standardizeResultsTable(language, requestUrl, userDapQuery, table);
         tableWriter.writeAllAndFinish(table);
     }
 
@@ -1401,7 +1403,7 @@ expected =
 "            <att name=\"testInts\" type=\"intList\">-2147483648 0 2147483647</att>\n" +
 "            <att name=\"testLongs\" type=\"doubleList\">-9.223372036854776E18 -9.007199254740992E15 9.007199254740992E15 9.223372036854776E18 9.223372036854776E18</att>\n" +
 "            <att name=\"testShorts\" type=\"shortList\">-32768 0 32767</att>\n" +
-"            <att name=\"testStrings\">a&#9;~&#xfc;,\n" +
+"            <att name=\"testStrings\">a&#9;~\u00fc,\n" +
 "&#39;z&quot;?</att>\n" +
 "            <att name=\"testUBytes\" type=\"byteList\">0 127 -1</att>\n" +  //var is _Unsigned=true and isn't common un/signed att name, so no way to know it should be ubytes
 "            <att name=\"testUInts\" type=\"uintList\">0 2147483647 4294967295</att>\n" +
@@ -1437,14 +1439,15 @@ expected =
     public static void testOneTime() throws Throwable {
         testVerboseOn();
         String tName;
+        int language = 0;
 
         if (true) {
             //get empiricalMinMax
             EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
-            tedd.getEmpiricalMinMax(null, "2007-08-01", "2007-08-10", false, true);
+            tedd.getEmpiricalMinMax(language, null, "2007-08-01", "2007-08-10", false, true);
             String tq = "longitude,latitude,id&time>=2008-06-17T16:04:12Z&time<=2008-06-24T16:04:12Z" +
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|||";
-            tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_GraphArgo", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         }
@@ -1460,7 +1463,7 @@ expected =
             EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
             String tq = "longitude,latitude,temp_adjusted&time>=2008-06-27T00:00:00Z" +
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|0|30|30";
-            tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_GraphArgo30", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         }
@@ -1472,6 +1475,7 @@ expected =
      */
     public static void testArgo() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String sourceUrl = "http://dapper.pmel.noaa.gov/dapper/argo/argo_all.cdp"; //no longer running
         String2.log("\n*** EDDTableFromDapSequence.testArgo " + sourceUrl);
         DConnect dConnect = new DConnect(sourceUrl, acceptDeflate, 1, 1);
@@ -1482,10 +1486,10 @@ expected =
 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "pmelArgoAll"); 
         String tq = "longitude,latitude,id&id<=1000000&.draw=markers&.marker=4|5&.color=0x000000&.colorBar=|C|Linear|||";
-        String tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
+        String tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        tName = tedd.makeNewFileForDapQuery(null, null, tq, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".csv"); 
         String results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1503,6 +1507,7 @@ expected =
      */
     public static void testPsdac() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String results, query, tName;
         String baseQuery = "time,longitude,latitude,depth,station,waterTemperature,salinity" +
             "&latitude=36.692"; 
@@ -1557,20 +1562,20 @@ expected =
 "2002-06-25T14:55:00Z,-121.845,36.692,45.0,T402,9.0566,33.9762\n";
 
         //the basicQuery
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_psdac", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //basicQuery + String= constraint that shouldn't change the results
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=\"T402\"", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=\"T402\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacNonTime", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
         
         //basicQuery + String> String< constraints that shouldn't change the results
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacGTLT", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1579,7 +1584,7 @@ expected =
         //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
         //This succeeds with source not handling regex, so leave test active.
             //always =~ (regardless of what source needs) because this is an erddap request
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"T40.\"", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=~\"T40.\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1589,13 +1594,13 @@ expected =
         //basicQuery + String regex constraint (ERDDAP handles it) that shouldn't change the results
         //This succeeds with source not handling regex, so leave test active.
             //always =~ (regardless of what source needs) because this is an erddap request
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&station=~\"(T402|t403)\"", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=~\"(T402|t403)\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //basicQuery + time= (a string= test) constraint that shouldn't change the results
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacTime", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1606,12 +1611,13 @@ expected =
      */
     public static void testErdlasNewportCtd() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String results, query, tName, expected;
         String baseQuery = "&time>=2006-08-07T00&time<2006-08-08"; 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdlasNewportCtd");
 
         //the basicQuery
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_newport", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1625,6 +1631,7 @@ expected =
      */
     public static void testDapErdlasNewportCtd() throws Throwable {
         testVerboseOn();
+        int language = 0;
 
         //the basicQuery
         for (int test = 1; test < 2; test++) {
@@ -1669,6 +1676,7 @@ expected =
      */
     public static void testErdlasCalCatch() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String results, query, tName, expected;
         String baseQuery = "&time>=2006-01-01"; 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "erdlasCalCatch");
@@ -1712,7 +1720,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 "1976-11-01", "Central California", 623, -9999, "Sole, unspecified", "N", 200, "UFLT", "302", 6, "Santa Barbara - Morro Bay", "FLAT"
 "1976-08-01", "Central California", 600, -9999, "Turbot", "N", 240, "UFLT", "40", 6, "Santa Barbara - Morro Bay", "FLAT"
 */
-        tName = tedd.makeNewFileForDapQuery(null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_CalCaltch", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -1728,6 +1736,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     public static void testSourceNeedsExpandedFP_EQ() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testSourceNeedsExpandedFP_EQ\n");
         testVerboseOn();
+        int language = 0;
         String results, query, tName, expected;
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nwioosGroundfish"); 
@@ -1737,7 +1746,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
             // now year is converted to time.]
             query = "longitude,latitude,time,common_name&longitude=-124.348098754882&latitude=44.690254211425";             
            
-            tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_FP_EQ", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //pre 2015-12-28 was sorted lexically, now case insensitive. pre 2013-05-28 wasn't sorted
@@ -1770,6 +1779,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     public static void testNosCoopsRWL() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testNosCoopsRWL\n");
         testVerboseOn();
+        int language = 0;
         String results, query, tName, expected;
         String today     = Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(1, Double.NaN));
         String yesterday = Calendar2.epochSecondsToIsoStringTZ(Calendar2.backNDays(2, Double.NaN));
@@ -1781,7 +1791,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 //https://opendap.co-ops.nos.noaa.gov/dods/IOOS/SixMin_Verified_Water_Level.ascii?
 //&WATERLEVEL_6MIN_VFD_PX._STATION_ID="1612340"&WATERLEVEL_6MIN_VFD_PX._DATUM="MLLW"
 //&WATERLEVEL_6MIN_VFD_PX._BEGIN_DATE="20100825"&WATERLEVEL_6MIN_VFD_PX._END_DATE="20100826"            
-        tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
             edd.className() + "_RWL", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
 //trouble: java.time (was Joda) doesn't like space-padded hour values
@@ -1796,6 +1806,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     public static void testReadDas() throws Exception {
         String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
         String url = "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
+        int language = 0;
         try {
             DConnect dConnect = new DConnect(url, true, 1, 1);
             DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
@@ -1810,10 +1821,11 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     /** Test graph made from subsetVariables data */
     public static void testSubsetVariablesGraph() throws Exception {
         String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesGraph\n");
+        int language = 0;
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nwioosCoral"); 
 
-            String tName = edd.makeNewFileForDapQuery(null, null, 
+            String tName = edd.makeNewFileForDapQuery(language, null, null, 
                 "longitude,latitude,time&time=%221992-01-01T00:00:00Z%22" +
                 "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0" +
                 "&distinct()&.draw=markers&.colorBar=|D||||", 
@@ -1828,6 +1840,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
     /** Test that info from subsetVariables gets back to variable's ranges */
     public static void testSubsetVariablesRange() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesRange\n");
+        int language = 0;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //before I fixed this, time had destinationMin/Max = NaN
@@ -1837,7 +1850,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
         Test.ensureEqual(edvTime.destinationMinDouble(), 3.155328E8,  "");
         Test.ensureEqual(edvTime.destinationMaxDouble(), 1.1045376E9, "");
 
-        String tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        String tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             edd.className() + "_Entire", ".das"); 
         String results = String2.annotatedString(String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));

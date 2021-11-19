@@ -292,6 +292,7 @@ public class EDDTableFromFileNames extends EDDTable{
         long constructionStartMillis = System.currentTimeMillis();
         String errorInMethod = "Error in EDDTableFromFileNames(" + 
             tDatasetID + ") constructor:\n";
+        int language = 0;
             
         //save some of the parameters
         className = "EDDTableFromFileNames"; 
@@ -582,10 +583,10 @@ public class EDDTableFromFileNames extends EDDTable{
 
         } else {  //from==fromRemoteFiles or fromLocalFiles
             File2.makeDirectory(cacheDirectory()); 
-            TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(
+            TableWriterAllWithMetadata twawm = new TableWriterAllWithMetadata(language, 
                 null, null, //metadata is irrelevant here
                 cacheDirectory(), "constructor");
-            getDataForDapQuery( //throws exception if 0 files
+            getDataForDapQuery(0, //language,  throws exception if 0 files
                 EDStatic.loggedInAsSuperuser, 
                 "/erddap/tabledap/" + datasetID + ".nc", "", //userDapQuery
                 twawm);
@@ -603,7 +604,7 @@ public class EDDTableFromFileNames extends EDDTable{
         //accessibleViaFiles
         if (accessibleViaFiles) {
             if (from == fromFiles) {
-                writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(3)); //may be null
+                writeFromFilesCache3LevelFileTable(getNLevelsOfInfo(language, 3)); //may be null
             } 
         }
 
@@ -698,22 +699,23 @@ public class EDDTableFromFileNames extends EDDTable{
      * of subdir of file information.
      * This is slow (1 minute?) because it must go through all the cached file info.
      *
+     * @param language the index of the selected language
      * @return null if trouble.
      *    The table will have rows for the subdirs, too. 
      */
-    public Table getNLevelsOfInfo(int nLevels) {
+    public Table getNLevelsOfInfo(int language, int nLevels) {
         try {
             //The code for this is very similar to the accessibleViaFilesFileTable() below.
             //MAKE SIMILAR CHANGES?
             String tDir = cacheDirectory(); //tDir is created by EDD.ensureValid
             String tFileName = suggestFileName(null, "tFileTable_NLevels_" + datasetID, ".twardt");
-            TableWriterAllReduceDnlsTableNLevels twardt = new TableWriterAllReduceDnlsTableNLevels(
+            TableWriterAllReduceDnlsTableNLevels twardt = new TableWriterAllReduceDnlsTableNLevels(language, 
                 fromFilesEDDTable, null, tDir, tFileName, fileDir, nLevels);  //nLevels
 
             //query to twardt
             Table dnlsTable = null;
             try {
-                fromFilesEDDTable.getDataForDapQuery(null, 
+                fromFilesEDDTable.getDataForDapQuery(language, null, 
                     "/erddap/tabledap/" + datasetID, //for history        something/something/something
                     "", twardt); //no constraints
 
@@ -804,6 +806,7 @@ public class EDDTableFromFileNames extends EDDTable{
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble (table.nRows + nSubdirs = 0 is not trouble)
@@ -813,7 +816,7 @@ public class EDDTableFromFileNames extends EDDTable{
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         try {
@@ -856,7 +859,7 @@ public class EDDTableFromFileNames extends EDDTable{
                     "tFileTable_" + 
                     (nextPath.length() == 0? "" : nextPath.substring(0, nextPath.length() - 1)), //short name
                     ".twardt");
-                TableWriterAllReduceDnlsTable twardt = new TableWriterAllReduceDnlsTable(
+                TableWriterAllReduceDnlsTable twardt = new TableWriterAllReduceDnlsTable(language, 
                     this, null, tDir, tFileName, fileDir + nextPath);
 
                 //query to twardt
@@ -865,7 +868,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 shortened = shortened.substring(0, shortened.length() - 1);
                 Table dnlsTable = null;
                 try {
-                    fromFilesEDDTable.getDataForDapQuery(null, 
+                    fromFilesEDDTable.getDataForDapQuery(language, null, 
                         "/erddap/tabledap/" + datasetID, //for history. Not relevant. 
                         //this is effectively: startsWith(fileDir + nextPath)           //e.g. find: /foo/bar/[one thing]
                         "&directory>=" + String2.toJson(fileDir + nextPath) +           //e.g. get:  /foo/bar/  //reject some files
@@ -914,11 +917,12 @@ public class EDDTableFromFileNames extends EDDTable{
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         if (!accessibleViaFiles)
              return null;
         String msg = datasetID() + " accessibleViaFilesGetLocal(" + relativeFileName + "): ";
@@ -927,7 +931,7 @@ public class EDDTableFromFileNames extends EDDTable{
             //and see if the relativeFileName is present
             String nextPath   = File2.getDirectory(relativeFileName);
             String nameAndExt = File2.getNameAndExtension(relativeFileName);
-            Object oar[] = accessibleViaFilesFileTable(nextPath);
+            Object oar[] = accessibleViaFilesFileTable(language, nextPath);
             if (oar == null) {
                 String2.log(msg + "accessibleViaFilesFileTable is null");
                 return null;
@@ -953,16 +957,17 @@ public class EDDTableFromFileNames extends EDDTable{
     /**
      * Get low level data: URL, NAME, LASTMODIFIED (as double epoch seconds), SIZE (as double)
      *
+     * @param language the index of the selected language
      * @param recursive for file==fromOnTheFly, use false.
      * @throws Exception if trouble, e.g., 0 matching files
      */
-    public static Table getBasicTable(String fileDir, String fileNameRegex, 
+    public static Table getBasicTable(int language, String fileDir, String fileNameRegex, 
         boolean recursive, String pathRegex, String loggedInAs, 
         String datasetID) throws Exception {
         Table table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
             fileDir, fileNameRegex, recursive, 
             pathRegex,
-            EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
+            EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/");
         int nRows = table.nRows();
         if (nRows == 0)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
@@ -976,13 +981,14 @@ public class EDDTableFromFileNames extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //String2.log("\n*** getDataForDapQuery: who's calling:\n" + MustBe.stackTrace());
@@ -991,7 +997,7 @@ public class EDDTableFromFileNames extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery, resultsVariables,
+        getSourceQueryFromDapQuery(language, userDapQuery, resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
         int nResultsVariables = resultsVariables.size();
 
@@ -1083,7 +1089,7 @@ public class EDDTableFromFileNames extends EDDTable{
                 BitSet keep = new BitSet(tnRows);  //initially all false
                 StringArray dirSA = (StringArray)table.getColumn(0);
                 int ffrdLength = fileDir.length();
-                String tTo = EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/";
+                String tTo = EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/";
                 for (int row = 0; row < tnRows; row++) {
                     String dir = dirSA.get(row);
                     if (dir.startsWith(fileDir)) {
@@ -1101,10 +1107,10 @@ public class EDDTableFromFileNames extends EDDTable{
                 table = FileVisitorDNLS.oneStepDoubleWithUrlsNotDirs(
                     FileVisitorDNLS.oneStepDouble(getCachedDNLSTable()), 
                     fileDir, 
-                    EDStatic.erddapUrl(loggedInAs) + "/files/" + datasetID + "/");
+                    EDStatic.erddapUrl(loggedInAs, language) + "/files/" + datasetID + "/");
 
             } else { //from == fromLocalFiles
-                table = getBasicTable(fileDir, fileNameRegex, 
+                table = getBasicTable(language, fileDir, fileNameRegex, 
                     recursive, pathRegex,
                     loggedInAs, datasetID); //loggedInAs - irrelevant since just getting this for metadata, not data
             }
@@ -1162,7 +1168,7 @@ public class EDDTableFromFileNames extends EDDTable{
 
             if (debugMode) String2.log(">> getDataForDapQuery:\n" + table.toString());
             if (table.nRows() > 0) { //should be
-                standardizeResultsTable(requestUrl, userDapQuery, table);
+                standardizeResultsTable(language, requestUrl, userDapQuery, table);
                 tableWriter.writeSome(table);
             }
         }
@@ -1833,13 +1839,14 @@ String expected =
         boolean oDebugMode = debugMode;
         debugMode = true;
         testVerboseOn();
+        int language = 0;
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected, query, tName;
 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "testFileNames");
 
         //.dds
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -1865,7 +1872,7 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //.das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
@@ -1958,7 +1965,7 @@ String expected =
 "    Float64 geospatial_lon_min 0.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"[TIME]Z (local files)\n" +
-"[TIME]Z http://localhost:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
+"[TIME]Z http://127.0.0.1:8080/cwexperimental/tabledap/testFileNames.das\";\n" +
 "    String infoUrl \"https://www.pfeg.noaa.gov/\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"file, images, jpl, modified, mur, name, nasa, size, sst, time, URL\";\n" +
@@ -1981,15 +1988,15 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString,fromScript\n" +
 "m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,,\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png name=jplMURSST20150103090000.png time=20150103090000 day=3 lastMod=1.421272444E9 size=46482.0 fileType=.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png name=jplMURSST20150104090000.png time=20150104090000 day=4 lastMod=1.420665738E9 size=46586.0 fileType=.png\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://localhost:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png name=jplMURSST20150105090000.png time=20150105090000 day=5 lastMod=1.420665704E9 size=46549.0 fileType=.png\n";
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png,jplMURSST20150103090000.png,2015-01-03T09:00:00Z,3,2015-01-14T21:54:04Z,46482.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png name=jplMURSST20150103090000.png time=20150103090000 day=3 lastMod=1.421272444E9 size=46482.0 fileType=.png\n" +
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png,jplMURSST20150104090000.png,2015-01-04T09:00:00Z,4,2015-01-07T21:22:18Z,46586.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://127.0.0.1:8080/cwexperimental/files/testFileNames/jplMURSST20150104090000.png name=jplMURSST20150104090000.png time=20150104090000 day=4 lastMod=1.420665738E9 size=46586.0 fileType=.png\n" +
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png,jplMURSST20150105090000.png,2015-01-05T09:00:00Z,5,2015-01-07T21:21:44Z,46549.0,.png,,NaN,NaN,\"My \"\"Special\"\" String\",,url=http://127.0.0.1:8080/cwexperimental/files/testFileNames/sub/jplMURSST20150105090000.png name=jplMURSST20150105090000.png time=20150105090000 day=5 lastMod=1.420665704E9 size=46549.0 fileType=.png\n";
         Test.ensureEqual(results, expected, "results=\n" + String2.annotatedString(results));
 
         //test that min and max are being set by the constructor
@@ -2033,7 +2040,7 @@ String expected =
         Test.ensureEqual(edv.destinationMaxDouble(), 45, "max");
 
         //a constraint on an extracted variable, and fewer results variables
-        tName = tedd.makeNewFileForDapQuery(null, null, "name,day,size&day=4", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "name,day,size&day=4", dir, 
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2043,7 +2050,7 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //just request fixed values
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "five,fixedTime,latitude,longitude,mySpecialString,fvEmptyString", 
             dir, tedd.className() + "_fixed", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
@@ -2071,11 +2078,12 @@ String expected =
         testVerboseOn();
         String dir = EDStatic.fullTestCacheDirectory;
         String results, expected, query, tName;
+        int language = 0;
 
         EDDTable tedd = (EDDTable)oneFromDatasetsXml(null, "testFileNamesAwsS3");
 
         //.dds
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2094,7 +2102,7 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //.das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
@@ -2147,7 +2155,7 @@ String expected =
 "    String creator_name \"NASA Earth Exchange\";\n" +
 "    String creator_url \"https://nex.nasa.gov/nex/\";\n" +
 "    String history \"[TIME]Z (remote files)\n" +
-"[TIME]Z http://localhost:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
+"[TIME]Z http://127.0.0.1:8080/cwexperimental/tabledap/testFileNamesAwsS3.das\";\n" +
 "    String infoUrl \"https://nex.nasa.gov/nex/\";\n" +
 "    String institution \"NASA Earth Exchange\";\n" +
 "    String keywords \"data, earth, exchange, file, great, identifier, lastModified, modified, name, nasa, size, time, title\";\n" +
@@ -2167,15 +2175,15 @@ String expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //get all as .csv
-        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,startMonth,endMonth,lastModified,size,fileType\n" +
 "m,,,UTC,UTC,UTC,bytes,\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2013-10-25T20:46:53Z,1.372730447E9,.nc\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2013-10-25T20:47:18Z,1.373728987E9,.nc\n" +
-"5.0,http://localhost:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2013-10-25T20:51:23Z,1.373747344E9,.nc\n";
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_200601-201012.nc,2006-01-01T00:00:00Z,2010-12-01T00:00:00Z,2013-10-25T20:46:53Z,1.372730447E9,.nc\n" +
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201101-201512.nc,2011-01-01T00:00:00Z,2015-12-01T00:00:00Z,2013-10-25T20:47:18Z,1.373728987E9,.nc\n" +
+"5.0,http://127.0.0.1:8080/cwexperimental/files/testFileNamesAwsS3/tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_CESM1-CAM5_201601-202012.nc,2016-01-01T00:00:00Z,2020-12-01T00:00:00Z,2013-10-25T20:51:23Z,1.373747344E9,.nc\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         //test that min and max are being set by the constructor
@@ -2196,7 +2204,7 @@ String expected =
         Test.ensureEqual(""+edv.destinationMaxDouble(), "1.373941204E9", "max");
 
         //a constraint on an extracted variable, and fewer results variables
-        tName = tedd.makeNewFileForDapQuery(null, null, "name,startMonth,size&size=1098815646", dir, 
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "name,startMonth,size&size=1098815646", dir, 
             tedd.className() + "_subset", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2216,6 +2224,7 @@ String expected =
             boolean bigTest) throws Throwable {
 
         String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable(deleteCachedInfo=" + deleteCachedInfo + ")");
+        int language = 0;
         String id = "awsS3NoaaGoes17" + (bigTest? "all" : "partial");
         if (deleteCachedInfo) {
             String2.log("This test will be slow.");
@@ -2238,7 +2247,7 @@ String expected =
         if (true) {
             //root dir  
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("");  //what's in root dir?
+            o2 = edd.accessibleViaFilesFileTable(language, "");  //what's in root dir?
             time = System.currentTimeMillis() - time;
             String2.log("root time=" + time + "ms");
             fileTable = (Table)o2[0];  
@@ -2263,7 +2272,7 @@ String expected =
         if (true) {
             //subdir    was 6s
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/");
+            o2 = edd.accessibleViaFilesFileTable(language, "ABI-L1b-RadC/");
             time = System.currentTimeMillis() - time;
             String2.log("ABI-L1b-RadC/ subdir time=" + time + "ms");
             fileTable = (Table)o2[0];
@@ -2286,7 +2295,7 @@ String expected =
         if (true) {
             //subdir    712ms
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/2018/360/10/");
+            o2 = edd.accessibleViaFilesFileTable(language, "ABI-L1b-RadC/2018/360/10/");
             time = System.currentTimeMillis() - time;
             String2.log("ABI-L1b-RadC/2018/360/10/ dir with files time=" + time + "ms");
             fileTable = (Table)o2[0];
@@ -2540,11 +2549,12 @@ String expected =
     public static void testOnTheFly() throws Throwable {
 
         String2.log("\n*** EDDTableFromFileNames.testAccessibleViaFilesFileTable");
+        int language = 0;
         String id = "awsS3NoaaGoes17";
         long time = System.currentTimeMillis();
         EDDTableFromFileNames edd = (EDDTableFromFileNames)oneFromDatasetsXml(null, id);
         time = System.currentTimeMillis() - time;
-        long expTime = 3563;
+        long expTime = 4000;
         String msg = "loadDataset time=" + time + "ms (expected=" + expTime + "ms)";
         String2.log(msg);
         Test.ensureTrue(time < expTime * 2, "Too slow: " + msg);
@@ -2562,7 +2572,7 @@ String expected =
         if (true) {
             //root dir  
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("");  //what's in root dir?
+            o2 = edd.accessibleViaFilesFileTable(language, "");  //what's in root dir?
             time = System.currentTimeMillis() - time;
             String2.log("root time=" + time + "ms");
             fileTable = (Table)o2[0];  
@@ -2572,10 +2582,10 @@ String expected =
             results = fileTable.dataToString(5);
             expected =
 "Name,Last modified,Size,Description\n" +
-"index.html,1628705828000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
+"index.html,1632772095000,32357,\n";  //last modified is millis (stored as long),   changes sometimes
             Test.ensureEqual(results, expected, "results=\n" + results + "\nlastModified and size change sometimes. If so, change the test.");
             results = subDirs.toString();
-            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
+            expected = "ABI-L1b-RadC, ABI-L1b-RadF, ABI-L1b-RadM, ABI-L2-ACHAC, ABI-L2-ACHAF, ABI-L2-ACHAM, ABI-L2-ACHTF, ABI-L2-ACHTM, ABI-L2-ACMC, ABI-L2-ACMF, ABI-L2-ACMM, ABI-L2-ACTPC, ABI-L2-ACTPF, ABI-L2-ACTPM, ABI-L2-ADPC, ABI-L2-ADPF, ABI-L2-ADPM, ABI-L2-AICEF, ABI-L2-AITAF, ABI-L2-AODC, ABI-L2-AODF, ABI-L2-BRFC, ABI-L2-BRFF, ABI-L2-BRFM, ABI-L2-CMIPC, ABI-L2-CMIPF, ABI-L2-CMIPM, ABI-L2-CODC, ABI-L2-CODF, ABI-L2-CPSC, ABI-L2-CPSF, ABI-L2-CPSM, ABI-L2-CTPC, ABI-L2-CTPF, ABI-L2-DMWC, ABI-L2-DMWF, ABI-L2-DMWM, ABI-L2-DMWVC, ABI-L2-DMWVF, ABI-L2-DMWVM, ABI-L2-DSIC, ABI-L2-DSIF, ABI-L2-DSIM, ABI-L2-DSRC, ABI-L2-DSRF, ABI-L2-DSRM, ABI-L2-FDCC, ABI-L2-FDCF, ABI-L2-FDCM, ABI-L2-LSAC, ABI-L2-LSAF, ABI-L2-LSAM, ABI-L2-LST2KMF, ABI-L2-LSTC, ABI-L2-LSTF, ABI-L2-LSTM, ABI-L2-LVMPC, ABI-L2-LVMPF, ABI-L2-LVMPM, ABI-L2-LVTPC, ABI-L2-LVTPF, ABI-L2-LVTPM, ABI-L2-MCMIPC, ABI-L2-MCMIPF, ABI-L2-MCMIPM, ABI-L2-RRQPEF, ABI-L2-RSRC, ABI-L2-RSRF, ABI-L2-SSTF, ABI-L2-TPWC, ABI-L2-TPWF, ABI-L2-TPWM, ABI-L2-VAAF, EXIS-L1b-SFEU, EXIS-L1b-SFXR, GLM-L2-LCFA, MAG-L1b-GEOF, SEIS-L1b-EHIS, SEIS-L1b-MPSH, SEIS-L1b-MPSL, SEIS-L1b-SGPS, SUVI-L1b-Fe093, SUVI-L1b-Fe131, SUVI-L1b-Fe171, SUVI-L1b-Fe195, SUVI-L1b-Fe284, SUVI-L1b-He303"; //changes sometimes
             Test.ensureEqual(results, expected, "");
             expTime = 459; //ms
             Test.ensureTrue(time < expTime * 2, "Too slow! (common if computer is busy).\n" +
@@ -2585,7 +2595,7 @@ String expected =
         if (true) {
             //subdir    
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/");
+            o2 = edd.accessibleViaFilesFileTable(language, "ABI-L1b-RadC/");
             time = System.currentTimeMillis() - time;
             String2.log("ABI-L1b-RadC/ subdir time=" + time + "ms");
             fileTable = (Table)o2[0];
@@ -2609,7 +2619,7 @@ String expected =
         if (true) {
             //subdir    
             time = System.currentTimeMillis();
-            o2 = edd.accessibleViaFilesFileTable("ABI-L1b-RadC/2018/360/10/");
+            o2 = edd.accessibleViaFilesFileTable(language, "ABI-L1b-RadC/2018/360/10/");
             time = System.currentTimeMillis() - time;
             String2.log("ABI-L1b-RadC/2018/360/10/ dir with files time=" + time + "ms");
             fileTable = (Table)o2[0];
@@ -2636,124 +2646,125 @@ String expected =
         }
 
         
-        tName = edd.makeNewFileForDapQuery(null, null, "", //entire dataset
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", //entire dataset
             dir, edd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-08-11T18:17:08Z,32357.0,.html\n" + //changes sometimes
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n" + //disappeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,\n" +   //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,\n" +   //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,\n" + //appeared 2021-06-24
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,\n" + //appeared 2021-08-31
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" + 
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" + //appeared 2021-05-03
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/index.html,index.html,2021-09-27T19:48:15Z,32357.0,.html\n" + //changes sometimes
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHAM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACHTM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACMM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ACTPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-ADPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AICEF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AITAF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-AODF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFC/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFF/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-BRFM/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CMIPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CODF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CPSM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-CTPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVC/,,,NaN,\n" + //disappeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVF/,,,NaN,\n" +   //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DMWVM/,,,NaN,\n" +   //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSIM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-DSRM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-FDCM/,,,NaN,\n" + //appeared 2021-06-24
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAC/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAF/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSAM/,,,NaN,\n" + //appeared 2021-08-31
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LST2KMF/,,,NaN,\n" + //appeared 2021-11-16
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LSTM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVMPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-LVTPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-MCMIPM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RRQPEF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-RSRF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-SSTF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWC/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-TPWM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L2-VAAF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/GLM-L2-LCFA/,,,NaN,\n" + 
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" + //appeared 2021-05-03
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        tName = edd.makeNewFileForDapQuery(null, null, "&url=~\".*-L1b-.*\"", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "&url=~\".*-L1b-.*\"", 
             dir, edd.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +  //2021-05-03 many added below...
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
-"http://localhost:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadC/,,,NaN,\n" +  //2021-05-03 many added below...
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/ABI-L1b-RadM/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFEU/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/EXIS-L1b-SFXR/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/MAG-L1b-GEOF/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-EHIS/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSH/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-MPSL/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SEIS-L1b-SGPS/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe093/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe131/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe171/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe195/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-Fe284/,,,NaN,\n" +
+"http://127.0.0.1:8080/cwexperimental/files/awsS3NoaaGoes17/SUVI-L1b-He303/,,,NaN,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
     }

@@ -646,10 +646,11 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * This is the non-static insertOrDelete method which calls the
      * static insertOrDelete method.
      *
+     * @param language the index of the selected language
      * @return the response String
      * @throws Throwable if any kind of trouble
      */
-    public String insertOrDelete(byte command, String userDapQuery) throws Throwable {
+    public String insertOrDelete(int language, byte command, String userDapQuery) throws Throwable {
 
         if (cacheFromUrl != null) {
             throw new SimpleException(
@@ -670,7 +671,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             throw new SimpleException("dirTable and/or fileTable are null!");
         }
 
-        String response = insertOrDelete(fileDir, 
+        String response = insertOrDelete(language, fileDir, 
             httpGetDirectoryStructureColumnNames, 
             httpGetDirectoryStructureNs, 
             httpGetDirectoryStructureCalendars,
@@ -739,6 +740,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * 
      * <p>Having this static method do the actual work makes the system easier to test.
      *
+     * @param language the index of the selected language
      * @param tDirStructureColumnNames the column names for the parts of the 
      *   dir and file names. All of these names must be in requiredVariableNames.
      * @param keys the valid values of author= (to authenticate the author)
@@ -782,7 +784,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * @return the response string 
      * @throws Throwable if any kind of trouble
      */
-    public static String insertOrDelete(String startDir, 
+    public static String insertOrDelete(int language, String startDir, 
         StringArray tDirStructureColumnNames, 
         IntArray tDirStructureNs, IntArray tDirStructureCalendars,
         HashSet<String> keys,
@@ -828,9 +830,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     //string times
                     if (!Calendar2.isStringTimeUnits(columnUnits[col])) {
                         String2.log("columnUnits[" + col + "]=" + columnUnits[col]);
-                        throw new SimpleException(EDStatic.queryError + 
-                            "Invalid units for the string time variable. " +
-                            "Units MUST specify the format of the time values.");
+                        throw new SimpleException(EDStatic.bilingual(language,
+                                EDStatic.queryErrorAr[0]        + "Invalid units for the string time variable. Units MUST specify the format of the time values.",
+                                EDStatic.queryErrorAr[language] + "Invalid units for the string time variable. Units MUST specify the format of the time values."));
                     }
                     timeFormat = columnUnits[col];
                 } else {
@@ -856,8 +858,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             int eqPo = parts[p].indexOf('=');
             if (eqPo <= 0 || //no '=' or no name
                 "<>~!".indexOf(parts[p].charAt(eqPo-1)) >= 0) // <= >= != ~=
-                throw new SimpleException(EDStatic.queryError + 
-                    "The \"" + parts[p] + "\" parameter isn't in the form name=value.");
+                throw new SimpleException(EDStatic.bilingual(language,
+                    EDStatic.queryErrorAr[0]        + "The \"" + parts[p] + "\" parameter isn't in the form name=value.",
+                    EDStatic.queryErrorAr[language] + "The \"" + parts[p] + "\" parameter isn't in the form name=value."));
             String tName  = parts[p].substring(0, eqPo); //names should be varNames so not percent encoded
             String tValue = SSR.percentDecode(parts[p].substring(eqPo + 1));            
             //String2.log(">> tName=" + tName + " tValue=" + String2.annotatedString(tValue));
@@ -868,11 +871,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     tValue = String2.fromJson(tValue);
 
                 if (p != nParts - 1)
-                    throw new SimpleException(EDStatic.queryError + 
-                        "author= must be the last parameter.");
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "author= must be the last parameter.",
+                        EDStatic.queryErrorAr[language] + "author= must be the last parameter."));
                 if (!keys.contains(tValue))  //this tests validity of author_key (since checked when created)
-                    throw new SimpleException(EDStatic.queryError + 
-                        "Invalid author_key.");
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "Invalid author_key.",
+                        EDStatic.queryErrorAr[language] + "Invalid author_key."));
                 int po = Math.max(0, tValue.indexOf('_')); 
                 author = tValue.substring(0, po); 
                 columnValues[authorColumn] = new StringArray(new String[]{author});
@@ -887,19 +892,23 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 int whichCol = String2.indexOf(columnNames, tName);
                 if (whichCol < 0) {
                     String2.log("columnNames=" + String2.toCSSVString(columnNames));
-                    throw new SimpleException(EDStatic.queryError + 
-                        "Unknown variable name=" + tName);
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "Unknown variable name=" + tName,
+                        EDStatic.queryErrorAr[language] + "Unknown variable name=" + tName));
                 } else if (whichCol == timestampColumn) {
-                    throw new SimpleException(EDStatic.queryError + 
-                        "An .insert or .delete request must not include " + TIMESTAMP + " as a parameter.");
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "An .insert or .delete request must not include " + TIMESTAMP + " as a parameter.",
+                        EDStatic.queryErrorAr[language] + "An .insert or .delete request must not include " + TIMESTAMP + " as a parameter."));
                 } else if (whichCol == commandColumn) {
-                    throw new SimpleException(EDStatic.queryError + 
-                        "An .insert or .delete request must not include " + COMMAND + " as a parameter.");
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "An .insert or .delete request must not include " + COMMAND + " as a parameter.",
+                        EDStatic.queryErrorAr[language] + "An .insert or .delete request must not include " + COMMAND + " as a parameter."));
                 }
 
                 if (columnValues[whichCol] != null) 
-                    throw new SimpleException(EDStatic.queryError + 
-                        "There are two parameters with variable name=" + tName + "."); 
+                    throw new SimpleException(EDStatic.bilingual(language,
+                        EDStatic.queryErrorAr[0]        + "There are two parameters with variable name=" + tName + ".", 
+                        EDStatic.queryErrorAr[language] + "There are two parameters with variable name=" + tName + ".")); 
 
                 //get the values
                 if (tValue.startsWith("[") &&
@@ -913,9 +922,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     if (arraySize < 0)
                         arraySize = columnValues[whichCol].size();
                     else if (arraySize != columnValues[whichCol].size())
-                        throw new SimpleException(EDStatic.queryError + 
-                            "Different parameters with arrays have different sizes: " +
-                            arraySize + "!=" + columnValues[whichCol].size() + ".");
+                        throw new SimpleException(EDStatic.bilingual(language,
+                            EDStatic.queryErrorAr[0]        + "Different parameters with arrays have different sizes: " + arraySize + "!=" + columnValues[whichCol].size() + ".",
+                            EDStatic.queryErrorAr[language] + "Different parameters with arrays have different sizes: " + arraySize + "!=" + columnValues[whichCol].size() + "."));
 
                 } else {
                     //deal with single value: name=value
@@ -925,9 +934,9 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                         //do it this way to deal with quotes, special chars, etc.
                         StringArray.arrayFromCSV(tValue, ",", false)); //trim?  
                     if (sa.size() > 1)
-                        throw new SimpleException(EDStatic.queryError + 
-                            "One value (not " + sa.size() +
-                            ") expected for columnName=" + tName + ". (missing [ ] ?)");
+                        throw new SimpleException(EDStatic.bilingual(language,
+                            EDStatic.queryErrorAr[0]        + "One value (not " + sa.size() + ") expected for columnName=" + tName + ". (missing [ ] ?)",
+                            EDStatic.queryErrorAr[language] + "One value (not " + sa.size() + ") expected for columnName=" + tName + ". (missing [ ] ?)"));
                     if (sa.size() == 0)
                         sa.add("");
                     columnValues[whichCol] = PrimitiveArray.factory(columnPATypes[whichCol], sa); //does nothing if desired class is String
@@ -936,16 +945,15 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     //    (tValue.length() < 2 || 
                     //     tValue.charAt(0) != '"' ||
                     //     tValue.charAt(tValue.length() - 1) != '"'))
-                    //    throw new SimpleException(EDStatic.queryError + 
-                    //        "The String value for columnName=" + tName + 
-                    //        " must start and end with \"'s.");
+                    //    throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                    //        "The String value for columnName=" + tName + " must start and end with \"'s.");
                 }
 
                 //ensure required var has valid value
                 if (whichRC >= 0) {
                     PrimitiveArray pa = columnValues[whichCol];
                     if (pa.size() == 0 || pa.getString(0).length() == 0) //string="" number=NaN
-                        throw new SimpleException(EDStatic.queryError + 
+                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                             "requiredVariable=" + tName + " must have a valid value.");
                 }
             }
@@ -953,13 +961,14 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //ensure required parameters were specified 
         if (author == null)
-            throw new SimpleException(EDStatic.queryError + 
-                "author= was not specified.");
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + "author= was not specified.",
+                EDStatic.queryErrorAr[language] + "author= was not specified."));
         int notFound = requiredVariablesFound.nextClearBit(0);
         if (notFound < requiredVariableNames.length)
-            throw new SimpleException(EDStatic.queryError + 
-                "requiredVariableName=" + requiredVariableNames[notFound] + 
-                " wasn't specified.");
+            throw new SimpleException(EDStatic.bilingual(language,
+                EDStatic.queryErrorAr[0]        + "requiredVariableName=" + requiredVariableNames[notFound] + " wasn't specified.",
+                EDStatic.queryErrorAr[language] + "requiredVariableName=" + requiredVariableNames[notFound] + " wasn't specified."));
 
         //make all columnValues the same size
         int maxSize = Math.max(1, arraySize);
@@ -1301,6 +1310,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
     public static void testStatic(int hammer) throws Throwable {
         String2.log("\n*** EDDTableFromHttpGet.testStatic");
         String results, expected;
+        int language = 0;
 
         //test parseDirectoryStructure
         StringArray dsColumnName = new StringArray();
@@ -1407,7 +1417,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             String2.log(">> tHammer=" + tHammer);
             for (int i = 0; i < n; i++) {
                 //error will throw exception
-                results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+                results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                     keys, tGlobalAttributes,
                     columnNames, columnUnits, columnPATypes, columnMvFv,
                     requiredVariableNames,
@@ -1429,7 +1439,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         //****** from here on are the non-hammer, static tests
         //*** test insertOrDelete
         String2.log("\n>> insertOrDelete #1: insert 1 row");
-        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+        results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
             columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
@@ -1457,13 +1467,13 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //*** add 2 rows via array
         String2.log("\n>> insertOrDelete #2: insert 2 rows via array");
-        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+        results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
             columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames, INSERT_COMMAND, 
             "stationID=\"46088\"&time=[4.4,5.5]&aByte=[18.2,18.8]&aChar=[\"\u20AC\",\" \"]" +  // unicode char
             "&aShort=[30002.2,30003.3]&anInt=3&aFloat=[1.45,1.67]" +
-            "&aDouble=[1.3,1.4]&aString=[\" s\n\tÃ\u20AC123\",\" \\n\\u20AC \"]" + //string is nBytes long, unicode char
+            "&aDouble=[1.3,1.4]&aString=[\" s\n\tÃƒ\u20AC123\",\" \\n\\u20AC \"]" + //string is nBytes long, unicode char
             "&author=bsimons_aSecret",
             null, null); //Table dirTable, Table fileTable
         Test.ensureLinesMatch(results, resultsRegex(2), "results=" + results);
@@ -1495,12 +1505,12 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //*** change all values in a row
         String2.log("\n>> insertOrDelete #3: change all values in a row");
-        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+        results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
             columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
             INSERT_COMMAND, 
-            "stationID=46088&time=3.3&aByte=19.9&aChar=¼" +  //stationID not in quotes    //the character itself
+            "stationID=46088&time=3.3&aByte=19.9&aChar=Â¼" +  //stationID not in quotes    //the character itself
             "&aShort=30009.9&anInt=9&aFloat=1.99" +
             "&aDouble=1.999&aString=\"\"" + //empty string
             "&author=\"bsimons_aSecret\"",  //author in quotes
@@ -1524,7 +1534,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //*** change values in a row but only specify a few
         String2.log("\n>> insertOrDelete #4: change a few values in a row");
-        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+        results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
             columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
@@ -1550,7 +1560,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         //*** delete a row
         String2.log("\n>> insertOrDelete #4: delete a row");
-        results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+        results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
             keys, tGlobalAttributes,
             columnNames, columnUnits, columnPATypes, columnMvFv,  
             requiredVariableNames,
@@ -1588,7 +1598,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "invalid author";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1607,7 +1617,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "author not last";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1626,7 +1636,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "invalid secret";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1645,7 +1655,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "invalid var name";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1663,7 +1673,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "missing required var";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1682,7 +1692,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "invalid required var value";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1701,7 +1711,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "invalid time value";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1720,7 +1730,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "different array sizes";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1739,7 +1749,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
 
         results = "2 vars with same name";
         try {
-            results = insertOrDelete(startDir, dsColumnName, dsN, dsCalendar,
+            results = insertOrDelete(language, startDir, dsColumnName, dsN, dsCalendar,
                 keys, tGlobalAttributes,
                 columnNames, columnUnits, columnPATypes, columnMvFv,  
                 requiredVariableNames,
@@ -1783,7 +1793,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXml(
+    public static String generateDatasetsXml(int language, 
         String tFileDir, String sampleFileName,
         String tHttpGetRequiredVariables, String tHttpGetDirectoryStructure,
         String tHttpGetKeys,
@@ -1860,7 +1870,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 destPA = new DoubleArray(sourcePA);
             } else if (colName.equals("timestamp")) {
                 destAtts.add("comment", 
-                    EDStatic.EDDTableFromHttpGetTimestampDescription + " " + EDStatic.note + " " + 
+                    EDStatic.EDDTableFromHttpGetTimestampDescription + " " + EDStatic.noteAr[0] + " " + 
                     EDStatic.EDDTableFromHttpGetDatasetDescription);
                 destAtts.add("units", Calendar2.SECONDS_SINCE_1970);
                 destAtts.add("time_precision", "1970-01-01T00:00:00.000Z");
@@ -1931,7 +1941,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         String ttSummary = getAddOrSourceAtt(addGlobalAtts, dataSourceTable.globalAttributes(), 
             "summary", "");
         addGlobalAtts.set("summary", String2.ifSomethingConcat(
-            ttSummary, "\n\n", EDStatic.note + " " + EDStatic.EDDTableFromHttpGetDatasetDescription));
+            ttSummary, "\n\n", EDStatic.noteAr[0] + " " + EDStatic.EDDTableFromHttpGetDatasetDescription));
         if (String2.isSomething(tHttpGetRequiredVariables))  {
             StringArray sa = StringArray.fromCSV(tHttpGetRequiredVariables);
             if (sa.size() > 0)
@@ -1996,10 +2006,11 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
+        int language = 0;
         String dataDir = "/u00/data/points/testFromHttpGet/";
         String sampleFile = dataDir + "testFromHttpGet.jsonl";
 
-        String results = generateDatasetsXml(
+        String results = generateDatasetsXml(language, 
             dataDir, sampleFile, 
             "stationID, time",
             "stationID/2months",
@@ -2065,7 +2076,7 @@ String expected =
 "        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
 "        <att name=\"subsetVariables\">stationID</att>\n" +
 "        <att name=\"summary\">This is my great summary. NOAA National Marine Fisheries Service (NMFS) Southwest Fisheries Science Center (SWFSC) ERD data from a local source." +
-"\n\nNOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
+"\n\nNOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "        <att name=\"testOutOfDate\">now-1day</att>\n" +
 "        <att name=\"title\">My Great Title</att>\n" +
 "    </addAttributes>\n" +
@@ -2127,7 +2138,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"comment\">The values in this column are added by ERDDAP to identify when each row of data was added to the data file. NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
+"            <att name=\"comment\">The values in this column are added by ERDDAP to identify when each row of data was added to the data file. NOTE! This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Timestamp</att>\n" +
 "            <att name=\"missing_value\" type=\"double\">NaN</att>\n" +
@@ -2154,7 +2165,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"comment\">This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (comand=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
+"            <att name=\"comment\">This is an unusual dataset in that the data files are actually log files. Normally, when you request data from this dataset, ERDDAP processes the insert (command=0) and delete (command=1) commands in the log files to return data from the current version of this dataset. However, if you make a request which includes &amp;timestamp&lt;= , then ERDDAP will return the dataset as it was at that point in time. Or, if you make a request which includes &amp;timestamp&gt; (or &gt;= or =), e.g., &amp;timestamp&gt;0, then ERDDAP will return the raw data from the log files.</att>\n" +
 "            <att name=\"flag_meanings\">insert delete</att>\n" +
 "            <att name=\"flag_values\" type=\"byteList\">0 1</att>\n" +
 "            <att name=\"ioos_category\">Unknown</att>\n" +
@@ -2184,7 +2195,7 @@ String expected =
 
     /**
      * This does basic tests of this class.
-     * Note that ü in utf-8 is \xC3\xBC or [195][188]
+     * Note that Ã¼ in utf-8 is \xC3\xBC or [195][188]
      * Note that Euro is \\u20ac (and low byte is #172 is \\u00ac -- I worked to encode as '?')
      *
      * @throws Throwable if trouble
@@ -2192,6 +2203,7 @@ String expected =
     public static void testBasic() throws Throwable {
         String2.log("\n****************** EDDTableFromHttpGet.testBasic() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -2214,7 +2226,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n*** EDDTableFromHttpGet.testBasic  test das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2350,7 +2362,7 @@ expected =
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2376,7 +2388,7 @@ expected =
 
         //.csv  all data (just the seed data)
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2398,24 +2410,24 @@ expected =
         //push a bunch of data into the dataset: 2 stations, 2 time periods
         for (int i = 0; i < 4; i++) {
             //apr
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station1&time=2016-04-29T0" + i + ":00:00Z" +
                 "&airTemp=10." + i + 
                 "&waterTemp=11." + i + "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_insert1_" + i, ".insert"); 
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station2&time=2016-04-29T0" + i + ":00:00Z" +
                 "&airTemp=12." + i + 
                 "&waterTemp=13." + i + "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_insert2_" + i, ".insert");
 
             //may
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station1&time=2016-05-29T0" + i + ":00:00Z" +
                 "&airTemp=14." + i + 
                 "&waterTemp=15." + i + "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_insert3_" + i, ".insert"); 
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station2&time=2016-05-29T0" + i + ":00:00Z" +
                 "&airTemp=16." + i + 
                 "&waterTemp=17." + i + "&author=JohnSmith_JohnSmithKey", 
@@ -2449,7 +2461,7 @@ expected =
 
         //.csv  all data 
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all2", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log(results);
@@ -2481,25 +2493,25 @@ expected =
         //overwrite and delete a bunch of data
         for (int i = 0; i < 2; i++) {
             //overwrite the first 2
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station1&time=2016-04-29T0" + i + ":00:00Z" +
                 "&airTemp=20." + i + 
                 "&waterTemp=21." + i + "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_insert5_" + i, ".insert"); 
             //delete the first 2
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station2&time=2016-04-29T0" + i + ":00:00Z" +
                 "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_delete6_" + i, ".delete");
 
             //overwrite the first 2
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station1&time=2016-05-29T0" + i + ":00:00Z" +
                 "&airTemp=22." + i + 
                 "&waterTemp=23." + i + "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_insert7_" + i, ".insert"); 
             //delete the first 2
-            tName = eddTable.makeNewFileForDapQuery(null, null, 
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "stationID=station2&time=2016-05-29T0" + i + ":00:00Z" +
                 "&author=JohnSmith_JohnSmithKey", 
                 dir, eddTable.className() + "_delete8_" + i, ".delete");
@@ -2507,7 +2519,7 @@ expected =
 
         //.csv  all data (with processing)
         userDapQuery = "";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2531,7 +2543,7 @@ expected =
 
         //similar: versioning as of now
         userDapQuery = "&timestamp<=" + (System.currentTimeMillis()/1000.0);    //as millis
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3b", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
@@ -2539,14 +2551,14 @@ expected =
         //similar: versioning as of now
         userDapQuery = "&timestamp<=" + 
             Calendar2.epochSecondsToIsoStringT3Z(System.currentTimeMillis()/1000.0);    //as ISO
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3c", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //.csv  all data (without processing)
         userDapQuery = "&timestamp>-1";  
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         String2.log("dataset without processing:\n" + results);
@@ -2626,7 +2638,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
 
         //.csv  (versioning: as of previous time)
         userDapQuery = "&timestamp<=" + (versioningTime/1000.0);
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all5", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
@@ -2635,7 +2647,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         
         //2020-10-09 There were errors related to a request not including some required variables, so test that
         userDapQuery = "airTemp";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_withProcessing", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2658,7 +2670,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
 
         //view the raw data for the station1 and time=2016-05-29T01:00:00Z 'row' 
         userDapQuery = "&stationID=\"station1\"&time=2016-05-29T01:00:00Z&timestamp>-1"; 
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1RawRow", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2670,7 +2682,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
 
         //e.g.,  max(timestamp)-0.001 -> 2020-10-09T19:29:31.667Z
         userDapQuery = "airTemp&timestamp<max(timestamp)-0.001";  //without the final change above
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_miniRollback", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 
@@ -2693,7 +2705,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         userDapQuery = "airTemp&timestamp>-1";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_withoutProcessing", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         expected = 

@@ -61,16 +61,16 @@ public class TableWriterJsonl extends TableWriter {
      *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
      *     ! I think jsonp never makes sense for jsonl output, which isn't one json object.
      */
-    public TableWriterJsonl(EDD tEdd, String tNewHistory, 
+    public TableWriterJsonl(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource, boolean tWriteColNames,
         boolean tWriteKVP, String tJsonp) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         writeColNames = tWriteColNames;
         writeKVP = tWriteKVP;
         jsonp = tJsonp;
         if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
-            throw new SimpleException(EDStatic.queryError + EDStatic.errorJsonpFunctionName);
+            throw new SimpleException(EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.errorJsonpFunctionNameAr));
     }
 
 
@@ -206,12 +206,12 @@ public class TableWriterJsonl extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource outputStreamSource, 
         boolean tWriteColNames, boolean tWriteKVP, String tJsonp)
         throws Throwable {
 
-        TableWriterJsonl twjl = new TableWriterJsonl(tEdd, tNewHistory, 
+        TableWriterJsonl twjl = new TableWriterJsonl(language, tEdd, tNewHistory, 
             outputStreamSource, tWriteColNames, tWriteKVP, tJsonp);
         twjl.writeAllAndFinish(table);
     }

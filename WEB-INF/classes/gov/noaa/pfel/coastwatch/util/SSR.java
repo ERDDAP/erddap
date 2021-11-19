@@ -2102,19 +2102,15 @@ public class SSR {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for(int s; (s=is.read(buffer)) != -1; ) 
                 baos.write(buffer, 0, s);
+            is.close();
+            is = null;
             if (reallyVerbose) String2.log("  SSR.getFileBytes " + fileName + 
                 " finished. TIME=" + (System.currentTimeMillis() - time) + "ms");
             return baos.toByteArray();
         } catch (Exception e) {
             //String2.log(e.toString());
+            if (is != null) try {is.close(); } catch (Throwable t) {};
             throw new Exception("ERROR while reading file=" + fileName + " : " + e.toString(), e);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Throwable t) {
-                }
-            }
         }
     } 
 

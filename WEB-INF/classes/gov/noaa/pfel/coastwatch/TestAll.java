@@ -124,7 +124,7 @@ public class TestAll  {
 //      String tFileName = "/data/fred/biooracle.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"testTimeSince19000101", "-verbose"});
+//      DasDds.main(new String[]{"jplMURSST41F", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -185,7 +185,7 @@ public class TestAll  {
         Writer writer = new BufferedWriter(String2.outputStreamWriterutf8(
             new BufferedOutputStream(new FileOutputStream(dirName, false)));
         //EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeFGDC(writer, null); 
-        EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeISO19115(writer, null); 
+        EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeISO19115(language, writer, null); 
         writer.close();
         SSR.displayInBrowser("file://" + dirName);
     }*/
@@ -565,7 +565,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 4, 2021, 7, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 7, 2021, 9, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -598,7 +598,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 4, 2021, 7); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 7, 2021, 9); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -787,9 +787,26 @@ public class TestAll  {
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
 //                  "c:/programs/mapserver/WVBoreholeResponsePretty.xml");
 
-//      Table.testReadNcSequence();
-      
+//    Table.testReadNcSequence();
 
+/*    
+      // Supported Mime Types: https://cloud.google.com/translate/docs/supported-formats
+      TranslateTextRequest request =
+          TranslateTextRequest.newBuilder()
+              .setParent(parent.toString())
+              .setMimeType("text/plain")
+              .setTargetLanguageCode(targetLanguage)
+              .addContents(text)
+              .build();
+
+      TranslateTextResponse response = client.translateText(request);
+
+      // Display the translation for each input text provided
+      for (Translation translation : response.getTranslationsList()) {
+        System.out.printf("Translated text: %s\n", translation.getTranslatedText());
+      }
+    }
+*/
 
 //Force compilation of all the classes that need to be deployed.
 //Almost all of these are compiled automatically if you recompile everything,
@@ -1063,11 +1080,13 @@ TableWriterOrderByMinMax twobmm;
 TableWriterSeparatedValue twsv;
 TableWriterUnits twu;
 TaskThread tt;
+TranslateMessages translateMessages;
 WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = false;
-        boolean doSlowTestsToo = false;
+        boolean interactive = true;
+        boolean doSlowTestsToo = true;
+
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
@@ -1355,7 +1374,7 @@ WaitThenTryAgainException wttae;
         //MakeErdJavaZip.makeConvertTableJar("C:/pmelsvn/WebContent/WEB-INF/lib/"); //only do when working on LAS stuff
 
         //INACTIVE because not needed, but works: make EMA.war
-        MakeEmaWar.main(null);
+        //MakeEmaWar.main(null);
 
         String2.log(
             "\n" +

@@ -213,7 +213,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -467,6 +467,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -478,7 +479,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
                 
         //read dds
         DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
@@ -512,7 +513,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         DArrayDimension dad = mainDArray.getDimension(0);
         int newSize = dad.getSize();  
         if (newSize < oldSize) 
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
                 " < oldSize=" + oldSize + ")"); 
         if (newSize == oldSize) {
@@ -545,14 +547,16 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             return false;
         }
         if (oldValues.elementType() != newValues.elementType())  
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + edvga.destinationName() + " dataType changed: " +
                    " new=" + newValues.elementTypeString() +
                 " != old=" + oldValues.elementTypeString() + ")"); 
 
         //ensure last old value is unchanged 
         if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
                   "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
                           " != new=" + newValues.getDouble(0)); 
@@ -579,7 +583,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //test isAscending  (having last old value is essential)
         String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
         if (error.length() > 0) 
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(" + edvga.destinationName() + " was " + 
                 (edvga.isAscending()? "a" : "de") +
                 "scending, but the newest values aren't (" + error + ").)"); 
@@ -755,6 +760,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -768,7 +774,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -801,11 +807,13 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 //request should be valid, so any other error is trouble with dataset
                 String2.log(MustBe.throwableToString(t));
                 throw t instanceof WaitThenTryAgainException? t : 
-                    new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    new WaitThenTryAgainException(
+                        EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                         "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", t); 
             }
             if (pa.length != axisVariables.length + 1) 
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                throw new WaitThenTryAgainException(
+                    EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                     "\n(Details: An unexpected data structure was returned from the source.)");
             results[axisVariables.length + dv] = pa[0];
             if (dv == 0) {
@@ -818,7 +826,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     String tError = results[av].almostEqual(pa[av + 1]); 
                     if (tError.length() > 0) 
                         throw new WaitThenTryAgainException(
-                            EDStatic.waitThenTryAgain +
+                            EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                             "\n(Details: The axis values for dataVariable=0,axis=" + av +  
                             "\ndon't equal the axis values for dataVariable=" + dv + ",axis=" + av + ".\n" +
                             tError + ")");
@@ -833,6 +841,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -842,7 +851,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
         if (!accessibleViaFiles)
             return null;
@@ -884,11 +893,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-    public String accessibleViaFilesGetLocal(String relativeFileName) {
+    public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         //almost identical code in EDDGridFromFiles and EDDTableFromFiles ("grid" vs "table")
         if (!accessibleViaFiles)
              return null;
@@ -1021,23 +1031,27 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-"<dataset type=\"EDDGridFromErddap\" datasetID=\"localhost_8f86_303c_35ff\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromErddap\" datasetID=\"1_0_3648_e4d8_5e3c\" active=\"true\">\n" +
 "    <!-- SST, Blended, Global, 2002-2014, EXPERIMENTAL (5 Day Composite) -->\n" +
-"    <sourceUrl>http://localhost:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
+"    <sourceUrl>http://127.0.0.1:8080/cwexperimental/griddap/erdBAssta5day</sourceUrl>\n" +
 "</dataset>";
             int po = results.indexOf(expected.substring(0, 80));
+            if (po < 0)
+                String2.log("results=" + results);
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
 expected = 
 "<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n";
             po = results.indexOf(expected.substring(0, 20));
+            if (po < 0)
+                String2.log("results=" + results);
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);            
             Test.ensureTrue(results.indexOf("rMHchla8day", po) > 0, 
                 "results=\n" + results + 
                 "\nTHIS TEST REQUIRES rMHchla8day TO BE ACTIVE ON THE localhost ERDDAP.");
 
             //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = "localhost_b73a_a4a6_4f4a";
+            String tDatasetID = "1_0_5615_5e97_1841";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);    
             String2.log(
@@ -1063,6 +1077,7 @@ expected =
     /** This does some basic tests. */
     public static void testBasic(boolean testLocalErddapToo) throws Throwable {
         testVerboseOn();
+        int language = 0;
         EDDGridFromErddap gridDataset;
         String name, tName, axisDapQuery, query, results, expected, expected2, error;
         int tPo;
@@ -1080,7 +1095,7 @@ expected =
 
             //*** test getting das for entire dataset
             String2.log("\n****************** EDDGridFromErddap test entire dataset\n");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".das"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1238,7 +1253,7 @@ expected2 =
             }
 
             //*** test getting dds for entire dataset
-            tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".dds"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1270,7 +1285,7 @@ expected2 =
             //.asc
             String2.log("\n*** EDDGridFromErddap test get .ASC axis data\n");
             query = "time%5B0:100:200%5D,longitude%5Blast%5D";
-            tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".asc"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1300,7 +1315,7 @@ expected2 =
             //.csv
             String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1321,7 +1336,7 @@ expected2 =
             //.csv  test of gridName.axisName notation
             String2.log("\n*** EDDGridFromErddap test get .CSV axis data\n");
             query = SSR.minimalPercentEncode("chlorophyll.time[0:100:200],chlorophyll.longitude[last]");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_AxisG.A", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1342,7 +1357,7 @@ expected2 =
             //.dods
             String2.log("\n*** EDDGridFromErddap test get .DODS axis data\n");
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".dods"); 
             results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
             //String2.log(results);
@@ -1367,7 +1382,7 @@ expected2 =
             //octave> erdMHchla8day
             String matlabAxisQuery = SSR.minimalPercentEncode("time[0:100:200],longitude[last]"); 
             String2.log("\n*** EDDGridFromErddap test get .MAT axis data\n");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, matlabAxisQuery, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, matlabAxisQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".mat"); 
             String2.log(".mat test file is " + EDStatic.fullTestCacheDirectory + tName);
             results = File2.hexDump(EDStatic.fullTestCacheDirectory + tName, 1000000);
@@ -1406,7 +1421,7 @@ expected2 =
             //.ncHeader
             String2.log("\n*** EDDGridFromErddap test get .NCHEADER axis data\n");
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".ncHeader"); 
             results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
@@ -1462,7 +1477,7 @@ expected2 =
             //********************************************** test getting grid data
             //.csv
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Data", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  //missing values are "NaN"
@@ -1501,7 +1516,7 @@ expected2 =
 
             //.csv   test gridName.gridName notation
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll." + userDapQuery, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll." + userDapQuery, 
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv"); 
             results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1540,7 +1555,7 @@ expected2 =
 
             //.nc
             String2.log("\n*** EDDGridFromErddap test get .NC data\n");
-            tName = gridDataset.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Data", ".nc"); 
             results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
             expected = 

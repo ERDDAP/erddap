@@ -132,7 +132,8 @@ public class XML {
      * This replaces chars 0 - 255 with their corresponding HTML_ENTITY
      * and higher chars with the hex numbered entity.
      *
-     * <p>char 0 - 127 and &gt;=256 are encoded same as encodeAsXML.
+     * <p>char 0 - 127 are encoded same as encodeAsXML.
+     * <br>char &gt;=256 are encoded as &#xhhhh (! although they don't need to be since HTML docs are UTF-8 docs).
      *
      * @param plainText the string to be encoded.
      *    If null, this throws exception.
@@ -192,6 +193,26 @@ public class XML {
 
 
     /**
+     * This is like encodeAsXML, but encodes char &gt;=256 so they can be shown
+     * in a DOW/Windows terminal window.
+     *
+     * @param encodeHighChar
+     */
+    public static String encodeAsTerminal(String plainText) {
+        return encodeAsXMLOpt(plainText, true);
+    }
+
+    /**
+     * This is the standard encodeAsXML which leaves chars &gt;=256 as is.
+     *
+     * @param encodeHighChar
+     */
+    public static String encodeAsXML(String plainText) {
+        return encodeAsXMLOpt(plainText, false);
+    }
+
+
+    /**
      * This replaces '&amp;', '&lt;', '&gt;', '"', ''' in the string with 
      * "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#39;" so plainText can be safely
      * stored as a quoted string within XML.
@@ -201,17 +222,16 @@ public class XML {
      * And see "XML in a Nutshell" book, pg 20 for info on these 5 character encodings
      * (and no others).
      *
-     * <p>char 0 - 127 and &gt;=256 are encoded same as encodeAsHTML.
-     *
      * <p>This is part of preventing Cross-site-scripting security vulnerability
      * (which allows hacker to insert his javascript into pages returned by server).
      * See Tomcat (Definitive Guide) pg 147.
      *
      * @param plainText the string to be encoded.
      *    If null, this throws exception.
+     * @param encodeHighChar if true, char &gt;255 are encoded as &#xhhhh;
      * @return the encoded string
      */
-    public static String encodeAsXML(String plainText) {
+    public static String encodeAsXMLOpt(String plainText, boolean encodeHighChar) {
 //future should it:* Pairs of spaces are converted to sp + &nbsp;.
         int size = plainText.length();
         StringBuilder output = new StringBuilder(size * 2);
@@ -221,9 +241,11 @@ public class XML {
             if (chi <= 127)
                 //converting " is important to prevent cross site scripting; 
                 //it prevents attacker from closing href="..." quotes
+                //[No. That's in a parameter. It shouldn't be needed for ordinary XML content.]
                 output.append(HTML_ENTITIES[chi]);
-            else 
+            else if (encodeHighChar && chi > 255)
                 output.append("&#x" + Integer.toHexString(chi) + ";");
+            else output.append((char)chi);
         }
 
         return output.toString();
@@ -519,7 +541,7 @@ public class XML {
             int temPo = 0;    //one character beyond last tag found
             String sub = substitutions[subN];
             int tagStart = 0; //in sub
-            //String2.log("sub=" + encodeAsXML(sub));
+            //String2.log("sub=" + encodeAsTerminal(sub));
 
             //find each tag which identifies the 
             String tag = null; //with throw null pointer if no tag found
@@ -528,13 +550,13 @@ public class XML {
                 int tagEnd = sub.indexOf('>', tagStart + 1);
                 tag = sub.substring(tagStart, tagEnd + 1);
                 tagStart = tagEnd + 1;
-                //String2.log("  tag=" + encodeAsXML(tag));
+                //String2.log("  tag=" + encodeAsTerminal(tag));
 
                 //find its location in the template
                 temPo = template.indexOf(tag, temPo);
                 Test.ensureNotEqual(temPo, -1, "FGDC.substitute subN=" + subN + 
-                    " tag not found =" + encodeAsXML(tag) + 
-                    "\n  substitution=" + encodeAsXML(sub));
+                    " tag not found =" + encodeAsTerminal(tag) + 
+                    "\n  substitution=" + encodeAsTerminal(sub));
                 temPo += tag.length();
             }
 
@@ -542,8 +564,8 @@ public class XML {
             String closeTag = "</" + tag.substring(1);
             int closeTagAt = template.indexOf(closeTag, temPo);
             Test.ensureNotEqual(closeTagAt, -1, "FGDC.substitute subN=" + subN + 
-                " close tag not found =" + encodeAsXML(closeTag) + 
-                "\n  substitution=" + encodeAsXML(sub));
+                " close tag not found =" + encodeAsTerminal(closeTag) + 
+                "\n  substitution=" + encodeAsTerminal(sub));
 
             //delete any data between the close and open tags
             template.delete(temPo, closeTagAt);
@@ -585,7 +607,7 @@ public class XML {
      * @throws Exception if trouble
      */
     public static Document parseXml(String fileName, boolean validating) throws Exception {
-        return parseXml(new InputSource(fileName), validating);
+        return parseXml(new InputSource(File2.getDecompressedBufferedFileReader(fileName, String2.UTF_8)), validating);
     }
 
     /**
@@ -717,18 +739,6 @@ public class XML {
         return getTextContent(getFirstNode(item, xPath, xPathQuery));
     }
 
-    /* SEE NEW prettyXml BELOW.
-     * This reformats an xml file without newlines to have some newlines. * /
-    public static void prettyXml(String inFileName, String outFileName) {
-        String2.log("prettyXml\n in=" + inFileName + "\nout=" + outFileName);
-        String in[] = String2.readFromFile(inFileName);
-        String2.log(in[0]);
-        in[1] = String2.replaceAll(in[1], "<", "\n<");
-        in[1] = String2.replaceAll(in[1], "\n</", "</");
-        String2.writeToFile(outFileName, in[1]);
-    }
-    */
-
     /** This reformats an xml file to have newlines and nice indentation. 
      * This throws RuntimeException if trouble.
      */
@@ -856,21 +866,22 @@ public class XML {
 
         //test encodeAsXML
         String2.log("test encode");
-        Test.ensureEqual(encodeAsXML( "Hi &<>\"�\u1234Bob"), "Hi &amp;&lt;&gt;&quot;&#xb0;&#x1234;Bob", "XML");
-        Test.ensureEqual(encodeAsHTML("Hi &<>\"�\u1234Bob"), "Hi &amp;&lt;&gt;&quot;&deg;&#x1234;Bob", "HTML");
+        Test.ensureEqual(encodeAsTerminal( "Hi &<>\"째\u1234Bob"), "Hi &amp;&lt;&gt;&quot;째&#x1234;Bob", "XML");
+        Test.ensureEqual(encodeAsXML( "Hi &<>\"째\u1234Bob"), "Hi &amp;&lt;&gt;&quot;째" + ((char)4660) + "Bob", "XML");
+        Test.ensureEqual(encodeAsHTML("Hi &<>\"째\u1234Bob"), "Hi &amp;&lt;&gt;&quot;&deg;&#x1234;Bob", "HTML");
         Test.ensureEqual(encodeAsHTMLAttribute(
-                                      "Hi &<>\"�\u1234Bob"), "Hi&#x20;&#x26;&#x3c;&#x3e;&#x22;&#xb0;&#x1234;Bob", "HTML");
+                                      "Hi &<>\"째\u1234Bob"), "Hi&#x20;&#x26;&#x3c;&#x3e;&#x22;&#xb0;&#x1234;Bob", "HTML");
 
         //test decodeEntities
         String2.log("test decodeEntities"); //037 tests leading 0, which is valid
         Test.ensureEqual(decodeEntities("Hi&#037;&#37;&#x025;&#x25; &amp;&lt;&gt;&quot;&nbsp;&#176;&deg;"), 
-            "Hi%%%% &<>\"\u00a0같", "decode");
+            "Hi%%%% &<>\"\u00a0째째", "decode");
 
         for (int ch = 0; ch < 260; ch++) {
             if (ch >= 128 && ch < 160) //don't test Windows-1252 characters
                 continue;
             char ch1 = (char)ch;
-            String ch2 = decodeEntities(encodeAsXML("" + ch1));
+            String ch2 = decodeEntities(encodeAsTerminal("" + ch1));
             if (ch2.length() > 0 && ch != 160)   //#160=nbsp decodes as #20=' ' 
                 Test.ensureEqual(ch2, "" + ch1, "XML encode/decode ch=" + ch);
             ch2 = decodeEntities(encodeAsHTML("" + ch1));
@@ -910,7 +921,7 @@ public class XML {
         //***** tests of XPath
         XPath xPath = getXPath();
         Document document = parseXml(new BufferedReader(new StringReader(
-            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
             "<testr>\n" +
             "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment -->text  \n" +
             "  </level1>\n" +

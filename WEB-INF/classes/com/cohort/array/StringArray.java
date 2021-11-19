@@ -3101,7 +3101,7 @@ public class StringArray extends PrimitiveArray {
         s = anArray.diffString(ia);  Test.ensureEqual(s, "  old [2]=23,\n  new [2]=22.", "s=" + s);
 
         //utf8
-        String os = " s\\\n\t√\u20ac ";
+        String os = " s\\\n\t√É\u20ac ";
         StringArray sa = new StringArray(new String[]{os});
         sa.toUTF8().fromUTF8();
         Test.ensureEqual(sa.get(0), os, "");

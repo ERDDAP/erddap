@@ -289,6 +289,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -302,7 +303,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 /*
@@ -474,6 +475,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         SgtMap.reallyVerbose = true;
         EDDGridFromDap gridDataset;
         String name, tName, axisDapQuery, userDapQuery, results, expected, error;
+        int language = 0;
 
 /*    
         gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "erdMHchla8day"); 
@@ -490,7 +492,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridFromBinaryFile test entire dataset\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, "", dir, baseName + "_Entire", ".das"); 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, "", dir, baseName + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -529,7 +531,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
 
         //.csv
         String2.log("\n*** EDDGridFromDap test get .CSV axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, "time[0:100:1000]", dir, baseName + "_Axis", ".csv"); 
+        tName = gridDataset.makeNewFileForDapQuery(language, null, "time[0:100:1000]", dir, baseName + "_Axis", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         //SSR.displayInBrowser("file://" + dir + tName);

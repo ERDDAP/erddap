@@ -409,6 +409,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
         String2.log("\n*** EDDGridFromNcFilesUnpacked.testBasic()\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -422,7 +423,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 
         //*** test getting das for entire dataset
         String2.log("\n*** test das dds for entire dataset\n");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -501,7 +502,7 @@ today;
 //2015-10-08T22:27:15Z  
 
 expected = 
-"http://localhost:8080/cwexperimental/griddap/testEDDGridFromNcFilesUnpacked.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/testEDDGridFromNcFilesUnpacked.das\";\n" +
 "    String infoUrl \"https://podaac.jpl.nasa.gov/\";\n" +
 "    String institution \"Jet Propulsion Laboratory\";\n" +
 "    String keywords \"analysed, analysed_sst, daily, data, day, earth, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environments, foundation, high, interim, jet, laboratory, making, measures, multi, multi-scale, mur, near, near real time, near-real-time, nrt, ocean, oceans, product, propulsion, real, records, research, resolution, scale, sea, sea_surface_foundation_temperature, sst, surface, system, temperature, time, ultra, ultra-high, use\";\n" +
@@ -535,7 +536,7 @@ expected =
         Test.ensureEqual(tResults, expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -559,7 +560,7 @@ expected =
         //.csv  with data from one file
         String2.log("\n*** test read from one file\n");       
         userDapQuery = "analysed_sst[0][0:2:6][0:2:6]";
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -597,6 +598,7 @@ expected =
     public static void testUInt16File() throws Throwable {
         String2.log("\n*** EDDGridFromNcFilesUnpacked.testUInt16File");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
         String fileDir = EDStatic.unitTestDataDir + "unsigned/";
@@ -966,7 +968,7 @@ expected =
 //45.000717 +2=> 47.000717 /7.17185E-4=> 65535
 
         //.das     das isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -1078,7 +1080,7 @@ expected =
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -1108,7 +1110,7 @@ expected =
 
         //.csv data values
         userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -1143,7 +1145,7 @@ expected =
 
         //display the image
         String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "sst[0][][]&.land=under", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][][]&.land=under", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
@@ -1159,6 +1161,7 @@ expected =
     public static void testSuperPreciseTimeUnits() throws Throwable {
         String2.log("\n*** EDDGridFromNcFilesUnpacked.testSuperPreciseTimeUnits");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery;
         String fileDir = EDStatic.unitTestDataDir + "nc/";
         boolean oDebugMode = NcHelper.debugMode;
@@ -1297,7 +1300,7 @@ expected =
 "  :Conventions = \"CF-1.6, ACDD-1.3, ISO-8601\";\n" +
 "  :standard_name_vocabulary = \"CF Standard Name Table v30\";\n" +
 "  :project = \"CYGNSS\";\n" +
-"  :summary = \"CYGNSS is a NASA Earth Venture mission, managed by the Earth System Science Pathfinder Program. The mission consists of a constellation of eight small satellites. The eight observatories comprise a constellation that measures the ocean surface wind field with very high temporal resolution and spatial coverage, under all precipitating conditions, and over the full dynamic range of wind speeds experienced in a tropical cyclone. The CYGNSS observatories fly in 510 km circular orbits at a common inclination of 35°. Each observatory includes a Delay Doppler Mapping Instrument (DDMI) consisting of a modified GPS receiver capable of measuring surface scattering, a low gain zenith antenna for measurement of the direct GPS signal, and two high gain nadir antennas for measurement of the weaker scattered signal. Each DDMI is capable of measuring 4 simultaneous bi-static reflections, resulting in a total of 32 wind measurements per second by the full constellation.\";\n" +
+"  :summary = \"CYGNSS is a NASA Earth Venture mission, managed by the Earth System Science Pathfinder Program. The mission consists of a constellation of eight small satellites. The eight observatories comprise a constellation that measures the ocean surface wind field with very high temporal resolution and spatial coverage, under all precipitating conditions, and over the full dynamic range of wind speeds experienced in a tropical cyclone. The CYGNSS observatories fly in 510 km circular orbits at a common inclination of 35Â°. Each observatory includes a Delay Doppler Mapping Instrument (DDMI) consisting of a modified GPS receiver capable of measuring surface scattering, a low gain zenith antenna for measurement of the direct GPS signal, and two high gain nadir antennas for measurement of the weaker scattered signal. Each DDMI is capable of measuring 4 simultaneous bi-static reflections, resulting in a total of 32 wind measurements per second by the full constellation.\";\n" +
 "  :program = \"CYGNSS\";\n" +
 "  :references = \"Ruf, C., P. Chang, M.P. Clarizia, S. Gleason, Z. Jelenak, J. Murray, M. Morris, S. Musko, D. Posselt, D. Provost, D. Starkenburg, V. Zavorotny, CYGNSS Handbook, Ann Arbor, MI, Michigan Pub., ISBN 978-1-60785-380-0, 154 pp, 1 Apr 2016. http://clasp-research.engin.umich.edu/missions/cygnss/reference/cygnss-mission/CYGNSS_Handbook_April2016.pdf\n" +
 "Global Modeling and Assimilation Office (GMAO) (2015), MERRA-2 inst1_2d_asm_Nx: 2d,1-Hourly,Instantaneous,Single-Level,Assimilation,Single-Level Diagnostics V5.12.4, Greenbelt, MD, USA, Goddard Earth Sciences Data and Information Services Center (GES DISC), Accessed: {dates differ for each L1 file. See 'source' L1 files for exact timestamps}, https://doi.org/10.5067/3Z173KIE2TPD\";\n" +
@@ -1344,7 +1347,7 @@ expected =
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testSuperPreciseTimeUnits"); 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -1446,7 +1449,7 @@ expected =
 
         //.csv data values
         userDapQuery = "time"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "time", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "time", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -1493,6 +1496,7 @@ expected =
     public static void testMissingValue() throws Throwable {
         String2.log("\n*** EDDGridFromNcFilesUnpacked.testMissingValue");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery;
         String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
         String fileDir = EDStatic.unitTestDataDir + "unpacked/";
@@ -1850,7 +1854,7 @@ NcHelper.debugMode = true;
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMPOC1day");
 
         //.das     
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
@@ -1977,7 +1981,7 @@ expected =
 
 
         //.dds     dds isn't affected by userDapQuery
-        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -1999,7 +2003,7 @@ expected =
 
         //.csv time values
         userDapQuery = "time"; 
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "time", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -2015,7 +2019,7 @@ expected =
 
         //.csv poc values
         userDapQuery = "poc[(2003-01-01T12:00:00Z)][0:1000:4000][0:1000:8000]"; //match direct read above
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc1", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -2072,7 +2076,7 @@ expected =
 
         //.csv poc values 70:4100:1000,70:8100:1000
         userDapQuery = "poc[(2016-08-28T12:00:00Z)][70:1000:4100][70:1000:8100]"; //match direct read above
-        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc2", ".csv"); 
         results = String2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
@@ -2129,7 +2133,7 @@ expected =
 
         //display an image
         String2.log("\n\n* PNG ");
-        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "poc[(2016-08-28T12:00:00Z)][][]", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".png"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);

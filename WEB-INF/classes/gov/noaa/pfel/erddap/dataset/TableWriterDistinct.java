@@ -45,6 +45,7 @@ public class TableWriterDistinct extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName-safe fileName without dir or extension 
@@ -53,10 +54,10 @@ public class TableWriterDistinct extends TableWriterAll {
      * @param tOtherTableWriter the tableWriter that will receive the unique rows
      *   found by this tableWriter.
      */
-    public TableWriterDistinct(EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt, 
+    public TableWriterDistinct(int tLanguage, EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt, 
         TableWriter tOtherTableWriter) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
     }
 

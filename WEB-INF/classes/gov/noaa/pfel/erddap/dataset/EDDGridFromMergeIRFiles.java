@@ -748,6 +748,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 
         String2.log("\n*** EDDGridFromMergeIRFiles.testMergeIRgz\n");
         testVerboseOn();
+        int language = 0;
         //String2.log(NcHelper.ncdump(String2.unitTestDataDir + "mergeIR/merg_20150101_4km-pixel", "-h"));
         deleteCachedDatasetInfo("mergeIR");
         deleteCachedDatasetInfo("mergeIRZ");
@@ -783,21 +784,21 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 "  } flux;\n" +
 "} mergeIR;\n";
         //uncompressed
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
         expected = String2.replaceAll(expected, "mergeIR;", "mergeIRZ;");
-        tName = eddZ.makeNewFileForDapQuery(null, null, "", 
+        tName = eddZ.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddZ.className() + "_Z", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
         expected = String2.replaceAll(expected, "mergeIRZ;", "mergeIRgz;");
-        tName = eddgz.makeNewFileForDapQuery(null, null, "", 
+        tName = eddgz.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddgz.className() + "_gz", ".dds"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);
@@ -874,7 +875,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 //2015-03-20T17:28:57Z (local files)\n" +
 //"2015-03-20T17:28:57Z 
 String expected2 = 
-"http://localhost:8080/cwexperimental/griddap/mergeIR.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/griddap/mergeIR.das\";\n" +
 "    String infoUrl \"https://www.cpc.ncep.noaa.gov/products/global_precip/html/README\";\n" +
 "    String institution \"NOAA NWS NCEP CPC\";\n" +
 "    String keywords \"4km, brightness, cpc, flux, global, ir, merge, ncep, noaa, nws, temperature\";\n" +
@@ -903,7 +904,7 @@ String expected2 =
 "  }\n" +
 "}\n";
         //uncompressed
-        tName = edd.makeNewFileForDapQuery(null, null, "", 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
@@ -913,7 +914,7 @@ String expected2 =
 
         //Z
         expected2 = String2.replaceAll(expected2, "mergeIR.das", "mergeIRZ.das");
-        tName = eddZ.makeNewFileForDapQuery(null, null, "", 
+        tName = eddZ.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddZ.className() + "_Z", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "Z results=\n" + results);
@@ -923,7 +924,7 @@ String expected2 =
 
         //gz
         expected2 = String2.replaceAll(expected2, "mergeIRZ.das", "mergeIRgz.das");
-        tName = eddgz.makeNewFileForDapQuery(null, null, "", 
+        tName = eddgz.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddgz.className() + "_gz", ".das"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "gz results=\n" + results);
@@ -978,19 +979,19 @@ String expected2 =
 "2015-01-01T00:00:00Z,49.170914,291.0352,282,263.5\n" +
 "2015-01-01T00:00:00Z,49.170914,327.41214,250,179.3\n";
         //uncompressed
-        tName = edd.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, edd.className() + "_", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
-        tName = eddZ.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = eddZ.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddZ.className() + "_Z", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
-        tName = eddgz.makeNewFileForDapQuery(null, null, dapQuery, 
+        tName = eddgz.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddgz.className() + "_gz", ".csv"); 
         results = String2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);

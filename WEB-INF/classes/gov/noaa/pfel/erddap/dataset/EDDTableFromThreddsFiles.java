@@ -583,7 +583,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             String2.log(MustBe.throwableToString(t));
             completelySuccessful = false;
         }
-        if (reallyVerbose) String2.log("\n>>> leaving getThreddsFileInfo" +
+        if (reallyVerbose) String2.log("\n>> leaving getThreddsFileInfo" +
             " nFiles=" + fileName.size() + 
             " completelySuccessful=" + completelySuccessful + 
             " time=" + (System.currentTimeMillis() - time) + "ms");
@@ -1098,6 +1098,7 @@ String expected =
     public static void testWcosTemp(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromThreddsFiles.testWcosTemp() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         int po;
@@ -1113,7 +1114,7 @@ String expected =
 
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDTableFromThreddsFiles testWcosTemp das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1247,7 +1248,7 @@ expected =
             expected, "results=\n" + results);
 
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1270,7 +1271,7 @@ expected =
 
         //.csv    for one lat,lon,time
         userDapQuery = "station&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_stationList", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1316,7 +1317,7 @@ expected =
 
         //.csv    for one lat,lon,time, many depths (from different files)      via lon > <
         userDapQuery = "&station=\"ANO001\"&time=1122592440";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);   
@@ -1375,6 +1376,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     public static void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         int po;
@@ -1392,11 +1394,11 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         //*** test getting das for entire dataset
         try {
         String2.log("\n****************** EDDTableFromThreddsFiles testShipWTEP das and dds for entire dataset\n");
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipEntire", ".das"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
-        boolean with = true; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeared, 2019-05-20 returned
+        boolean with = false; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeared, 2019-05-20 returned
         expected =           //2019-11-22 ~2 dozen small changes to centerline, precision, instrument, qcindex, ...
 "Attributes \\{\n" +
 " s \\{\n" +
@@ -1919,7 +1921,7 @@ expected =
         }
 
         //*** test getting dds for entire dataset
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipEntire", ".dds"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1960,7 +1962,7 @@ expected =
 
         //.csv    for one lat,lon,time
         userDapQuery = "cruise_id&distinct()";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_ShipCruiseList", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
@@ -1973,7 +1975,7 @@ expected =
 
         //.csv    
         userDapQuery = "time,latitude,longitude,airPressure,airTemperature,flag&time%3E=2012-01-29T19:30:00Z&time%3C=2012-01-29T19:34:00Z";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddTable.className() + "_Ship1StationGTLT", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);   

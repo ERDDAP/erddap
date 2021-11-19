@@ -31,14 +31,15 @@ public class TableWriterAllReduceDnlsTable extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName-safe fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
-    public TableWriterAllReduceDnlsTable(EDD tEdd, String tNewHistory, String tDir,
+    public TableWriterAllReduceDnlsTable(int language, EDD tEdd, String tNewHistory, String tDir,
         String tFileNameNoExt, String tOneDir) {
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt);
+        super(language, tEdd, tNewHistory, tDir, tFileNameNoExt);
         oneDir = tOneDir;
     }
 

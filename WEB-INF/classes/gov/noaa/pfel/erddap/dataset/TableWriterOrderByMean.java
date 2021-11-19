@@ -74,6 +74,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -82,10 +83,10 @@ public class TableWriterOrderByMean extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByMean(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByMean(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_MEAN_ERROR, tOrderByCsv);
         orderBy = new String[cols.length];

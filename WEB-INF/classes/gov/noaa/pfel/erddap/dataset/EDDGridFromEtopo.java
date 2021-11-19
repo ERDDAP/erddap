@@ -142,7 +142,7 @@ public class EDDGridFromEtopo extends EDDGrid {
             errorInMethod + "datasetID must be \"etopo180\" or \"etopo360\".");
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles;
         nThreads = tnThreads; //interpret invalid values (like -1) as EDStatic.nGridThreads
         dimensionValuesInMemory = tDimensionValuesInMemory; 
@@ -253,6 +253,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -266,7 +267,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -467,6 +468,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -476,7 +478,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         try {
@@ -502,11 +504,12 @@ public class EDDGridFromEtopo extends EDDGrid {
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-    public String accessibleViaFilesGetLocal(String relativeFileName) {
+    public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         if (!accessibleViaFiles)
             return null;
 
@@ -525,6 +528,7 @@ public class EDDGridFromEtopo extends EDDGrid {
     public static void testBasic(boolean doGraphicsTests) throws Throwable {
 
         String2.log("\n****************** EDDGridFromEtopo.test() *****************\n");
+        int language = 0;
         verbose = true;
         reallyVerbose = true;
         GridDataAccessor.verbose = true;
@@ -538,7 +542,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 
         //*** test getting .nc for entire dataset
         String2.log("\n****************** EDDGridFromEtopo test entire dataset\n");
-        tName = data180.makeNewFileForDapQuery(null, null, "altitude[(-90):500:(90)][(-180):500:(180)]", 
+        tName = data180.makeNewFileForDapQuery(language, null, null, "altitude[(-90):500:(90)][(-180):500:(180)]", 
             EDStatic.fullTestCacheDirectory, data180.className() + "_Entire", ".nc"); 
         results = NcHelper.ncdump(EDStatic.fullTestCacheDirectory  + tName, "");
         expected = 
@@ -606,7 +610,7 @@ public class EDDGridFromEtopo extends EDDGrid {
 //today + " (local file)\n" +
 //today + 
 expected =   
-" http://localhost:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
+" http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
 "  :id = \"etopo180\";\n" +
 "  :infoUrl = \"https://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 "  :institution = \"NOAA NGDC\";\n" +
@@ -670,7 +674,7 @@ expected =
             expected, "results=\n" + results);
 
 
-        tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
+        tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_Entire", ".csv"); 
         results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -744,7 +748,7 @@ expected =
 "76.66666666666666,333.3333333333333,1886\n";
         Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
-        tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
+        tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_timeGaps", ".timeGaps"); 
         results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -754,24 +758,24 @@ expected =
 
 
         if (doGraphicsTests) {
-            tName = data180.makeNewFileForDapQuery(null, null, 
+            tName = data180.makeNewFileForDapQuery(language, null, null, 
                 "altitude[(-90):(90)][(-180):(180)]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Ocean|C|Linear|-8000|0&.drawLand=Over", 
                 EDStatic.fullTestCacheDirectory, data180.className() + "_Map180", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     
-            tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):(90)][(0):(360)]", 
+            tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):(90)][(0):(360)]", 
                 EDStatic.fullTestCacheDirectory, data360.className() + "_Map360", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
-            tName = data360.makeNewFileForDapQuery(null, null, 
+            tName = data360.makeNewFileForDapQuery(language, null, null, 
                 "altitude[][]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=under", 
                 EDStatic.fullTestCacheDirectory, data360.className() + "_TopoUnder", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     
             //same data subset.  Is cached file used?
-            tName = data360.makeNewFileForDapQuery(null, null, 
+            tName = data360.makeNewFileForDapQuery(language, null, null, 
                 "altitude[][]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=over", 
                 EDStatic.fullTestCacheDirectory, data360.className() + "_TopoOver", ".png"); 

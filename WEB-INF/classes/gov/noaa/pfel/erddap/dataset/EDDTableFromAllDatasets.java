@@ -59,6 +59,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
             "\n*** constructing EDDTableFromAllDatasets"); 
         long constructionStartMillis = System.currentTimeMillis();
         String errorInMethod = "Error in EDDTableFromAllDatasets() constructor:\n";
+        int language = 0;
             
         //save some of the parameters
         gridDatasetHashMap  = tGridDatasetHashMap; 
@@ -86,7 +87,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
         sourceCanConstrainStringRegex = "";      
 
         //create dataVariables[]
-        Table table = makeDatasetTable(null); 
+        Table table = makeDatasetTable(language, null); 
         sourceGlobalAttributes = table.globalAttributes();
         addGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
@@ -129,11 +130,12 @@ public class EDDTableFromAllDatasets extends EDDTable{
     /** 
      * This overwrites the superclass to give the on-the-fly subsetVariables table. 
      *
+     * @param language the index of the selected language
      * @param loggedInAs This is used, e.g., for POST data (where the distinct subsetVariables table
      *    is different for each loggedInAs!) and for EDDTableFromAllDatasets.
      */
-    public Table subsetVariablesDataTable(String loggedInAs) throws Throwable {
-        Table table = makeDatasetTable(loggedInAs); 
+    public Table subsetVariablesDataTable(int language, String loggedInAs) throws Throwable {
+        Table table = makeDatasetTable(language, loggedInAs); 
         table.reorderColumns(new StringArray(subsetVariables()), true); //discard others
         table.ascendingSortIgnoreCase(subsetVariables());
         table.removeDuplicates();
@@ -152,6 +154,7 @@ public class EDDTableFromAllDatasets extends EDDTable{
      *
      * <p>time columns are epochSeconds.
      *
+     * @param language the index of the selected language
      * @param loggedInAs This is used, e.g., for POST data (where the distinct subsetVariables table
      *    is different for each loggedInAs!) and for EDDTableFromAllDatasets.
      * @param loadVars the specific destinationNames to be loaded (or null for all subsetVariables)
@@ -160,11 +163,11 @@ public class EDDTableFromAllDatasets extends EDDTable{
      *    So it isn't a valid table!
      *    The table will have full metadata.    
      */
-    public Table distinctSubsetVariablesDataTable(String loggedInAs, String loadVars[]) throws Throwable {
+    public Table distinctSubsetVariablesDataTable(int language, String loggedInAs, String loadVars[]) throws Throwable {
 
         //read the combinations table
         //this will throw exception if trouble
-        Table table = subsetVariablesDataTable(loggedInAs);
+        Table table = subsetVariablesDataTable(language, loggedInAs);
 
         //just the loadVars
         if (loadVars != null) 
@@ -187,17 +190,18 @@ public class EDDTableFromAllDatasets extends EDDTable{
      *
      * <p>time columns are epochSeconds.
      *
+     * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *    This is used to ensure that the user sees only datasets they have a 
      *    right to know exist. 
      * @return table a table with plain text information about the datasets
      */
-    public Table makeDatasetTable(String loggedInAs) {
+    public Table makeDatasetTable(int language, String loggedInAs) {
 
         StringArray datasetIDs  = new StringArray(gridDatasetHashMap.keys()); 
         datasetIDs.append(new StringArray(tableDatasetHashMap.keys()));
 
-        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         String roles[] = EDStatic.getRoles(loggedInAs);
         boolean isLoggedIn = loggedInAs != null && !loggedInAs.equals(EDStatic.loggedInAsHttps);
         double nowES = System.currentTimeMillis() / 1000.0;
@@ -216,9 +220,9 @@ public class EDDTableFromAllDatasets extends EDDTable{
             .add("license",         EDStatic.standardLicense)
             .add("sourceUrl",       publicSourceUrl)
             .add("subsetVariables", EDStatic.admSubsetVariables) 
-            .add("summary",         EDStatic.admSummary)
+            .add("summary",         EDStatic.admSummaryAr[language])
             //"* " is distinctive and almost ensures it will be sorted first (or close)
-            .add("title",    "* " + EDStatic.admTitle + " *");  
+            .add("title",    "* " + EDStatic.admTitleAr[language] + " *");  
 
         //order here is not important
         StringArray idCol = new StringArray();  
@@ -272,176 +276,176 @@ public class EDDTableFromAllDatasets extends EDDTable{
             .add("long_name", EDStatic.advl_datasetID);
         col = table.addColumn("accessible", accessCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_accessible)
+            .add("comment", EDStatic.advc_accessibleAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_accessible);
+            .add("long_name", EDStatic.advl_accessibleAr[language]);
         col = table.addColumn("institution", institutionCol); //Institution
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_institution);
+            .add("long_name", EDStatic.advl_institutionAr[language]);
         col = table.addColumn("dataStructure", dataStructureCol); 
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_dataStructure)
+            .add("comment", EDStatic.advc_dataStructureAr[language])
             .add("ioos_category", "Other")
-            .add("long_name",  EDStatic.advl_dataStructure)
+            .add("long_name",  EDStatic.advl_dataStructureAr[language])
             .add("references", EDStatic.advr_dataStructure);
         col = table.addColumn("cdm_data_type", cdmCol); 
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name",  EDStatic.advl_cdm_data_type)
+            .add("long_name",  EDStatic.advl_cdm_data_typeAr[language])
             .add("references", EDStatic.advr_cdm_data_type);
         col = table.addColumn("class", classCol); 
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name",  EDStatic.advl_class)
+            .add("long_name",  EDStatic.advl_classAr[language])
             .add("references", EDStatic.advr_class);
         col = table.addColumn("title", titleCol);  //Title
         int titleColNumber = col;
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_title);
+            .add("long_name", EDStatic.advl_titleAr[language]);
 
         col = table.addColumn("minLongitude", minLongitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_minLongitude)
+            .add("long_name", EDStatic.advl_minLongitudeAr[language])
             .add("units", EDV.LON_UNITS);
         col = table.addColumn("maxLongitude", maxLongitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_maxLongitude)
+            .add("long_name", EDStatic.advl_maxLongitudeAr[language])
             .add("units", EDV.LON_UNITS);
         col = table.addColumn("longitudeSpacing", longitudeSpacing); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_longitudeSpacing)
+            .add("long_name", EDStatic.advl_longitudeSpacingAr[language])
             .add("units", EDV.LON_UNITS);
         col = table.addColumn("minLatitude", minLatitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_minLatitude)
+            .add("long_name", EDStatic.advl_minLatitudeAr[language])
             .add("units", EDV.LAT_UNITS);
         col = table.addColumn("maxLatitude", maxLatitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_maxLatitude)
+            .add("long_name", EDStatic.advl_maxLatitudeAr[language])
             .add("units", EDV.LAT_UNITS);
         col = table.addColumn("latitudeSpacing", latitudeSpacing); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_latitudeSpacing)
+            .add("long_name", EDStatic.advl_latitudeSpacingAr[language])
             .add("units", EDV.LAT_UNITS);
         col = table.addColumn("minAltitude", minAltitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_minAltitude)
+            .add("long_name", EDStatic.advl_minAltitudeAr[language])
             .add("positive", "up")
             .add("units", "m");
         col = table.addColumn("maxAltitude", maxAltitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
-            .add("long_name", EDStatic.advl_maxAltitude)
+            .add("long_name", EDStatic.advl_maxAltitudeAr[language])
             .add("positive", "up")
             .add("units", "m");
         col = table.addColumn("minTime", minTime); 
         table.columnAttributes(col)
             .add("ioos_category", "Time")
-            .add("long_name", EDStatic.advl_minTime)
+            .add("long_name", EDStatic.advl_minTimeAr[language])
             .add("units", Calendar2.SECONDS_SINCE_1970);
         col = table.addColumn("maxTime", maxTime); 
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_maxTime)
+            .add("comment", EDStatic.advc_maxTimeAr[language])
             .add("ioos_category", "Time")
-            .add("long_name", EDStatic.advl_maxTime)
+            .add("long_name", EDStatic.advl_maxTimeAr[language])
             .add("units", Calendar2.SECONDS_SINCE_1970);
         col = table.addColumn("timeSpacing", timeSpacing); 
         table.columnAttributes(col)
             .add("ioos_category", "Time")
-            .add("long_name", EDStatic.advl_timeSpacing)
+            .add("long_name", EDStatic.advl_timeSpacingAr[language])
             .add("units", "seconds");
         //other columns
         col = table.addColumn("griddap", gdCol);  //just protocol name
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_griddap)
+            .add("comment", EDStatic.advc_griddapAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_griddap);
+            .add("long_name", EDStatic.advl_griddapAr[language]);
         col = table.addColumn("subset", subCol);
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_subset);
+            .add("long_name", EDStatic.advl_subsetAr[language]);
         col = table.addColumn("tabledap", tdCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_tabledap)
+            .add("comment", EDStatic.advc_tabledapAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_tabledap);
+            .add("long_name", EDStatic.advl_tabledapAr[language]);
         col = table.addColumn("MakeAGraph", magCol); //Make A Graph
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_MakeAGraph);
+            .add("long_name", EDStatic.advl_MakeAGraphAr[language]);
         col = table.addColumn("sos", sosCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_sos)
+            .add("comment", EDStatic.advc_sosAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_sos);
+            .add("long_name", EDStatic.advl_sosAr[language]);
         col = table.addColumn("wcs", wcsCol);
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_wcs);
+            .add("long_name", EDStatic.advl_wcsAr[language]);
         col = table.addColumn("wms", wmsCol);
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_wms);
+            .add("long_name", EDStatic.advl_wmsAr[language]);
         col = table.addColumn("files", filesCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_files)
+            .add("comment", EDStatic.advc_filesAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_files);
+            .add("long_name", EDStatic.advl_filesAr[language]);
         col = table.addColumn("fgdc", fgdcCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_fgdc)
+            .add("comment", EDStatic.advc_fgdcAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_fgdc);
+            .add("long_name", EDStatic.advl_fgdcAr[language]);
         col = table.addColumn("iso19115", iso19115Col);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_iso19115)
+            .add("comment", EDStatic.advc_iso19115Ar[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_iso19115);
+            .add("long_name", EDStatic.advl_iso19115Ar[language]);
         col = table.addColumn("metadata", metadataCol);  //Info
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_metadata)
+            .add("comment", EDStatic.advc_metadataAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_metadata);
+            .add("long_name", EDStatic.advl_metadataAr[language]);
         col = table.addColumn("sourceUrl", sourceCol);  
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_sourceUrl);
+            .add("long_name", EDStatic.advl_sourceUrlAr[language]);
         col = table.addColumn("infoUrl", infoUrlCol); //Background Info
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_infoUrl);
+            .add("long_name", EDStatic.advl_infoUrlAr[language]);
         col = table.addColumn("rss", rssCol);
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_rss);
+            .add("long_name", EDStatic.advl_rssAr[language]);
         col = table.addColumn("email", emailCol);
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_email)
+            .add("comment", EDStatic.advc_emailAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_email);
+            .add("long_name", EDStatic.advl_emailAr[language]);
         col = table.addColumn("testOutOfDate", testOutOfDateCol);  
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_testOutOfDate)
+            .add("comment", EDStatic.advc_testOutOfDateAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_testOutOfDate);
+            .add("long_name", EDStatic.advl_testOutOfDateAr[language]);
         col = table.addColumn("outOfDate", outOfDateCol);  
         table.columnAttributes(col)
-            .add("comment", EDStatic.advc_outOfDate)
+            .add("comment", EDStatic.advc_outOfDateAr[language])
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_outOfDate);
+            .add("long_name", EDStatic.advl_outOfDateAr[language]);
         col = table.addColumn("summary", summaryCol); 
         table.columnAttributes(col)
             .add("ioos_category", "Other")
-            .add("long_name", EDStatic.advl_summary);
+            .add("long_name", EDStatic.advl_summaryAr[language]);
         
         //add each dataset's information
         //only title, summary, institution, id are always accessible if !listPrivateDatasets
@@ -579,17 +583,18 @@ public class EDDTableFromAllDatasets extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
-        Table table = makeDatasetTable(loggedInAs);  
-        standardizeResultsTable(requestUrl, userDapQuery, table);
+        Table table = makeDatasetTable(language, loggedInAs);  
+        standardizeResultsTable(language, requestUrl, userDapQuery, table);
         tableWriter.writeAllAndFinish(table);
     }
 

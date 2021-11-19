@@ -462,7 +462,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
@@ -763,7 +763,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 String subject = String2.ERROR + " in " + datasetID + " constructor (inotify)";
                 String tmsg = MustBe.throwableToString(t);
                 if (tmsg.indexOf("inotify instances") >= 0)
-                    tmsg += EDStatic.inotifyFix;
+                    tmsg += EDStatic.inotifyFixAr[0];
                 EDStatic.email(EDStatic.adminEmail, subject, tmsg);
             }
         }
@@ -931,7 +931,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             while (tFileListPo < tFileNamePA.size()) {
                 if (Thread.currentThread().isInterrupted())
                     throw new SimpleException("EDDGridFromFiles.init" +
-                        EDStatic.caughtInterrupted);
+                        EDStatic.caughtInterruptedAr[0]);
 
                 int    tDirI   = tFileDirIndexPA.get(tFileListPo);
                 String tFileS  = tFileNamePA.get(tFileListPo);
@@ -1478,6 +1478,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -1489,7 +1490,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls requestReloadASAP() and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 
         //Most of this lowUpdate code is identical in EDDGridFromFiles and EDDTableFromFiles
         if (watchDirectory == null)
@@ -1579,7 +1580,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         for (int evi = 0; evi < nEvents; evi++) {
             if (Thread.currentThread().isInterrupted())
                 throw new SimpleException("EDDGridFromFiles.lowUpdate" +
-                        EDStatic.caughtInterrupted);
+                        EDStatic.caughtInterruptedAr[0]);
 
             String fullName = contexts.get(evi);
             String dirName = File2.getDirectory(fullName);
@@ -1903,6 +1904,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * with valid files (or null if unavailable or any trouble).
      * This is a copy of any internal data, so client can modify the contents.
      *
+     * @param language the index of the selected language
      * @param nextPath is the partial path (with trailing slash) to be appended 
      *   onto the local fileDir (or wherever files are, even url).
      * @return null if trouble,
@@ -1912,7 +1914,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         try {
@@ -1946,11 +1948,12 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
         //identical code in EDDGridFromFiles and EDDTableFromFiles
         if (!accessibleViaFiles)
              return null;
@@ -2291,6 +2294,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -2304,7 +2308,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -2315,7 +2319,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             if (tFileTable == null)
                 tFileTable = getFileTable();
         } catch (Exception e) {
-            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
+            throw new WaitThenTryAgainException(
+                EDStatic.simpleBilingual(language, EDStatic.waitThenTryAgainAr) + 
                 "\n(Details: unable to read fileTable.)"); 
         }
 
@@ -2354,7 +2359,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         while (axis0Start <= axis0Stop) {
             if (Thread.currentThread().isInterrupted())
                 throw new SimpleException("EDDGridFromFiles.getDataForDapQuery" + 
-                    EDStatic.caughtInterrupted);
+                    EDStatic.caughtInterruptedAr[0]);
 
             //find next relevant file
             ftRow = ftStartIndex.binaryFindLastLE(ftRow, nFiles - 1, PAOne.fromInt(axis0Start));

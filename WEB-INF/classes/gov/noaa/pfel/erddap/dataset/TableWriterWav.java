@@ -55,11 +55,11 @@ public class TableWriterWav extends TableWriter {
      * @param tempDir for temporary and result files.
      * @param outFileName the unique name (for this request) with extension .wav
      */
-    public TableWriterWav(EDD tEdd, String tNewHistory, 
+    public TableWriterWav(int tLanguage, EDD tEdd, String tNewHistory, 
         OutputStreamSource tOutputStreamSource, 
         String tempDir, String outFileName) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         randomInt = Math2.random(Integer.MAX_VALUE);
         fullDosName = tempDir + outFileName + ".dos" + randomInt;
         fullOutName = tempDir + outFileName;
@@ -97,8 +97,8 @@ public class TableWriterWav extends TableWriter {
             boolean java8 = System.getProperty("java.version").startsWith("1.8.");
             if (java8 &&
                 (tClass.equals("float") || tClass.equals("double"))) 
-                throw new SimpleException(EDStatic.queryError +  
-                ": Until Java 9, float and double values can't be written to .wav files.");
+                throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                     "Until Java 9, float and double values can't be written to .wav files.");
             for (int col = 0; col < nColumns; col++) {
                 Test.ensureEqual(tClass, 
                     table.getColumn(col).elementTypeString(),
@@ -182,10 +182,10 @@ public class TableWriterWav extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table, 
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table, 
         OutputStreamSource tOutputStreamSource) throws Throwable {
 
-        TableWriterNccsv twn = new TableWriterNccsv(tEdd, 
+        TableWriterNccsv twn = new TableWriterNccsv(language, tEdd, 
             tNewHistory, tOutputStreamSource);
         twn.writeAllAndFinish(table);
     }

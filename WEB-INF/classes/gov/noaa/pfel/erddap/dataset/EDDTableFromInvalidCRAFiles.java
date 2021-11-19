@@ -1092,6 +1092,7 @@ String expected =
     public static void testBasic() throws Throwable {
         String2.log("\n****************** EDDTableFromInvalidCRAFiles.testBasic() *****************\n");
         testVerboseOn();
+        int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
@@ -1104,7 +1105,7 @@ String expected =
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //.dds    
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_wod", ".dds"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
@@ -1154,7 +1155,7 @@ String expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         //.das    
-        tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_wod", ".das"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
@@ -1557,7 +1558,7 @@ expected =
 
         //.csv     all vars
         userDapQuery = "&time>2005-06-11T06&time<2005-06-11T07";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_all", ".csv"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
@@ -1575,7 +1576,7 @@ expected =
 
         //.csv    outer vars only,   constrain time, but don't include time in results
         userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude&time>2005-06-11T06&time<2005-06-11T07";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_outer", ".csv"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
@@ -1588,7 +1589,7 @@ expected =
 
         //.csv     outer and inner vars
         userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity&time>2005-06-11T06&time<2005-06-11T07";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, 
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_outerInner", ".csv"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
@@ -1606,7 +1607,7 @@ expected =
 
         //.csv   inner vars vars only   based on outer constraint
         userDapQuery = "depth,Temperature,Salinity&wod_unique_cast=10901522";
-        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             testCacheDir, eddTable.className() + "_wod_inner", ".csv"); 
         results = String2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);

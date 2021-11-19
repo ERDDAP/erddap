@@ -43,6 +43,7 @@ public class TableWriterOrderByClosest extends TableWriterAll {
     /**
      * The constructor.
      *
+     * @param language the index of the selected language
      * @param tDir a private cache directory for storing the intermediate files,
      *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
@@ -52,14 +53,14 @@ public class TableWriterOrderByClosest extends TableWriterAll {
      * @param tOrderByCsv the names of the columns to sort by (most to least important),
      *   with the time Interval as the last item.
      */
-    public TableWriterOrderByClosest(EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByClosest(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
-        super(tEdd, tNewHistory, tDir, tFileNameNoExt); 
+        super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_CLOSEST_ERROR + 
-                " (no CSV)");
+            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_CLOSEST_ERROR + " (no CSV)");
         String csv[] = String2.split(tOrderByCsv, ',');
 
         //bob added: allow csv[last] to be e.g., time/1day, instead of time,1day
@@ -76,8 +77,8 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         }
 
         if (csv.length < 2)
-            throw new SimpleException(EDStatic.queryError + Table.ORDER_BY_CLOSEST_ERROR + 
-                " (CSV.length<2)");
+            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_CLOSEST_ERROR + " (CSV.length<2)");
 
         //ensure the next to last value is numeric -- done later: by table.orderByClosest()
 
@@ -86,9 +87,8 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         System.arraycopy(csv, 0, orderBy, 0, csv.length - 1);
         numberTimeUnits = Calendar2.parseNumberTimeUnits(csv[csv.length - 1]); //throws Exception
         if (numberTimeUnits[0] <= 0)
-            throw new IllegalArgumentException(
-                EDStatic.queryError + Table.ORDER_BY_CLOSEST_ERROR + 
-                " (number=" + numberTimeUnits[0] + " must be a positive number)"); 
+            throw new IllegalArgumentException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                Table.ORDER_BY_CLOSEST_ERROR + " (number=" + numberTimeUnits[0] + " must be a positive number)"); 
     }
 
 

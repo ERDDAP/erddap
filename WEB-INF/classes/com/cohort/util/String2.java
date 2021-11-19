@@ -678,7 +678,7 @@ public class String2 {
     }
 
     /** 
-     * This repeatedly finds the pattern and extracts the specified captureGroup.
+     * This repeatedly finds the regex(which becomes a pattern) and extracts the specified captureGroup.
      *
      * @param s the source String
      * @param regex the regular expression, see java.util.regex.Pattern.
@@ -2211,6 +2211,25 @@ public class String2 {
     }
 
     /**
+     * This repeatedly replaces the text matched in the capture group with the replacement text.
+     * 
+     * @param sb a StringBuilder
+     * @param regex a regular Expression
+     * @param captureGroup a capture in the regex
+     * @param replacement the replacement string
+     * @return sb for convenience 
+     */
+    public static StringBuilder regexReplaceAll(StringBuilder sb, String regex, int captureGroup, String replacement) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sb);
+        while (matcher.find()) {
+            sb.replace(matcher.start(1), matcher.end(1), replacement);
+            matcher = pattern.matcher(sb);  //sb has changed, so need new matcher
+        }
+        return sb;
+    }
+
+    /**
      * Returns a string where all cases of more than one space are 
      * replaced by one space.  The string is also trim'd to remove
      * leading and trailing spaces.
@@ -2332,7 +2351,7 @@ public class String2 {
         replaceAll(sb, '\u201c', '\"'); //left double quote
         replaceAll(sb, '\u201d', '\"'); //right double quote
         replaceAll(sb, '\u2212', '-');  //math minus sign
-        replaceAll(sb, '\u03bc', 'µ');  //mu
+        replaceAll(sb, '\u03bc', 'Âµ');  //mu
         replaceAll(sb, "\u2264", "<="); 
         replaceAll(sb, "\u2265", ">="); 
         return sb;
@@ -2741,7 +2760,7 @@ public class String2 {
     }
 
     /**
-     * This encodes one char for an NCCSV char or String, without surrounding quotes.
+     * This encodes one char for an NCCSV char or String (7-bit ASCII), without surrounding quotes.
      */
     public static String toNccsvChar(char ch) {
         if (ch == '\\') return "\\\\";
@@ -2756,7 +2775,7 @@ public class String2 {
     }
 
     /**
-     * This encodes one String as an NCCSV data String, with surrounding double quotes
+     * This encodes one String as an NCCSV data String (7-bit ASCII), with surrounding double quotes
      * only if necessary.
      */
     public static String toNccsvDataString(String s) {
@@ -2779,7 +2798,7 @@ public class String2 {
     }
 
     /**
-     * This encodes one String as an NCCSV att String, with surrounding double quotes
+     * This encodes one String as an NCCSV att String (7-bit ASCII), with surrounding double quotes
      * only if necessary.
      */
     public static String toNccsvAttString(String s) {
@@ -6938,7 +6957,7 @@ and zoom and pan with controls in
         //we know 'b' isSomething
         b = b.trim();
         return a + 
-            (".!?;,".indexOf(a.charAt(a.length() - 1)) >= 0? " " : ". ") +
+            (".!?;,".indexOf(a.charAt(a.length() - 1)) >= 0 || a.endsWith(".)")? " " : ". ") +
             b;
     }
 

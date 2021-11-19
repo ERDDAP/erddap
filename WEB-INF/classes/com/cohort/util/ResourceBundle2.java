@@ -256,7 +256,7 @@ public class ResourceBundle2 {
      */
     public String getNotNullString(String key, String errorInMethod) {
         String value = getString(key, null);
-        Test.ensureNotNull(value, errorInMethod + key + " is null!"); 
+        Test.ensureNotNull(value, errorInMethod + "\"" + key + "\" is null!"); 
         return value;
     }
 
@@ -269,7 +269,7 @@ public class ResourceBundle2 {
      */
     public String getNotNothingString(String key, String errorInMethod) {
         String value = getString(key, null);
-        Test.ensureNotNothing(value, errorInMethod + key + " is null or ''!"); 
+        Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!"); 
         return value;
     }
 
@@ -285,7 +285,7 @@ public class ResourceBundle2 {
         if (initialValue != null && initialValue.length() > 0)
             return initialValue;
         String value = getString(key, null);
-        Test.ensureNotNothing(value, errorInMethod + key + " is null or ''!"); 
+        Test.ensureNotNothing(value, errorInMethod + "\"" + key + "\" is null or ''!"); 
         return value;
     }
 
@@ -316,7 +316,7 @@ public class ResourceBundle2 {
         String2.log("\n*** ResourceBundle2.basicTest");
 
         ResourceBundle2 rb2 = fromXml(XML.parseXml(new StringReader(
-            "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
             "<testr>\n" +
             "  <level1 att1=\"value1\" att2=\"value 2\" > level 1 &amp; <!-- comment < > -->text  \n" +
             "  </level1>\n" +

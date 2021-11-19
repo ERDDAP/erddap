@@ -555,13 +555,14 @@ public class EDDTableFromNWISDV extends EDDTable{
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
      *
+     * @param language the index of the selected language
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public void getDataForDapQuery(String loggedInAs, String requestUrl, 
+    public void getDataForDapQuery(int language, String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //make the sourceQuery
@@ -569,7 +570,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
+        getSourceQueryFromDapQuery(language, userDapQuery,
             resultsVariables,
             constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
@@ -697,7 +698,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (justStationVars) {
             if (reallyVerbose) String2.log("justStationVars");
             stationTable.justKeep(keep);
-            standardizeResultsTable(requestUrl, userDapQuery, stationTable);
+            standardizeResultsTable(language, requestUrl, userDapQuery, stationTable);
             if (stationTable.nRows() > 0) 
                 tableWriter.writeSome(stationTable);    
             tableWriter.finish();
@@ -787,7 +788,7 @@ public class EDDTableFromNWISDV extends EDDTable{
 
             //String2.log("\nstationInfo+valuesColumns table=\n" + table.dataToString());
             if (table.nRows() > 0)
-                standardizeResultsTable(requestUrl, userDapQuery, table);
+                standardizeResultsTable(language, requestUrl, userDapQuery, table);
 
             if (table.nRows() > 0) {
                 tableWriter.writeSome(table);
@@ -2215,7 +2216,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 }
 
                 //<dt><strong>DESCRIPTION:</strong></dt>
-                //<dd>Latitude  35°40'26", &nbsp; Longitude  96°04'06" &nbsp; NAD27<br /></dd>
+                //<dd>Latitude  35Â°40'26", &nbsp; Longitude  96Â°04'06" &nbsp; NAD27<br /></dd>
                 //<dd>Okmulgee County, Oklahoma,  Hydrologic Unit 11100303</dd>
                 po1 = siteInfo.indexOf("DESCRIPTION", Math.max(po1, 0));
                 int descPo = po1;
@@ -2789,13 +2790,14 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
     /** This runs some basic tests of a dataset from this class. */
     public static void testBasic() throws Throwable {
         EDD edd = EDD.oneFromDatasetsXml(null, "usgs_waterservices_f8b2_b8b1_96dd");
+        int language = 0;
         String dir = EDStatic.fullTestCacheDirectory;
         String tName, query, tRestuls, results[], expected;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
         Table table;
 
         //dds
-        tName = edd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".dds"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -2827,7 +2829,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         Test.ensureEqual(results[1], expected, "results[1]=\n" + results[1]);
 
         //das
-        tName = edd.makeNewFileForDapQuery(null, null, "", dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".das"); 
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -3045,7 +3047,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
 //&StartDate=2010-12-01&EndDate=2010-12-04&action=Submit           
         String2.log("\n* test #1");
         query = "&agency=\"USGS\"&siteCode=\"01302250\"&time>=2010-12-01&time<=2010-12-04";             
-        tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test1", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 
@@ -3062,7 +3064,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #2");
         query = "&agency=\"USGS\"&siteCode=\"01302250\"&time>=2005-12-01&time<=2005-12-04";             
         try {
-            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test2", ".csv"); 
             results = String2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
@@ -3080,7 +3082,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #3");
         query = "&agency=\"USGS\"&siteCode=\"01302250\"&time>=2020-12-01&time<=2020-12-04";             
         try {
-            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test3", ".csv"); 
             results = String2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
@@ -3097,7 +3099,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #3b");
         query = "&agency=\"USGS\"&siteCode=\"01302250\"&time=2010-12-01T12:00:00";             
         try {
-            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test3b", ".csv"); 
             results = String2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
@@ -3114,7 +3116,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #4");
         query = "&time=2010-12-01";             
         try {
-            tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test4", ".csv"); 
             results = String2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
@@ -3135,7 +3137,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         //SiteNum=0209303205&ParameterCode=00003&StatisticCode=00001&AgencyCode=USGS&action=Submit
         String2.log("\n* test #5");
         query = "&agency=\"USGS\"&siteCode=\"0209303205\"";             
-        tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test5", ".csv"); 
         results = String2.readFromFile(dir + tName);
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
@@ -3158,7 +3160,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #6");
         query = "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network," +
             "longitude,latitude,srs,altitude,vertDatum,beginDate,endDate&siteType=\"Estuary\"";             
-        tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test6", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 
@@ -3176,7 +3178,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         String2.log("\n* test #7");
         query = "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network," +
             "longitude,latitude,srs,altitude,vertDatum&siteName=~\".*BRIDGE.*\"";             
-        tName = edd.makeNewFileForDapQuery(null, null, query, dir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test7", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 

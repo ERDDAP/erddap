@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 
 
 /** 
- * This class represents a virtual table of data from by aggregating a collection of data files.
+ * This class represents a virtual table of data by aggregating a collection of data files.
  * <br>The presumption is that the entire dataset can be read reasonable quickly
  *   (from the local files, unlike remote data) and all variable's min and max info
  *   can be gathered (for each file) 
@@ -38,6 +38,7 @@ public class EDDTableFromFilesCallable implements Callable {
      */
     public static boolean debugMode = false; 
 
+    int language;
     String identifier;
     int task;
     EDDTableFromFiles eddTableFromFiles;
@@ -53,7 +54,7 @@ public class EDDTableFromFilesCallable implements Callable {
     StringArray sourceConVars, sourceConOps, sourceConValues;
     TableWriter tableWriter;
 
-    public EDDTableFromFilesCallable(String tIdentifier,
+    public EDDTableFromFilesCallable(int tLanguage, String tIdentifier,
         EDDTableFromFiles tEDDTableFromFiles, 
         String tLoggedInAs,
         String tRequestUrl, 
@@ -66,6 +67,7 @@ public class EDDTableFromFilesCallable implements Callable {
         StringArray tSourceConVars, StringArray tSourceConOps, StringArray tSourceConValues
         ) throws Throwable {
 
+        language          = tLanguage;
         identifier        = tIdentifier;
         eddTableFromFiles = tEDDTableFromFiles;
         loggedInAs        = tLoggedInAs;
@@ -173,7 +175,7 @@ public class EDDTableFromFilesCallable implements Callable {
 
             //standardizeResultsTable applies all constraints
             if (table.nRows() > 0)
-                eddTableFromFiles.standardizeResultsTable(requestUrl, userDapQuery, table);
+                eddTableFromFiles.standardizeResultsTable(language, requestUrl, userDapQuery, table);
             if (table.nRows() == 0) {
                 if (debugMode) String2.log(identifier + ": exit#4: nRows=0 after standardize. time=" + 
                     (System.currentTimeMillis() - startTime) + "ms");

@@ -296,7 +296,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
         setGraphsAccessibleTo(tGraphsAccessibleTo);
         if (!tAccessibleViaWMS) 
             accessibleViaWMS = String2.canonical(
-                MessageFormat.format(EDStatic.noXxx, "WMS"));
+                MessageFormat.format(EDStatic.noXxxAr[0], "WMS"));
         accessibleViaFiles = EDStatic.filesActive && tAccessibleViaFiles && tEDDTable.accessibleViaFiles;
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
@@ -474,6 +474,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
+     * @param language the index of the selected language
      * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
      * @param startUpdateMillis the currentTimeMillis at the start of this update.
      * @return true if a change was made
@@ -485,11 +486,11 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *   If the changes needed are probably fine but are too extensive to deal with here, 
      *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+    public boolean lowUpdate(int language, String msg, long startUpdateMillis) throws Throwable {
 //but somehow, this should update the outer time axis in this eddGrid.
 
         //update the internal eddTable
-        return eddTable.lowUpdate(msg, startUpdateMillis);
+        return eddTable.lowUpdate(language, msg, startUpdateMillis);
     }
 
 
@@ -500,6 +501,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
+     * @param language the index of the selected language
      * @param tDirTable If EDDGridFromFiles, this MAY be the dirTable, else null. 
      * @param tFileTable If EDDGridFromFiles, this MAY be the fileTable, else null. 
      * @param tDataVariables EDV[] with just the requested data variables
@@ -513,7 +515,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *   not modified.
      * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
-    public PrimitiveArray[] getSourceData(Table tDirTable, Table tFileTable,
+    public PrimitiveArray[] getSourceData(int language, Table tDirTable, Table tFileTable,
         EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
@@ -630,7 +632,7 @@ public class EDDGridFromEDDTable extends EDDGrid {
                  " >= gapThreshold=" + gapThreshold)));
 
         //make a subrequest for each combination of outerAxes values
-        TableWriterAll twa = new TableWriterAll(null, null, //metadata not kept
+        TableWriterAll twa = new TableWriterAll(language, null, null, //metadata not kept
             cacheDirectory(), 
             suggestFileName(loggedInAs, datasetID, ".twa")); 
         twa.ignoreFinish = true;
@@ -672,8 +674,8 @@ public class EDDGridFromEDDTable extends EDDGrid {
             String requestUrl = "/erddap/tabledap/" + datasetID + 
                 ".twa"; //I think irrelevant, since not getting metadata from source
             try {
-                if (eddTable.handleViaFixedOrSubsetVariables(loggedInAs, requestUrl, query, twa)) {}
-                else             eddTable.getDataForDapQuery(loggedInAs, requestUrl, query, twa);  
+                if (eddTable.handleViaFixedOrSubsetVariables(language, loggedInAs, requestUrl, query, twa)) {}
+                else             eddTable.getDataForDapQuery(language, loggedInAs, requestUrl, query, twa);  
             } catch (Throwable t) {
                 String msg = t.toString();
                 if (msg == null || msg.indexOf(MustBe.THERE_IS_NO_DATA) < 0) 
@@ -777,27 +779,28 @@ public class EDDGridFromEDDTable extends EDDGrid {
      *   [1] is a sorted String[] with the short names of directories that are 1 level lower, and
      *   [2] is the local directory corresponding to this (or null, if not a local dir).
      */
-    public Object[] accessibleViaFilesFileTable(String nextPath) {
+    public Object[] accessibleViaFilesFileTable(int language, String nextPath) {
         if (!accessibleViaFiles)
             return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDTable tChildDataset = eddTable; //getChildDataset();
-        return tChildDataset.accessibleViaFilesFileTable(nextPath);
+        return tChildDataset.accessibleViaFilesFileTable(language, nextPath);
     }
 
     /**
      * This converts a relativeFileName into a full localFileName (which may be a url).
      * 
+     * @param language the index of the selected language
      * @param relativeFileName (for most EDDTypes, just offset by fileDir)
      * @return full localFileName or null if any error (including, file isn't in
      *    list of valid files for this dataset)
      */
-     public String accessibleViaFilesGetLocal(String relativeFileName) {
+     public String accessibleViaFilesGetLocal(int language, String relativeFileName) {
          if (!accessibleViaFiles)
              return null;
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDTable tChildDataset = eddTable; //getChildDataset();
-        return tChildDataset.accessibleViaFilesGetLocal(relativeFileName);
+        return tChildDataset.accessibleViaFilesGetLocal(language, relativeFileName);
      }
 
     /** 
@@ -1115,11 +1118,12 @@ String expected =
         String name, tName, query, results, expected, error;
         String testDir = EDStatic.fullTestCacheDirectory;
         int po;
+        int language = 0;
         EDDGrid edd = (EDDGrid)oneFromDatasetsXml(null, "testGridFromTable"); //should work
 
         //get dds
         String2.log("\nget .dds\n");
-        tName = edd.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", testDir, 
             edd.className() + "_Entire", ".dds"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -1242,7 +1246,7 @@ String expected =
 
         //get das
         String2.log("\nget .das\n");
-        tName = edd.makeNewFileForDapQuery(null, null, "", testDir, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, "", testDir, 
             edd.className() + "_Entire", ".das"); 
         results = String2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
@@ -1442,7 +1446,7 @@ expected=
 //  strides=10, 1, 1, 1 gapAvValues=19, 19, 19, 1
 //  gap=171=((stride=10)-1) * gapAvValue=19 >= gapThreshold=15
         String2.log("\nget .csv\n");
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             "Eastward[10:10:20][][][],Eastward_flag[10:10:20][][][]," +
             "Northward[10:10:20][][][],Northward_flag[10:10:20][][][]", 
             testDir, edd.className() + "_gap0", ".csv"); 
@@ -1544,7 +1548,7 @@ BAYXXX,-120.31121,34.04017,2004-11-30T20:32:40Z,-1.8,NaN,9,NaN,9
 //  strides=10, 1, 1, 17 gapAvValues=18, 18, 18, 1
 //  gap=16=((stride=17)-1) * gapAvValue=1 >= gapThreshold=15
         String2.log("\nget .csv\n");
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             "Eastward[10:10:20][][][0:17:17],Eastward_flag[10:10:20][][][0:17:17]," +
             "Northward[10:10:20][][][0:17:17],Northward_flag[10:10:20][][][0:17:17]", 
             testDir, edd.className() + "_gap3", ".csv"); 
@@ -1566,7 +1570,7 @@ expected=
 //  axis sizes: result=1, 1, 1, 8 dataset=66201, 1, 1, 19
 //  strides=1, 1, 1, 1 gapAvValues=8, 8, 8, 1
         String2.log("\nget .csv\n");
-        tName = edd.makeNewFileForDapQuery(null, null, 
+        tName = edd.makeNewFileForDapQuery(language, null, null, 
             "Eastward[10][][][2:9],Eastward_flag[10][][][2:9]," +
             "Northward[10][][][2:9],Northward_flag[10][][][2:9]", 
             testDir, edd.className() + "_nogap", ".csv"); 

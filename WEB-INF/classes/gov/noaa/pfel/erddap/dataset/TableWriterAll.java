@@ -75,8 +75,8 @@ public class TableWriterAll extends TableWriter {
      *     (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
-    public TableWriterAll(EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt) {
-        super(tEdd, tNewHistory, null);
+    public TableWriterAll(int tLanguage, EDD tEdd, String tNewHistory, String tDir, String tFileNameNoExt) {
+        super(tLanguage, tEdd, tNewHistory, null);
         dir = File2.addSlash(tDir);
         //Normally, this is cacheDirectory and it already exists,
         //  but my testing environment (2+ things running) may have removed it.

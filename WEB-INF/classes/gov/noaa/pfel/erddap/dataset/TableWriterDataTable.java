@@ -57,10 +57,10 @@ public class TableWriterDataTable extends TableWriter {
      *     The ouputStream is not procured until there is data to be written.
      * @param tWriteUnits if true, the units information will be written to the file
      */
-    public TableWriterDataTable(EDD tEdd, String tNewHistory,
+    public TableWriterDataTable(int tLanguage, EDD tEdd, String tNewHistory,
                                 OutputStreamSource tOutputStreamSource, boolean tWriteUnits) {
 
-        super(tEdd, tNewHistory, tOutputStreamSource);
+        super(tLanguage, tEdd, tNewHistory, tOutputStreamSource);
         writeUnits = tWriteUnits;
     }
 
@@ -264,11 +264,11 @@ public class TableWriterDataTable extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(EDD tEdd, String tNewHistory, Table table,
+    public static void writeAllAndFinish(int language, EDD tEdd, String tNewHistory, Table table,
         OutputStreamSource outputStreamSource, boolean writeUnits)
         throws Throwable {
 
-        TableWriterDataTable tdt = new TableWriterDataTable(tEdd, tNewHistory,
+        TableWriterDataTable tdt = new TableWriterDataTable(language, tEdd, tNewHistory,
                 outputStreamSource, writeUnits);
         tdt.writeAllAndFinish(table);
     }
