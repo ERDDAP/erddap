@@ -685,6 +685,7 @@ public class TranslateMessages {
         "[standardDisclaimerOfExternalLinks]",
         "[standardPrivacyPolicy]",
         "[standardShortDescriptionHtml]",
+        "@noaa.gov",
         ".bz2",
         ".fileType",
         ".gzip",

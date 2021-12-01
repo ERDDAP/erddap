@@ -67,11 +67,68 @@ those great suggestions coming!
   with the specified charset.
 
 -->
+
+<!-- ****************************************************************************** 
+
+
+<h2><a class="selfLink" id="changes2.16" href="#changes2.16" rel="bookmark">Changes</a> 
+in ERDDAP version 2.16 (released 2021-??-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>CHANGES/BUG FIXES: Numerous small changes to the translation system
+    thanks to suggestions from reviewers.
+    Thanks to Mike Smit, Jennifer Sevadjian. 
+    <br>&nbsp;
+  <li>ADDED a proper disclaimer and attribution for Google Translate, 
+    as required by the terms of Google Translate. 
+    Also, the &lt;html&gt; tag in the HTML for 
+    every web page now properly identifies non-English web pages as
+    having been machine translated.
+    Thanks to Mike Smit.
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>TO DO: 
+    <ul>
+    <li>
+    <br>&nbsp;
+
+  <li>NEW: When downloading files from AWS S3, ERDDAP's cacheFromUrl system 
+    in EDDGridFromFiles and EDDTableFromFiles now uses 
+    the new AWS Transfer Manager to download files via parallelized chunks (thus very fast).
+    The target throughput is set to 20 Gbps, per file, so this works well with all AWS instance types,
+    but especially ones which have excellent "Networking Performance".
+    With this change ERDDAP's cacheFromUrl system now offers comparable speeds 
+    to xarray's approach of parallelized downloads of pre-chunked files, 
+    but without the need to convert the source files from .nc and .hdf into xarray files.
+    In fact, ERDDAP's system is better if there is a subsequent request to read from the same file,
+    because ERDDAP now has a local copy of the file.
+    Our community has spent years standardizing on .nc and .hdf files. Now
+    we don't have to toss that all out just to get good performance when storing
+    data in AWS S3.
+    Thanks to Rich Signell.
+    <br>&nbsp;
+
+  <li>BUG FIX: Starting in a recent release, ERDDAP stopped seeing more than
+    the first 1000 objects in a given AWS S3 bucket. Now, ERDDAP again sees
+    all of the objects.
+    Thanks to Andy Ziegler.
+    <br>&nbsp;
+
+  <li>BUG FIX: Now EDDTableAggregateRows removes the actual_range attribute
+    whenever one or more of the child datasets doesn't ever know its variables' actual_range
+    (e.g., EDDTableFromDatabase).
+    Thanks to Eric Geletti.
+    <br>&nbsp;
+  </ul>
+
+
 <!-- ****************************************************************************** -->
 
 
 <h2><a class="selfLink" id="changes2.15" href="#changes2.15" rel="bookmark">Changes</a> 
-in ERDDAP version 2.15 (released 2021-??-??)</h2>
+in ERDDAP version 2.15 (released 2021-11-19)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -82,10 +139,11 @@ in ERDDAP version 2.15 (released 2021-??-??)</h2>
     English content, as before.
     <p>Not all text or all web pages were translated. There were time constraints
     on this project that prevented Qi and Bob from getting to 100%.
-    <p>The obvious question is: why did you put so much effort into this when Chrome
+    <p>The obvious question is: why did we put so much effort into this when Chrome
     will translate web pages on-the-fly? The answer is: this way, we get much more
     control over how the translation is done. Notably, there are lots of words
-    that shouldn't be translated on the web pages, e.g., the names of variables,
+    that shouldn't be translated on the web pages, e.g., the titles and summaries of datasets, 
+    the names of variables,
     parameters, units, and organizations. Much of the translation effort was identifying
     words and phrases that shouldn't be translated. Also, the machine translations
     tended to mangle certain types of HTML markup. Managing the translation
@@ -119,7 +177,7 @@ in ERDDAP version 2.15 (released 2021-??-??)</h2>
         <br>"&EasierAccessToScientificData;" instead of "Easier access to scientific data" and
         <br>"&BroughtToYouBy;" instead of "Brought to you by",
         ERDDAP will use translated versions of those phrases in the banner.
-      <li>Similarly, the new default &theShortDescriptionHtml; in datasets.xml is <pre>
+      <li>Similarly, the new default &lt;theShortDescriptionHtml&gt; in datasets.xml is <pre>
 &lt;theShortDescriptionHtml&gt;&lt;![CDATA[ 
 &lt;h1&gt;ERDDAP&lt;/h1&gt;
 &amp;erddapIs;

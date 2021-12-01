@@ -4156,8 +4156,8 @@ After the button's label changes from "Sign in" to "Signed in", wait 5 seconds.<
 <loginOpenIDFree>They are all free!</loginOpenIDFree>
 <loginOpenIDSame>Make sure that you logged in with the exact same OpenID URL that you gave to the ERDDAP administrator.</loginOpenIDSame>
 
-<loginAs>You are logged in as</loginAs>
-<loginPartwayAs>You are logged in partway as</loginPartwayAs>
+<loginAs>You are logged in as {0} .</loginAs>
+<loginPartwayAs>You are logged in partway as {0} .</loginPartwayAs>
 <loginFailed>ERROR: Login failed</loginFailed>
 <loginInvalid>Invalid User Name and/or Password.</loginInvalid>
 <loginSucceeded>Login succeeded!</loginSucceeded>
@@ -4604,9 +4604,9 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <note>NOTE!</note>
 
 <!-- Xxx is Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>This dataset isn''t available via {0}.</noXxx>
-<noXxxBecause>This dataset isn''t available via {0} because {1}.</noXxxBecause>
-<noXxxBecause2>{0} isn''t available for this dataset because {1}.</noXxxBecause2>
+<noXxx>This dataset is never available via {0}.</noXxx>
+<noXxxBecause>This dataset is never available via {0} because {1}.</noXxxBecause>
+<noXxxBecause2>{0} is never available for this dataset because {1}.</noXxxBecause2>
 <noXxxNotActive>this ERDDAP''s {0} service is not active</noXxxNotActive>
 <noXxxNoAxis1>there aren't any axis variables with more than one value</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} is not a compatible type</noXxxNoCdmDataType>
@@ -4785,7 +4785,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorLastPMInvalid>The +/- value in {0} isn''t valid.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>The +/- index value in {0} isn''t an integer.</queryErrorLastPMInteger>
 
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 
 <rangesFromTo>{0} ranges from {1} to {2}.</rangesFromTo>
 

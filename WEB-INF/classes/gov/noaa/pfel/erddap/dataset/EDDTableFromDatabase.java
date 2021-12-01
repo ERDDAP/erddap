@@ -609,6 +609,15 @@ public class EDDTableFromDatabase extends EDDTable{
     }
 
     /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return false; } //because this gets info from a database
+
+    /**
      * This makes a new database Connection.
      * If dataSource != null, it will be used to get the connection; else via DriverManager.
      * See the connectionProperties documentation for the class constructor.
@@ -1856,6 +1865,16 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
+        //constrain numeric variable (even though knowsActualRange=false)
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "&height<162",
+            dir, tedd.className() + "_ht162", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected =  
+"category,first,last,height,weight_kg,weight_lb,time\n" +
+",,,cm,kg,lb,UTC\n" +
+"B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
         //just script variable
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&time=1967-07-08T09:10:11Z",
@@ -1868,7 +1887,7 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         String2.log("  subset time=" + (System.currentTimeMillis() - eTime) + "ms"); 
 
-        //constraint just script variable
+        //constrain just script variable
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&weight_lb=119",
             dir, tedd.className() + "_script3", ".csv"); 

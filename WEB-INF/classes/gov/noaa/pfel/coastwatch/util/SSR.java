@@ -44,6 +44,7 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -81,6 +82,9 @@ import jakarta.mail.Transport;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.S3Client;
+//for Transfer Manager:
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
+import software.amazon.awssdk.transfer.s3.FileDownload;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate 
@@ -1492,7 +1496,7 @@ public class SSR {
      * This downloads a file as bytes from a Url and saves it as a temporary file,
      * then renames it to the final name if successful.
      * If there is a failure, this deletes the parially written file.
-     * If the file is zipped, it will stay zipped.
+     * If the remote file is compressed (e.g., gzip or zipped), it will stay compressed.
      * Note that you may get a error-404-file-not-found error message stored in the file.
      *
      * CHARSET! This writes the bytes as-is, regardless of charset of source URL.
@@ -1503,6 +1507,7 @@ public class SSR {
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      *   <br>This can be a url or a local file (with or without file://).
+     *   <br>If this is an AWS S3 URL, this will use TransferManager to do a parallel transfer of chunks.
      * @param fullFileName the full name for the file to be created.
      *   If the directory doesn't already exist, it will be created.
      * @param tryToUseCompression If true, the request indicates in-transit http compression
@@ -1514,23 +1519,55 @@ public class SSR {
      */
     public static void downloadFile(String attributeTo, String urlString,
             String fullFileName, boolean tryToUseCompression) throws Exception {
-        //if 'url' is really just a local file, just copy it into place
+
+        //first, ensure destination dir exists
+        File2.makeDirectory(File2.getDirectory(fullFileName));
+
+        //if 'url' is really just a local file, use File2.copy() to copy it into place
         if (attributeTo == null)
             attributeTo = "downloadFile";
-        if (!String2.isUrl(urlString)) {
+        if (!String2.isUrl(urlString)) {  
             if (!File2.copy(urlString, fullFileName))
                 throw new IOException(String2.ERROR + ": " + attributeTo + " unable to copy " + 
                     urlString + " to " + fullFileName);
+            return;
         }
 
-        //download from Url
-        //first, ensure dir exists
+        //is it an AWS S3 URL?
         long time = System.currentTimeMillis();
         int random = Math2.random(Integer.MAX_VALUE);
+        String bro[] = String2.parseAwsS3Url(urlString); //bucket, region, object key
+        if (bro != null) {
+            //sample code and javadoc: https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
+            try {
+                S3TransferManager tm = S3TransferManager.builder()
+                    .s3ClientConfiguration(b -> b.region(Region.of(bro[1]))
+                                                 //.credentialsProvider(credentialProvider)  //handled by default credentials provider
+                                                 .targetThroughputInGbps(20.0)  //??? make a separate setting?
+                                                 .minimumPartSizeInBytes(new Long(8 * Math2.BytesPerMB)))
+                    .build();
+                FileDownload download =
+                    tm.downloadFile(d -> d.getObjectRequest(g -> g.bucket(bro[0]).key(bro[2]))
+                                          .destination(Paths.get(fullFileName + random)));
+                download.completionFuture().join();                //exception if trouble
+                File2.rename(fullFileName + random, fullFileName); //exception if trouble
+
+                if (verbose) String2.log(attributeTo + " (AWS Transfer Manager) successfully downloaded (in " + 
+                    (System.currentTimeMillis() - time) + " ms)\n" + 
+                    "  from: " + urlString + "\n" +
+                    "  to:   " + fullFileName);
+                return;
+            } catch (Exception e) {
+                File2.delete(fullFileName + random);
+                throw new IOException(String2.ERROR + " in " + attributeTo + 
+                    " (AWS Transfer Manager) while downloading from " + urlString, e);
+            }
+        }
+
+        //download from regular URL
         InputStream in = null;  
         OutputStream out = null;
         try {
-            File2.makeDirectory(File2.getDirectory(fullFileName));
             in = tryToUseCompression? 
                 getUrlBufferedInputStream(urlString) :             
                 getUncompressedUrlBufferedInputStream(urlString);  
@@ -1549,7 +1586,7 @@ public class SSR {
             }
             File2.rename(fullFileName + random, fullFileName); //exception if trouble
             if (verbose) String2.log(
-                attributeTo + " successfully DOWNLOADED (in " + (System.currentTimeMillis() - time) + "ms)" +
+                attributeTo + " successfully DOWNLOADED (in " + (System.currentTimeMillis() - time) + " ms)" +
                 "\n  from " + urlString + 
                 "\n  to " + fullFileName);
 

@@ -1953,6 +1953,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
             cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return true; } //EDDTableFromFiles knows actual_range
+
+
     /** 
      */
     public String fileDir()       {return fileDir; }

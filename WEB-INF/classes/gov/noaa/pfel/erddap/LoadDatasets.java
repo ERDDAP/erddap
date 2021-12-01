@@ -736,7 +736,6 @@ public class LoadDatasets extends Thread {
                 } else if (tags.equals("<erddapDatasets></startBodyHtml5>")) {
                     String ts = xmlReader.content();
                     ts = String2.isSomething(ts)? ts : EDStatic.DEFAULT_startBodyHtmlAr[0];
-                    EDStatic.ampLoginInfoPo = ts.indexOf(EDStatic.ampLoginInfo); //may be -1
                     EDStatic.startBodyHtmlAr[0] = ts; //swap into place
                     String2.log("startBodyHtml5 was set.");
 

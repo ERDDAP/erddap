@@ -1100,23 +1100,23 @@ will show NaN).
 
     /** 
      * This returns a non-null value if the
-     * axis isn't in the data source and so is represented by 
+     * variable isn't in the data source and so is represented by 
      * a fixed value. 
      * This is always defined so source = destination
      * (if time, this is epochSeconds).
      * 
-     * @return the fixedValue for this axis (or null if not fixed).
+     * @return the fixedValue for this variable (or null if not fixed).
      */
     public String fixedValue() {return fixedValue;}
 
     /** 
-     * This returns the destinationMin value (in standardized units) for this axis (e.g., 
+     * This returns the destinationMin value (in standardized units) for this variable (e.g., 
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01T00:00:00Z).
      * scaleFactor() and addOffset() have been applied.
      * !DON'T CHANGE THE VALUE!
      * 
-     * @return the cleaned up destinationMin value for this axis.
+     * @return the cleaned up destinationMin value for this variable.
      */
     public PAOne destinationMin() {
         //if (destinationName.equals("status"))
@@ -1125,7 +1125,7 @@ will show NaN).
     }
 
     /** 
-     * This returns the destinationMax value (in standardized units) for this axis (e.g., 
+     * This returns the destinationMax value (in standardized units) for this variable (e.g., 
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01).
      * scaleFactor() and addOffset() have been applied.
@@ -1135,24 +1135,24 @@ will show NaN).
      * to indicate that the roughly NOW.  For example, see cwwcNDBCMet: data is from files,
      * but presumption is data in files may change before next time file is read.
      * 
-     * @return the cleaned up destinationMax value for this axis.
+     * @return the cleaned up destinationMax value for this variable.
      */
     public PAOne destinationMax() {
         return destinationMax;
     }
 
     /** 
-     * This returns the destinationMin value (in standardized units) for this axis (e.g., 
+     * This returns the destinationMin value (in standardized units) for this variable (e.g., 
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01T00:00:00Z).
      * scaleFactor() and addOffset() have been applied.
      * 
-     * @return the "nice" destinationMin value for this axis.
+     * @return the "nice" destinationMin value for this variable.
      */
     public double destinationMinDouble() {return destinationMin.getNiceDouble();}
 
     /** 
-     * This returns the destinationMax value (in standardized units) for this axis (e.g., 
+     * This returns the destinationMax value (in standardized units) for this variable (e.g., 
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01).
      * scaleFactor() and addOffset() have been applied.
@@ -1161,7 +1161,7 @@ will show NaN).
      * to indicate that the roughly NOW.  For example, see cwwcNDBCMet: data is from files,
      * but presumption is data in files may change before next time file is read.
      * 
-     * @return the cleaned up destinationMax value for this axis.
+     * @return the cleaned up destinationMax value for this variable.
      */
     public double destinationMaxDouble() {return destinationMax.getNiceDouble();}
 

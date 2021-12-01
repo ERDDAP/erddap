@@ -128,7 +128,7 @@ public class HtmlWidgets {
      * config. FontSize = '10pt' // E.g. '9pt' or '12px' - unit is mandatory
      *
      * @param dir a public directory from the web page's point of view 
-     *   (e.g., EDStatic.imageDirUrl(loggedInAs)) where wz_tooltip.js can be found.
+     *   (e.g., EDStatic.imageDirUrl(loggedInAs, language)) where wz_tooltip.js can be found.
      */
     public static String htmlTooltipScript(String dir) {
         return 
@@ -224,6 +224,7 @@ public class HtmlWidgets {
 
     //these can be changed as needed while creating a form
     public boolean htmlTooltips;
+    /** From EDStatic.imagedirUrl(loggedInAs, language). */
     public String imageDirUrl;
 
     //this is set by beginForm
@@ -244,7 +245,7 @@ public class HtmlWidgets {
      *     If false, tooltips are plain text and should be (less than 60 char on some browsers).
      * @param tImageDirUrl the public URL for the image dir which has the
      *     arrow, p... and m... .gif files for the 'select' buttons
-     *     (or null or "" if not needed).  Usually EDStatic.imageDirUrl(loggedInAs)
+     *     (or null or "" if not needed).  Usually from EDStatic.imageDirUrl(loggedInAs, language)
      */
     public HtmlWidgets(boolean tHtmlTooltips, String tImageDirUrl) {
         htmlTooltips = tHtmlTooltips;
@@ -1178,7 +1179,7 @@ public class HtmlWidgets {
      * See tip().
      *
      * @param imageRef the reference for the question mark image 
-     *   (e.g., EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile)
+     *   (e.g., EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile)
      * @param alt the alt text to be displayed, e.g., "?"  (not yet encoded)
      * @param html  the html tooltip text, e.g., "Hi,<br>there!".
      *     It needs explicit br tags to set window width correctly.
