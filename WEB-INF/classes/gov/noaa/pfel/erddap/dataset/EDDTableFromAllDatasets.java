@@ -127,6 +127,16 @@ public class EDDTableFromAllDatasets extends EDDTable{
                 cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return true; } //but irrelevant, because this will never be a child dataset 
+
+
     /** 
      * This overwrites the superclass to give the on-the-fly subsetVariables table. 
      *

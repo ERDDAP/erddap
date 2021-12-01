@@ -31,6 +31,8 @@ import org.apache.commons.compress.archivers.sevenz.SevenZOutputFile;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
+//DON'T use "com.amazon.awssdk" (v1 of the SDK).
+//DO    use "software.amazon.awssdk" (v2 of the SDK).
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -1121,12 +1123,21 @@ public class File2 {
     public static boolean copy(String source, String destination, long first, long last) {
 
         if (source.equals(destination)) return false;
-        OutputStream out = null;
-        boolean success = false;
+
+        //make dir
         try {
             File dir = new File(getDirectory(destination));
             if (!dir.isDirectory())
                  dir.mkdirs();
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            return false;
+        }
+
+        //regular file
+        OutputStream out = null;
+        boolean success = false;
+        try {
             out = new BufferedOutputStream(new FileOutputStream(destination));
             success = copy(source, out, first, last);
         } catch (Exception e) {

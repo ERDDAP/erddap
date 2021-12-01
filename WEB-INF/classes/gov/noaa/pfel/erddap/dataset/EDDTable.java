@@ -919,6 +919,14 @@ public abstract class EDDTable extends EDD {
         return sb.toString();
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public abstract boolean knowsActualRange();
 
 
     /** 
@@ -2856,8 +2864,8 @@ public abstract class EDDTable extends EDD {
                 writer.write("\n</head>\n");
                 writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
                 writer.write("\n");
-                writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
-                writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));      //this is a link to a script
+                writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));   //this is a link to a script
+                writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));      //this is a link to a script
                 writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
                 writer.write(
                     "<div class=\"standard_width\">\n");
@@ -2890,7 +2898,7 @@ public abstract class EDDTable extends EDD {
                 writer.write("<hr>\n");
                 writeGeneralDapHtmlInstructions(language, tErddapUrl, writer, false); 
                 writer.write("</div>\n");
-                writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+                writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
                 writer.write("\n</html>\n");
                 writer.flush(); //essential
                 return;
@@ -2898,7 +2906,7 @@ public abstract class EDDTable extends EDD {
             } catch (Exception e) {
                 EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(language, e));
-                writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+                writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
                 writer.write("\n</html>\n");
                 writer.flush(); //essential
                 String2.log(String2.ERROR + " when writing web page:\n" + MustBe.throwableToString(e));
@@ -3044,7 +3052,7 @@ public abstract class EDDTable extends EDD {
             tableWriter = new TableWriterHtmlTable(language, this, tNewHistory, 
                 loggedInAs, endOfRequest, userDapQuery, outputStreamSource, 
                 true, fileName, false, "", "", true, true, -1,
-                EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);
+                EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
         } else if (fileTypeName.equals(".itx")) {  //Igor Text File
             //tableWriter = new TableWriterIgor(this, tNewHistory, outputStreamSource);
             twawm = new TableWriterAllWithMetadata(language, this, tNewHistory, dir, fileName);  //used after getDataForDapQuery below...
@@ -3091,7 +3099,7 @@ public abstract class EDDTable extends EDD {
             tableWriter = new TableWriterHtmlTable(language, this, tNewHistory, 
                 loggedInAs, endOfRequest, userDapQuery, outputStreamSource, 
                 true, fileName, true, "", "", true, true, -1,
-                EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);
+                EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
 
         if (tableWriter != null) {
             TableWriter tTableWriter = encloseTableWriter(language, true, //alwaysDoAll
@@ -6760,7 +6768,7 @@ public abstract class EDDTable extends EDD {
     public void writeDapHtmlForm(int language, String loggedInAs,
         String userDapQuery, Writer writer) throws Throwable {
 
-        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
+        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
 
         //parse userDapQuery 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
@@ -6808,7 +6816,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "<tr>\n" +
             "  <th class=\"L\">" + EDStatic.EDDTableVariableAr[language] + " " +
-            EDStatic.htmlTooltipImage(loggedInAs, 
+            EDStatic.htmlTooltipImage(language, loggedInAs, 
                 "<div class=\"narrow_max_width\">" + EDStatic.EDDTableTabularDatasetTooltipAr[language] +
                 "</div>"));
         
@@ -6827,26 +6835,26 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "  &nbsp;</th>\n" +
             "  <th colspan=\"2\">" + EDStatic.EDDTableOptConstraint1HtmlAr[language] + " " + 
-                EDStatic.htmlTooltipImage(loggedInAs, 
+                EDStatic.htmlTooltipImage(language, loggedInAs, 
                     "<div class=\"narrow_max_width\">" + EDStatic.EDDTableConstraintTooltipAr[language] +
                     "</div>") + 
                 "</th>\n" +
             "  <th colspan=\"2\">" + EDStatic.EDDTableOptConstraint2HtmlAr[language] + " " + 
-                EDStatic.htmlTooltipImage(loggedInAs, 
+                EDStatic.htmlTooltipImage(language, loggedInAs, 
                     "<div class=\"narrow_max_width\">" + EDStatic.EDDTableConstraintTooltipAr[language] +
                     "</div>") + 
                 "</th>\n" +
 
             "  <th>" + gap + EDStatic.EDDMinimumAr[language] + " " + 
-                EDStatic.htmlTooltipImage(loggedInAs, EDStatic.EDDTableMinimumTooltipAr[language]) + 
+                EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.EDDTableMinimumTooltipAr[language]) + 
                 (distinctOptions == null? "<br>&nbsp;" :
                     "<br>" + gap + EDStatic.orAListOfValuesAr[language] + " " + //2014-07-17 was Distinct Values
-                    EDStatic.htmlTooltipImage(loggedInAs, 
+                    EDStatic.htmlTooltipImage(language, loggedInAs, 
                         "<div class=\"narrow_max_width\">" + EDStatic.distinctValuesTooltipAr[language] +
                         "</div>")) +
                 "</th>\n" +
             "  <th>" + gap + EDStatic.EDDMaximumAr[language] + " " + 
-                EDStatic.htmlTooltipImage(loggedInAs, EDStatic.EDDTableMaximumTooltipAr[language]) + 
+                EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.EDDTableMaximumTooltipAr[language]) + 
                 "<br>&nbsp;" +
                 "</th>\n" +
             "</tr>\n");
@@ -6888,7 +6896,7 @@ public abstract class EDDTable extends EDD {
                 userDapQuery.length() == 0? true : (resultsVariables.indexOf(edv.destinationName()) >= 0), 
                 edv.destinationName(), 
                 edv.destinationName() + extra + " " +
-                    EDStatic.htmlTooltipImageEDV(loggedInAs, edv), 
+                    EDStatic.htmlTooltipImageEDV(language, loggedInAs, edv), 
                 ""));
             writer.write("  &nbsp;</td>\n");
 
@@ -7030,7 +7038,7 @@ public abstract class EDDTable extends EDD {
                     "    }\" >\n" + 
                     "  </td>\n" +
                     "  <td>&nbsp;" +
-                    EDStatic.htmlTooltipImage(loggedInAs, 
+                    EDStatic.htmlTooltipImage(language, loggedInAs, 
                         "<div class=\"narrow_max_width\">" + EDStatic.EDDTableSelectConstraintTooltipAr[language] +
                         "</div>") + 
                     "  </tr>\n" +
@@ -7138,7 +7146,7 @@ public abstract class EDDTable extends EDD {
                         widgets.select("avwav" + attNamei, EDStatic.addVarWhereAttValueAr[language], 1,
                             addVariablesWhereAttValues.get(attNamei).toArray(), attValuei, "") +
                         "\n" +
-                        EDStatic.htmlTooltipImage(loggedInAs, EDStatic.addVarWhereAr[language]) +
+                        EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.addVarWhereAr[language]) +
                     "</tr>\n");
             }
             writer.write(widgets.endTable());            
@@ -7201,7 +7209,7 @@ public abstract class EDDTable extends EDD {
         writer.write(
             "\n<br>(<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
             "title=\"tabledap documentation\">Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form</a>\n" +
-            EDStatic.htmlTooltipImage(loggedInAs, genViewHtml) + ")\n");
+            EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml) + ")\n");
 
 
         //submit
@@ -7242,7 +7250,7 @@ public abstract class EDDTable extends EDD {
         writer.write("\n&nbsp;\n"); //necessary for the blank line before the table (not <p>)
         writer.write(widgets.beginTable("class=\"compact W\"")); //not nowrap
         writer.write("<tr><td><strong>" + EDStatic.functionsAr[language] + "</strong> " + 
-            EDStatic.htmlTooltipImage(loggedInAs, 
+            EDStatic.htmlTooltipImage(language, loggedInAs, 
             "<div class=\"narrow_max_width\">" + EDStatic.functionTooltipAr[language] + "</div>") +
             "</td></tr>\n");
 
@@ -7253,7 +7261,7 @@ public abstract class EDDTable extends EDD {
                 EDStatic.functionDistinctCheckAr[language],
                 String2.indexOf(queryParts, "distinct()") >= 0, 
                 "true", "distinct()", ""));
-        writer.write(EDStatic.htmlTooltipImage(loggedInAs, 
+        writer.write(EDStatic.htmlTooltipImage(language, loggedInAs, 
             "<div class=\"narrow_max_width\">" + EDStatic.functionDistinctTooltipAr[language] +
             "</div>"));
         writer.write("</td></tr>\n");
@@ -7296,7 +7304,7 @@ public abstract class EDDTable extends EDD {
 
         writer.write("\n<tr><td>"); //not nowrap.  allow wrapping if varNames are long
         writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, ""));
-        writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByTooltipAr[language]));
+        writer.write(EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.functionOrderByTooltipAr[language]));
         writer.write("(\"");
         for (int ob = 0; ob < nOrderByComboBox; ob++) {
             //if (ob > 0) writer.write(",\n"); 
@@ -9138,14 +9146,14 @@ public abstract class EDDTable extends EDD {
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
         Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
         try {
-            HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs));
+            HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl,  
                 title() + " - " + EDStatic.magAr[language]));
             writer.write("\n" + rssHeadLink());
             writer.write("\n</head>\n");
             writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
             writer.write("\n");
-            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs))); //this is a link to a script
+            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language))); //this is a link to a script
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(
                 "<div class=\"standard_width\">\n");
@@ -9588,7 +9596,7 @@ public abstract class EDDTable extends EDD {
                     "false") + //else don't send var names
                 ");'")); 
             writer.write(
-                EDStatic.htmlTooltipImage(loggedInAs, 
+                EDStatic.htmlTooltipImage(language, loggedInAs, 
                     "<div class=\"standard_max_width\">" + EDStatic.magGraphTypeTooltipTableAr[language] +
                     "</div>") +
                 "  </td>\n" +
@@ -9756,17 +9764,17 @@ public abstract class EDDTable extends EDD {
                 "<tr>\n" +
                 "  <th>" + 
                     EDStatic.EDDTableConstraintsAr[language] + " " +
-                    EDStatic.htmlTooltipImage(loggedInAs, EDStatic.magConstraintHelpAr[language]) +
+                    EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.magConstraintHelpAr[language]) +
                     "</th>\n" +
                 "  <th style=\"text-align:center;\" colspan=\"2\">" + 
                     EDStatic.EDDTableOptConstraint1HtmlAr[language] + " " + 
-                    EDStatic.htmlTooltipImage(loggedInAs, 
+                    EDStatic.htmlTooltipImage(language, loggedInAs, 
                         "<div class=\"narrow_max_width\">" + EDStatic.EDDTableConstraintTooltipAr[language] +
                         "</div>") + 
                     "</th>\n" +
                 "  <th style=\"text-align:center;\" colspan=\"2\">" + 
                     EDStatic.EDDTableOptConstraint2HtmlAr[language] + " " + 
-                    EDStatic.htmlTooltipImage(loggedInAs, 
+                    EDStatic.htmlTooltipImage(language, loggedInAs, 
                         "<div class=\"narrow_max_width\">" + EDStatic.EDDTableConstraintTooltipAr[language] +
                         "</div>") + 
                     "</th>\n" +
@@ -10587,7 +10595,7 @@ public abstract class EDDTable extends EDD {
                 ""));
             writer.write("<br>(<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
                 "title=\"tabledap documentation\">" + EDStatic.magDocumentationAr[language] + "</a>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, genViewHtml) + ")\n");
+                EDStatic.htmlTooltipImage(language, loggedInAs, genViewHtml) + ")\n");
 
             if (debugMode) String2.log("respondToGraphQuery 8");
             writer.write(
@@ -10612,7 +10620,7 @@ public abstract class EDDTable extends EDD {
 
                 writer.write(
                     EDStatic.magZoomCenterAr[language] + "\n" +
-                    EDStatic.htmlTooltipImage(loggedInAs, EDStatic.magZoomCenterTooltipAr[language]) +
+                    EDStatic.htmlTooltipImage(language, loggedInAs, EDStatic.magZoomCenterTooltipAr[language]) +
                     "<br><strong>" + EDStatic.magZoomAr[language] + ":&nbsp;</strong>\n");
 
                 //zoom out?
@@ -10733,7 +10741,7 @@ public abstract class EDDTable extends EDD {
                 if (Double.isFinite(zoomXEdvRange)) {
                     //all the way left
                     writer.write(HtmlWidgets.htmlTooltipImage( 
-                        EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "|<",
+                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif", "|<",
                         EDStatic.shiftXAllTheWayLeftAr[language], 
                         "class=\"B\" " + //vertical-align: 'b'ottom
                         "onMouseUp='" + formTextField + "a.value=\"" +  zoomXEdvMin                                        + "\"; " +
@@ -10748,7 +10756,7 @@ public abstract class EDDTable extends EDD {
 
                 //left
                 writer.write(HtmlWidgets.htmlTooltipImage( 
-                    EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-",
+                    EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif", "-",
                     EDStatic.shiftXLeftAr[language], 
                     "class=\"B\" " + //vertical-align: 'b'ottom
                     "onMouseUp='" + formTextField + "a.value=\"" + (zoomXMin - zoomXRange2) + "\"; " +
@@ -10760,7 +10768,7 @@ public abstract class EDDTable extends EDD {
 
                 //right
                 writer.write(HtmlWidgets.htmlTooltipImage( 
-                    EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+",
+                    EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif", "+",
                     EDStatic.shiftXRightAr[language], 
                     "class=\"B\" " + //vertical-align: 'b'ottom
                     "onMouseUp='" + formTextField + "a.value=\"" + (zoomXMin + zoomXRange2) + "\"; " +
@@ -10773,7 +10781,7 @@ public abstract class EDDTable extends EDD {
                 if (Double.isFinite(zoomXEdvRange)) {
                     //all the way right
                     writer.write(HtmlWidgets.htmlTooltipImage( 
-                        EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">|",
+                        EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif", ">|",
                         EDStatic.shiftXAllTheWayRightAr[language], 
                         "class=\"B\" " + //vertical-align: 'b'ottom
                         "onMouseUp='" + formTextField + "a.value=\"" + (zoomXEdvMax - Math.min(zoomXEdvRange, zoomXRange)) + "\"; " +
@@ -10900,7 +10908,7 @@ public abstract class EDDTable extends EDD {
                     if (timeMin > edvTimeMin || ratio < 0.99 || ratio > 1.01) {
                         writer.write(
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "|<",
+                            EDStatic.imageDirUrl(loggedInAs, language) + "arrowLL.gif", "|<",
                             MessageFormat.format(EDStatic.magTimeRangeFirstAr[language], timeRangeString),
                             "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                             "&amp;time%3E=" + 
@@ -10925,7 +10933,7 @@ public abstract class EDDTable extends EDD {
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                     writer.write(HtmlWidgets.htmlTooltipImage( 
-                        EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-",
+                        EDStatic.imageDirUrl(loggedInAs, language) + "minus.gif", "-",
                         MessageFormat.format(EDStatic.magTimeRangeBackAr[language], timeRangeString),
                         "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                         "&amp;time%3E=" + 
@@ -10953,7 +10961,7 @@ public abstract class EDDTable extends EDD {
                         (!Double.isNaN(edvTimeMax) && 
                         idMaxGc.getTimeInMillis() >= edvTimeMax * 1000)? "=" : "";
                     writer.write(HtmlWidgets.htmlTooltipImage( 
-                        EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+",
+                        EDStatic.imageDirUrl(loggedInAs, language) + "plus.gif", "+",
                         MessageFormat.format(EDStatic.magTimeRangeForwardAr[language], timeRangeString),
                         "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                         "&amp;time%3E=" +          
@@ -10986,7 +10994,7 @@ public abstract class EDDTable extends EDD {
 
                     if (timeMax < edvTimeMax || ratio < 0.99 || ratio > 1.01) {
                         writer.write(HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">|",
+                            EDStatic.imageDirUrl(loggedInAs, language) + "arrowRR.gif", ">|",
                             MessageFormat.format(EDStatic.magTimeRangeLastAr[language], timeRangeString),
                             "class=\"B\" onMouseUp='" + gqnt + //vertical-align: 'b'ottom
                             "&amp;time%3E=" + 
@@ -11056,7 +11064,7 @@ public abstract class EDDTable extends EDD {
 
             writer.write("</div>\n");
 
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
             writer.write("\n</html>\n");           
             writer.flush(); //essential
             //*** end of document
@@ -11065,7 +11073,7 @@ public abstract class EDDTable extends EDD {
             EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(language, e));
             writer.write("</div>\n");
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
             writer.write("\n</html>\n");
             writer.flush(); //essential
             throw e;
@@ -11471,7 +11479,7 @@ public abstract class EDDTable extends EDD {
 
 
         //show the .html response/form
-        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
+        HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
         Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
@@ -11483,7 +11491,7 @@ public abstract class EDDTable extends EDD {
             writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userQuery));
             writer.write("\n");
             writer.write("<div class=\"standard_width\">\n");
-            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));   //this is a link to a script
+            writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));   //this is a link to a script
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(EDStatic.youAreHereWithHelp(language, loggedInAs, dapProtocol, 
                 EDStatic.subsetAr[language], 
@@ -11614,7 +11622,7 @@ public abstract class EDDTable extends EDD {
                 writer.write(
                     "<tr>\n" +
                     "  <td>&nbsp;&nbsp;&nbsp;&nbsp;" + pName + "\n" +
-                    EDStatic.htmlTooltipImageEDV(loggedInAs, edv) +
+                    EDStatic.htmlTooltipImageEDV(language, loggedInAs, edv) +
                     "  </td>\n" +
                     "  <td>\n");
 
@@ -11766,7 +11774,7 @@ public abstract class EDDTable extends EDD {
                             "", 
                             viewValue[v] == 1, "true", viewTitle[v], 
                             "onclick='mySubmit(null);'") +  //IE doesn't trigger onchange for checkbox
-                        EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[v]) +
+                        EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[v]) +
                         "</span>");
                     if (viewValue[v] == 1)
                         viewQuery.append("&." + viewParam[v] + "=true");
@@ -11791,7 +11799,7 @@ public abstract class EDDTable extends EDD {
                         widgets.select(viewParam[v], "", 1,
                             intOptions, String2.indexOf(intOptions, "" + viewValue[v]),
                             "onchange='mySubmit(null);'") +  
-                        EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[v]));
+                        EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[v]));
                     viewQuery.append("&." + viewParam[v] + "=" + viewValue[v]);
                 }
             }
@@ -11875,7 +11883,7 @@ public abstract class EDDTable extends EDD {
                     "&nbsp;<hr>\n" +
                     "<a class=\"selfLink\" id=\"DistinctMap\" href=\"#DistinctMap\" rel=\"bookmark\"><strong>" + 
                         viewTitle[current] + "</strong></a>\n" +
-                    EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]) +
+                    EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]) +
                     "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + datasetID + ".graph?" +
                         XML.encodeAsHTML(graphDapQuery) + "\">" +
                         EDStatic.subsetRefineMapDownloadAr[language] + "</a>)\n" +
@@ -11894,7 +11902,7 @@ public abstract class EDDTable extends EDD {
                             "</a>)\n");
                     else 
                         writer.write(EDStatic.subsetClickResetClosestAr[language] + "\n");
-                            //EDStatic.htmlTooltipImage(loggedInAs, 
+                            //EDStatic.htmlTooltipImage(language, loggedInAs, 
                             //    "Unfortunately, after you click, some data sources respond with" +
                             //    "<br><kbd>" + MustBe.THERE_IS_NO_DATA + "</kbd>" +
                             //    "<br>because they can't handle requests for specific longitude and" +
@@ -11935,7 +11943,7 @@ public abstract class EDDTable extends EDD {
                     "&nbsp;<hr>\n" +
                     "<a class=\"selfLink\" id=\"RelatedMap\" href=\"#RelatedMap\" rel=\"bookmark\"><strong>" + 
                         viewTitle[current] + "</strong></a>\n" +
-                    EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]) +
+                    EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]) +
                     "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + datasetID + ".graph?" +
                         XML.encodeAsHTMLAttribute(graphDapQuery) + "\">" +
                         EDStatic.subsetRefineMapDownloadAr[language] + "</a>)\n");
@@ -11971,7 +11979,7 @@ public abstract class EDDTable extends EDD {
                 "<br>&nbsp;<hr>\n" +
                 "<p><a class=\"selfLink\" id=\"DistinctDataCounts\" href=\"#DistinctDataCounts\" rel=\"bookmark\"><strong>" + 
                     viewTitle[current] + "</strong></a>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]));
+                EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]));
             if (viewValue[current] == 1 && lastP >= 0 && lastPPA != null) {  //lastPPA shouldn't be null
                 writer.write(
                     "&nbsp;&nbsp;\n" +
@@ -12061,7 +12069,7 @@ public abstract class EDDTable extends EDD {
                 "<br>&nbsp;<hr>\n" +
                 "<p><a class=\"selfLink\" id=\"DistinctData\" href=\"#DistinctData\" rel=\"bookmark\"><strong>" + 
                     viewTitle[current] + "</strong></a>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]) +
+                EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]) +
                 "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + datasetID +
                     ".das\">" + EDStatic.subsetMetadataAr[language] + "</a>)\n");
             writer.write(
@@ -12103,7 +12111,7 @@ public abstract class EDDTable extends EDD {
                 "<br>&nbsp;<hr>\n" +
                 "<p><a class=\"selfLink\" id=\"RelatedDataCounts\" href=\"#RelatedDataCounts\" rel=\"bookmark\"><strong>" + 
                     viewTitle[current] + "</strong></a>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]));
+                EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]));
             if (viewValue[current] == 1 && lastP >= 0) {  
                 writer.write(
                     "&nbsp;&nbsp;\n" +
@@ -12198,7 +12206,7 @@ public abstract class EDDTable extends EDD {
                 "<br>&nbsp;<hr>\n" +
                 "<p><a class=\"selfLink\" id=\"RelatedData\" href=\"#RelatedData\" rel=\"bookmark\"><strong>" + 
                     viewTitle[current] + "</strong></a>\n" +
-                EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[current]) +
+                EDStatic.htmlTooltipImage(language, loggedInAs, viewTooltip[current]) +
                 "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + datasetID +
                     ".das\">" + EDStatic.subsetMetadataAr[language] + "</a>)\n" +
                 "&nbsp;&nbsp;\n" +
@@ -12224,7 +12232,7 @@ public abstract class EDDTable extends EDD {
                             new OutputStreamSourceSimple(out),
                             false, "", false, "", "", 
                             true, true, viewValue[current],
-                            EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);          
+                            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);          
                         if (handleViaFixedOrSubsetVariables(language, loggedInAs, requestUrl,
                             newConstraints.toString(), //no vars specified, and not distinct()
                             twht)) {}
@@ -12309,7 +12317,7 @@ public abstract class EDDTable extends EDD {
             }
 
             writer.write("</div>\n");
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
             writer.write("\n</html>\n");
             writer.flush(); //essential
 
@@ -12317,7 +12325,7 @@ public abstract class EDDTable extends EDD {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(language, t));
             writer.write("</div>\n");
-            writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+            writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
             writer.write("\n</html>\n");
             writer.flush(); //essential
             throw t;
@@ -16287,7 +16295,7 @@ public abstract class EDDTable extends EDD {
         //writer.write("\n" + rssHeadLink());
         //writer.write("</head>\n");
         //writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString) + "\n");
-        //writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)));
+        //writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
         //writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 
         //*** html body content
@@ -16820,7 +16828,7 @@ public abstract class EDDTable extends EDD {
 
         
         writer.write("</div>\n");
-        //writer.write(EDStatic.endBodyHtml(language, tErddapUrl));
+        //writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
         //writer.write("\n</html>\n");
         writer.flush(); 
     }

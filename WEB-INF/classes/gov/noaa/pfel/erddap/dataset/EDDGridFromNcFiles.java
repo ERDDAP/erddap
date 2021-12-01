@@ -2726,8 +2726,8 @@ expected =
         }
 
         if (deleteCachedFiles) {
-            String2.log("\nWaiting 90s for download tasks to finish...\n");
-            Math2.sleep(90000); //allow tasks to finish
+            String2.log("\nWaiting 30s for download tasks to finish (but usually done in ~16s)...\n");
+            Math2.sleep(30000); //allow tasks to finish
             String2.log("\ntasks 2 of 2 should have finished. Now reloading the dataset. Now reloading dataset (in 5 seconds)...");
             Math2.sleep(5000); //allow tasks to finish
             eddGrid = (EDDGrid)oneFromDatasetsXml(null, id); 
@@ -15360,7 +15360,7 @@ expected =
                     if (test == 55 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
                     if (test == 56 && doSlowTestsToo) testNThreads(3);
                     if (test == 57 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
-                    if (test == 58 && doSlowTestsToo) testAwsS3(true);  //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+                    if (test == 58 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
                     if (test == 59 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
                     //NOT FINISHED

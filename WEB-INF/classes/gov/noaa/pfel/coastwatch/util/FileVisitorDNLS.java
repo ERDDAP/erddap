@@ -59,11 +59,13 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 
+//DON'T use "com.amazon.awssdk" (v1 of the SDK).
+//DO    use "software.amazon.awssdk" (v2 of the SDK).
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 //import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.CommonPrefix;
-import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.S3Client;
 
@@ -138,6 +140,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public static double PRUNE_CACHE_DEFAULT_FRACTION = 0.75; 
     /** ConcurrentHashMap handles multi-threaded access well. */
     public static ConcurrentHashMap<String,Long> pruneCacheDirSize = new ConcurrentHashMap(); /* dirName, bytes */
+    /** Max allowed is 1000. Only use smaller number for testing. */
+    public static int S3_MAX_KEYS = 1000;
 
     /** things set by constructor */
     public String dir;  //with \\ or / separators. With trailing slash (to match).
@@ -327,7 +331,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      * be in the root directory.
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
-     *    The resulting directoryPA will contain dirs with matching slashes and trailing slash.
+     *   The resulting directoryPA will contain dirs with matching slashes and trailing slash.
+     * @param tRecusive If true, this will look recursively into subdirectories.
+     *   If false, this looks in just this directory.
      * @param tPathRegex a regex to constrain which subdirs to include.
      *   This is ignored if recursive is false.
      *   null or "" is treated as .* (i.e., match everything).
@@ -379,7 +385,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     String dnlsFileName = FILE_VISITOR_DIRECTORY +
                         String2.modifyToBeFileNameSafe(tDir) + 
                         Calendar2.getCompactCurrentISODateTimeStringLocal() + "_" + 
-                        Math2.random(1000) + ".jsonlCsv";
+                        Math2.random(1000000) + ".jsonlCsv";
                     boolean writtenToFile = false;
 
                     String bucketName = matcher.group(1); 
@@ -394,90 +400,100 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     //I wanted to generate lastMod for dir based on lastMod of files
                     //but it would be inconsistent for different requests (recursive, fileNameRegex).
                     //so just a set of dir names.
-                    //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/ListObjectsV2Request.html
+                    //https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html says v2 is the recommended approach.
+                    //https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/services/s3/model/ListObjectsV2Request.html
                     HashSet<String> dirHashSet = new HashSet(); 
-                    ListObjectsRequest.Builder reqBuilder = ListObjectsRequest.builder()
+                    ListObjectsV2Request.Builder reqBuilder = ListObjectsV2Request.builder()
                         .bucket(bucketName)
                         .prefix(prefix)
-                        //I read (not in these docs) 1000 is max. 
-                        //For me, 1000 or 100000 returns ~1000 for first few responses, then ~100 for subsequent !
-                        //so getting a big bucket's contents takes ~12 hours on a non-Amazon network
-                        .maxKeys(10000); //be optimistic
+                        .maxKeys(S3_MAX_KEYS);  //maxKeys is only useful for setting the max to <1000, so I only set lower for testing.
 
                     if (!tRecursive)
                         reqBuilder = reqBuilder.delimiter("/"); //Using it just gets files in this dir (not subdir)
 
-                    ListObjectsRequest req = reqBuilder.build();
+                    ListObjectsV2Request request = reqBuilder.build();
+                    S3Client s3client = File2.getS3Client(region);    
+                    
+                    //complete example (start at line 98):
+                    //https://github.com/awsdocs/aws-doc-sdk-examples/blob/main/javav2/example_code/s3/src/main/java/com/example/s3/S3ObjectOperations.java
+                    //but example is stupid: sets maxKeys to 1 so it makes a separate request for each item!
+                    int nParts = 0;
+                    while (true) {
+                        ListObjectsV2Response response = s3client.listObjectsV2(request);
+                        if (debugMode) String2.log(">> maxKeys=" + S3_MAX_KEYS + " part #" + nParts++);
 
-                    S3Client s3client = File2.getS3Client(region);               
-                    ListObjectsResponse response = s3client.listObjects(req);
+                        //get common prefixes
+                        if (tDirectoriesToo) {
+                            List<CommonPrefix> list = response.commonPrefixes();
+                            int tn = list.size();
+                            for (int i = 0; i < tn; i++) {
+                                String td2 = baseURL + list.get(i).prefix(); //list.get(i)= e.g., BCSD/
+                                dirHashSet.add(td2);
+                                //String2.log(">> add dir=" + td2);
+                            }                          
+                        }
 
-                    //get common prefixes
-                    if (tDirectoriesToo) {
-                        List<CommonPrefix> list = response.commonPrefixes();
-                        int tn = list.size();
-                        for (int i = 0; i < tn; i++) {
-                            String td2 = baseURL + list.get(i).prefix(); //list.get(i)= e.g., BCSD/
-                            dirHashSet.add(td2);
-                            //String2.log(">> add dir=" + td2);
-                        }                          
-                    }
+                        List<S3Object> objects = response.contents();
+                        for (ListIterator iterVals = objects.listIterator(); iterVals.hasNext(); ) {
+                            S3Object s3Object = (S3Object)iterVals.next();
+                            String keyFullName = s3Object.key();
+                            String keyDir = File2.getDirectory(baseURL + keyFullName);
+                            String keyName = File2.getNameAndExtension(keyFullName);
+                            boolean matchesPath = keyDir.startsWith(tDir) && //it should
+                                ((keyDir.length() == tDir.length() ||
+                                  tRecursive && pathRegexPattern.matcher(keyDir).matches()));
+                            if (debugMode) String2.log(">> key=" + keyFullName);
+                                //+ "\n>> matchesPathRegex=" + matchesPath);
+                            if (matchesPath) {
 
-                    List<S3Object> objects = response.contents();
-                    for (ListIterator iterVals = objects.listIterator(); iterVals.hasNext(); ) {
-                        S3Object s3Object = (S3Object)iterVals.next();
-                        String keyFullName = s3Object.key();
-                        String keyDir = File2.getDirectory(baseURL + keyFullName);
-                        String keyName = File2.getNameAndExtension(keyFullName);
-                        boolean matchesPath = keyDir.startsWith(tDir) && //it should
-                            ((keyDir.length() == tDir.length() ||
-                              tRecursive && pathRegexPattern.matcher(keyDir).matches()));
-                        if (debugMode) String2.log(">> key=" + keyFullName);
-                            //+ "\n>> matchesPathRegex=" + matchesPath);
-                        if (matchesPath) {
+                                //store this dir
+                                if (tDirectoriesToo) {
+                                    //S3 only returns object keys. I must infer/collect directories.
+                                    //Store this dir and parents back to tDir.
+                                    String choppedKeyDir = keyDir;
+                                    while (choppedKeyDir.length() >= tDir.length()) {
+                                        if (!dirHashSet.add(choppedKeyDir)) 
+                                            break; //hash set already had this, so will already have parents
 
-                            //store this dir
-                            if (tDirectoriesToo) {
-                                //S3 only returns object keys. I must infer/collect directories.
-                                //Store this dir and parents back to tDir.
-                                String choppedKeyDir = keyDir;
-                                while (choppedKeyDir.length() >= tDir.length()) {
-                                    if (!dirHashSet.add(choppedKeyDir)) 
-                                        break; //hash set already had this, so will already have parents
+                                        //chop off last subdirectory
+                                        choppedKeyDir = File2.getDirectory(
+                                            choppedKeyDir.substring(0, choppedKeyDir.length() - 1)); //remove trailing /
+                                    }
+                                }
 
-                                    //chop off last subdirectory
-                                    choppedKeyDir = File2.getDirectory(
-                                        choppedKeyDir.substring(0, choppedKeyDir.length() - 1)); //remove trailing /
+                                //store this file's information
+                                //Sometimes directories appear as files named "" with size=0.
+                                //I don't store those as files.
+                                boolean matches = keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
+                                //if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" + matches);
+                                if (matches) {
+                                    directoryPA.add(keyDir);
+                                    namePA.add(keyName);
+                                    lastModifiedPA.add(s3Object.lastModified().toEpochMilli()); 
+                                    sizePA.add(s3Object.size()); //long
                                 }
                             }
 
-                            //store this file's information
-                            //Sometimes directories appear as files named "" with size=0.
-                            //I don't store those as files.
-                            boolean matches = keyName.length() > 0 && fileNameRegexPattern.matcher(keyName).matches();
-                            //if (debugMode) String2.log(">> matchesFileNameRegex=(" + tFileNameRegex + ")=" + matches);
-                            if (matches) {
-                                directoryPA.add(keyDir);
-                                namePA.add(keyName);
-                                lastModifiedPA.add(s3Object.lastModified().toEpochMilli()); 
-                                sizePA.add(s3Object.size()); //long
+                            //write a chunk to file?
+                            if ((response.isTruncated() && table.nRows() > 10000) ||  //write a chunk
+                                (!response.isTruncated() && writtenToFile)) {         //write final chunk
+                                if (!writtenToFile)
+                                    File2.makeDirectory(File2.getDirectory(dnlsFileName));  //ensure dir exists
+                                table.writeJsonlCSV(dnlsFileName, writtenToFile? true : false); //append
+                                table.removeAllRows();
+                                writtenToFile = true;
                             }
                         }
 
-                        /*
-                        //write a chunk to file?
-                        if ((response.isTruncated() && table.nRows() > 10000) ||  //write a chunk
-                            (!response.isTruncated() && writtenToFile)) {         //write final chunk
-                            if (!writtenToFile)
-                                File2.makeDirectory(File2.getDirectory(dnlsFileName));  //ensure dir exists
-                            table.writeJsonlCSV(dnlsFileName, writtenToFile? true : false); //append
-                            table.removeAllRows();
-                            writtenToFile = true;
-                        }
-                        */
+
+                        if (response.nextContinuationToken() == null) 
+                            break;
+
+                        request = request.toBuilder()
+                            .continuationToken(response.nextContinuationToken())
+                            .build();
                     }
 
-                    /*
                     //read the file
                     if (writtenToFile) {
                         table = new Table();
@@ -489,7 +505,6 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                         //if no error:
                         File2.delete(dnlsFileName);
                     } //else use table as is
-                    */
 
                     //add directories to the table
                     if (tDirectoriesToo) {
@@ -2941,6 +2956,65 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
     }
 
     /** 
+     * This tests this class with Amazon AWS S3 file system and reading all from a big directory. 
+     * Your S3 credentials must be in 
+     * <br> ~/.aws/credentials on Linux, OS X, or Unix
+     * <br> C:\Users\USERNAME\.aws\credentials on Windows
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html
+     * See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
+     * See https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/setup.html#setup-credentials
+     */
+    public static void testBigAWSS3() throws Throwable {
+        String2.log("\n*** FileVisitorDNLS.testBigAWSS3");
+
+        verbose = true;
+        debugMode = true;
+        Table table;
+        long time;
+        int n;
+        String results, expected;
+        //this works in browser: http://nasanex.s3.us-west-2.amazonaws.com
+        //the full parent here doesn't work in a browser.
+        //But ERDDAP knows that "nasanex" is the bucket name and 
+        //  "NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/" is the prefix.
+        //See https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingKeysHierarchy.html
+        String parent = "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/";
+        String child = "CONUS/";
+        String pathRegex = null;
+        String fullResults = null;
+
+        //test that the results are identical regardless of page size
+        int maxKeys[] = new int[]{10, 100, 1000}; //expectedCount is ~870.
+        for (int mk = 0; mk < maxKeys.length; mk++) {
+            FileVisitorDNLS.S3_MAX_KEYS = maxKeys[mk];
+
+            //recursive and dirToo
+            table = oneStep(parent, ".*\\.nc", true, pathRegex, true); //there is a .nc.md5 for each .nc, so oneStep filters client-side
+            results = table.dataToString();
+            expected = 
+    "directory,name,lastModified,size\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n" +
+    "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201601-202012.nc,1380651065000,1368894133\n";
+            if (expected.length() > results.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            //test that results are the same each time
+            if (fullResults == null)
+                fullResults = results;
+            Test.ensureEqual(results, fullResults, "results=\n" + results + "\nfullResults=\n" + fullResults);
+
+            String2.log("nLines=" + String2.countAll(results, "\n"));  //2021-11-30  441 but it processes ~890 items (half .nc, half .nc.md5)
+
+        }
+        debugMode = false;
+    }
+
+    /** 
      * This tests this class with Amazon AWS S3 file system. 
      * Your S3 credentials must be in 
      * <br> ~/.aws/credentials on Linux, OS X, or Unix
@@ -3778,7 +3852,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 2 : 12;
+            lastTest = interactive? 2 : 14;
         String msg = "\n^^^ FileVisitorDNLS.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -3794,17 +3868,18 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
                 } else {
                     if (test ==  0) testLocal(doSlowTestsToo); 
                     if (test ==  1) testAWSS3(); 
-                    if (test ==  2) testPrivateAWSS3(); 
-                    if (test ==  3) testHyrax();
-                    if (test ==  4) testHyraxMUR();
-                    if (test ==  5) testThredds();
-                    if (test ==  6) testErddapFilesWAF();  
-                    if (test ==  7) testErddapFilesWAF2();  
-                    if (test ==  8) testGpcp();  
-                    if (test ==  9) testErsst();  
-                    if (test == 10) testOneStepToString();
-                    if (test == 11) testPathRegex();
-                    if (test == 12) testReduceDnlsTableToOneDir();
+                    if (test ==  2) testBigAWSS3(); 
+                    if (test ==  3) testPrivateAWSS3(); 
+                    if (test ==  4) testHyrax();
+                    if (test ==  5) testHyraxMUR();
+                    if (test ==  6) testThredds();
+                    if (test ==  7) testErddapFilesWAF();  
+                    if (test ==  8) testErddapFilesWAF2();  
+                    if (test ==  9) testGpcp();  
+                    if (test == 10) testErsst();  
+                    if (test == 11) testOneStepToString();
+                    if (test == 12) testPathRegex();
+                    if (test == 14) testReduceDnlsTableToOneDir();
                    
                     //testSymbolicLinks(); //THIS TEST DOESN'T WORK on Windows, but links are followed on Linux
 

@@ -237,7 +237,7 @@ public class TableWriterHtmlTable extends TableWriter {
                         HtmlWidgets.DOCTYPE_XHTML_TRANSITIONAL + //specifies UTF-8
                         "  <title>" + XML.encodeAsXML(fileNameNoExt) + "</title>\n" +
                         "  <link rel=\"stylesheet\" type=\"text/css\" href=\"" +
-                            EDStatic.imageDirUrl(loggedInAs) + "erddap2.css\" />\n" + //xhtml has closing /
+                            EDStatic.imageDirUrl(loggedInAs, language) + "erddap2.css\" />\n" + //xhtml has closing /
                         "</head>\n" +
                         "<body>\n");
                 else {
@@ -462,7 +462,7 @@ public class TableWriterHtmlTable extends TableWriter {
                     "</body>\n" +
                     "</html>\n");
             else writer.write(
-                EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language)) +
+                EDStatic.endBodyHtml(language, EDStatic.erddapUrl(loggedInAs, language), loggedInAs) +
                 "\n</html>\n");
 
         writer.flush(); //essential
@@ -497,7 +497,7 @@ public class TableWriterHtmlTable extends TableWriter {
             loggedInAs, endOfRequest, queryString, outputStreamSource,  
             writeHeadAndBodyTags, fileNameNoExt, xhtmlMode, preTableHtml, postTableHtml, 
             encode, writeUnits, tShowFirstNRows,
-            EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile);
+            EDStatic.imageDirUrl(loggedInAs, language) + EDStatic.questionMarkImageFile);
         tw.writeAllAndFinish(table);
     }
 

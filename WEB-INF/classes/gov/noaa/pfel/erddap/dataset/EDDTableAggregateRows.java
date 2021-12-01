@@ -52,6 +52,7 @@ public class EDDTableAggregateRows extends EDDTable{
     //erddap.tableDatasetHashMap.get(localChildrenID).
     private Erddap erddap; 
     private String localChildrenID[]; //[c] is null if NOT local fromErddap
+    private boolean knowsActualRange;
 
     /**
      * This constructs an EDDTableAggregateRows based on the information in an .xml file.
@@ -193,6 +194,7 @@ public class EDDTableAggregateRows extends EDDTable{
         localChildrenID = new String[nChildren]; //the instance datasetIDs if   local fromErddap
         EDDTable tChildren[] = new EDDTable[nChildren]; //stable local instance
         int ndv = -1;
+        knowsActualRange = true; //only true if true for all children
         for (int c = 0; c < nChildren; c++) {
             if (oChildren[c] == null)
                 throw new RuntimeException(errorInMethod + 
@@ -235,6 +237,9 @@ public class EDDTableAggregateRows extends EDDTable{
                     " has a diffent number of variables (" + cndv + 
                     ") than the first child (" + ndv + ").");     
             }
+
+            if (!tChildren[c].knowsActualRange())
+                knowsActualRange = false;
         }
         //for rest of constructor, use temporary, stable tChildren reference.
 
@@ -273,7 +278,7 @@ public class EDDTableAggregateRows extends EDDTable{
 
         //quickRestart is handled by tChildren
 
-        //dataVariables  (axisVars in reverse order, then dataVars)
+        //dataVariables 
         dataVariables = new EDV[ndv];
         for (int dv = 0; dv < ndv; dv++) {
             //variables in this class just see the destination name/type/... of the child0 variable
@@ -287,6 +292,11 @@ public class EDDTableAggregateRows extends EDDTable{
             double tFV             = childVar.destinationFillValue();
             PAOne tMin             = childVar.destinationMin(); 
             PAOne tMax             = childVar.destinationMax();
+
+            if (!knowsActualRange) {
+                tMin = new PAOne(tMin.paType(), ""); //same type, but value=NaN
+                tMax = new PAOne(tMax.paType(), "");
+            }
 
             //ensure all tChildren are consistent
             for (int c = 1; c < nChildren; c++) {
@@ -327,8 +337,10 @@ public class EDDTableAggregateRows extends EDDTable{
                         "_FillValue=" + tFV + ".");
 
                 //and get the minimum min and maximum max
-                tMin = tMin.min(cEdv.destinationMin()); 
-                tMax = tMax.max(cEdv.destinationMax()); 
+                if (knowsActualRange) { //only gather if all children knowActualRange
+                    tMin = tMin.min(cEdv.destinationMin()); 
+                    tMax = tMax.max(cEdv.destinationMax()); 
+                }
             }
 
             //make the variable
@@ -382,6 +394,15 @@ public class EDDTableAggregateRows extends EDDTable{
             cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return knowsActualRange; } //depends on the children
+
 
     /**
      * This does the actual incremental update of this dataset 
@@ -410,24 +431,25 @@ public class EDDTableAggregateRows extends EDDTable{
         //update the children
         boolean anyChange = false;
         int ndv = dataVariables.length;
+
         PAOne tMin[] = new PAOne[ndv]; 
         PAOne tMax[] = new PAOne[ndv]; 
+        EDDTable tChild = getChild(language, 0);
         for (int dvi = 0; dvi < ndv; dvi++) {
-            tMin[dvi] = PAOne.fromDouble(Double.NaN);
-            tMax[dvi] = PAOne.fromDouble(Double.NaN);
+            EDV cEdv = tChild.dataVariables[dvi]; 
+            tMin[dvi] = new PAOne(cEdv.destinationMin().paType(), "");  //NaN, but of correct type
+            tMax[dvi] = new PAOne(cEdv.destinationMax().paType(), "");
         }
+
         for (int c = 0; c < nChildren; c++) {
-            EDDTable tChild = getChild(language, c);
+            tChild = getChild(language, c);
             if (tChild.lowUpdate(language, msg, startUpdateMillis))
                 anyChange = true;
 
-            //just update all dataVariable's destinationMin/Max
-            for (int dvi = 0; dvi < ndv; dvi++) {
-                EDV cEdv = tChild.dataVariables[dvi]; 
-                if (c == 0) {
-                    tMin[dvi] = cEdv.destinationMin();
-                    tMax[dvi] = cEdv.destinationMax();
-                } else {
+            if (knowsActualRange) {
+                //update all dataVariable's destinationMin/Max 
+                for (int dvi = 0; dvi < ndv; dvi++) {
+                    EDV cEdv = tChild.dataVariables[dvi]; 
                     tMin[dvi] = tMin[dvi].min(cEdv.destinationMin()); 
                     tMax[dvi] = tMax[dvi].max(cEdv.destinationMax()); 
                 }

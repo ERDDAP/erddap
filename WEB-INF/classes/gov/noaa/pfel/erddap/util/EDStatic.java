@@ -194,7 +194,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.15"; //see comment above
+    public static String erddapVersion = "2.16"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -274,6 +274,32 @@ public static boolean developmentMode = false;
     public static HashSet<String> ipAddressUnlimited =  //in datasets.xml  //read only. New one is swapped into place. You can add and remove addresses as needed.
         new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(EDStatic.DEFAULT_ipAddressUnlimited).toArray())); 
     public static int tooManyRequests = 0; //nRequests exceeding ipAddressMaxRequests, since last major datasets reload
+    public final static String translationDisclaimer = 
+        //from https://cloud.google.com/translate/attribution
+        "TRANSLATION DISCLAIMER" +
+        "<br>&nbsp;" +
+        "<br>THIS SERVICE MAY CONTAIN TRANSLATIONS POWERED BY GOOGLE. GOOGLE" +
+        "<br>DISCLAIMS ALL WARRANTIES RELATED TO THE TRANSLATIONS, EXPRESS" +
+        "<br>OR IMPLIED, INCLUDING ANY WARRANTIES OF ACCURACY, RELIABILITY," +
+        "<br>AND ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A" +
+        "<br>PARTICULAR PURPOSE AND NONINFRINGEMENT." +
+        "<br>&nbsp;" +
+        "<br>The ERDDAP website has been translated for your convenience using translation" +
+        "<br>software powered by Google Translate. Reasonable efforts have been made to" +
+        "<br>provide an accurate translation, however, no automated translation is perfect" +
+        "<br>nor is it intended to replace human translators. Translations are provided" +
+        "<br>as a service to users of the ERDDAP website, and are provided \"as is.\"" +
+        "<br>No warranty of any kind, either expressed or implied, is made as to the" +
+        "<br>accuracy, reliability, or correctness of any translations made from English" +
+        "<br>into any other language. Some content (such as images, videos, etc.) may not" +
+        "<br>be accurately translated due to the limitations of the translation software." +
+        "<br>&nbsp;" +
+        "<br>The official text is the English version of the website. Any discrepancies or" +
+        "<br>differences created in the translation are not binding and have no legal" +
+        "<br>effect for compliance or enforcement purposes. If any questions arise related" +
+        "<br>to the accuracy of the information contained in the translated website, refer" +
+        "<br>to the English version of the website which is the official version.";
+
 
     //things that can be specified in datasets.xml (often added in ERDDAP v2.00)
     public final static String DEFAULT_ANGULAR_DEGREE_UNITS = "angular_degree,angular_degrees,arcdeg,arcdegs,degree," +
@@ -602,13 +628,11 @@ public static boolean developmentMode = false;
         questionMarkImageFile,
         searchEngine,
         warName;
-    public static String ampLoginInfo = "&loginInfo;";
     public static String accessibleViaNC4; //"" if accessible, else message why not
     public static int 
         lowResLogoImageFileWidth,  lowResLogoImageFileHeight,
         highResLogoImageFileWidth, highResLogoImageFileHeight,
         googleEarthLogoFileWidth,  googleEarthLogoFileHeight;
-    public static volatile int ampLoginInfoPo = -1;
     /** These are special because other loggedInAs must be String2.justPrintable
         loggedInAsHttps is for using https without being logged in, 
           but &amp;loginInfo; indicates user isn't logged in.
@@ -677,9 +701,6 @@ public static boolean developmentMode = false;
         fullTestCacheDirectory,
         fullWmsCacheDirectory,
 
-        imageDirUrl,
-        imageDirHttpsUrl,
-        //downloadDirUrl,
         computerName; //e.g., coastwatch (or "")
     public static Subscriptions subscriptions; //null if !EDStatic.subscriptionSystemActive
 
@@ -2128,12 +2149,9 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         erddapUrl          = baseUrl        + "/" + warName;
         erddapHttpsUrl     = baseHttpsUrl   + "/" + warName;
         preferredErddapUrl = baseHttpsUrl.startsWith("https://")? erddapHttpsUrl : erddapUrl;
-        imageDirUrl        = erddapUrl      + "/" + IMAGES_DIR;   
-        imageDirHttpsUrl   = erddapHttpsUrl + "/" + IMAGES_DIR;   
-        //downloadDirUrl   = erddapUrl      + "/" + DOWNLOAD_DIR;  //if uncommented, you need downloadDirHttpsUrl too
 
         //???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
-        //logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs) + lowResLogoImageFile + "\" " +
+        //logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs, language) + lowResLogoImageFile + "\" " +
         //    "alt=\"logo\" title=\"logo\">\n";
 
         //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
@@ -3875,6 +3893,19 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             (language == 0? "" : "/" + TranslateMessages.languageCodeList[language]);
     }
 
+    /** 
+     * If loggedInAs is null, this returns erddapUrl, else erddapHttpsUrl
+     *  (neither has slash at end).
+     *
+     * @param language the index of the selected language
+     * @return erddapHttpsUrl plus optional /languageCode.
+     *  (without slash at end).
+     */
+    public static String erddapHttpsUrl(int language) {       
+        return erddapHttpsUrl + 
+            (language == 0? "" : "/" + TranslateMessages.languageCodeList[language]);
+    }
+
     /**
      * This determines if a URL points to this server (even in development).
      *
@@ -3904,15 +3935,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
 
     /** 
-     * If loggedInAs is null, this returns imageDirUrl, else imageDirHttpsUrl
-     *  (with slash at end).
+     * This returns the appropriate image directory URL (with slash at end).
      *
      * @param loggedInAs
-     * @return If loggedInAs == null, this returns imageDirUrl, else imageDirHttpsUrl
-     *  (with slash at end).
+     * @param language
+     * @return returns the appropriate image directory URL (with slash at end).
      */
-    public static String imageDirUrl(String loggedInAs) {
-        return loggedInAs == null? imageDirUrl : imageDirHttpsUrl; //works because of loggedInAsHttps
+    public static String imageDirUrl(String loggedInAs, int language) {
+        return erddapUrl(loggedInAs, language) + "/" + IMAGES_DIR;   
     }
 
     /** 
@@ -4049,7 +4079,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         return 
             "\n<h1 class=\"nowrap\">" + erddapHref(language, tErddapUrl) + 
             "\n &gt; " + protocol + 
-            "\n" + htmlTooltipImage(loggedInAs, htmlHelp) +
+            "\n" + htmlTooltipImage(language, loggedInAs, htmlHelp) +
             "\n</h1>\n";
     }
 
@@ -4073,7 +4103,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
-            "\n" + htmlTooltipImage(loggedInAs, htmlHelp) + 
+            "\n" + htmlTooltipImage(language, loggedInAs, htmlHelp) + 
             "\n</h1>\n";
     }
 
@@ -4106,25 +4136,27 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This returns the html to draw a question mark that has big html tooltip.
      * htmlTooltipScript (see HtmlWidgets) must be already in the document.
      *
+     * @param language the language code number
      * @param html  the html tooltip text, e.g., "Hi,<br>there!".
      *     It needs explicit br tags to set window width correctly.
      *     For plain text, generate html from XML.encodeAsPreHTML(plainText, 82).
      */
-    public static String htmlTooltipImage(String loggedInAs, String html) {
+    public static String htmlTooltipImage(int language, String loggedInAs, String html) {
         return HtmlWidgets.htmlTooltipImage(
-            imageDirUrl(loggedInAs) + questionMarkImageFile, "?", html, ""); 
+            imageDirUrl(loggedInAs, language) + questionMarkImageFile, "?", html, ""); 
     }
 
     /**
      * This returns the html to draw a question mark that has big html tooltip
      * for an EDDTable EDV data variable.
      *
+     * @param language the language code number
      * @param edv from an EDDTable
      */
-    public static String htmlTooltipImageEDV(String loggedInAs, EDV edv) 
+    public static String htmlTooltipImageEDV(int language, String loggedInAs, EDV edv) 
         throws Throwable {
 
-        return htmlTooltipImageLowEDV(loggedInAs,
+        return htmlTooltipImageLowEDV(language, loggedInAs,
             edv.destinationDataPAType(), 
             edv.destinationName(), 
             edv.combinedAttributes());
@@ -4134,12 +4166,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This returns the html to draw a question mark that has big html tooltip 
      * for an EDDGrid EDV axis variable.
      *
+     * @param language the language code number
      * @param edvga
      */
-    public static String htmlTooltipImageEDVGA(String loggedInAs, EDVGridAxis edvga)
+    public static String htmlTooltipImageEDVGA(int language, String loggedInAs, EDVGridAxis edvga)
         throws Throwable {
         
-        return htmlTooltipImageLowEDV(loggedInAs,
+        return htmlTooltipImageLowEDV(language, loggedInAs,
             edvga.destinationDataPAType(), 
             edvga.destinationName() + "[" + edvga.sourceValues().size() + "]",
             edvga.combinedAttributes());
@@ -4149,13 +4182,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This returns the html to draw a question mark that has big html tooltip 
      * for an EDDGrid EDV data variable.
      *
+     * @param language the language code number
      * @param edv for a grid variable
      * @param allDimString  from eddGrid.allDimString()
      */
-    public static String htmlTooltipImageEDVG(String loggedInAs, EDV edv, String allDimString) 
+    public static String htmlTooltipImageEDVG(int language, String loggedInAs, EDV edv, String allDimString) 
         throws Throwable {
 
-        return htmlTooltipImageLowEDV(loggedInAs,
+        return htmlTooltipImageLowEDV(language, loggedInAs,
             edv.destinationDataPAType(), 
             edv.destinationName() + allDimString, 
             edv.combinedAttributes());
@@ -4166,11 +4200,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * with a variable's name and attributes.
      * htmlTooltipScript (see HtmlWidgets) must be already in the document.
      *
+     * @param language the language code number
      * @param destinationDataPAType
      * @param destinationName  perhaps with axis information appended (e.g., [time][latitude][longitude]
      * @param attributes
      */
-    public static String htmlTooltipImageLowEDV(String loggedInAs, PAType destinationDataPAType, 
+    public static String htmlTooltipImageLowEDV(int language, String loggedInAs, PAType destinationDataPAType, 
         String destinationName, Attributes attributes) throws Throwable {
 
         StringBuilder sb = OpendapHelper.dasToStringBuilder(
@@ -4178,7 +4213,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             destinationDataPAType,
             attributes, false, false); //htmlEncoding, strictDapMode
         //String2.log("htmlTooltipImage sb=" + sb.toString());
-        return htmlTooltipImage(loggedInAs, 
+        return htmlTooltipImage(language, loggedInAs, 
             "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(sb.toString()) +
             "</div>");
     }
@@ -4819,11 +4854,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //user can't log in
             return "";
         } else {
+            String tUrl = erddapHttpsUrl(language);
             return loggedInAs == null || loggedInAsHttps.equals(loggedInAs)?  //ie not logged in
                 //always use the erddapHttpsUrl for login/logout pages
-                "<a href=\"" + erddapHttpsUrl + "/login.html\">" + loginAr[language] + "</a>" :
-                "<a href=\"" + erddapHttpsUrl + "/login.html\"><strong>" + XML.encodeAsHTML(loggedInAs) + "</strong></a> | \n" + 
-                "<a href=\"" + erddapHttpsUrl + "/logout.html\">" + logoutAr[language] + "</a>";
+                "<a href=\"" + tUrl + "/login.html\">" + loginAr[language] + "</a>" :
+                "<a href=\"" + tUrl + "/login.html\"><strong>" + XML.encodeAsHTML(loggedInAs) + "</strong></a> | \n" + 
+                "<a href=\"" + tUrl + "/logout.html\">" + logoutAr[language] + "</a>";
         }
     }
 
@@ -4864,12 +4900,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     public static String startBodyHtml(int language, String loggedInAs,
         String endOfRequest, String queryString, String otherBody) {
+        String tErddapUrl = erddapUrl(loggedInAs, language);
         String s = startBodyHtmlAr[0];  //It's hard for admins to customized this for all languages. So for now, just use language=0.
         s = String2.replaceAll(s, "&EasierAccessToScientificData;", EasierAccessToScientificDataAr[language]);
         s = String2.replaceAll(s, "&BroughtToYouBy;",               BroughtToYouByAr[language]);
         if (String2.isSomething(otherBody)) 
             s = String2.replaceAll(s, "<body>", "<body " + otherBody + ">");
-        s = String2.replaceAll(s, ampLoginInfo, getLoginHtml(language, loggedInAs));
+        s = String2.replaceAll(s, "&loginInfo;", getLoginHtml(language, loggedInAs));
         HtmlWidgets widgets = new HtmlWidgets();
         s = String2.replaceAll(s, "&language;", String2.isSomething(endOfRequest)? //isSomething should never be false, but it's safer this way
             widgets.select("language", "Select the language for all web pages in ERDDAP.",
@@ -4877,7 +4914,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "onchange=\"window.location.href='" + baseUrl(loggedInAs) + "/" + warName + "/' + " +
                     "(this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + '" +  //e.g., de
                     XML.encodeAsHTMLAttribute(endOfRequest + questionQuery(queryString)) + "';\"",  //query string is already percent encoded. 
-                false, "") :
+                false, "") +
+            htmlTooltipImage(language, loggedInAs, 
+                "<img src=\"" + tErddapUrl + "/images/TranslatedByGoogle.png\" alt=\"Translated by Google\">" +
+                "<br>" + translationDisclaimer) :
             ""); //we could also redirect to erddap/index.html but that loses the user's place (and this should never happen)
 
         //String2.log(">> EDStatic startBodyHtml=" + s);
@@ -4889,10 +4929,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      *
      * @param language the index of the selected language
      * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs, language)  (erddapUrl, or erddapHttpsUrl if user is logged in)
+     * @param loggedInAs
      */
-    public static String endBodyHtml(int language, String tErddapUrl) {
-        HtmlWidgets widget = new HtmlWidgets();
-        return String2.replaceAll(endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
+    public static String endBodyHtml(int language, String tErddapUrl, String loggedInAs) {
+        String s = String2.replaceAll(endBodyHtmlAr[language], "&erddapUrl;", tErddapUrl);
+        if (language > 0) 
+            s = s.replace("<hr>", 
+                "<br><img src=\"" + tErddapUrl + "/images/TranslatedByGoogle.png\" alt=\"Translated by Google\">\n" +
+                htmlTooltipImage(language, loggedInAs, translationDisclaimer) +
+                "<hr>");
+        return s;
     }
 
     /**
@@ -4923,7 +4969,14 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         if (addToTitle.length() > 0)
             ts = String2.replaceAll(ts, "</title>", " - " + XML.encodeAsHTML(addToTitle) + "</title>"); 
-        ts     = String2.replaceAll(ts, "&langCode;", langCodeAr[language]);
+        ts     = String2.replaceAll(ts, "&langCode;", 
+            langCodeAr[language] + (language == 0? "" : "-x-mtfrom-en")); //see https://cloud.google.com/translate/markup
+
+        //better if add <link> to lang=en version of this page, but hard to know enUrl (current English URL)
+        //see https://cloud.google.com/translate/markup
+        //if (language > 0) 
+        //    ts += "\n<link rel=\"alternate machine-translated-from\" hreflang=\"en\" href=\"" + enUrl + "\");
+
         return   String2.replaceAll(ts, "&erddapUrl;", tErddapUrl); 
     }
 
