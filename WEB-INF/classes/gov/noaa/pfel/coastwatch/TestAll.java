@@ -545,10 +545,12 @@ public class TestAll  {
 
 //    *** To update GTSPP (~10th of every month):
       //Don't add source_id or stream_ident: they are usually (always?) empty
-//    1) (overnight?) Use FileZilla to download newly changed files 
-//      from ftp.nodc.noaa.gov (name=anonymous  pwd=[my email address])
-//      from GTSPP dir: /nodc/data/gtspp/bestcopy/netcdf
-//         was /pub/data.nodc/gtspp/bestcopy/netcdf
+//    1) By hand (thanks (not), NCEI!), download newly changed files 
+//      from https://www.ncei.noaa.gov/data/oceans/gtspp/bestcopy/netcdf/?C=M;O=D
+//          (2021-11-23 was: ftp.nodc.noaa.gov (name=anonymous  pwd=[my email address]), 
+//          now see README at https://www.ncei.noaa.gov/data/oceans/gtspp/
+//          was from GTSPP dir: /nodc/data/gtspp/bestcopy/netcdf
+//          was /pub/data.nodc/gtspp/bestcopy/netcdf
 //      to my local: c:/data/gtspp/bestNcZip
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
@@ -565,7 +567,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 7, 2021, 9, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 8, 2021, 10, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -598,7 +600,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 7, 2021, 9); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 8, 2021, 10); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -1081,7 +1083,7 @@ TableWriterSeparatedValue twsv;
 TableWriterUnits twu;
 TaskThread tt;
 TranslateMessages translateMessages;
-WaitThenTryAgainException wttae;
+WaitThenTryAgainException wttae; 
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = true;

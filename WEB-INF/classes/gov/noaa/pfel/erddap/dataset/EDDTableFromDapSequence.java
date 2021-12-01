@@ -583,6 +583,15 @@ public class EDDTableFromDapSequence extends EDDTable{
 
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return false; } //because this gets info from a remote service
+
 
     /** 
      * This gets the data (chunk by chunk) from this EDDTable for the 

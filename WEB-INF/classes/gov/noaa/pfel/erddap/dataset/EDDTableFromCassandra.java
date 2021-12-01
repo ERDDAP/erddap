@@ -742,6 +742,15 @@ public class EDDTableFromCassandra extends EDDTable{
                 cTime + "ms" + (cTime >= 600000? "  (>10m!)" : cTime >= 10000? "  (>10s!)" : "") + "\n"); 
     }
 
+    /**
+     * This returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     *
+     * @returns true if this EDDTable knows each variable's actual_range (e.g., 
+     * EDDTableFromFiles) or false if it doesn't (e.g., EDDTableFromDatabase).
+     */
+    public boolean knowsActualRange() {return false; } //because this gets info from Cassandra
+
 
     /** 
      * Expand partitionKeyCSV.

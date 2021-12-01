@@ -392,7 +392,7 @@ public class PAOne {
 
     /**
      * This returns the lesser of this or otherPA.
-     * If this or other isNaN, this returns the other.
+     * If this or other isNaN, this returns the non-NaN value.
      */
     public PAOne min(PAOne otherPAOne) {
         if (isMissingValue())
@@ -404,6 +404,7 @@ public class PAOne {
 
     /**
      * This returns the max of this or otherPA.
+     * If this or other isNaN, this returns the non-NaN value.
      */
     public PAOne max(PAOne otherPAOne) {
         if (isMissingValue())

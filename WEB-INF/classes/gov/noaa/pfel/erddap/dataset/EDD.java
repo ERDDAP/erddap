@@ -1349,7 +1349,7 @@ public abstract class EDD {
             "/rss/" + datasetID+ ".rss\" \n" +
             "  title=\"\"><img alt=\"RSS\"\n" +
             "    title=\"" + EDStatic.subscriptionRSSAr[language] + "\" \n" +
-            "    src=\"" + EDStatic.imageDirUrl(loggedInAs) + "rss.gif\" ></a>"; //no img end tag 
+            "    src=\"" + EDStatic.imageDirUrl(loggedInAs, language) + "rss.gif\" ></a>"; //no img end tag 
     }
 
     /** 
@@ -1367,7 +1367,7 @@ public abstract class EDD {
                 "?datasetID=" + datasetID+ "&amp;showErrors=false&amp;email=\" \n" +
             "  title=\"\"><img alt=\"Subscribe\"\n" +
             "    title=\"" + XML.encodeAsHTMLAttribute(EDStatic.subscriptionEmailAr[language]) + "\" \n" +
-            "    src=\"" + EDStatic.imageDirUrl(loggedInAs) + "envelope.gif\" ></a>";
+            "    src=\"" + EDStatic.imageDirUrl(loggedInAs, language) + "envelope.gif\" ></a>";
         return "&nbsp;";
     }
 
@@ -3268,7 +3268,7 @@ public abstract class EDD {
             EDStatic.licenseAr[language] + " " + 
             (nonStandardLicense? "</span>" : "") +
             //link below should have rel=\"license\"
-            EDStatic.htmlTooltipImage(loggedInAs, 
+            EDStatic.htmlTooltipImage(language, loggedInAs, 
                 "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tLicense) +
                 "</div>") +
             "\n";
@@ -3295,7 +3295,7 @@ public abstract class EDD {
             "  <tr>\n" +
             "    <td>" + EDStatic.EDDInformationAr[language] + ":&nbsp;</td>\n" +
             "    <td>" + EDStatic.EDDSummaryAr[language] + " " + 
-                EDStatic.htmlTooltipImage(loggedInAs, 
+                EDStatic.htmlTooltipImage(language, loggedInAs, 
                     "<div class=\"standard_max_width\">" + XML.encodeAsPreHTML(tSummary) +
                     "</div>") + 
                 "\n" +
@@ -3336,11 +3336,11 @@ public abstract class EDD {
     public String getKmlIconScreenOverlay() {
         return 
             "  <ScreenOverlay id=\"Logo\">\n" + //generic id
-            "    <description>" + EDStatic.erddapUrl + //always use non-https url
+            "    <description>" + EDStatic.preferredErddapUrl + 
                 "</description>\n" +
             "    <name>Logo</name>\n" + //generic name
             "    <Icon>" +
-                  "<href>" + EDStatic.imageDirUrl + //always use non-https url
+                  "<href>" + EDStatic.preferredErddapUrl + "/" + EDStatic.IMAGES_DIR + //has trailing /
                 EDStatic.googleEarthLogoFile + "</href>" +
                 "</Icon>\n" +
             "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
