@@ -2441,6 +2441,10 @@ Pumili ng isa o higit pa sa mga variable ng grid.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Mga Variable ng Grid</strong> (na palaging nagda-download ng lahat ng mga variable ng dimensyon)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Suriin Lahat</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Mag-click dito upang piliin ang lahat ng mga variable ng data.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Alisan ng check ang Lahat</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Mag-click dito upang alisin sa pagkakapili ang lahat ng mga variable ng data.</EDDGridUncheckAllTooltip>
 <!-- Mga Halimbawa ng Griddap Ang pangkat ng mga setting na ito ay ginagamit upang gumawa ng mga halimbawa para sa dokumentasyon ng griddap na lumalabas sa [baseUrl]/erddap/griddap/documentation.html at saanman.
 Ang mga espesyal na character (hal., &amp; &lt; &gt;) ay dapat na naka-encode ng HTML.
 Kung gusto mong tumuro ang mga halimbawa sa iyong ERDDAP, ang pinakamadaling paraan ay:
@@ -3142,8 +3146,7 @@ Ang orderBy ...
 ay nag-uuri ng mga hilera ng talahanayan ng mga resulta at kung minsan ay pinapangkat ang mga ito at kung minsan ay higit pang minamanipula ang mga ito.
 Upang gumamit orderBy ...
 function, pumili ng function sa kaliwa, pagkatapos ay pumili ng isa o higit pang mga variable sa kanan, pagkatapos ay opsyonal na magdagdag ng mga setting ng karagdagan, hal, para sa mga numeric na variable, maaari mong tukuyin ang variableName[/divisor[timeUnits][:offset] ] .
-Upang hindi gumamit ng anumang orderBy ...
-function, piliin ang unang opsyon sa kaliwa (&quot;&quot;).
+Upang hindi gumamit ng anumang function orderBy ..., piliin ang unang opsyon sa kaliwa (&quot;&quot;).
 Ang orderBy ...
 function ay:
 <p><strong>orderBy</strong> -uuri ng mga hilera ng talahanayan ng mga resulta ayon sa mga tinukoy na variable.
@@ -3153,18 +3156,21 @@ Ang huling variable ay dapat na isang numerical variable na may divisor.
 Tanging ang mga row na pinakamalapit sa pagitan ng divisor ang pananatilihin.
 Halimbawa, orderByClosest(&quot;stationID, time/2hours&quot;) ay mag-uuri ayon sa stationID at oras, ngunit ibabalik lamang ang mga row para sa bawat stationID kung saan ang huling orderBy column (oras) ay pinakamalapit sa 2 oras na pagitan.
 <p>Inaayos ng <strong>orderByCount</strong> ang mga hilera ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang bilang ng bilang ng mga hindi nawawalang halaga para sa bawat pangkat.
-Halimbawa, orderByCount(&quot;stationID, time/1day&quot;) ay mag-uuri ayon sa stationID at magbabalik ng isang row para sa bawat stationID para sa bawat araw, na may bilang ng bilang ng mga hindi nawawalang halaga para sa bawat isa sa iba pang mga variable.
+Halimbawa, orderByCount(&quot;stationID, time/1day&quot;) ay mag-uuri ayon sa stationID at magbabalik ng isang row para sa bawat stationID para sa bawat araw, na may bilang ng bilang ng mga hindi nawawalang value para sa bawat isa sa iba pang mga variable.
 <p>Inuuri ng <strong>orderByLimit</strong> ang mga row ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang mga unang nRows (tulad ng tinukoy ng huling halaga ng orderByLimit ) sa loob ng bawat pangkat.
 Halimbawa, orderByMax(&quot;stationID, time/1day, 10&quot;) ay mag-uuri ayon sa stationID at oras, ngunit ibabalik lamang ang unang 10 row para sa bawat stationID para sa bawat araw.
 <p>Inuuri ng <strong>orderByMax</strong> ang mga hilera ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang hilera sa loob ng bawat pangkat na may pinakamataas na halaga ng huling variable ng orderByMax sa kahilingan.
-Halimbawa, orderByMax(&quot;stationID, time/1day, temperature&quot;) ang mga hilera ayon sa stationID at bawat araw, ngunit ibabalik lamang ang row na may pinakamataas na halaga ng temperatura para sa bawat stationID para sa bawat araw.
+Halimbawa, orderByMax(&quot;stationID, time/1day, temperature&quot;) ang mga row ayon sa stationID at bawat araw, ngunit ibabalik lang ang row na may pinakamataas na halaga ng temperatura para sa bawat stationID para sa bawat araw.
 <p><strong>orderBy Min</strong> ay parang orderByMax, ngunit pinapanatili lamang ang row na may pinakamababang halaga para sa huling variable orderBy Min.
 <p><strong>orderByMinMax</strong> ay parang orderBy Min plus orderByMax .
 Sa loob ng bawat pangkat ng pag-uuri, tanging ang row na may pinakamababang halaga at ang row na may pinakamataas na halaga para sa huling variable na orderByMinMax ang pananatilihin.
 Halimbawa, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) ang row na may pinakamababang halaga ng temperatura at ang row na may pinakamataas na halaga ng temperatura para sa bawat stationID para sa bawat araw.
-<p>Inuuri ng <strong>orderByMean</strong> ang mga hilera ng talahanayan ng mga resulta sa mga pangkat at nagbabalik lamang ng isang hilera para sa bawat pangkat.
+<p><strong>orderByMean</strong> -uuri ng mga hilera ng talahanayan ng mga resulta sa mga pangkat at nagbabalik lamang ng isang hilera para sa bawat pangkat.
 Ang row na iyon ay magkakaroon ng mean ng bawat isa sa iba pang mga variable.
 Halimbawa, orderByMax(&quot;stationID, time/1day&quot;) ay gagawa ng grupo para sa bawat stationID para sa bawat araw, at kakalkulahin at ibabalik ang mean ng iba pang mga variable.
+<p><strong>orderBy Sum ay nag</strong> -uuri ng mga hilera ng talahanayan ng mga resulta sa mga pangkat at nagbabalik lamang ng isang hilera para sa bawat pangkat.
+Ang row na iyon ay magkakaroon ng kabuuan ng bawat isa sa iba pang mga variable.
+Halimbawa, orderByMax(&quot;stationID, time/1day&quot;) ay gagawa ng grupo para sa bawat stationID para sa bawat araw, at kakalkulahin at ibabalik ang kabuuan ng iba pang mga variable.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Para orderByClosest, tukuyin ang pagitan (gamit ang format na n[timeUnits], hal, 1 oras) dito.
@@ -3522,8 +3528,8 @@ Pagkatapos magbago ang label ng button mula sa &quot;Mag-sign in&quot; patungong
 <loginOpenIDCreate>O gumawa ng OpenID URL sa</loginOpenIDCreate>
 <loginOpenIDFree>Lahat sila ay libre!</loginOpenIDFree>
 <loginOpenIDSame>Tiyaking naka-log in ka gamit ang eksaktong parehong OpenID URL na ibinigay mo sa administrator ng ERDDAP.</loginOpenIDSame>
-<loginAs>Ikaw ay naka-log in bilang</loginAs>
-<loginPartwayAs>Naka-log in ka sa kalagitnaan bilang</loginPartwayAs>
+<loginAs>Naka-log in ka bilang {0} .</loginAs>
+<loginPartwayAs>Naka-log in ka sa kalagitnaan bilang {0} .</loginPartwayAs>
 <loginFailed>ERROR: Nabigo ang pag-log in</loginFailed>
 <loginInvalid>Di-wastong User Name at/o Password.</loginInvalid>
 <loginSucceeded>Nagtagumpay ang pag-login!</loginSucceeded>
@@ -3914,9 +3920,9 @@ Mas mahusay na ibalik ang isang walang laman na file? Ngunit hindi pinapayagan n
 <notAvailable>Sa kasalukuyan, hindi available ang datasetID={0}.</notAvailable>
 <note>TANDAAN!</note>
 <!--  Ang Xxx ay Gumawa ng Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Ang dataset na ito ay hindi available sa pamamagitan ng {0}.</noXxx>
-<noXxxBecause>Ang dataset na ito ay hindi magagamit sa pamamagitan ng {0} dahil {1}.</noXxxBecause>
-<noXxxBecause2>Hindi available ang {0} para sa dataset na ito dahil {1}.</noXxxBecause2>
+<noXxx>Ang dataset na ito ay hindi kailanman magagamit sa pamamagitan ng {0}.</noXxx>
+<noXxxBecause>Ang dataset na ito ay hindi kailanman magagamit sa pamamagitan ng {0} dahil {1}.</noXxxBecause>
+<noXxxBecause2>Ang {0} ay hindi kailanman magagamit para sa dataset na ito dahil {1}.</noXxxBecause2>
 <noXxxNotActive>hindi aktibo ang serbisyong {0} ng ERDDAP na ito</noXxxNotActive>
 <noXxxNoAxis1>walang anumang mga variable ng axis na may higit sa isang halaga</noXxxNoAxis1>
 <noXxxNoCdmDataType>Ang cdm_data_type={0} ay hindi isang katugmang uri</noXxxNoCdmDataType>
@@ -4038,6 +4044,7 @@ Ang iba&#39;t ibang mga protocol ay angkop para sa iba&#39;t ibang uri ng data a
 <queryErrorOrderByClosest>Para sa orderByClosest, dapat kang tumukoy ng listahan ng CSV ng 1 o higit pang mga pangalan ng column na orderBy (na ang bawat isa ay dapat nasa listahan ng mga variable ng resulta) kasama ang agwat para sa huling variable ng orderBy (hal., &quot;stationID,oras,10 minuto&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Para sa orderByLimit, dapat kang tumukoy ng listahan ng CSV ng 0 o higit pang mga pangalan ng column ng orderBy (ang bawat isa ay dapat nasa listahan ng mga variable ng resulta; maaaring may columnName ang mga numerong column[/divisor[timeUnits][:offset]]) kasama ang maximum na bilang ng mga hilera para sa bawat pangkat (hal., &quot;stationID,oras/1araw,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Para sa orderByMean, dapat kang tumukoy ng CSV na listahan ng mga pangalan ng column na orderBy (bawat isa ay dapat nasa listahan ng mga variable ng resulta; ang mga numerong column ay maaaring may columnName[/divisor[timeUnits][:offset]]), hal, &quot;stationID,time /10 minuto&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Para sa orderBySum, dapat kang tumukoy ng CSV na listahan ng mga pangalan ng column na orderBy (bawat isa ay dapat nasa listahan ng mga variable ng resulta; ang mga numerong column ay maaaring may columnName[/divisor[timeUnits][:offset]]), hal, &quot;stationID,time /10 minuto&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} ay wala sa listahan ng mga variable ng resulta.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Hindi kilalang variable={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Ang mga query sa grid axis ay dapat tumukoy ng kahit isang axis variable.</queryErrorGrid1Axis>
@@ -4056,7 +4063,7 @@ Ang iba&#39;t ibang mga protocol ay angkop para sa iba&#39;t ibang uri ng data a
 <queryErrorLastUnexpected>Hindi inaasahang karakter pagkatapos ng &quot;huling&quot; sa {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Ang +/- value sa {0} ay hindi wasto.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Ang +/- index value sa {0} ay hindi isang integer.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>Ang {0} ay mula sa {1} hanggang {2}.</rangesFromTo>
 <required>Kailangan</required>
 <resetTheForm>I-reset ang form sa mga default na halaga.</resetTheForm>
@@ -4728,7 +4735,7 @@ Ang bawat isa ay mahusay sa sarili nitong.
 Ngunit kung walang ERDDAP, mahirap kumuha ng data mula sa iba&#39;t ibang uri ng mga server:
 <ul>
 <li>Pinapa-format ka ng iba&#39;t ibang server ng data ang iyong kahilingan sa data sa iba&#39;t ibang paraan.
-<li>Ang iba&#39;t ibang mga server ng data ay nagbabalik ng data sa iba&#39;t ibang mga format, kadalasan ay hindi ang karaniwang format ng file na gusto mo.
+<li>Ang iba&#39;t ibang mga server ng data ay nagbabalik ng data sa iba&#39;t ibang mga format, kadalasan hindi ang karaniwang format ng file na gusto mo.
 <li>Gumagamit ang iba&#39;t ibang dataset ng iba&#39;t ibang format para sa data ng oras, kaya mahirap ihambing ang mga resulta.
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
@@ -4739,7 +4746,7 @@ make it easier for you to get scientific data.-->
 Kapag humiling ka ng data mula sa ERDDAP, nire-reformat ng ERDDAP ang kahilingan sa format na kinakailangan ng remote server, ipinapadala ang kahilingan sa remote server, kinukuha ang data, nire-reformat ang data sa format na iyong hiniling, at ipinapadala ang data sa iyo.
 Hindi mo na kailangang pumunta sa iba&#39;t ibang mga server ng data upang makakuha ng data mula sa iba&#39;t ibang mga dataset.
 <br>&nbsp;
-<li>Nag-aalok ang ERDDAP madaling gamitin, pare-parehong paraan para humiling ng data:
+<li>Nag-aalok ang ERDDAP madaling gamitin, pare-parehong paraan upang humiling ng data:
 sa pamamagitan ng pamantayan ng OPeNDAP .
 <br>&wmsManyDatasets;
 <br>&nbsp;
@@ -4760,14 +4767,14 @@ Palaging ginagamit ng ERDDAP ang Zulu (UTC, GMT) na time zone upang alisin ang m
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;web&nbsp;mga serbisyo</a> (para sa mga programa sa computer).
 Maaari mong i-bypass ang mga web page ng ERDDAP at gamitin ang RESTful web services ng ERDDAP (halimbawa, para sa paghahanap ng mga dataset, para sa pag-download ng data, para sa paggawa ng mga mapa) nang direkta mula sa anumang computer program (halimbawa, Matlab, R, o isang program na sumulat ka) at maging mula sa mga web page (sa pamamagitan ng mga tag ng imaheng HTML o Java Script).
 Maaari ka ring bumuo ng iba pang kapaki-pakinabang at kawili-wiling mga bagay sa ibabaw ng mga serbisyo sa web ng ERDDAP — tingnan ang
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Kahanga-hangang ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> listahan ng mga kahanga-hangang proyektong nauugnay sa ERDDAP .
+    title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> listahan ng mga Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Para sa mabilis na pagpapakilala sa ERDDAP, panoorin ang unang kalahati nito<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> .</strong>
-<a class="selfLink" id="video" href="#video" rel="help">(5 minuto)</a> Dito, nag-download ang isang scientist ng data ng forecast ng mga alon ng karagatan mula sa ERDDAP para magmodelo ng isang nakakalason na spill sa karagatan gamit ang
+<a class="selfLink" id="video" href="#video" rel="help">(5 minuto)</a> Sa loob nito, nag-download ang isang siyentipiko ng data ng pagtataya ng alon ng karagatan mula sa ERDDAP upang magmodelo ng isang nakakalason na spill sa karagatan gamit ang
 <a rel="bookmark" href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">GNOME software ng NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> (sa loob ng 5 minuto!).
@@ -4782,8 +4789,8 @@ Maaari mong i-
 Gumagamit ito ng mga lisensyang tulad ng Apache, kaya magagawa mo ang anumang gusto mo dito.
 Nako-customize ang hitsura ERDDAP, kaya ang iyong ERDDAP magpapakita sa iyong institusyon, hindi ang NOAA .
 Ang maliit na pagsisikap na i-set up ang ERDDAP nagdudulot ng maraming benepisyo.
-Kung mayroon ka nang serbisyo sa web para sa pamamahagi ng iyong data, maaari mong i-set up ang ERDDAP upang ma-access ang iyong data sa pamamagitan ng umiiral na serbisyo o sa pamamagitan ng mga source file o database.
-Pagkatapos, ang mga tao ay magkakaroon ng isa pang paraan upang ma-access ang iyong data at magagawa nilang i-download ang data sa mga karagdagang format ng file o bilang mga graph o mapa.
+Kung mayroon ka nang serbisyo sa web para sa pamamahagi ng iyong data, maaari mong i-set up ang ERDDAP upang ma-access ang iyong data sa pamamagitan ng umiiral nang serbisyo o sa pamamagitan ng mga source file o database.
+Pagkatapos, ang mga tao ay magkakaroon ng isa pang paraan upang ma-access ang iyong data at magagawa nilang i-download ang data sa karagdagang mga format ng file o bilang mga graph o mapa.
 ERDDAP ay na-install ng mahigit 90 organisasyon sa hindi bababa sa 14 na bansa.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Direktiba sa Pamamaraan sa Pag-access sa Data NOAA <img 

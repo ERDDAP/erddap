@@ -2522,6 +2522,10 @@ geotif, .kml, .pdf किंवा .png शिवाय).
 <EDDGridGridVariableHtml><![CDATA[
 <strong>ग्रिड व्हेरिएबल्स</strong> (जे नेहमी सर्व डायमेंशन व्हेरिएबल्स देखील डाउनलोड करतात)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>सर्व तपासा</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>सर्व डेटा व्हेरिएबल्स निवडण्यासाठी येथे क्लिक करा.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>सर्व अनचेक करा</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>सर्व डेटा व्हेरिएबल्सची निवड रद्द करण्यासाठी येथे क्लिक करा.</EDDGridUncheckAllTooltip>
 <!-- Griddap उदाहरणे सेटिंग्जचा हा गट [baseUrl]/erddap/griddap/documentation.html आणि इतरत्र दिसणार्‍या griddap दस्तऐवजीकरणासाठी उदाहरणे तयार करण्यासाठी वापरला जातो.
 विशेष वर्ण (उदा., &amp; &lt; &gt;) HTML एन्कोड केलेले असणे आवश्यक आहे.
 तुम्‍हाला उदाहरणे तुमच्‍या ERDDAP कडे निर्देशित करण्‍याची इच्छा असल्‍यास, सर्वात सोपी पद्धत आहे:
@@ -3266,6 +3270,9 @@ orderBy ...
 <p><strong>orderByMean</strong> परिणाम सारणीच्या पंक्तींची गटांमध्ये क्रमवारी लावते आणि प्रत्येक गटासाठी फक्त एक पंक्ती मिळवते.
 त्या पंक्तीमध्ये इतर प्रत्येक व्हेरिएबल्सचा मध्य असेल.
 उदाहरणार्थ, orderByMax(&quot;stationID, time/1day&quot;) प्रत्येक stationID प्रत्येक दिवसासाठी एक गट तयार करेल आणि इतर व्हेरिएबल्सची सरासरी मोजेल आणि परत करेल.
+<p><strong>orderBy बेरीज</strong> परिणाम सारणीच्या पंक्तींना गटांमध्ये वर्गीकृत करते आणि प्रत्येक गटासाठी फक्त एक पंक्ती मिळवते.
+त्या पंक्तीमध्ये इतर प्रत्येक व्हेरिएबल्सची बेरीज असेल.
+उदाहरणार्थ, orderByMax(&quot;stationID, time/1day&quot;) प्रत्येक stationID आयडीसाठी प्रत्येक दिवसासाठी एक गट तयार करेल आणि इतर व्हेरिएबल्सची बेरीज मोजेल आणि परत करेल.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 orderByClosest साठी, येथे मध्यांतर (n[timeUnits] फॉरमॅट वापरून, उदा.
@@ -3633,8 +3640,8 @@ Google ईमेल खाते किंवा ORCID iD असलेले क
 <loginOpenIDCreate>किंवा येथे एक OpenID URL तयार करा</loginOpenIDCreate>
 <loginOpenIDFree>ते सर्व विनामूल्य आहेत!</loginOpenIDFree>
 <loginOpenIDSame>तुम्ही ERDDAP प्रशासकाला दिलेल्या त्याच OpenID URL ने लॉग इन केले असल्याची खात्री करा.</loginOpenIDSame>
-<loginAs>तुम्ही म्हणून लॉग इन आहात</loginAs>
-<loginPartwayAs>तुम्ही पार्टवे म्हणून लॉग इन आहात</loginPartwayAs>
+<loginAs>तुम्ही {0} म्हणून लॉग इन आहात.</loginAs>
+<loginPartwayAs>तुम्ही {0} म्हणून अर्धवट लॉग इन केले आहे.</loginPartwayAs>
 <loginFailed>त्रुटी: लॉगिन अयशस्वी</loginFailed>
 <loginInvalid>अवैध वापरकर्ता नाव आणि/किंवा पासवर्ड.</loginInvalid>
 <loginSucceeded>लॉगिन यशस्वी झाले!</loginSucceeded>
@@ -4029,9 +4036,9 @@ X अक्षावर वेळ काढण्यासाठी केला
 <notAvailable>सध्या, datasetID={0} उपलब्ध नाही.</notAvailable>
 <note>टीप!</note>
 <!--  Xxx हा मेक अ ग्राफ, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>हा डेटासेट {0} द्वारे उपलब्ध नाही.</noXxx>
-<noXxxBecause>हा डेटासेट {0} द्वारे उपलब्ध नाही कारण {1}.</noXxxBecause>
-<noXxxBecause2>या डेटासेटसाठी {0} उपलब्ध नाही कारण {1}.</noXxxBecause2>
+<noXxx>हा डेटासेट {0} द्वारे कधीही उपलब्ध नाही.</noXxx>
+<noXxxBecause>हा डेटासेट {0} द्वारे कधीही उपलब्ध नाही कारण {1}.</noXxxBecause>
+<noXxxBecause2>या डेटासेटसाठी {0} कधीही उपलब्ध नाही कारण {1}.</noXxxBecause2>
 <noXxxNotActive>ही ERDDAP ची {0} सेवा सक्रिय नाही</noXxxNotActive>
 <noXxxNoAxis1>एकापेक्षा जास्त मूल्यांसह कोणतेही अक्ष चल नाहीत</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} हा सुसंगत प्रकार नाही</noXxxNoCdmDataType>
@@ -4156,6 +4163,7 @@ A-Za-z0-9_-!.~&#39;()* व्यतिरिक्त इतर सर्व व
 <queryErrorOrderByClosest>OrderByClosest साठी, तुम्ही 1 किंवा अधिक ऑर्डरद्वारे स्तंभ नावांची CSV सूची निर्दिष्ट करणे आवश्यक आहे (त्यापैकी प्रत्येक परिणाम व्हेरिएबलच्या सूचीमध्ये असणे आवश्यक आहे) तसेच शेवटच्या ऑर्डरबाय व्हेरिएबलसाठी मध्यांतर (उदा., &quot;stationID,time,10 मिनिटे&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>OrderByLimit साठी, तुम्ही 0 किंवा अधिक ऑर्डरद्वारे स्तंभ नावांची CSV सूची निर्दिष्ट करणे आवश्यक आहे (त्यापैकी प्रत्येक परिणाम चलांच्या सूचीमध्ये असणे आवश्यक आहे; अंकीय स्तंभांमध्ये columnName[/divisor[timeUnits][:offset]]) आणि कमाल संख्या असू शकते प्रत्येक गटासाठी पंक्तींची (उदा., &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>OrderByMean साठी, तुम्ही ऑर्डरद्वारे स्तंभ नावांची CSV सूची निर्दिष्ट करणे आवश्यक आहे (त्यापैकी प्रत्येक परिणाम व्हेरिएबल्सच्या सूचीमध्ये असणे आवश्यक आहे; अंकीय स्तंभांमध्ये columnName[/divisor[timeUnits][:offset]] असू शकतात), उदा, &quot;stationID,time /10 मिनिटे&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>OrderBySum साठी, तुम्ही orderBy स्तंभ नावांची CSV सूची निर्दिष्ट करणे आवश्यक आहे (त्यापैकी प्रत्येक परिणाम व्हेरिएबल्सच्या सूचीमध्ये असणे आवश्यक आहे; अंकीय स्तंभांमध्ये columnName[/divisor[timeUnits][:offset]] असू शकतात), उदा., &quot;stationID,time /10 मिनिटे&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} परिणाम चलांच्या सूचीमध्ये नाही.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>अज्ञात चल={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>ग्रिड अक्ष क्वेरींनी किमान एक अक्ष व्हेरिएबल निर्दिष्ट करणे आवश्यक आहे.</queryErrorGrid1Axis>
@@ -4174,7 +4182,7 @@ A-Za-z0-9_-!.~&#39;()* व्यतिरिक्त इतर सर्व व
 <queryErrorLastUnexpected>{0} मध्ये &quot;अंतिम&quot; नंतर अनपेक्षित वर्ण.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>{0} मधील +/- मूल्य वैध नाही.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>{0} मधील +/- अनुक्रमणिका मूल्य पूर्णांक नाही.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} श्रेणी {1} ते {2} पर्यंत आहे.</rangesFromTo>
 <required>आवश्यक</required>
 <resetTheForm>फॉर्म डीफॉल्ट मूल्यांवर रीसेट करा.</resetTheForm>
@@ -4875,10 +4883,10 @@ ERDDAP नेहमी Zulu (UTC, GMT) टाइम झोनचा वापर
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;वेब&nbsp;सेवा</a> (संगणक प्रोग्रामसाठी).
 तुम्ही ERDDAP च्या वेब पृष्ठांना बायपास करू शकता आणि ERDDAP च्या RESTful वेब सेवा वापरू शकता (उदाहरणार्थ, डेटासेट शोधण्यासाठी, डेटा डाउनलोड करण्यासाठी, नकाशे बनवण्यासाठी) थेट कोणत्याही संगणक प्रोग्रामवरून (उदाहरणार्थ, Matlab, R, किंवा एखादा प्रोग्राम जो तुम्ही लिहा) आणि अगदी वेब पृष्ठांवरून (HTML इमेज टॅग किंवा Java Script द्वारे).
 तुम्ही ERDDAP च्या वेब सेवांच्या वर इतर उपयुक्त आणि मनोरंजक गोष्टी देखील तयार करू शकता —
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">अप्रतिम ERDDAP</a> पहा
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP</a> पहा
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="बाह्य वेबसाइटचा हा दुवा समर्थन तयार करत नाही."></a> छान ERDDAP संबंधित प्रकल्पांची यादी.
+    title="बाह्य वेबसाइटचा हा दुवा समर्थन तयार करत नाही."></a> Awesome ERDDAP संबंधित प्रकल्पांची यादी.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">ERDDAP च्या द्रुत परिचयासाठी, याचा पहिला भाग पहा<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > व्हिडिओ <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4898,7 +4906,7 @@ ERDDAP नेहमी Zulu (UTC, GMT) टाइम झोनचा वापर
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">तुमचा स्वतःचा ERDDAP सर्व्हर सेट</a> करू शकता आणि तुमचा स्वतःचा डेटा देऊ शकता.</strong> ERDDAP विनामूल्य आणि मुक्त स्रोत आहे.
 हे Apache सारखे परवाने वापरते, त्यामुळे तुम्ही त्यासह तुम्हाला हवे ते करू शकता.
 ERDDAP चे स्वरूप सानुकूल करण्यायोग्य आहे, त्यामुळे तुमचे ERDDAP तुमची संस्था प्रतिबिंबित करेल, NOAA नाही.
-ERDDAP ची स्थापना करण्याचा छोटासा प्रयत्न अनेक फायदे देतो.
+ERDDAP ची स्थापना करण्याचा छोटासा प्रयत्न अनेक फायदे आणतो.
 तुमचा डेटा वितरित करण्यासाठी तुमच्याकडे आधीपासून वेब सेवा असल्यास, तुम्ही विद्यमान सेवेद्वारे किंवा स्त्रोत फाइल्स किंवा डेटाबेसद्वारे तुमचा डेटा ऍक्सेस करण्यासाठी ERDDAP सेट करू शकता.
 त्यानंतर, लोकांकडे तुमच्या डेटामध्ये प्रवेश करण्याचा दुसरा मार्ग असेल आणि ते अतिरिक्त फाइल स्वरूपनात किंवा आलेख किंवा नकाशे म्हणून डेटा डाउनलोड करण्यास सक्षम असतील.
 ERDDAP किमान 14 देशांमध्ये 90 पेक्षा जास्त संस्थांनी स्थापित केले आहे.

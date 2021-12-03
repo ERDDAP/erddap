@@ -2459,6 +2459,10 @@ griddap використовує
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Змінні сітки</strong> (які завжди також завантажують усі змінні розмірів)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Перевірити все</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Натисніть тут, щоб вибрати всі змінні даних.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Зніміть прапорець Усі</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Натисніть тут, щоб скасувати вибір усіх змінних даних.</EDDGridUncheckAllTooltip>
 <!-- Приклади Griddap Ця група налаштувань використовується для створення прикладів для документації griddap, яка з&#39;являється за адресою [baseUrl]/erddap/griddap/documentation.html та в інших місцях.
 Спеціальні символи (наприклад, &amp; &lt; &gt;) мають бути закодовані HTML.
 Якщо ви хочете, щоб приклади вказували на ваш ERDDAP, найпростіший метод:
@@ -3177,6 +3181,9 @@ ERDDAP + curl неймовірно потужний і дозволяє вико
 <p><strong>orderByMean</strong> сортує рядки таблиці результатів за групами і просто повертає один рядок для кожної групи.
 Цей рядок матиме середнє значення кожної з інших змінних.
 Наприклад, orderByMax(&quot;stationID, time/1day&quot;) створить групу для кожного stationID для кожного дня, а також обчислить і поверне середнє значення інших змінних.
+<p><strong>orderBy Sum</strong> сортує рядки таблиці результатів за групами і просто повертає один рядок для кожної групи.
+У цьому рядку буде сума кожної з інших змінних.
+Наприклад, orderByMax(&quot;stationID, time/1day&quot;) створить групу для кожного stationID для кожного дня, а також обчислить і поверне суму інших змінних.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Для orderByClosest вкажіть тут інтервал (використовуючи формат n[timeUnits], наприклад, 1 година).
@@ -3534,8 +3541,8 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, с
 <loginOpenIDCreate>Або створіть URL-адресу OpenID за адресою</loginOpenIDCreate>
 <loginOpenIDFree>Вони всі вільні!</loginOpenIDFree>
 <loginOpenIDSame>Переконайтеся, що ви ввійшли за допомогою тієї самої URL-адреси OpenID, яку надали адміністратору ERDDAP.</loginOpenIDSame>
-<loginAs>Ви ввійшли як</loginAs>
-<loginPartwayAs>Ви ввійшли в систему частково як</loginPartwayAs>
+<loginAs>Ви ввійшли як {0}.</loginAs>
+<loginPartwayAs>Ви ввійшли в систему частково як {0}.</loginPartwayAs>
 <loginFailed>ПОМИЛКА: не вдалося ввійти</loginFailed>
 <loginInvalid>Недійсне ім’я користувача та/або пароль.</loginInvalid>
 <loginSucceeded>Увійти успішно!</loginSucceeded>
@@ -3926,9 +3933,9 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, с
 <notAvailable>Наразі datasetID={0} недоступний.</notAvailable>
 <note>ПРИМІТКА!</note>
 <!--  Xxx - це Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Цей набір даних недоступний через {0}.</noXxx>
-<noXxxBecause>Цей набір даних недоступний через {0}, оскільки {1}.</noXxxBecause>
-<noXxxBecause2>{0} недоступний для цього набору даних, оскільки {1}.</noXxxBecause2>
+<noXxx>Цей набір даних ніколи не доступний через {0}.</noXxx>
+<noXxxBecause>Цей набір даних ніколи не доступний через {0}, оскільки {1}.</noXxxBecause>
+<noXxxBecause2>{0} ніколи не доступний для цього набору даних, оскільки {1}.</noXxxBecause2>
 <noXxxNotActive>Служба {0} цієї ERDDAP не активна</noXxxNotActive>
 <noXxxNoAxis1>немає змінних осі з більш ніж одним значенням</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} не є сумісним типом</noXxxNoCdmDataType>
@@ -4050,6 +4057,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorOrderByClosest>Для orderByClosest ви повинні вказати список CSV з 1 або більше назв стовпців orderBy (кожне з яких має бути в списку змінних результатів) плюс інтервал для останньої змінної orderBy (наприклад, &quot;stationID,time,10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Для orderByLimit ви повинні вказати список CSV з 0 або більше назв стовпців orderBy (кожне з яких має бути в списку змінних результатів; числові стовпці можуть мати columnName[/divisor[timeUnits][:offset]]) плюс максимальну кількість рядків для кожної групи (наприклад, &quot;ідентифікатор станції, час/1 день, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Для orderByMean ви повинні вказати список CSV імен стовпців orderBy (кожне з яких має бути в списку змінних результатів; числові стовпці можуть мати columnName[/divisor[timeUnits][:offset]]), наприклад, &quot;stationID,time /10 хвилин&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Для orderBySum ви повинні вказати CSV список імен стовпців orderBy (кожне з яких має бути в списку змінних результатів; числові стовпці можуть мати columnName[/divisor[timeUnits][:offset]]), наприклад, &quot;stationID,time /10 хвилин&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>Змінна orderBy={0} відсутня у списку змінних результатів.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Невідома змінна={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Запити осі сітки повинні вказувати принаймні одну змінну осі.</queryErrorGrid1Axis>
@@ -4068,7 +4076,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorLastUnexpected>Неочікуваний символ після &quot;останнього&quot; в {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Значення +/- у {0} недійсне.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Значення +/- індексу в {0} не є цілим числом.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} коливається від {1} до {2}.</rangesFromTo>
 <required>вимагається</required>
 <resetTheForm>Скиньте форму до значень за замовчуванням.</resetTheForm>
@@ -4774,7 +4782,7 @@ ERDDAP завжди використовує часовий пояс Zulu (UTC, 
 Ви також можете створювати інші корисні та цікаві речі поверх веб-сервісів ERDDAP — дивіться
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Це посилання на зовнішній веб-сайт не є рекомендацією."></a> список чудових проектів, пов&#39;язаних з ERDDAP .
+    title="Це посилання на зовнішній веб-сайт не є рекомендацією."></a> список чудових проектів, пов&#39;язаних з Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Щоб швидко ознайомитися з ERDDAP, перегляньте першу половину цього<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > відео <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

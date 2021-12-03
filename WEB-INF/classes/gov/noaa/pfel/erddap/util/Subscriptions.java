@@ -875,15 +875,15 @@ public class Subscriptions {
 "So if you don't want the subscription, you don't have to do anything.\n" +
 "\n" +
 "To validate the subscription, visit\n" +
-"https://localhost:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"https://127.0.0.1:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "Now or in the future, you can delete that subscription (unsubscribe) with\n" +
-"https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
+"https://127.0.0.1:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n";              
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             Test.ensureEqual(sub.persistentTable.nRows(), 1, "");
@@ -901,14 +901,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         pending\n" +
-"to validate:    https://localhost:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
+"to validate:    https://127.0.0.1:8443/cwexperimental/subscriptions/validate.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"https://127.0.0.1:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -933,14 +933,14 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
+"to unsubscribe: https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
+"https://127.0.0.1:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n", 
                 "results=\n" + results);
         }
 
@@ -991,13 +991,13 @@ public class Subscriptions {
 "(nEmailAddress=2, nPendingSubscriptions=5, nValidSubscriptions=0)\n" +
 "\n" +
 "jane.smith@company.com\n" +
-"rPmelTao             pending http://www.yahoo.com                https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=4&key=" + key4 + "\n" +
 "\n" +
 "john.smith@company.com\n" +
-"pmelTao              pending mailto:john.smith@company.com       https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
-"pmelTao              pending http://www.google.com               https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
-"rPmelTao             pending mailto:john.smith@company.com       https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
-"rPmelTao             pending http://www.yahoo.com                https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"pmelTao              pending mailto:john.smith@company.com       https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"pmelTao              pending http://www.google.com               https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"rPmelTao             pending mailto:john.smith@company.com       https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"rPmelTao             pending http://www.yahoo.com                https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n",
             "results=\n" + results);
 
@@ -1024,29 +1024,29 @@ public class Subscriptions {
 "datasetID:      pmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
+"to unsubscribe: https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=0&key=" + key0 + "\n" +
 "\n" +
 "datasetID:      pmelTao\n" +
 "action:         http://www.google.com\n" +
 "status:         valid\n" +
-"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
+"to unsubscribe: https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=1&key=" + key1 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         mailto:john.smith@company.com\n" +
 "status:         valid\n" +
-"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
+"to unsubscribe: https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=2&key=" + key2 + "\n" +
 "\n" +
 "datasetID:      rPmelTao\n" +
 "action:         http://www.yahoo.com\n" +
 "status:         valid\n" +
-"to unsubscribe: https://localhost:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
+"to unsubscribe: https://127.0.0.1:8443/cwexperimental/subscriptions/remove.html?subscriptionID=3&key=" + key3 + "\n" +
 "\n" +
 "Note that pending subscriptions that aren't validated soon will be deleted.\n" +
 "\n" +
 "\n" +
 "*****\n" +
 "You can request an email with a list of all of your valid and pending subscriptions with this URL:\n" +
-"https://localhost:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
+"https://127.0.0.1:8443/cwexperimental/subscriptions/list.html?email=john.smith@company.com\n",
             "results=\n" + results);
 
         //remove 

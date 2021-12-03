@@ -2559,6 +2559,10 @@ griddap использует
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Переменные сетки</strong> (которые всегда также загружают все переменные измерения)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Отметить все</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Щелкните здесь, чтобы выбрать все переменные данных.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Снять все</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Щелкните здесь, чтобы отменить выбор всех переменных данных.</EDDGridUncheckAllTooltip>
 <!-- Примеры Griddap Эта группа настроек используется для создания примеров для документации griddap, которая находится по адресу [baseUrl] /erddap/griddap/documentation.html и в других местах.
 Специальные символы (например, &amp; &lt;&gt;) должны быть в кодировке HTML.
 Если вы хотите, чтобы примеры указывали на ваш ERDDAP, самый простой способ:
@@ -3286,6 +3290,9 @@ offset] ].
 <p><strong>orderByMean</strong> сортирует строки таблицы результатов по группам и просто возвращает по одной строке для каждой группы.
 Эта строка будет иметь среднее значение каждой из других переменных.
 Например, orderByMax(&quot;stationID, time/1day&quot;) создаст группу для каждого stationID на каждый день, а также вычислит и вернет среднее значение других переменных.
+<p><strong>orderBy Sum</strong> сортирует строки таблицы результатов по группам и просто возвращает по одной строке для каждой группы.
+В этой строке будет сумма всех остальных переменных.
+Например, orderByMax(&quot;stationID, time/1day&quot;) создаст группу для каждого stationID на каждый день, вычислит и вернет сумму других переменных.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Для orderByClosest укажите здесь интервал (используя формат n [timeUnits], например, 1 час).
@@ -3646,8 +3653,8 @@ URL-адрес, который вы видите здесь, является UR
 <loginOpenIDCreate>Или создайте URL-адрес OpenID в</loginOpenIDCreate>
 <loginOpenIDFree>Все они бесплатны!</loginOpenIDFree>
 <loginOpenIDSame>Убедитесь, что вы вошли в систему с тем же самым URL-адресом OpenID, который вы дали администратору ERDDAP.</loginOpenIDSame>
-<loginAs>Вы вошли как</loginAs>
-<loginPartwayAs>Вы вошли частично как</loginPartwayAs>
+<loginAs>Вы вошли как {0}.</loginAs>
+<loginPartwayAs>Вы частично вошли в систему как {0}.</loginPartwayAs>
 <loginFailed>ОШИБКА: не удалось войти в систему</loginFailed>
 <loginInvalid>Неверное имя пользователя и / или пароль.</loginInvalid>
 <loginSucceeded>Вход выполнен!</loginSucceeded>
@@ -4042,9 +4049,9 @@ URL-адрес, который вы видите здесь, является UR
 <notAvailable>В настоящее время datasetID = {0} недоступен.</notAvailable>
 <note>ПРИМЕЧАНИЕ!</note>
 <!--  Xxx - это сделать график, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Этот набор данных недоступен через {0}.</noXxx>
-<noXxxBecause>Этот набор данных недоступен через {0}, потому что {1}.</noXxxBecause>
-<noXxxBecause2>{0} недоступен для этого набора данных, потому что {1}.</noXxxBecause2>
+<noXxx>Этот набор данных никогда не доступен через {0}.</noXxx>
+<noXxxBecause>Этот набор данных никогда не доступен через {0}, потому что {1}.</noXxxBecause>
+<noXxxBecause2>{0} никогда не доступен для этого набора данных, потому что {1}.</noXxxBecause2>
 <noXxxNotActive>служба {0} этого ERDDAP не активна</noXxxNotActive>
 <noXxxNoAxis1>нет переменных оси с более чем одним значением</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = {0} не совместимый тип</noXxxNoCdmDataType>
@@ -4169,6 +4176,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorOrderByClosest>Для orderByClosest необходимо указать список CSV, состоящий из 1 или нескольких имен столбцов orderBy (каждое из которых должно быть в списке переменных результатов) плюс интервал для последней переменной orderBy (например, «stationID, time, 10 минут»).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Для orderByLimit необходимо указать список CSV из 0 или более имен столбцов orderBy (каждое из которых должно быть в списке переменных результатов; числовые столбцы могут иметь имя столбца [/ divisor [timeUnits] [: offset]]) плюс максимальное число строк для каждой группы (например, «ID станции, время / 1 день, 10»).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Для orderByMean необходимо указать список CSV с именами столбцов orderBy (каждое из которых должно быть в списке переменных результатов; числовые столбцы могут иметь имя столбца [/ divisor [timeUnits] [: offset]]), например, «stationID, time /10 минут&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Для orderBySum необходимо указать CSV-список имен столбцов orderBy (каждый из которых должен быть в списке переменных результатов; числовые столбцы могут иметь имя столбца [/ divisor [timeUnits] [: offset]]), например, «stationID, time /10 минут&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>Переменная orderBy = {0} отсутствует в списке переменных результатов.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Неизвестная переменная = {0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Запросы оси сетки должны указывать хотя бы одну переменную оси.</queryErrorGrid1Axis>
@@ -4187,7 +4195,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorLastUnexpected>Неожиданный символ после &quot;последнего&quot; в {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Значение +/- в {0} недействительно.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Значение индекса +/- в {0} не является целым числом.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} варьируется от {1} до {2}.</rangesFromTo>
 <required>Необходимый</required>
 <resetTheForm>Сбросьте форму до значений по умолчанию.</resetTheForm>
@@ -4876,7 +4884,7 @@ URL / действие недействительно.
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
 make it easier for you to get scientific data.-->
-<p><strong>ERDDAP объединяет различные типы серверов данных, поэтому у вас есть единообразный способ получения нужных данных в нужном вам формате.</strong>
+<p><strong>ERDDAP объединяет различные типы серверов данных, поэтому у вас есть единообразный способ получить нужные данные в нужном вам формате.</strong>
 <ul>
 <li>ERDDAP действует как посредник между вами и различными удаленными серверами данных.
 Когда вы запрашиваете данные из ERDDAP, ERDDAP переформатирует запрос в формат, требуемый удаленным сервером, отправляет запрос на удаленный сервер, получает данные, переформатирует данные в запрошенный вами формат и отправляет данные вам.
@@ -4909,7 +4917,7 @@ ERDDAP всегда использует часовой пояс Zulu (UTC, GMT)
 Вы также можете создавать другие полезные и интересные вещи поверх веб-сервисов ERDDAP - см.
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> список замечательных проектов, связанных с ERDDAP .
+    title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> список проектов, связанных с Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Чтобы быстро познакомиться с ERDDAP, просмотрите первую половину этого<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > видео <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

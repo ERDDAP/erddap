@@ -2485,6 +2485,10 @@ Selecione uma ou mais das variáveis da grade.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variáveis de grade</strong> (que sempre também baixam todas as variáveis de dimensão)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Verificar tudo</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Clique aqui para selecionar todas as variáveis de dados.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Desmarcar todos</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Clique aqui para desmarcar todas as variáveis de dados.</EDDGridUncheckAllTooltip>
 <!-- Exemplos Griddap Este grupo de configurações é usado para fazer exemplos para a documentação do griddap que aparece em [baseUrl] /erddap/griddap/documentation.html e em outros lugares.
 Os caracteres especiais (por exemplo, &amp; &lt;&gt;) devem ser codificados em HTML.
 Se você quiser que os exemplos apontem para seu ERDDAP, o método mais fácil é:
@@ -3181,7 +3185,7 @@ Portanto, você geralmente deve incluir restrições (por exemplo, tempo mínimo
 <functionOrderByTooltip><![CDATA[
 As funções orderBy ...
 classificam as linhas da tabela de resultados e às vezes as agrupa e às vezes as manipula posteriormente.
-Para usar uma função orderBy ..., selecione uma função à esquerda, selecione uma ou mais variáveis à direita e, opcionalmente, adicione configurações de adição, por exemplo, para variáveis numéricas, você pode especificar variableName [/ divisor [timeUnits] [:
+Para usar uma função orderBy ..., selecione uma função à esquerda, selecione uma ou mais variáveis à direita e, em seguida, opcionalmente adicione configurações de adição, por exemplo, para variáveis numéricas, você pode especificar variableName [/ divisor [timeUnits] [:
 offset] ] Para não usar nenhuma função orderBy ..., escolha a primeira opção à esquerda (&quot;&quot;).
 As funções orderBy ...
 são:
@@ -3191,7 +3195,7 @@ Por exemplo, orderBy(&quot;stationID, time&quot;) classifica os resultados princ
 A última variável deve ser uma variável numérica com um divisor.
 Apenas as linhas mais próximas do intervalo do divisor serão mantidas.
 Por exemplo, orderByClosest(&quot;stationID, time/2hours&quot;) classificará por stationID e hora, mas retornará apenas as linhas para cada stationID onde a última coluna orderBy (hora) está mais próxima de intervalos de 2 horas.
-<p><strong>orderByCount</strong> classifica as linhas da tabela de resultados em grupos e retorna apenas a contagem do número de valores não omissos para cada grupo.
+<p><strong>orderByCount</strong> classifica as linhas da tabela de resultados em grupos e apenas retorna a contagem do número de valores não omissos para cada grupo.
 Por exemplo, orderByCount(&quot;stationID, time/1day&quot;) classificará por stationID e retornará uma linha para cada stationID para cada dia, com uma contagem do número de valores não omissos para cada uma das outras variáveis.
 <p><strong>orderByLimit</strong> classifica as linhas da tabela de resultados em grupos e retorna apenas as primeiras nRows (conforme especificado pelo último valor orderByLimit ) dentro de cada grupo.
 Por exemplo, orderByMax(&quot;stationID, time/1day, 10&quot;) classificará por stationID e hora, mas retornará apenas as primeiras 10 linhas para cada stationID para cada dia.
@@ -3204,6 +3208,9 @@ Por exemplo, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) retorn
 <p><strong>orderByMean</strong> classifica as linhas da tabela de resultados em grupos e retorna apenas uma linha para cada grupo.
 Essa linha terá a média de cada uma das outras variáveis.
 Por exemplo, orderByMax(&quot;stationID, time/1day&quot;) criará um grupo para cada stationID para cada dia, calculará e retornará a média das outras variáveis.
+<p><strong>orderBy Sum</strong> classifica as linhas da tabela de resultados em grupos e retorna apenas uma linha para cada grupo.
+Essa linha terá a soma de cada uma das outras variáveis.
+Por exemplo, orderByMax(&quot;stationID, time/1day&quot;) criará um grupo para cada stationID para cada dia, calculará e retornará a soma das outras variáveis.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Para orderByClosest, especifique o intervalo (usando o formato n [timeUnits], por exemplo, 1 hora) aqui.
@@ -3561,8 +3568,8 @@ Depois que o rótulo do botão mudar de &quot;Fazer login&quot; para &quot;Conec
 <loginOpenIDCreate>Ou crie um URL OpenID em</loginOpenIDCreate>
 <loginOpenIDFree>Eles são todos gratuitos!</loginOpenIDFree>
 <loginOpenIDSame>Certifique-se de ter feito login com o mesmo URL OpenID que você forneceu ao administrador ERDDAP.</loginOpenIDSame>
-<loginAs>Você está logado como</loginAs>
-<loginPartwayAs>Você está logado parcialmente como</loginPartwayAs>
+<loginAs>Você está conectado como {0}.</loginAs>
+<loginPartwayAs>Você está logado parcialmente como {0}.</loginPartwayAs>
 <loginFailed>ERROR: Login falhou</loginFailed>
 <loginInvalid>Nome de usuário e / ou senha inválidos.</loginInvalid>
 <loginSucceeded>Login bem-sucedido!</loginSucceeded>
@@ -3953,9 +3960,9 @@ Melhor retornar um arquivo vazio? Mas .nc e outros não permitem dados de compri
 <notAvailable>Atualmente, datasetID = {0} não está disponível.</notAvailable>
 <note>NOTA!</note>
 <!--  Xxx é Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Este conjunto de dados não está disponível por meio de {0}.</noXxx>
-<noXxxBecause>Este conjunto de dados não está disponível por meio de {0} porque {1}.</noXxxBecause>
-<noXxxBecause2>{0} não está disponível para este conjunto de dados porque {1}.</noXxxBecause2>
+<noXxx>Este conjunto de dados nunca está disponível por meio de {0}.</noXxx>
+<noXxxBecause>Este conjunto de dados nunca está disponível por meio de {0} porque {1}.</noXxxBecause>
+<noXxxBecause2>{0} nunca está disponível para este conjunto de dados porque {1}.</noXxxBecause2>
 <noXxxNotActive>este serviço {0} do ERDDAP não está ativo</noXxxNotActive>
 <noXxxNoAxis1>não há nenhuma variável de eixo com mais de um valor</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = {0} não é um tipo compatível</noXxxNoCdmDataType>
@@ -4078,6 +4085,7 @@ Protocolos diferentes são apropriados para diferentes tipos de dados e para dif
 <queryErrorOrderByClosest>Para orderByClosest, você deve especificar uma lista CSV de 1 ou mais nomes de coluna orderBy (cada um dos quais deve estar na lista de variáveis de resultados) mais o intervalo para a última variável orderBy (por exemplo, &quot;stationID, time, 10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Para orderByLimit, você deve especificar uma lista CSV de 0 ou mais nomes de coluna orderBy (cada um deles deve estar na lista de variáveis de resultados; as colunas numéricas podem ter columnName [/ divisor [timeUnits] [: offset]]) mais o número máximo de linhas para cada grupo (por exemplo, &quot;stationID, time / 1day, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Para orderByMean, você deve especificar uma lista CSV de nomes de coluna orderBy (cada um dos quais deve estar na lista de variáveis de resultados; as colunas numéricas podem ter columnName [/ divisor [timeUnits] [: offset]]), por exemplo, &quot;stationID, time / 10 minutos &quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Para orderBySum, você deve especificar uma lista CSV de nomes de coluna orderBy (cada um dos quais deve estar na lista de variáveis de resultados; as colunas numéricas podem ter columnName [/ divisor [timeUnits] [: offset]]), por exemplo, &quot;stationID, time / 10 minutos &quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>variável orderBy = {0} não está na lista de variáveis de resultados.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variável desconhecida = {0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>As consultas do eixo da grade devem especificar pelo menos uma variável do eixo.</queryErrorGrid1Axis>
@@ -4096,7 +4104,7 @@ Protocolos diferentes são apropriados para diferentes tipos de dados e para dif
 <queryErrorLastUnexpected>Caráter inesperado depois do &quot;último&quot; em {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>O valor +/- em {0} não é válido.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>O valor do índice +/- em {0} não é um número inteiro.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} varia de {1} a {2}.</rangesFromTo>
 <required>Obrigatório</required>
 <resetTheForm>Redefina o formulário para os valores padrão.</resetTheForm>
@@ -4782,8 +4790,8 @@ make it easier for you to get scientific data.-->
 <p><strong>ERDDAP unifica os diferentes tipos de servidores de dados para que você tenha uma maneira consistente de obter os dados que deseja, no formato que desejar.</strong>
 <ul>
 <li>ERDDAP atua como um intermediário entre você e vários servidores de dados remotos.
-Quando você solicita dados do ERDDAP, o ERDDAP reformata a solicitação no formato exigido pelo servidor remoto, envia a solicitação ao servidor remoto, obtém os dados, reformata os dados no formato que você solicitou e envia os dados para você.
-Você não precisa mais ir a diferentes servidores de dados para obter dados de diferentes conjuntos de dados.
+Quando você solicita dados do ERDDAP, o ERDDAP reformata a solicitação no formato exigido pelo servidor remoto, envia a solicitação ao servidor remoto, obtém os dados, reformata os dados no formato solicitado e envia os dados para você.
+Você não precisa mais ir a servidores de dados diferentes para obter dados de conjuntos de dados diferentes.
 <br>&nbsp;
 <li>ERDDAP oferece uma maneira consistente e fácil de usar para solicitar dados:
 por meio do padrão OPeNDAP .
@@ -4796,7 +4804,7 @@ Assim, você não precisa mais perder tempo e esforço reformatando os dados.
 <li>ERDDAP também pode retornar uma imagem .png ou .pdf com um gráfico ou mapa personalizado.
 <br>&nbsp;
 <li>ERDDAP padroniza as datas + horários nos resultados.
-Os dados de outros servidores de dados são difíceis de comparar porque as datas + horas geralmente são expressas em formatos diferentes (por exemplo, &quot;2 de janeiro de 2018&quot;, 02-JAN-2018, 1/2/18, 01/02/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
+Os dados de outros servidores de dados são difíceis de comparar porque as datas + horas geralmente são expressas em formatos diferentes (por exemplo, &quot;2 de janeiro de 2018&quot;, 02-JAN-2018, 1/2/18, 2/1/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
 Para tempos de string, o ERDDAP sempre usa o formato padrão ISO 8601:
 2004 (E), por exemplo, 2018-01-02T00:
 00:
@@ -4807,11 +4815,11 @@ ERDDAP sempre usa o fuso horário Zulu (UTC, GMT) para eliminar as dificuldades 
 <br>&nbsp;
 <li>ERDDAP tem páginas da web (para humanos com navegadores) e
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;rede&nbsp;serviços</a> (para programas de computador).
-Você pode ignorar as páginas da web do ERDDAP e usar os serviços da web RESTful do ERDDAP (por exemplo, para pesquisar conjuntos de dados, para baixar dados, para fazer mapas) diretamente de qualquer programa de computador (por exemplo, Matlab, R, ou um programa que que você escreve) e até mesmo de páginas da web (por meio de tags de imagem HTML ou Java Script).
+Você pode ignorar as páginas da web do ERDDAP e usar os serviços da web RESTful do ERDDAP (por exemplo, para pesquisar conjuntos de dados, para fazer download de dados, para fazer mapas) diretamente de qualquer programa de computador (por exemplo, Matlab, R ou um programa que você escreve) e até mesmo de páginas da web (por meio de tags de imagem HTML ou Java Script).
 Você também pode construir outras coisas úteis e interessantes em cima dos serviços da web ERDDAP - veja o
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">incrível ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Este link para um site externo não constitui um endosso."></a> lista de projetos incríveis relacionados ERDDAP .
+    title="Este link para um site externo não constitui um endosso."></a> lista de projetos Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Para uma introdução rápida ao ERDDAP, assista à primeira metade deste<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vídeo <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4823,7 +4831,7 @@ Você também pode construir outras coisas úteis e interessantes em cima dos se
 Graças a Rich Signell.
 (Um pequeno erro no vídeo:
 ao pesquisar conjuntos de dados, não use <kbd>AND</kbd> entre os termos de pesquisa.
-É implícito.)
+Está implícito.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Saiba mais sobre ERDDAP .</strong></a>
 <p><strong>Provedores de dados:
 você pode
@@ -4832,7 +4840,7 @@ Ele usa licenças do tipo Apache, então você pode fazer o que quiser com ele.
 A aparência do ERDDAP é personalizável, portanto, seu ERDDAP refletirá sua instituição, não o NOAA .
 O pequeno esforço para configurar o ERDDAP traz muitos benefícios.
 Se você já tem um serviço da web para distribuição de seus dados, pode configurar o ERDDAP para acessar seus dados por meio do serviço existente ou por meio dos arquivos de origem ou banco de dados.
-Assim, as pessoas terão outra maneira de acessar seus dados e poderão fazer o download dos dados em formatos de arquivo adicionais ou como gráficos ou mapas.
+Assim, as pessoas terão outra forma de acessar seus dados e poderão fazer o download dos dados em formatos de arquivo adicionais ou como gráficos ou mapas.
 ERDDAP foi instalado por mais de 90 organizações em pelo menos 14 países.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Diretiva de procedimento de acesso a dados da NOAA <img 

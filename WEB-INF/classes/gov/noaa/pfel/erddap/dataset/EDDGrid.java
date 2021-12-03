@@ -6161,9 +6161,9 @@ Attributes {
                         otherInfo.append(", ");
                     double td = axisVar.destinationValue(ttIndex).getNiceDouble(0); 
                     if (av == lonIndex)
-                        otherInfo.append(td + " E"); //° didn't work
+                        otherInfo.append(td + "°E");
                     else if (av == latIndex) 
-                        otherInfo.append(td + " N"); //° didn't work
+                        otherInfo.append(td + "°N");
                     else if (axisVar instanceof EDVTimeStampGridAxis) 
                         otherInfo.append(Calendar2.epochSecondsToLimitedIsoStringT(
                             axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
@@ -9101,8 +9101,22 @@ Attributes {
         writer.write(
             widgets.beginTable("class=\"compact nowrap\"") +
             "<tr>\n" +
-            "  <td>&nbsp;<br>" + EDStatic.EDDGridGridVariableHtmlAr[language] + "</td>\n" +
-            "</tr>\n");
+            "  <td>&nbsp;<br>" + EDStatic.EDDGridGridVariableHtmlAr[language] + "&nbsp;");
+
+        StringBuilder checkAll = new StringBuilder();
+        StringBuilder uncheckAll = new StringBuilder();
+        int nDv = dataVariables.length;
+        for (int dv = 0; dv < nDv; dv++) {
+            checkAll.append(  formName + ".dvar" + dv + ".checked=true;");
+            uncheckAll.append(formName + ".dvar" + dv + ".checked=false;");
+        }
+
+        writer.write(widgets.button("button", "CheckAll", EDStatic.EDDGridCheckAllTooltipAr[language],
+            EDStatic.EDDGridCheckAllAr[language],   "onclick=\"" + checkAll.toString() + "\""));
+        writer.write(widgets.button("button", "UncheckAll", EDStatic.EDDGridUncheckAllTooltipAr[language],
+            EDStatic.EDDGridUncheckAllAr[language], "onclick=\"" + uncheckAll.toString() + "\""));
+
+        writer.write("</td></tr>\n");
 
         //a row for each dataVariable
         for (int dv = 0; dv < dataVariables.length; dv++) {

@@ -2580,6 +2580,10 @@ Chọn một hoặc nhiều biến lưới.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Biến lưới</strong> (luôn tải xuống tất cả các biến thứ nguyên)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Rà soát tất cả</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Bấm vào đây để chọn tất cả các biến dữ liệu.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Bỏ chọn tất cả</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Nhấp vào đây để bỏ chọn tất cả các biến dữ liệu.</EDDGridUncheckAllTooltip>
 <!-- Ví dụ về sơ đồ lưới Nhóm cài đặt này được sử dụng để làm ví dụ cho tài liệu sơ đồ lưới xuất hiện tại [baseUrl] /erddap/griddap/documentation.html và các nơi khác.
 Các ký tự đặc biệt (ví dụ:
 &amp; &lt;&gt;) phải được mã hóa HTML.
@@ -3325,9 +3329,13 @@ Trong mỗi nhóm sắp xếp, chỉ hàng có giá trị nhỏ nhất và hàng
 Ví dụ:
 orderByMinMax(&quot;stationID, time/1day, temperature&quot;) sẽ trả về hàng có giá trị nhiệt độ tối thiểu và hàng có giá trị nhiệt độ tối đa cho mỗi stationID cho mỗi ngày.
 <p><strong>orderByMean</strong> sắp xếp các hàng của bảng kết quả thành các nhóm và chỉ trả về một hàng cho mỗi nhóm.
-Hàng đó sẽ có giá trị trung bình của mỗi biến khác.
+Hàng đó sẽ có giá trị trung bình của từng biến khác.
 Ví dụ:
 orderByMax(&quot;stationID, time/1day&quot;) sẽ tạo một nhóm cho mỗi stationID cho mỗi ngày, đồng thời sẽ tính toán và trả về giá trị trung bình của các biến khác.
+<p><strong>orderBy Sum</strong> sắp xếp các hàng của bảng kết quả thành các nhóm và chỉ trả về một hàng cho mỗi nhóm.
+Hàng đó sẽ có tổng của mỗi biến khác.
+Ví dụ:
+orderByMax(&quot;stationID, time/1day&quot;) sẽ tạo một nhóm cho mỗi stationID cho mỗi ngày, đồng thời sẽ tính toán và trả về tổng của các biến khác.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Đối với orderByClosest, chỉ định khoảng thời gian (sử dụng định dạng n [timeUnits], ví dụ:
@@ -3693,8 +3701,8 @@ Sau khi nhãn của nút thay đổi từ &quot;Đăng nhập&quot; thành &quot
 <loginOpenIDCreate>Hoặc tạo một URL OpenID tại</loginOpenIDCreate>
 <loginOpenIDFree>Tất cả đều miễn phí!</loginOpenIDFree>
 <loginOpenIDSame>Đảm bảo rằng bạn đã đăng nhập bằng URL OpenID chính xác mà bạn đã cung cấp cho quản trị viên ERDDAP.</loginOpenIDSame>
-<loginAs>Bạn đang đăng nhập</loginAs>
-<loginPartwayAs>Bạn đã đăng nhập một phần với tư cách là</loginPartwayAs>
+<loginAs>Bạn đã đăng nhập bằng {0}.</loginAs>
+<loginPartwayAs>Bạn đã đăng nhập một phần với tư cách là {0}.</loginPartwayAs>
 <loginFailed>LỖI: Đăng nhập không thành công</loginFailed>
 <loginInvalid>Tên đăng nhập và / hoặc mật khẩu không hợp lệ.</loginInvalid>
 <loginSucceeded>Đăng nhập thành công!</loginSucceeded>
@@ -4087,9 +4095,9 @@ Tốt hơn để trả lại một tệp trống? Tuy nhiên, .nc và các tệp
 <notAvailable>Hiện tại, datasetID = {0} không khả dụng.</notAvailable>
 <note>GHI CHÚ!</note>
 <!--  Xxx là Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Tập dữ liệu này không có sẵn qua {0}.</noXxx>
-<noXxxBecause>Tập dữ liệu này không có sẵn qua {0} bởi vì {1}.</noXxxBecause>
-<noXxxBecause2>{0} không có sẵn cho tập dữ liệu này vì {1}.</noXxxBecause2>
+<noXxx>Tập dữ liệu này không bao giờ có sẵn qua {0}.</noXxx>
+<noXxxBecause>Tập dữ liệu này không bao giờ có sẵn qua {0} bởi vì {1}.</noXxxBecause>
+<noXxxBecause2>{0} không bao giờ có sẵn cho tập dữ liệu này vì {1}.</noXxxBecause2>
 <noXxxNotActive>dịch vụ {0} của ERDDAP này không hoạt động</noXxxNotActive>
 <noXxxNoAxis1>không có bất kỳ biến trục nào có nhiều hơn một giá trị</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = {0} không phải là loại tương thích</noXxxNoCdmDataType>
@@ -4213,6 +4221,7 @@ Các giao thức khác nhau thích hợp cho các loại dữ liệu khác nhau 
 <queryErrorOrderByClosest>Đối với orderByClosest, bạn phải chỉ định danh sách CSV gồm 1 hoặc nhiều orderBy tên cột (mỗi tên phải nằm trong danh sách các biến kết quả) cộng với khoảng thời gian cho biến orderBy cuối cùng (ví dụ: &quot;stationID, thời gian, 10 phút&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Đối với orderByLimit, bạn phải chỉ định danh sách CSV gồm 0 hoặc nhiều hơn orderBy tên cột (mỗi tên trong số đó phải nằm trong danh sách các biến kết quả; các cột số có thể có columnName [/ divisor [timeUnits] [: offset]]) cộng với số tối đa hàng cho mỗi nhóm (ví dụ: &quot;stationID, thời gian / 1 ngày, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Đối với orderByMean, bạn phải chỉ định danh sách CSV gồm các tên cột orderBy (mỗi tên trong số đó phải nằm trong danh sách các biến kết quả; các cột số có thể có columnName [/ divisor [timeUnits] [: offset]]), ví dụ: &quot;stationID, time /10 phút&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Đối với orderBySum, bạn phải chỉ định danh sách CSV gồm các tên cột orderBy (mỗi tên trong số đó phải nằm trong danh sách các biến kết quả; các cột số có thể có columnName [/ divisor [timeUnits] [: offset]]), ví dụ: &quot;stationID, time /10 phút&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>biến orderBy = {0} không có trong danh sách các biến kết quả.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Biến không xác định = {0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Truy vấn trục lưới phải chỉ định ít nhất một biến trục.</queryErrorGrid1Axis>
@@ -4231,7 +4240,7 @@ Các giao thức khác nhau thích hợp cho các loại dữ liệu khác nhau 
 <queryErrorLastUnexpected>Ký tự không mong đợi sau &quot;cuối cùng&quot; trong {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Giá trị +/- trong {0} không hợp lệ.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Giá trị chỉ mục +/- trong {0} không phải là số nguyên.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} nằm trong khoảng từ {1} đến {2}.</rangesFromTo>
 <required>Yêu cầu</required>
 <resetTheForm>Đặt lại biểu mẫu về các giá trị mặc định.</resetTheForm>
@@ -4969,9 +4978,9 @@ Bạn có thể bỏ qua các trang web của ERDDAP và sử dụng các dịch
 để tìm kiếm bộ dữ liệu, để tải xuống dữ liệu, để tạo bản đồ) trực tiếp từ bất kỳ chương trình máy tính nào (ví dụ:
 Matlab, R hoặc một chương trình bạn viết) và thậm chí từ các trang web (thông qua thẻ hình ảnh HTML hoặc Java Script).
 Bạn cũng có thể xây dựng những thứ hữu ích và thú vị khác trên các dịch vụ web của ERDDAP - xem
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">ERDDAP tuyệt vời <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> danh sách các dự án tuyệt vời liên quan đến ERDDAP .
+    title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> danh sách các dự án liên quan đến Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Để được giới thiệu nhanh về ERDDAP, hãy xem nửa đầu của phần này<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > băng hình <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

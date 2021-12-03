@@ -2507,6 +2507,10 @@ Roghnaigh ceann amháin nó níos mó de na hathróga greille.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Athróga Eangaí</strong> (a dhéanann gach ceann de na hathróga toise a íoslódáil i gcónaí)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Seiceáil Gach</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Cliceáil anseo chun gach athróg sonraí a roghnú.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Díthiceáil Uile</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Cliceáil anseo chun gach athróg sonraí a dhí-roghnú.</EDDGridUncheckAllTooltip>
 <!-- Samplaí Griddap Úsáidtear an grúpa socruithe seo chun samplaí a dhéanamh don doiciméadacht griddap atá le feiceáil ag [baseUrl] /erddap/griddap/documentation.html agus in áiteanna eile.
 Ní mór carachtair speisialta (m.sh., &amp; &lt;&gt;) a ionchódú HTML.
 Más mian leat na samplaí a dhíriú ar do ERDDAP, is é an modh is éasca:
@@ -3212,31 +3216,34 @@ Mar sin ba chóir duit srianta a áireamh de ghnáth (m.sh.
 Déanann na feidhmeanna orderBy ...
 sraitheanna an tábla torthaí a shórtáil agus uaireanta iad a ghrúpáil agus uaireanta iad a ionramháil tuilleadh.
 Chun feidhm orderBy ...
-a úsáid, roghnaigh feidhm ar chlé, ansin athróg amháin nó níos mó a roghnú ar dheis, ansin socruithe breise a chur leis go roghnach, m.sh., le haghaidh athróg uimhriúil, féadfaidh tú athrógName [/ roinnteoir [timeUnits] [:
+a úsáid, roghnaigh feidhm ar chlé, ansin roghnaigh athróg amháin nó níos mó ar dheis, ansin cuir socruithe breise leis go roghnach, m.sh., le haghaidh athróg uimhriúil, féadfaidh tú athrógName [/ divisor [timeUnits] [:
 fritháireamh] a shonrú.
 ].
-Chun aon fheidhm orderBy ...
+Chun gan aon fheidhm orderBy ...
 a úsáid, roghnaigh an chéad rogha ar chlé (&quot;&quot;).
 Is iad na feidhmeanna orderBy ...
 <p><strong>orderBy</strong> sraitheanna an tábla torthaí de réir na n-athróg sonraithe.
 Mar shampla, orderBy(&quot;stationID, time&quot;) na torthaí go príomha de réir stationID agus sa dara háit de réir ama.
 <p><strong>orderByClosest</strong> sraitheanna an tábla torthaí de réir na n-athróg sonraithe.
-Ní mór athróg uimhriúil le roinnteoir a bheith san athróg deireanach.
-Ní choimeádfar ach na sraitheanna is gaire d’am eatramh an roinnteora.
-Mar shampla, orderByClosest(&quot;stationID, time/2hours&quot;) de réir stationID agus am, ach seolfaidh sé na sraitheanna ar ais do gach stationID sa chás go bhfuil an colún deireanach orderBy (am) is gaire do eatraimh 2 uair an chloig.
+Caithfidh an athróg dheireanach a bheith ina athróg uimhriúil le roinnteoir.
+Ní choimeádfar ach na sraitheanna is gaire d’idir eatramh an roinnteora.
+Mar shampla, orderByClosest(&quot;stationID, time/2hours&quot;) de réir stationID agus am, ach ní fhillfidh sé ach na sraitheanna do gach stationID áit a bhfuil an colún deireanach orderBy (am) is gaire do eatraimh 2 uair an chloig.
 <p><strong>orderByCount</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach comhaireamh líon na luachanna nach bhfuil in easnamh a chur ar ais do gach grúpa.
 Mar shampla, orderByCount(&quot;stationID, time/1day&quot;) de réir stationID agus fillfidh sé sraith amháin do gach stationID do gach lá, le comhaireamh ar líon na luachanna nach bhfuil in easnamh do gach ceann de na hathróga eile.
 <p><strong>orderByLimit</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus díreach na chéad nRows (mar a shonraítear leis an luach deireanach orderByLimit ) a chur ar ais laistigh de gach grúpa.
 Mar shampla, orderByMax(&quot;stationID, time/1day, 10&quot;) de réir stationID agus am, ach ní thabharfaidh sé ach na chéad 10 sraitheanna do gach stationID ar ais do gach lá.
-<p><strong>orderByMax</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach an tsraith a chur ar ais laistigh de gach grúpa le huasluach an athróg dheiridh orderByMax san iarraidh.
-Mar shampla, orderByMax(&quot;stationID, time/1day, temperature&quot;) na sraitheanna a ghrúpáil de réir stationID agus gach lá, ach an tsraith a thabhairt ar ais leis an uasluach teochta do gach stationID do gach lá.
-<p><strong>orderBy Min</strong> cosúil le orderByMax, ach ní choinníonn sé ach an tsraith leis an luach íosta don athróg deireanach orderBy Min.
+<p><strong>orderByMax</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus díreach an tsraith a chur ar ais laistigh de gach grúpa le huasluach na orderByMax deireanach san iarraidh.
+Mar shampla, orderByMax(&quot;stationID, time/1day, temperature&quot;) na sraitheanna a ghrúpáil de réir stationID agus gach lá, ach ní fhillfidh siad ach an tsraith leis an uasluach teochta do gach stationID do gach lá.
+<p><strong>orderBy Min</strong> cosúil le orderByMax, ach ní choinníonn sé ach an tsraith leis an íosluach don orderBy Min deireanach.
 <p>tá <strong>orderByMinMax</strong> cosúil le orderBy Min móide orderByMax .
-Laistigh de gach grúpa sórtála, ní choimeádfar ach an tsraith leis an luach íosta agus an tsraith leis an uasluach don athróg deireanach orderByMinMax .
-Mar shampla, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) an tsraith leis an luach teochta íosta agus an tsraith leis an uasluach teochta do gach stationID do gach lá.
+Laistigh de gach grúpa sórtála, ní choimeádfar ach an tsraith leis an íosluach agus an tsraith leis an uasluach don athróg deireanach orderByMinMax .
+Mar shampla, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) an tsraith ar ais leis an luach teochta íosta agus an tsraith leis an uasluach teochta do gach stationID do gach lá.
 <p><strong>orderByMean</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach sraith amháin a chur ar ais do gach grúpa.
 Beidh meán gach ceann de na hathróga eile sa tsraith sin.
 Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh sé agus seolfaidh sé meán na n-athróg eile ar ais.
+<p><strong>orderBy Sum</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach sraith amháin a chur ar ais do gach grúpa.
+Beidh suim gach ceann de na hathróga eile sa tsraith sin.
+Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh sé agus seolfaidh sé suim na n-athróg eile ar ais.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Maidir orderByClosest, sonraigh an t-eatramh (ag úsáid an fhormáid n [timeUnits], m.sh., 1 uair) anseo.
@@ -3595,8 +3602,8 @@ Tar éis go n-athraíonn lipéad an chnaipe ó &quot;Sínigh isteach&quot; go &q
 <loginOpenIDCreate>Nó cruthaigh URL OpenID ag</loginOpenIDCreate>
 <loginOpenIDFree>Tá siad uile saor in aisce!</loginOpenIDFree>
 <loginOpenIDSame>Déan cinnte go ndearna tú logáil isteach leis an URL OpenID céanna a thug tú do riarthóir ERDDAP.</loginOpenIDSame>
-<loginAs>Tá tú logáilte isteach mar</loginAs>
-<loginPartwayAs>Tá tú logáilte isteach ar bhealach mar</loginPartwayAs>
+<loginAs>Tá tú logáilte isteach mar {0}.</loginAs>
+<loginPartwayAs>Tá tú logáilte isteach i bpáirt mar {0}.</loginPartwayAs>
 <loginFailed>ERROR: Theip ar logáil isteach</loginFailed>
 <loginInvalid>Ainm Úsáideora Neamhbhailí agus / nó Pasfhocal.</loginInvalid>
 <loginSucceeded>D&#39;éirigh le logáil isteach!</loginSucceeded>
@@ -3987,9 +3994,9 @@ Níos fearr comhad folamh a thabhairt ar ais? Ach ní cheadaíonn .nc agus daoin
 <notAvailable>Faoi láthair, níl tacar sonraí = {0} ar fáil.</notAvailable>
 <note>NÓTA!</note>
 <!--  Is é Xxx Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Níl an tacar sonraí seo ar fáil trí {0}.</noXxx>
-<noXxxBecause>Níl an tacar sonraí seo ar fáil trí {0} mar gheall ar {1}.</noXxxBecause>
-<noXxxBecause2>Níl {0} ar fáil don tacar sonraí seo mar gheall ar {1}.</noXxxBecause2>
+<noXxx>Ní bhíonn an tacar sonraí seo ar fáil riamh trí {0}.</noXxx>
+<noXxxBecause>Ní bhíonn an tacar sonraí seo ar fáil riamh trí {0} mar gheall ar {1}.</noXxxBecause>
+<noXxxBecause2>Níl {0} ar fáil riamh don tacar sonraí seo mar gheall ar {1}.</noXxxBecause2>
 <noXxxNotActive>níl an tseirbhís {0} ERDDAP seo gníomhach</noXxxNotActive>
 <noXxxNoAxis1>níl aon athróga aiseach le níos mó ná luach amháin</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = Ní cineál comhoiriúnach é {0}</noXxxNoCdmDataType>
@@ -4114,6 +4121,7 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
 <queryErrorOrderByClosest>Maidir le orderByClosest, ní mór duit liosta CSV de 1 ainm colún ordúBy nó níos mó a shonrú (caithfidh gach ceann acu a bheith ar liosta na n-athróg torthaí) móide an t-eatramh don athróg orderBy deireanach (e.g., &quot;stationID, time, 10 nóiméad&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Maidir le orderByLimit, ní mór duit liosta CSV de 0 ainm colún ordúBy nó níos mó a shonrú (caithfidh gach ceann acu a bheith ar liosta na n-athróg torthaí; d’fhéadfadh go mbeadh colúnName [/ roinnteoir [timeUnits] [: fritháireamh]] ag colúin uimhriúla) móide an líon uasta de shraitheanna do gach grúpa (m.sh., &quot;stationID, time / 1day, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Maidir le orderByMean, ní mór duit liosta CSV d’ainmneacha colún orderBy a shonrú (caithfidh gach ceann acu a bheith ar liosta na n-athróg torthaí; d’fhéadfadh go mbeadh colúnName [/ roinnteoir [timeUnits] [: fritháireamh]] ag colúin uimhriúla), m.sh., &quot;stationID, time / 10 nóiméad ”.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Maidir le orderBySum, ní mór duit liosta CSV d’ainmneacha colún orderBy a shonrú (caithfidh gach ceann acu a bheith ar liosta na n-athróg torthaí; d’fhéadfadh go mbeadh colúnName [/ divisor [timeUnits] [: fritháireamh]] ag colúin uimhriúla), m.sh., &quot;stationID, time / 10 nóiméad ”.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>níl orderBy athróg = {0} ar liosta na n-athróg torthaí.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Athróg anaithnid = {0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Caithfidh ceisteanna ais ghreille athróg ais amháin ar a laghad a shonrú.</queryErrorGrid1Axis>
@@ -4132,7 +4140,7 @@ Tá prótacail éagsúla oiriúnach do chineálacha éagsúla sonraí agus d’f
 <queryErrorLastUnexpected>Carachtar gan choinne i ndiaidh “deireanach” in {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Níl an luach +/- in {0} bailí.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Ní slánuimhir an luach innéacs +/- in {0}.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>Tá {0} ann ó {1} go {2}.</rangesFromTo>
 <required>Riachtanach</required>
 <resetTheForm>Athshocraigh an fhoirm de réir na luachanna réamhshocraithe.</resetTheForm>
@@ -4813,49 +4821,49 @@ Tá gach ceann acu iontach ar a shon féin.
 Ach gan ERDDAP, tá sé deacair sonraí a fháil ó chineálacha éagsúla freastalaithe:
 <ul>
 <li>Déanann freastalaithe sonraí éagsúla duit d’iarratas sonraí a fhormáidiú ar bhealaí éagsúla.
-<li>Cuireann freastalaithe sonraí éagsúla sonraí ar ais i bhformáidí éagsúla, de ghnáth ní hé an fhormáid comhaid choitianta a theastaíonn uait.
-<li>Úsáideann tacar sonraí difriúla formáidí éagsúla le haghaidh sonraí ama, mar sin is deacair comparáid a dhéanamh idir na torthaí.
+<li>Cuireann freastalaithe sonraí éagsúla sonraí ar ais i bhformáidí éagsúla, de ghnáth ní an fhormáid comhaid choitianta a theastaíonn uait.
+<li>Úsáideann tacar sonraí difriúla formáidí éagsúla le haghaidh sonraí ama, mar sin is deacair na torthaí a chur i gcomparáid.
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
 make it easier for you to get scientific data.-->
-<p><strong>ERDDAP na cineálacha éagsúla freastalaithe sonraí a oiriúnú ionas go mbeidh bealach comhsheasmhach agat chun na sonraí a theastaíonn uait a fháil, san fhormáid atá uait.</strong>
+<p><strong>ERDDAP na cineálacha éagsúla freastalaithe sonraí ionas go mbeidh bealach comhsheasmhach agat chun na sonraí a theastaíonn uait a fháil, san fhormáid atá uait.</strong>
 <ul>
 <li>Feidhmíonn ERDDAP mar fhear lár idir tú féin agus freastalaithe iargúlta éagsúla sonraí.
-Nuair a iarrann tú sonraí ó ERDDAP, ERDDAP an iarraidh a athfhoirmiú san fhormáid a éilíonn an cianfhreastalaí, seolann sé an iarraidh chuig an gcianfhreastalaí, faigheann sé na sonraí, déanann sé na sonraí a athfhoirmiú san fhormáid a d’iarr tú, agus seolann sé na sonraí chugat.
+Nuair a iarrann tú sonraí ó ERDDAP, ERDDAP an iarraidh a athfhoirmiú san fhormáid a éilíonn an cianfhreastalaí, seolann sé an iarraidh chuig an gcianfhreastalaí, faigheann sé na sonraí, déanann sé na sonraí a athfhoirmiú san fhormáid a d’iarr tú, agus seolann tú na sonraí chugat.
 Ní gá duit a thuilleadh dul chuig freastalaithe sonraí éagsúla chun sonraí a fháil ó thacair sonraí éagsúla.
 <br>&nbsp;
 <li>Cuireann ERDDAP bealach comhsheasmhach éasca le húsáid chun sonraí a iarraidh:
 trí chaighdeán OPeNDAP .
 <br>&wmsManyDatasets;
 <br>&nbsp;
-<li>ERDDAP sonraí ar ais san fhormáid comhaid is rogha leat.
+<li>ERDDAP sonraí i bhformáid comhaid choitianta de do rogha féin.
 Cuireann ERDDAP na sonraí go léir ar fáil mar thábla .html, ESRI .asc agus .csv, Google Earth .kml, dénártha OPeNDAP, .mat, .nc, ODV .txt, .csv, .tsv, .json, agus .xhtml .
-Mar sin ní gá duit am agus iarracht a chur amú ag athfhoirmiú sonraí.
+Mar sin ní gá duit am agus iarracht a chur amú sonraí a athfhoirmliú.
 <br>&nbsp;
 <li>Is féidir le ERDDAP íomhá .png nó .pdf a chur ar ais le graf nó léarscáil saincheaptha.
 <br>&nbsp;
 <li>ERDDAP na dátaí + na hamanna sna torthaí a chaighdeánú.
-Is deacair comparáid a dhéanamh idir sonraí ó fhreastalaithe sonraí eile toisc go gcuirtear na dátaí + na hamanna in iúl go minic i bhformáidí éagsúla (mar shampla, &quot;Jan 2, 2018&quot;, 02-JAN-2018, 1/2/18, 2/1/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
+Is deacair comparáid a dhéanamh idir sonraí ó fhreastalaithe sonraí eile toisc go gcuirtear na dátaí + na hamanna in iúl go minic i bhformáidí éagsúla (mar shampla, &quot;2 Eanáir, 2018&quot;, 02-JAN-2018, 1/2/18, 2/1/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
 Maidir le hamanna sreinge, úsáideann ERDDAP formáid chaighdeánach ISO 8601:
 2004 (E) i gcónaí, mar shampla, 2018-01-02T00:
 00:
 00Z.
 Maidir le hamanna uimhriúla, úsáideann ERDDAP &quot;seconds since 1970-01-01T00:00:00Z&quot; i gcónaí.
-ERDDAP crios ama na Zulu (UTC, GMT) i gcónaí chun fáil réidh leis na deacrachtaí a bhaineann le bheith ag obair le criosanna ama éagsúla agus le ham caighdeánach i gcoinne am sábhála solas an lae.
+ERDDAP crios ama Zulu (UTC, GMT) i gcónaí chun fáil réidh leis na deacrachtaí a bhaineann le bheith ag obair le criosanna ama éagsúla agus le ham caighdeánach i gcoinne am sábhála solas an lae.
 &convertTimeReference;
 <br>&nbsp;
 <li>Tá leathanaigh ghréasáin ag ERDDAP (do dhaoine le brabhsálaithe) agus
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;gréasáin&nbsp;seirbhísí</a> (do chláir ríomhaire).
-Féadfaidh tú leathanaigh ghréasáin ERDDAP a sheachbhóthar agus seirbhísí gréasáin RESTful ERDDAP a úsáid (mar shampla, chun tacar sonraí a chuardach, chun sonraí a íoslódáil, chun léarscáileanna a dhéanamh) go díreach ó aon chlár ríomhaire (mar shampla, Matlab, R, nó clár a dhéanann scríobhann tú) agus fiú ó leathanaigh ghréasáin (trí chlibeanna íomhá HTML nó Java Script).
+Is féidir leat leathanaigh ghréasáin ERDDAP a sheachbhóthar agus seirbhísí gréasáin RESTful ERDDAP a úsáid (mar shampla, chun tacar sonraí a chuardach, chun sonraí a íoslódáil, chun léarscáileanna a dhéanamh) go díreach ó aon chlár ríomhaire (mar shampla, Matlab, R, nó clár a dhéanann scríobhann tú) agus fiú ó leathanaigh ghréasáin (trí chlibeanna íomhá HTML nó Java Script).
 Is féidir leat rudaí úsáideacha agus suimiúla eile a thógáil ar bharr sheirbhísí gréasáin ERDDAP - féach an
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> liosta de thionscadail uamhnach a bhaineann le ERDDAP .
+    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> liosta de thionscadail Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Le haghaidh réamhrá tapa ar ERDDAP, féach ar an gcéad leath de seo<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > físeán <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> .</strong>
-<a class="selfLink" id="video" href="#video" rel="help">(5 nóiméad)</a> Istigh ann, déanann eolaí sonraí réamhaisnéise sruthanna aigéin a íoslódáil ó ERDDAP chun doirteadh tocsaineach san aigéan a shamhaltú ag baint úsáide as
+<a class="selfLink" id="video" href="#video" rel="help">(5 nóiméad)</a> Ann, déanann eolaí sonraí réamhaisnéise sruthanna aigéin a íoslódáil ó ERDDAP chun doirteadh tocsaineach san aigéan a shamhaltú ag baint úsáide as
 <a rel="bookmark" href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">bogearraí GNOME NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> (i gceann 5 nóiméad!).
@@ -4865,11 +4873,11 @@ agus tú ag cuardach tacar sonraí, ná húsáid <kbd>AND</kbd> idir téarmaí c
 Tá sé intuigthe.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Faigh tuilleadh eolais faoi ERDDAP .</strong></a>
 <p><strong>Soláthraithe Sonraí:
-Féadfaidh tú
+Is féidir leat
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">do fhreastalaí ERDDAP féin a bhunú</a> agus do chuid sonraí féin a sheirbheáil.</strong> Tá ERDDAP saor in aisce agus foinse oscailte.
 Úsáideann sé ceadúnais cosúil le Apache, ionas gur féidir leat aon rud a theastaíonn uait a dhéanamh leis.
 Tá cuma ERDDAP, mar sin léireoidh do ERDDAP d’institiúid, ní NOAA .
-Is iomaí sochar a bhaineann leis an iarracht bheag ERDDAP a chur ar bun.
+Is iomaí sochar a bhaineann leis an iarracht bheag chun ERDDAP a chur ar bun.
 Má tá seirbhís gréasáin agat cheana féin chun do chuid sonraí a dháileadh, féadfaidh tú ERDDAP a bhunú chun rochtain a fháil ar do chuid sonraí tríd an tseirbhís atá ann cheana nó trí na comhaid foinse nó an bunachar sonraí.
 Ansin, beidh bealach eile ag daoine rochtain a fháil ar do chuid sonraí agus beidh siad in ann na sonraí a íoslódáil i bhformáidí comhaid breise nó mar ghraif nó léarscáileanna.
 Tá ERDDAP suiteáilte ag níos mó ná 90 eagraíocht i 14 tír ar a laghad.

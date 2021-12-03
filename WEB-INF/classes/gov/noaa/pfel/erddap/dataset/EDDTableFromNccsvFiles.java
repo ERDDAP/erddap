@@ -2889,8 +2889,8 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "//<Creator>https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>Trajectories</DataType>[10]\n" +

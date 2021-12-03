@@ -2598,7 +2598,7 @@ public class SSR {
         HashSet<String> tried = new HashSet();
         String skip[] = new String[]{
             "https://192.168.31.18/",
-            "https://localhost:8443/cwexperimental/login.html"};  //the links to log in (upper right of most web pages) will fail on my test computer
+            "https://127.0.0.1:8443/cwexperimental/login.html"};  //the links to log in (upper right of most web pages) will fail on my test computer
             //https://unitsofmeasure.org/ucum.html fails in tests because of certificate, but succeeds in my browser. Others are like this, too.
         for (int linei = 0; linei < lines.length; linei++) {
             String urls[] = String2.extractAllCaptureGroupsAsHashSet(lines[linei], pattern, 1).toArray(new String[0]);

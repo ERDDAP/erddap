@@ -2483,6 +2483,10 @@ Velg én eller flere av rutenettvariablene.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Rutenettvariabler</strong> (som alltid også laster ned alle dimensjonsvariablene)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Sjekk alt</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Klikk her for å velge alle datavariabler.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Fjern merket for Alle</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Klikk her for å velge bort alle datavariabler.</EDDGridUncheckAllTooltip>
 <!-- Griddap-eksempler Denne gruppen med innstillinger brukes til å lage eksempler for griddap-dokumentasjonen som vises på [baseUrl]/erddap/griddap/documentation.html og andre steder.
 Spesialtegn (f.eks.
 &amp; &lt; &gt;) må være HTML-kodet.
@@ -3204,6 +3208,9 @@ For eksempel vil orderByMinMax(&quot;stationID, time/1day, temperature&quot;) re
 <p><strong>orderByMean</strong> sorterer radene i resultattabellen i grupper og returnerer bare én rad for hver gruppe.
 Den raden vil ha gjennomsnittet av hver av de andre variablene.
 For eksempel vil orderByMax(&quot;stationID, time/1day&quot;) opprette en gruppe for hver stationID for hver dag, og vil beregne og returnere gjennomsnittet av de andre variablene.
+<p><strong>orderBy Sum</strong> sorterer radene i resultattabellen i grupper og returnerer bare én rad for hver gruppe.
+Den raden vil ha summen av hver av de andre variablene.
+For eksempel vil orderByMax(&quot;stationID, time/1day&quot;) opprette en gruppe for hver stationID for hver dag, og vil beregne og returnere summen av de andre variablene.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 For orderByClosest spesifiser intervallet (bruk formatet n[timeUnits], f.eks.
@@ -3560,8 +3567,8 @@ Etter at knappens etikett endres fra &quot;Logg på&quot; til &quot;Pålogget&qu
 <loginOpenIDCreate>Eller opprett en OpenID URL på</loginOpenIDCreate>
 <loginOpenIDFree>De er alle gratis!</loginOpenIDFree>
 <loginOpenIDSame>Sørg for at du logget på med nøyaktig samme OpenID URL som du ga til ERDDAP-administratoren.</loginOpenIDSame>
-<loginAs>Du er innlogget som</loginAs>
-<loginPartwayAs>Du er pålogget halvveis som</loginPartwayAs>
+<loginAs>Du er logget på som {0}.</loginAs>
+<loginPartwayAs>Du er pålogget halvveis som {0}.</loginPartwayAs>
 <loginFailed>FEIL: Pålogging mislyktes</loginFailed>
 <loginInvalid>Ugyldig brukernavn og/eller passord.</loginInvalid>
 <loginSucceeded>Innlogging lyktes!</loginSucceeded>
@@ -3954,9 +3961,9 @@ Bedre å returnere en tom fil? Men .nc og andre tillater ikke 0-lengde data.
 <notAvailable>For øyeblikket er ikke datasett-ID={0} tilgjengelig.</notAvailable>
 <note>MERK!</note>
 <!--  Xxx er Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Dette datasettet er ikke tilgjengelig via {0}.</noXxx>
-<noXxxBecause>Dette datasettet er ikke tilgjengelig via {0} fordi {1}.</noXxxBecause>
-<noXxxBecause2>{0} er ikke tilgjengelig for dette datasettet fordi {1}.</noXxxBecause2>
+<noXxx>Dette datasettet er aldri tilgjengelig via {0}.</noXxx>
+<noXxxBecause>Dette datasettet er aldri tilgjengelig via {0} fordi {1}.</noXxxBecause>
+<noXxxBecause2>{0} er aldri tilgjengelig for dette datasettet fordi {1}.</noXxxBecause2>
 <noXxxNotActive>denne ERDDAPs {0}-tjeneste er ikke aktiv</noXxxNotActive>
 <noXxxNoAxis1>det er ingen aksevariabler med mer enn én verdi</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} er ikke en kompatibel type</noXxxNoCdmDataType>
@@ -4078,6 +4085,7 @@ Ulike protokoller er passende for ulike typer data og for ulike klientapplikasjo
 <queryErrorOrderByClosest>For orderByClosest må du spesifisere en CSV-liste med 1 eller flere orderBy-kolonnenavn (som hver må være i listen over resultatvariabler) pluss intervallet for den siste orderBy-variabelen (f.eks. &quot;stasjonsID,tid,10 minutter&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>For orderByLimit må du spesifisere en CSV-liste med 0 eller flere orderBy-kolonnenavn (som hver må være i listen over resultatvariabler; numeriske kolonner kan ha columnName[/divisor[timeUnits][:offset]]) pluss det maksimale antallet av rader for hver gruppe (f.eks. &quot;stasjonsID,tid/1dag,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>For orderByMean må du spesifisere en CSV-liste med orderBy-kolonnenavn (som hver må være i listen over resultatvariabler; numeriske kolonner kan ha columnName[/divisor[timeUnits][:offset]]), f.eks. &quot;stasjonsID,tid /10 minutter&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>For orderBySum må du spesifisere en CSV-liste med orderBy-kolonnenavn (som hver må være i listen over resultatvariabler; numeriske kolonner kan ha columnName[/divisor[timeUnits][:offset]]), f.eks. &quot;stasjonsID,tid /10 minutter&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} er ikke i listen over resultatvariabler.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Ukjent variabel={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Rutenettaksespørringer må spesifisere minst én aksevariabel.</queryErrorGrid1Axis>
@@ -4096,7 +4104,7 @@ Ulike protokoller er passende for ulike typer data og for ulike klientapplikasjo
 <queryErrorLastUnexpected>Uventet tegn etter &quot;siste&quot; i {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>+/- verdien i {0} er ikke gyldig.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>+/- indeksverdien i {0} er ikke et heltall.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} varierer fra {1} til {2}.</rangesFromTo>
 <required>Obligatorisk</required>
 <resetTheForm>Tilbakestill skjemaet til standardverdiene.</resetTheForm>
@@ -4803,7 +4811,7 @@ Du kan omgå ERDDAP nettsider og bruke ERDDAP RESTful webtjenester (for eksempel
 Du kan også bygge andre nyttige og interessante ting på toppen av ERDDAP webtjenester — se
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> liste over fantastiske ERDDAP relaterte prosjekter.
+    title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> liste over Awesome ERDDAP relaterte prosjekter.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">For en rask introduksjon til ERDDAP, se første halvdel av dette<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
