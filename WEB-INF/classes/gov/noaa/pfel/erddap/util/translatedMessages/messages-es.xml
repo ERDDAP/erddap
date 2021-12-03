@@ -2574,6 +2574,10 @@ seleccione una o más de las variables de la cuadrícula.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variables de cuadrícula</strong> (que siempre descargan también todas las variables de dimensión)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Comprobar todo</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Haga clic aquí para seleccionar todas las variables de datos.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Desmarcar todo</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Haga clic aquí para anular la selección de todas las variables de datos.</EDDGridUncheckAllTooltip>
 <!-- Ejemplos de Griddap Este grupo de configuraciones se usa para hacer ejemplos para la documentación de griddap que aparece en [baseUrl] /erddap/griddap/documentation.html y en otros lugares.
 Los caracteres especiales (por ejemplo, &amp; &lt;&gt;) deben estar codificados en HTML.
 Si desea que los ejemplos apunten a su ERDDAP, el método más fácil es:
@@ -3283,7 +3287,7 @@ Por ejemplo, orderBy(&quot;stationID, time&quot;) ordena los resultados principa
 <p><strong>orderByClosest</strong> ordena las filas de la tabla de resultados por las variables especificadas.
 La última variable debe ser una variable numérica con divisor.
 Solo se conservarán las filas más cercanas al intervalo del divisor.
-Por ejemplo, orderByClosest(&quot;stationID, time/2hours&quot;) ordenará por stationID y hora, pero solo devolverá las filas para cada stationID donde la última columna orderBy (tiempo) esté más cerca de los intervalos de 2 horas.
+Por ejemplo, orderByClosest(&quot;stationID, time/2hours&quot;) ordenará por stationID y time, pero solo devolverá las filas para cada stationID donde la última columna orderBy (tiempo) esté más cerca de los intervalos de 2 horas.
 <p><strong>orderByCount</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve el recuento del número de valores no perdidos para cada grupo.
 Por ejemplo, orderByCount(&quot;stationID, time/1day&quot;) ordenará por stationID y devolverá una fila para cada stationID para cada día, con un recuento del número de valores no perdidos para cada una de las otras variables.
 <p><strong>orderByLimit</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve las primeras nRows (según lo especificado por el último valor orderByLimit ) dentro de cada grupo.
@@ -3297,6 +3301,9 @@ Por ejemplo, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) devolv
 <p><strong>orderByMean</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve una fila para cada grupo.
 Esa fila tendrá la media de cada una de las otras variables.
 Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día, y calculará y devolverá la media de las otras variables.
+<p><strong>orderBy Sum</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve una fila para cada grupo.
+Esa fila tendrá la suma de cada una de las otras variables.
+Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día, y calculará y devolverá la suma de las otras variables.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Para orderByClosest, especifique el intervalo (usando el formato n [timeUnits], por ejemplo, 1 hora) aquí.
@@ -3659,8 +3666,8 @@ Después de que la etiqueta del botón cambie de &quot;Iniciar sesión&quot; a &
 <loginOpenIDCreate>O crea una URL de OpenID en</loginOpenIDCreate>
 <loginOpenIDFree>¡Todos son gratis!</loginOpenIDFree>
 <loginOpenIDSame>Asegúrese de haber iniciado sesión con exactamente la misma URL de OpenID que le dio al administrador de ERDDAP.</loginOpenIDSame>
-<loginAs>Has iniciado sesión como</loginAs>
-<loginPartwayAs>Ha iniciado sesión parcialmente como</loginPartwayAs>
+<loginAs>Ha iniciado sesión como {0}.</loginAs>
+<loginPartwayAs>Ha iniciado sesión parcialmente como {0}.</loginPartwayAs>
 <loginFailed>ERROR: Error al iniciar sesión</loginFailed>
 <loginInvalid>Nombre de usuario y / o contraseña inválido.</loginInvalid>
 <loginSucceeded>¡Inicio de sesión exitoso!</loginSucceeded>
@@ -4051,9 +4058,9 @@ Pero dods.dap.DODSException no tiene una excepción relevante.
 <notAvailable>Actualmente, datasetID = {0} no está disponible.</notAvailable>
 <note>¡NOTA!</note>
 <!--  Xxx es Hacer un gráfico, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Este conjunto de datos no está disponible a través de {0}.</noXxx>
-<noXxxBecause>Este conjunto de datos no está disponible a través de {0} porque {1}.</noXxxBecause>
-<noXxxBecause2>{0} no está disponible para este conjunto de datos porque {1}.</noXxxBecause2>
+<noXxx>Este conjunto de datos nunca está disponible a través de {0}.</noXxx>
+<noXxxBecause>Este conjunto de datos nunca está disponible a través de {0} porque {1}.</noXxxBecause>
+<noXxxBecause2>{0} nunca está disponible para este conjunto de datos porque {1}.</noXxxBecause2>
 <noXxxNotActive>el servicio {0} de este ERDDAP no está activo</noXxxNotActive>
 <noXxxNoAxis1>no hay variables de eje con más de un valor</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = {0} no es un tipo compatible</noXxxNoCdmDataType>
@@ -4178,6 +4185,7 @@ Los diferentes protocolos son apropiados para diferentes tipos de datos y para d
 <queryErrorOrderByClosest>Para orderByClosest, debe especificar una lista CSV de 1 o más nombres de columna orderBy (cada uno de los cuales debe estar en la lista de variables de resultados) más el intervalo para la última variable orderBy (p. Ej., &quot;StationID, time, 10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Para orderByLimit, debe especificar una lista CSV de 0 o más nombres de columna orderBy (cada uno de los cuales debe estar en la lista de variables de resultados; las columnas numéricas pueden tener columnName [/ divisor [timeUnits] [: offset]]) más el número máximo de filas para cada grupo (por ejemplo, &quot;stationID, time / 1day, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Para orderByMean, debe especificar una lista CSV de los nombres de columna orderBy (cada uno de los cuales debe estar en la lista de variables de resultados; las columnas numéricas pueden tener columnName [/ divisor [timeUnits] [: offset]]), por ejemplo, &quot;stationID, time /10 minutos&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Para orderBySum, debe especificar una lista CSV de los nombres de columna orderBy (cada uno de los cuales debe estar en la lista de variables de resultados; las columnas numéricas pueden tener columnName [/ divisor [timeUnits] [: offset]]), por ejemplo, &quot;stationID, time /10 minutos&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable = {0} no está en la lista de variables de resultados.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variable desconocida = {0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Las consultas de eje de cuadrícula deben especificar al menos una variable de eje.</queryErrorGrid1Axis>
@@ -4196,7 +4204,7 @@ Los diferentes protocolos son apropiados para diferentes tipos de datos y para d
 <queryErrorLastUnexpected>Carácter inesperado después de &quot;último&quot; en {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>El valor +/- en {0} no es válido.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>El valor de índice +/- en {0} no es un número entero.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} varía de {1} a {2}.</rangesFromTo>
 <required>Requerido</required>
 <resetTheForm>Restablezca el formulario a los valores predeterminados.</resetTheForm>
@@ -4910,8 +4918,8 @@ Por lo tanto, ya no tendrá que perder tiempo y esfuerzo reformateando los datos
 <li>ERDDAP también puede devolver una imagen .png o .pdf con un gráfico o mapa personalizado.
 <br>&nbsp;
 <li>ERDDAP estandariza las fechas + horas en los resultados.
-Los datos de otros servidores de datos son difíciles de comparar porque las fechas y horas a menudo se expresan en diferentes formatos (por ejemplo, &quot;2 de enero de 2018&quot;, 02-ENE-2018, 1/2/18, 1/2/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
-Para tiempos de cadena, ERDDAP siempre usa el formato estándar ISO 8601:
+Los datos de otros servidores de datos son difíciles de comparar porque las fechas y las horas a menudo se expresan en diferentes formatos (por ejemplo, &quot;2 de enero de 2018&quot;, 02-ENE-2018, 1/2/18, 1/2/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
+Para los tiempos de cadena, ERDDAP siempre usa el formato estándar ISO 8601:
 2004 (E), por ejemplo, 2018-01-02T00:
 00:
 00Z.
@@ -4925,13 +4933,13 @@ Puede omitir las páginas web de ERDDAP y utilizar los servicios web RESTful de 
 También puede crear otras cosas útiles e interesantes sobre los servicios web de ERDDAP ; consulte
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Este enlace a un sitio web externo no constituye un respaldo."></a> lista de increíbles proyectos relacionados ERDDAP .
+    title="Este enlace a un sitio web externo no constituye un respaldo."></a> lista de Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Para una introducción rápida a ERDDAP, vea la primera mitad de este<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este enlace a un sitio web externo no constituye un respaldo."></a> .</strong>
 <a class="selfLink" id="video" href="#video" rel="help">(5 minutos)</a> En él, un científico descarga datos de pronóstico de corrientes oceánicas de ERDDAP para modelar un derrame tóxico en el océano utilizando
-<a rel="bookmark" href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">el software GNOME de la NOAA .
+<a rel="bookmark" href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">el software GNOME de NOAA .
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este enlace a un sitio web externo no constituye un respaldo."></a> (¡en 5 minutos!).

@@ -2468,6 +2468,10 @@ Chagua moja au zaidi ya vigeu vya gridi ya taifa.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Vigezo vya Gridi</strong> (ambavyo pia hupakua vigeu vyote vya vipimo)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Angalia zote</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Bofya hapa ili kuchagua vigezo vyote vya data.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Ondoa Uteuzi Wote</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Bofya hapa ili kutengua vigezo vyote vya data.</EDDGridUncheckAllTooltip>
 <!-- Mifano ya Griddap Kundi hili la mipangilio linatumika kutengeneza mifano ya hati za griddap zinazoonekana kwenye [baseUrl]/erddap/griddap/documentation.html na kwingineko.
 Herufi maalum (kwa mfano, &amp; &lt; &gt;) lazima HTML zisimbwe.
 Ikiwa ungependa mifano ielekeze kwa ERDDAP yako, njia rahisi zaidi ni:
@@ -3182,11 +3186,14 @@ Kwa mfano, orderByMax(&quot;stationID, time/1day, 10&quot;) itapanga kulingana n
 Kwa mfano, orderByMax(&quot;stationID, time/1day, temperature&quot;) itapanga safu mlalo kulingana na stationID na kila siku, lakini itarudisha tu safu mlalo yenye thamani ya juu zaidi ya halijoto kwa kila stationID cha kituo kwa kila siku.
 <p><strong>orderBy Min</strong> ni kama orderByMax, lakini huweka tu safu mlalo na thamani ya chini kwa mpangilio wa orderBy Min kutofautiana.
 <p><strong>orderByMinMax</strong> ni kama orderBy Min plus orderByMax .
-Ndani ya kila kikundi cha kupanga, ni safu mlalo iliyo na thamani ya chini pekee na safu mlalo yenye thamani ya juu zaidi ya mpangilio wa mwisho wa orderByMinMax zitawekwa.
+Ndani ya kila kikundi cha kupanga, ni safu mlalo yenye thamani ya chini pekee na safu mlalo yenye thamani ya juu zaidi kwa mpangilio wa mwisho wa kutofautisha wa orderByMinMax zitawekwa.
 Kwa mfano, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) safu mlalo yenye thamani ya chini zaidi ya halijoto na safu mlalo yenye thamani ya juu zaidi ya halijoto kwa kila stationID cha kituo kwa kila siku.
 <p><strong>orderByMean</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha safu mlalo moja kwa kila kikundi.
 Safu hiyo itakuwa na maana ya kila moja ya vigezo vingine.
 Kwa mfano, orderByMax(&quot;stationID, time/1day&quot;) itaunda kikundi kwa kila stationID cha kituo kwa kila siku, na itakokotoa na kurudisha wastani wa vigeu vingine.
+<p><strong>orderBy Sum</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha safu mlalo moja kwa kila kikundi.
+Safu hiyo itakuwa na jumla ya kila moja ya vigezo vingine.
+Kwa mfano, orderByMax(&quot;stationID, time/1day&quot;) itaunda kikundi kwa kila stationID cha kituo kwa kila siku, na itakokotoa na kurudisha jumla ya vigeu vingine.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Kwa orderByClosest, bainisha muda (kwa kutumia umbizo n[timeUnits], kwa mfano, saa 1) hapa.
@@ -3545,8 +3552,8 @@ Baada ya lebo ya kitufe kubadilika kutoka &quot;Ingia&quot; hadi &quot;Imeingia&
 <loginOpenIDCreate>Au unda URL ya OpenID kwa</loginOpenIDCreate>
 <loginOpenIDFree>Wote ni bure!</loginOpenIDFree>
 <loginOpenIDSame>Hakikisha kuwa umeingia kwa kutumia OpenID URL sawa na uliyompa msimamizi wa ERDDAP.</loginOpenIDSame>
-<loginAs>Umeingia kama</loginAs>
-<loginPartwayAs>Umeingia kwa sehemu kama</loginPartwayAs>
+<loginAs>Umeingia kama {0} .</loginAs>
+<loginPartwayAs>Umeingia kwa sehemu kama {0} .</loginPartwayAs>
 <loginFailed>HITILAFU: Kuingia kumeshindwa</loginFailed>
 <loginInvalid>Jina Batili la Mtumiaji na/au Nenosiri.</loginInvalid>
 <loginSucceeded>Kuingia kumefaulu!</loginSucceeded>
@@ -3937,9 +3944,9 @@ Ni bora kurudisha faili tupu? Lakini .nc na zingine haziruhusu data ya urefu wa 
 <notAvailable>Kwa sasa, datasetID={0} haipatikani.</notAvailable>
 <note>KUMBUKA!</note>
 <!--  Xxx ni Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Seti hii ya data haipatikani kupitia {0}.</noXxx>
-<noXxxBecause>Seti hii ya data haipatikani kupitia {0} kwa sababu {1}.</noXxxBecause>
-<noXxxBecause2>{0} haipatikani kwa mkusanyiko huu wa data kwa sababu {1}.</noXxxBecause2>
+<noXxx>Seti hii ya data haipatikani kamwe kupitia {0}.</noXxx>
+<noXxxBecause>Seti hii ya data haipatikani kamwe kupitia {0} kwa sababu {1}.</noXxxBecause>
+<noXxxBecause2>{0} haipatikani kamwe kwa mkusanyiko huu wa data kwa sababu {1}.</noXxxBecause2>
 <noXxxNotActive>huduma hii ya ERDDAP {0} haitumiki</noXxxNotActive>
 <noXxxNoAxis1>hakuna viambishi vyovyote vya mhimili vilivyo na thamani zaidi ya moja</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} si aina inayolingana</noXxxNoCdmDataType>
@@ -4063,6 +4070,7 @@ Itifaki tofauti zinafaa kwa aina tofauti za data na kwa programu tofauti za mtej
 <queryErrorOrderByClosest>Kwa orderByClosest, lazima ubainishe orodha ya CSV ya majina 1 au zaidi ya kuagizaKwa safu wima (kila moja ambalo lazima liwe katika orodha ya vigeu vya matokeo) pamoja na muda wa mpangilio wa mwishoKwa kutofautisha (k.m., &quot;kitambulisho cha kituo, muda, dakika 10&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Kwa orderByLimit, ni lazima ubainishe orodha ya CSV ya majina 0 au zaidi ya kuagizaKwa safu wima (kila moja ambayo lazima iwe katika orodha ya vigeu vya matokeo; safu wima za nambari zinaweza kuwa na columnName[/divisor[timeUnits][:offset]]) pamoja na idadi ya juu zaidi. ya safu mlalo kwa kila kikundi (kwa mfano, &quot;kitambulisho cha kituo, saa/siku 1, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Kwa orderByMean, lazima ubainishe orodha ya CSV ya mpangilioKwa majina ya safu wima (ambayo kila moja lazima liwe katika orodha ya vigeu vya matokeo; safu wima za nambari zinaweza kuwa na columnName[/divisor[timeUnits][:offset]]), kwa mfano, &quot;stationID,time /dakika 10&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Kwa orderBySum, lazima ubainishe orodha ya CSV ya kuagizaKwa majina ya safu wima (kila moja ambalo lazima liwe katika orodha ya anuwai za matokeo; safu wima za nambari zinaweza kuwa na columnName[/divisor[timeUnits][:offset]]), kwa mfano, &quot;stationID,time /dakika 10&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} haiko katika orodha ya vigeu vya matokeo.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Tofauti isiyojulikana={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Hoja za mhimili wa gridi lazima zibainishe angalau kigezo kimoja cha mhimili.</queryErrorGrid1Axis>
@@ -4081,7 +4089,7 @@ Itifaki tofauti zinafaa kwa aina tofauti za data na kwa programu tofauti za mtej
 <queryErrorLastUnexpected>Herufi isiyotarajiwa baada ya &quot;mwisho&quot; katika {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Thamani ya +/- katika {0} si sahihi.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Nambari ya faharasa ya +/- katika {0} si nambari kamili.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} ni kati ya {1} hadi {2}.</rangesFromTo>
 <required>Inahitajika</required>
 <resetTheForm>Weka upya fomu kwa maadili chaguo-msingi.</resetTheForm>
@@ -4784,7 +4792,7 @@ Unaweza kukwepa kurasa za wavuti za ERDDAP na kutumia huduma za wavuti za ERDDAP
 Unaweza pia kuunda vitu vingine muhimu na vya kuvutia juu ya huduma za wavuti za ERDDAP - angalia
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> orodha ya miradi ya kushangaza inayohusiana na ERDDAP .
+    title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> orodha ya Miradi ya Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Kwa utangulizi wa haraka wa ERDDAP, tazama nusu ya kwanza ya hii<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

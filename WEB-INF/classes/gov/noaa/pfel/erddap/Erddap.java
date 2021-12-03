@@ -4643,6 +4643,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 String parts[] = String2.splitNoTrim(queryString, '&');
                 for (int p = 1; p < parts.length; p++) { //1 because 0 is varList
                     if (queryString.indexOf("orderByMean") >= 0 ||
+                        queryString.indexOf("orderBySum") >= 0 ||                        
                         (parts[p].startsWith("orderBy") && parts[p].indexOf('/') > 0)) {
                         newOrderBy = true;
                         break;
@@ -19217,7 +19218,7 @@ EDStatic.endBodyHtml(0, EDStatic.erddapUrl((String)null, language), (String)null
 "  \"@context\": \"http://schema.org\",\n" +
 "  \"@type\": \"DataCatalog\",\n" +
 "  \"name\": \"ERDDAP Data Server at NOAA NMFS SWFSC Environmental Research Division\",\n" +
-"  \"url\": \"https://localhost:8443/cwexperimental\",\n" +
+"  \"url\": \"https://127.0.0.1:8443/cwexperimental\",\n" +
 "  \"publisher\": {\n" +
 "    \"@type\": \"Organization\",\n" +
 "    \"name\": \"NOAA NMFS SWFSC Environmental Research Division\",\n" +
@@ -19249,7 +19250,7 @@ expected =
 "    {\n" +
 "      \"@type\": \"Dataset\",\n" +
 "      \"name\": \"JPL MUR SST Images\",\n" +
-"      \"sameAs\": \"https://localhost:8443/cwexperimental/info/testFileNames/index.html\"\n" +
+"      \"sameAs\": \"https://127.0.0.1:8443/cwexperimental/info/testFileNames/index.html\"\n" +
 "    }";
         po = results.indexOf(expected.substring(0, 80));
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
@@ -19288,11 +19289,11 @@ expected =
 //                                                end date changes   
 "le v70\\ntestOutOfDate=now-3days\\ntime_coverage_end=2018-08-07T09:00:00Z\\ntime_coverage_start=2002-06-01T09:00:0" +
 "0Z\\nWesternmost_Easting=-179.99\",\n" +
-"  \"url\": \"https://localhost:8443/cwexperimental/griddap/jplMURSST41.html\",\n" +
+"  \"url\": \"https://127.0.0.1:8443/cwexperimental/griddap/jplMURSST41.html\",\n" +
 "  \"includedInDataCatalog\": {\n" +
 "    \"@type\": \"DataCatalog\",\n" +
 "    \"name\": \"ERDDAP Data Server at NOAA NMFS SWFSC Environmental Research Division\",\n" +
-"    \"sameAs\": \"https://localhost:8443/cwexperimental\"\n" +
+"    \"sameAs\": \"https://127.0.0.1:8443/cwexperimental\"\n" +
 "  },\n" +
 "  \"keywords\": [\n" +
 "    \"analysed\",\n" +

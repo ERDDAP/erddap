@@ -1082,6 +1082,10 @@ public static boolean developmentMode = false;
         EDDGridSpacingTooltipAr,
         EDDGridDownloadTooltipAr,
         EDDGridGridVariableHtmlAr,
+        EDDGridCheckAllAr,
+        EDDGridCheckAllTooltipAr,
+        EDDGridUncheckAllAr,
+        EDDGridUncheckAllTooltipAr,
 
         EDDTableConstraintsAr,
         EDDTableTabularDatasetTooltipAr,
@@ -2547,7 +2551,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         dtWCSAr                      = getNotNothingString(messagesAr, "dtWCS",                      errorInMethod);
         dtWMSAr                      = getNotNothingString(messagesAr, "dtWMS",                      errorInMethod);
         
-        EasierAccessToScientificDataAr     = getNotNothingString(messagesAr, "EasierAccessToScientificData",     errorInMethod);
+        EasierAccessToScientificDataAr=getNotNothingString(messagesAr, "EasierAccessToScientificData",errorInMethod);
         EDDDatasetIDAr               = getNotNothingString(messagesAr, "EDDDatasetID",               errorInMethod);
         EDDFgdc                    = messagesAr[0].getNotNothingString("EDDFgdc",                    errorInMethod);
         EDDFgdcMetadataAr            = getNotNothingString(messagesAr, "EDDFgdcMetadata",            errorInMethod);
@@ -2613,6 +2617,10 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         EDDGridStrideTooltipAr       = getNotNothingString(messagesAr, "EDDGridStrideTooltip",       errorInMethod);
         EDDGridSpacingTooltipAr      = getNotNothingString(messagesAr, "EDDGridSpacingTooltip",      errorInMethod);
         EDDGridGridVariableHtmlAr    = getNotNothingString(messagesAr, "EDDGridGridVariableHtml",    errorInMethod);
+        EDDGridCheckAllAr            = getNotNothingString(messagesAr, "EDDGridCheckAll",            errorInMethod);
+        EDDGridCheckAllTooltipAr     = getNotNothingString(messagesAr, "EDDGridCheckAllTooltip",     errorInMethod);
+        EDDGridUncheckAllAr          = getNotNothingString(messagesAr, "EDDGridUncheckAll",          errorInMethod);
+        EDDGridUncheckAllTooltipAr   = getNotNothingString(messagesAr, "EDDGridUncheckAllTooltip",   errorInMethod);
 
         //default EDDGrid...Example
         EDDGridErddapUrlExample      = messagesAr[0].getNotNothingString("EDDGridErddapUrlExample",  errorInMethod);

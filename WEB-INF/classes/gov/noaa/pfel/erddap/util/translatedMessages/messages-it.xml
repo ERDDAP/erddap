@@ -2486,6 +2486,10 @@ selezionare una o più variabili della griglia.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variabili griglia</strong> (che scarica sempre anche tutte le variabili di dimensione)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Seleziona tutto</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Fare clic qui per selezionare tutte le variabili di dati.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Deseleziona tutto</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Fare clic qui per deselezionare tutte le variabili di dati.</EDDGridUncheckAllTooltip>
 <!-- Esempi Griddap Questo gruppo di impostazioni è usato per creare esempi per la documentazione griddap che appare in [baseUrl]/erddap/griddap/documentation.html e altrove.
 I caratteri speciali (ad es.
 &amp; &lt; &gt;) devono essere codificati in HTML.
@@ -3209,6 +3213,9 @@ Ad esempio, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) restitu
 <p><strong>orderByMean</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo una riga per ogni gruppo.
 Quella riga avrà la media di ciascuna delle altre variabili.
 Ad esempio, orderByMax(&quot;stationID, time/1day&quot;) creerà un gruppo per ogni stationID per ogni giorno e calcolerà e restituirà la media delle altre variabili.
+<p><strong>orderBy Sum</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo una riga per ogni gruppo.
+Quella riga avrà la somma di ciascuna delle altre variabili.
+Ad esempio, orderByMax(&quot;stationID, time/1day&quot;) creerà un gruppo per ogni stationID per ogni giorno e calcolerà e restituirà la somma delle altre variabili.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Per orderByClosest, specificare l&#39;intervallo (utilizzando il formato n[timeUnits], ad es.
@@ -3569,8 +3576,8 @@ Dopo che l&#39;etichetta del pulsante cambia da &quot;Accedi&quot; a &quot;Acces
 <loginOpenIDCreate>Oppure crea un URL OpenID su</loginOpenIDCreate>
 <loginOpenIDFree>Sono tutti gratuiti!</loginOpenIDFree>
 <loginOpenIDSame>Assicurati di aver effettuato l&#39;accesso con lo stesso URL OpenID che hai fornito all&#39;amministratore ERDDAP.</loginOpenIDSame>
-<loginAs>Sei stato registrato come</loginAs>
-<loginPartwayAs>Hai effettuato l&#39;accesso parzialmente come</loginPartwayAs>
+<loginAs>Hai effettuato l&#39;accesso come {0}.</loginAs>
+<loginPartwayAs>Hai effettuato l&#39;accesso in parte come {0} .</loginPartwayAs>
 <loginFailed>ERRORE: accesso non riuscito</loginFailed>
 <loginInvalid>Username e / o password non validi.</loginInvalid>
 <loginSucceeded>Accesso riuscito!</loginSucceeded>
@@ -3962,9 +3969,9 @@ Meglio restituire un file vuoto? Ma .nc e altri non consentono dati di lunghezza
 <notAvailable>Attualmente, datasetID={0} non è disponibile.</notAvailable>
 <note>NOTA!</note>
 <!--  Xxx è Crea un grafico, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Questo set di dati non è disponibile tramite {0}.</noXxx>
-<noXxxBecause>Questo set di dati non è disponibile tramite {0} perché {1}.</noXxxBecause>
-<noXxxBecause2>{0} non è disponibile per questo set di dati perché {1}.</noXxxBecause2>
+<noXxx>Questo set di dati non è mai disponibile tramite {0}.</noXxx>
+<noXxxBecause>Questo set di dati non è mai disponibile tramite {0} perché {1}.</noXxxBecause>
+<noXxxBecause2>{0} non è mai disponibile per questo set di dati perché {1}.</noXxxBecause2>
 <noXxxNotActive>il servizio {0} di questo ERDDAP non è attivo</noXxxNotActive>
 <noXxxNoAxis1>non ci sono variabili di asse con più di un valore</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} non è un tipo compatibile</noXxxNoCdmDataType>
@@ -4086,6 +4093,7 @@ Protocolli diversi sono appropriati per diversi tipi di dati e per diverse appli
 <queryErrorOrderByClosest>Per orderByClosest, è necessario specificare un elenco CSV di 1 o più nomi di colonna orderBy (ognuno dei quali deve essere nell&#39;elenco delle variabili dei risultati) più l&#39;intervallo per l&#39;ultima variabile orderBy (ad esempio, &quot;stationID,time,10 minuti&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Per orderByLimit, devi specificare un elenco CSV di 0 o più nomi di colonne orderBy (ognuno dei quali deve essere nell&#39;elenco delle variabili dei risultati; le colonne numeriche possono avere columnName[/divisor[timeUnits][:offset]]) più il numero massimo di righe per ogni gruppo (es. &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Per orderByMean, è necessario specificare un elenco CSV di nomi di colonne orderBy (ognuno dei quali deve essere nell&#39;elenco delle variabili dei risultati; le colonne numeriche possono avere columnName[/divisor[timeUnits][:offset]]), ad esempio &quot;stationID,time /10 minuti&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Per orderBySum, è necessario specificare un elenco CSV di nomi di colonne orderBy (ognuno dei quali deve essere nell&#39;elenco delle variabili dei risultati; le colonne numeriche possono avere columnName[/divisor[timeUnits][:offset]]), ad esempio &quot;stationID,time /10 minuti&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} non è nell&#39;elenco delle variabili dei risultati.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variabile sconosciuta={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Le query sull&#39;asse della griglia devono specificare almeno una variabile dell&#39;asse.</queryErrorGrid1Axis>
@@ -4104,7 +4112,7 @@ Protocolli diversi sono appropriati per diversi tipi di dati e per diverse appli
 <queryErrorLastUnexpected>Carattere imprevisto dopo &quot;ultimo&quot; in {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Il valore +/- in {0} non è valido.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Il valore dell&#39;indice +/- in {0} non è un numero intero.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} varia da {1} a {2}.</rangesFromTo>
 <required>Necessario</required>
 <resetTheForm>Reimposta il modulo ai valori predefiniti.</resetTheForm>
@@ -4814,9 +4822,9 @@ ERDDAP utilizza sempre il fuso orario Zulu (UTC, GMT) per eliminare le difficolt
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;ragnatela&nbsp;servizi</a> (per programmi informatici).
 È possibile ignorare le pagine Web di ERDDAP e utilizzare i servizi Web RESTful di ERDDAP (ad esempio, per la ricerca di set di dati, per il download di dati, per la creazione di mappe) direttamente da qualsiasi programma per computer (ad esempio Matlab, R o un programma che scrivi) e anche da pagine web (tramite tag immagine HTML o Java Script).
 Puoi anche creare altre cose utili e interessanti in aggiunta ai servizi web di ERDDAP - vedi il
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">fantastico ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> elenco di fantastici progetti relativi a ERDDAP .
+    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> elenco di fantastici progetti relativi a Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Per una rapida introduzione a ERDDAP, guarda la prima metà di questo<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4840,7 +4848,7 @@ Se disponi già di un servizio web per la distribuzione dei tuoi dati, puoi conf
 Quindi, le persone avranno un altro modo per accedere ai tuoi dati e potranno scaricare i dati in formati di file aggiuntivi o come grafici o mappe.
 ERDDAP è stato installato da oltre 90 organizzazioni in almeno 14 paesi.
 <a rel="bookmark"
-href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Direttiva procedurale di accesso ai dati della NOAA <img 
+href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Direttiva procedurale per l&#39;accesso ai dati della NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> include ERDDAP nel suo elenco di server di dati consigliati per l&#39;utilizzo da parte di gruppi all&#39;interno di NOAA .
 ]]></standardShortDescriptionHtml>

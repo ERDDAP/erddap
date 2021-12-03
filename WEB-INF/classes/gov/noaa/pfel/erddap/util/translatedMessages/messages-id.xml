@@ -2438,6 +2438,10 @@ Pilih satu atau lebih variabel kisi.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variabel Grid</strong> (yang selalu juga mengunduh semua variabel dimensi)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Periksa Semua</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Klik di sini untuk memilih semua variabel data.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Jangan tandai semua</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Klik di sini untuk membatalkan pilihan semua variabel data.</EDDGridUncheckAllTooltip>
 <!-- Contoh Griddap Grup pengaturan ini digunakan untuk membuat contoh dokumentasi griddap yang muncul di [baseUrl]/erddap/griddap/documentation.html dan di tempat lain.
 Karakter khusus (misalnya, &amp; &lt; &gt;) harus dikodekan dalam HTML.
 Jika Anda ingin contoh mengarah ke ERDDAP Anda, metode termudah adalah:
@@ -3154,6 +3158,9 @@ Misalnya, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) akan meng
 <p><strong>orderByMean</strong> mengurutkan baris tabel hasil ke dalam grup dan hanya mengembalikan satu baris untuk setiap grup.
 Baris itu akan memiliki rata-rata dari masing-masing variabel lainnya.
 Misalnya, orderByMax(&quot;stationID, time/1day&quot;) akan membuat grup untuk setiap stationID untuk setiap hari, dan akan menghitung dan mengembalikan mean dari variabel lainnya.
+<p><strong>orderBy Sum</strong> mengurutkan baris tabel hasil ke dalam grup dan hanya mengembalikan satu baris untuk setiap grup.
+Baris itu akan memiliki jumlah dari masing-masing variabel lainnya.
+Misalnya, orderByMax(&quot;stationID, time/1day&quot;) akan membuat grup untuk setiap stationID untuk setiap hari, dan akan menghitung dan mengembalikan jumlah variabel lainnya.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Untuk orderByClosest, tentukan interval (menggunakan format n[timeUnits], misalnya 1 jam) di sini.
@@ -3511,8 +3518,8 @@ Setelah label tombol berubah dari &quot;Masuk&quot; menjadi &quot;Masuk&quot;, t
 <loginOpenIDCreate>Atau buat URL OpenID di</loginOpenIDCreate>
 <loginOpenIDFree>Mereka semua gratis!</loginOpenIDFree>
 <loginOpenIDSame>Pastikan Anda masuk dengan URL OpenID yang sama persis dengan yang Anda berikan kepada administrator ERDDAP.</loginOpenIDSame>
-<loginAs>Kamu masuk sebagai</loginAs>
-<loginPartwayAs>Anda masuk sebagian sebagai</loginPartwayAs>
+<loginAs>Anda masuk sebagai {0} .</loginAs>
+<loginPartwayAs>Anda masuk sebagian sebagai {0} .</loginPartwayAs>
 <loginFailed>KESALAHAN: Login gagal</loginFailed>
 <loginInvalid>Nama Pengguna dan/atau Kata Sandi Tidak Valid.</loginInvalid>
 <loginSucceeded>Masuk berhasil!</loginSucceeded>
@@ -3903,9 +3910,9 @@ Lebih baik mengembalikan file kosong? Tetapi .nc dan lainnya tidak mengizinkan d
 <notAvailable>Saat ini, datasetID={0} tidak tersedia.</notAvailable>
 <note>CATATAN!</note>
 <!--  Xxx adalah Membuat Grafik, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Kumpulan data ini tidak tersedia melalui {0}.</noXxx>
-<noXxxBecause>Kumpulan data ini tidak tersedia melalui {0} karena {1}.</noXxxBecause>
-<noXxxBecause2>{0} tidak tersedia untuk kumpulan data ini karena {1}.</noXxxBecause2>
+<noXxx>Kumpulan data ini tidak pernah tersedia melalui {0}.</noXxx>
+<noXxxBecause>Kumpulan data ini tidak pernah tersedia melalui {0} karena {1}.</noXxxBecause>
+<noXxxBecause2>{0} tidak pernah tersedia untuk kumpulan data ini karena {1}.</noXxxBecause2>
 <noXxxNotActive>layanan {0} ERDDAP ini tidak aktif</noXxxNotActive>
 <noXxxNoAxis1>tidak ada variabel sumbu dengan lebih dari satu nilai</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} bukan tipe yang kompatibel</noXxxNoCdmDataType>
@@ -4027,6 +4034,7 @@ Protokol yang berbeda sesuai untuk tipe data yang berbeda dan untuk aplikasi kli
 <queryErrorOrderByClosest>Untuk orderByClosest, Anda harus menentukan daftar CSV dari 1 atau lebih nama kolom orderBy (masing-masing harus ada dalam daftar variabel hasil) ditambah interval untuk variabel orderBy terakhir (mis., &quot;stationID,time,10 menit&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Untuk orderByLimit, Anda harus menentukan daftar CSV dari 0 atau lebih nama kolom orderBy (masing-masing harus ada dalam daftar variabel hasil; kolom numerik mungkin memiliki columnName[/divisor[timeUnits][:offset]]) ditambah jumlah maksimum baris untuk setiap grup (misalnya, &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Untuk orderByMean, Anda harus menentukan daftar CSV dari nama kolom orderBy (masing-masing harus ada dalam daftar variabel hasil; kolom numerik mungkin memiliki columnName[/divisor[timeUnits][:offset]]), misalnya, &quot;stationID,time /10 menit&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Untuk orderBySum, Anda harus menentukan daftar CSV dari nama kolom orderBy (masing-masing harus ada dalam daftar variabel hasil; kolom numerik mungkin memiliki columnName[/divisor[timeUnits][:offset]]), misalnya, &quot;stationID,time /10 menit&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>variabel orderBy={0} tidak ada dalam daftar variabel hasil.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variabel tidak diketahui={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Kueri sumbu kisi harus menentukan setidaknya satu variabel sumbu.</queryErrorGrid1Axis>
@@ -4045,7 +4053,7 @@ Protokol yang berbeda sesuai untuk tipe data yang berbeda dan untuk aplikasi kli
 <queryErrorLastUnexpected>Karakter tak terduga setelah &quot;terakhir&quot; di {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Nilai +/- di {0} tidak valid.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Nilai indeks +/- dalam {0} bukan bilangan bulat.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} berkisar dari {1} hingga {2}.</rangesFromTo>
 <required>Yg dibutuhkan</required>
 <resetTheForm>Setel ulang formulir ke nilai default.</resetTheForm>
@@ -4746,10 +4754,10 @@ ERDDAP selalu menggunakan zona waktu Zulu (UTC, GMT) untuk menghilangkan kesulit
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;jaring&nbsp;layanan</a> (untuk program komputer).
 Anda dapat melewati halaman web ERDDAP dan menggunakan RESTful web ERDDAP (misalnya, untuk mencari kumpulan data, untuk mengunduh data, untuk membuat peta) langsung dari program komputer mana pun (misalnya, Matlab, R, atau program yang Anda menulis) dan bahkan dari halaman web (melalui tag gambar HTML atau Java Script).
 Anda juga dapat membangun hal-hal berguna dan menarik lainnya di atas layanan web ERDDAP — lihat
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">ERDDAP</a> yang Luar Biasa
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP</a> yang Luar Biasa
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> daftar proyek terkait ERDDAP yang mengagumkan.
+    title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> daftar proyek terkait Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Untuk pengenalan singkat tentang ERDDAP, tonton paruh pertama ini<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4770,7 +4778,7 @@ Ini menggunakan lisensi seperti Apache, sehingga Anda dapat melakukan apa pun ya
 ERDDAP dapat disesuaikan, sehingga ERDDAP Anda akan mencerminkan institusi Anda, bukan NOAA .
 Upaya kecil untuk menyiapkan ERDDAP membawa banyak manfaat.
 Jika Anda sudah memiliki layanan web untuk mendistribusikan data Anda, Anda dapat mengatur ERDDAP untuk mengakses data Anda melalui layanan yang ada atau melalui file sumber atau database.
-Kemudian, orang akan memiliki cara lain untuk mengakses data Anda dan dapat mengunduh data dalam format file tambahan atau sebagai grafik atau peta.
+Kemudian, orang akan memiliki cara lain untuk mengakses data Anda dan akan dapat mengunduh data dalam format file tambahan atau sebagai grafik atau peta.
 ERDDAP telah dipasang oleh lebih dari 90 organisasi di setidaknya 14 negara.
 <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Petunjuk Prosedural Akses Data NOAA <img 

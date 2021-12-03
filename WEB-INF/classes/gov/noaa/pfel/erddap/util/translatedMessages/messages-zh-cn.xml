@@ -2035,6 +2035,10 @@ griddap 使用<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img
 <EDDGridGridVariableHtml><![CDATA[
 <strong>网格变量</strong>（也总是下载所有维度变量）
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>选择所有</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>单击此处选择所有数据变量。</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>取消所有</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>单击此处取消选择所有数据变量。</EDDGridUncheckAllTooltip>
 <!-- Griddap 示例 这组设置用于为出现在 [baseUrl]/erddap/griddap/documentation.html 和其他地方的 griddap 文档制作示例。特殊字符（例如 &amp; &lt; &gt;）必须是 HTML 编码的。如果您希望示例指向您的ERDDAP ，最简单的方法是：1) 通过将其添加到您的datasets.xml中，将 jplMU RSS T41 数据集包含在您的ERDDAP中： <dataset type=" EDDGrid FromErddap&quot;<span translate="no">datasetID =&quot;jplMU RSS T41&quot;active=&quot;true&quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2) 将此标记添加到您的 setup.xml，但将 URL 更改为您的ERDDAP (https?) URL：&lt; EDDGrid ErddapUrlExample&gt;https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrl示例&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
 <!--  这是由您的 ERDDAP 提供服务的 EDDGrid 数据集的 datasetID。
@@ -2600,14 +2604,15 @@ orderBy ...
 函数，请选择左侧的第一个选项 (&quot;&quot;)。
 orderBy ...
 函数是：
-<p><strong>orderBy</strong>按指定的变量对结果表的行进行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID对结果进行排序，其次按时间排序。
+<p><strong>orderBy</strong>按指定的变量对结果表的行进行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序结果，其次按时间排序。
 <p><strong>orderByClosest</strong>按指定的变量对结果表的行进行排序。最后一个变量必须是一个带除数的数值变量。只保留最接近除数间隔的行。例如， orderByClosest(&quot;stationID, time/2hours&quot;)将按stationID和时间排序，但只返回每个stationID的最后一个orderBy列（时间）最接近2 小时间隔的行。
-<p><strong>orderByCount</strong>将结果表的行排序为组，并只返回每个组的非缺失值数量的计数。例如， orderByCount(&quot;stationID, time/1day&quot;)将按stationID stationID一行，并对每个其他变量的非缺失值数量进行计数。
-<p><strong>orderByLimit</strong>将结果表的行排序为组，并只返回每个组中的前 nRows（由最后一个orderByLimit值指定）。例如orderByMax(&quot;stationID, time/1day, 10&quot;)将按stationID和 time 排序，但只返回每个stationID每天的前 10 行。
+<p><strong>orderByCount</strong>将结果表的行排序为组，并只返回每个组的非缺失值数的计数。例如， orderByCount(&quot;stationID, time/1day&quot;)将按stationID stationID一行，并计算其他每个变量的非缺失值的数量。
+<p><strong>orderByLimit</strong>将结果表的行分类到组中，并只返回每个组中的前 nRows（由最后一个orderByLimit值指定）。例如orderByMax(&quot;stationID, time/1day, 10&quot;)将按stationID和 time 排序，但只返回每个stationID每天的前 10 行。
 <p><strong>orderByMax</strong>将结果表的行排序成组，并只返回每个组中具有请求中最后一个orderByMax变量的最大值的行。例如， orderByMax(&quot;stationID, time/1day, temperature&quot;)将按stationID和每天对行进行分组，但仅返回每个stationID每天具有最高温度值的行。
 <p><strong>orderBy Min</strong>类似于orderByMax ，但只保留最后一个orderBy Min 变量具有最小值的行。
 <p><strong>orderByMinMax</strong>就像orderBy Min 加上orderByMax 。在每个排序组中，仅保留最后一个orderByMinMax变量具有最小值的行和具有最大值的行。例如， orderByMinMax(&quot;stationID, time/1day, temperature&quot;)将返回每个stationID每天温度值最低的行和温度值最高的行。
 <p><strong>orderByMean</strong>将结果表的行排序为组，并且只为每个组返回一行。该行将具有每个其他变量的平均值。例如， orderByMax(&quot;stationID, time/1day&quot;)将为每天的每个stationID创建一个组，并计算并返回其他变量的平均值。
+<p><strong>orderBy Sum</strong>将结果表的行排序为组，并且只为每个组返回一行。该行将包含每个其他变量的总和。例如orderByMax(&quot;stationID, time/1day&quot;)会为每天的每个stationID创建一个组，并计算并返回其他变量的总和。
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 对于orderByClosest ，请在此处指定间隔（使用格式 n[timeUnits]，例如 1 小时）。
@@ -2916,8 +2921,8 @@ URL 标识数据集、响应所需的文件类型、要查看的数据子集以�
 <loginOpenIDCreate>或者在以下位置创建一个 OpenID URL</loginOpenIDCreate>
 <loginOpenIDFree>他们都是免费的！</loginOpenIDFree>
 <loginOpenIDSame>确保您使用与您提供给 ERDDAP 管理员完全相同的 OpenID URL 登录。</loginOpenIDSame>
-<loginAs>您登录为</loginAs>
-<loginPartwayAs>您中途登录为</loginPartwayAs>
+<loginAs>您以 {0} 的身份登录。</loginAs>
+<loginPartwayAs>您中途以 {0} 的身份登录。</loginPartwayAs>
 <loginFailed>错误：登录失败</loginFailed>
 <loginInvalid>无效的用户名和/或密码。</loginInvalid>
 <loginSucceeded>登录成功！</loginSucceeded>
@@ -3259,9 +3264,9 @@ Empty Caches”。
 <notAvailable>目前，datasetID={0} 不可用。</notAvailable>
 <note>笔记！</note>
 <!--  Xxx 是制作图表、FGDC、ISO 19115、SOS、WCS、WMS、... -->
-<noXxx>此数据集无法通过 {0} 获得。</noXxx>
-<noXxxBecause>此数据集无法通过 {0} 获得，因为 {1}。</noXxxBecause>
-<noXxxBecause2>{0} 不适用于此数据集，因为 {1}。</noXxxBecause2>
+<noXxx>此数据集永远无法通过 {0} 获得。</noXxx>
+<noXxxBecause>此数据集永远无法通过 {0} 获得，因为 {1}。</noXxxBecause>
+<noXxxBecause2>{0} 永远无法用于此数据集，因为 {1}。</noXxxBecause2>
 <noXxxNotActive>此 ERDDAP 的 {0} 服务未激活</noXxxNotActive>
 <noXxxNoAxis1>没有任何轴变量具有多个值</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} 不是兼容的类型</noXxxNoCdmDataType>
@@ -3375,6 +3380,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorOrderByClosest>对于 orderByClosest，您必须指定一个 CSV 列表，其中包含 1 个或多个 orderBy 列名称（每个列名称都必须在结果变量列表中）加上最后一个 orderBy 变量的间隔（例如，“stationID,time,10 minutes”）。</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>对于 orderByLimit，您必须指定 0 个或多个 orderBy 列名称的 CSV 列表（每个列名称必须在结果变量列表中；数字列可能有 columnName[/divisor[timeUnits][:offset]]）加上最大数量每组的行数（例如，“stationID,time/1day,10”）。</queryErrorOrderByLimit>
 <queryErrorOrderByMean>对于 orderByMean，您必须指定 orderBy 列名称的 CSV 列表（每个列名称都必须在结果变量列表中；数字列可能具有 columnName[/divisor[timeUnits][:offset]]），例如，“stationID,time /10分钟”。</queryErrorOrderByMean>
+<queryErrorOrderBySum>对于 orderBySum，您必须指定 orderBy 列名称的 CSV 列表（每个列名称都必须在结果变量列表中；数字列可能具有 columnName[/divisor[timeUnits][:offset]]），例如，“stationID,time /10分钟”。</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} 不在结果变量列表中。</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>未知变量={0}。</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>网格轴查询必须至少指定一个轴变量。</queryErrorGrid1Axis>
@@ -3393,7 +3399,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorLastUnexpected>{0} 中“last”之后的意外字符。</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>{0} 中的 +/- 值无效。</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>{0} 中的 +/- 索引值不是整数。</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} 的范围从 {1} 到 {2}。</rangesFromTo>
 <required>必需的</required>
 <resetTheForm>将表单重置为默认值。</resetTheForm>
@@ -3972,9 +3978,9 @@ ERDDAP以 .html 表、 ESRI .asc和 .csv、 Google Earth .kml 、 OPeNDAP二进�
 ERDDAP始终使用Zulu （UTC、GMT）时区来消除使用不同时区和标准时间与夏令时的困难。
 &convertTimeReference;
 <br>&nbsp;
-<li>ERDDAP有网页（适用于有浏览器的人）和<a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;网络&nbsp;服务</a>（用于计算机程序）。您可以绕过ERDDAP的RESTful ERDDAP直接从任何计算机程序（例如， Matlab 、R 或您编写）甚至来自网页（通过 HTML 图像标签或Java脚本）。您还可以在ERDDAP的 Web 服务之上构建其他有用和有趣的东西——请参阅<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
+<li>ERDDAP有网页（适用于有浏览器的人）和<a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;网络&nbsp;服务</a>（用于计算机程序）。您可以绕过ERDDAP的RESTful ERDDAP直接从任何计算机程序（例如Matlab 、R 或您编写）甚至来自网页（通过 HTML 图像标签或Java脚本）。您还可以在ERDDAP的 Web 服务之上构建其他有用和有趣的东西——请参阅<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部网站的链接不构成认可。"></a>很棒的ERDDAP相关项目列表。
+    title="此指向外部网站的链接不构成认可。"></a> Awesome ERDDAP相关项目列表。
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">有关ERDDAP的快速介绍，请观看本文的前半部分<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >视频<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

@@ -2790,6 +2790,10 @@ missing or bad in an otherwise perfectly evenly spaced dataset.
 <EDDGridGridVariableHtml><![CDATA[<strong>Grid Variables</strong>
   (which always also download all of the dimension variables)]]></EDDGridGridVariableHtml>
 
+<EDDGridCheckAll>Check All</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Click here to select all data variables.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Uncheck All</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Click here to de-select all data variables.</EDDGridUncheckAllTooltip>
 <!-- Griddap Examples
 This group of settings is used to make examples for the griddap documentation 
 that appears at [baseUrl]/erddap/griddap/documentation.html and elsewhere.
@@ -3706,6 +3710,11 @@ for each stationID for each day.
 and just returns one row for each group. That row will have the mean of each of the other variables.
 For example, orderByMax("stationID, time/1day") will create a group for each
 stationID for each day, and will calculate and return the mean of the other variables.
+
+<p><strong>orderBySum</strong> sorts the rows of the results table into groups
+and just returns one row for each group. That row will have the sum of each of the other variables.
+For example, orderByMax("stationID, time/1day") will create a group for each
+stationID for each day, and will calculate and return the sum of the other variables.
 ]]></functionOrderByTooltip>
 
 <functionOrderByExtra><![CDATA[
@@ -4156,8 +4165,8 @@ After the button's label changes from "Sign in" to "Signed in", wait 5 seconds.<
 <loginOpenIDFree>They are all free!</loginOpenIDFree>
 <loginOpenIDSame>Make sure that you logged in with the exact same OpenID URL that you gave to the ERDDAP administrator.</loginOpenIDSame>
 
-<loginAs>You are logged in as</loginAs>
-<loginPartwayAs>You are logged in partway as</loginPartwayAs>
+<loginAs>You are logged in as {0} .</loginAs>
+<loginPartwayAs>You are logged in partway as {0} .</loginPartwayAs>
 <loginFailed>ERROR: Login failed</loginFailed>
 <loginInvalid>Invalid User Name and/or Password.</loginInvalid>
 <loginSucceeded>Login succeeded!</loginSucceeded>
@@ -4604,9 +4613,9 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <note>NOTE!</note>
 
 <!-- Xxx is Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>This dataset isn''t available via {0}.</noXxx>
-<noXxxBecause>This dataset isn''t available via {0} because {1}.</noXxxBecause>
-<noXxxBecause2>{0} isn''t available for this dataset because {1}.</noXxxBecause2>
+<noXxx>This dataset is never available via {0}.</noXxx>
+<noXxxBecause>This dataset is never available via {0} because {1}.</noXxxBecause>
+<noXxxBecause2>{0} is never available for this dataset because {1}.</noXxxBecause2>
 <noXxxNotActive>this ERDDAP''s {0} service is not active</noXxxNotActive>
 <noXxxNoAxis1>there aren't any axis variables with more than one value</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} is not a compatible type</noXxxNoCdmDataType>
@@ -4755,6 +4764,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorOrderByClosest>For orderByClosest, you must specify a CSV list of 1 or more orderBy column names (each of which must be in the list of results variables) plus the interval for the last orderBy variable (e.g., "stationID,time,10 minutes").</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of 0 or more orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]) plus the maximum number of rows for each group (e.g., "stationID,time/1day,10").</queryErrorOrderByLimit>
 <queryErrorOrderByMean>For orderByMean, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderByMean>
+<queryErrorOrderBySum>For orderBySum, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 
@@ -4785,7 +4795,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorLastPMInvalid>The +/- value in {0} isn''t valid.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>The +/- index value in {0} isn''t an integer.</queryErrorLastPMInteger>
 
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 
 <rangesFromTo>{0} ranges from {1} to {2}.</rangesFromTo>
 
@@ -5698,11 +5708,11 @@ make it easier for you to get scientific data.-->
     directly from any computer program (for example, Matlab, R, or a program that you write)
     and even from web pages (via HTML image tags or JavaScript).  
   You can also build other useful and interesting things on top of ERDDAP's web services
-  &mdash; see the 
+    &mdash; see the 
   <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
-    list of awesome ERDDAP-related projects.
+    list of Awesome ERDDAP-related projects.
 </ul>
 
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">For a quick introduction to ERDDAP,

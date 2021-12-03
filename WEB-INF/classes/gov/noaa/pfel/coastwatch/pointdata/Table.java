@@ -218,6 +218,13 @@ public class Table  {
         "numeric columns may have columnName[/divisor[timeUnits][:offset]]), " +
         "e.g., \"stationID,time/10minutes\".";
 
+    //EDStatic replaces this with queryErrorOrderBySum from messages.xml 
+    public static String ORDER_BY_SUM_ERROR = 
+        "For orderBySum, you must specify a CSV list of orderBy column names " +
+        "(each of which must be in the list of results variables; " +
+        "numeric columns may have columnName[/divisor[timeUnits][:offset]]), " +
+        "e.g., \"stationID,time/10minutes\".";
+
     public static String NOT_FOUND_EOF = " not found before end-of-file.";
     public static String ELAPSED_TIME = "elapsedTime"; 
     public static String WARNING_BAD_LINE_OF_DATA_IN = String2.WARNING + ": Bad line(s) of data in "; 
@@ -26465,7 +26472,7 @@ String2.log(table.dataToString());
      * @param dapQuery A PERCENT-ENCODED DAP query.
      *   Unofficially (e.g., for testing) the query can be already percent decoded
      *     if there are no %dd in the decoded query.
-     *   This supports filters: distinct(), orderBy(), orderBy...(), but not orderByMean() or units().
+     *   This supports filters: distinct(), orderBy(), orderBy...(), but not orderByMean(), orderBySum() or units().
      * @return the number of rows remaining (may be 0!).
      */
     public int subsetViaDapQuery(String dapQuery) throws Exception {
@@ -26531,7 +26538,8 @@ String2.log(table.dataToString());
                 orderByMax(StringArray.arrayFromCSV(part.substring(12, partL-2)));    
             } else if (part.startsWith("orderByMinMax(\"") && part.endsWith("\")")) {
                 orderByMinMax(StringArray.arrayFromCSV(part.substring(15, partL-2))); 
-//orderByMean isn't supported here! It is just in TableWriterOrderByMean.
+            //orderByMean isn't supported here! It is just in TableWriterOrderByMean.
+            //orderBySum isn't supported here! It is just in TableWriterOrderBySum.
             }// else it's a constraint. If error, parseDapQuery would have caught it.
              // units() is ignored here 
         }

@@ -2101,6 +2101,10 @@ griddapは<a rel="bookmark" href="https://www.opendap.org">OPeNDAP</a>を使用�
 <EDDGridGridVariableHtml><![CDATA[
 <strong>グリッド変数</strong>（常にすべてのディメンション変数もダウンロードします）
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>すべてチェック</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>すべてのデータ変数を選択するには、ここをクリックしてください。</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>すべてチェックを外します</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>すべてのデータ変数の選択を解除するには、ここをクリックしてください。</EDDGridUncheckAllTooltip>
 <!-- Griddapの例この設定グループは、[baseUrl] /erddap/griddap/documentation.htmlなどに表示されるgriddapドキュメントの例を作成するために使用されます。特殊文字（＆&lt;&gt;など）はHTMLでエンコードする必要があります。例でERDDAPを指すようにする場合、最も簡単な方法は次のとおりです。1）これをdatasets.xmlに追加して、 RSS ERDDAPデータセットをERDDAPに含めます。
 <dataset type=" EDDGrid FromErddap &quot;<span translate="no">datasetID =&quot; jplMU RSS T41 &quot;active =&quot; true &quot;&gt;<sourceUrl> https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41</sourceUrl></dataset> 2）このタグをsetup.xmlに追加しますが、URLをERDDAPの（https？）URLに変更します：&lt; EDDGrid ErddapUrlExample&gt; https://coastwatch.pfeg.noaa.gov/erddap/ </ EDDGrid ErddapUrlExample&gt; -->
 <EDDGridErddapUrlExample>https://coastwatch.pfeg.noaa.gov/erddap/</EDDGridErddapUrlExample>
@@ -2703,6 +2707,7 @@ orderBy ...関数は次のとおりです。
 <p><strong>orderBy Min</strong>はorderByMaxに似ていますが、最後のorderBy変数の最小値を持つ行のみを保持します。
 <p><strong>orderByMinMax</strong>は、 orderByとorderByMaxのようなものです。各ソートグループ内では、最後のorderByMinMax変数の最小値の行と最大値の行のみが保持されます。たとえば、 orderByMinMax(&quot;stationID, time/1day, temperature&quot;)は、各日の各stationIDの最小温度値を持つ行と最大温度値を持つ行を返します。
 <p><strong>orderByMean</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1行だけを返します。その行には、他の各変数の平均が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の平均を計算して返します。
+<p><strong>orderBy Sum</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1行だけを返します。その行には、他の各変数の合計が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の合計を計算して返します。
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 orderByClosestの場合、ここで間隔を指定します（n [timeUnits]の形式を使用して、たとえば1時間）。
@@ -3023,8 +3028,8 @@ GoogleメールアカウントまたはORCIDiDを持っている人なら誰で�
 <loginOpenIDCreate>または、次の場所でOpenIDURLを作成します。</loginOpenIDCreate>
 <loginOpenIDFree>それらはすべて無料です！</loginOpenIDFree>
 <loginOpenIDSame>ERDDAP管理者に提供したものとまったく同じOpenIDURLでログインしていることを確認してください。</loginOpenIDSame>
-<loginAs>としてログインしています</loginAs>
-<loginPartwayAs>途中でログインしています</loginPartwayAs>
+<loginAs>{0}としてログインしています。</loginAs>
+<loginPartwayAs>途中で{0}としてログインしています。</loginPartwayAs>
 <loginFailed>エラー：ログインに失敗しました</loginFailed>
 <loginInvalid>無効なユーザー名またはパスワード、あるいはその両方。</loginInvalid>
 <loginSucceeded>ログインに成功しました！</loginSucceeded>
@@ -3369,9 +3374,9 @@ X =経度およびY =緯度の場合、マップを取得します。
 <notAvailable>現在、datasetID = {0}は利用できません。</notAvailable>
 <note>ノート！</note>
 <!--  XxxはMakeA Graph、FGDC、ISO 19115、SOS、WCS、WMS、... -->
-<noXxx>このデータセットは{0}経由では利用できません。</noXxx>
-<noXxxBecause>{1}のため、このデータセットは{0}経由では利用できません。</noXxxBecause>
-<noXxxBecause2>{1}のため、このデータセットでは{0}を使用できません。</noXxxBecause2>
+<noXxx>このデータセットは、{0}を介して利用できることはありません。</noXxx>
+<noXxxBecause>{1}のため、このデータセットは{0}経由で利用できません。</noXxxBecause>
+<noXxxBecause2>{1}のため、このデータセットで{0}を使用することはできません。</noXxxBecause2>
 <noXxxNotActive>このERDDAPの{0}サービスはアクティブではありません</noXxxNotActive>
 <noXxxNoAxis1>複数の値を持つ軸変数はありません</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type = {0}は互換性のあるタイプではありません</noXxxNoCdmDataType>
@@ -3485,6 +3490,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorOrderByClosest>orderByClosestの場合、1つ以上のorderBy列名（それぞれが結果変数のリストに含まれている必要があります）と最後のorderBy変数の間隔（「stationID、time、10minutes」など）のCSVリストを指定する必要があります。</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>orderByLimitの場合、0個以上のorderBy列名（それぞれが結果変数のリストに含まれている必要があります。数値列にはcolumnName [/ divisor [timeUnits] [：offset]]が含まれる場合があります）と最大数のCSVリストを指定する必要があります。各グループの行数（例：「stationID、time / 1day、10」）。</queryErrorOrderByLimit>
 <queryErrorOrderByMean>orderByMeanの場合、orderBy列名のCSVリストを指定する必要があります（各列は結果変数のリストに含まれている必要があります。数値列にはcolumnName [/ divisor [timeUnits] [：offset]]が含まれる場合があります）。例： &quot;stationID、time /10分&quot;。</queryErrorOrderByMean>
+<queryErrorOrderBySum>orderBySumの場合、orderBy列名のCSVリストを指定する必要があります（各列は結果変数のリストに含まれている必要があります。数値列にはcolumnName [/ divisor [timeUnits] [：offset]]が含まれる場合があります）。例： &quot;stationID、time /10分&quot;。</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable = {0}は結果変数のリストにありません。</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>不明な変数= {0}。</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>グリッド軸クエリでは、少なくとも1つの軸変数を指定する必要があります。</queryErrorGrid1Axis>
@@ -3503,7 +3509,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorLastUnexpected>{0}の「最後」の後の予期しない文字。</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>{0}の+/-値は無効です。</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>{0}の+/-インデックス値は整数ではありません。</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0}の範囲は{1}から{2}です。</rangesFromTo>
 <required>必須</required>
 <resetTheForm>フォームをデフォルト値にリセットします。</resetTheForm>
@@ -4107,9 +4113,9 @@ ERDDAPは、常にZulu （UTC、GMT）タイムゾーンを使用して、さま
 <li>ERDDAPにはWebページ（ブラウザーを使用する人間向け）と<a rel="help" href="&erddapUrl;/rest.html">RESTful</a>があります<a rel="help" href="&erddapUrl;/rest.html">&nbsp;ウェブ&nbsp;サービス</a>（コンピュータープログラム用）。
 ERDDAPのWebページをバイパスして、 ERDDAPのRESTful Webサービス（たとえば、データセットの検索、データのダウンロード、マップの作成）を任意のコンピュータープログラム（たとえば、 Matlab 、R、またはあなたが書く）そしてウェブページからさえ（HTML画像タグまたはJavaスクリプトを介して）。
 ERDDAPのWebサービスの上に他の便利で興味深いものを構築することもできます—
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">ERDDAP</a>を参照してください<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap"><img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP</a>を参照してください<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>素晴らしいERDDAP関連プロジェクトのリスト。
+    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> Awesome ERDDAP関連プロジェクトのリスト。
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">ERDDAPの簡単な紹介については、この前半をご覧ください。<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >ビデオ<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

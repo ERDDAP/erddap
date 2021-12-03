@@ -2497,6 +2497,10 @@ Vyberte jednu nebo více proměnných mřížky.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Proměnné mřížky</strong> (které vždy také stahují všechny proměnné dimenze)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Zkontrolovat vše</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Kliknutím sem vyberete všechny datové proměnné.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Zrušte zaškrtnutí políčka Vše</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Kliknutím sem zrušíte výběr všech datových proměnných.</EDDGridUncheckAllTooltip>
 <!-- Příklady Griddap Tato skupina nastavení se používá k vytvoření příkladů pro dokumentaci griddap, která se objevuje na [baseUrl]/erddap/griddap/documentation.html a jinde.
 Speciální znaky (např.
 &amp; &lt; &gt;) musí být kódovány HTML.
@@ -3225,6 +3229,9 @@ Například orderByMinMax(&quot;stationID, time/1day, temperature&quot;) vrátí
 <p><strong>orderByMean</strong> seřadí řádky výsledkové tabulky do skupin a pouze vrátí jeden řádek pro každou skupinu.
 Tento řádek bude obsahovat průměr každé z ostatních proměnných.
 Například orderByMax(&quot;stationID, time/1day&quot;) vytvoří skupinu pro každé stationID pro každý den a vypočítá a vrátí průměr ostatních proměnných.
+<p><strong>orderBy Sum</strong> seřadí řádky výsledkové tabulky do skupin a pouze vrátí jeden řádek pro každou skupinu.
+Tento řádek bude obsahovat součet všech ostatních proměnných.
+Například orderByMax(&quot;stationID, time/1day&quot;) vytvoří skupinu pro každé stationID pro každý den a vypočítá a vrátí součet ostatních proměnných.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Pro orderByClosest zadejte interval (ve formátu n[timeUnits], např.
@@ -3583,8 +3590,8 @@ Poté, co se označení tlačítka změní z „Přihlásit se“ na „Přihlá
 <loginOpenIDCreate>Nebo vytvořte OpenID URL na</loginOpenIDCreate>
 <loginOpenIDFree>Všechny jsou zdarma!</loginOpenIDFree>
 <loginOpenIDSame>Ujistěte se, že jste se přihlásili pomocí přesně stejné adresy URL OpenID, kterou jste poskytli správci ERDDAP.</loginOpenIDSame>
-<loginAs>Jste přihlášen jako</loginAs>
-<loginPartwayAs>Jste přihlášeni částečně jako</loginPartwayAs>
+<loginAs>Jste přihlášeni jako {0}.</loginAs>
+<loginPartwayAs>Jste přihlášeni jako {0}.</loginPartwayAs>
 <loginFailed>CHYBA: Přihlášení se nezdařilo</loginFailed>
 <loginInvalid>Neplatné uživatelské jméno a/nebo heslo.</loginInvalid>
 <loginSucceeded>Přihlášení proběhlo úspěšně!</loginSucceeded>
@@ -3977,9 +3984,9 @@ Je lepší vrátit prázdný soubor? Ale .nc a další neumožňují data o dél
 <notAvailable>V současné době není datasetID={0} k dispozici.</notAvailable>
 <note>POZNÁMKA!</note>
 <!--  Xxx je Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Tato datová sada není dostupná prostřednictvím {0}.</noXxx>
-<noXxxBecause>Tato datová sada není dostupná prostřednictvím {0}, protože {1}.</noXxxBecause>
-<noXxxBecause2>{0} není pro tuto datovou sadu k dispozici, protože {1}.</noXxxBecause2>
+<noXxx>Tato datová sada není nikdy dostupná prostřednictvím {0}.</noXxx>
+<noXxxBecause>Tato datová sada není nikdy dostupná prostřednictvím {0}, protože {1}.</noXxxBecause>
+<noXxxBecause2>{0} není pro tuto datovou sadu nikdy k dispozici, protože {1}.</noXxxBecause2>
 <noXxxNotActive>tato služba {0} ERDDAP není aktivní</noXxxNotActive>
 <noXxxNoAxis1>neexistují žádné osové proměnné s více než jednou hodnotou</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} není kompatibilní typ</noXxxNoCdmDataType>
@@ -4101,6 +4108,7 @@ Různé protokoly jsou vhodné pro různé typy dat a pro různé klientské apl
 <queryErrorOrderByClosest>Pro orderByClosest musíte zadat seznam CSV s 1 nebo více názvy sloupců orderBy (každý z nich musí být v seznamu proměnných výsledků) plus interval pro poslední proměnnou orderBy (např. „stationID,time,10 minutes“).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Pro orderByLimit musíte zadat seznam CSV s 0 nebo více názvy sloupců orderBy (každý z nich musí být v seznamu proměnných výsledků; číselné sloupce mohou mít název_sloupce[/divisor[timeUnits][:offset]]) plus maximální počet řádků pro každou skupinu (např. &quot;ID stanice,čas/1den,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Pro orderByMean musíte zadat CSV seznam názvů sloupců orderBy (každý z nich musí být v seznamu proměnných výsledků; číselné sloupce mohou mít columnName[/divisor[timeUnits][:offset]]), např. &quot;stationID,time /10 minut&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Pro orderBySum musíte zadat CSV seznam názvů sloupců orderBy (každý z nich musí být v seznamu proměnných výsledků; číselné sloupce mohou mít columnName[/divisor[timeUnits][:offset]]), např. &quot;stationID,time /10 minut&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} není v seznamu proměnných výsledků.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Neznámá proměnná={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Dotazy osy mřížky musí specifikovat alespoň jednu proměnnou osy.</queryErrorGrid1Axis>
@@ -4119,7 +4127,7 @@ Různé protokoly jsou vhodné pro různé typy dat a pro různé klientské apl
 <queryErrorLastUnexpected>Neočekávaný znak za „posledním“ v {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Hodnota +/- v {0} není platná.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Hodnota indexu +/- v {0} není celé číslo.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} se pohybuje od {1} do {2}.</rangesFromTo>
 <required>Požadované</required>
 <resetTheForm>Obnovte výchozí hodnoty formuláře.</resetTheForm>
@@ -4832,7 +4840,7 @@ Můžete obejít webové stránky ERDDAP a používat webové služby RESTful ER
 Na webových službách ERDDAP můžete také stavět další užitečné a zajímavé věci — viz
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> seznam úžasných projektů souvisejících s ERDDAP .
+    title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> seznam úžasných projektů souvisejících s Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Pro rychlý úvod do ERDDAP se podívejte na první polovinu tohoto<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

@@ -3677,8 +3677,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-10-18\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2021-10-18\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2021-11-22\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2021-11-22\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -3819,6 +3819,368 @@ expected =
 
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
+
+
+    /**
+     * This tests orderBySum -- TODO put the correct value in "expected" variable
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testOrderBySum() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testOrderBySum() *****************\n");
+        testVerboseOn();
+        int language = 0;
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        String dir = EDStatic.fullTestCacheDirectory;
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
+
+        //test orderBySum(twoVars)
+        //from NdbcMetStation.test31201
+        //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
+        //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
+        userDapQuery = "time,station,wd,wtmp,atmp&station>\"5\"&station<\"51004\"" +
+            "&time>=2005-04-18&time<2005-04-20&orderBySum(\"station,time/12hours\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = //since time in orderBySum"", it is the truncated time        
+"time,station,wd,wtmp,atmp\n" +
+"UTC,,degrees_true,degree_C,degree_C\n" +
+"2005-04-18T00:00:00Z,51001,1175.0,293.3,285.8\n" +
+"2005-04-18T12:00:00Z,51001,1130.0,289.2,281.0\n" +
+"2005-04-19T00:00:00Z,51001,815.0,293.09999999999997,283.5999999999999\n" +
+"2005-04-19T12:00:00Z,51001,853.0,289.79999999999995,277.90000000000003\n" +
+"2005-04-18T00:00:00Z,51002,1010.0,302.8999999999999,302.3\n" +
+"2005-04-18T12:00:00Z,51002,1007.0,301.4,299.3\n" +
+"2005-04-19T00:00:00Z,51002,978.0,302.1,301.9\n" +
+"2005-04-19T12:00:00Z,51002,921.0,301.4,297.40000000000003\n" +
+"2005-04-18T00:00:00Z,51003,1097.0,304.30000000000007,295.90000000000003\n" +
+"2005-04-18T12:00:00Z,51003,987.0,303.70000000000005,293.9\n" +
+"2005-04-19T00:00:00Z,51003,904.0,305.5,294.4\n" +
+"2005-04-19T12:00:00Z,51003,925.0,304.1,292.0\n";
+
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(station)
+        userDapQuery = "time,station,wd,wtmp,atmp&station>\"5\"&station<\"51004\"" +
+            "&time>=2005-04-18&time<2005-04-20&orderBySum(\"station\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum2", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = //since time isn't in orderBySum(), it is the sum of the time values
+"time,station,wd,wtmp,atmp\n" +
+"UTC,,degrees_true,degree_C,degree_C\n" +
+"2005-04-18T23:30:00Z,51001,3973.0,1165.4,1128.3000000000002\n" +
+"2005-04-18T23:30:00Z,51002,3916.0,1207.8000000000002,1200.9000000000003\n" +
+"2005-04-18T23:30:00Z,51003,3913.0,1217.6,1176.2\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(oneVar)
+        userDapQuery = "time,station,wd,wtmp,atmp&station=\"51002\"" +
+            "&time>=2005-04-18&time<2005-04-20&orderBySum(\"time/6hours\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum3", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"time,station,wd,wtmp,atmp\n" +
+"UTC,,degrees_true,degree_C,degree_C\n" +
+"2005-04-18T00:00:00Z,51002,494.0,151.7,154.4\n" +
+"2005-04-18T06:00:00Z,51002,516.0,151.2,147.9\n" +
+"2005-04-18T12:00:00Z,51002,499.0,150.6,146.5\n" +
+"2005-04-18T18:00:00Z,51002,508.0,150.8,152.8\n" +
+"2005-04-19T00:00:00Z,51002,490.0,151.4,154.1\n" +
+"2005-04-19T06:00:00Z,51002,488.0,150.7,147.8\n" +
+"2005-04-19T12:00:00Z,51002,455.0,150.6,146.1\n" +
+"2005-04-19T18:00:00Z,51002,466.0,150.8,151.3\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(    with missing value data at 2012-01-01T04
+        userDapQuery = "time,station,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<2012-01-01T12&orderBySum(\"time/6hours\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum4", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"time,station,wd,atmp,wtmp\n" +
+"UTC,,degrees_true,degree_C,degree_C\n" +
+"2012-01-01T00:00:00Z,41004,1332.0,96.8,101.4\n" +
+"2012-01-01T06:00:00Z,41004,1604.0,112.6,121.80000000000001\n";   
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(   with missing value data at 2012-01-01T04
+        userDapQuery = "station,time,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<2012-01-07&orderBySum(\"time/2days\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum6", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"station,time,wd,atmp,wtmp\n" +
+",UTC,degrees_true,degree_C,degree_C\n" +
+"41004,2012-01-01T00:00:00Z,11640.0,757.9,866.5999999999998\n" +
+"41004,2012-01-03T00:00:00Z,13902.0,280.5,900.7999999999997\n" +
+"41004,2012-01-05T00:00:00Z,12405.0,685.0000000000001,852.7\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(  with missing value data at 2012-01-01T04
+        userDapQuery = "station,time,wd,atmp,wtmp&station>=\"41004\"&station<\"41024\"" +
+            "&time>=2012-01-01&time<2012-01-07&orderBySum(\"station,time/2days\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum7", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"station,time,wd,atmp,wtmp\n" +
+",UTC,degrees_true,degree_C,degree_C\n" +
+"41004,2012-01-01T00:00:00Z,11640.0,757.9,866.5999999999998\n" +
+"41004,2012-01-03T00:00:00Z,13902.0,280.5,900.7999999999997\n" +
+"41004,2012-01-05T00:00:00Z,12405.0,685.0000000000001,852.7\n" +
+"41008,2012-01-01T00:00:00Z,11538.0,679.2,747.9\n" +
+"41008,2012-01-03T00:00:00Z,12997.0,218.09999999999997,617.6\n" +
+"41008,2012-01-05T00:00:00Z,10607.0,534.3000000000001,612.7999999999998\n" +
+"41009,2012-01-01T00:00:00Z,22123.0,1974.7000000000003,2174.0999999999985\n" +
+"41009,2012-01-03T00:00:00Z,30485.0,1095.4999999999998,2063.7\n" +
+"41009,2012-01-05T00:00:00Z,27414.0,1581.0999999999995,2044.8999999999994\n" +
+"41010,2012-01-01T00:00:00Z,23135.0,2003.7999999999997,2176.999999999999\n" +
+"41010,2012-01-03T00:00:00Z,28344.0,1272.9000000000003,2184.599999999999\n" +
+"41010,2012-01-05T00:00:00Z,27432.0,1757.6999999999987,2191.1\n" +
+"41012,2012-01-01T00:00:00Z,12328.0,840.9999999999999,1037.9\n" +
+"41012,2012-01-03T00:00:00Z,14288.0,427.3999999999998,1060.8000000000004\n" +
+"41012,2012-01-05T00:00:00Z,13084.0,773.3,1019.3\n" +
+"41013,2012-01-01T00:00:00Z,11387.0,748.4000000000001,841.4000000000002\n" +
+"41013,2012-01-03T00:00:00Z,14562.0,194.69999999999996,766.4000000000001\n" +
+"41013,2012-01-05T00:00:00Z,12274.0,650.7999999999998,803.8\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(  with missing value data at 2012-01-01T04
+        //first, just print the raw data
+        userDapQuery = "station,time,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<=2012-01-01T05";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum8pre", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        String2.log("\nraw results for " + userDapQuery + "\n" + results);
+        expected = 
+"station,time,wd,atmp,wtmp\n" +
+",UTC,degrees_true,degree_C,degree_C\n" +
+"41004,2012-01-01T00:50:00Z,252,19.4,20.1\n" +
+"41004,2012-01-01T01:50:00Z,264,19.3,20.2\n" +
+"41004,2012-01-01T02:50:00Z,271,19.3,20.3\n" +
+"41004,2012-01-01T03:50:00Z,NaN,NaN,NaN\n" +
+"41004,2012-01-01T04:50:00Z,272,19.5,20.4\n"; 
+        Test.ensureEqual(results, expected, "");
+
+        //test orderBySum(  with missing value data at 2012-01-01T04
+        userDapQuery += "&orderBySum(\"station,time/2hours\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum8", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"station,time,wd,atmp,wtmp\n" +
+",UTC,degrees_true,degree_C,degree_C\n" +
+"41004,2012-01-01T00:00:00Z,516.0,38.7,40.3\n" +
+"41004,2012-01-01T02:00:00Z,271.0,19.3,20.3\n" +
+"41004,2012-01-01T04:00:00Z,272.0,19.5,20.4\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(  with missing value data at 2012-01-01T04    and group size=1
+        userDapQuery = "station,time,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<=2012-01-01T04&orderBySum(\"station,time/1hour\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum8b", ".csv"); 
+        results = String2.directReadFrom88591File(dir + tName);
+        expected = 
+"station,time,wd,atmp,wtmp\n" +
+",UTC,degrees_true,degree_C,degree_C\n" +
+"41004,2012-01-01T00:00:00Z,252.0,19.4,20.1\n" +
+"41004,2012-01-01T01:00:00Z,264.0,19.3,20.2\n" +
+"41004,2012-01-01T02:00:00Z,271.0,19.3,20.3\n" +
+"41004,2012-01-01T03:00:00Z,NaN,NaN,NaN\n"; //group with no values  
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test orderBySum(  with missing value data at 2012-01-01T04  as .nc file
+        userDapQuery = "station,time,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<=2012-01-01T04&orderBySum(\"station,time/1hour\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obSum8bnc", ".nc"); 
+        results = NcHelper.ncdump(dir + tName, "");
+        expected = 
+"netcdf EDDTableFromNcFiles_obSum8bnc.nc {\n" +
+"  dimensions:\n" +
+"    row = 4;\n" +
+"    station_strlen = 5;\n" +
+"  variables:\n" +
+"    char station(row=4, station_strlen=5);\n" +
+"      :_Encoding = \"ISO-8859-1\";\n" +
+"      :cf_role = \"timeseries_id\";\n" +
+"      :comment = \"The station identifier.\";\n" +
+"      :ioos_category = \"Identifier\";\n" +
+"      :long_name = \"Station Identifier\";\n" +
+"\n" +
+"    double time(row=4);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.325376E9, 1.3253868E9; // double\n" +
+"      :axis = \"T\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double wd(row=4);\n" +
+"      :_FillValue = NaN; // double\n" +
+"      :actual_range = 252.0, 271.0; // double\n" +
+"      :cell_methods = \"time: sum (interval: 1 hour)\";\n" +
+"      :colorBarMaximum = 360.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
+"      :comment = \"Wind direction (the direction the wind is coming from in degrees clockwise from true N) during the same period used for WSPD.\";\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Wind Direction\";\n" +
+"      :standard_name = \"wind_from_direction\";\n" +
+"      :units = \"degrees_true\";\n" +
+"\n" +
+"    double atmp(row=4);\n" +
+"      :_FillValue = NaN; // double\n" +  
+"      :actual_range = 19.3, 19.4; // double\n" +
+"      :cell_methods = \"time: sum (interval: 1 hour)\";\n" +
+"      :colorBarMaximum = 40.0; // double\n" +
+"      :colorBarMinimum = -10.0; // double\n" +
+"      :comment = \"Air temperature (Celsius). For sensor heights on buoys, see Hull Descriptions. For sensor heights at C-MAN stations, see C-MAN Sensor Locations.\";\n" +
+"      :ioos_category = \"Temperature\";\n" +
+"      :long_name = \"Air Temperature\";\n" +
+"      :standard_name = \"air_temperature\";\n" +
+"      :units = \"degree_C\";\n" +
+"\n" +
+"    double wtmp(row=4);\n" +
+"      :_FillValue = NaN; // double\n" +  
+"      :actual_range = 20.1, 20.3; // double\n" +
+"      :cell_methods = \"time: sum (interval: 1 hour)\";\n" +
+"      :colorBarMaximum = 32.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
+"      :comment = \"Sea surface temperature (Celsius). For sensor depth, see Hull Description.\";\n" +
+"      :ioos_category = \"Temperature\";\n" +
+"      :long_name = \"SST\";\n" +
+"      :standard_name = \"sea_surface_temperature\";\n" +
+"      :units = \"degree_C\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :cdm_data_type = \"TimeSeries\";\n" +
+"  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
+"  :contributor_name = \"NOAA NDBC\";\n" +
+"  :contributor_role = \"Source of data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :creator_email = \"erd.data@noaa.gov\";\n" +
+"  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :creator_type = \"institution\";\n" +
+"  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
+"  :date_created = \"2021-11-22\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2021-11-22\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :featureType = \"TimeSeries\";\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_positive = \"down\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"Around the 25th of each month, erd.data@noaa.gov downloads the latest yearly and monthly historical .txt.gz files from https://www.ndbc.noaa.gov/data/historical/stdmet/ and generates one historical .nc file for each station. erd.data@noaa.gov also downloads all of the 45day near real time .txt files from https://www.ndbc.noaa.gov/data/realtime2/ and generates one near real time .nc file for each station.\n" +
+"Every 5 minutes, erd.data@noaa.gov downloads the list of latest data from all stations for the last 2 hours from https://www.ndbc.noaa.gov/data/latest_obs/latest_obs.txt and updates the near real time .nc files.";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+expected =
+  ":time_coverage_end = \"2012-01-01T03:00:00Z\";\n" +
+"  :time_coverage_start = \"2012-01-01T00:00:00Z\";\n" +
+"  :title = \"NDBC Standard Meteorological Buoy Data, 1970-present\";\n" +
+"\n" +
+"  data:\n" +
+"    station =   \"41004\",   \"41004\",   \"41004\",   \"41004\"\n" +
+"    time = \n" +
+"      {1.325376E9, 1.3253796E9, 1.3253832E9, 1.3253868E9}\n" +
+"    wd = \n" +
+"      {252.0, 264.0, 271.0, NaN}\n" +
+"    atmp = \n" +
+"      {19.4, 19.3, 19.3, NaN}\n" +
+"    wtmp = \n" +
+"      {20.1, 20.2, 20.3, NaN}\n" +
+"}\n";
+        int po = results.indexOf(expected.substring(0, 20));
+        Test.ensureEqual(results.substring(po), expected, "\nresults=\n" + results);
+        //String2.pressEnterToContinue();
+
+        //test orderBySum(   test that lat and lon sums are 180 - 180, but wind (degrees_true) is 0 to 360
+        //Marco Alba - skip, no special function for lat,lon and wind
+//        userDapQuery = "time,latitude,longitude,wd&latitude<0&longitude<0&time=2014-01-04T12&orderBySum(\"time/1day\")";
+//        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+//            eddTable.className() + "_obSum10", ".csv"); 
+//        results = String2.directReadFrom88591File(dir + tName);
+//        expected = 
+//"time,latitude,longitude,wd\n" +
+//"UTC,degrees_north,degrees_east,degrees_true\n" +
+//"2014-01-04T00:00:00Z,-14.28,-170.688,248.0\n";   
+//        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+//
+//        //test orderBySum(   test that lat and lon sums are 180 - 180, but wind (degrees_true) is 0 to 360
+//        userDapQuery = "time,latitude,longitude,wd&latitude>0&longitude>0&time=2014-01-04T12&orderBySum(\"time/1day\")";
+//        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
+//            eddTable.className() + "_obSum11", ".csv"); 
+//        results = String2.directReadFrom88591File(dir + tName);
+//        expected = 
+//"time,latitude,longitude,wd\n" +
+//"UTC,degrees_north,degrees_east,degrees_true\n" +
+//"2014-01-04T00:00:00Z,13.784014057024162,155.9907299240343,59.03859101760849\n";   
+//        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //quick reject -> orderBySum var not in results vars
+        String2.log("\n* Intentional Errors:\n");
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&orderBySum(\"station,atmp\")",
+                dir, eddTable.className() + "_qr1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For orderBySum, " +
+                "you must specify a CSV list of orderBy column names (each of " +
+                "which must be in the list of results variables; numeric columns " +
+                "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
+                "(col=atmp not in results variables)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> station/10 not allowed
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&station<\"32000\"&orderBySum(\"station/10,wtmp\")",
+                dir, eddTable.className() + "_qr2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For orderBySum, " +
+                "you must specify a CSV list of orderBy column names (each of " +
+                "which must be in the list of results variables; numeric columns " +
+                "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
+                "(cannot group numerically for column=station)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> 0 orderBySum vars
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&orderBySum(\"\")",
+                dir, eddTable.className() + "_qr3", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: For orderBySum, " +
+                "you must specify a CSV list of orderBy column names (each of " +
+                "which must be in the list of results variables; numeric columns " +
+                "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
+                "(no csv)";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+        String2.log("End of intentional errors.");
+    }
+
 
     /**
      * This tests orderByMax.
@@ -4927,8 +5289,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-10-18\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2021-10-18\";\n" +  // ""
+"  :date_created = \"2021-11-22\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2021-11-22\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -12957,7 +13319,7 @@ expected =
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>\n" +
 "//<Encoding>UTF-8</Encoding>\n" +
 "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>Profiles</DataType>\n" +
@@ -14515,8 +14877,8 @@ So the changes seem good. */
 "//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>TimeSeries</DataType>[10]\n" +
@@ -14585,8 +14947,8 @@ So the changes seem good. */
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>Trajectories</DataType>[10]\n" +
@@ -14638,8 +15000,8 @@ So the changes seem good. */
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>Profiles</DataType>[10]\n" +
@@ -14721,8 +15083,8 @@ So the changes seem good. */
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
@@ -15532,9 +15894,9 @@ So the changes seem good. */
 "    <range>466666.6666666667</range>\n" +
 "  </LookAt>\n" +
 "  <ScreenOverlay id=\"Logo\">\n" +
-"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <description>https://127.0.0.1:8443/cwexperimental</description>\n" +
 "    <name>Logo</name>\n" +
-"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <Icon><href>https://127.0.0.1:8443/cwexperimental/images/nlogo.gif</href></Icon>\n" +
 "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
@@ -15709,8 +16071,8 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
@@ -16073,9 +16435,9 @@ expected =
 "    <range>466666.6666666667</range>\n" +
 "  </LookAt>\n" +
 "  <ScreenOverlay id=\"Logo\">\n" +
-"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <description>https://127.0.0.1:8443/cwexperimental</description>\n" +
 "    <name>Logo</name>\n" +
-"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <Icon><href>https://127.0.0.1:8443/cwexperimental/images/nlogo.gif</href></Icon>\n" +
 "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
@@ -16208,8 +16570,8 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.15</Software>[10]\n" +
-"//<Source>https://localhost:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
+"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>GeneralType</DataType>[10]\n" +
@@ -19167,7 +19529,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 15 : 72;
+            lastTest = interactive? 15 : 73;
         String msg = "\n^^^ EDDTableFromNcFiles.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -19215,11 +19577,12 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 18) testOrderByLimit();   //mv fv fixed 
                     if (test == 19) testOrderByMean();    //mv fv fixed
                     if (test == 20) testOrderByMean2();  
-                    if (test == 21) testAddVariablesWhere();
-                    if (test == 22) testStationLonLat();
-                    if (test == 23) testGlobal();  //tests global: metadata to data conversion
-                    if (test == 24) testGenerateDatasetsXml2();
-                    if (test == 25) testGenerateDatasetsXmlNcdump();
+                    if (test == 21) testOrderBySum();    
+                    if (test == 22) testAddVariablesWhere();
+                    if (test == 23) testStationLonLat();
+                    if (test == 24) testGlobal();  //tests global: metadata to data conversion
+                    if (test == 25) testGenerateDatasetsXml2();
+                    if (test == 26) testGenerateDatasetsXmlNcdump();
                     if (test == 28) testErdGtsppBest("erdGtsppBestNc");
                     if (test == 29) testErdGtsppBest("erdGtsppBest");
                     if (test == 30) testManyYears();
@@ -19261,7 +19624,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 70 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads    very slow
                     if (test == 71 && doSlowTestsToo) testCacheFiles(false); //deleteDataFiles?  //requires gtsppBest, very slow, not usually run    
                     if (test == 72 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo? //requires gtsppBest, very slow, not usually run
-
+                   
                     /* */
 
                     //not usually run

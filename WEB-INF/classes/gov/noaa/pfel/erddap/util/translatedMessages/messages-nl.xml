@@ -2487,6 +2487,10 @@ Selecteer een of meer rastervariabelen.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Rastervariabelen</strong> (die altijd ook alle dimensievariabelen downloaden)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Controleer alles</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Klik hier om alle gegevensvariabelen te selecteren.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Schakel alles uit</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Klik hier om alle gegevensvariabelen te deselecteren.</EDDGridUncheckAllTooltip>
 <!-- Griddap-voorbeelden Deze groep instellingen wordt gebruikt om voorbeelden te maken voor de griddap-documentatie die verschijnt op [baseUrl]/erddap/griddap/documentation.html en elders.
 Speciale tekens (bijv.
 &amp; &lt; &gt;) moeten HTML-gecodeerd zijn.
@@ -3213,6 +3217,9 @@ orderByMinMax(&quot;stationID, time/1day, temperature&quot;) retourneert bijvoor
 <p><strong>orderByMean</strong> sorteert de rijen van de resultatentabel in groepen en retourneert slechts één rij voor elke groep.
 Die rij heeft het gemiddelde van elk van de andere variabelen.
 orderByMax(&quot;stationID, time/1day&quot;) maakt bijvoorbeeld een groep voor elke stationID voor elke dag en berekent en retourneert het gemiddelde van de andere variabelen.
+<p><strong>orderBy Sum</strong> sorteert de rijen van de resultatentabel in groepen en retourneert slechts één rij voor elke groep.
+Die rij heeft de som van elk van de andere variabelen.
+orderByMax(&quot;stationID, time/1day&quot;) maakt bijvoorbeeld een groep voor elke stationID voor elke dag en berekent en retourneert de som van de andere variabelen.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Voor orderByClosest specificeert u hier het interval (met de notatie n[timeUnits], bijv.
@@ -3575,8 +3582,8 @@ Wacht 5 seconden nadat het label van de knop is gewijzigd van &#39;Aanmelden&#39
 <loginOpenIDCreate>Of maak een OpenID URL aan op</loginOpenIDCreate>
 <loginOpenIDFree>Ze zijn allemaal gratis!</loginOpenIDFree>
 <loginOpenIDSame>Zorg ervoor dat u bent ingelogd met exact dezelfde OpenID-URL die u aan de ERDDAP-beheerder hebt gegeven.</loginOpenIDSame>
-<loginAs>Je bent ingelogd als</loginAs>
-<loginPartwayAs>U bent gedeeltelijk ingelogd als</loginPartwayAs>
+<loginAs>U bent aangemeld als {0} .</loginAs>
+<loginPartwayAs>U bent gedeeltelijk aangemeld als {0} .</loginPartwayAs>
 <loginFailed>FOUT: Inloggen mislukt</loginFailed>
 <loginInvalid>Ongeldige gebruikersnaam en / of wachtwoord.</loginInvalid>
 <loginSucceeded>Inloggen gelukt!</loginSucceeded>
@@ -3968,9 +3975,9 @@ Is het beter om een leeg bestand terug te sturen? Maar .nc en anderen staan geen
 <notAvailable>Momenteel is datasetID={0} niet beschikbaar.</notAvailable>
 <note>OPMERKING!</note>
 <!--  Xxx is Maak een grafiek, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Deze dataset is niet beschikbaar via {0}.</noXxx>
-<noXxxBecause>Deze dataset is niet beschikbaar via {0} omdat {1}.</noXxxBecause>
-<noXxxBecause2>{0} is niet beschikbaar voor deze dataset omdat {1}.</noXxxBecause2>
+<noXxx>Deze dataset is nooit beschikbaar via {0}.</noXxx>
+<noXxxBecause>Deze dataset is nooit beschikbaar via {0} omdat {1}.</noXxxBecause>
+<noXxxBecause2>{0} is nooit beschikbaar voor deze dataset omdat {1}.</noXxxBecause2>
 <noXxxNotActive>de {0}-service van deze ERDDAP is niet actief</noXxxNotActive>
 <noXxxNoAxis1>er zijn geen asvariabelen met meer dan één waarde</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} is geen compatibel type</noXxxNoCdmDataType>
@@ -4094,6 +4101,7 @@ Verschillende protocollen zijn geschikt voor verschillende soorten gegevens en v
 <queryErrorOrderByClosest>Voor orderByClosest moet u een CSV-lijst met 1 of meer orderBy-kolomnamen specificeren (die elk in de lijst met resultaatvariabelen moeten staan) plus het interval voor de laatste orderBy-variabele (bijv. &quot;stationID,time,10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Voor orderByLimit moet u een CSV-lijst met 0 of meer orderBy-kolomnamen specificeren (die elk in de lijst met resultaatvariabelen moeten staan; numerieke kolommen kunnen columnName[/divisor[timeUnits][:offset]]) plus het maximum aantal hebben rijen voor elke groep (bijv. &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Voor orderByMean moet u een CSV-lijst met orderBy-kolomnamen specificeren (die elk in de lijst met resultaatvariabelen moeten staan; numerieke kolommen kunnen columnName[/divisor[timeUnits][:offset]] hebben), bijv. &quot;stationID,time /10 minuten&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Voor orderBySum moet u een CSV-lijst met orderBy-kolomnamen specificeren (die elk in de lijst met resultaatvariabelen moeten staan; numerieke kolommen kunnen columnName[/divisor[timeUnits][:offset]] hebben), bijv. &quot;stationID,time /10 minuten&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} staat niet in de lijst met resultaatvariabelen.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Onbekende variabele={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Rasterasquery&#39;s moeten ten minste één asvariabele specificeren.</queryErrorGrid1Axis>
@@ -4112,7 +4120,7 @@ Verschillende protocollen zijn geschikt voor verschillende soorten gegevens en v
 <queryErrorLastUnexpected>Onverwacht teken na &#39;laatste&#39; in {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>De +/- waarde in {0} is niet geldig.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>De +/- indexwaarde in {0} is geen geheel getal.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} varieert van {1} tot {2}.</rangesFromTo>
 <required>Verplicht</required>
 <resetTheForm>Zet het formulier terug naar de standaardwaarden.</resetTheForm>
@@ -4820,7 +4828,7 @@ U kunt de webpagina&#39;s van ERDDAP omzeilen en de RESTful -webservices van ERD
 Je kunt ook andere nuttige en interessante dingen bouwen bovenop de webservices van ERDDAP - zie de
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Deze link naar een externe website houdt geen goedkeuring in."></a> lijst met geweldige ERDDAP projecten.
+    title="Deze link naar een externe website houdt geen goedkeuring in."></a> lijst van Awesome ERDDAP projecten.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Voor een snelle introductie tot ERDDAP, bekijk de eerste helft hiervan<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video- <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

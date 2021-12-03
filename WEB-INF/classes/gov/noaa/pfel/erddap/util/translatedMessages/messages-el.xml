@@ -2465,6 +2465,10 @@ ERDDAP θα τα μετατρέψει σε byte, 1 ή 0.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Μεταβλητές πλέγματος</strong> (που πάντα επίσης κάνουν λήψη όλων των μεταβλητών διαστάσεων)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Ελεγξε τα ολα</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Κάντε κλικ εδώ για να επιλέξετε όλες τις μεταβλητές δεδομένων.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Αποεπιλογή όλων</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Κάντε κλικ εδώ για να καταργήσετε την επιλογή όλων των μεταβλητών δεδομένων.</EDDGridUncheckAllTooltip>
 <!-- Παραδείγματα Griddap Αυτή η ομάδα ρυθμίσεων χρησιμοποιείται για τη δημιουργία παραδειγμάτων για την τεκμηρίωση του griddap που εμφανίζεται στη διεύθυνση [baseUrl]/erddap/griddap/documentation.html και αλλού.
 Οι ειδικοί χαρακτήρες (π.χ.
 &amp; &lt; &gt;) πρέπει να είναι κωδικοποιημένοι σε HTML.
@@ -3191,6 +3195,9 @@ ERDDAP + curl είναι εκπληκτικά ισχυρό και σας επι�
 <p><strong>orderByMean</strong> ταξινομεί τις σειρές του πίνακα αποτελεσμάτων σε ομάδες και απλώς επιστρέφει μία σειρά για κάθε ομάδα.
 Αυτή η σειρά θα έχει τον μέσο όρο κάθε μιας από τις άλλες μεταβλητές.
 Για παράδειγμα, orderByMax(&quot;stationID, time/1day&quot;) θα δημιουργήσει μια ομάδα για κάθε stationID για κάθε ημέρα και θα υπολογίσει και θα επιστρέψει τον μέσο όρο των άλλων μεταβλητών.
+<p><strong>orderBy Sum</strong> ταξινομεί τις σειρές του πίνακα αποτελεσμάτων σε ομάδες και απλώς επιστρέφει μία σειρά για κάθε ομάδα.
+Αυτή η σειρά θα έχει το άθροισμα καθεμιάς από τις άλλες μεταβλητές.
+Για παράδειγμα, orderByMax(&quot;stationID, time/1day&quot;) θα δημιουργήσει μια ομάδα για κάθε stationID για κάθε ημέρα και θα υπολογίσει και θα επιστρέψει το άθροισμα των άλλων μεταβλητών.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Για orderByClosest, καθορίστε το διάστημα (χρησιμοποιώντας τη μορφή n[timeUnits], π.χ.
@@ -3547,8 +3554,8 @@ href="https://groups.google.com/forum/#!forum/erddap">διεύθυνση https:/
 <loginOpenIDCreate>Ή δημιουργήστε μια διεύθυνση URL OpenID στο</loginOpenIDCreate>
 <loginOpenIDFree>Είναι όλοι δωρεάν!</loginOpenIDFree>
 <loginOpenIDSame>Βεβαιωθείτε ότι έχετε συνδεθεί με την ίδια ακριβώς διεύθυνση URL OpenID που δώσατε στον διαχειριστή του ERDDAP.</loginOpenIDSame>
-<loginAs>Εχετε συνδεθεί ως</loginAs>
-<loginPartwayAs>Έχετε συνδεθεί εν μέρει ως</loginPartwayAs>
+<loginAs>Έχετε συνδεθεί ως {0} .</loginAs>
+<loginPartwayAs>Έχετε συνδεθεί εν μέρει ως {0} .</loginPartwayAs>
 <loginFailed>ΣΦΑΛΜΑ: Η σύνδεση απέτυχε</loginFailed>
 <loginInvalid>Μη έγκυρο όνομα χρήστη και/ή κωδικός πρόσβασης.</loginInvalid>
 <loginSucceeded>Η σύνδεση πέτυχε!</loginSucceeded>
@@ -3940,9 +3947,9 @@ Empty Caches&quot;.
 <notAvailable>Επί του παρόντος, το σύνολο δεδομένων ID={0} δεν είναι διαθέσιμο.</notAvailable>
 <note>ΣΗΜΕΙΩΣΗ!</note>
 <!--  Το Xxx είναι το Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Αυτό το σύνολο δεδομένων δεν είναι διαθέσιμο μέσω του {0}.</noXxx>
-<noXxxBecause>Αυτό το σύνολο δεδομένων δεν είναι διαθέσιμο μέσω του {0} επειδή το {1}.</noXxxBecause>
-<noXxxBecause2>Το {0} δεν είναι διαθέσιμο για αυτό το σύνολο δεδομένων επειδή το {1}.</noXxxBecause2>
+<noXxx>Αυτό το σύνολο δεδομένων δεν είναι ποτέ διαθέσιμο μέσω του {0}.</noXxx>
+<noXxxBecause>Αυτό το σύνολο δεδομένων δεν είναι ποτέ διαθέσιμο μέσω του {0} επειδή το {1}.</noXxxBecause>
+<noXxxBecause2>Το {0} δεν είναι ποτέ διαθέσιμο για αυτό το σύνολο δεδομένων επειδή το {1}.</noXxxBecause2>
 <noXxxNotActive>αυτή η υπηρεσία {0} του ERDDAP δεν είναι ενεργή</noXxxNotActive>
 <noXxxNoAxis1>δεν υπάρχουν μεταβλητές άξονα με περισσότερες από μία τιμές</noXxxNoAxis1>
 <noXxxNoCdmDataType>Το cdm_data_type={0} δεν είναι συμβατός τύπος</noXxxNoCdmDataType>
@@ -4064,6 +4071,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorOrderByClosest>Για το orderByClosest, πρέπει να καθορίσετε μια λίστα CSV με 1 ή περισσότερα ονόματα στηλών orderBy (καθένα από τα οποία πρέπει να βρίσκεται στη λίστα των μεταβλητών αποτελεσμάτων) συν το διάστημα για την τελευταία μεταβλητή orderBy (π.χ. &quot;stationID, time, 10 λεπτά&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Για orderByLimit, πρέπει να καθορίσετε μια λίστα CSV με 0 ή περισσότερα ονόματα στηλών orderBy (καθένα από τα οποία πρέπει να βρίσκεται στη λίστα των μεταβλητών αποτελεσμάτων· οι αριθμητικές στήλες μπορεί να έχουν στήληName[/divisor[timeUnits][:offset]]) συν τον μέγιστο αριθμό σειρών για κάθε ομάδα (π.χ. &quot;αναγνωριστικό σταθμού, ώρα/1 ημέρα, 10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Για orderByMean, πρέπει να καθορίσετε μια λίστα CSV με ονόματα στηλών orderBy (καθένα από τα οποία πρέπει να βρίσκεται στη λίστα των μεταβλητών αποτελεσμάτων· οι αριθμητικές στήλες μπορεί να έχουν στήληName[/divisor[timeUnits][:offset]]), π.χ., &quot;stationID,time /10 λεπτά&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Για orderBySum, πρέπει να καθορίσετε μια λίστα CSV με ονόματα στηλών orderBy (καθένα από τα οποία πρέπει να βρίσκεται στη λίστα των μεταβλητών αποτελεσμάτων· οι αριθμητικές στήλες μπορεί να έχουν στήληName[/divisor[timeUnits][:offset]]), π.χ., &quot;stationID,time /10 λεπτά&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} δεν βρίσκεται στη λίστα των μεταβλητών αποτελεσμάτων.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Άγνωστη μεταβλητή={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Τα ερωτήματα για τον άξονα πλέγματος πρέπει να προσδιορίζουν τουλάχιστον μία μεταβλητή άξονα.</queryErrorGrid1Axis>
@@ -4082,7 +4090,7 @@ KT_speed, KT_tempo, KT_thermal, KT_turbid</palettes>
 <queryErrorLastUnexpected>Απροσδόκητος χαρακτήρας μετά το &quot;last&quot; στο {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Η τιμή +/- στο {0} δεν είναι έγκυρη.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Η τιμή του δείκτη +/- στο {0} δεν είναι ακέραιος.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>Το {0} κυμαίνεται από {1} έως {2}.</rangesFromTo>
 <required>Απαιτείται</required>
 <resetTheForm>Επαναφέρετε τη φόρμα στις προεπιλεγμένες τιμές.</resetTheForm>
@@ -4786,7 +4794,7 @@ ERDDAP χρησιμοποιεί πάντα τη ζώνη ώρας Zulu (UTC, GMT
 Μπορείτε επίσης να δημιουργήσετε άλλα χρήσιμα και ενδιαφέροντα πράγματα πάνω από τις υπηρεσίες web του ERDDAP — δείτε το
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> λίστα με καταπληκτικά έργα που σχετίζονται με ERDDAP .
+    title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> λίστα φοβερών έργων που σχετίζονται με Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Για μια γρήγορη εισαγωγή στο ERDDAP, παρακολουθήστε το πρώτο μισό αυτού<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > βίντεο <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4805,7 +4813,7 @@ ERDDAP χρησιμοποιεί πάντα τη ζώνη ώρας Zulu (UTC, GMT
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ρυθμίσετε τον δικό σας διακομιστή ERDDAP</a> και να εξυπηρετήσετε τα δικά σας δεδομένα.</strong> ERDDAP είναι δωρεάν και ανοιχτού κώδικα.
 Χρησιμοποιεί άδειες τύπου Apache, ώστε να μπορείτε να κάνετε ό,τι θέλετε με αυτό.
 Η εμφάνιση του ERDDAP είναι προσαρμόσιμη, επομένως το ERDDAP σας θα αντικατοπτρίζει το ίδρυμά σας και όχι το NOAA .
-Η μικρή προσπάθεια για τη σύσταση του ERDDAP φέρνει πολλά οφέλη.
+Η μικρή προσπάθεια για τη σύσταση της ERDDAP φέρνει πολλά οφέλη.
 Εάν διαθέτετε ήδη μια υπηρεσία web για τη διανομή των δεδομένων σας, μπορείτε να ρυθμίσετε το ERDDAP για πρόσβαση στα δεδομένα σας μέσω της υπάρχουσας υπηρεσίας ή μέσω των αρχείων προέλευσης ή της βάσης δεδομένων.
 Στη συνέχεια, οι χρήστες θα έχουν έναν άλλο τρόπο πρόσβασης στα δεδομένα σας και θα μπορούν να κάνουν λήψη των δεδομένων σε πρόσθετες μορφές αρχείων ή ως γραφήματα ή χάρτες.
 ERDDAP έχει εγκατασταθεί από περισσότερους από 90 οργανισμούς σε τουλάχιστον 14 χώρες.
