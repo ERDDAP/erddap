@@ -2441,6 +2441,10 @@ Sélectionnez une ou plusieurs variables de grille.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variables de grille</strong> (qui téléchargent toujours également toutes les variables de dimension)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Vérifie tout</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Cliquez ici pour sélectionner toutes les variables de données.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Décocher tout</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Cliquez ici pour désélectionner toutes les variables de données.</EDDGridUncheckAllTooltip>
 <!-- Exemples Griddap Ce groupe de paramètres est utilisé pour créer des exemples pour la documentation griddap qui apparaît sur [baseUrl]/erddap/griddap/documentation.html et ailleurs.
 Les caractères spéciaux (par exemple, &amp; &lt; &gt;) doivent être encodés en HTML.
 Si vous voulez que les exemples pointent vers votre ERDDAP, la méthode la plus simple est :
@@ -3146,17 +3150,20 @@ Seules les lignes les plus proches de l&#39;intervalle du diviseur seront conser
 Par exemple, orderByClosest(&quot;stationID, time/2hours&quot;) triera par stationID et time, mais ne renverra que les lignes pour chaque stationID où la dernière colonne orderBy (time) est la plus proche d&#39;intervalles de 2 heures.
 <p><strong>orderByCount</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement le nombre de valeurs non manquantes pour chaque groupe.
 Par exemple, orderByCount(&quot;stationID, time/1day&quot;) par stationID et renverra une ligne pour chaque stationID pour chaque jour, avec un décompte du nombre de valeurs non manquantes pour chacune des autres variables.
-<p><strong>orderByLimit</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement les premières nRows (comme spécifié par la dernière valeur orderByLimit ) au sein de chaque groupe.
+<p><strong>orderByLimit</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement les premières nRows (comme spécifié par la dernière valeur orderByLimit ) dans chaque groupe.
 Par exemple, orderByMax(&quot;stationID, time/1day, 10&quot;) par stationID et time, mais ne renverra que les 10 premières lignes pour chaque stationID pour chaque jour.
 <p><strong>orderByMax</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement la ligne dans chaque groupe avec la valeur maximale de la dernière variable orderByMax dans la demande.
 Par exemple, orderByMax(&quot;stationID, time/1day, temperature&quot;) regroupera les lignes par stationID et chaque jour, mais ne renverra que la ligne avec la valeur de température maximale pour chaque stationID pour chaque jour.
 <p><strong>orderBy Min</strong> est comme orderByMax, mais ne conserve que la ligne avec la valeur minimale pour la dernière variable orderBy Min.
 <p><strong>orderByMinMax</strong> est comme orderBy Min plus orderByMax .
-Au sein de chaque groupe de tri, seule la ligne avec la valeur minimale et la ligne avec la valeur maximale de la dernière variable orderByMinMax seront conservées.
+Au sein de chaque groupe de tri, seule la ligne avec la valeur minimale et la ligne avec la valeur maximale pour la dernière variable orderByMinMax seront conservées.
 Par exemple, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) renverra la ligne avec la valeur de température minimale et la ligne avec la valeur de température maximale pour chaque stationID pour chaque jour.
 <p><strong>orderByMean</strong> trie les lignes du tableau des résultats en groupes et renvoie juste une ligne pour chaque groupe.
 Cette ligne aura la moyenne de chacune des autres variables.
 Par exemple, orderByMax(&quot;stationID, time/1day&quot;) créera un groupe pour chaque stationID pour chaque jour, et calculera et renverra la moyenne des autres variables.
+<p><strong>orderBy Sum</strong> trie les lignes du tableau des résultats en groupes et ne renvoie qu&#39;une ligne pour chaque groupe.
+Cette ligne aura la somme de chacune des autres variables.
+Par exemple, orderByMax(&quot;stationID, time/1day&quot;) créera un groupe pour chaque stationID pour chaque jour, et calculera et renverra la somme des autres variables.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Pour orderByClosest, spécifiez l&#39;intervalle (en utilisant le format n[timeUnits], par exemple, 1 heure) ici.
@@ -3514,8 +3521,8 @@ Une fois que le libellé du bouton passe de « Connexion » à « Connexion 
 <loginOpenIDCreate>Ou créez une URL OpenID sur</loginOpenIDCreate>
 <loginOpenIDFree>Ils sont tous gratuits !</loginOpenIDFree>
 <loginOpenIDSame>Assurez-vous que vous vous êtes connecté avec exactement la même URL OpenID que vous avez donnée à l&#39;administrateur ERDDAP.</loginOpenIDSame>
-<loginAs>Vous êtes connecté en tant que</loginAs>
-<loginPartwayAs>Vous êtes connecté en partie en tant que</loginPartwayAs>
+<loginAs>Vous êtes connecté en tant que {0} .</loginAs>
+<loginPartwayAs>Vous êtes connecté en partie en tant que {0} .</loginPartwayAs>
 <loginFailed>ERREUR : Échec de la connexion</loginFailed>
 <loginInvalid>Nom d&#39;utilisateur et / ou mot de passe incorrect.</loginInvalid>
 <loginSucceeded>Connexion réussie !</loginSucceeded>
@@ -3906,9 +3913,9 @@ Mieux vaut retourner un fichier vide ? Mais .nc et autres n&#39;autorisent pas l
 <notAvailable>Actuellement, datasetID={0} n&#39;est pas disponible.</notAvailable>
 <note>REMARQUE!</note>
 <!--  Xxx est Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Cet ensemble de données n&#39;est pas disponible via {0}.</noXxx>
-<noXxxBecause>Cet ensemble de données n&#39;est pas disponible via {0} car {1}.</noXxxBecause>
-<noXxxBecause2>{0} n&#39;est pas disponible pour cet ensemble de données car {1}.</noXxxBecause2>
+<noXxx>Cet ensemble de données n&#39;est jamais disponible via {0}.</noXxx>
+<noXxxBecause>Cet ensemble de données n&#39;est jamais disponible via {0} car {1}.</noXxxBecause>
+<noXxxBecause2>{0} n&#39;est jamais disponible pour cet ensemble de données car {1}.</noXxxBecause2>
 <noXxxNotActive>ce service {0} de l&#39;ERDDAP n&#39;est pas actif</noXxxNotActive>
 <noXxxNoAxis1>il n&#39;y a pas de variables d&#39;axe avec plus d&#39;une valeur</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} n&#39;est pas un type compatible</noXxxNoCdmDataType>
@@ -4030,6 +4037,7 @@ Différents protocoles sont appropriés pour différents types de données et po
 <queryErrorOrderByClosest>Pour orderByClosest, vous devez spécifier une liste CSV d&#39;un ou plusieurs noms de colonne orderBy (chacun d&#39;entre eux devant figurer dans la liste des variables de résultats) plus l&#39;intervalle pour la dernière variable orderBy (par exemple, &quot;stationID,time,10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Pour orderByLimit, vous devez spécifier une liste CSV de 0 ou plusieurs noms de colonnes orderBy (chacun d&#39;entre eux devant figurer dans la liste des variables de résultats ; les colonnes numériques peuvent avoir columnName[/divisor[timeUnits][:offset]]) plus le nombre maximum de lignes pour chaque groupe (par exemple, &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Pour orderByMean, vous devez spécifier une liste CSV de noms de colonnes orderBy (chacun doit être dans la liste des variables de résultats ; les colonnes numériques peuvent avoir columnName[/divisor[timeUnits][:offset]]), par exemple, &quot;stationID,time /10 minutes&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Pour orderBySum, vous devez spécifier une liste CSV de noms de colonnes orderBy (chacun doit être dans la liste des variables de résultats ; les colonnes numériques peuvent avoir columnName[/divisor[timeUnits][:offset]]), par exemple, &quot;stationID,time /10 minutes&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} n&#39;est pas dans la liste des variables de résultats.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variable inconnue={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Les requêtes d&#39;axe de grille doivent spécifier au moins une variable d&#39;axe.</queryErrorGrid1Axis>
@@ -4048,7 +4056,7 @@ Différents protocoles sont appropriés pour différents types de données et po
 <queryErrorLastUnexpected>Caractère inattendu après &quot;last&quot; dans {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>La valeur +/- dans {0} n&#39;est pas valide.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>La valeur d&#39;index +/- dans {0} n&#39;est pas un entier.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} va de {1} à {2}.</rangesFromTo>
 <required>Obligatoire</required>
 <resetTheForm>Réinitialisez le formulaire aux valeurs par défaut.</resetTheForm>
@@ -4719,13 +4727,13 @@ Mais sans ERDDAP, il est difficile d&#39;obtenir des données de différents typ
 <ul>
 <li>Différents serveurs de données vous obligent à formater votre demande de données de différentes manières.
 <li>Différents serveurs de données renvoient des données dans différents formats, généralement pas le format de fichier commun que vous souhaitez.
-<li>Différents ensembles de données utilisent différents formats pour les données temporelles, de sorte que les résultats sont difficiles à comparer.
+<li>Différents ensembles de données utilisent différents formats pour les données temporelles, les résultats sont donc difficiles à comparer.
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
 make it easier for you to get scientific data.-->
 <p><strong>ERDDAP unifie les différents types de serveurs de données afin que vous ayez un moyen cohérent d&#39;obtenir les données que vous souhaitez, dans le format que vous souhaitez.</strong>
 <ul>
-<li>ERDDAP agit en tant qu&#39;intermédiaire entre vous et divers serveurs de données distants.
+<li>ERDDAP agit comme intermédiaire entre vous et divers serveurs de données distants.
 Lorsque vous demandez des données à ERDDAP, ERDDAP reformate la demande dans le format requis par le serveur distant, envoie la demande au serveur distant, récupère les données, reformate les données dans le format que vous avez demandé et vous envoie les données.
 Vous n&#39;avez plus besoin d&#39;aller sur différents serveurs de données pour obtenir des données à partir de différents ensembles de données.
 <br>&nbsp;
@@ -4734,7 +4742,7 @@ via la norme OPeNDAP .
 <br>&wmsManyDatasets;
 <br>&nbsp;
 <li>ERDDAP renvoie les données dans le format de fichier commun de votre choix.
-ERDDAP propose toutes les données sous forme de table .html, ESRI .asc et .csv, Google Earth .kml, binaire OPeNDAP, .mat, .nc, ODV .txt, .csv, .tsv, .json et .xhtml .
+ERDDAP propose toutes les données sous forme de table .html, ESRI .asc et .csv, Google Earth .kml, OPeNDAP binaire, .mat, .nc, ODV .txt, .csv, .tsv, .json et .xhtml .
 Ainsi, vous n&#39;avez plus à perdre de temps et d&#39;efforts à reformater les données.
 <br>&nbsp;
 <li>ERDDAP peut également renvoyer une image .png ou .pdf avec un graphique ou une carte personnalisé.
@@ -4748,11 +4756,11 @@ ERDDAP utilise toujours le fuseau horaire Zulu (UTC, GMT) pour éliminer les dif
 <br>&nbsp;
 <li>ERDDAP a des pages Web (pour les humains avec des navigateurs) et
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;la toile&nbsp;services</a> (pour programmes informatiques).
-Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services Web RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme qui vous écrivez) et même à partir de pages Web (via des balises d&#39;image HTML ou JavaScript).
+Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services Web RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme qui vous écrivez) et même à partir de pages Web (via des balises d&#39;image HTML ou Java Script).
 Vous pouvez également créer d&#39;autres choses utiles et intéressantes en plus des services Web d&#39; ERDDAP - voir le
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> liste de projets impressionnants liés à ERDDAP .
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> liste des projets liés Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Pour une introduction rapide à ERDDAP, regardez la première moitié de ce<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vidéo <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

@@ -2492,6 +2492,10 @@ Valitse yksi tai useampi ruudukkomuuttuja.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Ruudukkomuuttujat</strong> (jotka lataavat aina myös kaikki ulottuvuusmuuttujat)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Tarkista kaikki</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Napsauta tästä valitaksesi kaikki datamuuttujat.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Poista valinta Kaikki</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Napsauta tätä poistaaksesi kaikkien datamuuttujien valinnat.</EDDGridUncheckAllTooltip>
 <!-- Griddap-esimerkit Tämän asetusryhmän avulla luodaan esimerkkejä griddap-dokumentaatiosta, joka on osoitteessa [baseUrl]/erddap/griddap/documentation.html ja muualla.
 Erikoismerkkien (esim.
 &amp; &lt; &gt;) on oltava HTML-koodattuja.
@@ -3199,7 +3203,8 @@ orderBy ...
 Jos haluat käyttää orderBy ...
 -funktiota, valitse funktio vasemmalta, valitse sitten yksi tai useampi muuttuja oikealta ja lisää sitten valinnaisesti lisäysasetukset, esim.
 numeerisille muuttujille voit määrittää muuttujanNimi[/jakaja[aikayksiköt][:offset] ] .
-Jos et käytä orderBy ...-toimintoa, valitse ensimmäinen vaihtoehto vasemmalta (&quot;&quot;).
+Jos et halua käyttää mitään orderBy ...
+-toimintoa, valitse ensimmäinen vaihtoehto vasemmalta (&quot;&quot;).
 orderBy ...-funktiot ovat:
 <p><strong>orderBy</strong> lajittelee tulostaulukon rivit määritettyjen muuttujien mukaan.
 Esimerkiksi orderBy(&quot;stationID, time&quot;) lajittelee tulokset ensisijaisesti stationID ja toissijaisesti ajan mukaan.
@@ -3220,6 +3225,9 @@ Esimerkiksi orderByMinMax(&quot;stationID, time/1day, temperature&quot;) palautt
 <p><strong>orderByMean</strong> lajittelee tulostaulukon rivit ryhmiin ja palauttaa vain yhden rivin jokaiselle ryhmälle.
 Tällä rivillä on kunkin muun muuttujan keskiarvo.
 Esimerkiksi orderByMax(&quot;stationID, time/1day&quot;) luo ryhmän kullekin stationID kullekin päivälle ja laskee ja palauttaa muiden muuttujien keskiarvon.
+<p><strong>orderBy Sum</strong> lajittelee tulostaulukon rivit ryhmiin ja palauttaa vain yhden rivin jokaiselle ryhmälle.
+Tällä rivillä on kaikkien muiden muuttujien summa.
+Esimerkiksi orderByMax(&quot;stationID, time/1day&quot;) luo ryhmän kullekin stationID kullekin päivälle ja laskee ja palauttaa muiden muuttujien summan.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Määritä orderByClosest väli (käyttäen muotoa n[timeUnits], esim.
@@ -3584,8 +3592,8 @@ Odota 5 sekuntia, kun painikkeen nimi vaihtuu kirjautumisesta sisäänkirjautune
 <loginOpenIDCreate>Tai luo OpenID-URL osoitteessa</loginOpenIDCreate>
 <loginOpenIDFree>Ne ovat kaikki ilmaisia!</loginOpenIDFree>
 <loginOpenIDSame>Varmista, että kirjauduit sisään täsmälleen samalla OpenID-URL-osoitteella, jonka annoit ERDDAP-järjestelmänvalvojalle.</loginOpenIDSame>
-<loginAs>Olet kirjautunut sisään nimellä</loginAs>
-<loginPartwayAs>Olet kirjautunut sisään osittain nimellä</loginPartwayAs>
+<loginAs>Olet kirjautunut sisään käyttäjänä {0}.</loginAs>
+<loginPartwayAs>Olet kirjautunut sisään käyttäjänä {0}.</loginPartwayAs>
 <loginFailed>VIRHE: Kirjautuminen epäonnistui</loginFailed>
 <loginInvalid>Virheellinen käyttäjätunnus ja/tai salasana.</loginInvalid>
 <loginSucceeded>Kirjautuminen onnistui!</loginSucceeded>
@@ -3977,9 +3985,9 @@ Onko parempi palauttaa tyhjä tiedosto? Mutta .nc ja muut eivät salli 0-pituist
 <notAvailable>Tällä hetkellä datasetID={0} ei ole käytettävissä.</notAvailable>
 <note>HUOMAUTUS!</note>
 <!--  Xxx on Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Tämä tietojoukko ei ole saatavilla verkkotunnuksen {0} kautta.</noXxx>
-<noXxxBecause>Tämä tietojoukko ei ole saatavilla verkkotunnuksen {0} kautta, koska {1}.</noXxxBecause>
-<noXxxBecause2>{0} ei ole saatavilla tälle tietojoukolle, koska {1}.</noXxxBecause2>
+<noXxx>Tämä tietojoukko ei ole koskaan saatavilla verkkotunnuksen {0} kautta.</noXxx>
+<noXxxBecause>Tämä tietojoukko ei ole koskaan saatavilla osoitteen {0} kautta, koska {1}.</noXxxBecause>
+<noXxxBecause2>{0} ei ole koskaan saatavilla tälle tietojoukolle, koska {1}.</noXxxBecause2>
 <noXxxNotActive>tämän ERDDAP:n {0}-palvelu ei ole aktiivinen</noXxxNotActive>
 <noXxxNoAxis1>ei ole akselimuuttujia, joilla on useampi kuin yksi arvo</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} ei ole yhteensopiva tyyppi</noXxxNoCdmDataType>
@@ -4102,6 +4110,7 @@ Eri protokollat sopivat erityyppisille tiedoille ja erilaisille asiakassovelluks
 <queryErrorOrderByClosest>OrderByClosestille on määritettävä CSV-luettelo, jossa on vähintään yksi orderBy-sarakenimi (joista jokaisen on oltava tulosmuuttujien luettelossa) sekä viimeisen orderBy-muuttujan väli (esim. &quot;stationID,time,10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>OrderByLimit-kohdassa sinun on määritettävä CSV-luettelo, jossa on 0 tai useampia orderBy-sarakkeiden nimiä (joista jokaisen on oltava tulosmuuttujien luettelossa; numeerisissa sarakkeissa voi olla sarakkeenNimi[/jakaja[aikayksiköt][:offset]]) plus enimmäismäärä riviä jokaiselle ryhmälle (esim. &quot;asematunnus,aika/1päivä,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>OrderByMeanille on määritettävä CSV-luettelo orderBy-sarakkeiden nimistä (joista jokaisen on oltava tulosmuuttujien luettelossa; numeerisissa sarakkeissa voi olla sarakkeenNimi[/jakaja[aikayksiköt][:offset]]), esim. &quot;stationID,time /10 minuuttia&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>OrderBySum-arvoa varten sinun on määritettävä CSV-luettelo orderBy-sarakkeiden nimistä (joista jokaisen on oltava tulosmuuttujien luettelossa; numeerisissa sarakkeissa voi olla sarakkeenNimi[/jakaja[aikayksiköt][:offset]]), esim. &quot;stationID,time /10 minuuttia&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} ei ole tulosmuuttujien luettelossa.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Tuntematon muuttuja={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Ruudukkoakselikyselyissä on määritettävä vähintään yksi akselimuuttuja.</queryErrorGrid1Axis>
@@ -4120,7 +4129,7 @@ Eri protokollat sopivat erityyppisille tiedoille ja erilaisille asiakassovelluks
 <queryErrorLastUnexpected>Odottamaton merkki &quot;viimeisen&quot; jälkeen kohteessa {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>+/- arvo kohdassa {0} ei kelpaa.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>{0}-indeksin +/- arvo ei ole kokonaisluku.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} vaihtelee välillä {1} - {2}.</rangesFromTo>
 <required>Vaaditaan</required>
 <resetTheForm>Palauta lomakkeen oletusarvot.</resetTheForm>
@@ -4831,9 +4840,9 @@ Voit ohittaa ERDDAP :n verkkosivut ja käyttää ERDDAP :n RESTful -verkkopalvel
 aineistojen etsimiseen, tiedon lataamiseen, karttojen tekemiseen) suoraan mistä tahansa tietokoneohjelmasta (esim.
 Matlab, R tai ohjelma, joka kirjoitat) ja jopa verkkosivuilta (HTML-kuvatunnisteiden tai Java Scriptin avulla).
 Voit myös rakentaa muita hyödyllisiä ja mielenkiintoisia asioita ERDDAP :n verkkopalveluiden päälle – katso
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Mahtava ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> luettelo mahtavista ERDDAP hankkeista.
+    title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> luettelo Awesome ERDDAP hankkeista.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Katso tämän ensimmäisen puoliskon nopea esittely ERDDAP :iin<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video- <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

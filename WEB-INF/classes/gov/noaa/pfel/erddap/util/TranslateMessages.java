@@ -729,6 +729,7 @@ public class TranslateMessages {
         "ArcGIS",
         "Ardour",
         "Audacity",
+        "Awesome ERDDAP",
         "based on three-band reflectance difference, J. Geophys.",
         "beginTime",
         "bob dot simons at noaa dot gov",

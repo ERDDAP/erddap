@@ -2463,6 +2463,10 @@ selectați una sau mai multe dintre variabilele grilei.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variabile grilă</strong> (care descarcă întotdeauna toate variabilele de dimensiune)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Selectați toate</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Faceți clic aici pentru a selecta toate variabilele de date.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Deselecteaza tot</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Faceți clic aici pentru a deselecta toate variabilele de date.</EDDGridUncheckAllTooltip>
 <!-- Exemple Griddap Acest grup de setări este folosit pentru a face exemple pentru documentația griddap care apare la [baseUrl]/erddap/griddap/documentation.html și în altă parte.
 Caracterele speciale (de exemplu, &amp; &lt; &gt;) trebuie să fie codificate HTML.
 Dacă doriți ca exemplele să indice ERDDAP dvs., cea mai ușoară metodă este:
@@ -3182,6 +3186,9 @@ De exemplu, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) va retu
 <p><strong>orderByMean</strong> sortează rândurile tabelului de rezultate în grupuri și returnează doar un rând pentru fiecare grup.
 Rândul respectiv va avea media fiecăreia dintre celelalte variabile.
 De exemplu, orderByMax(&quot;stationID, time/1day&quot;) va crea un grup pentru fiecare stationID pentru fiecare zi și va calcula și returna media celorlalte variabile.
+<p><strong>orderBy Sum</strong> sortează rândurile tabelului de rezultate în grupuri și returnează doar un rând pentru fiecare grup.
+Rândul respectiv va avea suma fiecăreia dintre celelalte variabile.
+De exemplu, orderByMax(&quot;stationID, time/1day&quot;) va crea un grup pentru fiecare stationID pentru fiecare zi și va calcula și returna suma celorlalte variabile.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Pentru orderByClosest, specificați intervalul (folosind formatul n[timeUnits], de exemplu, 1 oră) aici.
@@ -3547,8 +3554,8 @@ După ce eticheta butonului se schimbă din „Conectare” în „Conectat”, 
 <loginOpenIDCreate>Sau creați o adresă URL OpenID la</loginOpenIDCreate>
 <loginOpenIDFree>Toate sunt gratuite!</loginOpenIDFree>
 <loginOpenIDSame>Asigurați-vă că v-ați conectat cu exact aceeași adresă URL OpenID pe care ați dat-o administratorului ERDDAP.</loginOpenIDSame>
-<loginAs>Sunteți autentificat ca</loginAs>
-<loginPartwayAs>Sunteți autentificat parțial ca</loginPartwayAs>
+<loginAs>Sunteți autentificat ca {0} .</loginAs>
+<loginPartwayAs>Sunteți conectat parțial ca {0} .</loginPartwayAs>
 <loginFailed>EROARE: autentificarea eșuată</loginFailed>
 <loginInvalid>Nume de utilizator și / sau parolă nevalide.</loginInvalid>
 <loginSucceeded>Autentificarea reușită!</loginSucceeded>
@@ -3940,9 +3947,9 @@ Mai bine să returnați un fișier gol? Dar .nc și altele nu permit date cu lun
 <notAvailable>În prezent, datasetID={0} nu este disponibil.</notAvailable>
 <note>NOTĂ!</note>
 <!--  Xxx este Crearea unui grafic, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Acest set de date nu este disponibil prin {0}.</noXxx>
-<noXxxBecause>Acest set de date nu este disponibil prin {0} deoarece {1}.</noXxxBecause>
-<noXxxBecause2>{0} nu este disponibil pentru acest set de date deoarece {1}.</noXxxBecause2>
+<noXxx>Acest set de date nu este niciodată disponibil prin {0}.</noXxx>
+<noXxxBecause>Acest set de date nu este niciodată disponibil prin {0} deoarece {1}.</noXxxBecause>
+<noXxxBecause2>{0} nu este niciodată disponibil pentru acest set de date deoarece {1}.</noXxxBecause2>
 <noXxxNotActive>serviciul {0} al acestui ERDDAP nu este activ</noXxxNotActive>
 <noXxxNoAxis1>nu există variabile de axă cu mai mult de o valoare</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} nu este un tip compatibil</noXxxNoCdmDataType>
@@ -4067,6 +4074,7 @@ Diferite protocoale sunt adecvate pentru diferite tipuri de date și pentru dife
 <queryErrorOrderByClosest>Pentru orderByClosest, trebuie să specificați o listă CSV cu 1 sau mai multe nume de coloană orderBy (fiecare dintre acestea trebuie să fie în lista de variabile de rezultate) plus intervalul pentru ultima variabilă orderBy (de exemplu, „stationID,time,10 minutes”).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Pentru orderByLimit, trebuie să specificați o listă CSV cu 0 sau mai multe nume de coloane orderBy (fiecare dintre acestea trebuie să fie în lista de variabile de rezultate; coloanele numerice pot avea columnName[/divisor[timeUnits][:offset]]) plus numărul maxim de rânduri pentru fiecare grup (de exemplu, „ID stație, oră/1 zi, 10”).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Pentru orderByMean, trebuie să specificați o listă CSV de nume de coloane orderBy (fiecare dintre acestea trebuie să fie în lista de variabile de rezultate; coloanele numerice pot avea columnName[/divisor[timeUnits][:offset]]), de exemplu, „stationID,time /10 minute&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Pentru orderBySum, trebuie să specificați o listă CSV de nume de coloane orderBy (fiecare dintre acestea trebuie să fie în lista de variabile de rezultate; coloanele numerice pot avea columnName[/divisor[timeUnits][:offset]]), de exemplu, „stationID,time /10 minute&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} nu se află în lista de variabile de rezultate.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Variabilă necunoscută={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Interogările pe axa grilă trebuie să specifice cel puțin o variabilă de axă.</queryErrorGrid1Axis>
@@ -4085,7 +4093,7 @@ Diferite protocoale sunt adecvate pentru diferite tipuri de date și pentru dife
 <queryErrorLastUnexpected>Caracter neașteptat după „ultimul” în {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Valoarea +/- din {0} nu este validă.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Valoarea indexului +/- din {0} nu este un număr întreg.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} variază de la {1} la {2}.</rangesFromTo>
 <required>Necesar</required>
 <resetTheForm>Resetați formularul la valorile implicite.</resetTheForm>
@@ -4810,7 +4818,7 @@ Puteți ocoli paginile web ale ERDDAP și puteți utiliza serviciile web RESTful
 De asemenea, puteți construi alte lucruri utile și interesante pe lângă serviciile web ale ERDDAP - vedeți
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> listă de proiecte minunate legate de ERDDAP .
+    title="Acest link către un site extern nu constituie o aprobare."></a> lista de proiecte minunate legate de Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Pentru o introducere rapidă în ERDDAP, urmăriți prima jumătate a acesteia<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

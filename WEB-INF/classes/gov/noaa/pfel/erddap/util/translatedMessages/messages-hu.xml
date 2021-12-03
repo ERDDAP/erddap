@@ -2560,6 +2560,10 @@ Válasszon ki egy vagy több rácsváltozót.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Rácsváltozók</strong> (amelyek mindig letöltik az összes dimenzióváltozót)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Ellenőrizni mind</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Kattintson ide az összes adatváltozó kiválasztásához.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Minden választás törlése</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Kattintson ide az összes adatváltozó kijelölésének megszüntetéséhez.</EDDGridUncheckAllTooltip>
 <!-- Griddap példák Ez a beállításcsoport arra szolgál, hogy példákat készítsen a griddap dokumentációhoz, amely a [baseUrl]/erddap/griddap/documentation.html címen és máshol is megjelenik.
 A speciális karaktereknek (pl.
 &amp; &lt; &gt;) HTML-kódolásúaknak kell lenniük.
@@ -3302,6 +3306,9 @@ Például az orderByMinMax(&quot;stationID, time/1day, temperature&quot;) minden
 <p><strong>orderByMean</strong> az eredménytábla sorait csoportokba rendezi, és minden csoporthoz csak egy sort ad vissza.
 Ebben a sorban lesz az összes többi változó átlaga.
 Például az orderByMax(&quot;stationID, time/1day&quot;) minden naphoz létrehoz egy csoportot minden egyes stationID, és kiszámítja és visszaadja a többi változó átlagát.
+<p><strong>orderBy Sum</strong> az eredménytábla sorait csoportokba rendezi, és minden csoporthoz csak egy sort ad vissza.
+Ebben a sorban a többi változó összege lesz.
+Például az orderByMax(&quot;stationID, time/1day&quot;) minden naphoz létrehoz egy csoportot minden egyes stationID, és kiszámítja és visszaadja a többi változó összegét.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Az orderByClosest esetén itt adja meg az intervallumot (n[timeUnits] formátumban, pl.
@@ -3667,8 +3674,8 @@ Miután a gomb címkéje „Bejelentkezés”-ről „Bejelentkezett”-re vált
 <loginOpenIDCreate>Vagy hozzon létre egy OpenID URL-t a címen</loginOpenIDCreate>
 <loginOpenIDFree>Mindegyik ingyenes!</loginOpenIDFree>
 <loginOpenIDSame>Győződjön meg arról, hogy pontosan ugyanazzal az OpenID URL-címmel jelentkezett be, amelyet az ERDDAP adminisztrátorának adott.</loginOpenIDSame>
-<loginAs>be vagy jelentkezve mint</loginAs>
-<loginPartwayAs>Ön részlegesen bejelentkezett, mint</loginPartwayAs>
+<loginAs>Ön mint {0} bejelentkezett.</loginAs>
+<loginPartwayAs>Részben bejelentkezett, mint {0}.</loginPartwayAs>
 <loginFailed>HIBA: Sikertelen bejelentkezés</loginFailed>
 <loginInvalid>Érvénytelen felhasználónév és/vagy jelszó.</loginInvalid>
 <loginSucceeded>A bejelentkezés sikerült!</loginSucceeded>
@@ -4059,9 +4066,9 @@ Jobb, ha üres fájlt küld vissza? De az .nc és mások nem engedélyezik a 0 h
 <notAvailable>Jelenleg a datasetID={0} nem érhető el.</notAvailable>
 <note>JEGYZET!</note>
 <!--  Az Xxx a Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Ez az adatkészlet nem érhető el a következőn keresztül: {0}.</noXxx>
-<noXxxBecause>Ez az adatkészlet nem érhető el a következőn keresztül: {0}, mert {1}.</noXxxBecause>
-<noXxxBecause2>A(z) {0} nem érhető el ehhez az adatkészlethez, mert {1}.</noXxxBecause2>
+<noXxx>Ez az adatkészlet soha nem érhető el a következőn keresztül: {0}.</noXxx>
+<noXxxBecause>Ez az adatkészlet soha nem érhető el a következőn keresztül: {0}, mert {1}.</noXxxBecause>
+<noXxxBecause2>A(z) {0} soha nem érhető el ehhez az adatkészlethez, mert {1}.</noXxxBecause2>
 <noXxxNotActive>ez az ERDDAP {0} szolgáltatása nem aktív</noXxxNotActive>
 <noXxxNoAxis1>egyetlen tengelyváltozó sem rendelkezik egynél több értékkel</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} nem kompatibilis típus</noXxxNoCdmDataType>
@@ -4185,6 +4192,7 @@ A különböző típusú adatokhoz és a különböző kliens alkalmazásokhoz k
 <queryErrorOrderByClosest>Az orderByClosest esetében meg kell adnia egy CSV-listát, amely 1 vagy több orderBy oszlopnévből áll (mindegyiknek szerepelnie kell az eredményváltozók listájában), valamint az utolsó orderBy változó intervallumát (pl. &quot;stationID,time,10 minutes&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Az orderByLimit esetében meg kell adnia egy 0 vagy több orderBy oszlopnévből álló CSV-listát (mindegyiknek szerepelnie kell az eredményváltozók listájában; a numerikus oszlopokban szerepelhet oszlopnév[/osztó[időegységek][:eltolás]]), plusz a maximális szám sorok száma minden csoporthoz (pl. &quot;állomásazonosító,idő/1nap,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Az orderByMean értékhez meg kell adnia egy CSV-listát az orderBy oszlopnevekből (mindegyiknek szerepelnie kell az eredményváltozók listájában; a numerikus oszlopok rendelkezhetnek oszlopnévvel[/osztó[időegységek][:eltolás]]), pl. &quot;stationID,time /10 perc&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Az orderBySum esetén meg kell adnia az orderBy oszlopnevek CSV-listáját (mindegyiknek szerepelnie kell az eredményváltozók listájában; a numerikus oszlopok rendelkezhetnek oszlopnévvel[/osztó[időegységek][:eltolás]]), pl. &quot;stationID,time /10 perc&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} nem szerepel a találati változók listájában.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Ismeretlen változó={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>A rácstengely-lekérdezéseknek legalább egy tengelyváltozót meg kell adniuk.</queryErrorGrid1Axis>
@@ -4203,7 +4211,7 @@ A különböző típusú adatokhoz és a különböző kliens alkalmazásokhoz k
 <queryErrorLastUnexpected>Váratlan karakter az &quot;utolsó&quot; után itt: {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>A +/- érték a következőben: {0} nem érvényes.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>A +/- index értéke a következőben: {0} nem egész szám.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>A {0} értéke {1} és {2} között van.</rangesFromTo>
 <required>Kívánt</required>
 <resetTheForm>Állítsa vissza az űrlapot az alapértelmezett értékekre.</resetTheForm>
@@ -4891,7 +4899,7 @@ az OPeNDAP szabványon keresztül.
 ERDDAP minden adatot .html tábla, ESRI .asc és .csv, Google Earth .kml, OPeNDAP bináris, .mat, .nc, ODV .txt, .csv, .tsv, .json és .xhtml kínál.
 Így többé nem kell időt és erőfeszítést pazarolnia az adatok újraformázására.
 <br>&nbsp;
-<li>ERDDAP egy .png vagy .pdf formátumú képet is visszaadhat testreszabott grafikonnal vagy térképpel.
+<li>ERDDAP .png vagy .pdf formátumú képet is visszaadhat testreszabott grafikonnal vagy térképpel.
 <br>&nbsp;
 <li>ERDDAP szabványosítja a dátumokat+időpontokat az eredményekben.
 Más adatszerverekről származó adatokat nehéz összehasonlítani, mert a dátumok és időpontok gyakran különböző formátumokban vannak megadva (például &quot;2018.
@@ -4910,9 +4918,9 @@ ERDDAP mindig a Zulu (UTC, GMT) időzónát használja, hogy kiküszöbölje a k
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;web&nbsp;szolgáltatások</a> (számítógépes programokhoz).
 Megkerülheti ERDDAP weboldalait, és használhatja az ERDDAP RESTful webszolgáltatásait (például adathalmazok keresésére, adatok letöltésére, térképek készítésére) közvetlenül bármely számítógépes programból (például Matlab, R vagy olyan programból, amely írsz) és akár weboldalakról is (HTML képcímkék vagy Java Script segítségével).
 Más hasznos és érdekes dolgokat is építhet az ERDDAP webszolgáltatásaira – lásd a
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Félelmetes ERDDAP <img 
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> az ERDDAP kapcsolódó fantasztikus projektek listája.
+    title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> az Awesome ERDDAP kapcsolódó projektek listája.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Az ERDDAP gyors bemutatásához tekintse meg ennek az első felét<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > videó- <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

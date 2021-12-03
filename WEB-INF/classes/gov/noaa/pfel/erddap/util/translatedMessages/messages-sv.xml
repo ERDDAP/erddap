@@ -2472,6 +2472,10 @@ Välj en eller flera av rutnätsvariablerna.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Rutnätsvariabler</strong> (som alltid också laddar ner alla dimensionsvariabler)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Markera alla</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Klicka här för att välja alla datavariabler.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Avbocka alla</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Klicka här för att avmarkera alla datavariabler.</EDDGridUncheckAllTooltip>
 <!-- Griddap-exempel Den här gruppen med inställningar används för att göra exempel för griddap-dokumentationen som visas på [baseUrl]/erddap/griddap/documentation.html och på andra ställen.
 Specialtecken (t.ex.
 &amp; &lt; &gt;) måste vara HTML-kodade.
@@ -3195,6 +3199,9 @@ Till exempel kommer orderByMinMax(&quot;stationID, time/1day, temperature&quot;)
 <p><strong>orderByMean</strong> sorterar raderna i resultattabellen i grupper och returnerar bara en rad för varje grupp.
 Den raden kommer att ha medelvärdet av var och en av de andra variablerna.
 Till exempel kommer orderByMax(&quot;stationID, time/1day&quot;) att skapa en grupp för varje stationID för varje dag, och kommer att beräkna och returnera medelvärdet av de andra variablerna.
+<p><strong>orderBy Sum</strong> sorterar raderna i resultattabellen i grupper och returnerar bara en rad för varje grupp.
+Den raden kommer att ha summan av var och en av de andra variablerna.
+Till exempel kommer orderByMax(&quot;stationID, time/1day&quot;) att skapa en grupp för varje stationID för varje dag, och kommer att beräkna och returnera summan av de andra variablerna.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 För orderByClosest, ange intervallet (med formatet n[timeUnits], t.ex.
@@ -3551,8 +3558,8 @@ Efter att knappens etikett ändrats från &quot;Logga in&quot; till &quot;Inlogg
 <loginOpenIDCreate>Eller skapa en OpenID URL på</loginOpenIDCreate>
 <loginOpenIDFree>De är alla gratis!</loginOpenIDFree>
 <loginOpenIDSame>Se till att du loggat in med exakt samma OpenID-URL som du gav till ERDDAP-administratören.</loginOpenIDSame>
-<loginAs>Du är inloggad som</loginAs>
-<loginPartwayAs>Du är inloggad halvvägs som</loginPartwayAs>
+<loginAs>Du är inloggad som {0}.</loginAs>
+<loginPartwayAs>Du är inloggad halvvägs som {0} .</loginPartwayAs>
 <loginFailed>FEL: Inloggningen misslyckades</loginFailed>
 <loginInvalid>Ogiltigt användarnamn och / eller lösenord.</loginInvalid>
 <loginSucceeded>Inloggningen lyckades!</loginSucceeded>
@@ -3944,9 +3951,9 @@ Bättre att returnera en tom fil? Men .nc och andra tillåter inte 0-längdsdata
 <notAvailable>För närvarande är datasetID={0} inte tillgängligt.</notAvailable>
 <note>NOTERA!</note>
 <!--  Xxx är Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Denna datauppsättning är inte tillgänglig via {0}.</noXxx>
-<noXxxBecause>Denna datauppsättning är inte tillgänglig via {0} eftersom {1}.</noXxxBecause>
-<noXxxBecause2>{0} är inte tillgänglig för denna datauppsättning eftersom {1}.</noXxxBecause2>
+<noXxx>Denna datauppsättning är aldrig tillgänglig via {0}.</noXxx>
+<noXxxBecause>Denna datauppsättning är aldrig tillgänglig via {0} eftersom {1}.</noXxxBecause>
+<noXxxBecause2>{0} är aldrig tillgänglig för denna datauppsättning eftersom {1}.</noXxxBecause2>
 <noXxxNotActive>denna ERDDAP:s {0}-tjänst är inte aktiv</noXxxNotActive>
 <noXxxNoAxis1>det finns inga axelvariabler med mer än ett värde</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} är inte en kompatibel typ</noXxxNoCdmDataType>
@@ -4068,6 +4075,7 @@ Olika protokoll är lämpliga för olika typer av data och för olika klientappl
 <queryErrorOrderByClosest>För orderByClosest måste du ange en CSV-lista med 1 eller flera orderBy-kolumnnamn (som var och en måste finnas i listan över resultatvariabler) plus intervallet för den sista orderBy-variabeln (t.ex. &quot;stationID,tid,10 minuter&quot;).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>För orderByLimit måste du ange en CSV-lista med 0 eller fler orderBy-kolumnnamn (som var och en måste finnas i listan med resultatvariabler; numeriska kolumner kan ha kolumnnamn[/divisor[timeUnits][:offset]]) plus det maximala antalet rader för varje grupp (t.ex. &quot;stations-ID,tid/1dag,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>För orderByMean måste du ange en CSV-lista med orderBy-kolumnnamn (som var och en måste finnas i listan över resultatvariabler; numeriska kolumner kan ha columnName[/divisor[timeUnits][:offset]]), t.ex. &quot;stationID,tid /10 minuter&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>För orderBySum måste du ange en CSV-lista med orderBy-kolumnnamn (som var och en måste finnas i listan med resultatvariabler; numeriska kolumner kan ha kolumnName[/divisor[timeUnits][:offset]]), t.ex. &quot;stationID,tid /10 minuter&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} finns inte i listan över resultatvariabler.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Okänd variabel={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Rutnätsaxelfrågor måste ange minst en axelvariabel.</queryErrorGrid1Axis>
@@ -4086,7 +4094,7 @@ Olika protokoll är lämpliga för olika typer av data och för olika klientappl
 <queryErrorLastUnexpected>Oväntat tecken efter &quot;sista&quot; i {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>+/- värdet i {0} är inte giltigt.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>+/- indexvärdet i {0} är inte ett heltal.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} sträcker sig från {1} till {2}.</rangesFromTo>
 <required>Nödvändig</required>
 <resetTheForm>Återställ formuläret till standardvärdena.</resetTheForm>
@@ -4792,7 +4800,7 @@ Du kan kringgå ERDDAP :s webbsidor och använda ERDDAP :s RESTful webbtjänster
 Du kan också bygga andra användbara och intressanta saker ovanpå ERDDAP :s webbtjänster — se
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Denna länk till en extern webbplats utgör inte ett stöd."></a> lista över fantastiska ERDDAP relaterade projekt.
+    title="Denna länk till en extern webbplats utgör inte ett stöd."></a> lista över Awesome ERDDAP relaterade projekt.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">För en snabb introduktion till ERDDAP, titta på första halvan av detta<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video- <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

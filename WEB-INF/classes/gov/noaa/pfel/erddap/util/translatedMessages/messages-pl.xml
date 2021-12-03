@@ -2475,6 +2475,10 @@ Wybierz jedną lub więcej zmiennych siatki.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Zmienne siatki</strong> (które zawsze pobierają również wszystkie zmienne wymiarów)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Zaznacz wszystkie</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Kliknij tutaj, aby wybrać wszystkie zmienne danych.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Odznacz wszystko</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Kliknij tutaj, aby usunąć zaznaczenie wszystkich zmiennych danych.</EDDGridUncheckAllTooltip>
 <!-- Przykłady Griddap Ta grupa ustawień jest używana do tworzenia przykładów dla dokumentacji griddap, która pojawia się w [baseUrl]/erddap/griddap/documentation.html i gdzie indziej.
 Znaki specjalne (np.
 &amp; &lt; &gt;) muszą być zakodowane w formacie HTML.
@@ -3200,6 +3204,9 @@ orderByMinMax(&quot;stationID, time/1day, temperature&quot;) zwróci wiersz z mi
 <p><strong>orderByMean</strong> sortuje wiersze tabeli wyników w grupy i po prostu zwraca jeden wiersz dla każdej grupy.
 Ten wiersz będzie miał średnią każdej z pozostałych zmiennych.
 Na przykład orderByMax(&quot;stationID, time/1day&quot;) utworzy grupę dla każdego stationID dla każdego dnia oraz obliczy i zwróci średnią pozostałych zmiennych.
+<p><strong>orderBy Sum</strong> sortuje wiersze tabeli wyników w grupy i po prostu zwraca jeden wiersz dla każdej grupy.
+Ten wiersz będzie zawierał sumę każdej z pozostałych zmiennych.
+Na przykład orderByMax(&quot;stationID, time/1day&quot;) utworzy grupę dla każdego stationID dla każdego dnia oraz obliczy i zwróci sumę pozostałych zmiennych.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 W przypadku orderByClosest określ tutaj interwał (używając formatu n[timeUnits], np.
@@ -3558,8 +3565,8 @@ Gdy etykieta przycisku zmieni się z „Zaloguj się” na „Zalogowano”, odc
 <loginOpenIDCreate>Lub utwórz adres URL OpenID pod adresem</loginOpenIDCreate>
 <loginOpenIDFree>Wszystkie są bezpłatne!</loginOpenIDFree>
 <loginOpenIDSame>Upewnij się, że zalogowałeś się przy użyciu dokładnie tego samego adresu URL OpenID, który podałeś administratorowi ERDDAP.</loginOpenIDSame>
-<loginAs>Jesteś zalogowany jako</loginAs>
-<loginPartwayAs>Jesteś częściowo zalogowany jako</loginPartwayAs>
+<loginAs>Jesteś zalogowany jako {0} .</loginAs>
+<loginPartwayAs>Jesteś częściowo zalogowany jako {0} .</loginPartwayAs>
 <loginFailed>BŁĄD: logowanie nie powiodło się</loginFailed>
 <loginInvalid>Niepoprawna nazwa użytkownika i / lub hasło.</loginInvalid>
 <loginSucceeded>Logowanie powiodło się!</loginSucceeded>
@@ -3952,9 +3959,9 @@ Lepiej zwrócić pusty plik? Ale .nc i inne nie zezwalają na dane o długości 
 <notAvailable>Obecnie datasetID={0} nie jest dostępna.</notAvailable>
 <note>NOTATKA!</note>
 <!--  Xxx to Utwórz wykres, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Ten zbiór danych nie jest dostępny przez {0}.</noXxx>
-<noXxxBecause>Ten zbiór danych nie jest dostępny przez {0}, ponieważ {1}.</noXxxBecause>
-<noXxxBecause2>{0} nie jest dostępne dla tego zbioru danych, ponieważ {1}.</noXxxBecause2>
+<noXxx>Ten zbiór danych nigdy nie jest dostępny za pośrednictwem {0}.</noXxx>
+<noXxxBecause>Ten zbiór danych nigdy nie jest dostępny za pośrednictwem {0}, ponieważ {1}.</noXxxBecause>
+<noXxxBecause2>{0} nigdy nie jest dostępny dla tego zbioru danych, ponieważ {1}.</noXxxBecause2>
 <noXxxNotActive>ta usługa ERDDAP {0} nie jest aktywna</noXxxNotActive>
 <noXxxNoAxis1>nie ma żadnych zmiennych osi z więcej niż jedną wartością</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} nie jest zgodnym typem</noXxxNoCdmDataType>
@@ -4076,6 +4083,7 @@ Różne protokoły są odpowiednie dla różnych typów danych i różnych aplik
 <queryErrorOrderByClosest>W przypadku orderByClosest musisz określić listę CSV zawierającą co najmniej 1 nazwę kolumny orderBy (z których każda musi znajdować się na liście zmiennych wyników) oraz interwał dla ostatniej zmiennej orderBy (np. „stationID,time,10 minutes”).</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>W przypadku orderByLimit należy określić listę CSV zawierającą 0 lub więcej nazw kolumn orderBy (z których każda musi znajdować się na liście zmiennych wyników; kolumny liczbowe mogą mieć nazwęKolumny[/divisor[jednostki czasu][:przesunięcie]]) plus maksymalna liczba wierszy dla każdej grupy (np. „IDstacji,godzina/1dzień,10”).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>W przypadku orderByMean musisz określić listę CSV nazw kolumn orderBy (z których każda musi znajdować się na liście zmiennych wyników; kolumny numeryczne mogą mieć nazwęKolumny[/divisor[timeUnits][:offset]]), np. &quot;stationID,time /10 minut&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>W przypadku orderBySum należy określić listę CSV nazw kolumn orderBy (z których każda musi znajdować się na liście zmiennych wyników; kolumny numeryczne mogą mieć nazwęKolumny[/divisor[timeUnits][:offset]]), np. „stationID,time /10 minut&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} nie znajduje się na liście zmiennych wyników.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Nieznana zmienna={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Zapytania dotyczące osi siatki muszą określać co najmniej jedną zmienną osi.</queryErrorGrid1Axis>
@@ -4094,7 +4102,7 @@ Różne protokoły są odpowiednie dla różnych typów danych i różnych aplik
 <queryErrorLastUnexpected>Nieoczekiwany znak po „ostatni” w {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Wartość +/- w {0} jest nieprawidłowa.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Wartość indeksu +/- w {0} nie jest liczbą całkowitą.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} ma zakres od {1} do {2}.</rangesFromTo>
 <required>Wymagany</required>
 <resetTheForm>Zresetuj formularz do wartości domyślnych.</resetTheForm>
@@ -4800,7 +4808,7 @@ Możesz ominąć strony internetowe ERDDAP i korzystać z usług sieciowych REST
 Możesz także budować inne przydatne i interesujące rzeczy na usługach internetowych ERDDAP — zobacz
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> lista niesamowitych projektów związanych z ERDDAP .
+    title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> lista projektów związanych z Awesome ERDDAP .
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Aby uzyskać krótkie wprowadzenie do ERDDAP, obejrzyj pierwszą połowę tego<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > wideo <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 

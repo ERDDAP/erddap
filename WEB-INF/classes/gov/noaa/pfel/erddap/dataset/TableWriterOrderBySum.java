@@ -1,5 +1,5 @@
 /* 
- * TableWriterOrderByMean Copyright 2018, NOAA & Irish Marine Institute
+ * TableWriterOrderBySum Copyright 2018, NOAA & Irish Marine Institute
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -28,45 +28,40 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
 
 /**
- * TableWriterOrderByMean provides a way summarize the response table's rows,
- * and just keep the row where the values hold the mean.
- * For example, you could use orderBy(\"stationID,time/1day\") to get the mean
+ * TableWriterOrderBySum provides a way summarize the response table's rows,
+ * and just keep the row where the values hold the sum.
+ * For example, you could use orderBy(\"stationID,time/1day\") to get the sum
  * daily values for each station.
  *
  * <p>This doesn't include _FillValues or missing_values in the calculations.
  *
- * <p>This uses the incremental-averaging algorithm to calculate the means, e.g.,
- * https://math.stackexchange.com/questions/106700/incremental-averageing
+ * TableWriterOrderBySum is derived from TableWriterOrderByMean
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2018-09-11
  * @author Rob Fuller (rob.fuller@marine.ie) 2018-09-11
  * @author Adam Leadbetter (adam.leadbetter@marine.ie) 2018-09-11
+ * @author Marco Alba (marco.alba@ettsolutions.com) 2021-09-10
  */
-public class TableWriterOrderByMean extends TableWriterAll {
+public class TableWriterOrderBySum extends TableWriterAll {
 
 
     //set by constructor
     protected final TableWriter otherTableWriter;
     public String orderBy[];
-    // maintains count of the number of values in average
+    // maintains count of the number of values in sum
     protected final Map<String,int[]> counts = new HashMap<String,int[]>();
     protected final Map<String,Integer> rowmap = new HashMap<String,Integer>();
-    // used when calculating degree means at the end, one key for each row.
-    protected final StringArray keymap = new StringArray();
-    protected final Map<String,DegreesAccumulator> degreesMap = new HashMap<String,DegreesAccumulator>();
 
     protected Attributes oColumnAtts[] = null; //from incoming table or edd
     
     private int[] keyCols;
     private String cellMethods = null;
     private BitSet isKeyCol;
-    private BitSet cannotMeanCol;
-    private BitSet degreesCol;  
-    private BitSet degreesTrueCol;
+    private BitSet cannotSumCol;
     private BitSet wasDecimalCol;
     private int timeCol = -1;
     private boolean configured = false;
-    private Table meansTable;
+    private Table sumsTable;
     private final Map<String,Table.Rounder> rounders = new HashMap<String,Table.Rounder>();
 
     
@@ -83,24 +78,24 @@ public class TableWriterOrderByMean extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByMean(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderBySum(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
         super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
-        final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_MEAN_ERROR, tOrderByCsv);
+        final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_SUM_ERROR, tOrderByCsv);
         orderBy = new String[cols.length];
 
         for (int col=0; col < cols.length; col++) {
             orderBy[col] = Table.deriveActualColumnName(cols[col]);
             if (orderBy[col].equals(cols[col])) {
                 if (cols[col].equals("time")) 
-                    cellMethods = "time: mean";
+                    cellMethods = "time: sum";
             } else {
-                rounders.put(orderBy[col], Table.createRounder("orderByMean", cols[col]));                
+                rounders.put(orderBy[col], Table.createRounder("orderBySum", cols[col]));                
                 Matcher m = Calendar2.TIME_N_UNITS_PATTERN.matcher(cols[col]);
                 if (m.matches()) 
-                    cellMethods = "time: mean (interval: " + m.group(1) + " " + m.group(2) + ")"; //hard to include other info
+                    cellMethods = "time: sum (interval: " + m.group(1) + " " + m.group(2) + ")"; //hard to include other info
             }
         }
     }
@@ -145,7 +140,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         ROW:
         for (int row = 0; row < nRows; row++) {
             sbKey.setLength(0);
-            for (int i=0; i<keyCols.length; i++) {
+            for (int i = 0; i < keyCols.length; i++) {
                 int col = keyCols[i];
                 PrimitiveArray column = table.getColumn(col);
                 String columnName = table.getColumnName(col);
@@ -172,51 +167,46 @@ public class TableWriterOrderByMean extends TableWriterAll {
                 tCounts = new int[nCols];
                 int idx = counts.size();
                 counts.put(key, tCounts);
-                for (int col=0;col<nCols;col++) {
+                for (int col = 0; col < nCols; col++) {
                     PrimitiveArray column = table.getColumn(col);
-                    String value = column.getRawString(row);
-                    meansTable.getColumn(col).addString(value);
+                    String value = (column.isFloatingPointType() || column.isIntegerType())? "" :  //numeric types should start with NaN
+                        column.getRawString(row);
+                    //if (table.getColumnName(col).equals("wd"))  String2.log(">>wd addString=" + value);
+                    sumsTable.getColumn(col).addString(value);
                 }
                 rowmap.put(key, idx);
-                keymap.add(key);
             }
             int idx = rowmap.get(key);
-            for (int col=0;col<nCols;col++) {
+            for (int col = 0; col < nCols; col++) {
                 PrimitiveArray column = table.getColumn(col);
-                if (cannotMeanCol.get(col)) {
+                if (cannotSumCol.get(col)) {
                     // Keep the value only if all rows are the same.
                     String value = column.getRawString(row);
-                    String prev = meansTable.getColumn(col).getRawString(idx);
+                    String prev = sumsTable.getColumn(col).getRawString(idx);
                     if (!("".equals(prev)||prev.equals(value))) {
-                        meansTable.setStringData(col, idx, "");
+                        sumsTable.setStringData(col, idx, "");
                     }
                     continue;
                 }
                 if (!(column.isFloatingPointType() || column.isIntegerType())){
-                    meansTable.setStringData(col, idx, column.getRawString(row));
+                    sumsTable.setStringData(col, idx, column.getRawString(row));
                     continue;
                 }
                 double value = isRounded.get(col) ? roundedValue[col] : table.getNiceDoubleData(col, row);
-                if (Double.isNaN(value)) {
+                //if (table.getColumnName(col).equals("wd")) String2.log(">>wd value=" + value + "\n" + sumsTable.dataToString());
+                if (Double.isNaN(value)) 
                     continue;
-                }
-                //String2.log(">> row=" + row + " col=" + col + " val=" + value + " mean=" + mean);
-                if (degreesTrueCol.get(col)) {
-                    accumulateDegreesTrue(key + ":" + col, value);
-                    continue;
-                }
-                if (degreesCol.get(col)) {
-                    accumulateDegrees(key + ":" + col, value);
-                    continue;
-                }
                 tCounts[col] += 1;
                 if (tCounts[col] == 1) {
-                    meansTable.setDoubleData(col, idx, value);
+                    sumsTable.setDoubleData(col, idx, value);
                     continue;
                 }
-                double mean = meansTable.getDoubleData(col, idx);
-                mean += (value-mean)/tCounts[col];
-                meansTable.setDoubleData(col, idx, mean);
+                double sum = sumsTable.getDoubleData(col, idx);
+                if (isTimeColumn(sumsTable,col)) 
+                     sum += (value-sum)/tCounts[col]; 
+                else sum += value;
+                
+                sumsTable.setDoubleData(col, idx, sum);
             }
         }
     }
@@ -226,33 +216,23 @@ public class TableWriterOrderByMean extends TableWriterAll {
         String units = table.columnAttributes(col).getString("units");
         return "time".equals(table.getColumnName(col)) || EDV.TIME_UNITS.equals(units);
     }
-    
-    private boolean isDegreeUnitsColumn(Table table, int col) {
-        String units = table.columnAttributes(col).getString("units");
-        return units != null && EDStatic.angularDegreeUnitsSet.contains(units);
-    }
-    
-    private boolean isDegreeTrueUnitsColumn(Table table, int col) {
-        String units = table.columnAttributes(col).getString("units");
-        return units != null && EDStatic.angularDegreeTrueUnitsSet.contains(units);
-    }
-    
-    /*
+     
+    /**
      * Find the key columns and possibly the time column.
      */
     private boolean configure(Table table) throws SimpleException{
         int nKeyCols = orderBy.length;
         int ncols = table.nColumns();
-        ArrayList <Integer> tKeyCols= new ArrayList<Integer>();
-        isKeyCol       = new BitSet(ncols);
-        cannotMeanCol  = new BitSet(ncols);
-        degreesCol     = new BitSet(ncols);
-        degreesTrueCol = new BitSet(ncols);
+        ArrayList<Integer> tKeyCols= new ArrayList<Integer>();
+        isKeyCol      = new BitSet(ncols);
+        cannotSumCol  = new BitSet(ncols);
+        //degreesCol     = new BitSet(ncols);
+        //degreesTrueCol = new BitSet(ncols);
         wasDecimalCol  = new BitSet(ncols);
         for (int k = 0; k < nKeyCols; k++) {
             int col = table.findColumnNumber(orderBy[k]);
             if (col < 0)
-                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
+                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_SUM_ERROR + 
                     " (unknown orderBy column=" + orderBy[k] + ")");
             tKeyCols.add(col);
             isKeyCol.set(col);
@@ -260,8 +240,8 @@ public class TableWriterOrderByMean extends TableWriterAll {
         rounders.keySet().forEach((columnName)-> {
             PrimitiveArray column = table.getColumn(columnName);
             if (!(column.isIntegerType() || column.isFloatingPointType())) {
-                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-                        " (cannot group numerically for column=" + columnName + ")");
+                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_SUM_ERROR + 
+                    " (cannot group numerically for column=" + columnName + ")");
                 
             }
         });
@@ -284,11 +264,6 @@ public class TableWriterOrderByMean extends TableWriterAll {
             if (isKeyCol.get(col)) {
                 dataType[col] = column.elementTypeString();
             } else {
-                if (isDegreeTrueUnitsColumn(table,col)) {
-                    degreesTrueCol.set(col);
-                } else if (isDegreeUnitsColumn(table,col)) {
-                    degreesCol.set(col);
-                }
                 if (column.isFloatingPointType()) {
                     wasDecimalCol.set(col);
                 }
@@ -298,11 +273,12 @@ public class TableWriterOrderByMean extends TableWriterAll {
                     //include this in the output only if a single value
                     dataType[col] = column.elementType() == PAType.CHAR? "char": 
                         column.elementType() == PAType.BYTE ? "byte" : "String";
-                    cannotMeanCol.set(col);
+                    cannotSumCol.set(col);
                 }
             }
         }
-        meansTable = Table.makeEmptyTable(colName, dataType);
+        sumsTable = Table.makeEmptyTable(colName, dataType);
+        //String2.log(">> make sumsTable colNames=" + String2.toCSVString(colName) + " dataTypes=" + String2.toCSVString(dataType));
         return true;
     }
 
@@ -313,20 +289,20 @@ public class TableWriterOrderByMean extends TableWriterAll {
      */
     private void useIntegersWhereSensible() {
         //Currently disabled. Much debate: I think it is better to always present
-        //results as doubles: for consistency. Use can look at mean and decide to
+        //results as doubles: for consistency. User can look at sum and decide to
         //ceil/floor/round it as desired.
         //Integers also cause problems with unexpected missing values (e.g., 32767)
         //for groups that have no data values.
         /*
-        int ncols = meansTable.nColumns();
+        int ncols = sumsTable.nColumns();
         for (int col = 0; col < ncols; col++) {
             if (isKeyCol.get(col))  //never change data type of key columns
                 continue;
-            PrimitiveArray column = meansTable.getColumn(col);
+            PrimitiveArray column = sumsTable.getColumn(col);
             if (wasDecimalCol.get(col) || !column.isFloatingPointType()) 
                 continue;
             if (areAllValuesIntegers(column)) 
-                meansTable.setColumn(col, PrimitiveArray.factory(PAType.INT, column));
+                sumsTable.setColumn(col, PrimitiveArray.factory(PAType.INT, column));
         } 
         */
     }
@@ -345,87 +321,9 @@ public class TableWriterOrderByMean extends TableWriterAll {
         return true;
         */
     }
-
-
-    private void accumulateDegrees(String key, double value) {
-        DegreesAccumulator accum = degreesMap.get(key);
-        if (accum == null) {
-            accum = new DegreesAccumulator(false); //not degrees true
-            degreesMap.put(key, accum);
-        }
-        //String2.log(">> accumulateDegrees " + key + " value=" + value);
-        accum.add(value);
-    }
-
-    private void accumulateDegreesTrue(String key, double value) {
-        DegreesAccumulator accum = degreesMap.get(key);
-        if (accum == null) {
-            accum = new DegreesAccumulator(true); //is degrees true
-            degreesMap.put(key, accum);
-        }
-        //String2.log(">> accumulateDegrees " + key + " value=" + value);
-        accum.add(value);
-    }
-
-
-    
-    private void calculateDegreeMeans() {
-        if (meansTable == null || (degreesCol.isEmpty() && degreesTrueCol.isEmpty())) {
-            return;
-        }
-        int ncols = meansTable.nColumns();
-        for (int col=0; col<ncols;col++) {
-            if (degreesCol.get(col) ||
-                degreesTrueCol.get(col)) {
-                int nRows = meansTable.nRows();
-                for (int row = 0; row < nRows; row++) {
-                    String key = keymap.get(row)+":"+col;
-                    DegreesAccumulator accum = degreesMap.get(key); //will be null if 0 values for that group
-                    meansTable.setDoubleData(col, row, 
-                        accum == null? Double.NaN : accum.getMean());
-                    //String2.log(">> " + key + " row=" + row + (accum == null? " null" : " mean=" + accum.getMean()));
-                    //if (accum != null) 
-                    //    meansTable.setDoubleData(col, row, accum.getMean());
-                }
-            }
-        }        
-    }
-
-    private class DegreesAccumulator{
-        boolean isDegreesTrue;
-        boolean allSame = true;
-        double deg = Double.NaN; //the value if allSame
-        double meanx = Double.NaN;
-        double meany = Double.NaN;
-        int count = 0;
-        //constructor
-        DegreesAccumulator(boolean tIsDegreesTrue) {
-            isDegreesTrue = tIsDegreesTrue;
-        }
-        void add(double angleDegrees) {
-            count++;
-            double angleR = Math.toRadians(angleDegrees);
-            if (count == 1) {
-                deg = angleDegrees;
-                meanx = Math.cos(angleR);
-                meany = Math.sin(angleR);
-            } else {
-                if (allSame && angleDegrees != deg)
-                    allSame = false;
-                meanx += (Math.cos(angleR) - meanx) / count;
-                meany += (Math.sin(angleR) - meany) / count;
-            }
-        }
-        public double getMean() {
-            if (count == 0)
-                return Double.NaN;
-            double d = allSame? deg : Math.toDegrees(Math.atan2(meany, meanx));
-            return isDegreesTrue? Math2.angle0360(d) : Math2.anglePM180(d);
-        }
-    }
     
     /**
-     * This finishes orderByMean and writes results to otherTableWriter
+     * This finishes orderBySum and writes results to otherTableWriter
      * If ignoreFinish=true, nothing will be done.
      *
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
@@ -435,11 +333,10 @@ public class TableWriterOrderByMean extends TableWriterAll {
             return;
        
         if (keyCols != null) {
-            calculateDegreeMeans();
             useIntegersWhereSensible();
             if (keyCols.length > 0) 
-                meansTable.sort(keyCols);
-            super.writeSome(meansTable);
+                sumsTable.sort(keyCols);
+            super.writeSome(sumsTable);
         }
         super.finish();  //this ensures there is data and thus configured=true
 
@@ -465,8 +362,7 @@ public class TableWriterOrderByMean extends TableWriterAll {
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
-        meansTable = null;
-        degreesMap.clear();
+        sumsTable = null;
         counts.clear();
         rowmap.clear();
     }

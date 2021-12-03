@@ -2491,6 +2491,10 @@ Bir veya daha fazla ızgara değişkeni seçin.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Izgara Değişkenleri</strong> (her zaman tüm boyut değişkenlerini de indirir)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Tümünü Kontrol Et</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Tüm veri değişkenlerini seçmek için buraya tıklayın.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Tümünü işaretleme</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Tüm veri değişkenlerinin seçimini kaldırmak için buraya tıklayın.</EDDGridUncheckAllTooltip>
 <!-- Griddap Örnekleri Bu ayar grubu, [baseUrl]/erddap/griddap/documentation.html ve başka yerlerde görünen griddap belgelerine örnekler yapmak için kullanılır.
 Özel karakterler (örn.
 &amp; &lt; &gt;) HTML olarak kodlanmalıdır.
@@ -3203,7 +3207,7 @@ Bu nedenle, genellikle kısıtlamalar eklemelisiniz (örneğin, minimum ve maksi
 orderBy ...
 işlevleri, sonuçlar tablosunun satırlarını sıralar ve bazen bunları gruplandırır ve bazen de daha fazla manipüle eder.
 orderBy ...
-işlevini kullanmak için, solda bir işlev seçin, ardından sağda bir veya daha fazla değişken seçin, ardından isteğe bağlı olarak ekleme ayarları ekleyin, örneğin sayısal değişkenler için değişkenAdı[/divisor[zamanBirimleri][:offset] belirtebilirsiniz.
+işlevini kullanmak için, soldan bir işlev seçin, ardından sağda bir veya daha fazla değişken seçin, ardından isteğe bağlı olarak ekleme ayarları ekleyin, örneğin sayısal değişkenler için, değişkenAdı[/divisor[zamanBirimleri][:offset] belirtebilirsiniz.
 ] .
 Herhangi bir orderBy ...
 işlevini kullanmamak için soldaki (&quot;&quot;) ilk seçeneği seçin.
@@ -3217,17 +3221,20 @@ Yalnızca bölenin aralığına en yakın satırlar tutulacaktır.
 Örneğin, orderByClosest(&quot;stationID, time/2hours&quot;), stationID ve zamana göre sıralar, ancak yalnızca son stationID sütununun (zaman) 2 saatlik aralıklarla en yakın olduğu her istasyon kimliği için satırları orderBy .
 <p><strong>orderByCount</strong>, sonuçlar tablosunun satırlarını gruplara ayırır ve her grup için eksik olmayan değerlerin sayısını döndürür.
 Örneğin, orderByCount(&quot;stationID, time/1day&quot;), stationID göre sıralar ve diğer değişkenlerin her biri için eksik olmayan değerlerin sayısıyla birlikte her gün için her stationID için bir satır döndürür.
-<p><strong>orderByLimit</strong>, sonuçlar tablosunun satırlarını gruplar halinde sıralar ve her grup içindeki ilk nRow&#39;ları (son orderByLimit değeri tarafından belirtildiği gibi) döndürür.
+<p><strong>orderByLimit</strong>, sonuçlar tablosunun satırlarını gruplara ayırır ve her grup içindeki ilk nRow&#39;ları (son orderByLimit değeriyle belirtildiği gibi) döndürür.
 Örneğin, orderByMax(&quot;stationID, time/1day, 10&quot;), stationID ve saate göre sıralar, ancak her gün için her stationID için yalnızca ilk 10 satırı döndürür.
 <p><strong>orderByMax</strong>, sonuçlar tablosunun satırlarını gruplara ayırır ve yalnızca istekteki son orderByMax değişkeninin maksimum değeriyle her grup içindeki satırı döndürür.
-Örneğin, orderByMax(&quot;stationID, time/1day, temperature&quot;) satırları stationID ve her güne göre gruplandırır, ancak yalnızca her gün için her stationID için maksimum sıcaklık değerine sahip satırı döndürür.
+Örneğin, orderByMax(&quot;stationID, time/1day, temperature&quot;) satırları stationID ve her güne göre gruplandırır, ancak yalnızca her gün için her stationID için maksimum sıcaklık değeri olan satırı döndürür.
 <p><strong>orderBy Min</strong> orderByMax, ancak yalnızca son orderBy Min değişkeni için minimum değere sahip satırı tutar.
 <p><strong>orderByMinMax</strong>, orderBy Min artı orderByMax .
 Her sıralama grubu içinde, yalnızca son orderByMinMax değişkeni için minimum değere sahip satır ve maksimum değere sahip satır tutulacaktır.
-Örneğin, orderByMinMax(&quot;stationID, time/1day, temperature&quot;), her gün için her stationID için minimum sıcaklık değerini içeren satırı ve maksimum sıcaklık değerini içeren satırı döndürür.
+Örneğin, orderByMinMax(&quot;stationID, time/1day, temperature&quot;), her gün için her stationID için minimum sıcaklık değerine sahip satırı ve maksimum sıcaklık değerine sahip satırı döndürür.
 <p><strong>orderByMean</strong>, sonuçlar tablosunun satırlarını gruplara ayırır ve her grup için yalnızca bir satır döndürür.
 Bu satır, diğer değişkenlerin her birinin ortalamasına sahip olacaktır.
-Örneğin, orderByMax(&quot;stationID, time/1day&quot;) her gün için her stationID için bir grup oluşturacak ve diğer değişkenlerin ortalamasını hesaplayacak ve döndürecektir.
+Örneğin orderByMax(&quot;stationID, time/1day&quot;) her gün için her stationID için bir grup oluşturacak ve diğer değişkenlerin ortalamasını hesaplayıp döndürecektir.
+<p><strong>orderBy Sum</strong>, sonuçlar tablosunun satırlarını gruplara ayırır ve her grup için yalnızca bir satır döndürür.
+Bu satır, diğer değişkenlerin her birinin toplamına sahip olacaktır.
+Örneğin, orderByMax(&quot;stationID, time/1day&quot;) her gün için her stationID için bir grup oluşturacak ve diğer değişkenlerin toplamını hesaplayacak ve döndürecektir.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 orderByClosest için burada aralığı belirtin (n[zamanBirimleri] biçimini kullanarak, ör.
@@ -3593,8 +3600,8 @@ Düğmenin etiketi &quot;Oturum aç&quot;dan &quot;Oturum açıldı&quot; olarak
 <loginOpenIDCreate>Veya adresinde bir OpenID URL oluşturun</loginOpenIDCreate>
 <loginOpenIDFree>Hepsi ücretsiz!</loginOpenIDFree>
 <loginOpenIDSame>ERDDAP yöneticisine verdiğiniz aynı OpenID URL&#39;si ile oturum açtığınızdan emin olun.</loginOpenIDSame>
-<loginAs>olarak giriş yaptınız</loginAs>
-<loginPartwayAs>olarak oturum açtınız</loginPartwayAs>
+<loginAs>{0} olarak giriş yaptınız.</loginAs>
+<loginPartwayAs>{0} olarak kısmen oturum açtınız.</loginPartwayAs>
 <loginFailed>HATA: Oturum açılamadı</loginFailed>
 <loginInvalid>Geçersiz Kullanıcı Adı ve/veya Şifre.</loginInvalid>
 <loginSucceeded>Giriş başarılı!</loginSucceeded>
@@ -3984,9 +3991,9 @@ Boş bir dosya döndürmek daha mı iyi? Ancak .nc ve diğerleri 0 uzunluklu ver
 <notAvailable>Şu anda datasetID={0} mevcut değil.</notAvailable>
 <note>NOT!</note>
 <!--  Xxx Bir Grafik Yap, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Bu veri kümesi, {0} üzerinden kullanılamaz.</noXxx>
-<noXxxBecause>{1} nedeniyle bu veri kümesi {0} üzerinden kullanılamaz.</noXxxBecause>
-<noXxxBecause2>{0}, {1} nedeniyle bu veri kümesi için kullanılamıyor.</noXxxBecause2>
+<noXxx>Bu veri kümesi hiçbir zaman {0} üzerinden kullanılamaz.</noXxx>
+<noXxxBecause>Bu veri kümesi, {1} nedeniyle hiçbir zaman {0} üzerinden kullanılamaz.</noXxxBecause>
+<noXxxBecause2>{0}, {1} nedeniyle bu veri kümesi için hiçbir zaman kullanılamaz.</noXxxBecause2>
 <noXxxNotActive>bu ERDDAP&#39;ın {0} hizmeti etkin değil</noXxxNotActive>
 <noXxxNoAxis1>birden fazla değere sahip herhangi bir eksen değişkeni yok</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} uyumlu bir tür değil</noXxxNoCdmDataType>
@@ -4109,6 +4116,7 @@ Farklı veri türleri ve farklı istemci uygulamaları için farklı protokoller
 <queryErrorOrderByClosest>orderByClosest için, 1 veya daha fazla orderBy sütun adından oluşan bir CSV listesi (her biri sonuç değişkenleri listesinde olmalıdır) artı son orderBy değişkeninin aralığını (örneğin, &quot;stationID,time,10 dakika&quot;) belirtmelisiniz.</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>orderByLimit için, 0 veya daha fazla orderBy sütun adından (her biri sonuç değişkenleri listesinde olmalıdır; sayısal sütunlarda sütunAdı[/divisor[zamanBirimleri][:offset]] olabilir) artı maksimum sayıyı içeren bir CSV listesi belirtmelisiniz. her grup için satır sayısı (örneğin, &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>orderByMean için, orderBy sütun adlarından oluşan bir CSV listesi belirtmelisiniz (bunların her biri sonuç değişkenleri listesinde olmalıdır; sayısal sütunlarda sütunAdı[/divisor[timeUnits][:offset]] olabilir), ör. &quot;stationID,time /10 dakika&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>orderBySum için, orderBy sütun adlarından oluşan bir CSV listesi belirtmelisiniz (bunların her biri sonuç değişkenleri listesinde olmalıdır; sayısal sütunlarda sütunAdı[/divisor[timeUnits][:offset]] olabilir), örneğin &quot;stationID,time /10 dakika&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy değişkeni={0} sonuç değişkenleri listesinde yok.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Bilinmeyen değişken={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Izgara ekseni sorguları en az bir eksen değişkeni belirtmelidir.</queryErrorGrid1Axis>
@@ -4127,7 +4135,7 @@ Farklı veri türleri ve farklı istemci uygulamaları için farklı protokoller
 <queryErrorLastUnexpected>{0} içinde &quot;son&quot;dan sonra beklenmeyen karakter.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>{0} içindeki +/- değeri geçerli değil.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>{0} içindeki +/- dizin değeri bir tam sayı değil.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0}, {1} ile {2} arasında değişir.</rangesFromTo>
 <required>Gerekli</required>
 <resetTheForm>Formu varsayılan değerlere sıfırlayın.</resetTheForm>
@@ -4791,7 +4799,7 @@ Bu, &erddapUrl;
 
 <h2>Bilimsel Verilere Daha Kolay Erişim</h2>
 Odak noktamız, bilimsel verilere ulaşmanızı kolaylaştırmaktır.
-<p><strong>Farklı bilimsel topluluklar, farklı türde veri sunucuları geliştirmiştir.</strong>
+<p><strong>Farklı bilimsel topluluklar, farklı türlerde veri sunucuları geliştirmiştir.</strong>
 <p>Örneğin, OPeNDAP, WCS, SOS, OBIS ve formları olan sayısız özel web sayfası.
 Her biri kendi başına harika.
 Ancak ERDDAP olmadan farklı sunucu türlerinden veri almak zordur:
@@ -4802,10 +4810,10 @@ Ancak ERDDAP olmadan farklı sunucu türlerinden veri almak zordur:
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
 make it easier for you to get scientific data.-->
-<p><strong>ERDDAP, farklı türdeki veri sunucularını birleştirir, böylece istediğiniz verileri istediğiniz formatta elde etmek için tutarlı bir yola sahip olursunuz.</strong>
+<p><strong>ERDDAP, farklı türdeki veri sunucularını birleştirir, böylece istediğiniz verileri istediğiniz biçimde elde etmek için tutarlı bir yola sahip olursunuz.</strong>
 <ul>
 <li>ERDDAP, sizinle çeşitli uzak veri sunucuları arasında aracı görevi görür.
-ERDDAP veri talep ettiğinizde, ERDDAP, isteği uzak sunucunun gerektirdiği biçimde yeniden biçimlendirir, isteği uzak sunucuya gönderir, verileri alır, verileri istediğiniz formatta yeniden biçimlendirir ve size gönderir.
+ERDDAP veri talep ettiğinizde, ERDDAP, isteği uzak sunucunun gerektirdiği biçimde yeniden biçimlendirir, isteği uzak sunucuya gönderir, verileri alır, verileri istediğiniz biçimde yeniden biçimlendirir ve size gönderir.
 Artık farklı veri kümelerinden veri almak için farklı veri sunucularına gitmeniz gerekmiyor.
 <br>&nbsp;
 <li>ERDDAP, veri istemek için kullanımı kolay, tutarlı bir yol sunar:
@@ -4828,13 +4836,13 @@ ERDDAP, farklı saat dilimleri ve standart saat ile yaz saati uygulamasına gör
 <br>&nbsp;
 <li>ERDDAP web sayfaları (tarayıcılı insanlar için) ve
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;ağ&nbsp;hizmetler</a> (bilgisayar programları için).
-ERDDAP web sayfalarını atlayabilir ve ERDDAP RESTful web servislerini (örneğin, veri kümelerini aramak, veri indirmek, haritalar yapmak için) herhangi bir bilgisayar programından (örneğin, Matlab, R veya bir programdan) doğrudan kullanabilirsiniz.
+ERDDAP web sayfalarını atlayabilir ve ERDDAP RESTful web servislerini (örneğin, veri kümelerini aramak, veri indirmek, haritalar oluşturmak için) herhangi bir bilgisayar programından (örneğin, Matlab, R veya bir programdan) doğrudan kullanabilirsiniz.
 yazarsınız) ve hatta web sayfalarından (HTML resim etiketleri veya Java Komut Dosyası aracılığıyla).
 Ayrıca ERDDAP web servislerinin üzerine başka faydalı ve ilginç şeyler de oluşturabilirsiniz -
-<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Muhteşem ERDDAP</a> bakın
+<a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP</a> bakın
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> ERDDAP ile ilgili harika projelerin listesi.
+    title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> Awesome ERDDAP ilgili projelerin listesi.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">ERDDAP hızlı bir giriş için bu bölümün ilk yarısını izleyin<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4854,7 +4862,7 @@ Bu örtüktür.)
 Apache benzeri lisanslar kullanır, böylece onunla istediğiniz her şeyi yapabilirsiniz.
 ERDDAP görünümü özelleştirilebilir, bu nedenle ERDDAP NOAA kurumunuzu yansıtacaktır.
 ERDDAP kurmak için küçük bir çaba, birçok fayda sağlar.
-Verilerinizi dağıtmak için halihazırda bir web servisiniz varsa, verilerinize mevcut servis veya kaynak dosyalar veya veritabanı üzerinden erişmek için ERDDAP .
+Verilerinizi dağıtmak için halihazırda bir web hizmetiniz varsa, verilerinize mevcut hizmet üzerinden veya kaynak dosyalar veya veritabanı üzerinden erişmek için ERDDAP .
 Ardından, kişilerin verilerinize erişmenin başka bir yolu olacak ve verileri ek dosya formatlarında veya grafikler veya haritalar olarak indirebilecekler.
 ERDDAP, en az 14 ülkede 90&#39;ın üzerinde kuruluş tarafından kurulmuştur.
 <a rel="bookmark"

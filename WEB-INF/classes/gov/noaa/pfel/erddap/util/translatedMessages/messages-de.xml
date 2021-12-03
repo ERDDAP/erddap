@@ -2509,6 +2509,10 @@ Wählen Sie eine oder mehrere Rastervariablen aus.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Rastervariablen</strong> (die immer auch alle Dimensionsvariablen herunterladen)
 ]]></EDDGridGridVariableHtml>
+<EDDGridCheckAll>Alle überprüfen</EDDGridCheckAll>
+<EDDGridCheckAllTooltip>Klicken Sie hier, um alle Datenvariablen auszuwählen.</EDDGridCheckAllTooltip>
+<EDDGridUncheckAll>Alle deaktivieren</EDDGridUncheckAll>
+<EDDGridUncheckAllTooltip>Klicken Sie hier, um alle Datenvariablen abzuwählen.</EDDGridUncheckAllTooltip>
 <!-- Griddap-Beispiele Diese Gruppe von Einstellungen wird verwendet, um Beispiele für die Griddap-Dokumentation zu erstellen, die unter [baseUrl]/erddap/griddap/documentation.html und anderswo erscheint.
 Sonderzeichen (zB &amp; &lt; &gt;) müssen HTML-kodiert sein.
 Wenn Sie möchten, dass die Beispiele auf Ihren ERDDAP, ist die einfachste Methode:
@@ -3232,7 +3236,10 @@ Innerhalb jeder Sortiergruppe wird nur die Zeile mit dem Minimalwert und die Zei
 orderByMinMax(&quot;stationID, time/1day, temperature&quot;) gibt beispielsweise die Zeile mit dem minimalen Temperaturwert und die Zeile mit dem maximalen Temperaturwert für jede stationID -ID für jeden Tag zurück.
 <p><strong>orderByMean</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur eine Zeile für jede Gruppe zurück.
 Diese Zeile enthält den Mittelwert jeder der anderen Variablen.
-Beispielsweise erstellt orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede Stations-ID für jeden Tag und berechnet den Mittelwert der anderen Variablen und gibt ihn zurück.
+Beispielsweise erstellt orderByMax(&quot;stationID orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede Stations-ID für jeden Tag und berechnet den Mittelwert der anderen Variablen und gibt ihn zurück.
+<p><strong>orderBy Sum</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur eine Zeile für jede Gruppe zurück.
+Diese Zeile enthält die Summe aller anderen Variablen.
+Zum Beispiel erstellt orderByMax(&quot; stationID orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede Stations-ID für jeden Tag und berechnet die Summe der anderen Variablen und gibt sie zurück.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Geben Sie für orderByClosest das Intervall an (im Format n[timeUnits], zB 1 Stunde).
@@ -3594,8 +3601,8 @@ Nachdem sich die Beschriftung der Schaltfläche von &quot;Anmelden&quot; zu &quo
 <loginOpenIDCreate>Oder erstellen Sie eine OpenID-URL unter</loginOpenIDCreate>
 <loginOpenIDFree>Sie sind alle kostenlos!</loginOpenIDFree>
 <loginOpenIDSame>Stellen Sie sicher, dass Sie sich mit genau derselben OpenID-URL angemeldet haben, die Sie dem ERDDAP-Administrator gegeben haben.</loginOpenIDSame>
-<loginAs>Du bist eingeloggt als</loginAs>
-<loginPartwayAs>Sie sind teilweise eingeloggt als</loginPartwayAs>
+<loginAs>Sie sind als {0} angemeldet.</loginAs>
+<loginPartwayAs>Sie sind teilweise als {0} angemeldet.</loginPartwayAs>
 <loginFailed>FEHLER: Anmeldung fehlgeschlagen</loginFailed>
 <loginInvalid>Ungültiger Benutzername und / oder Passwort.</loginInvalid>
 <loginSucceeded>Anmeldung erfolgreich!</loginSucceeded>
@@ -3986,9 +3993,9 @@ Besser eine leere Datei zurückgeben? Aber .nc und andere erlauben keine Daten d
 <notAvailable>Derzeit ist datasetID={0} nicht verfügbar.</notAvailable>
 <note>HINWEIS!</note>
 <!--  Xxx ist Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
-<noXxx>Dieses Dataset ist nicht über {0} verfügbar.</noXxx>
-<noXxxBecause>Dieses Dataset ist über {0} nicht verfügbar, da {1}.</noXxxBecause>
-<noXxxBecause2>{0} ist für dieses Dataset nicht verfügbar, weil {1}.</noXxxBecause2>
+<noXxx>Dieses Dataset ist nie über {0} verfügbar.</noXxx>
+<noXxxBecause>Dieses Dataset ist nie über {0} verfügbar, da {1}.</noXxxBecause>
+<noXxxBecause2>{0} ist für dieses Dataset nie verfügbar, da {1}.</noXxxBecause2>
 <noXxxNotActive>der {0}-Dienst dieses ERDDAP ist nicht aktiv</noXxxNotActive>
 <noXxxNoAxis1>Es gibt keine Achsenvariablen mit mehr als einem Wert</noXxxNoAxis1>
 <noXxxNoCdmDataType>cdm_data_type={0} ist kein kompatibler Typ</noXxxNoCdmDataType>
@@ -4112,6 +4119,7 @@ Unterschiedliche Protokolle sind für unterschiedliche Datentypen und für unter
 <queryErrorOrderByClosest>Für orderByClosest müssen Sie eine CSV-Liste mit einem oder mehreren orderBy-Spaltennamen (von denen jeder in der Liste der Ergebnisvariablen enthalten sein muss) plus das Intervall für die letzte orderBy-Variable (z. B. &quot;stationID,time,10 minutes&quot;) angeben.</queryErrorOrderByClosest>
 <queryErrorOrderByLimit>Für orderByLimit müssen Sie eine CSV-Liste mit 0 oder mehr orderBy-Spaltennamen (die sich jeweils in der Liste der Ergebnisvariablen befinden müssen; numerische Spalten können columnName[/divisor[timeUnits][:offset]]) plus die maximale Anzahl angeben von Zeilen für jede Gruppe (zB &quot;stationID,time/1day,10&quot;).</queryErrorOrderByLimit>
 <queryErrorOrderByMean>Für orderByMean müssen Sie eine CSV-Liste mit orderBy-Spaltennamen angeben (die sich jeweils in der Liste der Ergebnisvariablen befinden müssen; numerische Spalten können Spaltenname[/divisor[timeUnits][:offset]] haben), z. B. &quot;stationID,time /10 Minuten&quot;.</queryErrorOrderByMean>
+<queryErrorOrderBySum>Für orderBySum müssen Sie eine CSV-Liste mit orderBy-Spaltennamen angeben (die sich jeweils in der Liste der Ergebnisvariablen befinden müssen; numerische Spalten können Spaltenname[/divisor[timeUnits][:offset]] haben), z. B. &quot;stationID,time /10 Minuten&quot;.</queryErrorOrderBySum>
 <queryErrorOrderByVariable>orderBy variable={0} ist nicht in der Liste der Ergebnisvariablen.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unbekannte Variable={0}.</queryErrorUnknownVariable>
 <queryErrorGrid1Axis>Rasterachsenabfragen müssen mindestens eine Achsenvariable angeben.</queryErrorGrid1Axis>
@@ -4130,7 +4138,7 @@ Unterschiedliche Protokolle sind für unterschiedliche Datentypen und für unter
 <queryErrorLastUnexpected>Unerwartetes Zeichen nach &quot;letztem&quot; in {0}.</queryErrorLastUnexpected>
 <queryErrorLastPMInvalid>Der +/- Wert in {0} ist ungültig.</queryErrorLastPMInvalid>
 <queryErrorLastPMInteger>Der +/- Indexwert in {0} ist keine ganze Zahl.</queryErrorLastPMInteger>
-<questionMarkImageFile>QuestionMark.jpg</questionMarkImageFile>
+<questionMarkImageFile>QuestionMark.png</questionMarkImageFile>
 <rangesFromTo>{0} reicht von {1} bis {2}.</rangesFromTo>
 <required>Erforderlich</required>
 <resetTheForm>Setzen Sie das Formular auf die Standardwerte zurück.</resetTheForm>
@@ -4831,11 +4839,11 @@ ERDDAP verwendet immer die Zeitzone Zulu (UTC, GMT), um die Schwierigkeiten beim
 <br>&nbsp;
 <li>ERDDAP hat Webseiten (für Menschen mit Browsern) und
 <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;Netz&nbsp;Dienstleistungen</a> (für Computerprogramme).
-Sie können die Webseiten von ERDDAP umgehen und die RESTful -Webdienste von ERDDAP (zum Beispiel zum Suchen nach Datensätzen, zum Herunterladen von Daten, zum Erstellen von Karten) direkt von jedem Computerprogramm (zum Beispiel Matlab, R oder ein Programm, das Sie schreiben) und sogar von Webseiten (über HTML-Image-Tags oder JavaScript).
+Sie können die Webseiten von ERDDAP umgehen und die RESTful -Webdienste von ERDDAP (z.B. zum Suchen nach Datensätzen, zum Herunterladen von Daten, zum Matlab von Karten) direkt von jedem Computerprogramm (z Sie schreiben) und sogar von Webseiten (über HTML-Image-Tags oder Java -Script).
 Sie können auch andere nützliche und interessante Dinge auf den Webservices von ERDDAP – siehe
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> Liste großartiger ERDDAP Projekte.
+    title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> Liste von Awesome ERDDAP Projekten.
 </ul>
 <p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Eine kurze Einführung in ERDDAP finden Sie in der ersten Hälfte davon<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > Video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
