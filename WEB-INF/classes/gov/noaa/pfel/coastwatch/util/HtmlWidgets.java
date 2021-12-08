@@ -2223,7 +2223,7 @@ sb.append(twoClickMap[2]);
             "</body>\n" +
             "</html>\n");
         String2.log("writeToFile result=" + 
-            String2.writeToFile(fullName, sb.toString(), String2.UTF_8));
+            File2.writeToFile(fullName, sb.toString(), File2.UTF_8));
 
         SSR.displayInBrowser("file://" + fullName);
         debugMode = oDebugMode;

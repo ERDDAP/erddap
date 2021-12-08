@@ -135,14 +135,14 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //read the table
             Table table = new Table();
             InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl); 
-            BufferedReader in = new BufferedReader(new InputStreamReader(is, String2.UTF_8));
+            BufferedReader in = new BufferedReader(new InputStreamReader(is, File2.UTF_8));
             table.readXml(in, false, //no validate since no .dtd
                 tRowElementXPath, 
                 null, false);  //row attributes,  simplify=false
 
             //save as UTF-8 ASCII TSV file
             //This writes to temp file first and throws Exception if trouble.
-            table.saveAsTabbedASCII(fullFileName, String2.UTF_8); 
+            table.saveAsTabbedASCII(fullFileName, File2.UTF_8); 
             return "";
 
         } catch (Exception e) {
@@ -208,15 +208,15 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             tRowElementXPath = DefaultRowElementXPath;
 
         if (developmentMode) {
-            dataSourceTable.readXml(new BufferedReader(new FileReader(
-                "c:/programs/mapserver/WVBoreholeResponse.xml")), 
-                false, tRowElementXPath, null, true); //simplify=true
+            dataSourceTable.readXml(
+                File2.getDecompressedBufferedFileReaderUtf8("c:/programs/mapserver/WVBoreholeResponse.xml"), 
+                false, //validate?  false since no .dtd
+                tRowElementXPath, null, true); //simplify=true
         } else {
-//            InputStream is = SSR.getUrlBufferedInputStream(tSourceUrl); 
-//            BufferedReader in = new BufferedReader(new InputStreamReader(is, String2.UTF_8));
-//            dataSourceTable.readXml(in, false, //no validate since no .dtd
-//                tRowElementXPath, 
-//                null, true);  //row attributes,  here, simplify to get suggested dataTypes
+            dataSourceTable.readXml(
+                File2.getDecompressedBufferedFileReaderUtf8(tSourceUrl), 
+                false, //validate?  false since no .dtd
+                tRowElementXPath, null, true); //simplify=true
         }
         if (verbose)
             String2.log("Table.readXml parsed the source xml to this table:\n" +
@@ -1191,7 +1191,7 @@ String expected =
         //*** .das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".das"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected =   
 "Attributes {\n" +
@@ -1555,7 +1555,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "kgsBoreTempWVTRUE", ".dds"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1629,7 +1629,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&APINo=\"4700102422\"", 
             EDStatic.fullTestCacheDirectory, "kgsBoreTempWVTRUE", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "ObservationURI,WellName,APINo,HeaderURI,OtherName,Label,Operator,time,EndedDrillingDate,WellType,StatusDate,ReleaseDate,Field,County,State,UTM_E,UTM_N,latitude,longitude,SRS,LocationUncertaintyStatement,LocationUncertaintyRadius,DrillerTotalDepth,DepthReferencePoint,LengthUnits,WellBoreShape,TrueVerticalDepth,ElevationKB,ElevationDF,ElevationGL,FormationTD,BitDiameterTD,MaximumRecordedTemperature,MeasuredTemperature,CorrectedTemperature,TemperatureUnits,CirculationDuration,MeasurementProcedure,DepthOfMeasurement,MeasurementDateTime,MeasurementFormation,MeasurementSource,RelatedResource,CasingBottomDepthDriller,CasingTopDepth,CasingPipeDiameter,CasingWeight,CasingThickness,pH,InformationSource,Shape_gml_Point_latitude,Shape_gml_Point_longitude,LeaseName,LeaseOwner,LeaseNo,TimeSinceCirculation,Status,CommodityOfInterest,Function,Production,ProducingInterval,Notes\n" +

@@ -64,7 +64,7 @@ public class WriteShapefile {
         //read the data from the ASCII file
         String2.log("WriteShapefile.write(" + fullAscName + ")");
         long time = System.currentTimeMillis();
-        BufferedReader reader = new BufferedReader(new FileReader(fullAscName));
+        BufferedReader reader = File2.getDecompressFileReader88591(fullAscName);
         try {
             String s;
             s = reader.readLine(); int nX = String2.parseInt(s.substring(s.indexOf(' ') + 1));

@@ -1125,7 +1125,7 @@ String expected =
         String2.log("\nget .dds\n");
         tName = edd.makeNewFileForDapQuery(language, null, null, "", testDir, 
             edd.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1248,7 +1248,7 @@ String expected =
         String2.log("\nget .das\n");
         tName = edd.makeNewFileForDapQuery(language, null, null, "", testDir, 
             edd.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1450,7 +1450,7 @@ expected=
             "Eastward[10:10:20][][][],Eastward_flag[10:10:20][][][]," +
             "Northward[10:10:20][][][],Northward_flag[10:10:20][][][]", 
             testDir, edd.className() + "_gap0", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
 /* from source eddTable
 station,longitude,latitude,time,depth,Eastward,Eastward_flag,Northward,Northward_flag
 ,degrees_east,degrees_north,UTC,m,m s-1,,m s-1,
@@ -1552,7 +1552,7 @@ BAYXXX,-120.31121,34.04017,2004-11-30T20:32:40Z,-1.8,NaN,9,NaN,9
             "Eastward[10:10:20][][][0:17:17],Eastward_flag[10:10:20][][][0:17:17]," +
             "Northward[10:10:20][][][0:17:17],Northward_flag[10:10:20][][][0:17:17]", 
             testDir, edd.className() + "_gap3", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
 expected=
 "time,latitude,longitude,depth,Eastward,Eastward_flag,Northward,Northward_flag\n" +
 "UTC,degrees_north,degrees_east,m,m s-1,,m s-1,\n" +
@@ -1574,7 +1574,7 @@ expected=
             "Eastward[10][][][2:9],Eastward_flag[10][][][2:9]," +
             "Northward[10][][][2:9],Northward_flag[10][][][2:9]", 
             testDir, edd.className() + "_nogap", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
 expected=
 "time,latitude,longitude,depth,Eastward,Eastward_flag,Northward,Northward_flag\n" +
 "UTC,degrees_north,degrees_east,m,m s-1,,m s-1,\n" +

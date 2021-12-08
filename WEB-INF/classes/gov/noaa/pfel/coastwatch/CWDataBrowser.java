@@ -5,6 +5,7 @@
 package gov.noaa.pfel.coastwatch;
 
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -138,7 +139,7 @@ public class CWDataBrowser extends EmaClass  {
         int logPo = fullClassName.lastIndexOf('.');
         String logDir = String2.replaceAll(fullClassName.substring(0, logPo + 1), ".", "/");
         String2.setupLog(false, false, 
-            String2.getClassPath() + logDir + "log.txt", //with / separator
+            File2.getClassPath() + logDir + "log.txt", //with / separator
             true, String2.logFileDefaultMaxSize); //append?
         String2.log("\n" + String2.makeString('*', 80) +  
             "\nCWDataBrowser.constructor " + constructorDateTime +

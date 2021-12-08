@@ -577,7 +577,7 @@ public class EDDTableFromBMDE extends EDDTable{
         //.das     das isn't affected by userDapQuery
         tName = prbo.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".das"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -717,7 +717,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className(), ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         expected = 
 "longitude, latitude, altitude, time, GlobalUniqueIdentifier, Genus, ScientificName, ObservationCount\n" +
@@ -741,7 +741,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus>=\"Urh\"&Genus<\"Urj\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -750,7 +750,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&Family=\"Laridae\"&Genus=~\"(zztop|Uria)\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "Compare", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -761,7 +761,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude=-123.002737&latitude=37.698771&Family=\"Laridae\"&Genus=\"Uria\"&time>2007-06-01&time<2007-06-05"; 
         tName = prbo.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             prbo.className() + "LonLat", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
         expected = 
 "longitude, latitude, altitude, time, GlobalUniqueIdentifier, Genus, ScientificName, ObservationCount\n" +

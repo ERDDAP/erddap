@@ -158,7 +158,7 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
     public static void testLocal() throws Throwable {
         String2.log("\n*** FileVisitorSubdir.testLocal");
         verbose = true;
-        String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
+        String contextDir = File2.webInfParentDirectory(); //with / separator and / at the end
         StringArray alps;
         long time;
 

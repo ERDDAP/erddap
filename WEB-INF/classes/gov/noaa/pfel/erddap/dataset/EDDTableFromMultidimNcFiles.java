@@ -1223,7 +1223,7 @@ String expected =
         String2.log("\n****************** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1688,7 +1688,7 @@ expected=
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1753,7 +1753,7 @@ expected=
             "&longitude=154.853&latitude=26.587";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
@@ -1774,7 +1774,7 @@ expected=
             "&longitude>154.852&longitude<=154.854";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc,positioning_system,profile_pres_qc,profile_temp_qc,profile_psal_qc,vertical_sampling_scheme,config_mission_number,pres,pres_qc,pres_adjusted,pres_adjusted_qc,pres_adjusted_error,temp,temp_qc,temp_adjusted,temp_adjusted_qc,temp_adjusted_error,psal,psal_qc,psal_adjusted,psal_adjusted_qc,psal_adjusted_error\n" +
@@ -1794,7 +1794,7 @@ expected=
         userDapQuery = "data_type&data_type=~\".*go.*\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "data_type\n" +
@@ -1806,7 +1806,7 @@ expected=
         userDapQuery = "pres&pres>10&pres<10.5&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_scalar", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "pres\n" +
@@ -2710,7 +2710,7 @@ String expected =
         //.das
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "Attributes {\n" +
@@ -2985,7 +2985,7 @@ expected =
         //.dds
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "Dataset {\n" +
@@ -3013,7 +3013,7 @@ expected =
         //"    Float64 actual_range 1.3201056e+9, 1.3437756e+9;\n" +
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=1.3201056e9", dir, 
             eddTable.className() + "_treatDimensionsAs1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "time,TIME_QC,depth,DEPTH_QC,latitude,longitude,TEMP,TEMP_QC,TEMP_DM,ATPT,ATPT_QC,ATPT_DM,ATMS,ATMS_QC,ATMS_DM\n" +
@@ -3023,7 +3023,7 @@ expected =
 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "&time=1.3437756e9", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "time,TIME_QC,depth,DEPTH_QC,latitude,longitude,TEMP,TEMP_QC,TEMP_DM,ATPT,ATPT_QC,ATPT_DM,ATMS,ATMS_QC,ATMS_DM\n" +
@@ -3056,7 +3056,7 @@ expected =
         //.das
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   //long flag masks appear a float64
 "Attributes {\n" +
@@ -3482,7 +3482,7 @@ expected =
         //.dds
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_treatDimensionsAs2", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "Dataset {\n" +
@@ -3524,7 +3524,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "&time=\"2017-10-01T00:00:00Z\"", //in quotes
             dir, eddTable.className() + "_treatDimensionsAs21", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "time,TIME_QC,latitude,longitude,depth,DEPH_QC,DEPH_DM,RELH,RELH_QC,RELH_DM,ATMS,ATMS_QC,ATMS_DM,DRYT,DRYT_QC,DRYT_DM,DEWT,DEWT_QC,DEWT_DM,WSPD,WSPD_QC,WSPD_DM,WDIR,WDIR_QC,WDIR_DM,GSPD,GSPD_QC,GSPD_DM\n" +
@@ -3536,7 +3536,7 @@ expected =
         //all data
         //tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
         //    dir, eddTable.className() + "_treatDimensionsAs22", ".csv"); 
-        //results = String2.directReadFrom88591File(dir + tName);
+        //results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
@@ -3546,7 +3546,7 @@ expected =
             //See EDDTable line 2302 and above
             "&time=2017-11-29T23:30:00Z",
             dir, eddTable.className() + "_treatDimensionsAs23", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   
 "time,TIME_QC,latitude,longitude,depth,DEPH_QC,DEPH_DM,RELH,RELH_QC,RELH_DM,ATMS,ATMS_QC,ATMS_DM,DRYT,DRYT_QC,DRYT_DM,DEWT,DEWT_QC,DEWT_DM,WSPD,WSPD_QC,WSPD_DM,WDIR,WDIR_QC,WDIR_DM,GSPD,GSPD_QC,GSPD_DM\n" +
@@ -3584,7 +3584,7 @@ expected =
         String2.log("\n*** EDDTableFromMultidimNcFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   //long flag masks appear a float64
 "Attributes {\n" +
@@ -3822,7 +3822,7 @@ expected=
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_LongEntire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -3852,7 +3852,7 @@ expected=
         userDapQuery = "&time<=2016-09-28T00:03";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
@@ -3866,7 +3866,7 @@ expected=
         userDapQuery = "&error_flag2!=4202496";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "feature_type_instance,latitude,longitude,crs,platform,time,depth,battery_bank1_current,battery_bank1_temperature,dcl_date_time_string,error_flag1,error_flag2,error_flag3,deploy_id\n" +
@@ -3880,7 +3880,7 @@ expected=
         userDapQuery = "error_flag2&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Long1distinct", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "error_flag2\n" +
@@ -4092,7 +4092,7 @@ expected =
         userDapQuery = "time,depth,TEMP&time>=2011-01-03T00&time<=2011-01-03T03";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1profile", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,depth,TEMP\n" +
@@ -4142,7 +4142,7 @@ expected =
         String2.log("\n****************** test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -4591,7 +4591,7 @@ expected=
         //dds
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_1", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -4651,7 +4651,7 @@ expected=
             "&cycle_number<3";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc\n" +
@@ -4665,7 +4665,7 @@ expected=
             "&cycle_number<3&direction=\"A\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -4674,7 +4674,7 @@ expected=
             "&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "position_qc\n" +
 "\n" +
@@ -4689,7 +4689,7 @@ expected=
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "platform_number,cycle_number,position_qc\n" +
 ",,\n" +
@@ -4708,7 +4708,7 @@ expected=
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "platform_number,cycle_number,position_qc\n" +
 ",,\n" +
@@ -4734,7 +4734,7 @@ expected=
         //dds
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_1b", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -4794,7 +4794,7 @@ expected=
             "&cycle_number<3";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_2b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "fileNumber,data_type,format_version,handbook_version,reference_date_time,date_creation,date_update,platform_number,project_name,pi_name,cycle_number,direction,data_center,dc_reference,data_state_indicator,data_mode,platform_type,float_serial_no,firmware_version,wmo_inst_type,time,time_qc,time_location,latitude,longitude,position_qc\n" +
@@ -4808,7 +4808,7 @@ expected=
             "&cycle_number<3&direction=\"A\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_3b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -4817,7 +4817,7 @@ expected=
             "&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_4b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "position_qc\n" +
 "\n" +
@@ -4833,7 +4833,7 @@ expected=
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc>\"3\"&position_qc<\"8\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_5b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "platform_number,cycle_number,position_qc\n" +
 ",,\n" +
@@ -4852,7 +4852,7 @@ expected=
         userDapQuery = "platform_number,cycle_number,position_qc&position_qc=\"2\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_6c", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "platform_number,cycle_number,position_qc\n" +
 ",,\n" +

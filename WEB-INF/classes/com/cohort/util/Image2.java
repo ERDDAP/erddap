@@ -750,7 +750,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     public static void basicTest() throws Exception {
         String2.log("\n*** Image2.basicTest");
 
-        String imageDir = String2.getClassPath() + //with / separator and / at the end
+        String imageDir = File2.getClassPath() + //with / separator and / at the end
             "com/cohort/util/";
 
         //test ImageIO

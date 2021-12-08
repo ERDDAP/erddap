@@ -1710,7 +1710,7 @@ expected =
             //!!! This does request data, so it is a complete test
             tName = edd.makeNewFileForDapQuery(language, null, null, "&orderBy(\"id\")", 
                 dir, edd.className() + "_" + tDatasetID + "_getCSV", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "id,first,last,height_cm,weight_kg,time,category\n" +
 ",,,,,UTC,\n" +
@@ -1747,7 +1747,7 @@ expected =
             tDatasetID); 
         String tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, tedd.className() + "_Basic", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
         expected = 
 "Attributes {\n" +
@@ -1821,7 +1821,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, 
             tedd.className() + "_peb_Data", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -1841,7 +1841,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
@@ -1857,7 +1857,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "time,last&time=1967-07-08T09:10:11Z",
             dir, tedd.className() + "_subset", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "time,last\n" +
 "UTC,\n" +
@@ -1868,7 +1868,7 @@ expected =
         //constrain numeric variable (even though knowsActualRange=false)
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&height<162",
             dir, tedd.className() + "_ht162", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
@@ -1879,7 +1879,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&time=1967-07-08T09:10:11Z",
             dir, tedd.className() + "_script2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "weight_lb\n" +
 "lb\n" +
@@ -1891,7 +1891,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&weight_lb=119",
             dir, tedd.className() + "_script3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
@@ -1903,7 +1903,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&weight_lb=119&category=\"B\"",
             dir, tedd.className() + "_script4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
@@ -1916,7 +1916,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "category&distinct()",
             dir, tedd.className() + "_subset", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category\n" +
 "\n" +
@@ -1930,7 +1930,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&distinct()",
             dir, tedd.className() + "_subset2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "weight_lb\n" +
 "lb\n" +
@@ -1946,7 +1946,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "category,weight_lb&distinct()",
             dir, tedd.className() + "_distinct1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //tDatasetID.equals("testMyDatabaseNo") ||
                    //tDatasetID.equals("testMyDatabasePartial")?
 //ERDDAP sorts category="" at top.   
@@ -1975,7 +1975,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "first,weight_lb&distinct()",
             dir, tedd.className() + "_distinct2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "first,weight_lb\n" +
 ",lb\n" +
@@ -1991,7 +1991,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "category&orderBy(\"category\")",
             dir, tedd.className() + "_orderBy1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category\n" +
 "\n" +
@@ -2005,7 +2005,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "weight_lb&orderBy(\"weight_lb\")",
             dir, tedd.className() + "_orderBy1a", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "weight_lb\n" +
 "lb\n" +
@@ -2021,7 +2021,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "category,last,first&orderBy(\"last,category\")",
             dir, tedd.className() + "_orderBy2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected =  
 "category,last,first\n" +
 ",,\n" +
@@ -2038,7 +2038,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first,weight_lb&orderBy(\"category,weight_lb,last\")",
             dir, tedd.className() + "_orderBy3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //tDatasetID.equals("testMyDatabaseNo") ||
                    //tDatasetID.equals("testMyDatabasePartial")?
                    //2019-12-12 now ERDDAP always does orderBy (even if database does, too)
@@ -2068,7 +2068,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first&orderBy(\"category,last\")&distinct()",
             dir, tedd.className() + "_orderBy4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 //ERDDAP's distinct() is always done and it sorts "" at top.
 "category,last,first\n" +
@@ -2085,7 +2085,7 @@ expected =
         eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(language, null, null, "category,last,first&orderByMax(\"category,last\")&distinct()",
             dir, tedd.className() + "_orderBy5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
 //ERDDAP sorts "" at top and it is ERDDAP's orderByMax that is done last
 expected = 
 "category,last,first\n" +
@@ -2101,7 +2101,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "category,last,first&orderByMax(\"category,last\")&orderBy(\"first\")",
             dir, tedd.className() + "_orderBy6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
 expected = 
 "category,last,first\n" +
 ",,\n" + //units
@@ -2116,7 +2116,7 @@ expected =
         try {
             tName = tedd.makeNewFileForDapQuery(language, null, null, "last,height&height=170",
                 dir, tedd.className() + "_subset", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = "Shouldn't get here";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
@@ -2146,7 +2146,7 @@ expected =
         try {
             tName = tedd.makeNewFileForDapQuery(language, null, null, "last,height&height>1000",
                 dir, tedd.className() + "_qr2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = "Shouldn't get here";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
@@ -2171,7 +2171,7 @@ expected =
         EDDTableFromDatabase tedd = (EDDTableFromDatabase)oneFromDatasetsXml(null, datasetID); 
         String tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
             dir, tedd.className() + "_" + datasetID + "_getCSV", ".csv"); 
-        return String2.directReadFrom88591File(dir + tName);
+        return File2.directReadFrom88591File(dir + tName);
     }
 
     /**

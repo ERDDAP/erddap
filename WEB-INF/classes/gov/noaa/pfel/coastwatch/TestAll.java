@@ -124,7 +124,7 @@ public class TestAll  {
 //      String tFileName = "/data/fred/biooracle.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"jplMURSST41F", "-verbose"});
+//      DasDds.main(new String[]{"nesdisVHNnoaaSNPPnoaa20chlaGapfilledDaily", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -174,7 +174,7 @@ public class TestAll  {
     } /* */
 
 //    String tFileName = String2.unitTestBigDataDir + "nccf/wod/wod_xbt_2005.nc";
-//    String2.writeToFile(tFileName + ".ncdump.txt", NcHelper.ncdump(tFileName, "-h"));
+//    File2.writeToFile(tFileName + ".ncdump.txt", NcHelper.ncdump(tFileName, "-h"));
 
 //    String2.log(EDDGrid.findTimeGaps("https://coastwatch.pfeg.noaa.gov/erddap/griddap/nceiPH53sstn1day"));
 
@@ -182,8 +182,7 @@ public class TestAll  {
     // https://xmlvalidation.com/
     /*{
         String dirName = "c:/downloads/test.xml";
-        Writer writer = new BufferedWriter(String2.outputStreamWriterutf8(
-            new BufferedOutputStream(new FileOutputStream(dirName, false)));
+        Writer writer = File2.getBufferedFileWriterUtf8(dirName);
         //EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeFGDC(writer, null); 
         EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeISO19115(language, writer, null); 
         writer.close();
@@ -217,7 +216,7 @@ public class TestAll  {
 //    DasDds.main(new String[]{"testGraphs_Lon0360", "-verbose"});
 
 //    String tFileName = "/programs/_tomcat/webapps/cwexperimental/download/setupDatasetsXml.html";
-//    String ts = String2.directReadFromUtf8File(tFileName + "Old");
+//    String ts = File2.directReadFromUtf8File(tFileName + "Old");
 
 //        
 //    Crawl UAF clean catalog:
@@ -262,7 +261,7 @@ public class TestAll  {
 //    }
 //    extract acronyms from a text file
 //      Object ar[] = String2.findAcronyms(
-//          String2.readFromFile("/Temp/datasetsUAF0_20150505161356.xml")[1]).toArray();
+//          File2.readFromFile("/Temp/datasetsUAF0_20150505161356.xml")[1]).toArray();
 //      Arrays.sort(ar);
 //      String2.log(String2.toNewlineString(ar)); 
 
@@ -330,7 +329,7 @@ public class TestAll  {
 */
 
 //    s = Projects.makeAwsS3FilesDatasets(".*"); //all: .*   tests: nrel-pds-wtk\\.yaml, silo\\.yaml (has ?Name: but ? doesn't show in EditPlus)
-//    String2.writeToFile(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
+//    File2.writeToFile(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
 //    String2.log(EDD.testDasDds("radar_vola")); 
 
     /*  
@@ -391,7 +390,7 @@ public class TestAll  {
           //"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/",
           //"https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/",
           ".*\\.nc", true, ".*", true).writeJsonlCSV(outName); //dirsToo=false
-      String2.log(String2.directReadFrom88591File(outName));
+      String2.log(File2.directReadFrom88591File(outName));
       String2.log("The Results are in " + outName + "\n" +
           "The lower level (partial?) copy (written to file as it is downloaded)\n" +
           "is in _erddapBPD/datasets/_GenerateDatasetsXml .");
@@ -444,7 +443,7 @@ public class TestAll  {
 
        /*   //tallyXml
         String tfn = EDStatic.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
-        String2.writeToFile(tfn, 
+        File2.writeToFile(tfn, 
             FileVisitorDNLS.tallyXml(
             "/u00/data/points/lterSbc/", "knb-lter-sbc\\.\\d+", false,
             new String[]{
@@ -475,11 +474,11 @@ public class TestAll  {
 //    Table.debugMode = true; DasDds.main(new String[]{"NTL_DEIMS_5672_t1", "-verbose"});
 
 //    make flag files for all knb datasets
-//    ArrayList<String> tsa = String2.readLinesFromFile("/downloads/allKnb.txt", "", 1);
+//    ArrayList<String> tsa = File2.readLinesFromFile("/downloads/allKnb.txt", "", 1);
 //    int nTsa = tsa.size();
 //    String2.log("allKnb n=" + nTsa);
 //    for (int tsai = 0; tsai < nTsa; tsai++)
-//        String2.writeToFile("/flag/" + tsa.get(tsai), "flag");
+//        File2.writeToFile("/flag/" + tsa.get(tsai), "flag");
 
 //    EDDTableFromHttpGet.testStatic();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
@@ -762,7 +761,7 @@ public class TestAll  {
 //    SSR.downloadFile(
 //        "http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0",
 //        "/downloads/testUnidata.xml", true); //tryToUseCompression
-//    String2.log(String2.directReadFromUtf8File("/downloads/testUnidata.xml"));
+//    String2.log(File2.directReadFromUtf8File("/downloads/testUnidata.xml"));
 
 //    Projects.makeNetcheckErddapTests( //results are on clipboard
 //        "https://coastwatch.pfeg.noaa.gov/erddap/");
@@ -1391,9 +1390,9 @@ WaitThenTryAgainException wttae;
 
         if (errorSB != null && errorSB.length() > 0) {
             String fileName = EDStatic.fullLogsDirectory + "/TestAllErrorSB.txt";
-            String2.log(String2.writeToFile(fileName, 
+            String2.log(File2.writeToFile(fileName, 
                 "errorSB from TestAll which finished at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" + 
-                errorSB.toString(), String2.UTF_8));
+                errorSB.toString(), File2.UTF_8));
             SSR.displayInBrowser("file://" + fileName);
         }
 

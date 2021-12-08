@@ -676,7 +676,7 @@ expected =
 
         tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_Entire", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "latitude,longitude,altitude\n" +
 "degrees_north,degrees_east,m\n" +
@@ -750,7 +750,7 @@ expected =
 
         tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_timeGaps", ".timeGaps"); 
-        results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Time gaps: (none, because there is no time axis variable)\n" +
 "nGaps=0\n";

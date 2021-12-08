@@ -406,7 +406,7 @@ public class SdsWriter  {
         if (tagList.size() >= Short.MAX_VALUE)
             throw new RuntimeException(String2.ERROR + " in SdsWriter.create: too many tags (" + 
                 tagList.size() + ").");
-        DataOutputStream stream = new DataOutputStream( new BufferedOutputStream(
+        DataOutputStream stream = new DataOutputStream(new BufferedOutputStream(
             new FileOutputStream(hdfFileName)));
         try {
             int dataOffset = 0;
@@ -682,7 +682,7 @@ public class SdsWriter  {
         //describe the data
         String2.log("SdsWriter.main gathering data and attributes");  
         int NaN = -999;
-        String dir = String2.getClassPath() + //with / separator and / at the end
+        String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/hdf/";
         double lonSpacing = 0.25; 
         double latSpacing = 0.5; 
@@ -789,8 +789,8 @@ public class SdsWriter  {
         //look for differences
         String2.setupLog(true, false, "", false, String2.logFileDefaultMaxSize);
         String2.log("SdsWriter.main look for dump differences");  //after close log files
-        String miniDump[]  = String2.readFromFile(dir + "mini.hdf.dump");
-        String mini2Dump[] = String2.readFromFile(dir + "mini2.hdf.dump");
+        String miniDump[]  = File2.readFromFile88591(dir + "mini.hdf.dump");
+        String mini2Dump[] = File2.readFromFile88591(dir + "mini2.hdf.dump");
         Test.ensureEqual(miniDump[0].length() , 0, String2.ERROR + " reading mini.hdf.dump");
         Test.ensureEqual(mini2Dump[0].length(), 0, String2.ERROR + " reading mini2.hdf.dump");
         Test.ensureEqual(miniDump[1], mini2Dump[1], 
@@ -808,7 +808,7 @@ public class SdsWriter  {
         String2.setupLog(true, false, dir + "OQNux10.hdf.dump",
             false, String2.logFileDefaultMaxSize); //append
         SdsReader.verbose = true;
-        SdsReader.read(String2.getClassPath() + //with / separator and / at the end
+        SdsReader.read(File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/OQNux101day_20050712_W-135E-105S22N50.hdf");
         */
 

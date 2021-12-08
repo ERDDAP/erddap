@@ -49,7 +49,7 @@ import java.awt.Image;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -217,10 +217,10 @@ public static boolean developmentMode = false;
     public static String contentDirectory;
 
     public final static String INSTITUTION = "institution";
-    public final static int TITLE_DOT_LENGTH = 95; //max nChar before inserting newlines (was truncate with " ... ")
+    public final static int TITLE_DOT_LENGTH = 95; //max nChar before inserting newlines
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-    public static String webInfParentDirectory = String2.webInfParentDirectory(); //with / separator and / at the end
+    public static String webInfParentDirectory = File2.webInfParentDirectory(); //with / separator and / at the end
     //fgdc and iso19115XmlDirectory are used for virtual URLs.
     public final static String fgdcXmlDirectory     = "metadata/fgdc/xml/";     //virtual
     public final static String iso19115XmlDirectory = "metadata/iso19115/xml/"; //virtual
@@ -1719,7 +1719,7 @@ public static boolean developmentMode = false;
             "Couldn't find 'content' directory ([tomcat]/content/erddap/ ?) " +
             "because '" + ecd + "' environment variable not found " +
             "and couldn't find '/webapps/' in classPath=" + 
-            String2.getClassPath() + //with / separator and / at the end
+            File2.getClassPath() + //with / separator and / at the end
             " (and 'content/erddap' should be a sibling of <tomcat>/webapps): ";
         contentDirectory = System.getProperty(ecd);        
         if (contentDirectory == null) {
@@ -1727,7 +1727,7 @@ public static boolean developmentMode = false;
             //e.g., c:/programs/_tomcat/webapps/erddap/WEB-INF/classes/[these classes]
             //On windows, contentDirectory may have spaces as %20(!)
             contentDirectory = String2.replaceAll(
-                String2.getClassPath(), //with / separator and / at the end
+                File2.getClassPath(), //with / separator and / at the end
                 "%20", " "); 
             int po = contentDirectory.indexOf("/webapps/");
             contentDirectory = contentDirectory.substring(0, po) + "/content/erddap/"; //exception if po=-1
@@ -2204,7 +2204,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
             //use default messages.xml
             String2.log("Custom messages.xml not found at " + messagesFileName);
             //use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-            messagesFileName = String2.getClassPath() + //with / separator and / at the end
+            messagesFileName = File2.getClassPath() + //with / separator and / at the end
                 "gov/noaa/pfel/erddap/util/messages.xml";
             String2.log("Using default messages.xml from  " + messagesFileName);
         }
@@ -4307,9 +4307,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 }
 
                 //open a new file
-                emailLogFile = new BufferedWriter(new FileWriter(
-                    fullLogsDirectory + "emailLog" + date + ".txt", 
-                    true)); //true=append
+                emailLogFile = File2.getBufferedWriterUtf8(
+                    new FileOutputStream(fullLogsDirectory + "emailLog" + date + ".txt", true)); //true=append
             }
 
             //write the email to the log
@@ -5292,9 +5291,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         StringArray col2 = new StringArray();
         table.addColumn("acronym", col1);
         table.addColumn("fullName", col2);
-        ArrayList<String> lines = String2.readLinesFromFile(
+        ArrayList<String> lines = File2.readLinesFromFile(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
-            String2.ISO_8859_1, 1);
+            File2.ISO_8859_1, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) { //1 because skip colNames
             String s = lines.get(i).trim();
@@ -5325,9 +5324,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         StringArray col2 = new StringArray();
         table.addColumn("variableName", col1);
         table.addColumn("fullName", col2);
-        ArrayList<String> lines = String2.readLinesFromFile(
+        ArrayList<String> lines = File2.readLinesFromFile(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
-            String2.ISO_8859_1, 1);
+            File2.ISO_8859_1, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) {
             String s = lines.get(i).trim();
@@ -5436,7 +5435,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Table table = new Table();
         table.readASCII(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
-            String2.ISO_8859_1, "", "",
+            File2.ISO_8859_1, "", "",
             0, 1, "", null, null, null, null, false); //false = don't simplify
         return table;
     }
@@ -6353,13 +6352,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 //set content type both ways in hopes of overwriting any previous settings
                 response.setHeader("Content-Type", "text/plain; charset=UTF-8"); 
                 response.setContentType("text/plain");
-                response.setCharacterEncoding(String2.UTF_8);
+                response.setCharacterEncoding(File2.UTF_8);
                 response.setHeader("Content-Description", "dods-error"); 
                 response.setHeader("Content-Encoding", "identity");  //not e.g. deflate
                 OutputStream outputStream = new BufferedOutputStream(response.getOutputStream()); //after all setHeader
                 Writer writer = null;
                 try {
-                    writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
+                    writer = File2.getBufferedWriterUtf8(outputStream);
                     //from DAP 2.0 section 7.2.4
                     writer.write(fullMsg);
 

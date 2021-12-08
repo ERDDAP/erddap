@@ -323,7 +323,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //das
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cps3_Data", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 //data changes so it is hard to test all
 "Attributes {\n" +
@@ -346,7 +346,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //.dds 
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cps3_Data", ".dds"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -404,7 +404,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1role", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -420,7 +420,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleLIOD", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //same expected
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + results.substring(0, 3000));
@@ -433,7 +433,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleP", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 String2.log("\nUnexpected results:\n" + results);
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
@@ -452,7 +452,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             try {
                 tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleWP", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
                 if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -466,7 +466,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1roleL", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -482,7 +482,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "&orderBy(\"unique_tag_id\")"; //without this, data is ordered by pi, so different order
             tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_1rolePDLI", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, activation_time, anaesthetic_conc_recirc, anaesthetic_conc_surgery, buffer_conc_anaesthetic, buffer_conc_recirc, buffer_conc_surgery, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, fork_length, frequency, implant_type, length_hood, length_pcl, length_standard, project, provenance, role, scientific_name, sedative_conc_surgery, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tagger, treatment_type, water_temp, weight\n" +
 ", , degrees_east, degrees_north, UTC, UTC, ppm, ppm, ppm, ppm, ppm, , , , , UTC, ms, ms, days, , , days, mm, kHz, , mm, mm, mm, , , , , ppm, , , , degrees_east, degrees_north, UTC, , , degree_C, grams\n" +
@@ -499,7 +499,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "longitude,latitude,time&time>=2007-05-01&time<2007-09-01";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_LLT", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log("results=\n" + results.substring(0, Math.min(results.length(), 10000)));
             po = results.indexOf("NaN");
             String2.log("\nresults.length()=" + results.length() + "  NaN po=" + po);
@@ -511,7 +511,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "role&distinct()";
             tName = tedd.makeNewFileForDapQuery(language, null, EDStatic.loggedInAsSuperuser, tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_roles", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "role\n" +
 "\n" +
@@ -532,7 +532,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "unique_tag_id,pi,longitude,latitude,time,tagger&tagger=\"\"";
             tName = tedd.makeNewFileForDapQuery(language, null, "noTagger", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_noTagger", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, tagger, date_public, role\n" +
 ", , degrees_east, degrees_north, UTC, , UTC, \n" +
@@ -548,7 +548,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tQuery = "unique_tag_id,pi,longitude,latitude,time,tagger&tagger=%22ADRIAN%20LADOUCEUR%22";
             tName = tedd.makeNewFileForDapQuery(language, null, "tagAL", tQuery, 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_ps3_tagAL", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   
 "unique_tag_id, pi, longitude, latitude, time, tagger, date_public, role\n" +
 ", , degrees_east, degrees_north, UTC, , UTC, \n" +
@@ -632,7 +632,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //das
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cpd3_Data", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -651,7 +651,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             //.dds 
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_cpd3_Data", ".dds"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -685,7 +685,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&unique_tag_id=\"224_A69-1206-AF_4003\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1tag", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 expected =   
     "unique_tag_id, pi, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, stock, surgery_time, surgery_location, tagger\n" +
     ", , degrees_east, degrees_north, UTC, m, , UTC, , , m, , , , UTC, , \n" +
@@ -701,7 +701,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1role", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 //same expected
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                 String2.log("*** testCopyPostDet3 c1role FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
@@ -711,7 +711,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&role=\"WELCH_DAVID_ONCORHYNCHUSNERKA_CULTUSLAKE\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleLIOD", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 //same expected
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
                 String2.log("*** testCopyPostDet3 c1roleLIOD FINISHED.  TIME=" + (System.currentTimeMillis() - eTime) + "ms"); 
@@ -723,7 +723,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 try {
                     tName = tedd.makeNewFileForDapQuery(language, null, null, tQuery, 
                         EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleP", ".csv"); 
-                    results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
                     if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -738,7 +738,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 try {
                     tName = tedd.makeNewFileForDapQuery(language, null, "WELCH_DAVID", tQuery, 
                         EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleWP", ".csv"); 
-                    results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                    results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
                     if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
@@ -752,7 +752,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "&role=\"ROBICHAUD_DAVID_ACIPENSERTRANSMONTANUS_LOWERFRASER\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, "ROBICHAUD_DAVID", tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_1roleL", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
     String2.log("\n" + results.substring(0, 4000) + "\n");
                 expected =   
     "unique_tag_id, pi, longitude, latitude, time, bottom_depth, common_name, date_public, position_on_subarray, project, riser_height, role, scientific_name, stock, surgery_time, surgery_location, tagger\n" +
@@ -769,7 +769,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 tQuery = "role&distinct()";
                 tName = tedd.makeNewFileForDapQuery(language, null, EDStatic.loggedInAsSuperuser, tQuery, 
                     EDStatic.fullTestCacheDirectory, tedd.className() + "_pd3_roles", ".csv"); 
-                results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
+                results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 expected =   
     "role\n" +
     "\n" +
@@ -1505,7 +1505,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         String tName = postSurgery3.makeNewFileForDapQuery(language, null, EDStatic.loggedInAsSuperuser, 
             "&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + "%22", 
             tDir, "cPostSurg3_1Surgery_" + String2.modifyToBeFileNameSafe(unique_tag_id), ".csv"); 
-        String2.log("\n" + String2.readFromFile(tDir + tName)[1]);
+        String2.log("\n" + File2.readFromFile(tDir + tName)[1]);
     }
 
     /** Test if absolute times are correct */

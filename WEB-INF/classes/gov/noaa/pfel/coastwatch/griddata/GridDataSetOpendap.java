@@ -927,7 +927,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String internalName, sixName;
         GridDataSetOpendap.verbose = true;
         Opendap.verbose = true;
-        String dir = String2.getClassPath() + //with / separator and / at the end
+        String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/";
 
         //*********************************************************************

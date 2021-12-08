@@ -33,7 +33,7 @@ public class HashDigest {
     public static void basicTest() throws Throwable {
         System.out.println("*** HashDigest.basicTest");
         String tName = String2.replaceAll(
-            String2.getClassPath() + "com\\cohort\\util\\License.txt", "\\", "/");
+            File2.getClassPath() + "com\\cohort\\util\\License.txt", "\\", "/");
         Test.ensureEqual(doIt(new String[]{"type:MD5"}), 
             "Neither password or filename was specified.\n" + usage, "");
         Test.ensureEqual(doIt(new String[]{"password:myPassword", "type:MD-5"}), 
@@ -50,7 +50,7 @@ public class HashDigest {
             "e376c88953b2d56b00783fed071f1875e8ed94230f4e14eee5bce8bd608de5e6", "");
         Test.ensureEqual(doIt(new String[]{"filename:" + tName, "type:SHA-256", "-file"}), 
             "Created " + tName + ".sha256", "");
-        Test.ensureEqual(String2.readFromFile(tName + ".sha256")[1],
+        Test.ensureEqual(File2.readFromFileUtf8(tName + ".sha256")[1],
             "e376c88953b2d56b00783fed071f1875e8ed94230f4e14eee5bce8bd608de5e6  License.txt\n", "");
         File2.delete(tName + ".sha256");
     }
@@ -78,7 +78,7 @@ public class HashDigest {
         String digest = String2.fileDigest(algorithm, filename);
         if (String2.indexOf(args, "-file") >= 0) {
             String ext = String2.FILE_DIGEST_EXTENSIONS[whichAlgo];
-            String2.writeToFile(filename + ext, 
+            File2.writeToFileUtf8(filename + ext, 
                 digest + "  " + File2.getNameAndExtension(filename));
             return "Created " + filename + ext; 
         } else {

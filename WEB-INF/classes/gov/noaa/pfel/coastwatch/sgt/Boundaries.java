@@ -52,7 +52,7 @@ public class Boundaries  {
     public static boolean debug = false;
 
     public final static String REF_DIRECTORY = 
-        String2.webInfParentDirectory() + //with / separator and / at the end
+        File2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     /** 
@@ -63,7 +63,7 @@ public class Boundaries  {
      *    GPL license: http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT
      *    landMaskDir should have slash at end.
      */
-    public String directory = String2.webInfParentDirectory() + //with / separator and / at the end
+    public String directory = File2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     /**
@@ -443,7 +443,7 @@ public class Boundaries  {
         String startGapLine2 = format == MATLAB_FORMAT? "nan nan" : "#";
         int nObjects = 0;
 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fullFileName));
+        BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(fullFileName);
         try {
             String s = bufferedReader.readLine();
             while (s != null) { //null = end-of-file
@@ -537,7 +537,7 @@ public class Boundaries  {
         String startGapLine2 = format == MATLAB_FORMAT? "nan nan" : "#";
         int nObjects = 0;
 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(sourceName));
+        BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader88591(sourceName);
         try {
             DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
                 new FileOutputStream(destName)));

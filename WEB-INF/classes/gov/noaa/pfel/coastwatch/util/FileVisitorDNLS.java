@@ -2613,7 +2613,7 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
     public static void testLocal(boolean doBigTest) throws Throwable {
         String2.log("\n*** FileVisitorDNLS.testLocal");
         verbose = true;
-        String contextDir = String2.webInfParentDirectory(); //with / separator and / at the end
+        String contextDir = File2.webInfParentDirectory(); //with / separator and / at the end
         String tPathRegex = null;
         Table table;
         long time;

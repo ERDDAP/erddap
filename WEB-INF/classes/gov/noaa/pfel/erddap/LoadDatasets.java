@@ -972,7 +972,7 @@ public class LoadDatasets extends Thread {
                         String contents = 
                             "datasetID,variableSourceName,attribute\n" + 
                             EDStatic.suggestAddFillValueCSV.toString();
-                        String2.writeToFile(tFileName, contents);
+                        File2.writeToFileUtf8(tFileName, contents);
                         String afva =
                             "ADD _FillValue ATTRIBUTES?\n" +
                             "The datasets/variables in the table below have integer source data, but no\n" +
@@ -988,7 +988,7 @@ public class LoadDatasets extends Thread {
                             "instead, which will suppress this message for that datasetID+variable\n" +
                             "combination in the future.\n" +
                             "The list below is created each time you start up ERDDAP.\n" +
-                            "The list was just written to a CSV file\n" + 
+                            "The list was just written to a UTF-8 CSV file\n" + 
                             tFileName + "\n" +
                             "and is shown here:\n" + 
                             contents + "\n";

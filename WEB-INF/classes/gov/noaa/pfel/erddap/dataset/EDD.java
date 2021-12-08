@@ -1831,8 +1831,8 @@ public abstract class EDD {
                         StringWriter writer = new StringWriter(65536);  //most are ~40KB
                         writeFGDC(0, writer);  //language=0 so error is consistent
                         accessibleViaFGDC = String2.canonical(
-                            String2.writeToFile(
-                                tName + tmp, writer.toString(), String2.UTF_8));
+                            File2.writeToFile(
+                                tName + tmp, writer.toString(), File2.UTF_8));
 
                         //then swap into place to replace old version quickly
                         if (accessibleViaFGDC.length() == 0)
@@ -1905,8 +1905,8 @@ public abstract class EDD {
                         StringWriter writer = new StringWriter(65536);  //most are ~40KB
                         writeISO19115(0, writer);
                         accessibleViaISO19115 = String2.canonical(
-                            String2.writeToFile(
-                                tName + tmp, writer.toString(), String2.UTF_8));
+                            File2.writeToFile(
+                                tName + tmp, writer.toString(), File2.UTF_8));
 
                         //then swap into place to replace old version quickly
                         if (accessibleViaISO19115.length() == 0)
@@ -2586,7 +2586,7 @@ public abstract class EDD {
     public static void requestReloadASAP(String tDatasetID) {
         String2.log("EDD.requestReloadASAP " + tDatasetID);
         if (String2.isFileNameSafe(tDatasetID)) {
-            String2.writeToFile(EDStatic.fullResetFlagDirectory + tDatasetID, tDatasetID);
+            File2.writeToFileUtf8(EDStatic.fullResetFlagDirectory + tDatasetID, tDatasetID);
             EDStatic.tally.add("RequestReloadASAP (since startup)", tDatasetID);
             EDStatic.tally.add("RequestReloadASAP (since last daily report)", tDatasetID);
         }
@@ -2600,7 +2600,7 @@ public abstract class EDD {
      * This uses a Boyer-Moore-like search (see String2.indexOf(byte[], byte[], int[])).
      *
      * @param words the words or phrases to be searched for (already lowercase)
-     *    stored as byte[] via word.getBytes(String2.UTF_8).
+     *    stored as byte[] via word.getBytes(File2.UTF_8).
      * @param jump the jumpTables from String2.makeJumpTable(word).
      * @return a rating value for this dataset (lower numbers are better),
      *   or Integer.MAX_VALUE if words.length == 0 or 
@@ -10734,7 +10734,7 @@ public abstract class EDD {
                 sb.append(String2.toJson("graphIntWESN") + ": [" + pa.toJsonCsvString() + "],\n");
                 sb.append("}\n");
 
-                String tError = String2.writeToFile(infoFileName, sb.toString(), String2.UTF_8); //json always UTF-8
+                String tError = File2.writeToFile(infoFileName, sb.toString(), File2.UTF_8); //json always UTF-8
                 if (tError.length() == 0) {
                     if (verbose) String2.log("  writePngInfo succeeded"); 
                 } else {
@@ -10805,7 +10805,7 @@ public abstract class EDD {
             }
 
             //read the json pngInfo file
-            String sa[] = String2.readFromFile(infoFileName, String2.UTF_8, 1);
+            String sa[] = File2.readFromFile(infoFileName, File2.UTF_8, 1);
             if (sa[0].length() > 0) 
                 throw new Exception(sa[0]);
             JSONTokener jTok = new JSONTokener(sa[1]);
@@ -11156,12 +11156,12 @@ public abstract class EDD {
         tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "EDD.testDasDds_" + tDatasetID, ".das"); 
         results.append("**************************** The .das for " + tDatasetID + " ****************************\n");
-        results.append(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
+        results.append(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
 
         tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             "EDD.testDasDds_" + tDatasetID, ".dds"); 
         results.append("**************************** The .dds for " + tDatasetID + " ****************************\n");
-        results.append(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
+        results.append(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
 
         if (edd instanceof EDDGrid) {
             EDDGrid eddGrid = (EDDGrid)edd;
@@ -11747,8 +11747,8 @@ sb.append(
      */
     public void writeInPortXmlFile(String fullFileName, String archiveLocation,
         String archiveOther, String archiveNone) {
-        String error = String2.writeToFile(fullFileName, 
-            getInPortXmlString(archiveLocation, archiveOther, archiveNone), String2.UTF_8);
+        String error = File2.writeToFile(fullFileName, 
+            getInPortXmlString(archiveLocation, archiveOther, archiveNone), File2.UTF_8);
         if (error.length() > 0)
             throw new RuntimeException(error);
     }
@@ -11985,16 +11985,16 @@ if (nSuccess >= 2)
 "<dataset type=\"EDD" + String2.toTitleCase(gridTable) + "FromErddap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/" + gridTable + "dap/" + tDatasetID + "</sourceUrl>\n" +
 "</dataset>\n");        
-        String error = String2.writeToFile(dir + fileName, 
+        String error = File2.writeToFile(dir + fileName, 
             edd.getInPortXmlString(
                 "No Archiving Intended",
                 "",
                 "This data is derived from data in an archive. " +
                 "The archives only want to archive the source data."), 
-            String2.UTF_8);
+            File2.UTF_8);
         if (error.length() > 0)
             throw new RuntimeException(error);
-        String results = String2.directReadFromUtf8File(dir + fileName);
+        String results = File2.directReadFromUtf8File(dir + fileName);
         String expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<inport-metadata version=\"1.0\">\n" +
@@ -12420,7 +12420,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
 
         //read csvChangesFileName
         Table table = new Table();
-        table.readASCII(csvChangesFileName, String2.ISO_8859_1,
+        table.readASCII(csvChangesFileName, File2.ISO_8859_1,
             "", "", 0, 1, null, null, null, null, null, false); //simplify?     
         int nChanges = table.nRows();
         if (table.nColumns() != 3 ||
@@ -12488,7 +12488,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         String errorLogName = File2.getDirectory(csvChangesFileName) + "addFillValueAttributesErrors" + compactDateTime + ".txt";
         if (errors.length() > 0) {
             String2.log(errors.toString());
-            String2.writeToFile(errorLogName, errors.toString());
+            File2.writeToFileUtf8(errorLogName, errors.toString());
         } else {
             String2.log("0 errors");
         }
@@ -12547,7 +12547,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
             Test.ensureTrue(results.indexOf("The revised datasets.xml file is named") > 0, "");
             String logFile = String2.extractCaptureGroup(results, "The error log file is named (.*\\.txt)", 1);
             String2.log("logFile=" + logFile);
-            String log = String2.readFromFile(logFile)[1];
+            String log = File2.readFromFileUtf8(logFile)[1];
             String expected = 
 "ERROR on line #3 of addFillValueAttributes file: datasetID=\"noSuchDataset\" wasn't found in datasets.xml!\n" +
 "ERROR on line #4 of addFillValueAttributes file: for datasetID=\"dataset1\", sourceName=\"noSuchVariable\" wasn't found in datasets.xml!\n" +
@@ -12555,7 +12555,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
             Test.ensureEqual(log, expected, "log=\n" + log);
 
             //check results
-            results = String2.readFromFile(dir + "tempDatasets.xml")[1];
+            results = File2.readFromFileUtf8(dir + "tempDatasets.xml")[1];
             results = results.replaceAll(" \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} ", " [COMPACT_TIME] ");
             expected = 
 "<startOfFile (but with nonstandard tag)>\n" +
@@ -12709,13 +12709,13 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         try {
             //open oldXmlReader
             oldXmlReader = File2.getDecompressedBufferedFileReader(
-                datasetsXmlFullName, String2.ISO_8859_1);
+                datasetsXmlFullName, File2.ISO_8859_1);
             
             //open newXmlWriter
-//newXmlWriter = getBufferedOutputStreamWriter88591(new FileOutputStream(datasetsXmlFullName + compactDateTime));
+//newXmlWriter = getBufferedWriter88591(new FileOutputStream(datasetsXmlFullName + compactDateTime));
 
             //open notes
-            notes = String2.getBufferedOutputStreamWriter88591(new FileOutputStream(notesName));
+            notes = File2.getBufferedFileWriter88591(notesName);
 
             //go through lines of oldXml
             String datasetType        = null; //null if not currently in a dataset

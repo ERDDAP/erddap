@@ -137,7 +137,7 @@ public class Grid  {
 
     /** These are used to access the test files. */
     public static String testDir = 
-        String2.getClassPath() + //with / separator and / at the end
+        File2.getClassPath() + //with / separator and / at the end
         "gov/noaa/pfel/coastwatch/griddata/";
     public final static String testName = "OQNux10S1day_20050712_x-135_X-105_y22_Y50"; 
 
@@ -2913,7 +2913,7 @@ try {
         int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the temp file
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(directory + randomInt));
+        BufferedWriter bufferedWriter = File2.getBufferedFileWriter88591(directory + randomInt);
         try {
             //write the data
             bufferedWriter.write("ncols " + lon.length + "\n");
@@ -2958,7 +2958,7 @@ try {
 
         //diagnostic
         if (false) {
-            String[] rff = String2.readFromFile(directory + name + ext);
+            String[] rff = File2.readFromFile88591(directory + name + ext);
             if (rff[0].length() > 0)
                 throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsASCII: " + directory + name + ext + " contains:\n" +
@@ -2982,7 +2982,7 @@ try {
         grid.readGrd(testDir + testName + ".grd", true);
         grid.makeLonPM180(false); //so saveAsEsriASCII will have to change it
         grid.saveAsEsriASCII(testDir, "temp");
-        String result[] = String2.readFromFile(testDir + "temp.asc");
+        String result[] = File2.readFromFile88591(testDir + "temp.asc");
         Test.ensureEqual(result[0], "", "");
         String reference = 
 "ncols 121\n" +
@@ -3009,7 +3009,7 @@ try {
         Grid grid = new Grid();
         grid.readGrd(testDir + testName + ".grd", true);
         grid.saveAsASCII(testDir, "temp");
-        String result[] = String2.readFromFile(testDir + "temp.asc");
+        String result[] = File2.readFromFile88591(testDir + "temp.asc");
         Test.ensureEqual(result[0], "", "");
         String reference = 
 "ncols 121\n" +
@@ -3488,14 +3488,14 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             "'" + directory + name + "_" + randomInt + ".hdf'," +
             "'" + varName + "'," + lonSpacing + "," + latSpacing + ")\n");
         matlabControl.append("quit\n");
-        String error = String2.writeToFile(directory + randomInt + ".control", matlabControl.toString());
+        String error = File2.writeToFile(directory + randomInt + ".control", matlabControl.toString());
         if (error.length() > 0) 
             throw new RuntimeException(error);
   
         //execute matlabControl
         String2.log("HDF matlabControl:\n" + matlabControl);
         SSR.runMatlab(directory + randomInt + ".control", directory + randomInt + ".out");
-        String[] results = String2.readFromFile(directory + randomInt + ".out");
+        String[] results = File2.readFromFile(directory + randomInt + ".out");
         String2.log("Grid.saveAsHDF matlabOutput:\n" + results[1] + "\n[end]");
         //File2.delete(directory + randomInt + ".control");
         //File2.delete(directory + randomInt + ".out");
@@ -3525,7 +3525,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * nor does it get information from the .grd file name.
      *
      * <p>This uses jhdf.jar which must be in the 
-     * String2.webInfParentDirectory()+"WEB-INF\lib" directory (for Tomcat)
+     * File2.webInfParentDirectory()+"WEB-INF\lib" directory (for Tomcat)
      * and on the javac's and java's classpath (for compiling and running outside
      * of Tomcat).
      *
@@ -4361,7 +4361,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String2.log("\n*** Grid.testNetCDF");
 
         //***** test composite *******************************************************
-        String dir = String2.getClassPath() + //with / separator and / at the end
+        String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/";
         Grid grid1 = new Grid();
         grid1.latSpacing = 0.5; 
@@ -4658,7 +4658,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //open the temp file
         //(I tried with Buffer/FileOutputStream. No faster.)
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(directory + randomInt));
+        BufferedWriter bufferedWriter = File2.getBufferedFileWriter88591(directory + randomInt);
         try {
 
             //write the data
@@ -4697,7 +4697,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //diagnostic
         /*
         if (verbose) {
-            String[] rff = String2.readFromFile(directory + name + ext);
+            String[] rff = File2.readFromFile(directory + name + ext);
             if (rff[0].length() > 0)
                 throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsXYZ: " + directory + name + ext + " contains:\n" +
@@ -4722,7 +4722,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         for (int i = 0; i < 3; i++) {
             grid.saveAsXYZ(testDir, "temp");
         }
-        String sa[] = String2.readFromFile(testDir + "temp.xyz");
+        String sa[] = File2.readFromFile88591(testDir + "temp.xyz");
         Test.ensureEqual(sa[0], "", "");
         sa[1] = String2.annotatedString(sa[1].substring(0, 300));
         String2.log(sa[1]);
@@ -5090,7 +5090,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //ensure asc was saved as pm180
         if (true) { //so sar is garbage collected
-            String sar[] = String2.readFromFile(testDir + daveName + ".asc");
+            String sar[] = File2.readFromFile88591(testDir + daveName + ".asc");
             Test.ensureEqual(sar[0], "", "");
             //String2.log(sar[1].substring(1, 200));
             String t = 
@@ -5543,7 +5543,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
 
             //write to ascii
-            Writer ascii = new BufferedWriter(new FileWriter(outName));
+            Writer ascii = File2.getBufferedFileWriter88591(outName);
             try {
                 String s = xName + "\t" + yName + "\t" + tName + "\t" + dataName + newline;
                 ascii.write(s, 0, s.length());
@@ -5581,8 +5581,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * this replaces the data values in the ascii files with NaN where 
      * there is land.
      *
-     * @param landMaskFileName
-     * @param dataFileName
+     * @param landMaskFileName An ISO-8859-1 file, perhaps externally compressed.
+     * @param dataFileName  An ISO-8859-1 file, perhaps externally compressed.
      * @param newFileName
      */
     public static void maskAsciiXYT(String landMaskFileName,
@@ -5593,7 +5593,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //read the land mask into a hash table
         HashSet hashSet = new HashSet();
-        BufferedReader maskFile = new BufferedReader(new FileReader(landMaskFileName));
+        BufferedReader maskFile = File2.getDecompressedBufferedFileReader88591(landMaskFileName);
         try {
             s = maskFile.readLine(); //skip col names
             s = maskFile.readLine();
@@ -5611,9 +5611,9 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         }
 
         //read the asciiFile and write new newFile
-        BufferedReader in  = new BufferedReader(new FileReader(dataFileName));
+        BufferedReader in = File2.getDecompressedBufferedFileReader88591(dataFileName);
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(newFileName));
+            BufferedWriter out = File2.getBufferedFileWriter88591(newFileName);
             try {
                 s = in.readLine(); //skip col names
                 s = in.readLine();

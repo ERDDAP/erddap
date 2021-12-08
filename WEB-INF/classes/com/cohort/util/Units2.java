@@ -59,11 +59,11 @@ public class Units2 {
 
     //these don't need to be thread-safe because they are read-only after creation
     private static HashMap<String,String> udHashMap = getHashMapStringString(
-        String2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UdunitsToUcum.properties", 
-        String2.UTF_8);
+        File2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UdunitsToUcum.properties", 
+        File2.UTF_8);
     private static HashMap<String,String> ucHashMap = getHashMapStringString(
-        String2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UcumToUdunits.properties", 
-        String2.UTF_8);
+        File2.webInfParentDirectory() + "WEB-INF/classes/com/cohort/util/UcumToUdunits.properties", 
+        File2.UTF_8);
 
     //these special cases are usually populated by EDStatic static constructor, but don't have to be
     public static HashMap<String,String> standardizeUdunitsHM = new HashMap();
@@ -1764,7 +1764,7 @@ String2.log("5/9=" + (5/9.0));
         throws RuntimeException {
         try {
             HashMap ht = new HashMap();
-            ArrayList<String> sar = String2.readLinesFromFile(fileName, charset, 2);
+            ArrayList<String> sar = File2.readLinesFromFile(fileName, charset, 2);
             int n = sar.size();
             int i = 0;
             while (i < n) {
@@ -1952,7 +1952,7 @@ String2.log("5/9=" + (5/9.0));
                  f == 1? "datasetsFEDCW.xml" :
                          "uniqueCFUnits.txt");
 
-            ArrayList<String> lines = String2.readLinesFromFile(fileName, String2.ISO_8859_1, 1); //nAttempts
+            ArrayList<String> lines = File2.readLinesFromFile(fileName, File2.ISO_8859_1, 1); //nAttempts
             int nLines = lines.size();
             for (int i = 0; i < nLines; i++) {
                 String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); //captureGroupNumber
@@ -1963,7 +1963,7 @@ String2.log("5/9=" + (5/9.0));
         StringArray sa = new StringArray(set.toArray());
         set = null;
         sa.sortIgnoreCase();
-        //sa.toFile(cfUnique, String2.UTF_8, "\n");
+        //sa.toFile(cfUnique, File2.UTF_8, "\n");
         //String2.log(sa.toNewlineString());
         return sa;
     }
@@ -2056,7 +2056,7 @@ String2.log("5/9=" + (5/9.0));
      */
     public static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
 
-        ArrayList<String> lines = String2.readLinesFromFile(fullCFXMLFileName, String2.UTF_8, 1); //nAttempts
+        ArrayList<String> lines = File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); //nAttempts
         HashSet reject = new HashSet();
         HashSet set = new HashSet();
         set.add("degree_C");  //test it, too
@@ -2080,7 +2080,7 @@ String2.log("5/9=" + (5/9.0));
         StringArray sa = new StringArray(set.toArray());
         set = null;
         sa.sortIgnoreCase();
-        sa.toFile(cfUnique, String2.UTF_8, "\n");
+        sa.toFile(cfUnique, File2.UTF_8, "\n");
         String2.log(sa.toNewlineString());
         sa = new StringArray(reject.toArray());
         sa.sortIgnoreCase();
@@ -2207,7 +2207,7 @@ String2.log("5/9=" + (5/9.0));
      * This tests if the canonical units for each unique CF unit is unique.
      */
     public static void testIfCFCanonicalUnitsUnique() throws Throwable {
-        StringArray sa = StringArray.fromFile(cfUnique, String2.UTF_8);
+        StringArray sa = StringArray.fromFile(cfUnique, File2.UTF_8);
         Attributes atts = new Attributes(); //use it as a hashmap: canon -> source
         for (int i = 0; i < sa.size(); i++) {
             String s = sa.get(i);

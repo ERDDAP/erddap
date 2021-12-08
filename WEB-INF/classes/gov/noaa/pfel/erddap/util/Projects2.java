@@ -59,7 +59,7 @@ public class Projects2  {
         String resultName  = "c:/programs/_tomcat/content/erddap/datasets2New.xml";
 
         //read handXml
-        String sar[] = String2.readFromFile(handXmlName);
+        String sar[] = File2.readFromFileUtf8(handXmlName);
         if (sar[0].length() > 0) {
             String2.log("Error reading handXml: " + sar[0]);
             return;
@@ -67,7 +67,7 @@ public class Projects2  {
         StringBuilder handXml = new StringBuilder(sar[1]);
 
         //read autoXml
-        sar = String2.readFromFile(autoXmlName);
+        sar = File2.readFromFileUtf8(autoXmlName);
         if (sar[0].length() > 0) {
             String2.log("Error reading autoXml: " + sar[0]);
             return;
@@ -142,7 +142,7 @@ public class Projects2  {
         autoXml = null; //gc
 
         //save the changes
-        String2.writeToFile(resultName, handXml.toString());
+        File2.writeToFileUtf8(resultName, handXml.toString());
         String2.log("Finished successfully");
 
     }
@@ -156,7 +156,7 @@ public class Projects2  {
         String resultName  = "c:/programs/_tomcat/content/erddap/datasets2New.xml";
 
         //read handXml
-        String sar[] = String2.readFromFile(handXmlName);
+        String sar[] = File2.readFromFileUtf8(handXmlName);
         if (sar[0].length() > 0) {
             String2.log("Error reading handXml: " + sar[0]);
             return;
@@ -194,7 +194,7 @@ public class Projects2  {
         }
 
         //save the changes
-        String2.writeToFile(resultName, handXml.toString());
+        File2.writeToFileUtf8(resultName, handXml.toString());
         String2.log("Finished successfully");
 
     }

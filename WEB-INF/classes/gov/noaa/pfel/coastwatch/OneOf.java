@@ -259,7 +259,7 @@ public class OneOf {
 
             //get absolute directories
             baseUrl = classRB2.getNotNothingString("baseUrl", errorInMethod);     
-            fullContextDirectory = String2.webInfParentDirectory(); //with / separator and / at the end
+            fullContextDirectory = File2.webInfParentDirectory(); //with / separator and / at the end
             bigParentDirectory = classRB2.getNotNothingString("bigParentDirectory", errorInMethod);      
             fullContextDirectory = File2.addSlash(fullContextDirectory);
             bigParentDirectory =   File2.addSlash(bigParentDirectory);
@@ -1425,7 +1425,7 @@ public class OneOf {
         String2.replaceAll(tTemplate, "&lonResolution;", "" + tempGrid.lonSpacing); 
 
         Test.ensureEqual("", 
-            String2.writeToFile(dir + customFileName + ".xml",
+            File2.writeToFileUtf8(dir + customFileName + ".xml",
                 tTemplate.toString()), 
             String2.ERROR + " while writing FGDC .xml file.");
     }
