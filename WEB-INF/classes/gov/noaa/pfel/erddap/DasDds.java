@@ -87,7 +87,7 @@ public class DasDds {
             String2.standardHelpAboutMessage());  
         //trick EDStatic.initialLoadDatasets by making majorLoadDatasetsTimeSeriesSB not empty
         EDStatic.majorLoadDatasetsTimeSeriesSB.append("\n");
-        outFile = new BufferedWriter(new FileWriter(outFileName)); //default charset
+        outFile = File2.getBufferedFileWriterUtf8(outFileName);
         try {
 
             //delete the old log files (pre 1.48 names)
@@ -124,7 +124,7 @@ public class DasDds {
                     outFile.flush();
                     outFile.close();
                     outFile = null;
-                    return String2.readFromFile(outFileName)[1];
+                    return File2.readFromFileUtf8(outFileName)[1];
                 }
 
                 try {
@@ -142,7 +142,7 @@ public class DasDds {
         } finally {
             outFile.close();
         }
-        String ret = String2.readFromFile(outFileName)[1];
+        String ret = File2.readFromFileUtf8(outFileName)[1];
         String2.returnLoggingToSystemOut();
         return ret;
     }

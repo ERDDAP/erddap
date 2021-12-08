@@ -61,7 +61,7 @@ public class GSHHS  {
      *    landMaskDir should have slash at end.
      */
     public static String gshhsDirectory = 
-        String2.webInfParentDirectory() + //with / separator and / at the end
+        File2.webInfParentDirectory() + //with / separator and / at the end
         "WEB-INF/ref/";
 
     /**

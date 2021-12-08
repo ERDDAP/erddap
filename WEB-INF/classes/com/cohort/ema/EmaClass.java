@@ -6,6 +6,7 @@
 package com.cohort.ema;
 
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
@@ -1052,8 +1053,8 @@ public class EmaClass extends HttpServlet {
 
         //output the response html page 
         response.setContentType("text/html");
-        response.setCharacterEncoding(String2.UTF_8);
-        Writer out = String2.getBufferedOutputStreamWriterUtf8(response.getOutputStream());
+        response.setCharacterEncoding(File2.UTF_8);
+        Writer out = File2.getBufferedWriterUtf8(response.getOutputStream());
         out.write(getHTMLPage(request, request.getContentLength() > 0)); //displayErrorMessages
         out.flush(); //close it???
     }

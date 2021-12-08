@@ -39,7 +39,7 @@ import java.time.ZoneId;
  */
 public class TestUtil {
 
-    public static String utilDir = String2.getClassPath() + //with / separator and / at the end
+    public static String utilDir = File2.getClassPath() + //with / separator and / at the end
         "com/cohort/util/";
 
     /**
@@ -1861,19 +1861,19 @@ public class TestUtil {
         String contents = "This is a file\n" +
             "with a few lines.\n" + //used below
             Calendar2.newGCalendarLocal() + "\n"; //unique content
-        Test.ensureEqual(String2.writeToFile(fileName, contents), "", "a");
+        Test.ensureEqual(File2.writeToFileUtf8(fileName, contents), "", "a");
 
         //readFromFile
         String2.log("test readFromFile");
-        String result[] = String2.readFromFile(fileName);
+        String result[] = File2.readFromFileUtf8(fileName);
         Test.ensureEqual(result[0], "", "a");
         Test.ensureEqual(result[1], contents, "b");
 
         //appendFile
         String2.log("test appendFile");
         String contents2 = "This was appended.\n";
-        Test.ensureEqual(String2.appendFile(fileName, contents2), "", "a");
-        result = String2.readFromFile(fileName);
+        Test.ensureEqual(File2.appendFileUtf8(fileName, contents2), "", "a");
+        result = File2.readFromFileUtf8(fileName);
         Test.ensureEqual(result[0], "", "b");
         Test.ensureEqual(result[1], contents + contents2, "c");
         File2.delete(fileName);
@@ -1887,10 +1887,10 @@ public class TestUtil {
         //for (int i = 0; i < 10000000; i++)
         //    sb.append("a");
         //String s9 = sb2.toString();
-        //String2.writeToFile(fileName, s9); //warm up
-        //String2.writeToFile(fileName, s9);
+        //File2.writeToFile(fileName, s9); //warm up
+        //File2.writeToFile(fileName, s9);
         //long tTime = System.currentTimeMillis();
-        //String2.writeToFile(fileName, s9);
+        //File2.writeToFile(fileName, s9);
         //String2.log("time=" + (System.currentTimeMillis() - tTime));
         //sb2 = null;
         //s9 = null;
@@ -2604,22 +2604,22 @@ public class TestUtil {
         String2.log("test simpleSearchAndReplace");
         int random = Math2.random(Integer.MAX_VALUE);
         Test.ensureEqual(
-            String2.writeToFile(utilDir + random + ".asc", "1\nNaNny\nhi, NaN!\n4\n"), 
+            File2.writeToFile88591(utilDir + random + ".asc", "1\nNaNny\nhi, NaN!\n4\n"), 
             "", "a");
-        String2.simpleSearchAndReplace(
-            utilDir + random + ".asc", utilDir + random + "b.asc",
+        File2.simpleSearchAndReplace(
+            utilDir + random + ".asc", utilDir + random + "b.asc", File2.ISO_8859_1,
             "NaN", "99999");
-        sar = String2.readFromFile(utilDir + random + "b.asc");
+        sar = File2.readFromFile88591(utilDir + random + "b.asc");
         Test.ensureEqual(sar[0], "", "b");
         Test.ensureEqual(sar[1], "1\n99999ny\nhi, 99999!\n4\n", "c");
         File2.delete(utilDir + random + "b.asc"); 
 
         //regexSearchAndReplace
         String2.log("test regexSearchAndReplace");
-        String2.regexSearchAndReplace(
-            utilDir + random + ".asc", utilDir + random + "b.asc",
+        File2.regexSearchAndReplace(
+            utilDir + random + ".asc", utilDir + random + "b.asc", File2.ISO_8859_1,
             "\\bNaN\\b", "99999");   // \b = word boundary
-        sar = String2.readFromFile(utilDir + random + "b.asc");
+        sar = File2.readFromFile88591(utilDir + random + "b.asc");
         Test.ensureEqual(sar[0], "", "b");
         Test.ensureEqual(sar[1], "1\nNaNny\nhi, 99999!\n4\n", "c");
         File2.delete(utilDir + random + ".asc"); 
@@ -2782,12 +2782,12 @@ public class TestUtil {
         
 
         //getClassPath  (with / separator and / at the end)
-        String2.log("test getClassPath   current=" + String2.getClassPath());
+        String2.log("test getClassPath   current=" + File2.getClassPath());
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
-        //Test.ensureEqual(String2.getClassPath(), "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/", "a");
+        //Test.ensureEqual(File2.getClassPath(), "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/", "a");
         //this is a wimpy test, but will work with all installations under Tomcat
-        Test.ensureEqual(String2.getClassPath().endsWith("/WEB-INF/classes/"), true, "a");
+        Test.ensureEqual(File2.getClassPath().endsWith("/WEB-INF/classes/"), true, "a");
 
         //toRational
         String2.log("test String2.toRational");
@@ -6043,17 +6043,17 @@ expected =
         //The following tests must all be done and must be done in this sequence.
         //make a temp file to work with  
         Test.ensureEqual(
-            String2.writeToFile(utilDir + "temp.txt", "This\nis a\n\ntest.\n"),
+            File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n"),
             "",
             "writeToFile");
 
         Test.ensureEqual(
-            String2.writeToFile(utilDir + "temp2.txt", "This\nis another\n\ntest.\n"),
+            File2.writeToFile88591(utilDir + "temp2.txt", "This\nis another\n\ntest.\n"),
             "",
             "writeToFile2");
 
         Test.ensureEqual(
-            String2.writeToFile(utilDir + "temp3.txt", "This\nis"),
+            File2.writeToFile88591(utilDir + "temp3.txt", "This\nis"),
             "",
             "writeToFile3");
 
@@ -6110,7 +6110,7 @@ expected =
         String2.log("test touch and getLastModified");
         Math2.gc(1000);
         Math2.gc(1000);
-        String2.writeToFile(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
+        File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
         long time1 = System.currentTimeMillis();
@@ -6158,12 +6158,12 @@ expected =
         String tTempDir = File2.addSlash(tempDir) + "comCohortUtilTest/";
         File2.makeDirectory(tTempDir); //throws Exception
         //make a file
-        String2.writeToFile(tTempDir + "test1.txt", "test1.txt");
+        File2.writeToFile88591(tTempDir + "test1.txt", "test1.txt");
         Math2.sleep(100);
         long midTime = System.currentTimeMillis();
         Math2.sleep(100);
         //make a file
-        String2.writeToFile(tTempDir + "test2.txt", "test2.txt");
+        File2.writeToFile88591(tTempDir + "test2.txt", "test2.txt");
         Math2.sleep(100);
         //delete based on midTime
         Test.ensureEqual(File2.deleteIfOld(tTempDir, midTime, true, true), 1, 
@@ -6230,37 +6230,37 @@ expected =
         String sar[];
         String shouldBe = "This is a UTF-8 file with special characters like [255], [8364], [968], [8644], and [24179][25104]![10]\n[end]";
 
-        sar = String2.readFromFile(utff + ".txt", String2.UTF_8, 1);
+        sar = File2.readFromFile(utff + ".txt", File2.UTF_8, 1);
         String2.log("?" + String2.annotatedString(sar[1]) + "?");
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        sar = String2.readFromFile(utff + ".txt.bz2", String2.UTF_8, 1);
+        sar = File2.readFromFile(utff + ".txt.bz2", File2.UTF_8, 1);
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        sar = String2.readFromFile(utff + ".txt.gz", String2.UTF_8, 1);
+        sar = File2.readFromFile(utff + ".txt.gz", File2.UTF_8, 1);
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
         //more complicated. not supported.
-        //sar = String2.readFromFile(sd + ".7z", String2.UTF_8, 1);
+        //sar = File2.readFromFile(sd + ".7z", File2.UTF_8, 1);
         //Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         //Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        sar = String2.readFromFile(sd + ".tar.gz", String2.UTF_8, 1);
+        sar = File2.readFromFile(sd + ".tar.gz", File2.UTF_8, 1);
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        sar = String2.readFromFile(sd + ".tgz", String2.UTF_8, 1);
+        sar = File2.readFromFile(sd + ".tgz", File2.UTF_8, 1);
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        sar = String2.readFromFile(sd + ".zip", String2.UTF_8, 1);
+        sar = File2.readFromFile(sd + ".zip", File2.UTF_8, 1);
         Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
-        //sar = String2.readFromFile(sd + ".zztop", String2.UTF_8, 1); //good: java's msg displays the file name
+        //sar = File2.readFromFile(sd + ".zztop", File2.UTF_8, 1); //good: java's msg displays the file name
         //Test.ensureEqual(sar[0], "", "error msg:" + sar[0]);
         //Test.ensureEqual(String2.annotatedString(sar[1]), shouldBe, "sar[1]=" + sar[1]);
 
@@ -6644,7 +6644,7 @@ expected =
     /** Test the speed of writing to hard drive. Does it block? No */
     public static void testFileWriteSpeed() throws Exception {
         String fileName = "c:/temp/TestUtilTestFileSpeed.txt";  
-        Writer writer = new BufferedWriter(new FileWriter(fileName)); //387  ~490 ms if not buffered
+        Writer writer = File2.getBufferedFileWriterUtf8(fileName); //387  ~490 ms if not buffered
         try {
             long time = System.currentTimeMillis();
             for (int i = 0; i < 1000000; i++) {
@@ -6667,7 +6667,7 @@ expected =
             sb.append("This is a test of a pretty long string that changes on each line " + i + "\n");
         String s = sb.toString();
         long time = System.currentTimeMillis();
-        String2.writeToFile(fileName, s);
+        File2.writeToFile88591(fileName, s);
         String2.log("TestUtil.testWriteToFile write 1000000 lines. time=" + 
             (System.currentTimeMillis() - time) + "ms (expected=3406ms which is really fast)");
     }
@@ -6677,7 +6677,7 @@ expected =
     public static void testReadFromFileSpeed() throws Exception {
         String fileName = "c:/temp/TestUtilTestFileSpeed.txt";
         long time = System.currentTimeMillis();
-        String s[] = String2.readFromFile(fileName);
+        String s[] = File2.readFromFile88591(fileName);
         if (s[0].length() > 0)
             String2.log(s[0]);
         String2.log("TestUtil.testReadFromFile nChar=" + s[1].length() + " time=" + 

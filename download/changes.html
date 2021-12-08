@@ -77,7 +77,7 @@ in ERDDAP version 2.16 (released 2021-??-??)</h2>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
   <li>CHANGES/BUG FIXES: Numerous small changes to the translation system
-    thanks to suggestions from reviewers.
+    thanks to suggestions from language-specific editors.
     Thanks to Mike Smit, Jennifer Sevadjian. 
     <br>&nbsp;
   <li>ADDED a proper disclaimer and attribution for Google Translate, 
@@ -97,6 +97,11 @@ in ERDDAP version 2.16 (released 2021-??-??)</h2>
   <li>TO DO: 
     <ul>
     <li>
+    <br>&nbsp;
+
+  <li>CHANGE: The log output files from GenerateDatasetsXml and DasDds are now
+    UTF-8, not the computer's default character set.
+    ERDDAP's email log file is now UTF-8, not the computer's default character set.
     <br>&nbsp;
 
   <li>NEW: When downloading files from AWS S3, ERDDAP's cacheFromUrl system 
@@ -615,7 +620,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
     After the slow initial reload, they will load quickly, as before. Please be patient.
     <br>&nbsp;
 
-  <li>THINGS YOU MUST TO DO: 
+  <li>THINGS YOU MUST DO: 
       <ul>
       <li>When you first run v2.10, some datasets may not load because ERDDAP is now 
         stricter about some metadata. As before, ERDDAP will email you a Daily Report 
@@ -649,7 +654,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
             <br>&lt;defaultAccessibleViaFiles&gt;true&lt;/defaultAccessibleViaFiles&gt;
           <li>(Optionally) Remove all the 
             <br>&lt;accessibleViaFiles&gt;true&lt;/accessibleViaFiles&gt;
-            since the default is now true.
+            in datasets.xml since the default is now true.
             <br>&nbsp;
           </ol>
 

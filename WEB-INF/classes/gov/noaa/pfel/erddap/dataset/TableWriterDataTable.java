@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -95,8 +96,8 @@ public class TableWriterDataTable extends TableWriter {
         //do firstTime stuff
 
         if (firstTime) {
-            writer = String2.getBufferedOutputStreamWriterUtf8(
-                outputStreamSource.outputStream(String2.UTF_8));
+            writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8));
             writer.write("{\"cols\":[");
             isTimeStamp = new boolean[nColumns];
             isCharOrString = new boolean[nColumns];

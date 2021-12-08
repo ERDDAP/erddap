@@ -2549,7 +2549,7 @@ expected =
 /* */
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2582,7 +2582,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -2728,7 +2728,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +  
@@ -2766,7 +2766,7 @@ expected =
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -2784,7 +2784,7 @@ expected =
             query = "deviceid,sampletime,cmap&deviceid=1001&sampletime>2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -2802,7 +2802,7 @@ expected =
             query = "deviceid,sampletime,ctext&ctext=\"text1\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,ctext\n" +
 ",UTC,\n" +
@@ -2821,7 +2821,7 @@ expected =
             query = "deviceid,sampletime,ctext&ctext>=\"text3\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,ctext\n" +
 ",UTC,\n" +
@@ -2839,7 +2839,7 @@ expected =
             query = "deviceid,cascii&deviceid=1001&distinct()";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
@@ -2858,7 +2858,7 @@ expected =
             query = "deviceid,sampletime,cascii&deviceid=1001&orderBy(\"cascii\")";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -2878,7 +2878,7 @@ expected =
             query = "deviceid,date&deviceid=1001";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date\n" +
 ",UTC\n" +
@@ -2896,7 +2896,7 @@ expected =
                 query = "deviceid,sampletime&sampletime<2013-01-01";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -2916,7 +2916,7 @@ expected =
             query = "&cint=-99";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_intNaN", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2934,7 +2934,7 @@ expected =
             query = "&cfloat=NaN";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_floatNaN", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2952,7 +2952,7 @@ expected =
             query = "&cboolean=NaN";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_booleanNaN", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2967,7 +2967,7 @@ expected =
             query = "&cboolean=1";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_boolean1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -2984,7 +2984,7 @@ expected =
             query = "&cset=~\".*set73.*\"";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_set73", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -3002,7 +3002,7 @@ expected =
                 query = "&deviceid=1001&sampletime<2014-01-01";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3027,7 +3027,7 @@ expected =
             "&deviceid=1001&sampletime>=2014-11-01&sampletime<=2014-11-01T03";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_dup", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "sampletime,depth,u\n" +
 "UTC,m,\n" +
@@ -3049,7 +3049,7 @@ expected =
                 query = "&deviceid>1001&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3105,7 +3105,7 @@ expected =
                 query = "&deviceid>1000&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "frac", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3127,7 +3127,7 @@ expected =
                 query = "&deviceid>1001&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "frac2", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3148,7 +3148,7 @@ expected =
             query = "deviceid,sampletime,cascii&deviceid=1001&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_frac3", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -3199,7 +3199,7 @@ expected =
 
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -3232,7 +3232,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3372,7 +3372,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_all", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
 ",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
@@ -3402,7 +3402,7 @@ expected =
             query = "deviceid,sampletime,cmap&sampletime>=2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_subset1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -3420,7 +3420,7 @@ expected =
             query = "deviceid,sampletime,cmap&sampletime>2014-11-01T03:02:03Z";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_subset2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cmap\n" +
 ",UTC,\n" +
@@ -3437,7 +3437,7 @@ expected =
             query = "deviceid,cascii&distinct()";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,cascii\n" +
 ",\n" +
@@ -3456,7 +3456,7 @@ expected =
             query = "deviceid,sampletime,cascii&orderBy(\"cascii\")";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_distinct", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,sampletime,cascii\n" +
 ",UTC,\n" +
@@ -3476,7 +3476,7 @@ expected =
             query = "deviceid,date";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_justkeys", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date\n" +
 ",UTC\n" +
@@ -3494,7 +3494,7 @@ expected =
                 query = "deviceid,sampletime&sampletime<2013-01-01";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata1", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3515,7 +3515,7 @@ expected =
                 query = "&sampletime<2014-01-01";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "_nodata2", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3535,7 +3535,7 @@ expected =
                 query = "&cascii=\"zztop\"";
                 tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                     dir, tedd.className() + "nodata3", ".csv"); 
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
                 expected = "Shouldn't get here";
                 Test.ensureEqual(results, expected, "\nresults=\n" + results);
             } catch (Throwable t) {
@@ -3592,7 +3592,7 @@ expected =
             //.dds
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, tedd.className() + "_Basic", ".dds"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -3613,7 +3613,7 @@ expected =
             tName = tedd.makeNewFileForDapQuery(language, null, null, "", 
                 dir, 
                 tedd.className() + "_Basic", ".das"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3732,7 +3732,7 @@ expected =
             query = "";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 tedd.className() + "_staticAll", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 //This shows that lat and lon just have different values for each combination of the
 //partition key (deviceid+date).
@@ -3761,7 +3761,7 @@ expected =
             query = "deviceid,date,latitude,longitude&distinct()";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query,
                 dir, tedd.className() + "_staticDistinct", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 //diagnostic messages show that ERDDAP got this data from the subset file.
 "deviceid,date,latitude,longitude\n" +
@@ -3780,7 +3780,7 @@ expected =
             query = "&latitude=34";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_staticCon1", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,time,depth,latitude,longitude,u,v\n" +
 ",UTC,UTC,m,degrees_north,degrees_east,,\n" +
@@ -3799,7 +3799,7 @@ expected =
             query = "&latitude>33.5";
             tName = tedd.makeNewFileForDapQuery(language, null, null, query, 
                 dir, tedd.className() + "_staticCon2", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected =  
 "deviceid,date,time,depth,latitude,longitude,u,v\n" +
 ",UTC,UTC,m,degrees_north,degrees_east,,\n" +

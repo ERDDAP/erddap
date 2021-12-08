@@ -908,7 +908,7 @@ expected =
         userDapQuery = "&Genus=\"Macrocystis\""; 
         tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".das"); 
-        results = String2.annotatedString(String2.directReadFrom88591File(
+        results = String2.annotatedString(File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
         //String2.log(results);
         expected = 
@@ -1167,7 +1167,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //.csv        
         tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className(), ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 //2010-07-20 -132.4223 changed to -132.422 in 3 places
@@ -1200,7 +1200,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude, time, ID, Genus, Species\n" +
@@ -1234,7 +1234,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         */
@@ -1244,7 +1244,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1253,7 +1253,7 @@ so standardize results table removes all but 1 record.
             "&longitude>-134&longitude<-131&latitude>53&latitude<55&time<1973-01-01"; //Carcharodon";
         tName = obis.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             obis.className() + "latlon", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -1284,7 +1284,7 @@ so standardize results table removes all but 1 record.
         userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
         tName = fishbase.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             fishbase.className() + "FishBaseGraph", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude, time, ID, Genus, Species, Citation\n" +
@@ -1299,7 +1299,7 @@ so standardize results table removes all but 1 record.
         //data for mapExample
         tName = fishbase.makeNewFileForDapQuery(language, null, null, "longitude,latitude&Genus=Carcharodon&longitude!=NaN", 
             EDStatic.fullTestCacheDirectory, fishbase.className() + "Map", ".csv");
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "longitude, latitude\n" +
@@ -1428,7 +1428,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
             userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
             tName = dukeSeamap.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, dukeSeamap.className() + "duke", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "longitude, latitude, time, ID, Genus, Species, Citation\n" +
@@ -1465,7 +1465,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01"; 
         tName = argos.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             argos.className() + "Argos", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = "";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);

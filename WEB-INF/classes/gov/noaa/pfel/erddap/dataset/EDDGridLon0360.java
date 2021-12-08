@@ -896,7 +896,7 @@ sb.append(
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_LT0_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 74];\n" +    //changes
@@ -917,7 +917,7 @@ sb.append(
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_LT0_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
@@ -955,7 +955,7 @@ expected =
         userDapQuery = "longitude[0:1000:9332]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_LT0_lon", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 180.00375, 187.50375, 195.00375, 202.50375, 210.00375, 217.50375, 225.00375, 232.50375, 240.00375, 247.50375, ";
@@ -965,7 +965,7 @@ expected =
         userDapQuery = "chla[(2015-03-16)][][(89.77152):5500:(-0.10875)][(180.00375):4500:(249.99375)]"; //[-179.99625:4500:-110.00625]
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_LT0_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 //from same request from cw erddap: erdVHNchlamday  
@@ -988,7 +988,7 @@ expected =
         userDapQuery = "chla[(2015-03-16)][][(10):500:(0)][(200):2000:(240)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_LT0_2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdVHNchlamday.htmlTable?chla%5B(2015-03-16):1:(2015-03-16)%5D%5B(0.0):1:(0.0)%5D%5B(10):500:(0)%5D%5B(-160):2000:(-120)%5D
@@ -1039,7 +1039,7 @@ expected =
  /* */
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_PM181_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 371];\n" +   //changes
@@ -1060,7 +1060,7 @@ expected =
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_PM181_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 "  longitude {\n" +
@@ -1098,7 +1098,7 @@ expected =
         userDapQuery = "longitude[(0.01875):1000:(359.98125)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_lon", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 0.018749999999981976, 37.51874999999998, 75.01874999999998, 112.51874999999998, 150.01874999999998, 187.51874999999998, 225.01874999999998, 262.51874999999995, 300.01874999999995, 337.51874999999995, ";
@@ -1108,7 +1108,7 @@ expected =
         userDapQuery = "longitude[(179.93):1:(180.07)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_lonNear0", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 179.94374999999997, 179.98125, 180.01874999999998, 180.05624999999998, ";
@@ -1118,7 +1118,7 @@ expected =
         userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.25625):1900:(-0.98)%5D
@@ -1146,7 +1146,7 @@ expected =
         userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
         expected =    
@@ -1164,7 +1164,7 @@ expected =
         userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
         expected =    
@@ -1183,7 +1183,7 @@ expected =
         userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.26):1900:(-0.98)%5D
         expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
@@ -1251,7 +1251,7 @@ expected =
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_PM180_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 latitude[latitude = 10801];\n" +
@@ -1268,7 +1268,7 @@ expected =
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_PM180_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 " longitude {\n" +
@@ -1305,7 +1305,7 @@ expected =
         userDapQuery = "longitude[(179.94):(180.06)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_lonNear0", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 179.93333333333334, 179.95, 179.96666666666664, 179.98333333333335, 180.0, 180.01666666666668, 180.03333333333333, 180.05, 180.06666666666666, ";
@@ -1315,7 +1315,7 @@ expected =
         userDapQuery = "longitude[(179.95):3:(180.05)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_lon_jumpa", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 179.95, 180.0, 180.05, ";
@@ -1325,7 +1325,7 @@ expected =
         userDapQuery = "longitude[(179.966):3:(180.03)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_lon_jumpb", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 179.96666666666664, 180.01666666666668, ";
@@ -1335,7 +1335,7 @@ expected =
         userDapQuery = "longitude[(179.983):3:(180.04)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180__jumpc", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 179.98333333333335, 180.03333333333333, ";
@@ -1345,7 +1345,7 @@ expected =
         userDapQuery = "longitude[(179.999):3:(180.05)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180__jumpd", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 180.0, 180.05, ";
@@ -1355,7 +1355,7 @@ expected =
         userDapQuery = "altitude[(40):60:(41)][(0):6600:(359.99)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):6600:(180.0)%5D
@@ -1376,7 +1376,7 @@ expected =
         userDapQuery = "altitude[(40):60:(41)][(0):6600:(120)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):6600:(180.0)%5D
@@ -1392,7 +1392,7 @@ expected =
         userDapQuery = "altitude[(40):60:(41)][(220):6600:(359.99)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(-140):6600:(0)%5D
@@ -1408,7 +1408,7 @@ expected =
         userDapQuery = "altitude[(40):60:(41)][(0):5400:(359.99)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM180_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 // https://coastwatch.pfeg.noaa.gov/erddap/griddap/etopo180.htmlTable?altitude%5B(40):60:(41)%5D%5B(0):5400:(180.0)%5D
@@ -1482,7 +1482,7 @@ expected =
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_Insert_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 1];\n" +
@@ -1501,7 +1501,7 @@ expected =
 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_Insert_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 "  longitude {\n" +
@@ -1534,7 +1534,7 @@ expected =
         userDapQuery = "longitude[(22.5):1:(27.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_lonNear0", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 22.5, 23.5, 24.5, 25.5, 26.5, 27.5, ";
@@ -1544,7 +1544,7 @@ expected =
         userDapQuery = "longitude[(327.5):1:(332.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_lonNear0", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, "\n", ", ");
         expected = 
 "longitude, degrees_east, 327.5, 328.5, 329.5, 330.5, 331.5, 332.5, ";
@@ -1554,7 +1554,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(359.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 //verified by cw erddap 
@@ -1604,7 +1604,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(20.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1L", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1619,7 +1619,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(160.5):20:(200.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1I", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1636,7 +1636,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(140.5):20:(160.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1Ib", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1651,7 +1651,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(340.5):10:(350.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_1R", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1666,7 +1666,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):20:(60.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1685,7 +1685,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(320.5):20:(340.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +
@@ -1700,7 +1700,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][(-33.5):(-34.5)][(0.5):340:(340.5)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_Insert_3b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,sst\n" +

@@ -360,8 +360,8 @@ public class StringArray extends PrimitiveArray {
         try {
             //open the file
             if (charset == null || charset.length() == 0)
-                charset = String2.ISO_8859_1;
-            bufferedWriter = String2.getBufferedOutputStreamWriter(
+                charset = File2.ISO_8859_1;
+            bufferedWriter = File2.getBufferedWriter(
                 new FileOutputStream(fileName, append), charset);
                          
             //write the text to the file

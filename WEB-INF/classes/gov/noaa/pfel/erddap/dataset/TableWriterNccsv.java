@@ -9,6 +9,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -83,8 +84,8 @@ public class TableWriterNccsv extends TableWriter {
         if (firstTime) {
 
             //write the header
-            writer = String2.getBufferedOutputStreamWriter88591(
-                outputStreamSource.outputStream(String2.ISO_8859_1));
+            writer = File2.getBufferedWriter88591(
+                outputStreamSource.outputStream(File2.ISO_8859_1));
 
             //write the global attributes   (ensureCompatibly added newHistory)
             writer.write(globalAttributes.toNccsvString(String2.NCCSV_GLOBAL));

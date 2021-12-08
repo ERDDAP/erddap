@@ -493,7 +493,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //*** test getting das for entire dataset
         String2.log("\n****************** EDDGridFromBinaryFile test entire dataset\n");
         tName = gridDataset.makeNewFileForDapQuery(language, null, "", dir, baseName + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 //"Attributes {\n" +
@@ -532,7 +532,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //.csv
         String2.log("\n*** EDDGridFromDap test get .CSV axis data\n");
         tName = gridDataset.makeNewFileForDapQuery(language, null, "time[0:100:1000]", dir, baseName + "_Axis", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         //SSR.displayInBrowser("file://" + dir + tName);
         expected = 

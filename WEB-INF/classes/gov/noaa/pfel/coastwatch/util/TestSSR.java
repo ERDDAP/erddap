@@ -34,7 +34,7 @@ import java.util.Properties;
  */
 public class TestSSR {
 
-    static String classPath = String2.getClassPath(); //with / separator and / at the end
+    static String classPath = File2.getClassPath(); //with / separator and / at the end
 
     /**
      * Run all of the tests which are operating system independent.
@@ -124,14 +124,14 @@ public class TestSSR {
 
         //dosShell
         String2.log("test dosShell");
-        String tempGif = String2.webInfParentDirectory() + //with / separator and / at the end
+        String tempGif = File2.webInfParentDirectory() + //with / separator and / at the end
             "images/temp.gif";
         File2.delete(tempGif);
         try {
             Test.ensureEqual(
                 String2.toNewlineString(SSR.dosShell(
                     "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" " +
-                    String2.webInfParentDirectory() + //with / separator and / at the end
+                    File2.webInfParentDirectory() + //with / separator and / at the end
                         "images/subtitle.jpg " +
                     tempGif, 10).toArray()),
                 "", "dosShell a");
@@ -175,7 +175,7 @@ public class TestSSR {
         String zipName = "TestSSR.zip";
         String fileName = "TestSSR.txt";
         //write a longText file
-        Test.ensureEqual(String2.writeToFile(zipDir + fileName, longText), "", "SSR.zip a");
+        Test.ensureEqual(File2.writeToFile88591(zipDir + fileName, longText), "", "SSR.zip a");
         //make the zip file
         File2.delete(zipDir + zipName);
         long time1 = System.currentTimeMillis();
@@ -188,7 +188,7 @@ public class TestSSR {
             false, 10, null); //false 'ignoreDirectoryInfo', but there is none
         time2 = System.currentTimeMillis() - time2;
         //ensure results are as expected
-        String[] results = String2.readFromFile(zipDir + fileName);
+        String[] results = File2.readFromFile88591(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");
         String2.log("zip+unzip time=" + (time1 + time2) + "ms  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
@@ -198,7 +198,7 @@ public class TestSSR {
         //zip with directory info
         String2.log("\n* test zip with dir info" + testMB);
         //write a longText file
-        Test.ensureEqual(String2.writeToFile(zipDir + fileName, longText), "", "SSR.zip a");
+        Test.ensureEqual(File2.writeToFile88591(zipDir + fileName, longText), "", "SSR.zip a");
         //make the zip file
         File2.delete(zipDir + zipName);
         time1 = System.currentTimeMillis();
@@ -211,7 +211,7 @@ public class TestSSR {
             false, 10, null); //false 'ignoreDirectoryInfo'
         time2 = System.currentTimeMillis() - time2;
         //ensure results are as expected
-        results = String2.readFromFile(zipDir + fileName);
+        results = File2.readFromFile88591(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");  
         String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + 
@@ -227,7 +227,7 @@ public class TestSSR {
             String gzipName = "TestSSRG.txt.gz";
             fileName = "TestSSRG.txt";
             //write a longText file
-            Test.ensureEqual(String2.writeToFile(gzipDir + fileName, longText), "", "SSR.gz a");
+            Test.ensureEqual(File2.writeToFile88591(gzipDir + fileName, longText), "", "SSR.gz a");
             //make the gzip file
             File2.delete(gzipDir + gzipName);
             time1 = System.currentTimeMillis();
@@ -240,7 +240,7 @@ public class TestSSR {
                 true, 10); //false 'ignoreDirectoryInfo'
             time2 = System.currentTimeMillis() - time2;
             //ensure results are as expected
-            results = String2.readFromFile(gzipDir + fileName);
+            results = File2.readFromFile88591(gzipDir + fileName);
             Test.ensureEqual(results[0], "", "SSR.gz b");
             Test.ensureEqual(results[1], longText, "SSR.z c");
             String2.log("gzip+ungzip time=" + (time1 + time2) + 
@@ -303,34 +303,34 @@ public class TestSSR {
         //getFirstLineStartsWith
         String2.log("test getFirstLineStartsWith");
         String tFileName = classPath + "testSSR.txt";
-        String2.writeToFile(tFileName, "This is\na file\nwith a few lines.");
-        Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, "with "), "with a few lines.", "a");
-        Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, "hi "), null, "b");
+        File2.writeToFile88591(tFileName, "This is\na file\nwith a few lines.");
+        Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "with "), "with a few lines.", "a");
+        Test.ensureEqual(SSR.getFirstLineStartsWith(tFileName, File2.ISO_8859_1, "hi "), null, "b");
 
         //getFirstLineMatching
         String2.log("test getFirstLineMatching");
-        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, ".*?i.*"),        "This is",           "a"); //find first of many matches
-        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, "^a.*"),          "a file",            "b"); //start of line
-        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, ".*?\\sfew\\s.*"),"with a few lines.", "c"); //containing
-        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, "q"),             null,                "d"); //no match
+        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?i.*"),        "This is",           "a"); //find first of many matches
+        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "^a.*"),          "a file",            "b"); //start of line
+        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, ".*?\\sfew\\s.*"),"with a few lines.", "c"); //containing
+        Test.ensureEqual(SSR.getFirstLineMatching(tFileName, File2.ISO_8859_1, "q"),             null,                "d"); //no match
 
         Test.ensureTrue(File2.delete(tFileName), "delete " + tFileName);
 
         //getContextDirectory
         String2.log("test getContextDirectory current=" + 
-            String2.webInfParentDirectory()); //with / separator and / at the end
+            File2.webInfParentDirectory()); //with / separator and / at the end
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
         //ensureEqual(String2.getContextDirectory(), //with / separator and / at the end
         //  "C:/programs/_tomcat/webapps/cwexperimental/", "a");
         //wimpy test, but works on all computers
-        Test.ensureNotNull(String2.webInfParentDirectory(), //with / separator and / at the end
+        Test.ensureNotNull(File2.webInfParentDirectory(), //with / separator and / at the end
             "contextDirectory");
 
         //getTempDirectory
         String2.log("test getTempDirectory current=" + SSR.getTempDirectory());
         //wimpy test
-        Test.ensureEqual(SSR.getTempDirectory(), String2.webInfParentDirectory() + "WEB-INF/temp/", "a");
+        Test.ensureEqual(SSR.getTempDirectory(), File2.webInfParentDirectory() + "WEB-INF/temp/", "a");
 
 
         //done 

@@ -1427,7 +1427,7 @@ String expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1a", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits\n" +
@@ -1443,7 +1443,7 @@ String expected =
         userDapQuery = "line_station";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1b", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "line_station\n" +
@@ -1480,7 +1480,7 @@ String expected =
         userDapQuery = "traj,obs,time,longitude,latitude,temp,ve,vn&traj<26.5&time<2011-02-15T00:05";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1Kevin20130109a", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "traj,obs,time,longitude,latitude,temp,ve,vn\n" +
@@ -1494,7 +1494,7 @@ String expected =
         userDapQuery = "traj,obs,time,longitude,latitude,temp,ve,vn&traj<6&time>=2011-09-30T17:50";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1Kevin20130109a", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "traj,obs,time,longitude,latitude,temp,ve,vn\n" +
@@ -1648,7 +1648,7 @@ String expected =
         //.dds    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".dds"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1671,7 +1671,7 @@ String expected =
         //.das    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger", ".das"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes \\{\n" +
@@ -1932,7 +1932,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
         userDapQuery = "&time<=2002-03-28T22:00:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger1", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
@@ -1946,7 +1946,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
         userDapQuery = "&time>=2014-01-26T15:00:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger2", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "station,longitude,latitude,depth,time,time_created,time_modified,significant_wave_height,significant_wave_height_qc,dominant_wave_period,dominant_wave_period_qc\n" +
@@ -1959,7 +1959,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
         userDapQuery = "station&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_bridger3", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "station\n" +
@@ -2013,7 +2013,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
         //.dds    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_7SampleDimensions", ".dds"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2045,7 +2045,7 @@ today + "T.{8}Z http://localhost:8080/cwexperimental/tabledap/UMaineAccB01.das\"
         //.das    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_7SampleDimensions", ".das"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -2243,7 +2243,7 @@ expected =
         userDapQuery = "&time=1991-05-02T02:08:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_7SampleDimensions_all", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "wod_unique_cast,latitude,longitude,time,Access_no,Project,Platform,Institute," +
@@ -2267,7 +2267,7 @@ expected =
             "&time=1991-05-02T02:08:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_7SampleDimensions_outerInner", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "wod_unique_cast,latitude,longitude,time,Temperature,crs,WODf,WODfd\n" +
@@ -2283,7 +2283,7 @@ expected =
             "&time=1991-05-02T02:08:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_7SampleDimensions_outer", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "wod_unique_cast,latitude,longitude,time,crs,WODf,WODfd\n" +
@@ -2297,7 +2297,7 @@ expected =
             "&time=1991-05-02T02:08:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_7SampleDimensions_scalar", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "crs,WODf,WODfd\n" +
@@ -2310,7 +2310,7 @@ expected =
             "&time=1991-05-02T02:08:00Z";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             testCacheDir, eddTable.className() + "_7SampleDimensions_inner", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "Temperature\n" +

@@ -1858,7 +1858,7 @@ String expected =
         //.dds
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 //fvEmptyString wasn't allowed before v2.10
 "Dataset {\n" +
@@ -1884,7 +1884,7 @@ String expected =
         //.das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
         expected = 
 "Attributes {\n" +
@@ -2000,7 +2000,7 @@ String expected =
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,time,day,lastModified,size,fileType,fixedTime,latitude,longitude,mySpecialString,fvEmptyString,fromScript\n" +
 "m,,,UTC,,UTC,bytes,,UTC,degrees_north,degrees_east,,,\n" +
@@ -2052,7 +2052,7 @@ String expected =
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(language, null, null, "name,day,size&day=4", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "name,day,size\n" +
 ",,bytes\n" +
@@ -2063,7 +2063,7 @@ String expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "five,fixedTime,latitude,longitude,mySpecialString,fvEmptyString", 
             dir, tedd.className() + "_fixed", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log("dir+tName=" + dir+tName);
         expected = 
 "five,fixedTime,latitude,longitude,mySpecialString,fvEmptyString\n" +
@@ -2095,7 +2095,7 @@ String expected =
         //.dds
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2114,7 +2114,7 @@ String expected =
         //.das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", "[TIME]");
         expected = 
 "Attributes {\n" +
@@ -2187,7 +2187,7 @@ String expected =
         //get all as .csv
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "five,url,name,startMonth,endMonth,lastModified,size,fileType\n" +
 "m,,,UTC,UTC,UTC,bytes,\n" +
@@ -2216,7 +2216,7 @@ String expected =
         //a constraint on an extracted variable, and fewer results variables
         tName = tedd.makeNewFileForDapQuery(language, null, null, "name,startMonth,size&size=1098815646", dir, 
             tedd.className() + "_subset", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "name,startMonth,size\n" +
 ",UTC,bytes\n" +
@@ -2658,7 +2658,7 @@ String expected =
         
         tName = edd.makeNewFileForDapQuery(language, null, null, "", //entire dataset
             dir, edd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +
@@ -2755,7 +2755,7 @@ String expected =
 
         tName = edd.makeNewFileForDapQuery(language, null, null, "&url=~\".*-L1b-.*\"", 
             dir, edd.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "url,name,lastModified,size,fileType\n" +
 ",,UTC,bytes,\n" +

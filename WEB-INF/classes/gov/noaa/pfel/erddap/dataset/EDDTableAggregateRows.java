@@ -573,7 +573,7 @@ public class EDDTableAggregateRows extends EDDTable{
         //das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -730,7 +730,7 @@ expected =
         //das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -752,7 +752,7 @@ expected =
         query = "prefix,station,latitude,longitude&distinct()";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfo", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "prefix,station,latitude,longitude\n" +
 "m,,degrees_north,degrees_east\n" +
@@ -766,7 +766,7 @@ expected =
         query = "prefix,station,latitude,longitude&distinct()&longitude<-80";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfoLT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "prefix,station,latitude,longitude\n" +
 "m,,degrees_north,degrees_east\n" +
@@ -777,7 +777,7 @@ expected =
         query = "prefix,station,latitude,longitude&distinct()&longitude>-80";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "stationInfoGT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "prefix,station,latitude,longitude\n" +
 "m,,degrees_north,degrees_east\n" +
@@ -790,7 +790,7 @@ expected =
         query = "&time=2014-01-01";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,prefix,longitude,latitude,time,wd,wspd,atmp,wtmp\n" +
 ",m,degrees_east,degrees_north,UTC,degrees_true,m s-1,degree_C,degree_C\n" +
@@ -804,7 +804,7 @@ expected =
         query = "&time=2014-01-01&longitude<-80";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "dataLT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,prefix,longitude,latitude,time,wd,wspd,atmp,wtmp\n" +
 ",m,degrees_east,degrees_north,UTC,degrees_true,m s-1,degree_C,degree_C\n" +
@@ -815,7 +815,7 @@ expected =
         query = "&time=2014-01-01&longitude>-80";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "dataGT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,prefix,longitude,latitude,time,wd,wspd,atmp,wtmp\n" +
 ",m,degrees_east,degrees_north,UTC,degrees_true,m s-1,degree_C,degree_C\n" +
@@ -828,7 +828,7 @@ expected =
         query = "&time=2014-01-01&prefix=4103";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4103", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,prefix,longitude,latitude,time,wd,wspd,atmp,wtmp\n" +
 ",m,degrees_east,degrees_north,UTC,degrees_true,m s-1,degree_C,degree_C\n" +
@@ -839,7 +839,7 @@ expected =
         query = "&time=2014-01-01&prefix=4102";
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "data4102", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,prefix,longitude,latitude,time,wd,wspd,atmp,wtmp\n" +
 ",m,degrees_east,degrees_north,UTC,degrees_true,m s-1,degree_C,degree_C\n" +

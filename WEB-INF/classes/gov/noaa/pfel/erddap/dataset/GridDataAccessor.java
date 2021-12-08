@@ -15,6 +15,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -288,11 +289,11 @@ public class GridDataAccessor {
             //dataAttributes NEEDS actual_range, and ... , but not available, so remove...
             dataAttributes[dv].remove("actual_range");
 
-            dataEncodingLC[dv] = dataAttributes[dv].getString(String2.ENCODING);
+            dataEncodingLC[dv] = dataAttributes[dv].getString(File2.ENCODING);
             if (String2.isSomething(dataEncodingLC[dv])) {
-                if (dataEncodingLC[dv].equals(String2.UTF_8_LC) ||
-                    dataEncodingLC[dv].equals(String2.ISO_8859_1_LC)) 
-                    dataAttributes[dv].remove(String2.ENCODING);
+                if (dataEncodingLC[dv].equals(File2.UTF_8_LC) ||
+                    dataEncodingLC[dv].equals(File2.ISO_8859_1_LC)) 
+                    dataAttributes[dv].remove(File2.ENCODING);
                 //else leave _Encoding in place
             }
             //leave String2.CHARSET in place
@@ -736,11 +737,11 @@ class GetChunkCallable implements Callable {
                     continue;
 
                 //decode UTF-8
-                if (gda.dataEncodingLC[dv].equals(String2.UTF_8_LC)) {
+                if (gda.dataEncodingLC[dv].equals(File2.UTF_8_LC)) {
                     ((StringArray)partialResults[dv]).fromUTF8();
 
                 //unchanged ISO-8859-1 becomes the first page of unicode encoded strings
-                //} else if (enc.equals(String2.ISO_8859_1_LC)) {
+                //} else if (enc.equals(File2.ISO_8859_1_LC)) {
                     //nothing to do
 
                 } //other encodings are left in place

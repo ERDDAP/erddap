@@ -84,7 +84,7 @@ public class SimpleXMLReader {
             //make the reader with the proper encoding
             //String2.log("SimpleXMLReader constructor found encoding=" + encoding);
             reader = new BufferedReader(encoding.length() == 0?
-                new InputStreamReader(inputStream, String2.UTF_8) :
+                new InputStreamReader(inputStream, File2.UTF_8) :
                 new InputStreamReader(inputStream, encoding));
         } catch (Exception e) {
             try {inputStream.close(); } catch (Exception e2) {}

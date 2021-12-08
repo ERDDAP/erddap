@@ -8,6 +8,7 @@ import com.cohort.array.CharArray;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -91,11 +92,11 @@ public class TableWriterDodsAscii extends TableWriter {
         if (firstTime) {
 
             //write the dds    //DAP 2.0, 7.2.3
-            OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
+            OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
             table.saveAsDDS(outputStream, sequenceName);  
 
             //see OpendapHelper.EOL for comments
-            writer = String2.getBufferedOutputStreamWriter88591(outputStream); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            writer = File2.getBufferedWriter88591(outputStream); //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             writer.write("---------------------------------------------" + 
                 OpendapHelper.EOL); //this exactly mimics the example
 

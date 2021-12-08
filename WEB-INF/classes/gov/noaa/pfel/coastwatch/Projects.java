@@ -2540,7 +2540,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
         String url = "http://biloxi-bay.ssc.hpc.msstate.edu/dods-bin/dapnav_main.py/WCOS/nmsp/wcos/"; 
         String fileName = "c:/temp/ssc.xml";
 
-        Writer writer = new BufferedWriter(new FileWriter(fileName));
+        Writer writer = File2.getBufferedFileWriterUtf8(fileName);
         try {
             oneSsc(writer,
                 "http://biloxi-bay.ssc.hpc.msstate.edu",
@@ -2548,7 +2548,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
         } finally {
             writer.close();
         }
-        String2.log(String2.readFromFile(fileName)[1]);
+        String2.log(File2.readFromFileUtf8(fileName)[1]);
         String2.log("fileName=" + fileName);
 
     }
@@ -2718,7 +2718,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
         for (int year = startYear; year <= stopYear; year++) {
             String name = preName + year;
             String2.log("writing " + dir + name + ".ncml");
-            Writer writer = new BufferedWriter(new FileWriter(dir + name + ".ncml"));
+            Writer writer = File2.getBufferedFileWriterUtf8(dir + name + ".ncml");
             try {
                 StringBuilder values = new StringBuilder();
                 for (int i = 1; i <= 12; i++)
@@ -3317,11 +3317,11 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
         String[] list = RegexFilenameFilter.recursiveFullNameList(
             "c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/ucar4", ".*\\.java", false);
         for (int i = 0; i < list.length; i++) {
-            String content[] = String2.readFromFile(list[i]);
+            String content[] = File2.readFromFile(list[i]);
             if (content[0].length() == 0) {
                 String2.log("processing " + list[i]);
                 content[1] = String2.replaceAll(content[1], "ucar.", "ucar4.");
-                String2.writeToFile(list[i], content[1]);
+                File2.writeToFile(list[i], content[1]);
             } else {
                 String2.log(content[0]);
             } 
@@ -3645,7 +3645,7 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1, 
+        dataTable.readASCII(sourceDir + sourceCsv, File2.ISO_8859_1, 
             "", "", //skipHeaderToRegex, skipLinesRegex,
             -1, 0, "", 
             null, null, null, null, false); //don't simplify
@@ -3757,7 +3757,7 @@ public static void testJanino() throws Exception {
         //read the latLon file
         String2.log("\nreading the latLon source file");
         Table latLonTable = new Table();
-        latLonTable.readASCII(sourceDir + sourceLatLon, String2.ISO_8859_1,
+        latLonTable.readASCII(sourceDir + sourceLatLon, File2.ISO_8859_1,
             "", "", -1, 0, "", null, null, null, null, true);
         Test.ensureEqual(latLonTable.nColumns(), latLonColNames.length, "latLonTable.nColumns() != latLonColNames.length");
         for (int col = 0; col < latLonColNames.length; col++) {
@@ -3907,7 +3907,7 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        dataTable.readASCII(sourceDir + sourceCsv, String2.ISO_8859_1,  
+        dataTable.readASCII(sourceDir + sourceCsv, File2.ISO_8859_1,  
             "", "", //skipHeaderToRegex, skipLinesRegex,
             -1, 0, "", null, null, null, null, false);  //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
@@ -4010,7 +4010,7 @@ public static void testJanino() throws Exception {
         String2.log("\nreading the marCat source file");
         Table marCatTable = new Table();
 
-        marCatTable.readASCII(sourceDir + sourceMarCat, String2.ISO_8859_1,
+        marCatTable.readASCII(sourceDir + sourceMarCat, File2.ISO_8859_1,
             "", "", -1, 0, "", null, null, null, null, true);
         Test.ensureEqual(marCatTable.nColumns(), marCatColNames.length, "marCatTable.nColumns() != marCatColNames.length");
         for (int col = 0; col < marCatColNames.length; col++) {
@@ -6367,7 +6367,7 @@ project)
         for (int f = 0; f < fileNames.length; f++) {
             try {
                 String2.log("\n#" + f + " " + fileNames[f]);
-                ArrayList<String> lines = String2.readLinesFromFile(inDir + fileNames[f], null, 2);
+                ArrayList<String> lines = File2.readLinesFromFile(inDir + fileNames[f], null, 2);
 
                 //BOTTLE,20030711WHPSIODMB
                 //#code : jjward hyd_to_exchange.pl 
@@ -6942,7 +6942,7 @@ project)
     public static String makeNetcheckErddapTests(String erddapUrl) throws Throwable {
         Table table = new Table();
         erddapUrl += "tabledap/allDatasets.csv0?datasetID";
-        ArrayList<String> rows = SSR.getUrlResponseArrayList(erddapUrl); //default is String2.ISO_8859_1
+        ArrayList<String> rows = SSR.getUrlResponseArrayList(erddapUrl); //default is File2.ISO_8859_1
         int nRows = rows.size();
         rows.sort(String2.STRING_COMPARATOR_IGNORE_CASE);
         StringBuilder sb = new StringBuilder();
@@ -6984,7 +6984,7 @@ project)
      */
     public static void fixKeywords(String fileName) throws Exception {
         String2.log("fixKeywords " + fileName);
-        String charset = String2.ISO_8859_1;
+        String charset = File2.ISO_8859_1;
         String attKeywords = "<att name=\"keywords\">";
         int attKeywordsLength = attKeywords.length();
         StringArray lines = StringArray.fromFile(fileName, charset);
@@ -7804,7 +7804,7 @@ towTypesDescription);
             lNames.add(info[n++]);
         }
 
-        String fromFile[] = String2.readFromFile(inFile);
+        String fromFile[] = File2.readFromFile88591(inFile);
         if (fromFile[0].length() > 0)
             throw new RuntimeException(fromFile[0]);
         String lines = String2.replaceAll(fromFile[1], "\t", ",");
@@ -8079,7 +8079,7 @@ towTypesDescription);
         HashSet<String> others = new HashSet();
         String source;
 
-        BufferedReader in = File2.getDecompressedBufferedFileReader(datasetsXmlFileName, String2.ISO_8859_1); 
+        BufferedReader in = File2.getDecompressedBufferedFileReader(datasetsXmlFileName, File2.ISO_8859_1); 
         try {
             while ((source = in.readLine()) != null) {
                 source = source.trim();
@@ -8344,7 +8344,7 @@ towTypesDescription);
 
         //read the outer files
         Table outer = new Table();
-        outer.readASCII(dir + outerName + fileExtension, String2.ISO_8859_1,
+        outer.readASCII(dir + outerName + fileExtension, File2.ISO_8859_1,
             "", "", 0, 1, "\t", 
             null, null, null, null, false); //simplify
         Test.ensureEqual(outer.getColumnNamesCSVString(),
@@ -8423,7 +8423,7 @@ towTypesDescription);
 
         //read inner table
         Table inner = new Table();
-        inner.readASCII(dir + innerName + fileExtension, String2.ISO_8859_1,
+        inner.readASCII(dir + innerName + fileExtension, File2.ISO_8859_1,
             "", "", 0, 1, "\t", 
             null, null, null, null, false); //simplify
         for (int coli = 0; coli < inner.nColumns(); coli++) 
@@ -8473,7 +8473,7 @@ towTypesDescription);
         for (int f = 0; f < tFileNames.length; f++) {
 
             Table table = new Table();
-            table.readASCII(tFileNames[f], String2.ISO_8859_1,
+            table.readASCII(tFileNames[f], File2.ISO_8859_1,
                 "", "", 0, 2, "", null, null, null, null, false); //simplify
             Test.ensureEqual(table.getColumnNamesCSVString(),
                 headerMode?
@@ -8614,7 +8614,7 @@ towTypesDescription);
 "    <netcdf location=\"" + fileName + ".hdf\" coordValue=\"" + daysSince + "\"/>\n" +
 "  </aggregation>\n" +
 "</netcdf>\n";
-            String2.writeToFile(dir + fileName + ".ncml", contents);
+            File2.writeToFileUtf8(dir + fileName + ".ncml", contents);
 
             //increment seconds
             seconds += increment * Calendar2.SECONDS_PER_DAY;
@@ -8861,8 +8861,8 @@ towTypesDescription);
                         Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
                 String2.log(yj + " " + daysSince);      
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VHncml/" +
-                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncml1day/V2014365.ncml is
 <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -8913,8 +8913,8 @@ towTypesDescription);
                     daysSince--; //imperfect
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VHncml/" +
-                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncml8day/V20120012012008.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -8958,8 +8958,8 @@ towTypesDescription);
                         firstDay.getTimeInMillis()/1000));
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VHncml/" +
-                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VHncml/chla/ncmlmon/V20120012012031.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9002,8 +9002,8 @@ towTypesDescription);
                         Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
                 String2.log(yj + " " + daysSince);      
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2ncml/" +
-                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncml1day/V2014365.ncml is
 <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9055,8 +9055,8 @@ towTypesDescription);
                     daysSince--; //imperfect
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2ncml/" +
-                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncml8day/V20120012012008.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9102,8 +9102,8 @@ towTypesDescription);
                         firstDay.getTimeInMillis()/1000));
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2ncml/" +
-                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2ncml/chla/ncmlmon/V20120012012031.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9146,8 +9146,8 @@ towTypesDescription);
                         Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
                 String2.log(yj + " " + daysSince);      
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH3ncml/" +
-                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncml1day/V2014365.ncml is
 <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9199,8 +9199,8 @@ towTypesDescription);
                     daysSince--; //imperfect
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH3ncml/" +
-                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncml8day/V20120012012008.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9246,8 +9246,8 @@ towTypesDescription);
                         firstDay.getTimeInMillis()/1000));
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH3ncml/" +
-                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH3ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH3ncml/chla/ncmlmon/V20120012012031.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9290,8 +9290,8 @@ towTypesDescription);
                         Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
                 String2.log(yj + " " + daysSince);      
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2018ncml/" +
-                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncml1day/V2014365.ncml is
 <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9343,8 +9343,8 @@ towTypesDescription);
                     daysSince--; //imperfect
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2018ncml/" +
-                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncml8day/V20120012012008.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9390,8 +9390,8 @@ towTypesDescription);
                         firstDay.getTimeInMillis()/1000));
                 String2.log(yj1 + " " + yj2 + " " + daysSince);
                 for (int var = 0; var < varDirNames.length; var++) {
-                    Writer w = new BufferedWriter(new FileWriter("/content/scripts/VH2018ncml/" +
-                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml"));
+                    Writer w = File2.getBufferedFileWriterUtf8("/content/scripts/VH2018ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
                     w.write(
 /* C:/content/scripts/VH2018ncml/chla/ncmlmon/V20120012012031.ncml is
  <netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
@@ -9503,7 +9503,7 @@ towTypesDescription);
         String regex = "\\d{14}-NODC.*\\.nc";
 
         //String names[] = RegexFilenameFilter.list(dir, regex);
-        ArrayList<String> names = String2.readLinesFromFile(
+        ArrayList<String> names = File2.readLinesFromFile(
             "/u00/satellite/PH2/" + sstdn + "/names.txt", null, 1);
 
         //for each file
@@ -9518,7 +9518,7 @@ towTypesDescription);
                 1000.0) + 12 * Calendar2.SECONDS_PER_HOUR; //center on noon of that day
 
             String2.log("writing " + dir + tName + ".ncml " + epochSeconds);
-            Writer writer = new BufferedWriter(new FileWriter(dir + tName + ".ncml"));
+            Writer writer = File2.getBufferedFileWriterUtf8(dir + tName + ".ncml");
             StringBuilder values = new StringBuilder();
             writer.write(
 "<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
@@ -9558,7 +9558,7 @@ towTypesDescription);
         for (int year = 2019; year <= 2019; year++) {
             for (int daynight = 0; daynight < 2; daynight++) {
 
-                ArrayList<String> names = String2.readLinesFromFile(
+                ArrayList<String> names = File2.readLinesFromFile(
                     ncmlDir + dayNight[daynight] + "names" + year + ".txt", null, 1);
                 HashMap<String,String> hm = new HashMap();
                 //for each file
@@ -9582,7 +9582,7 @@ towTypesDescription);
                            "\n" + tName);
 
                     String2.log("writing " + ncmlDir + dayNight[daynight] + "Ncml/" +tName + ".ncml " + epochSeconds);
-                    Writer writer = new BufferedWriter(new FileWriter(ncmlDir + dayNight[daynight] + "Ncml/" +tName + ".ncml"));
+                    Writer writer = File2.getBufferedFileWriterUtf8(ncmlDir + dayNight[daynight] + "Ncml/" +tName + ".ncml");
                     try {
                         writer.write(
         "<netcdf xmlns='https://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'\n" +
@@ -9742,7 +9742,7 @@ towTypesDescription);
 
         //read the csv
         Table table = new Table();
-        table.readASCII(sourceFullName, String2.ISO_8859_1,
+        table.readASCII(sourceFullName, File2.ISO_8859_1,
             "", "", 0, 1, ",",
             null, null, null, null, true);  //simplify
         String2.log("acousticCsvToNc " + sourceFullName + "\n" +
@@ -9965,7 +9965,7 @@ towTypesDescription);
             if (!names.get(f).matches(fileNameRegex))
                 continue;
             String2.log(dirs.get(f) + "   " + names.get(f));
-            ArrayList<String> lines = String2.readLinesFromFile(dirs.get(f) + names.get(f), String2.UTF_8, 1);
+            ArrayList<String> lines = File2.readLinesFromFile(dirs.get(f) + names.get(f), File2.UTF_8, 1);
             int nLines = lines.size();
             String name = null, deprecated = null, description = null, documentation = null, contact = null,
                 managedBy = null, updateFrequency = null, license = null,
@@ -10254,7 +10254,7 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
         String2.log("*** Projects.splitOBIS(" + sourceFileName + ", " + destDirectory + ")");
         File2.makeDirectory(destDirectory);
         File2.deleteAllFiles(destDirectory, true, false); //recursive, deleteEmptySubdirectories
-        BufferedReader in = File2.getDecompressedBufferedFileReader(sourceFileName, String2.UTF_8);
+        BufferedReader in = File2.getDecompressedBufferedFileReader(sourceFileName, File2.UTF_8);
         int nLines = 1;
         int nSuccess = 0; 
         int nFail = 0;
@@ -10370,7 +10370,7 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
             lines = colNamesLine + "\n" + lines;
         }
 
-        String err = String2.appendFile(fileName, lines, String2.UTF_8);
+        String err = File2.appendFile(fileName, lines, File2.UTF_8);
         if (err.length() > 0) {
             String2.log("Error at line #" + (nLines-1) + " while writing content to " + fileName + ": " + err);
             return false;

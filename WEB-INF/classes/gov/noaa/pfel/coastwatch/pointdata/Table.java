@@ -235,7 +235,7 @@ public class Table  {
      * <br>Command reference: in Bob's /programs/igor/ or 
      *   https://www.wavemetrics.net/doc/igorman/V-01%20Reference.pdf
      */
-    public final static String IgorCharset = String2.ISO_8859_1; //they are vague, but it is 1-byte, not UTF variant
+    public final static String IgorCharset = File2.ISO_8859_1; //they are vague, but it is 1-byte, not UTF variant
     public final static String IgorNanString = "NaN"; //Igor Text File Format: use "NaN"
     public final static String IgorEndOfLine = "\r";  //Igor Text File Format: "a carriage return at the end of the line"
     //Igor Text File Format: "use the standard Igor date format (number of seconds since 1/1/1904)"
@@ -364,7 +364,7 @@ public class Table  {
 
     /** testDir is used for tests. */
     public static String testDir = 
-        String2.getClassPath() + //with / separator and / at the end
+        File2.getClassPath() + //with / separator and / at the end
         "gov/noaa/pfel/coastwatch/pointdata/";
 
     /** The one known valid url for readIobis. */
@@ -2323,7 +2323,7 @@ public class Table  {
     public void readASCII(String fullFileName, int columnNamesLine, int dataStartLine) 
         throws Exception {
 
-        readASCII(fullFileName, String2.ISO_8859_1,
+        readASCII(fullFileName, File2.ISO_8859_1,
             "", "", columnNamesLine, dataStartLine,
             null, null, null, null, null, true);
     }
@@ -2336,7 +2336,7 @@ public class Table  {
      */
     public void readASCII(String fullFileName) throws Exception {
 
-        readASCII(fullFileName, String2.ISO_8859_1,
+        readASCII(fullFileName, File2.ISO_8859_1,
             "", "", 0, 1, null, null, null, null, null, true);
     }
 
@@ -2687,7 +2687,7 @@ public class Table  {
         //read as Strings 
         table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileName, String2.ISO_8859_1, 
+        table.readASCII(fileName, File2.ISO_8859_1, 
             skipHeaderToRegex, skipLinesRegex,
             0, 1, "", null, null, null, null, false);
         results = table.dataToString();
@@ -2716,7 +2716,7 @@ public class Table  {
         //test simplify
         table = new Table();
         table.allowRaggedRightInReadASCII = false;
-        table.readASCII(fileName, String2.ISO_8859_1,
+        table.readASCII(fileName, File2.ISO_8859_1,
             skipHeaderToRegex, skipLinesRegex,
             0, 1, "", null, null, null, null, true);
         results = table.dataToString();
@@ -2743,7 +2743,7 @@ public class Table  {
         //read subset 
         table = new Table();
         table.allowRaggedRightInReadASCII = false;
-        table.readASCII(fileName, String2.ISO_8859_1,
+        table.readASCII(fileName, File2.ISO_8859_1,
             skipHeaderToRegex, skipLinesRegex,
             0, 1, "", 
             new String[]{"aByte"}, new double[]{14}, new double[]{16}, 
@@ -2777,7 +2777,7 @@ public class Table  {
         //read as Strings 
         table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileName, String2.ISO_8859_1,
+        table.readASCII(fileName, File2.ISO_8859_1,
             "", "", 0, 1, "", null, null, null, null, false);
         results = table.dataToString();
         expected = 
@@ -2804,7 +2804,7 @@ public class Table  {
         //test simplify
         table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileName, String2.ISO_8859_1,
+        table.readASCII(fileName, File2.ISO_8859_1,
             "", "", 0, 1, "", null, null, null, null, true);
         results = table.dataToString();
         expected = 
@@ -2831,7 +2831,7 @@ public class Table  {
         //read subset 
         table = new Table();
         table.allowRaggedRightInReadASCII = true;
-        table.readASCII(fileName, String2.ISO_8859_1,
+        table.readASCII(fileName, File2.ISO_8859_1,
             "", "", 0, 1, "", 
             new String[]{"aByte"}, new double[]{14}, new double[]{16}, 
             new String[]{"aDouble","aString","aByte"}, true);  //load cols
@@ -3305,7 +3305,7 @@ public class Table  {
     public void readNccsv(String fullName, boolean readData) throws Exception {
         BufferedReader bufferedReader = String2.isRemote(fullName)?
             SSR.getBufferedUrlReader(fullName) : //handles AWS S3
-            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), String2.ISO_8859_1));      
+            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), File2.ISO_8859_1));      
         try {
             lowReadNccsv(fullName, readData, bufferedReader);
         } finally {
@@ -3559,8 +3559,7 @@ public class Table  {
         long time = System.currentTimeMillis();
 
         try {
-            bw = String2.getBufferedOutputStreamWriter88591(
-                 new FileOutputStream(fullFileName + randomInt));
+            bw = File2.getBufferedFileWriter88591(fullFileName + randomInt);
             saveAsNccsv(catchScalars, writeMetadata, firstDataRow, lastDataRow, bw);
             bw.close(); 
             bw = null;
@@ -3969,8 +3968,8 @@ public class Table  {
         //test round trip to spreadsheet and back
         //make a copy of sampleScalar
         String fileName = dir + "sampleExcel.csv";
-        String2.writeToFile(fileName, 
-            String2.directReadFrom88591File(dir + "testScalar.csv"));
+        File2.writeToFile88591(fileName, 
+            File2.directReadFrom88591File(dir + "testScalar.csv"));
         SSR.displayInBrowser("file://" + fileName);
         String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel.csv : yes : yes.");
         Table table = new Table();
@@ -4670,8 +4669,8 @@ public class Table  {
 
         //*** WFS
         table = new Table();
-        BufferedReader reader = new BufferedReader(new FileReader(
-            "c:/programs/mapserver/WVBoreholeResponse.xml"));
+        BufferedReader reader = File2.getDecompressedBufferedFileReaderUtf8(
+            "c:/programs/mapserver/WVBoreholeResponse.xml");
         try {
             table.readXml(reader, 
                 false, //no validate since no .dtd
@@ -5249,7 +5248,7 @@ String stationsXml =
         if (reallyVerbose) String2.log("  Table.saveAsDAS"); 
         long time = System.currentTimeMillis();
         //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); 
+        Writer writer = File2.getBufferedWriter88591(outputStream); 
         writeDAS(writer, sequenceName, false);
 
         //diagnostic
@@ -5353,7 +5352,7 @@ Dataset {
         if (reallyVerbose) String2.log("  Table.saveAsDDS"); 
         long time = System.currentTimeMillis();
         //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream);  
+        Writer writer = File2.getBufferedWriter88591(outputStream);  
 
         int nColumns = nColumns();
         writer.write("Dataset {" + OpendapHelper.EOL); //see EOL definition for comments
@@ -5396,7 +5395,7 @@ Dataset {
         saveAsDDS(outputStream, sequenceName);  
 
         //write the connector  
-        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); 
+        Writer writer = File2.getBufferedWriter88591(outputStream); 
         writer.write("---------------------------------------------" + OpendapHelper.EOL); //see EOL definition for comments
 
         //write the column names
@@ -5562,7 +5561,7 @@ Dataset {
         long time = System.currentTimeMillis();
 
         //write the header
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
+        BufferedWriter writer = File2.getBufferedWriterUtf8(outputStream);
         writer.write(
             "<!DOCTYPE HTML>\n" +
             "<html lang=\"en-US\">\n" +
@@ -5774,7 +5773,7 @@ Dataset {
     public void readHtml(String fullFileName, int skipNTables, 
         boolean secondRowHasUnits, boolean simplify) throws Exception {
         
-        String sar[] = String2.readFromFile(fullFileName, String2.UTF_8, 2);
+        String sar[] = File2.readFromFile(fullFileName, File2.UTF_8, 2);
         Test.ensureEqual(sar[0].length(), 0, sar[0]); //check that there was no error
         //String2.log(String2.annotatedString(sar[1]));
         readHtml(fullFileName, sar[1], skipNTables, secondRowHasUnits, simplify); 
@@ -6502,8 +6501,8 @@ Dataset {
         for (int col = 0; col < nc; col++) {
             PrimitiveArray pa = getColumn(col);
             Attributes atts = columnAttributes(col);
-            String enc     = atts.getString(String2.ENCODING);
-            atts.remove(String2.ENCODING);
+            String enc = atts.getString(File2.ENCODING);
+            atts.remove(File2.ENCODING);
 // disabled until there is a standard
 //            String charset = atts.getString(String2.CHARSET);
 //            atts.remove(String2.CHARSET);
@@ -6513,7 +6512,7 @@ Dataset {
 //                //check that it is CharArray and 8859-1
 //                if (pa.elementType() != PAType.CHAR)
 //                    setColumn(col, new CharArray(pa));  //too bold?
-//                if (!charset.toLowerCase().equals(String2.ISO_8859_1_LC))
+//                if (!charset.toLowerCase().equals(File2.ISO_8859_1_LC))
 //                    String2.log("col=" + getColumnName(col) + " has unexpected " +
 //                        String2.CHARSET + "=" + charset);
 //                continue;
@@ -6526,18 +6525,18 @@ Dataset {
             enc = enc.toLowerCase();
 
             //decode
-            if (enc.toLowerCase().equals(String2.UTF_8_LC)) {
+            if (enc.toLowerCase().equals(File2.UTF_8_LC)) {
                 //UTF-8
                 //String2.log(">> before decode: " + pa);
                 ((StringArray)pa).fromUTF8();
                 //String2.log(">> after decode: " + pa);
 
-            } else if (enc.toLowerCase().equals(String2.ISO_8859_1_LC)) {
+            } else if (enc.toLowerCase().equals(File2.ISO_8859_1_LC)) {
                 //unchanged ISO-8859-1 becomes the first page of unicode encoded strings
 
             } else {
                 String2.log("col=" + getColumnName(col) + " has unexpected " +
-                    String2.ENCODING + "=" + enc);
+                    File2.ENCODING + "=" + enc);
             }
 
             //currently, OTHER ENCODINGS ARE NOT HANDLED 
@@ -28694,13 +28693,13 @@ String2.log(table.dataToString());
                     convertToFakeMissingValues(col);
 
                 Attributes tAtts = new Attributes(columnAttributes(col)); //use a copy
-                //String2.log(">> saveAsFlatNc col=" + tPA[col].elementTypeString() + " enc=" + tAtts.getString(String2.ENCODING));
+                //String2.log(">> saveAsFlatNc col=" + tPA[col].elementTypeString() + " enc=" + tAtts.getString(File2.ENCODING));
                 if (tc == PAType.STRING && 
-                    tAtts.getString(String2.ENCODING) == null) //don't change if already specified
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+                    tAtts.getString(File2.ENCODING) == null) //don't change if already specified
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (tc == PAType.CHAR)
-//                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, colVars[col], tAtts, tc.isUnsigned());
             }
@@ -28830,9 +28829,9 @@ String2.log(table.dataToString());
                     }
 
                     if (pa.elementType() == PAType.CHAR)
-                        atts.add(String2.CHARSET, String2.ISO_8859_1);
+                        atts.add(String2.CHARSET, File2.ISO_8859_1);
                     else if (pa.elementType() == PAType.STRING)
-                        atts.add(String2.ENCODING, String2.ISO_8859_1);
+                        atts.add(File2.ENCODING, File2.ISO_8859_1);
                     NcHelper.setAttributes(colVars[col], atts);
                 }
 
@@ -29163,10 +29162,10 @@ String2.log(table.dataToString());
                 Attributes tAtts = new Attributes(columnAttributes(col)); //use a copy
                 PAType paType = getColumn(col).elementType();
                 if (paType == PAType.STRING)
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (getColumn(col).elementType() == PAType.CHAR)
-//                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, colVars[col], tAtts, paType.isUnsigned());
             }
@@ -29184,7 +29183,7 @@ String2.log(table.dataToString());
 
                 //save the attributes
                 Attributes tAtts = new Attributes(stringVariableAttributes); //use a copy
-                tAtts.add(String2.ENCODING, String2.ISO_8859_1);                
+                tAtts.add(File2.ENCODING, File2.ISO_8859_1);                
 
                 NcHelper.setAttributes(nc3Mode, stringVar, tAtts, false); //unsigned=false because it is a string var
             }
@@ -30082,7 +30081,7 @@ String2.log(table.dataToString());
      * @throws Exception 
      */
     public void saveAsTabbedASCII(String fullFileName) throws Exception {
-        saveAsTabbedASCII(fullFileName, String2.ISO_8859_1);
+        saveAsTabbedASCII(fullFileName, File2.ISO_8859_1);
     }
 
     /**
@@ -30249,8 +30248,8 @@ String2.log(table.dataToString());
 
         long time = System.currentTimeMillis();
         if (charset == null || charset.length() == 0)
-            charset = String2.ISO_8859_1;
-        BufferedWriter writer = String2.getBufferedOutputStreamWriter(outputStream, charset);
+            charset = File2.ISO_8859_1;
+        BufferedWriter writer = File2.getBufferedWriter(outputStream, charset);
 
         //write the column names   
         boolean csvMode = separator.equals(",");
@@ -30363,7 +30362,7 @@ String2.log(table.dataToString());
     public void saveAsJson(OutputStream outputStream, int timeColumn, 
         boolean writeUnits) throws Exception {
 
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(outputStream);
+        BufferedWriter writer = File2.getBufferedWriterUtf8(outputStream);
         saveAsJson(writer, timeColumn, writeUnits);
     }
 
@@ -30465,7 +30464,7 @@ String2.log(table.dataToString());
      */
     public void readJson(String fileName) throws Exception {
         //this can't use BufferedReader because json parsers need access to entire file's content
-        String results[] = String2.readFromFile(fileName, String2.UTF_8, 2);
+        String results[] = File2.readFromFile(fileName, File2.UTF_8, 2);
         if (results[0].length() > 0)
             throw new Exception(results[0]);
         readJson(fileName, results[1]);
@@ -30651,7 +30650,7 @@ String2.log(table.dataToString());
         StringArray colNames, String[] colTypes, boolean simplify) throws Exception {
         clear();
         BufferedReader reader = 
-            File2.getDecompressedBufferedFileReader(fullFileName, String2.UTF_8);
+            File2.getDecompressedBufferedFileReader(fullFileName, File2.UTF_8);
         try {
             readJsonlCSV(reader, fullFileName, colNames, colTypes, simplify);
         } finally {
@@ -30851,7 +30850,7 @@ String2.log(table.dataToString());
         boolean writeColumnNames = !append || !File2.isFile(fullFileName);
 
         try {
-            bw = String2.getBufferedOutputStreamWriterUtf8(
+            bw = File2.getBufferedWriterUtf8(
                 new FileOutputStream(fullFileName + (append? "" : randomInt), append));
 
             //write the col names
@@ -31013,7 +31012,7 @@ String2.log(table.dataToString());
         table = makeToughTestTable();
         fullName = File2.getSystemTempDirectory() + "testJsonlCSV.json";
         table.writeJsonlCSV(fullName);
-        results = String2.directReadFromUtf8File(fullName);
+        results = File2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
 "[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
 "[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
@@ -31027,7 +31026,7 @@ String2.log(table.dataToString());
         table = makeToughTestTable();
         File2.delete(fullName);
         table.writeJsonlCSV(fullName, true);
-        results = String2.directReadFromUtf8File(fullName);
+        results = File2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
 "[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
 "[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
@@ -31039,7 +31038,7 @@ String2.log(table.dataToString());
 
         //then append
         table.writeJsonlCSV(fullName, true);
-        results = String2.directReadFromUtf8File(fullName);
+        results = File2.directReadFromUtf8File(fullName);
         Test.ensureEqual(results, 
 "[\"aString\",\"aChar\",\"aByte\",\"aUByte\",\"aShort\",\"aUShort\",\"anInt\",\"aUInt\",\"aLong\",\"aULong\",\"aFloat\",\"aDouble\"]\n" +
 "[\"a\\u00fcb\\nc\\td\\u20ace\",\"\\u00fc\",-128,0,-32768,0,-2147483648,0,-9223372036854775808,0,-3.4028235E38,-1.7976931348623157E308]\n" +
@@ -31632,11 +31631,11 @@ String2.log(table.dataToString());
         //write it to a file
         String fileName = testDir + "tempTable.json";
         table.saveAsJson(fileName, 0, true);
-        //String2.log(fileName + "=\n" + String2.readFromFile(fileName)[1]);
+        //String2.log(fileName + "=\n" + File2.readFromFile(fileName)[1]);
         //SSR.displayInBrowser("file://" + fileName);
 
         //read it from the file
-        String results = String2.directReadFromUtf8File(fileName);
+        String results = File2.directReadFromUtf8File(fileName);
         Test.ensureEqual(results, 
 "{\n" +
 "  \"table\": {\n" +
@@ -32376,7 +32375,7 @@ String2.log(table.dataToString());
         //write it to a file
         String fileName = testDir + "tempTable.asc";
         table.saveAsTabbedASCII(fileName);
-        String2.log(fileName + "=\n" + String2.directReadFrom88591File(fileName));
+        String2.log(fileName + "=\n" + File2.directReadFrom88591File(fileName));
 
         //read it from the file
         Table table2 = new Table();
@@ -32409,7 +32408,7 @@ String2.log(table.dataToString());
 
         //read 2nd row from the file
         table2 = new Table();
-        table2.readASCII(fileName, String2.ISO_8859_1,
+        table2.readASCII(fileName, File2.ISO_8859_1,
             "", "", 0, 1, "", 
             new String[]{"Int Data"}, new double[]{0}, new double[]{4}, 
             new String[]{"Short Data", "String Data"}, true);
@@ -32425,7 +32424,7 @@ String2.log(table.dataToString());
         String2.log("\n***** Table.testASCII  read subset with no column names");
         //read 3rd row from the file
         table2 = new Table();
-        table2.readASCII(fileName, String2.ISO_8859_1,
+        table2.readASCII(fileName, File2.ISO_8859_1,
             "", "", -1, 1, "",  //-1=no column names
             new String[]{"Column#5"}, new double[]{0}, new double[]{4}, 
             new String[]{"Column#6", "Column#8", "Column#9"}, true);
@@ -32476,7 +32475,7 @@ String2.log(table.dataToString());
 
         //write it to a file
         String fileName = testDir + "tempTable.asc";
-        String2.writeToFile(fileName, lines);
+        File2.writeToFile88591(fileName, lines);
 
         //read all columns from the file
         Table table2 = new Table();
@@ -32523,11 +32522,11 @@ String2.log(table.dataToString());
         table.saveAsHtml(fileName, "preTextHtml\n<br>\n", "postTextHtml\n<br>", 
             null, BGCOLOR, 1, true, 0, true, //needEncodingAsHtml
             false);
-        //String2.log(fileName + "=\n" + String2.directReadFromUtf8File(fileName));
+        //String2.log(fileName + "=\n" + File2.directReadFromUtf8File(fileName));
         SSR.displayInBrowser("file://" + fileName);
 
         //read it from the file
-        String results = String2.directReadFromUtf8File(fileName);
+        String results = File2.directReadFromUtf8File(fileName);
         Test.ensureEqual(results, 
 "<!DOCTYPE HTML>\n" +
 "<html lang=\"en-US\">\n" +

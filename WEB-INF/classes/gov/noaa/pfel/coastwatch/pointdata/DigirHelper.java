@@ -444,9 +444,9 @@ public class DigirHelper  {
         String xml = getMetadataXml(url, version);
         BufferedReader reader = new BufferedReader(new StringReader(xml));
         //for testing:
-        //Test.ensureTrue(String2.writeToFile("c:/temp/ObisMetadata.xml", xml).equals(""), 
+        //Test.ensureTrue(File2.writeToFile("c:/temp/ObisMetadata.xml", xml).equals(""), 
         //    "Unable to save c:/temp/Obis.Metadata.xml.");
-        //Reader reader = new BufferedReader(new FileReader("c:/programs/digir/ObisMetadata.xml"));
+        //Reader reader = File2.getDecompressFileReaderUtf8("c:/programs/digir/ObisMetadata.xml");
         try {
 
             //read the resource data
@@ -693,9 +693,9 @@ String2.log("DigirHelper.getInventoryTable(resource[0]=" + resource[0] + " var="
                 resultsVariable);
             //used for testing:
             //String fileName = "c:/programs/digir/ObisInventory" + res + ".xml";
-            //Test.ensureTrue(String2.writeToFile(fileName, xml).equals(""), 
+            //Test.ensureTrue(File2.writeToFile(fileName, xml).equals(""), 
             //    "Unable to save " + fileName);
-            //String xml = String2.readFromFile(fileName)[1];
+            //String xml = File2.readFromFile(fileName)[1];
             //String2.log("xml=" + xml);
 
             //sample xml response snippet:
@@ -1121,8 +1121,8 @@ String2.log("inventoryTable:\n" + table.toString());
                 String response = SSR.getUrlResponseStringUnchanged(url + "?request=" + 
                     SSR.percentEncode(request));
                 //for testing:
-                //String2.writeToFile("c:/temp/SearchDigirResponse" + resource + ".xml", response);
-                //String response = String2.readFromFile("c:/temp/SearchDigirResponse" + resource + ".xml")[1];
+                //File2.writeToFile("c:/temp/SearchDigirResponse" + resource + ".xml", response);
+                //String response = File2.readFromFile("c:/temp/SearchDigirResponse" + resource + ".xml")[1];
 
                 if (verbose) String2.log(resources[resource] + 
                     " readTime=" + (System.currentTimeMillis() - readTime));
@@ -1502,7 +1502,7 @@ String2.log("inventoryTable:\n" + table.toString());
                     "bmde:GlobalUniqueIdentifier", "bmde:Genus", "bmde:ScientificName"});
             String fileName = "c:/temp/DigirHelperTestBmde.csv";
             table.saveAsCsvASCII(fileName);
-            String results = String2.readFromFile(fileName)[1];
+            String results = File2.readFromFile88591(fileName)[1];
             String expected = 
 "\"bmde:DecimalLongitude\",\"bmde:DecimalLatitude\",\"bmde:ObservationDate\",\"bmde:GlobalUniqueIdentifier\",\"bmde:Genus\",\"bmde:ScientificName\"\n" +
 "\"degrees_east\",\"degrees_north\",\"\",\"\",\"\",\"\"\n" +

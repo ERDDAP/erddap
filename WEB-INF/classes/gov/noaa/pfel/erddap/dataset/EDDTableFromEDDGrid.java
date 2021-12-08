@@ -757,7 +757,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         //das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -908,7 +908,7 @@ expected2 =
         //das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -927,7 +927,7 @@ expected2 =
             "&longitude=200"; //longitude constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude\n" +
 "degrees_north\n" +
@@ -940,7 +940,7 @@ expected2 =
         //query 1 axis =min    lon is 120 - 320
         tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude=120", 
             dir, tedd.className() + "1axisMin", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -950,7 +950,7 @@ expected2 =
         //query 1 axis <=min 
         tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude<=120", 
             dir, tedd.className() + "1axisLEMin", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -986,7 +986,7 @@ expected2 =
         //query 1 axis =max
         tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude=320", 
             dir, tedd.className() + "1axisMax", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -996,7 +996,7 @@ expected2 =
         //query 1 axis >=max 
         tName = tedd.makeNewFileForDapQuery(language, null, null, "longitude&longitude>=320", 
             dir, tedd.className() + "1axisGEMax", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude\n" +
 "degrees_east\n" +
@@ -1033,7 +1033,7 @@ expected2 =
         String timeMin = "2008-02-15T12:00:00Z";
         tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time=" + timeMin, 
             dir, tedd.className() + "timeAxisMin", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
@@ -1043,7 +1043,7 @@ expected2 =
         //query time axis <=min 
         tName = tedd.makeNewFileForDapQuery(language, null, null, "time&time<=" + timeMin, 
             dir, tedd.className() + "timeAxisLEMin", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
@@ -1126,7 +1126,7 @@ expected2 =
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; //time constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
@@ -1154,7 +1154,7 @@ expected2 =
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; 
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1198,7 +1198,7 @@ expected2 =
                 "&longitude>=215&longitude<215.1&time=\"2008-02-15T12\""; 
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -1225,7 +1225,7 @@ expected2 =
                   "latitude,longitude,altitude,time,sst&sst%3E37&time=%222008-02-15T12%22"; 
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test17", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -1254,7 +1254,7 @@ expected2 =
                   "latitude,longitude,altitude,time&latitude%3E0&sst%3E37&time=%222008-02-15T12%22"; 
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test18", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1269,7 +1269,7 @@ expected2 =
                   "sst&sst%3E40&time=%222008-02-15T12%22"; 
         tName = tedd.makeNewFileForDapQuery(language, null, null, query, dir, 
             tedd.className() + "test19", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "sst\n" +
 "degree_C\n" +

@@ -665,7 +665,7 @@ Dataset {
                 
                 //trigger a re-indexing
                 if (flagDirectory != null)
-                    String2.writeToFile(flagDirectory + "OpendapTimeIndexTrouble", "a");
+                    File2.writeToFile88591(flagDirectory + "OpendapTimeIndexTrouble", "a");
 
                 //read all the time data
                 double timesAr[] = OpendapHelper.getDoubleArray(dConnect, 

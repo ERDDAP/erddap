@@ -1232,7 +1232,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String ndbcDapQuery = "wind_speed[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, 
             EDStatic.fullTestCacheDirectory, gridDataset.className(), ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_speed\n"+
@@ -1379,7 +1379,7 @@ expected =
         ndbcDapQuery = "wind_direction[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "2", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_direction\n"+
@@ -1394,7 +1394,7 @@ expected =
         ndbcDapQuery = "wind_speed[1:5][0][0],wind_direction[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "3", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_speed,wind_direction\n"+
@@ -1409,7 +1409,7 @@ expected =
         ndbcDapQuery = "wind_direction[1:5][0][0],wind_speed[1:5][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "4", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_direction,wind_speed\n"+
@@ -1477,7 +1477,7 @@ expected =
         ndbcDapQuery = "wind_direction[22232:22239][0][0],wind_speed[22232:22239][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "5", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_direction,wind_speed\n"+
@@ -1496,7 +1496,7 @@ expected =
         ndbcDapQuery = "wind_direction[22232:2:22239][0][0],wind_speed[22232:2:22239][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "6", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_direction,wind_speed\n"+
@@ -1513,7 +1513,7 @@ expected =
                            "wind_speed[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]";
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "7", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,wind_direction,wind_speed\n"+
@@ -1539,7 +1539,7 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "time", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_rtofs", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "time\n" +
 "UTC\n" +

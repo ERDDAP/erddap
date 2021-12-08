@@ -536,7 +536,7 @@ public class TwoGrids  {
 
         //open the temp file
         //(I tried with Buffer/FileOutputStream. No faster.)
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(directory + randomInt));
+        BufferedWriter bufferedWriter = File2.getBufferedFileWriter88591(directory + randomInt);
         try {
 
             //write the data
@@ -563,7 +563,7 @@ public class TwoGrids  {
 
         //diagnostic
         if (false) {
-            String[] rff = String2.readFromFile(directory + name + ext);
+            String[] rff = File2.readFromFile88591(directory + name + ext);
             if (rff[0].length() > 0)
                 throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsXYZ: " + directory + name + ext + " contains:\n" +
@@ -694,7 +694,7 @@ public class TwoGrids  {
     
         String2.log("\n***** TwoGrids.testSaveAsXyz");
         saveAsXyz(makeTestGrid(true), makeTestGrid(false), Grid.testDir, "temp", "NaN");
-        String xyz[] = String2.readFromFile(Grid.testDir + "temp.xyz");
+        String xyz[] = File2.readFromFile88591(Grid.testDir + "temp.xyz");
         Test.ensureEqual(xyz[0], "", "");
         //String2.log(xyz[1]);
         Test.ensureEqual(xyz[1], 

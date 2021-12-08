@@ -904,7 +904,7 @@ EDStatic.standardLicense);
             }
 
             //read and preprocess the file
-            String html[] = String2.readFromFile(htmlDir + fName + ".html");
+            String html[] = File2.readFromFileUtf8(htmlDir + fName + ".html");
             if (html[0].length() > 0)
                 throw new RuntimeException(html[0]);
             html[1] = String2.replaceAll(html[1], " DIR=LTR", "");

@@ -158,7 +158,7 @@ public class CompoundColorMap extends ColorMap {
     protected static void populate(CompoundColorMap ccm, String cptFileName) 
         throws Exception {
         //set up a colorMap based on info in the .cpt file
-        ArrayList<String> lines = String2.readLinesFromFile(cptFileName, null, 3);
+        ArrayList<String> lines = File2.readLinesFromFile(cptFileName, null, 3);
 
         //set up temporary PrimitiveArrays
         DoubleArray rangeLowAr  = new DoubleArray(); //stores the low ends of a piece
@@ -829,7 +829,7 @@ public class CompoundColorMap extends ColorMap {
                 String2.log("colorMap  " + palette + " " + scale + " " + minData + " " + maxData + 
                     " continuous=" + continuous + "\n" + results);
             int randomInt = Math2.random(Integer.MAX_VALUE);
-            String error = String2.writeToFile(fullResultCpt + randomInt, results.toString());
+            String error = File2.writeToFile88591(fullResultCpt + randomInt, results.toString());
             if (error.length() > 0) 
                 throw new RuntimeException(String2.ERROR + " in CompoundColorMap.makeCPT:\n" + error);
 
@@ -883,7 +883,7 @@ public class CompoundColorMap extends ColorMap {
      */
     public static void basicTest() throws Exception {
         verbose = true;
-        String basePaletteDir = String2.webInfParentDirectory() + //with / separator and / at the end
+        String basePaletteDir = File2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF/cptfiles/";
         String tempDir = SSR.getTempDirectory();      
         File2.deleteAllFiles(tempDir);

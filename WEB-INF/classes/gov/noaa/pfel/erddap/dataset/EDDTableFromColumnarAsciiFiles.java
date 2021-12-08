@@ -180,7 +180,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         StringArray colNames, IntArray start, IntArray stop) throws Exception {
 
         //read the lines of the sample file
-        ArrayList<String> lines = String2.readLinesFromFile(sampleFileName, charset, 2);
+        ArrayList<String> lines = File2.readLinesFromFile(sampleFileName, charset, 2);
 
         //hueristic: col with low usage then col with high usage (or vice versa)
         //  indicates new column
@@ -324,7 +324,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 true, ".*", false); //not fullSync
         firstDataRow = Math.max(1, firstDataRow); //1..
         if (charset == null || charset.length() == 0)
-            charset = String2.ISO_8859_1;
+            charset = File2.ISO_8859_1;
         tColumnNameForExtract = String2.isSomething(tColumnNameForExtract)?
             tColumnNameForExtract.trim() : "";
         //tSortedColumnSourceName = String2.isSomething(tSortedColumnSourceName)?
@@ -338,7 +338,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
 
         //get info from the sampleFile
         if (charset == null || charset.length() == 0)
-            charset = String2.ISO_8859_1;
+            charset = File2.ISO_8859_1;
         StringArray colNames = new StringArray();
         IntArray start = new IntArray();
         IntArray stop = new IntArray();
@@ -554,7 +554,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                     startUrl + names.get(i), useLocalFilesIfPresent, 
                     tAccessibleTo, localTimeZone, tStandardizeWhat) + "\n"; //standardizeWhat
                 results.append(result);
-                String2.appendFile(resultsFileName, result);
+                File2.appendFileUtf8(resultsFileName, result);
                 String2.log(result);
             }
         }
@@ -667,7 +667,7 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         if (!String2.isSomething(localTimeZone))
             localTimeZone = "";
         String charset = null; //for the sample data file
-        String defaultDatafileCharset = String2.ISO_8859_1; //for the sample data file
+        String defaultDatafileCharset = File2.ISO_8859_1; //for the sample data file
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES; 
         Table addTable = new Table();
         Attributes addGlobalAtts = addTable.globalAttributes();
@@ -2227,7 +2227,7 @@ boolean columnar = false;  // are there any? how detect?
                     pauseForErrors, emlDir, 
                     startUrl + names.get(i), useLocalFilesIfPresent, 
                     tAccessibleTo, localTimeZone, tStandardizeWhat); 
-                String2.appendFile(resultsFileName, result);
+                File2.appendFileUtf8(resultsFileName, result);
                 String2.log(result);
             }
         }
@@ -3078,7 +3078,7 @@ String expected =
         String userDapQuery = "";
         String tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_eml_1", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "site_code,time,NH4_uM,NO3_uM,PO4_uM,TDN_uM,TDP_uM,TPC_uM,TPN_uM,TPP_uM,TSS_mg_per_L,Spec_Cond_uS_per_cm\n" +
 ",UTC,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,micromole per liter,milligram per liter,siemens per centimeter\n" +
@@ -3317,7 +3317,7 @@ String expected =
         String userDapQuery = "";
         String tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, edd.className() + "_1", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
 ",,,,,,,,\n" +
@@ -3359,7 +3359,7 @@ String expected =
         String2.log("\nEDDTableFromColumnarAsciiFiles test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -3463,7 +3463,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", testDir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -3491,7 +3491,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
@@ -3513,7 +3513,7 @@ expected =
         userDapQuery = "fileName,five";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_sv", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         expected = 
 "fileName,five\n" +       
 ",\n" +
@@ -3533,7 +3533,7 @@ expected =
         userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_conbool", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         expected = 
 "anInt,fileName,five,aBoolean\n" +
 ",,,\n" +
@@ -3606,7 +3606,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "time,Superior,Michigan,Huron,Erie,Ontario,St_Clair\n" +
@@ -3646,7 +3646,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "time,Superior,Michigan,Huron,Erie,Ontario,St_Clair,GL_Total\n" +
@@ -3704,7 +3704,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, testDir, 
             eddTable.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(testDir + tName);
+        results = File2.directReadFrom88591File(testDir + tName);
         //String2.log(results);
         expected = 
 "lake,dayOfYear,temperature\n" +
