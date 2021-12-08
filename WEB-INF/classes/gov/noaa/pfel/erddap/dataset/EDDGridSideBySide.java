@@ -739,7 +739,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "x_wind[4:8][0][(-20)][(80)],y_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "1", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-07-19 was
@@ -770,7 +770,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "x_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "2", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-10-26 was 
@@ -793,7 +793,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "y_wind[4:8][0][(-20)][(80)]";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsWind8.className() + "3", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 /* pre 2010-10-26 was
@@ -906,7 +906,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:11][0][(-20)][(40)],tauy[0:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -928,7 +928,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:2:10][0][(-20)][(40)],tauy[0:2:10][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2a", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -944,7 +944,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[1:2:11][0][(-20)][(40)],tauy[1:2:11][0][(-20)][(40)]";
         tName = qs1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2b", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -961,7 +961,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[0:2:6][0][(-20)][(40):(40.5)],tauy[0:2:6][0][(-20)][(40):(40.5)]";
         tName = qs1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qs1.className() + "sbsxy2c", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux,tauy\n" +
@@ -1009,7 +1009,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "taux[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsx1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsz1.className() + "sbsx", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,altitude,latitude,longitude,taux\n" +
@@ -1028,7 +1028,7 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = "tauy[(1.130328E9):(1.1309328E9)][0][(-20)][(40)]";
         tName = qsy1.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
             qsy1.className() + "sbsy", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "results=time,altitude,latitude,longitude,tauy\n" +

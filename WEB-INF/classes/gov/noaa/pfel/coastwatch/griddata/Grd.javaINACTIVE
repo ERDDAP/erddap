@@ -267,7 +267,7 @@ public class Grd {
                     //String2.log("grdinfo = " + String2.toCSSVString(info));
 
                     //write the header and the data
-                    String error = String2.writeToFile(fullResultName + randomInt + ".asc", 
+                    String error = File2.writeToFile(fullResultName + randomInt + ".asc", 
                         "ncols " + info[9] + "\n" +
                         "nrows " + info[10] + "\n" +
                         "xllcenter " + Math2.anglePM180(String2.parseDouble(info[1])) + "\n" +
@@ -285,7 +285,7 @@ public class Grd {
                     if (outType == MakeAsc) {
                         String2.simpleSearchAndReplace(
                             fullResultName + randomInt + ".asc",
-                            fullResultName + randomInt + "b.asc",
+                            fullResultName + randomInt + "b.asc", File2.ISO_8859_1,
                             "NaN",
                             "99999");
                         File2.rename(resultDir, name + randomInt + "b.asc", name + ".asc");
@@ -296,7 +296,7 @@ public class Grd {
 
                     //diagnostic
                     if (true) {
-                        String[] rff = String2.readFromFile(fullResultName + ".asc");
+                        String[] rff = File2.readFromFile(fullResultName + ".asc");
                         if (rff[0].length() > 0)
                             throw new Exception(String2.ERROR + ":\n" + rff[0]);
                         String2.log(fullResultName + ".asc contains:\n" +
@@ -334,8 +334,7 @@ public class Grd {
 
 
                     //read the data from the ASCII file
-                    BufferedReader reader = new BufferedReader(new FileReader(
-                        resultDir + name + ".asc"));
+                    BufferedReader reader = File2.getDecompressFileReader88591(resultDir + name + ".asc");
                     String s;
                     s = reader.readLine(); int nCols = String2.parseInt(s.substring(s.indexOf(' ') + 1));
                     s = reader.readLine(); int nRows = String2.parseInt(s.substring(s.indexOf(' ') + 1));
@@ -442,8 +441,7 @@ public class Grd {
                 //MakeMat (this relies on MakeAsc above making .asc with missingValue=NaN)
                 if (outType == MakeMat) {
                     //read the data from the ASCII file
-                    BufferedReader reader = new BufferedReader(new FileReader(
-                        resultDir + name + ".asc"));
+                    BufferedReader reader = File2.getDecompressFileReader88591(resultDir + name + ".asc");
                     try {
                         String s;
                         s = reader.readLine(); int nCols = String2.parseInt(s.substring(s.indexOf(' ') + 1));
@@ -505,7 +503,7 @@ public class Grd {
 
                     //diagnostic
                     if (false) { // verbose) {
-                        String[] rff = String2.readFromFile(fullResultName + ".xyz");
+                        String[] rff = File2.readFromFile(fullResultName + ".xyz");
                         if (rff[0].length() > 0)
                             throw new Exception(String2.ERROR + ":\n" + rff[0]);
                         String2.log(fullResultName + ".xyz contains:\n" +
@@ -824,7 +822,7 @@ public class Grd {
                     //for (int i = 1; i < dar.length; i++) //yes 1: since use i-1 below
                     //    bathSB.append(dar[i-1] + "\t"+i+"\t"+i+"\t"+i+"\t" + dar[i] + "\t"+i+"\t"+i+"\t"+i+"\n"); 
                     //String2.log("AString=" + AString + "\nbathSB=" + bathSB);
-                    error = String2.writeToFile(bathymetryConFile, bathSB.toString());
+                    error = File2.writeToFile(bathymetryConFile, bathSB.toString());
                     if (error.length() > 0)
                         throw new RuntimeException(error);
                 }
@@ -868,7 +866,7 @@ public class Grd {
                     //for (int i = 1; i < dar.length; i++) //yes 1: since use i-1 below
                     //    contSB.append(dar[i-1] + "\t"+i+"\t"+i+"\t"+i+"\t" + dar[i] + "\t"+i+"\t"+i+"\t"+i+"\n"); 
                     //String2.log("AString=" + AString + "\ncontSB=" + contSB);
-                    error = String2.writeToFile(contourConFile, contSB.toString());
+                    error = File2.writeToFile(contourConFile, contSB.toString());
                     if (error.length() > 0)
                         throw new RuntimeException(error);
                 }
@@ -940,7 +938,7 @@ public class Grd {
                 " -Y-" + ypos + " >> " + tmpFullPsFileName);
 
             // make metadata box 
-            error = String2.writeToFile(fullTmpTxtFile,
+            error = File2.writeToFile(fullTmpTxtFile,
                 "8.4 0.25\n" +
                 "10.3 0.25\n" +
                 "10.3 7.75\n" +
@@ -960,7 +958,7 @@ public class Grd {
             
             /*
             //not quite working: embed an .eps noaa_logo file in 
-            String [] epsfContents = String2.readFromFile(imageDir + "noaa_logo2.eps");
+            String [] epsfContents = File2.readFromFile(imageDir + "noaa_logo2.eps");
             if (epsfContents[0].length() > 0) 
                 throw new RuntimeException(epsfContents[0]);
             String2.appendFile(tmpFullPsFileName, 
@@ -1055,7 +1053,7 @@ public class Grd {
             }
 
             //draw the text
-            error = String2.writeToFile(fullTmpTxtFile, sb.toString());
+            error = File2.writeToFile(fullTmpTxtFile, sb.toString());
             if (error.length() > 0)
                 throw new RuntimeException(error);
             SSR.cShell("pstext " + fullTmpTxtFile + 

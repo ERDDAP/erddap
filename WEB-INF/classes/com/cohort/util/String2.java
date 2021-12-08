@@ -11,33 +11,19 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.Toolkit;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PushbackInputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -95,14 +81,6 @@ public class String2 {
      */
     public static String lineSeparator = System.getProperty("line.separator");
 
-//    public final static String  CHARSET = "charset";       //the name  of the charset att
-    public final static String  ISO_8859_1 = "ISO-8859-1"; //the value of the charset att and usable in Java code
-    public final static String  ISO_8859_1_LC = ISO_8859_1.toLowerCase();
-    public final static Charset ISO_8859_1_CHARSET = StandardCharsets.ISO_8859_1;
-    public final static String ENCODING = "_Encoding";    //the name  of the _Encoding att
-    public final static String UTF_8 = "UTF-8";           //a   value of the _Encoding att and usable in Java code
-    public final static String UTF_8_LC = UTF_8.toLowerCase();
-    public final static Charset UTF_8_CHARSET = StandardCharsets.UTF_8;
     public final static String JSON = "JSON";          
     public final static StringComparatorIgnoreCase STRING_COMPARATOR_IGNORE_CASE = new StringComparatorIgnoreCase();
     public final static String EMPTY_STRING = "";
@@ -199,8 +177,6 @@ public class String2 {
     private static DecimalFormat genEngFormat10 = new DecimalFormat("##0.#########E0");
     private static DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
-    private static String classPath; //lazy creation by getClassPath
-
     //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
     //to be bigger and makes synchronized contention less common.
     private static Map canonicalMap[] = new Map[6];
@@ -214,36 +190,9 @@ public class String2 {
     private static Map canonicalLockMap = new WeakHashMap();
     public static int longTimeoutSeconds = 300; //5 minutes. This is >= other timeouts in the system. This is used in places that previously waited forever.
 
-    private static String webInfParentDirectory; //lazy creation by webInfParentDirectory()
-
     //EDStatic may change this
     public static String unitTestDataDir    = "/erddapTest/";
     public static String unitTestBigDataDir = "/erddapTestBig/";
-
-    /**
-     * This returns the directory that is the tomcat application's root
-     * (with forward slashes and a trailing slash, 
-     * e.g., c:/programs/_tomcat/webapps/cwexperimental/).
-     * Tomcat calls this the ContextDirectory.
-     * This only works if these classes are installed
-     * underneath Tomcat (with "WEB-INF/" 
-     * the start of things to be removed from classPath).
-     *
-     * @return the parent directory of WEB-INF (with / separator and / at the end)
-     *   or "ERROR if trouble
-     * @throws RuntimeException if trouble
-     */
-    public static String webInfParentDirectory() {
-        if (webInfParentDirectory == null) {
-            String classPath = getClassPath(); //with / separator and / at the end
-            int po = classPath.indexOf("/WEB-INF/");
-            if (po < 0)
-                throw new RuntimeException(ERROR + ": '/WEB-INF/' not found in classPath=" + classPath);
-            webInfParentDirectory = classPath.substring(0, po + 1);
-        }
-
-        return webInfParentDirectory;
-    }
 
     /**
      * This returns the string which sorts higher.
@@ -952,366 +901,6 @@ public class String2 {
      */
     public static int indexOf(double[] dArray, double d) {
         return indexOf(dArray, d, 0);
-    }
-
-    /** This calls directReadFromFile with charset= UTF_8 */
-    public static String directReadFromUtf8File(String fileName) 
-        throws Exception {
-        return directReadFromFile(fileName, UTF_8);
-    }
-
-    /** This calls directReadFromFile with charset= ISO_8859_1 */
-    public static String directReadFrom88591File(String fileName) 
-        throws Exception {
-        return directReadFromFile(fileName, ISO_8859_1);
-    }
-
-    /**
-     * This reads the bytes of the file with the specified charset.
-     * This does not alter the characters (e.g., the line endings).
-     * 
-     * <P>This method is generally appropriate for small and medium-sized
-     * files. For very large files or files that need additional processing,
-     * it may be better to write a custom method to
-     * read the file line-by-line, processing as it goes.
-     *
-     * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
-     * @return a String with the decoded contents of the file.
-     * @throws Exception if trouble
-     */
-    public static String directReadFromFile(String fileName, String charset) 
-        throws Exception {
-
-        //declare the BufferedReader variable
-        //declare the results variable: String results[] = {"", ""}; 
-        //BufferedReader and results are declared outside try/catch so 
-        //that they can be accessed from within either try/catch block.
-        long time = System.currentTimeMillis();
-        BufferedReader br = File2.getDecompressedBufferedFileReader(fileName, charset);
-        StringBuilder sb = new StringBuilder(8192);
-        try {
-
-            //get the text from the file
-            char buffer[] = new char[8192];
-            int nRead;
-            while ((nRead = br.read(buffer)) >= 0)  //-1 = end-of-file
-                sb.append(buffer, 0, nRead);
-            return sb.toString();
-        } finally {
-            try {br.close(); } catch (Exception e) {}
-        }
-    }
-
-    /**
-     * This is a variant of readFromFile that uses the default character set 
-     * and 3 tries (1 second apart) to read the file. 
-     */
-    public static String[] readFromFile(String fileName) {
-        return readFromFile(fileName, null, 3);
-    }
-
-    /**
-     * This is a variant of readFromFile that uses the specified character set
-     * and 3 tries (1 second apart) to read the file.
-     */
-    public static String[] readFromFile(String fileName, String charset) {
-        return readFromFile(fileName, charset, 3);
-    }
-
-    /**
-     * This reads the text contents of the specified text file.
-     * 
-     * <P>This method uses try/catch to ensure that all possible
-     * exceptions are caught and returned as the error String
-     * (throwable.toString()).
-     * 
-     * <P>This method is generally appropriate for small and medium-sized
-     * files. For very large files or files that need additional processing,
-     * it may be better to write a custom method to
-     * read the file line-by-line, processing as it goes.
-     *
-     * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
-     * @param maxAttempt e.g. 3   (the tries are 1 second apart)
-     * @return a String array with two strings.
-     *     Using a String array gets around Java's limitation of
-     *         only returning one value from a method.
-     *     String #0 is an error String (or "" if no error).
-     *     String #1 has the contents of the file as one big string
-     *         (with any end-of-line characters converted to \n).
-     *     If the error String is not "", String #1
-     *         may not have all the contents of the file.
-     *     ***This ensures that the last character in the file (if any) is \n.
-     *     This behavior varies from other implementations of readFromFile.
-     */
-    public static String[] readFromFile(String fileName, String charset, int maxAttempt) {
-
-        //declare the BufferedReader variable
-        //declare the results variable: String results[] = {"", ""}; 
-        //BufferedReader and results are declared outside try/catch so 
-        //that they can be accessed from within either try/catch block.
-        long time = System.currentTimeMillis();
-        BufferedReader br = null;
-        String results[] = {"", ""};
-        int errorIndex = 0;
-        int contentsIndex = 1;
-
-        try {
-            //open the file
-            //To deal with problems in multithreaded apps 
-            //(when deleting and renaming files, for an instant no file with that name exists),
-            maxAttempt = Math.max(1, maxAttempt);
-            for (int attempt = 1; attempt <= maxAttempt; attempt++) {
-                try {
-                    br = File2.getDecompressedBufferedFileReader(fileName, charset);
-                } catch (Exception e) {
-                    if (attempt == maxAttempt) {
-                        log(ERROR + ": String2.readFromFile was unable to read " + fileName);
-                        throw e;
-                    } else {
-                        log("WARNING #" + attempt + 
-                            ": String2.readFromFile is having trouble. It will try again to read " + 
-                            fileName);
-                        if (attempt == 1) Math2.gcAndWait(); //trouble! Give OS/Java a time and gc to deal with trouble
-                        else Math2.sleep(1000);
-                    }
-                }
-            }
-        
-            //get the text from the file
-            //This uses bufferedReader.readLine() to repeatedly
-            //read lines from the file and thus can handle various 
-            //end-of-line characters.
-            //The lines (with \n added at the end) are added to a 
-            //StringBuilder.
-            StringBuilder sb = new StringBuilder(8192);
-            String s = br.readLine();
-            while (s != null) { //null = end-of-file
-                sb.append(s);
-                sb.append('\n');
-                s = br.readLine();
-            }
-
-            //save the contents as results[1]
-            results[contentsIndex] = sb.toString();
-
-        } catch (Exception e) {
-            results[errorIndex] = MustBe.throwable("fileName=" + fileName, e);
-        } finally {
-            try {if (br != null) br.close(); } catch (Exception e2) {}
-        }
-
-        //return results
-        //log("  String2.readFromFile " + fileName + " time=" + 
-        //    (System.currentTimeMillis() - time) + "ms");
-        return results;
-    }
-
-    /**
-     * This is like the other readFromFile, but returns ArrayList of Strings
-     * and throws Exception is trouble.
-     * The strings in the ArrayList are not canonical! So this is useful
-     * for reading, processing, and throwing away.
-     * 
-     * <P>This method is generally appropriate for small and medium-sized
-     * files. For very large files or files that need additional processing,
-     * it may be more efficient to write a custom method to
-     * read the file line-by-line, processing as it goes.
-     *
-     * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
-     * @param maxAttempt e.g. 3   (the tries are 1 second apart)
-     * @return ArrayList with the lines from the file
-     * @throws Exception if trouble
-     */
-    public static ArrayList<String> readLinesFromFile(String fileName, String charset,
-        int maxAttempt) throws Exception {
-
-        long time = System.currentTimeMillis();
-        BufferedReader bufferedReader = null;
-        try {
-            for (int i = 0; i < maxAttempt; i++) {
-                try {
-                    bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);
-                    break; //success
-                } catch (RuntimeException e) {
-                    if (i == maxAttempt - 1)
-                        throw e;
-                    Math2.sleep(100);
-                }
-            }
-            ArrayList<String> al = new ArrayList();                         
-            String s = bufferedReader.readLine();
-            while (s != null) { //null = end-of-file
-                al.add(s);
-                s = bufferedReader.readLine();
-            }
-            return al;
-        } finally {
-            if (bufferedReader != null)
-                bufferedReader.close();
-        }
-    }
-
-    /*
-    Here is a skeleton for more direct control of reading text from a file: 
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName));                      
-        try {
-            String s;
-            while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
-                //do something with s
-                //for example, split at whitespace: String fields[] = s.split("\\s+"); //s = whitespace regex
-                }
-
-            bufferedReader.close();
-        } catch (Exception e) {
-            System.err.println(error + "while reading file '" + filename + "':\n" + e);
-            e.printStackTrace(System.err);
-            bufferedReader.close();
-        }
-    */
-
-    /**
-     * Creating a buffered outputStreamWriter this way helps me check that charset is set.
-     * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
-     */
-    public static BufferedWriter getBufferedOutputStreamWriter88591(OutputStream os) {
-        return getBufferedOutputStreamWriter(os, ISO_8859_1_CHARSET);
-    }
-
-    /**
-     * Creating a buffered outputStreamWriter this way helps me check that charset is set.
-     * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
-     */
-    public static BufferedWriter getBufferedOutputStreamWriterUtf8(OutputStream os) {
-        return getBufferedOutputStreamWriter(os, UTF_8_CHARSET);
-    }
-
-    /**
-     * Creating a buffered outputStreamWriter this way helps me check that charset is set.
-     * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
-     */
-    public static BufferedWriter getBufferedOutputStreamWriter(OutputStream os, String charset) throws UnsupportedEncodingException {
-        return new BufferedWriter(new OutputStreamWriter(os, charset));
-    }
-
-    /**
-     * Creating a buffered outputStreamWriter this way helps me check that charset is set.
-     * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
-     */
-    public static BufferedWriter getBufferedOutputStreamWriter(OutputStream os, Charset charset) {
-        return new BufferedWriter(new OutputStreamWriter(os, charset));
-    }
-
-     
-    /**
-     * This saves some text in a file named fileName.
-     * This uses the default character encoding (ISO-8859-1).
-     * 
-     * <P>This method uses try/catch to ensure that all possible
-     * exceptions are caught and returned as the error String
-     * (throwable.toString()).
-     *
-     * <P>This method is generally appropriate for small and medium-sized
-     * files. For very large files or files that need additional processing,
-     * it may be more efficient to write a custom method to
-     * read the file line-by-line, processing as it goes.
-     *
-     * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param contents has the text that will be written to the file.
-     *     contents must use \n as the end-of-line marker.
-     *     Currently, this method purposely does not convert \n to the 
-     *     operating-system-appropriate end-of-line characters when writing 
-     *     to the file (see lineSeparator).
-     * @return an error message (or "" if no error).
-     */
-    public static String writeToFile(String fileName, String contents) {
-        return lowWriteToFile(fileName, contents, null, "\n", false);
-    }
-
-    /**
-     * This is like writeToFile, but it appends the text if the file already 
-     * exists. If the file doesn't exist, it makes a new file. 
-     */
-    public static String appendFile(String fileName, String contents) {
-        return lowWriteToFile(fileName, contents, null, "\n", true);
-    }
-
-    public static String writeToFile(String fileName, String contents, String charset) {
-        return lowWriteToFile(fileName, contents, charset, "\n", false);
-    }
-
-    public static String appendFile(String fileName, String contents, String charset) {
-        return lowWriteToFile(fileName, contents, charset, "\n", true);
-    }
-
-    /**
-     * This provides services to writeToFile and appendFile. 
-     * If there is an error and !append, the partial file is deleted.
-     *
-     * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param contents has the text that will be written to the file.
-     *     contents must use \n as the end-of-line marker.
-     *     Currently, this method purposely does not convert \n to the 
-     *     operating-system-appropriate end-of-line characters when writing 
-     *     to the file (see lineSeparator).
-     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1)
-     * @param lineSeparator is the desired lineSeparator for the outgoing file.
-     * @param append if you want to append any existing fileName;
-     *   otherwise any existing file is deleted first.
-     * @return an error message (or "" if no error).
-     */
-    private static String lowWriteToFile(String fileName, String contents, 
-        String charset, String lineSeparator, boolean append) {
-        
-        //bufferedWriter and error are declared outside try/catch so 
-        //that they can be accessed from within either try/catch block.
-        BufferedWriter bufferedWriter = null;
-        String error = "";
-
-        try {
-            //open the file
-            //This uses a BufferedWriter wrapped around a FileWriter
-            //to write the information to the file.
-            if (charset == null || charset.length() == 0) 
-                charset = ISO_8859_1;
-            bufferedWriter = getBufferedOutputStreamWriter(new FileOutputStream(fileName, append), charset);
-                         
-            //convert \n to operating-system-specific lineSeparator
-            if (!lineSeparator.equals("\n"))
-                contents = replaceAll(contents, "\n", lineSeparator);
-                //since the first String is a regex, you can use "[\\n]" too
-
-            //write the text to the file
-            bufferedWriter.write(contents);
-
-            //test speed
-            //int start = 0;
-            //while (start < contents.length()) {
-            //    bufferedWriter.write(contents.substring(start, Math.min(start+39, contents.length())));
-            //    start += 39;
-            //}
-
-        } catch (Exception e) {
-            error = e.toString();
-        }
-
-        //make sure bufferedWriter is closed
-        try {
-            if (bufferedWriter != null) 
-                bufferedWriter.close();
-        } catch (Exception e) {
-            if (error.length() == 0)
-                error = e.toString(); 
-            //else ignore the error (the first one is more important)
-        }
-
-        //and delete partial file if error and not appending
-        if (error.length() > 0 && !append)
-            File2.delete(fileName);
-
-        return error;
     }
 
     /**
@@ -4026,7 +3615,7 @@ public class String2 {
         //always synchronize on logFileLock
         synchronized(logFileLock) { 
             try {
-                logFile = new BufferedWriter(new FileWriter(fullFileName, append)); //default charset
+                logFile = File2.getBufferedWriterUtf8(new FileOutputStream(fullFileName, append)); 
                 logFileSize = Math2.narrowToInt((new File(fullFileName)).length());
                 logFileName = fullFileName; //log file created, so assign logFileName
             } catch (Throwable t) {
@@ -4150,12 +3739,12 @@ and zoom and pan with controls in
                         logFileSize = 0;
                         File2.safeRename(logFileName, logFileName + ".previous"); //won't throw exception
                         try {
-                            logFile = new BufferedWriter(new FileWriter(logFileName));
+                            logFile = File2.getBufferedFileWriterUtf8(logFileName);
                         } catch (Throwable t) {
                             //try again: really bad if unable to create a new logFile
                             Math2.gc(1000);
                             try {
-                                logFile = new BufferedWriter(new FileWriter(logFileName));
+                                logFile = File2.getBufferedFileWriterUtf8(logFileName);
                             } catch (Throwable t2) {
                                 System.out.println(Calendar2.getCurrentISODateTimeStringZulu() +
                                     " ERROR: while creating new logFile=" + logFileName + "\n" +
@@ -5242,119 +4831,6 @@ and zoom and pan with controls in
     }
 
     /**
-     * This reads an ASCII file line by line (with any common end-of-line characters), 
-     * does a simple (not regex) search and replace on each line, 
-     * and saves the lines in another file (with String2.lineSeparator's).
-     *
-     * @param fullInFileName the full name of the input file
-     * @param fullOutFileName the full name of the output file 
-        (if same as fullInFileName, fullInFileName will be renamed +.original)
-     * @param search  a plain text string to search for
-     * @param replace  a plain text string to replace any instances of 'search'
-     * @throws Exception if any trouble
-     */
-    public static void simpleSearchAndReplace(String fullInFileName,
-        String fullOutFileName, String search, String replace) 
-        throws Exception {       
-             
-        log("simpleSearchAndReplace in=" + fullInFileName +
-            " out=" + fullOutFileName + " search=" + search + " replace=" + replace);
-        String tOutFileName = fullOutFileName + Math2.random(Integer.MAX_VALUE);
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fullInFileName));
-        try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tOutFileName));
-            try {
-                                 
-                //convert the text, line by line
-                //This uses bufferedReader.readLine() to repeatedly
-                //read lines from the file and thus can handle various 
-                //end-of-line characters.
-                String s = bufferedReader.readLine();
-                while (s != null) { //null = end-of-file
-                    bufferedWriter.write(replaceAll(s, search, replace));
-                    bufferedWriter.write(lineSeparator);
-                    s = bufferedReader.readLine();
-                }
-
-                bufferedReader.close();
-                bufferedReader = null;
-                bufferedWriter.close();
-                bufferedWriter = null;
-
-                if (fullInFileName.equals(fullOutFileName))
-                    File2.rename(fullInFileName, fullInFileName + ".original");
-                File2.rename(tOutFileName, fullOutFileName);
-                if (fullInFileName.equals(fullOutFileName))
-                    File2.delete(fullInFileName + ".original");
-
-            } catch (Exception e) {
-                try {
-                    if (bufferedWriter != null) {
-                        bufferedWriter.close();
-                        bufferedWriter = null;
-                    }
-                } catch (Exception e2) {
-                }
-                try {
-                    if (bufferedReader != null) {
-                        bufferedReader.close();
-                        bufferedReader = null;
-                    }
-                } catch (Exception e2) {
-                }
-                File2.delete(tOutFileName);
-                throw e;
-            }
-        } catch (Exception e3) {
-            try {
-                if (bufferedReader != null) 
-                    bufferedReader.close();
-            } catch (Exception e4) {
-            }
-            File2.delete(tOutFileName);
-            throw e3;
-        }
-    }
-
-    /**
-     * This reads an ASCII file line by line (with any common end-of-line characters), 
-     * does a regex search and replace on each line, 
-     * and saves the lines in another file (with String2.lineSeparator's).
-     *
-     * @param fullInFileName the full name of the input file
-     * @param fullOutFileName the full name of the output file
-     * @param search  a regex to search for
-     * @param replace  a plain text string to replace any instances of 'search'
-     * @throws Exception if any trouble
-     */
-    public static void regexSearchAndReplace(String fullInFileName,
-        String fullOutFileName, String search, String replace) 
-        throws Exception {
-         
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fullInFileName));
-        try {
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fullOutFileName));
-            try {                   
-                //get the text from the file
-                //This uses bufferedReader.readLine() to repeatedly
-                //read lines from the file and thus can handle various 
-                //end-of-line characters.
-                String s = bufferedReader.readLine();
-                while (s != null) { //null = end-of-file
-                    bufferedWriter.write(s.replaceAll(search, replace));
-                    bufferedWriter.write(lineSeparator);
-                    s = bufferedReader.readLine();
-                }
-            } finally {
-                bufferedWriter.close();
-            }
-        } finally {
-            bufferedReader.close();
-        }
-    }
-
-
-    /**
      * This returns a string with the keys and values of the Map (sorted by the keys, ignoreCase).
      *
      * @param map (keys and values are objects with good toString methods).
@@ -5573,41 +5049,6 @@ and zoom and pan with controls in
         while (po > 0 && isWhite(s.charAt(po - 1))) 
             po--;
         return po < sLength? s.substring(0, po) : s;
-    }
-
-    /**
-     * This returns the directory that is the classpath for the source
-     * code files (with forward slashes and a trailing slash, 
-     * e.g., c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/.
-     *
-     * @return directory that is the classpath for the source
-     *     code files (with / separator and / at the end)
-     * @throws RuntimeException if trouble
-     */
-    public static String getClassPath() {
-        if (classPath == null) {
-            String find = "/com/cohort/util/String2.class";
-            //use this.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-            classPath = String2.class.getResource(find).getFile();
-            classPath = replaceAll(classPath, '\\', '/');
-            int po = classPath.indexOf(find);
-            classPath = classPath.substring(0, po + 1);
-
-            //on windows, remove the troublesome leading "/"
-            if (OSIsWindows && classPath.length() > 2 && 
-                classPath.charAt(0) == '/' && classPath.charAt(2) == ':')
-                classPath = classPath.substring(1);
-
-            //classPath is a URL! so spaces are encoded as %20 on Windows!
-            //UTF-8: see https://en.wikipedia.org/wiki/Percent-encoding#Current_standard
-            try {
-                classPath = URLDecoder.decode(classPath, UTF_8);  
-            } catch (Throwable t) {
-                log(MustBe.throwableToString(t));
-            }
-        }
-
-        return classPath;
     }
 
     /**
@@ -5977,7 +5418,7 @@ and zoom and pan with controls in
      */
     public static byte[] stringToUtf8Bytes(String s) {
         return s == null? null : 
-               s.length() == 0? BAR_ZERO : s.getBytes(UTF_8_CHARSET);   
+               s.length() == 0? BAR_ZERO : s.getBytes(File2.UTF_8_CHARSET);   
     }
 
     /**
@@ -5987,7 +5428,7 @@ and zoom and pan with controls in
      * null in returns null out.
      */
     public static String utf8BytesToString(byte[] bar) {
-        return bar == null? null : new String(bar, UTF_8_CHARSET); 
+        return bar == null? null : new String(bar, File2.UTF_8_CHARSET); 
     }
 
     /**
@@ -5998,7 +5439,7 @@ and zoom and pan with controls in
      */
     public static String stringToUtf8String(String s) {
         try {
-            return new String(s.getBytes(UTF_8), 0);  //0=highByte  this is deprecated but useful
+            return new String(s.getBytes(File2.UTF_8), 0);  //0=highByte  this is deprecated but useful
         } catch (Exception e) {
             log("Caught " + ERROR + " in String2.stringToUtf8String(" + s + "): " + 
                 MustBe.throwableToString(e));
@@ -6012,7 +5453,7 @@ and zoom and pan with controls in
      */
     public static String utf8StringToString(String s) {
         try {
-            return new String(toByteArray(s), UTF_8);             
+            return new String(toByteArray(s), File2.UTF_8);             
         } catch (Exception e) {
             log("Caught " + ERROR + " in String2.utf8StringToString(" + s + "): " + 
                 MustBe.throwableToString(e));

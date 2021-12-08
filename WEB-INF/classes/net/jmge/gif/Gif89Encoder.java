@@ -396,7 +396,7 @@ public class Gif89Encoder {
    * on your classpath and run ala
    * <blockquote>java net.jmge.gif.Gif89Encoder {filename}</blockquote>
    * The filename must be either (1) a JPEG file with extension 'jpg', for
-   * conversion to a static GIF, or (2) a file containing a list of GIFs and/or
+   * conversion to a static GIF, or (2) an ISO-8859-1 file containing a list of GIFs and/or
    * JPEGs, one per line, to be combined into an animated GIF.  The output will
    * appear in the current directory as 'gif89out.gif'.
    * <p>

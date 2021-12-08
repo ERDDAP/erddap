@@ -229,8 +229,8 @@ public class TableWriterHtmlTable extends TableWriter {
             }
 
             //write the header
-            writer = String2.getBufferedOutputStreamWriterUtf8(
-                outputStreamSource.outputStream(String2.UTF_8)); 
+            writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8)); 
             if (writeHeadAndBodyTags) {
                 if (xhtmlMode)
                     writer.write(

@@ -102,7 +102,7 @@ public class GenerateDatasetsXml {
             String2.standardHelpAboutMessage());
         String insert = null;
         boolean reallyVerbose = false;  
-        outFile = String2.getBufferedOutputStreamWriterUtf8(new FileOutputStream(outFileName)); //charset to match datasets.xml
+        outFile = File2.getBufferedFileWriterUtf8(outFileName); //charset to match datasets.xml
         //String2.pressEnterToContinue("stackTrace:\n" + MustBe.stackTrace() + ">> outFile is open");
 
         try {
@@ -335,7 +335,7 @@ public class GenerateDatasetsXml {
                         EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
                             resultsFileName, s1, s2, s3, s4, 
                             String2.parseInt(s5, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
-                        printToBoth(String2.readFromFile(resultsFileName, String2.UTF_8)[1]);
+                        printToBoth(File2.readFromFile(resultsFileName, File2.UTF_8)[1]);
 
                     } else if (eddType.equals("EDDGridLonPM180FromErddapCatalog")) {
                         s1  = get(args,  1,  s1, "ERDDAP URL (ending in \"/erddap/\")");         
@@ -839,7 +839,7 @@ public class GenerateDatasetsXml {
                         String2.flushLog();
                         outFile.close();
                         outFile = null;
-                        return String2.readFromFile(outFileName, String2.UTF_8)[1];
+                        return File2.readFromFile(outFileName, File2.UTF_8)[1];
                     }
                     String2.log(msg);
                 }
@@ -854,7 +854,7 @@ public class GenerateDatasetsXml {
             if (String2.OSIsWindows) 
                 Math2.sleep(250);
         }
-        String ret = String2.readFromFile(outFileName, String2.UTF_8)[1]; 
+        String ret = File2.readFromFile(outFileName, File2.UTF_8)[1]; 
 
         //insert switch:  -idatasetsXmlName#tagName  
         //(or -I for testmode: no overwrite datasets.xml)
@@ -904,8 +904,8 @@ public class GenerateDatasetsXml {
 
             //copy datasets.xml line-by-line to new file, 
             tempName = datasetsXmlName + localCompactTime;
-            inFile = File2.getDecompressedBufferedFileReader(datasetsXmlName, String2.UTF_8); //charset to match datasets.xml  
-            outFile = String2.getBufferedOutputStreamWriterUtf8(new FileOutputStream(tempName)); //charset to match datasets.xml
+            inFile = File2.getDecompressedBufferedFileReaderUtf8(datasetsXmlName); //charset to match datasets.xml  
+            outFile = File2.getBufferedFileWriterUtf8(tempName); //charset to match datasets.xml
             
             //look for the beginLine  
             String line = inFile.readLine();

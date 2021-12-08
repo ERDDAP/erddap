@@ -1107,7 +1107,7 @@ String expected =
         //.dds    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_wod", ".dds"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1157,7 +1157,7 @@ String expected =
         //.das    
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", 
             testCacheDir, eddTable.className() + "_wod", ".das"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1560,7 +1560,7 @@ expected =
         userDapQuery = "&time>2005-06-11T06&time<2005-06-11T07";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_all", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "country,WOD_cruise_identifier,originators_cruise_identifier,wod_unique_cast,latitude,longitude,time,date,GMT_time,Access_no,Platform,Institute,Orig_Stat_Num,dataset,real_time,Ocean_Vehicle,Temperature_WODprofileflag,Temperature_Instrument,Salinity_WODprofileflag,Salinity_Instrument,Oxygen_WODprofileflag,Oxygen_Original_units,Primary_Investigator,Primary_Investigator_VAR,depth,z_WODflag,z_sigfigs,Temperature,Temperature_sigfigs,Temperature_WODflag,Salinity,Salinity_sigfigs,Salinity_WODflag,Pressure,Pressure_sigfigs,Oxygen,Oxygen_sigfigs,Oxygen_WODflag\n" +
@@ -1578,7 +1578,7 @@ expected =
         userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude&time>2005-06-11T06&time<2005-06-11T07";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_outer", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "WOD_cruise_identifier,wod_unique_cast,latitude,longitude\n" +
@@ -1591,7 +1591,7 @@ expected =
         userDapQuery = "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity&time>2005-06-11T06&time<2005-06-11T07";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             testCacheDir, eddTable.className() + "_wod_outerInner", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "WOD_cruise_identifier,wod_unique_cast,latitude,longitude,time,depth,Temperature,Salinity\n" +
@@ -1609,7 +1609,7 @@ expected =
         userDapQuery = "depth,Temperature,Salinity&wod_unique_cast=10901522";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery,
             testCacheDir, eddTable.className() + "_wod_inner", ".csv"); 
-        results = String2.directReadFrom88591File(testCacheDir + tName);
+        results = File2.directReadFrom88591File(testCacheDir + tName);
         //String2.log(results);
         expected = 
 "depth,Temperature,Salinity\n" +

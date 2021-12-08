@@ -1048,7 +1048,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String internalName, sixName;
         GridDataSetThredds.verbose = true;
         Opendap.verbose = true;
-        String dir = String2.getClassPath() + //with / separator and / at the end
+        String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/";
 
         //****************************
@@ -1362,7 +1362,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String2.log("\n*** GridDataSetThredds.quickTest of " + internalName);
         GridDataSetThredds.verbose = true;
         Opendap.verbose = true;
-        String dir = String2.getClassPath() + //with / separator and / at the end
+        String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/griddata/";
         GridDataSetThredds gridDataSet = new GridDataSetThredds(fnu, 
             internalName,

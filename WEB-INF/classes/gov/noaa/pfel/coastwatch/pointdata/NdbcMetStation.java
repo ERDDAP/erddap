@@ -482,7 +482,7 @@ public class NdbcMetStation  {
             float lon, float lat) throws Exception {
         //read the file
         //String2.log("fullFileName=" + fullFileName);
-        ArrayList<String> lines = String2.readLinesFromFile(fullFileName, null, 1); 
+        ArrayList<String> lines = File2.readLinesFromFile(fullFileName, null, 1); 
         String line0 = lines.get(0);
         if (line0.length() >=2 && line0.charAt(0) == '\u001f' && line0.charAt(1) == '\u008b') {
             //common problem in 2019+ : it's a .gzip file, but with wrong extension
@@ -490,7 +490,7 @@ public class NdbcMetStation  {
             File2.rename(fullFileName, fullFileName + ".gz");
             SSR.unGzip(fullFileName + ".gz", File2.getDirectory(fullFileName), true, 20); //throws exception
             File2.delete(fullFileName + ".gz");
-            lines = String2.readLinesFromFile(fullFileName, null, 1); 
+            lines = File2.readLinesFromFile(fullFileName, null, 1); 
         }
         String shortFileName = File2.getNameAndExtension(fullFileName);
         return readStationTxt(fullFileName, lines, stationID, lon, lat);
@@ -1856,10 +1856,10 @@ public class NdbcMetStation  {
             String stationUrl = "https://www.ndbc.noaa.gov/station_page.php?station=" + 
                 lcOfficialStationName;
             if (File2.isFile(htmlFileName)) {
-                lines = String2.readLinesFromFile(htmlFileName, null, 2).toArray(new String[0]);
+                lines = File2.readLinesFromFile(htmlFileName, null, 2).toArray(new String[0]);
             } else {
                 lines = SSR.getUrlResponseArrayList(stationUrl).toArray(new String[0]);
-                Test.ensureEqual(String2.writeToFile(htmlFileName, String2.toNewlineString(lines)), "", "");
+                Test.ensureEqual(File2.writeToFileUtf8(htmlFileName, String2.toNewlineString(lines)), "", "");
             }
             msg.append("  stationUrl=" + stationUrl + "  nLines=" + lines.length + "\n");
 

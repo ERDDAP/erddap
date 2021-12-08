@@ -367,7 +367,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
         boolean process, double maxTimestampSeconds) throws Throwable {
 
         //String2.log(">> EDDTableFromHttpGet.readFile process=" + process + " timestampSeconds=" + timestampSeconds);
-        //String2.directReadFrom88591File(fullFileName)); 
+        //File2.directReadFrom88591File(fullFileName)); 
 
         //ensure required columns are included (if needed)
         int nRCN = tRequiredVariableNames.length;
@@ -1040,7 +1040,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                     fileIsNew = true; //first
                     File2.makeDirectory(File2.getDirectory(fullFileName)); //throws exception if trouble
                 }
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(baos);  
+                Writer writer = File2.getBufferedWriterUtf8(baos);  
 
                 if (fileIsNew) {
                     //write the column names to the writer
@@ -1395,7 +1395,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
             int count = 0;
             while (System.currentTimeMillis() - start < 20000) {
                 count++;
-                String text = String2.directReadFromUtf8File(name);
+                String text = File2.directReadFromUtf8File(name);
                 text = text.substring(Math.max(0, text.length() - 80)).trim();
                 if (text.endsWith("]"))
                     String2.log("The file ends with ']' as expected.");
@@ -2228,7 +2228,7 @@ String expected =
         String2.log("\n*** EDDTableFromHttpGet.testBasic  test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -2364,7 +2364,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2390,7 +2390,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
@@ -2435,7 +2435,7 @@ expected =
         }
 
         //look at last response file
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
         expected = 
 "\\{\n" +
@@ -2463,7 +2463,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
         long versioningTime = System.currentTimeMillis();
         Math2.sleep(1);
@@ -2521,7 +2521,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
@@ -2545,7 +2545,7 @@ expected =
         userDapQuery = "&timestamp<=" + (System.currentTimeMillis()/1000.0);    //as millis
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //similar: versioning as of now
@@ -2553,14 +2553,14 @@ expected =
             Calendar2.epochSecondsToIsoStringT3Z(System.currentTimeMillis()/1000.0);    //as ISO
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3c", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //.csv  all data (without processing)
         userDapQuery = "&timestamp>-1";  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log("dataset without processing:\n" + results);
 /* without neutered timestamps (neutered because they change each time):
 stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command
@@ -2622,7 +2622,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //direct read a data file 
-        results = String2.directReadFromUtf8File(
+        results = File2.directReadFromUtf8File(
             "/u00/data/points/testFromHttpGet/station2/station2_2016-05.jsonl");
         //String2.log(results);
         expected = 
@@ -2640,7 +2640,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         userDapQuery = "&timestamp<=" + (versioningTime/1000.0);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         Test.ensureLinesMatch(results, versioningExpected, "\nresults=\n" + results);
 
@@ -2649,7 +2649,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         userDapQuery = "airTemp";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_withProcessing", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "airTemp\n" +
 "degree_C\n" +
@@ -2672,7 +2672,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         userDapQuery = "&stationID=\"station1\"&time=2016-05-29T01:00:00Z&timestamp>-1"; 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1RawRow", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "stationID,time,latitude,longitude,airTemp,waterTemp,timestamp,author,command\n" +
 ",UTC,degrees_north,degrees_east,degree_C,degree_C,UTC,,\n" +
@@ -2684,7 +2684,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         userDapQuery = "airTemp&timestamp<max(timestamp)-0.001";  //without the final change above
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_miniRollback", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "airTemp\n" +
 "degree_C\n" +
@@ -2707,7 +2707,7 @@ station2,2016-05-29T01:00:00Z,10.2,-150.3,NaN,NaN,2020-10-09T19:12:57.577Z,JohnS
         userDapQuery = "airTemp&timestamp>-1";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_withoutProcessing", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "airTemp\n" +
 "degree_C\n" +

@@ -2277,7 +2277,7 @@ writer.write(dataProviderFormLongDescriptionHTML
                     "\n";
 
                 //log the content to /logs/dataProviderForm.log
-                String error = String2.appendFile(
+                String error = File2.appendFileUtf8(
                     EDStatic.fullLogsDirectory + "dataProviderForm.log",
                     "*** " + content);
                 if (error.length() > 0)
@@ -2630,7 +2630,7 @@ writer.write(widgets.endForm());
 "\n";
 
                 //log the content to /logs/dataProviderForm.log
-                String error = String2.appendFile(
+                String error = File2.appendFileUtf8(
                     EDStatic.fullLogsDirectory + "dataProviderForm.log",
                     "*** " + content);
                 if (error.length() > 0)
@@ -3097,7 +3097,7 @@ dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   +
                         "\n");
 
                 //log the content to /logs/dataProviderForm.log
-                String error = String2.appendFile(
+                String error = File2.appendFileUtf8(
                     EDStatic.fullLogsDirectory + "dataProviderForm.log",
                     "*** " + content.toString());
                 if (error.length() > 0)
@@ -3390,7 +3390,7 @@ writer.write(widgets.endForm());
                     tOtherComments + "\n\n";
 
                 //log the content to /logs/dataProviderForm.log
-                String error = String2.appendFile(
+                String error = File2.appendFileUtf8(
                     EDStatic.fullLogsDirectory + "dataProviderForm.log",
                     "*** " + content);
                 if (error.length() > 0)
@@ -4188,7 +4188,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         //beginning
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "sitemap", ".xml", ".xml");
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(outSource.outputStream(String2.UTF_8));
+        Writer writer = File2.getBufferedWriterUtf8(outSource.outputStream(File2.UTF_8));
         try {
             writer.write(
                 "<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -4445,8 +4445,8 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "version", //fileName is not used
                 ".txt", ".txt");
-            OutputStream out = outSource.outputStream(String2.ISO_8859_1);
-            Writer writer = String2.getBufferedOutputStreamWriter88591(out);
+            OutputStream out = outSource.outputStream(File2.ISO_8859_1);
+            Writer writer = File2.getBufferedWriter88591(out);
             try {
                 writer.write( 
                     "Core Version: "   + EDStatic.dapVersion    + OpendapHelper.EOL + //see EOL definition for comments
@@ -4477,8 +4477,8 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 new OutputStreamFromHttpResponse(request, response, 
                     "help", ".html", ".html");
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-            OutputStream out = outputStreamSource.outputStream(String2.ISO_8859_1);
-            Writer writer = String2.getBufferedOutputStreamWriter88591(out);
+            OutputStream out = outputStreamSource.outputStream(File2.ISO_8859_1);
+            Writer writer = File2.getBufferedWriter88591(out);
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl, protocol + " Help"));
             writer.write("\n</head>\n");
             writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString));
@@ -5541,8 +5541,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
         if (part1.equals(EDDTable.sosPhenomenaDictionaryUrl) && urlEndParts.length == 2) {
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "sos_" + eddTable.datasetID() + "_phenomenaDictionary", ".xml", ".xml");
-            OutputStream out = outSource.outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+            OutputStream out = outSource.outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 eddTable.sosPhenomenaDictionary(writer);
                 if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
@@ -5598,8 +5598,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 //e.g., ?service=SOS&request=GetCapabilities
                 OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                     request, response, "sos_" + eddTable.datasetID() + "_capabilities", ".xml", ".xml");
-                OutputStream out = outSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                OutputStream out = outSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out);
                 try {
                     eddTable.sosGetCapabilities(language, queryMap, writer, loggedInAs); 
                     writer.flush();
@@ -5665,8 +5665,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 String fileName = "sosSensor_" + eddTable.datasetID() + "_" + shortName;
                 OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                     request, response, fileName, ".xml", ".xml");
-                OutputStream out = outSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                OutputStream out = outSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out);
                 try {
                     eddTable.sosDescribeSensor(language, loggedInAs, shortName, writer);
                     writer.flush();
@@ -5729,8 +5729,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "ExceptionReport", //fileName is not used
                 ".xml", ".xml");
-            OutputStream out = outSource.outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+            OutputStream out = outSource.outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 //for now, mimic oostethys  (ndbcSOS often doesn't throw exceptions)
                 //exceptionCode options are from OGC 06-121r3  section 8
@@ -6005,8 +6005,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                     request, response, "wcs_" + eddGrid.datasetID() + "_capabilities", 
                     ".xml", ".xml");
-                OutputStream out = outSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                OutputStream out = outSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out);
                 try {
                     eddGrid.wcsGetCapabilities(language, loggedInAs, tVersion, writer); 
                     writer.flush();
@@ -6021,8 +6021,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                     request, response, "wcs_" + eddGrid.datasetID()+ "_" + tCoverage, 
                     ".xml", ".xml");
-                OutputStream out = outSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                OutputStream out = outSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out);
                 try {
                     eddGrid.wcsDescribeCoverage(language, loggedInAs, tVersion, tCoverage, writer);
                     writer.flush();
@@ -6082,8 +6082,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "error", //fileName is not used
                 ".xml", ".xml");
-            OutputStream out = outSource.outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+            OutputStream out = outSource.outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 //???needs work, see Annex A of 1.0.0 specification
                 //this is based on mapserver's exception  (thredds doesn't have xmlns...)
@@ -6391,8 +6391,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "error", //fileName is not used
                 ".xml", ".xml");
-            OutputStream out = outSource.outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+            OutputStream out = outSource.outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 //see WMS 1.3.0 spec, section H.2
                 String error = MustBe.getShortErrorMessage(t);
@@ -7537,8 +7537,8 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
         //return capabilities xml
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "Capabilities", ".xml", ".xml");
-        OutputStream out = outSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+        OutputStream out = outSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out);
         try {
             String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + EDD.WMS_SERVER;
             //see the WMS 1.1.0, 1.1.1, and 1.3.0 specification for details 
@@ -8247,7 +8247,7 @@ scripts.append(
 
         //*** html head
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+        Writer writer = File2.getBufferedWriterUtf8(out);
         try {
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl, eddGrid.title() + " - WMS"));
             writer.write("\n" + eddGrid.rssHeadLink());
@@ -8708,7 +8708,7 @@ scripts.append(
                         fileName.substring(0, fileName.length() - 4), //remove .xml
                         (isFgdc? ".fgdc" : ".iso19115"), ".xml");
                     OutputStream outputStream = 
-                        outSource.outputStream(String2.UTF_8, File2.length(tDir + fileName));
+                        outSource.outputStream(File2.UTF_8, File2.length(tDir + fileName));
                     doTransfer(language, requestNumber, request, response, tDir, 
                         tErddapUrl + "/" + File2.getDirectory(endOfRequest), fileName,
                         outputStream, outSource.usingCompression()); 
@@ -9735,7 +9735,7 @@ breadCrumbs + endBreadCrumbs +
             ext.equals(".js")  || ext.equals(".json") || ext.equals(".kml") || 
             ext.equals(".pdf") || ext.equals(".tsv") || 
             ext.equals(".txt") || ext.equals(".xml")? 
-            String2.UTF_8 : //an assumption, the most universal solution
+            File2.UTF_8 : //an assumption, the most universal solution
             "";
 
         //Set expires header for things that don't change often.
@@ -9977,7 +9977,7 @@ breadCrumbs + endBreadCrumbs +
         //reply to request
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, tDatasetID, "custom:application/rss+xml", ".rss"); 
-        OutputStream outputStream = outSource.outputStream(String2.UTF_8); 
+        OutputStream outputStream = outSource.outputStream(File2.UTF_8); 
         try {
             outputStream.write(rssAr);
         } finally {
@@ -10000,8 +10000,8 @@ breadCrumbs + endBreadCrumbs +
         //generate text response
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "setDatasetFlag", ".txt", ".txt");
-        OutputStream out = outSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             //look at the request
             HashMap<String, String> queryMap = EDD.userQueryHashMap(queryString, true); //false so names are case insensitive
@@ -10026,7 +10026,7 @@ breadCrumbs + endBreadCrumbs +
                 //And ok of it isn't even in datasets.xml.  Unknown files are removed.
                 EDStatic.tally.add("SetDatasetFlag (since startup)", datasetID);
                 EDStatic.tally.add("SetDatasetFlag (since last daily report)", datasetID);
-                String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, datasetID);
+                File2.writeToFileUtf8(EDStatic.fullResetFlagDirectory + datasetID, datasetID);
                 message = "SUCCESS: The flag has been set.";
                 delaySeconds = 0;
             }
@@ -10056,8 +10056,8 @@ breadCrumbs + endBreadCrumbs +
         //generate text response
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "version", ".txt", ".txt");
-        OutputStream out = outSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             String ev = EDStatic.erddapVersion;
             int po = ev.indexOf('_');
@@ -10080,8 +10080,8 @@ breadCrumbs + endBreadCrumbs +
         //generate text response
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "version_string", ".txt", ".txt");
-        OutputStream out = outSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             writer.write("ERDDAP_version_string=" + EDStatic.erddapVersion + "\n");
         } finally {
@@ -11079,8 +11079,8 @@ breadCrumbs + endBreadCrumbs +
             OutputStream out = (new OutputStreamFromHttpResponse(
                 request, response, "OpenSearchDescription", 
                     "custom:application/opensearchdescription+xml", ".xml")).
-                outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 String template = "?searchTerms={searchTerms}&#x26;page={startPage?}" +
                                   "&#x26;itemsPerPage={count?}";
@@ -11202,8 +11202,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(
                 request, response, "OpenSearchResults", 
                     "custom:application/atom+xml", ".xml"); 
-            OutputStream out = outSource.outputStream(String2.UTF_8); 
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+            OutputStream out = outSource.outputStream(File2.UTF_8); 
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 long lastMajorLoadMillis = runLoadDatasets.lastMajorLoadDatasetsStopTimeMillis;
                 if (lastMajorLoadMillis == 0)
@@ -11297,8 +11297,8 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         //*** else return results as RSS 
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "OpenSearchResults", "custom:application/rss+xml", ".xml"); 
-        OutputStream out = outSource.outputStream(String2.UTF_8); 
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+        OutputStream out = outSource.outputStream(File2.UTF_8); 
+        Writer writer = File2.getBufferedWriterUtf8(out);
         try {
             writer.write(
             //see https://cyber.harvard.edu/rss/examples/rss2sample.xml which is simpler
@@ -13311,8 +13311,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
     /**
      * Return an object representation of the DataCatalog.
-     * This hard-coded Java version mimics the method of the same name in 
-     * &lt;jsonld&gt; in messages.xml. See https://schema.org/ class definitions.
+     * See https://schema.org/ class definitions.
      * See Google intro: https://developers.google.com/search/docs/guides/intro-structured-data
      * See Google test: https://search.google.com/structured-data/testing-tool/u/0/
      * @throws IOException if trouble
@@ -13397,8 +13396,7 @@ writer.write(
 
     /**
      * Return an jsonld object representation of the Dataset.
-     * This hard-coded Java version mimics the method of the same name in 
-     * &lt;jsonld&gt; in messages.xml. See https://schema.org/ class definitions.
+     * See https://schema.org/ class definitions.
      * See Google intro: https://developers.google.com/search/docs/guides/intro-structured-data
      * See Google test: https://search.google.com/structured-data/testing-tool/u/0/
      * @throws IOException if trouble
@@ -14693,8 +14691,8 @@ writer.write(
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertFipsCounty", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "ConvertFipsCounty", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 if (toCode) 
                     writer.write(answerCode);
@@ -14919,8 +14917,8 @@ writer.write(
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "convertOAAcronym", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "convertOAAcronym", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
 
                 if (toAcronym) 
@@ -15144,8 +15142,8 @@ writer.write(
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "convertOAVariableName", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "convertOAVariableName", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 if (toVariableName) 
                     writer.write(answerVariableName);
@@ -15358,8 +15356,8 @@ writer.write(
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertKeywords", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "ConvertKeywords", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 if (toCF) 
                     writer.write(answerCF);
@@ -16845,8 +16843,8 @@ UTC                  m   deg_n    deg_east m s-1
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertTime", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "ConvertTime", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 if (cleanString)     writer.write(answerIsoTime);
                 else if (cleanUnits) writer.write(answerUnits);
@@ -17101,8 +17099,8 @@ UTC                  m   deg_n    deg_east m s-1
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertUnits", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "ConvertUnits", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 writer.write(
                     tStandardizeUdunits.length() > 0? rStandardizeUdunits :
@@ -17306,8 +17304,8 @@ UTC                  m   deg_n    deg_east m s-1
 
             //respond to a valid request
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                "ConvertURLs", ".txt", ".txt")).outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                "ConvertURLs", ".txt", ".txt")).outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 writer.write(rText);
                 
@@ -17415,8 +17413,8 @@ UTC                  m   deg_n    deg_east m s-1
         OutputStreamSource outputStreamSource = 
             new OutputStreamFromHttpResponse(request, response, 
                 fileName, fileType, ".json");
-        return String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8));
+        return File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8));
     }
     
     /**
@@ -17432,7 +17430,7 @@ UTC                  m   deg_n    deg_east m s-1
 
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
             request, response, "index", ".html", ".html");
-        return outSource.outputStream(String2.UTF_8);
+        return outSource.outputStream(File2.UTF_8);
     }
 
     /**
@@ -17469,7 +17467,7 @@ UTC                  m   deg_n    deg_east m s-1
     Writer getHtmlWriterUtf8(int language, String loggedInAs, String endOfRequest, String queryString,
         String addToTitle, String addToHead, OutputStream out) throws Throwable {
 
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+        Writer writer = File2.getBufferedWriterUtf8(out);
 
         //write the information for this protocol (dataset list table and instructions)
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
@@ -18204,7 +18202,7 @@ UTC                  m   deg_n    deg_east m s-1
 
         } else if (fileTypeName.equals(".itx")) {
 
-            table.saveAsIgor(String2.getBufferedOutputStreamWriter(
+            table.saveAsIgor(File2.getBufferedWriter(
                 outSource.outputStream(Table.IgorCharset), Table.IgorCharset)); 
 
         } else if (fileTypeName.equals(".mat")) {
@@ -20023,31 +20021,31 @@ expected =
                     if (test ==  3) testCategorize();
                     if (test ==  4) testConvertInterpolate();
 
-                    if (test == 10) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericAcronyms.html");
-                    if (test == 11) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/fipscounty.html");
-                    if (test == 12) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/keywords.html");
-                    if (test == 13) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/time.html");
-                    if (test == 14) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/units.html");
-                    if (test == 15) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/urls.html");
-                    if (test == 16) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericVariableNames.html");
+                    if (test == 10 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericAcronyms.html");
+                    if (test == 11 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/fipscounty.html");
+                    if (test == 12 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/keywords.html");
+                    if (test == 13 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/time.html");
+                    if (test == 14 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/units.html");
+                    if (test == 15 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/urls.html");
+                    if (test == 16 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/convert/oceanicAtmosphericVariableNames.html");
 
-                    if (test == 20) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/AccessToPrivateDatasets.html");
-                    if (test == 21) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/changes.html");
-                    if (test == 22) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/EDDTableFromEML.html");
-                    if (test == 23) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/grids.html");
-                    if (test == 24) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV.html");
-                    if (test == 25) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV_1.00.html");
-                    if (test == 26) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setup.html");
-                    if (test == 27) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setupDatasetsXml.html");
+                    if (test == 20 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/AccessToPrivateDatasets.html");
+                    if (test == 21 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/changes.html");
+                    if (test == 22 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/EDDTableFromEML.html");
+                    if (test == 23 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/grids.html");
+                    if (test == 24 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV.html");
+                    if (test == 25 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/NCCSV_1.00.html");
+                    if (test == 26 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setup.html");
+                    if (test == 27 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/download/setupDatasetsXml.html");
 
-                    if (test == 30) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/information.html");
-                    if (test == 31) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/rest.html");
-                    if (test == 32) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/griddap/documentation.html");
-                    if (test == 33) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/tabledap/documentation.html");
-                    if (test == 34) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/files/documentation.html");
-                    if (test == 35) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/wms/documentation.html");
-                    if (test == 36) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/TablesAndGrids.html");
-                    if (test == 37) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
+                    if (test == 30 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/information.html");
+                    if (test == 31 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/rest.html");
+                    if (test == 32 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/griddap/documentation.html");
+                    if (test == 33 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/tabledap/documentation.html");
+                    if (test == 34 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/files/documentation.html");
+                    if (test == 35 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/wms/documentation.html");
+                    if (test == 36 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/TablesAndGrids.html");
+                    if (test == 37 && doSlowTestsToo) SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
 
                 }
 

@@ -62,7 +62,7 @@ public class FileNameUtility  {
 
 
     public static String STANDARD_REGIONS_FILE_NAME = 
-        String2.getClassPath() + //with / separator and / at the end
+        File2.getClassPath() + //with / separator and / at the end
         "gov/noaa/pfel/coastwatch/griddata/regions";
 
     public static String getAcknowledgement() {return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD"; }
@@ -335,7 +335,7 @@ public class FileNameUtility  {
         StringBuilder wesnSB = new StringBuilder();
         if (region.length() > 0) {
             //get the line in the regions file with the region
-            String line = SSR.getFirstLineStartsWith(STANDARD_REGIONS_FILE_NAME, region); 
+            String line = SSR.getFirstLineStartsWith(STANDARD_REGIONS_FILE_NAME, File2.ISO_8859_1, region); 
             Test.ensureNotNull(line, errorIn + "region \"" + region + 
                 "\" not found in " + STANDARD_REGIONS_FILE_NAME + ".");
             
@@ -392,7 +392,7 @@ public class FileNameUtility  {
                 String2.genEFormat10(getMaxY(cwName));
 
             //get the region name from the matching line in the regions file
-            String line = SSR.getFirstLineMatching(STANDARD_REGIONS_FILE_NAME, 
+            String line = SSR.getFirstLineMatching(STANDARD_REGIONS_FILE_NAME, File2.ISO_8859_1, 
                 "[^#].*?\\s" + regionInfo + "\\s.*");  //# = not a comment line
             Test.ensureNotNull(line, errorIn + "no region with range \"" + regionInfo + 
                 "\" found in " + STANDARD_REGIONS_FILE_NAME + ".");

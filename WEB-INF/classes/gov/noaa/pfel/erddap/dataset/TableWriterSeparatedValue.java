@@ -8,6 +8,7 @@ import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -124,8 +125,8 @@ public class TableWriterSeparatedValue extends TableWriter {
             }
 
             //write the header
-            writer = String2.getBufferedOutputStreamWriter88591(
-                outputStreamSource.outputStream(String2.ISO_8859_1));
+            writer = File2.getBufferedWriter88591(
+                outputStreamSource.outputStream(File2.ISO_8859_1));
 
             //write the column names   
             isStringOrChar = new boolean[nColumns];

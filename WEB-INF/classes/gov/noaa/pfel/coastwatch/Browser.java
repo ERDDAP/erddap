@@ -1916,7 +1916,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                             false); //false=zipIt
 
                                     //save .ncHeader
-                                    String2.writeToFile(dir + name + extension,
+                                    File2.writeToFileUtf8(dir + name + extension,
                                         NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".nc")) { //always standardized here
@@ -2063,7 +2063,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         getIconScreenOverlay() +
                                         "</Document>\n" +
                                         "</kml>\n");
-                                    String2.writeToFile(dir + name + fileExtension, sb.toString());
+                                    File2.writeToFileUtf8(dir + name + fileExtension, sb.toString());
 
                                 } else if (extension.equals("transparent.png")) {
                                     //note: I considered making image options part of Grid.saveAs
@@ -2230,7 +2230,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         yGridDataSet.internalName.substring(1)); 
 
                                     //then save .ncHeader
-                                    String2.writeToFile(dir + name + extension,
+                                    File2.writeToFileUtf8(dir + name + extension,
                                         NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".xyz")) { //always standardized here
@@ -2342,7 +2342,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                 } else if (extension.equals(".nc")) {
                                     //already done
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
-                                    String2.writeToFile(dir + name + fileExtension,
+                                    File2.writeToFileUtf8(dir + name + fileExtension,
                                         NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else {
                                     Test.error("internal error Browser.doQuery:\n" +
@@ -2411,7 +2411,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                             Grid.SAVE_AS_NETCDF, false); //false=zipIt
 
                                     //save .ncHeader
-                                    String2.writeToFile(dir + name + extension,
+                                    File2.writeToFileUtf8(dir + name + extension,
                                         NcHelper.ncdump(dir + name + ".nc", "-h"));
 
                                 } else if (extension.equals(".nc")) { //always standardized here
@@ -2475,7 +2475,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         getIconScreenOverlay() +
                                         "</Document>\n" +
                                         "</kml>\n");
-                                    String2.writeToFile(dir + name + fileExtension, sb.toString());
+                                    File2.writeToFileUtf8(dir + name + fileExtension, sb.toString());
 
                                 } else if (extension.equals("transparent.png")) {
                                     //note: I considered making image options part of Grid.saveAs
@@ -2773,7 +2773,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         getIconScreenOverlay() +
                                         "  </Document>\n" +
                                         "</kml>\n");
-                                    String2.writeToFile(dir + name + fileExtension, sb.toString());
+                                    File2.writeToFileUtf8(dir + name + fileExtension, sb.toString());
 
                                 } else if (extension.equals(".html")) {
 
@@ -2806,7 +2806,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //save as .nc done above
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //save as .nc done above
-                                    String2.writeToFile(dir + name + fileExtension,
+                                    File2.writeToFileUtf8(dir + name + fileExtension,
                                         NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     stationSaveAsPng(pointDataSet, subsetTable, dir, name, 
@@ -3081,7 +3081,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         getIconScreenOverlay() +
                                         "  </Document>\n" +
                                         "</kml>\n");
-                                    String2.writeToFile(dir + name + fileExtension, sb.toString());
+                                    File2.writeToFileUtf8(dir + name + fileExtension, sb.toString());
 
                                 } else if (extension.equals(".html")) {
                                     //make table
@@ -3130,7 +3130,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //already done above
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //first save as .nc
-                                    String2.writeToFile(dir + name + fileExtension,
+                                    File2.writeToFileUtf8(dir + name + fileExtension,
                                         NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     //make table
@@ -3327,7 +3327,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         getIconScreenOverlay() +
                                         "  </Document>\n" +
                                         "</kml>\n");
-                                    String2.writeToFile(dir + name + fileExtension, sb.toString());
+                                    File2.writeToFileUtf8(dir + name + fileExtension, sb.toString());
 
                                 } else if (extension.equals(".html")) {
 
@@ -3360,7 +3360,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     //save as .nc done above
                                 } else if (extension.equals(".ncHeader")) { //always standardized here
                                     //save as .nc done above
-                                    String2.writeToFile(dir + name + fileExtension,
+                                    File2.writeToFileUtf8(dir + name + fileExtension,
                                         NcHelper.ncdump(dir + tDataName + ".nc", "-h"));
                                 } else if (whichImage >= 0) {
                                     trajectorySaveAsPng(tableDataSet, subsetTable, dir, name, 

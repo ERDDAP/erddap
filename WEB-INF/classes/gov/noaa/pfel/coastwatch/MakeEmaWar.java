@@ -39,7 +39,7 @@ public class MakeEmaWar  {
         String errorInMethod = String2.ERROR + " while generating Ema JavaDocs ";
 
         //identify directories
-        String classPath = String2.getClassPath(); //with / separator and / at the end
+        String classPath = File2.getClassPath(); //with / separator and / at the end
         int po = classPath.indexOf("WEB-INF/classes/");
         Test.ensureTrue(po >= 0, "test po >= 0");
         String baseDir = classPath.substring(0, po);
@@ -97,7 +97,7 @@ public class MakeEmaWar  {
         //String2.log(String2.toNewlineString(dirNameArray));
 
         //make the zip file
-        String zipName = String2.webInfParentDirectory() + //with / separator and / at the end
+        String zipName = File2.webInfParentDirectory() + //with / separator and / at the end
             "EMA.war";
         String2.log("MakeEmaWar is making " + zipName + ".");
         SSR.zip(zipName, dirNameArray, 60, baseDir);

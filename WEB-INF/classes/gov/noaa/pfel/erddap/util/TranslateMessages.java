@@ -224,7 +224,7 @@ public class TranslateMessages {
     
     
     // path
-    public static String utilDir = String2.getClassPath() + "gov/noaa/pfel/erddap/util/";
+    public static String utilDir = File2.getClassPath() + "gov/noaa/pfel/erddap/util/";
     public static String translatedMessagesDir = utilDir + "translatedMessages/";
     private static String messagesXmlFileName  = utilDir + "messages.xml";
     private static String oldMessagesXmlFileName = translatedMessagesDir + "messagesOld.xml";
@@ -1743,7 +1743,7 @@ import org.xml.sax.SAXException;
 
         //*** Uncomment this to get a list of &xxx; (or some other regex) in messages.xml
         /* 
-        String s = String2.directReadFromUtf8File(messagesXmlFileName);
+        String s = File2.directReadFromUtf8File(messagesXmlFileName);
         String2.log(s);
         //common regexes: ".*(\\&[a-zA-Z0-9]+?;).*",  ".*(<kbd>.*</kbd>).*",  ".*(&lt;\\w*&gt;).*"
         String oa[] = String2.extractAllCaptureGroupsAsHashSet(s, ".*(&lt;.{1,25}&gt;).*", 1).toArray(new String[0]);

@@ -2811,21 +2811,21 @@ public abstract class EDDTable extends EDD {
             Table table = makeEmptyDestinationTable(language, requestUrl, "", true); //as if userDapQuery was for everything
 
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-            table.saveAsDAS(outputStreamSource.outputStream(String2.ISO_8859_1), 
+            table.saveAsDAS(outputStreamSource.outputStream(File2.ISO_8859_1), 
                 SEQUENCE_NAME);
             return;
         }
         if (fileTypeName.equals(".dds")) {
             Table table = makeEmptyDestinationTable(language, requestUrl, userDapQuery, false);
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
-            table.saveAsDDS(outputStreamSource.outputStream(String2.ISO_8859_1),
+            table.saveAsDDS(outputStreamSource.outputStream(File2.ISO_8859_1),
                 SEQUENCE_NAME);
             return;
         }
 
         if (fileTypeName.equals(".fgdc")) {
             if (accessibleViaFGDC.length() == 0) {                
-                OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+                OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
                 try {
                     if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
                         throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -2854,8 +2854,8 @@ public abstract class EDDTable extends EDD {
                     EDDTableFromHttpGet.INSERT_COMMAND :
                     EDDTableFromHttpGet.DELETE_COMMAND, 
                 userDapQuery);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(
-                outputStreamSource.outputStream(String2.UTF_8)); 
+            Writer writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8)); 
             writer.write(jsonResponse);
             writer.flush(); //essential
 
@@ -2876,8 +2876,8 @@ public abstract class EDDTable extends EDD {
             //it is important that this use outputStreamSource so stream is compressed (if possible)
             //DAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
             //With HTML 5 and for future, best to go with UTF_8. Also, <startHeadHtml> says UTF_8.
-            OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-            Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+            OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+            Writer writer = File2.getBufferedWriterUtf8(out); 
             try {
                 writer.write(EDStatic.startHeadHtml(language, tErddapUrl,  
                     title() + " - " + EDStatic.dafAr[language]));
@@ -2952,7 +2952,7 @@ public abstract class EDDTable extends EDD {
                     EDStatic.queryErrorAr[language] + EDStatic.errorFileNotFoundImageAr[language]));
 
             //ok, copy it  (and don't close the outputStream)
-            OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+            OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
             try {
                 if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
                     throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -2964,7 +2964,7 @@ public abstract class EDDTable extends EDD {
 
         if (fileTypeName.equals(".iso19115")) {
             if (accessibleViaISO19115.length() == 0) {                
-                OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+                OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
                 try {
                     if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
                         throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -3004,8 +3004,8 @@ public abstract class EDDTable extends EDD {
                 table.addColumn(dvi, dv.destinationName(), 
                     PrimitiveArray.factory(tPAType, 1, false), catts);
             }        
-            Writer writer = String2.getBufferedOutputStreamWriter88591(
-                outputStreamSource.outputStream(String2.ISO_8859_1)); 
+            Writer writer = File2.getBufferedWriter88591(
+                outputStreamSource.outputStream(File2.ISO_8859_1)); 
             table.saveAsNccsv(false, true, 0, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
@@ -3320,8 +3320,8 @@ public abstract class EDDTable extends EDD {
             try {
 
                 if (!File2.isFile(fullName)) {
-                    String error = String2.writeToFile(fullName + random, 
-                        NcHelper.ncdump(cacheFullName, "-h"), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
+                    String error = File2.writeToFile(fullName + random, 
+                        NcHelper.ncdump(cacheFullName, "-h"), File2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
                     if (error.length() == 0) {
                         File2.rename(fullName + random, fullName); //make available in an instant
                         File2.isFile(fullName, 5); //for possible waiting thread, wait till file is visible via operating system
@@ -3337,8 +3337,8 @@ public abstract class EDDTable extends EDD {
         //copy file to outputStream
         //(I delayed getting actual outputStream as long as possible.)
         OutputStream out = outputStreamSource.outputStream(
-            ncXHeader? String2.UTF_8 : 
-            fileTypeName.equals(".kml")? String2.UTF_8 : "");
+            ncXHeader? File2.UTF_8 : 
+            fileTypeName.equals(".kml")? File2.UTF_8 : "");
         try {
             if (!File2.copy(fullName, out)) { 
                 //outputStream contentType already set,
@@ -3820,8 +3820,8 @@ public abstract class EDDTable extends EDD {
 
         //Google Earth .kml
         //(getting the outputStream was delayed until actually needed)
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8));
+        BufferedWriter writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8));
 
         //collect the units
         String columnUnits[] = new String[table.nColumns()];
@@ -4559,7 +4559,7 @@ public abstract class EDDTable extends EDD {
                 //getting the outputStream was delayed as long as possible to allow errors
                 //to be detected and handled before committing to sending results to client
                 pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                    imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
+                    imageWidth, imageHeight, outputStreamSource.outputStream(File2.UTF_8));
                 g2 = (Graphics2D)pdfInfo[0];
             } else {
                 logoImageFile = sizeIndex <= 1? EDStatic.lowResLogoImageFile : EDStatic.highResLogoImageFile;
@@ -4789,7 +4789,7 @@ public abstract class EDDTable extends EDD {
                     if (pdf) {
                         if (pdfInfo == null)
                             pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                                imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
+                                imageWidth, imageHeight, outputStreamSource.outputStream(File2.UTF_8));
                         if (g2 == null)
                             g2 = (Graphics2D)pdfInfo[0];
                     } else {
@@ -5051,8 +5051,8 @@ public abstract class EDDTable extends EDD {
         int nCols = twawm.nColumns();
 
         //create a writer
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8));
+        BufferedWriter writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8));
         try {
             if (jsonp != null) 
                 writer.write(jsonp + "(");
@@ -5287,10 +5287,10 @@ public abstract class EDDTable extends EDD {
                 Attributes tAtts = new Attributes(twawm.columnAttributes(col)); //use a copy
                 PAType paType = twawm.columnType(col);
                 if (paType == PAType.STRING)
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (paType == PAType.CHAR)
-//                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
@@ -5706,10 +5706,10 @@ public abstract class EDDTable extends EDD {
 
                 PAType paType = twawm.columnType(col);
                 if (paType == PAType.STRING)
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (paType == PAType.CHAR)
-//                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
@@ -6135,10 +6135,10 @@ public abstract class EDDTable extends EDD {
 
                 PAType paType = twawm.columnType(col);
                 if (paType == PAType.STRING)
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);                
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);                
 // disabled until there is a standard
 //                else if (paType == PAType.CHAR)
-//                    tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[col], tAtts, paType.isUnsigned());
             }
@@ -6325,7 +6325,7 @@ public abstract class EDDTable extends EDD {
             //  so it's a programming error if they are missing
 
             //open an OutputStream   
-            Writer writer = String2.getBufferedOutputStreamWriter(
+            Writer writer = File2.getBufferedWriter(
                 outputStreamSource.outputStream(Table.IgorCharset), Table.IgorCharset);
             try {
                 writer.write("IGOR" + Table.IgorEndOfLine);
@@ -6530,8 +6530,8 @@ public abstract class EDDTable extends EDD {
         metavariables.add(table.getColumnName(0));
 
         //open an OutputStream   
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8)); //ODV User's Guide 5.2.1 allows for UTF-8
+        Writer writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8)); //ODV User's Guide 5.2.1 allows for UTF-8
 
         //figure out DataType
         String cdm = globalAtts.getString("cdm_data_type");
@@ -7725,7 +7725,7 @@ public abstract class EDDTable extends EDD {
             //nc4Header
             "  <p><strong>.ncHeader</strong> and <strong>.nc4Header</strong>\n" +
             "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a>\n" +
-            "      for .ncHeader and .nc4Header files will return the header information (text)\n" +
+            "      for .ncHeader and .nc4Header files will return the header information (UTF-8 text)\n" +
             "  that would be generated if you used\n" +
             "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\"\n" +
             "      >ncdump -h <i>fileName</i>" +
@@ -9198,8 +9198,8 @@ public abstract class EDDTable extends EDD {
 
 
         //*** write the header
-        OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl,  
@@ -11536,8 +11536,8 @@ public abstract class EDDTable extends EDD {
         //show the .html response/form
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
-        OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl,  
                 title() + " - " + EDStatic.subsetAr[language]));
@@ -12480,7 +12480,7 @@ public abstract class EDDTable extends EDD {
                 " is making subsetVariablesDataTable(loggedInAs=" + loggedInAs + ")\n" +
                 "from file=" + adminSubsetFileName + ".csv");
             table = new Table();
-            table.readASCII(adminSubsetFileName + ".csv", String2.ISO_8859_1,
+            table.readASCII(adminSubsetFileName + ".csv", File2.ISO_8859_1,
                 "", "", 0, 1, "",  //throws Exception if trouble
                 null, null, null, //no tests
                 tSubsetVars,   //file may have additional columns, but must have these
@@ -14733,8 +14733,8 @@ public abstract class EDDTable extends EDD {
 
                     //write the results
                     //all likely errors are above, so it is now ~safe to get outputstream
-                    out = outputStreamSource.outputStream(String2.UTF_8);
-                    Writer writer = String2.getBufferedOutputStreamWriterUtf8(out);
+                    out = outputStreamSource.outputStream(File2.UTF_8);
+                    Writer writer = File2.getBufferedWriterUtf8(out);
                     if (isIoosSosXmlResponseFormat(language, responseFormat)) 
                         sosObservationsXmlInlineIoos(language, offeringType, offeringName, 
                             twawm, writer, loggedInAs);
@@ -20715,7 +20715,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery1Csv, "someIPAddress", null, osss, dir, "testSos1Sta");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 //from eddTableSos.testNdbcSosWind
@@ -20738,7 +20738,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -20897,7 +20897,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery1b, "someIPAddress", null, osss, dir, "testSos1b");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected =    //changes when I update ndbc
 "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
@@ -20927,7 +20927,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSos2");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
@@ -20957,7 +20957,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery2b, "someIPAddress", null, osss, dir, "testSos2b");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "longitude, latitude, time, station, atmp, wtmp\n" +
@@ -20988,7 +20988,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery2c, "someIPAddress", null, osss, dir, "testSos2c");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -21127,7 +21127,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery2b + "&responseMode=out-of-band", null, osss, dir, "testSos2d");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -21222,7 +21222,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSos3");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
@@ -21253,7 +21253,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery4, "someIPAddress", null, osss, dir, "testSos4");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         expected = 
 "longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
 "degrees_east, degrees_north, UTC, , degrees_true, m s-1, m s-1, m, s, s, degrees_true, hPa, degree_C, degree_C, degree_C, km, hPa, m, m s-1, m s-1\n" +
@@ -21291,7 +21291,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery5csv, "someIPAddress", null, osss, dir, "testSos5csv");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "longitude, latitude, time, station, wtmp\n" +
@@ -21338,7 +21338,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery6csv, "someIPAddress", null, osss, dir, "testSos6csv");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 "longitude, latitude, time, station, wtmp\n" +
@@ -21430,7 +21430,7 @@ writer.write(
 "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -152.8, 2008-06-01T14:03:00Z, 96, 35.3\n" +
 "urn:ioos:station:noaa.nws.ndbc:42376:, -87.94, 29.16, -184.8, 2008-06-01T14:03:00Z, 89, 31.9\n" +
 */
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         //String2.log(results);        
         expected = 
 "longitude, latitude, station_id, altitude, time, CurrentDirection, CurrentSpeed\n" +
@@ -21455,7 +21455,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery2, "someIPAddress", null, osss, dir, "testSosCurSta");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         //expected = same data
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
@@ -21474,7 +21474,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery3, "someIPAddress", null, osss, dir, "testSosCurSta2");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         //String2.log(results);        
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -21623,7 +21623,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testGomoos");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         //String2.log(results);        
         expected = 
 "longitude (deg{east}), latitude (deg{north}), station_id, altitude (m), time (UTC), air_temperature (Cel), chlorophyll (mg.m-3), direction_of_sea_water_velocity (deg{true}), dominant_wave_period (s), sea_level_pressure (mbar), sea_water_density (kg.m-3), sea_water_electrical_conductivity (S.m-1), sea_water_salinity ({psu}), sea_water_speed (cm.s-1), sea_water_temperature (Cel), wave_height (m), visibility_in_air (m), wind_from_direction (deg{true}), wind_gust (m.s-1), wind_speed (m.s-1)\n" +
@@ -21662,7 +21662,7 @@ writer.write(
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddTable.sosGetObservation(language, endOfRequest, sosQuery1, "someIPAddress", null, osss, dir, "testSos1Sta");
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         expected = 
 //"longitude, latitude, time, station, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +

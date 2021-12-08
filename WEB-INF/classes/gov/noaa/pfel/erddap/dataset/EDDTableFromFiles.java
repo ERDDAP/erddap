@@ -709,7 +709,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 false,        //force !recursive, 
                 ".*",         //irrelevant pathRegex
                 tMetadataFrom, 
-                String2.UTF_8,//force charset
+                File2.UTF_8,//force charset
                 tSkipHeaderToRegex, 
                 tSkipLinesRegex, 
                 1,            //force columnNamesRow, 

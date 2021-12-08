@@ -1475,14 +1475,14 @@ public class EDDTableFromNWISDV extends EDDTable{
      */
     public static void bobGenerateNWISDVDatasetsXml() throws Throwable {
         String2.log("\n*** bobGenerateNWISDVDatasetsXml()");
-        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
+        String today = Calendar2getCompactCurrentISODateTimeStringLocal();
         String dataStationsDir    = "c:/data/waterML/briarDatasetStations/";
         String paramCodesFileName = "c:/data/waterML/nwisParametercodes.tsv";
         String outputFileName     = "c:/data/waterML/NWISDVDatasets" + today + ".xml";
         String logFileName        = "c:/data/waterML/NWISDVDatasetFailures" + today + ".txt";
-        Writer logFile = new BufferedWriter(new FileWriter(logFileName, true));  //append
+        Writer logFile = File2.getBufferedFileWriterUtf8(logFileName); 
         try {
-            String subsetDir          = EDStatic.contentDirectory + "subset/";
+            String subsetDir   = EDStatic.contentDirectory + "subset/";
             String fileNames[] = RegexFilenameFilter.list(dataStationsDir, ".*\\.json");
             StringBuilder results  = new StringBuilder();
             int nSkip = 0;
@@ -1654,7 +1654,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             }
 
             //write the results to 
-            String2.writeToFile(outputFileName, results.toString());
+            File2.writeToFileUtf8(outputFileName, results.toString());
             String msg = 
                 "\n" +
                 "*** DONE.  nSkip=" + nSkip + " nFailures=" + nFailures + "\n" +
@@ -2799,7 +2799,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //dds
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".dds"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -2831,7 +2831,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToString());
         //das
         tName = edd.makeNewFileForDapQuery(language, null, null, "", dir, 
             edd.className() + "_Entire", ".das"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.readFromFile(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -3049,7 +3049,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         query = "&agency=\"USGS\"&siteCode=\"01302250\"&time>=2010-12-01&time<=2010-12-04";             
         tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test1", ".csv"); 
-        results = String2.readFromFile(dir + tName);
+        results = File2.readFromFile(dir + tName);
         expected = 
 "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,county,state,country,beginDate,endDate,time,Sampling_depth,Sampling_depthQualifiers\n" +
 ",,,,,,,degrees_east,degrees_north,,m,,,,,UTC,UTC,UTC,ft,\n" +
@@ -3066,7 +3066,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         try {
             tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test2", ".csv"); 
-            results = String2.readFromFile(dir + tName);
+            results = File2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
             String2.log("results[1]=\n" + results[1]);
             throw new SimpleException("shouldn't get here");
@@ -3084,7 +3084,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         try {
             tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test3", ".csv"); 
-            results = String2.readFromFile(dir + tName);
+            results = File2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
             String2.log("results[1]=\n" + results[1]);
             throw new SimpleException("shouldn't get here");
@@ -3101,7 +3101,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         try {
             tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test3b", ".csv"); 
-            results = String2.readFromFile(dir + tName);
+            results = File2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
             String2.log("results[1]=\n" + results[1]);
             throw new SimpleException("shouldn't get here");
@@ -3118,7 +3118,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         try {
             tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
                 edd.className() + "_3_1_test4", ".csv"); 
-            results = String2.readFromFile(dir + tName);
+            results = File2.readFromFile(dir + tName);
             String2.log("results[0]=\n" + results[0]);
             String2.log("results[1]=\n" + results[1]);
             throw new SimpleException("shouldn't get here");
@@ -3139,7 +3139,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         query = "&agency=\"USGS\"&siteCode=\"0209303205\"";             
         tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test5", ".csv"); 
-        results = String2.readFromFile(dir + tName);
+        results = File2.readFromFile(dir + tName);
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
         expected = 
 "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,county,state,country,beginDate,endDate,time,Sampling_depth,Sampling_depthQualifiers\n" +
@@ -3162,7 +3162,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             "longitude,latitude,srs,altitude,vertDatum,beginDate,endDate&siteType=\"Estuary\"";             
         tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test6", ".csv"); 
-        results = String2.readFromFile(dir + tName);
+        results = File2.readFromFile(dir + tName);
         expected = 
 "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,beginDate,endDate\n" +
 ",,,,,,,degrees_east,degrees_north,,m,,UTC,UTC\n" +
@@ -3180,7 +3180,7 @@ today + " http://localhost:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             "longitude,latitude,srs,altitude,vertDatum&siteName=~\".*BRIDGE.*\"";             
         tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_3_1_test7", ".csv"); 
-        results = String2.readFromFile(dir + tName);
+        results = File2.readFromFile(dir + tName);
         expected = 
 "agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum\n" +
 ",,,,,,,degrees_east,degrees_north,,m,\n" +

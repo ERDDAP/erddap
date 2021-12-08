@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.PAType;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -131,8 +132,8 @@ public class TableWriterGeoJson extends TableWriter {
             }
 
             //write the header
-            writer = String2.getBufferedOutputStreamWriterUtf8(
-                outputStreamSource.outputStream(String2.UTF_8));
+            writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8));
             if (jsonp != null) 
                 writer.write(jsonp + "(");
 

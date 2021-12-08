@@ -2281,8 +2281,8 @@ public abstract class EDDGrid extends EDD {
             }
 
             if (fileTypeName.equals(".dds")) {
-                Writer writer = String2.getBufferedOutputStreamWriter88591(
-                    outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+                Writer writer = File2.getBufferedWriter88591(
+                    outputStreamSource.outputStream(File2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
                 try {
                     writeDDS(language, requestUrl, userDapQuery, writer);
                 } finally {
@@ -2303,7 +2303,7 @@ public abstract class EDDGrid extends EDD {
 
             if (fileTypeName.equals(".fgdc")) {
                 if (accessibleViaFGDC.length() == 0) {                
-                    OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+                    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
                     try {
                         if (!File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", out))
                             throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -2328,8 +2328,8 @@ public abstract class EDDGrid extends EDD {
                 //it is important that this use outputStreamSource so stream is compressed (if possible)
                 //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible unicode
                 //With HTML 5 and for future, best to go with UTF_8.  Also, <startHeadHtml> says UTF_8.
-                OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+                OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out); 
                 try {
                     writer.write(EDStatic.startHeadHtml(language, tErddapUrl,  
                         title() + " - " + EDStatic.dafAr[language]));
@@ -2397,7 +2397,7 @@ public abstract class EDDGrid extends EDD {
 
             if (fileTypeName.equals(".iso19115")) {
                 if (accessibleViaISO19115.length() == 0) {                
-                    OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+                    OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
                     try {
                         if (!File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", out))
                             throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -2469,7 +2469,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + EDStatic.errorFileNotFoundImageAr[language]));
 
                 //ok, copy it  (and don't close the outputStream)
-                OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
+                OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
                 try {
                     if (!File2.copy(getPngInfoFileName(loggedInAs, userDapQuery, imageFileType), out))
                         throw new SimpleException(String2.ERROR + " while transmitting file.");
@@ -2491,8 +2491,8 @@ public abstract class EDDGrid extends EDD {
 
             if (fileTypeName.equals(".timeGaps")) {
                 String ts = findTimeGaps();
-                OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-                Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+                OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+                Writer writer = File2.getBufferedWriterUtf8(out); 
                 try {
                     writer.write(ts);
                     writer.flush(); //essential
@@ -2623,8 +2623,8 @@ public abstract class EDDGrid extends EDD {
                     throw new TimeoutException("Timeout waiting for lock on EDDGrid .ncHeader fullName.");
                 try {
 
-                    String error = String2.writeToFile(fullName + random, 
-                        NcHelper.ncdump(cacheFullName, "-h"), String2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
+                    String error = File2.writeToFileUtf8(fullName + random, 
+                        NcHelper.ncdump(cacheFullName, "-h")); //!!!this doesn't do anything to internal " in a String attribute value.
                     if (error.length() == 0) {
                         File2.rename(fullName + random, fullName); //make available in an instant
                         File2.isFile(fullName, 5); //for possible waiting thread, wait till file is visible via operating system
@@ -2639,9 +2639,9 @@ public abstract class EDDGrid extends EDD {
             //copy file to outputStream
             //(I delayed getting actual outputStream as long as possible.)
             OutputStream out = outputStreamSource.outputStream(
-                fileTypeName.equals(".ncHeader")? String2.UTF_8 : 
-                fileTypeName.equals(".nc4Header")? String2.UTF_8 : 
-                fileTypeName.equals(".kml")? String2.UTF_8 : 
+                fileTypeName.equals(".ncHeader")? File2.UTF_8 : 
+                fileTypeName.equals(".nc4Header")? File2.UTF_8 : 
+                fileTypeName.equals(".kml")? File2.UTF_8 : 
                 "");
             try {
                 if (!File2.copy(fullName, out)) {
@@ -2695,8 +2695,8 @@ public abstract class EDDGrid extends EDD {
       
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         String formName = "f1"; //change JavaScript below if this changes
-        OutputStream out = outputStreamSource.outputStream(String2.UTF_8);
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(out); 
+        OutputStream out = outputStreamSource.outputStream(File2.UTF_8);
+        Writer writer = File2.getBufferedWriterUtf8(out); 
         try {
             HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language));
 
@@ -4472,8 +4472,8 @@ public abstract class EDDGrid extends EDD {
             int nRAV = ada.nRequestedAxisVariables();
 
             //write the dds    //OPeNDAP 2.0, 7.2.3
-            Writer writer = String2.getBufferedOutputStreamWriter88591(
-                outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+            Writer writer = File2.getBufferedWriter88591(
+                outputStreamSource.outputStream(File2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
             try {
                 writeDDS(language, requestUrl, userDapQuery, writer);  
 
@@ -4515,8 +4515,8 @@ public abstract class EDDGrid extends EDD {
         Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
-        Writer writer = String2.getBufferedOutputStreamWriter88591(
-            outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = File2.getBufferedWriter88591(
+            outputStreamSource.outputStream(File2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
         try {
             writeDDS(language, requestUrl, userDapQuery, writer);  
 
@@ -4610,8 +4610,8 @@ public abstract class EDDGrid extends EDD {
         long time = System.currentTimeMillis();
 
         //get the modified outputStream
-        Writer writer = String2.getBufferedOutputStreamWriter88591(
-            outputStreamSource.outputStream(String2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
+        Writer writer = File2.getBufferedWriter88591(
+            outputStreamSource.outputStream(File2.ISO_8859_1)); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit
         try {
             //write the DAS
             writeDAS(File2.forceExtension(requestUrl, ".das"), "", writer, false);
@@ -4846,8 +4846,8 @@ Attributes {
         long time = System.currentTimeMillis();
 
         //get the writer
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8)); 
+        Writer writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8)); 
         try {
             String opendapBaseUrl = EDStatic.baseUrl(loggedInAs) + "/griddap/" + datasetID;
             writer.write(  //NCML
@@ -4917,10 +4917,10 @@ Attributes {
 
                 PAType paType = edv.destinationDataPAType();
                 if (paType == PAType.STRING)
-                    tAtts.add(String2.ENCODING, String2.ISO_8859_1);
+                    tAtts.add(File2.ENCODING, File2.ISO_8859_1);
     // disabled until there is a standard
     //            else if (paType == PAType.CHAR)
-    //                tAtts.add(String2.CHARSET, String2.ISO_8859_1);
+    //                tAtts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 writeNcmlAttributes(writer, tAtts, "    "); 
                 writer.write("  </variable>\n");
@@ -4964,8 +4964,8 @@ Attributes {
             int nRAV = ada.nRequestedAxisVariables();
 
             //write the dds    //OPeNDAP 2.0, 7.2.3
-            OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
-            Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
+            OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
+            Writer writer = File2.getBufferedWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
             try {
                 writeDDS(language, requestUrl, userDapQuery, writer);  //writer is flushed
 
@@ -5011,8 +5011,8 @@ Attributes {
         Math2.ensureArraySizeOkay(tSize, "OPeNDAP limit");
 
         //write the dds    //OPeNDAP 2.0, 7.2.3
-        OutputStream outputStream = outputStreamSource.outputStream(String2.ISO_8859_1);
-        Writer writer = String2.getBufferedOutputStreamWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
+        OutputStream outputStream = outputStreamSource.outputStream(File2.ISO_8859_1);
+        Writer writer = File2.getBufferedWriter88591(outputStream); //OPeNDAP 2.0 section 3.2.3 says US-ASCII (7bit), so might as well go for compatible common 8bit            
         try {
             writeDDS(language, requestUrl, userDapQuery, writer);  
 
@@ -5225,8 +5225,8 @@ Attributes {
 
         //then get the writer
         //???!!! ISO-8859-1 is a guess. I found no specification.
-        Writer writer = String2.getBufferedOutputStreamWriter88591(
-            outputStreamSource.outputStream(String2.ISO_8859_1)); 
+        Writer writer = File2.getBufferedWriter88591(
+            outputStreamSource.outputStream(File2.ISO_8859_1)); 
         try {
             //ESRI .asc doesn't like NaN
             double dmv = edv.safeDestinationMissingValue();
@@ -6591,7 +6591,7 @@ Attributes {
                 fontScale *= 1.4 * fontScale; //SgtMap.PDF_FONTSCALE=1.5 is too big
                 logoImageFile = EDStatic.highResLogoImageFile;
                 pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                    imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
+                    imageWidth, imageHeight, outputStreamSource.outputStream(File2.UTF_8));
                 g2 = (Graphics2D)pdfInfo[0];
             } else {
                 fontScale *= imageWidth < 500? 1: 1.25;
@@ -6738,7 +6738,7 @@ Attributes {
                     if (pdf) {
                         if (pdfInfo == null)
                             pdfInfo = SgtUtil.createPdf(SgtUtil.PDF_PORTRAIT, 
-                                imageWidth, imageHeight, outputStreamSource.outputStream(String2.UTF_8));
+                                imageWidth, imageHeight, outputStreamSource.outputStream(File2.UTF_8));
                         if (g2 == null)
                             g2 = (Graphics2D)pdfInfo[0];
                     } else { //png
@@ -6880,8 +6880,8 @@ Attributes {
 
         //.nccsvMetadata?       
         if (fileTypeName.equals(".nccsvMetadata")) {
-            Writer writer = String2.getBufferedOutputStreamWriter88591(
-                outputStreamSource.outputStream(String2.ISO_8859_1)); 
+            Writer writer = File2.getBufferedWriter88591(
+                outputStreamSource.outputStream(File2.ISO_8859_1)); 
             try {
                 Table table = new Table();
                 table.globalAttributes().add(combinedGlobalAttributes());
@@ -7214,8 +7214,8 @@ Attributes {
         //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
         //kml docs: https://developers.google.com/kml/documentation/kmlreference
         //CDATA is necessary for url's with queries
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8));
+        BufferedWriter writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8));
         try {
             writer.write( //KML
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -7549,7 +7549,7 @@ Attributes {
                 table.addColumn(av, ada.axisVariables(av).destinationName(),
                     ada.axisValues(av), ada.axisAttributes(av));
             }
-            table.saveAsIgor(String2.getBufferedOutputStreamWriter(
+            table.saveAsIgor(File2.getBufferedWriter(
                 oss.outputStream(Table.IgorCharset), Table.IgorCharset));
 
             //diagnostic
@@ -7585,7 +7585,7 @@ Attributes {
         GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); 
 
         //write the data
-        BufferedWriter writer = String2.getBufferedOutputStreamWriter(
+        BufferedWriter writer = File2.getBufferedWriter(
             oss.outputStream(Table.IgorCharset), Table.IgorCharset);
         try {
             writer.write("IGOR" + Table.IgorEndOfLine);
@@ -8007,10 +8007,10 @@ Attributes {
                     Attributes atts = new Attributes(ada.axisAttributes(av)); //use a copy
                     PAType paType = pa.elementType();
                     if (pa.elementType() == PAType.STRING)  //never
-                        atts.add(String2.ENCODING, String2.ISO_8859_1);
+                        atts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                    else if (paType == PAType.CHAR)  //never
-//                        atts.add(String2.CHARSET, String2.ISO_8859_1);
+//                        atts.add(String2.CHARSET, File2.ISO_8859_1);
 
                     NcHelper.setAttributes(nc3Mode, newAxisVars[av], atts, paType.isUnsigned());
                 }
@@ -8151,10 +8151,10 @@ Attributes {
                 Attributes atts = new Attributes(gda.axisAttributes[av]); //use a copy
                 PAType paType = gda.axisValues[av].elementType();
                 if (paType == PAType.STRING)  //never
-                    atts.add(String2.ENCODING, String2.ISO_8859_1);
+                    atts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (paType == PAType.CHAR)  //never
-//                    atts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    atts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newAxisVars[a], atts, paType.isUnsigned());
             }
@@ -8164,10 +8164,10 @@ Attributes {
                 Attributes atts = new Attributes(gda.dataAttributes[dv]); //use a copy
                 PAType paType = gda.dataVariables[dv].destinationDataPAType();
                 if (paType == PAType.STRING)  //never
-                    atts.add(String2.ENCODING, String2.ISO_8859_1);
+                    atts.add(File2.ENCODING, File2.ISO_8859_1);
 // disabled until there is a standard
 //                else if (paType == PAType.CHAR)  //never
-//                    atts.add(String2.CHARSET, String2.ISO_8859_1);
+//                    atts.add(String2.CHARSET, File2.ISO_8859_1);
 
                 NcHelper.setAttributes(nc3Mode, newVars[dv], atts, paType.isUnsigned());
             }
@@ -8272,8 +8272,8 @@ Attributes {
             int nRAV = ada.nRequestedAxisVariables();
 
             //create a writer
-            BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
-                outputStreamSource.outputStream(String2.UTF_8));
+            BufferedWriter writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8));
             try {
                 if (jsonp != null) 
                     writer.write(jsonp + "(");
@@ -8353,8 +8353,8 @@ Attributes {
         int nRDV = gda.dataVariables().length;
 
         //create a writer
-        BufferedWriter writer = String2.getBufferedOutputStreamWriterUtf8(
-            outputStreamSource.outputStream(String2.UTF_8));
+        BufferedWriter writer = File2.getBufferedWriterUtf8(
+            outputStreamSource.outputStream(File2.UTF_8));
         try {
             if (jsonp != null) 
                 writer.write(jsonp + "(");
@@ -9617,7 +9617,7 @@ Attributes {
             "\n" +
             //ncHeader
             "  <p><strong>.ncHeader</strong>\n" +
-            "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
+            "    - <a class=\"selfLink\" id=\"ncHeader\" href=\"#ncHeader\" rel=\"bookmark\">Requests</a> for .ncHeader files will return the header information (UTF-8 text) that\n" +
             "  would be generated if you used\n" +
             "    <a rel=\"help\" href=\"https://linux.die.net/man/1/ncdump\">ncdump -h <i>fileName</i>" +
                     EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
@@ -10562,7 +10562,7 @@ Attributes {
             SSR.downloadFile("https://coastwatch.pfeg.noaa.gov/erddap/info/" + dsName + "/index.tsv",
                 tDir + tName, true);
 
-            String response[] = String2.readFromFile(tDir + tName);
+            String response[] = File2.readFromFile88591(tDir + tName);
             Test.ensureTrue(response[0].length() == 0, response[0]);
             String2.log("Dataset info (500 chars):\n" + response[1].substring(0, Math.min(response[1].length(), 500)));
 
@@ -10608,7 +10608,7 @@ Attributes {
                     SSR.downloadFile("https://coastwatch.pfeg.noaa.gov/erddap/griddap/" + dsName + ".tsv?" +
                         varName + subset.toString(), tDir + tName, true);
 
-                    response = String2.readFromFile(tDir + tName);
+                    response = File2.readFromFile88591(tDir + tName);
                     Test.ensureTrue(response[0].length() == 0, response[0]);
                     if (response[1].startsWith("<!DOCTYPE HTML")) {
                         int start = response[1].indexOf("The error:");
@@ -12138,7 +12138,7 @@ Attributes {
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddGrid.respondToWcsQuery(wcsQuery2, null, osss);
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
         
         //*** observations   for all stations and with BBOX  (multiple stations)
@@ -12149,7 +12149,7 @@ Attributes {
         baos = new ByteArrayOutputStream();
         osss = new OutputStreamSourceSimple(baos);
         eddGrid.respondToWcsQuery(wcsQuery3, null, osss);
-        results = baos.toString(String2.UTF_8);
+        results = baos.toString(File2.UTF_8);
         String2.log(results);        
   */      
     }

@@ -646,7 +646,7 @@ public class EDDGridCopy extends EDDGrid {
             String2.log("\n*** .nc test das dds for entire dataset\n");
             tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Entire", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Attributes {\n" +
@@ -806,7 +806,7 @@ expected =
             //*** test getting dds for entire dataset
             tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Entire", ".dds"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -851,7 +851,7 @@ expected =
             userDapQuery = "y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]";
             tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Data1", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     //verified with 
@@ -877,7 +877,7 @@ expected =
             userDapQuery = "y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]";
             tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 eddGrid.className() + "_Data1", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     //verified with 
@@ -936,7 +936,7 @@ expected =
         //*** look at the time values
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "time", EDStatic.fullTestCacheDirectory, 
             eddGrid.className() + "_time", ".csv"); 
-        String2.log("\n" + String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+        String2.log("\n" + File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
         String2.pressEnterToContinue(
             "The time values shown should only include times since " + 
             Calendar2.epochSecondsToIsoStringTZ(

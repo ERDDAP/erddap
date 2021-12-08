@@ -607,7 +607,7 @@ public class XML {
      * @throws Exception if trouble
      */
     public static Document parseXml(String fileName, boolean validating) throws Exception {
-        return parseXml(new InputSource(File2.getDecompressedBufferedFileReader(fileName, String2.UTF_8)), validating);
+        return parseXml(new InputSource(File2.getDecompressedBufferedFileReader(fileName, File2.UTF_8)), validating);
     }
 
     /**
@@ -746,7 +746,7 @@ public class XML {
         String2.log("prettyXml\n in=" + inFileName + "\nout=" + outFileName);
         if (inFileName.equals(outFileName))
             throw new RuntimeException("Error: inFileName equals outFileName!");
-        String in[] = String2.readFromFile(inFileName, String2.UTF_8);
+        String in[] = File2.readFromFile(inFileName, File2.UTF_8);
         if (in[0].length() > 0)
             throw new RuntimeException("Error while reading " + inFileName + "\n" + in[0]);
         String xml = in[1];
@@ -846,7 +846,7 @@ public class XML {
             }
         }
         //String2.log(sb.toString());
-        String2.writeToFile(outFileName, sb.toString());
+        File2.writeToFileUtf8(outFileName, sb.toString());
     }
 
 

@@ -1290,7 +1290,7 @@ cdmSuggestion() +
         String2.log("\n****************** EDDTableFromNcFiles 1D test das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -1429,7 +1429,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1455,7 +1455,7 @@ expected =
             "&longitude=-119.05&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1Station", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1476,7 +1476,7 @@ expected =
             "&longitude>-119.06&longitude<=-119.04&latitude=33.46666666666&time=2005-07-01T00:00:00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1StationGTLT", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1499,7 +1499,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_eq", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1523,7 +1523,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_NE", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1546,7 +1546,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_gtlt", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "id,longitude,latitude,depth,time,common_name,species_name,size\n" +
@@ -1562,7 +1562,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_regex", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,depth,time,id,species_name,size\n" +
@@ -1607,7 +1607,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles 2D test das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1644,7 +1644,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1690,7 +1690,7 @@ expected =
             "&latitude=-27.7&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1704,7 +1704,7 @@ expected =
             "&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1722,7 +1722,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1750,7 +1750,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -1779,7 +1779,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "latitude,wtmp\n" +
@@ -1841,7 +1841,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles test3D das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "  time {[10]\n" +
@@ -1878,7 +1878,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -1925,7 +1925,7 @@ expected =
             "&longitude=-48.13&latitude=-27.7&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1939,7 +1939,7 @@ expected =
             "&longitude=-48.13&latitude=-27.7&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -1957,7 +1957,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -1979,7 +1979,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,station,wvht,dpd,wtmp,dewp\n" +
@@ -2002,7 +2002,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,wtmp\n" +
@@ -2216,7 +2216,7 @@ expected =
         String2.log("\n****************** EDDTableFromNcFiles test4D das dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
 
         expected = 
@@ -2269,7 +2269,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -2318,7 +2318,7 @@ expected =
             "&longitude=-48.134&latitude=-27.705&time=2005-04-19T00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
@@ -2332,7 +2332,7 @@ expected =
             "&longitude=-48.134&latitude=-27.705&time>=2005-04-01&time<=2005-04-26";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
@@ -2350,7 +2350,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data3", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //  more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2379,7 +2379,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data4", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //  more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2409,7 +2409,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_Data5", ".csv"); 
         String2.log("queryTime=" + (System.currentTimeMillis() - time));
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //  more precise lat lon: from mostly 2 decimal digits to mostly 3.
@@ -2467,7 +2467,7 @@ expected =
         userDapQuery = "longitude,latitude,time,station,wd,wtmp&time%3E=2009-03-12T20"; 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_24hours", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log(results);
 
         //in log output, look at end of constructor for "maxTime is within last 24hrs, so setting maxTime to NaN (i.e., Now)."
@@ -2494,7 +2494,7 @@ expected =
         userDapQuery = "longitude,latitude,station&station=~\"5.*\"&time>=2008-03-11&time<2008-03-12&distinct()"; 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_distincts", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = //2011-04-12 changed with reprocessing. Mostly 2 to mostly 3 decimal digits
 "longitude,latitude,station\n" +
@@ -2799,7 +2799,7 @@ expected =
         userDapQuery = "station&station>\"5\"&station<\"6\""; 
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_id", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station\n" +
 "\n" +
@@ -2861,7 +2861,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_ob", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2899,7 +2899,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderBy(\"time,station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_ob2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -2934,7 +2934,7 @@ expected =
             "&time=2005-04-19T23:00:00Z&orderBy(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_ob3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 ",degrees_east,degrees_north,UTC,degrees_true,m s-1,m s-1,m,s,s,degrees_true,hPa,degree_C,degree_C,degree_C,km,hPa,m,m s-1,m s-1\n" +
@@ -2950,7 +2950,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-01T12&orderBy(\"time\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_ob4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3046,7 +3046,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 ",count,count,count,count\n" +
@@ -3064,7 +3064,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2000-01-01&time<2000-01-01T04&orderByCount(\"station,time\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 ",UTC,count,count,count\n" +
@@ -3091,7 +3091,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"station,time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 ",UTC,count,count,count\n" +
@@ -3121,7 +3121,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2005-04-19&time<2005-04-20&orderByCount(\"\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,wd,wtmp,atmp\n" +
 "count,count,count,count\n" +
@@ -3133,7 +3133,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2000-01-01&time<2000-01-02&orderByCount(\"\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,wtmp,atmp\n" +
 "count,count,count,count,count\n" +
@@ -3145,7 +3145,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<2012-01-01T12&orderByCount(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,count,count,count,count\n" +
@@ -3158,7 +3158,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<2012-01-01T12&orderByCount(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc6", ".nccsv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //neuter dates that vary
         results = results.replaceAll("\\d{4}-\\d{2}-\\d{2}",  "9999-99-99"); //regex replaceAll
         results = results.replaceAll("\\d{2}:\\d{2}:\\d{2}Z", "99:99:99Z");  //regex replaceAll
@@ -3448,7 +3448,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2005-04-18&time<2005-04-20&orderByMean(\"station,time/12hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //since time in orderByMean"", it is the truncated time
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3472,7 +3472,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2005-04-18&time<2005-04-20&orderByMean(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //since time isn't in orderByMean"", it is the mean of the time values
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3486,7 +3486,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2005-04-18&time<2005-04-20&orderByMean(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3505,7 +3505,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<2012-01-01T12&orderByMean(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3518,7 +3518,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<2012-01-07&orderByMean(\"time/2days\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3532,7 +3532,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<2012-01-07&orderByMean(\"station,time/2days\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean7", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3562,7 +3562,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<=2012-01-01T05";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean8pre", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log("\nraw results for " + userDapQuery + "\n" + results);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
@@ -3578,7 +3578,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         userDapQuery += "&orderByMean(\"station,time/2hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean8", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3592,7 +3592,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMean(\"station,time/1hour\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean8b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3712,7 +3712,7 @@ expected =
         userDapQuery = "time,latitude,longitude,wd&latitude<0&longitude<0&time=2014-01-04T12&orderByMean(\"time/1day\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean10", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,latitude,longitude,wd\n" +
 "UTC,degrees_north,degrees_east,degrees_true\n" +
@@ -3723,7 +3723,7 @@ expected =
         userDapQuery = "time,latitude,longitude,wd&latitude>0&longitude>0&time=2014-01-04T12&orderByMean(\"time/1day\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean11", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,latitude,longitude,wd\n" +
 "UTC,degrees_north,degrees_east,degrees_true\n" +
@@ -3803,7 +3803,7 @@ expected =
         userDapQuery = "station%2Clongitude%2Clatitude%2Ctime%2Cdepth%2CT_25%2CQT_5025%2CST_6025&station=%220n110w%22&time%3E=2020-01-01&time%3C2020-01-10&orderByMean(%22time/1day%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //since time in orderByMean"", it is the truncated time
 "station,longitude,latitude,time,depth,T_25,QT_5025,ST_6025\n" +
 ",degrees_east,degrees_north,UTC,m,degree_C,,\n" +
@@ -3843,7 +3843,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderBySum(\"station,time/12hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //since time in orderBySum"", it is the truncated time        
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3867,7 +3867,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderBySum(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //since time isn't in orderBySum(), it is the sum of the time values
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3881,7 +3881,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderBySum(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3900,7 +3900,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-01T12&orderBySum(\"time/6hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -3913,7 +3913,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-07&orderBySum(\"time/2days\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3927,7 +3927,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-07&orderBySum(\"station,time/2days\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum7", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3957,7 +3957,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T05";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum8pre", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         String2.log("\nraw results for " + userDapQuery + "\n" + results);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
@@ -3973,7 +3973,7 @@ expected =
         userDapQuery += "&orderBySum(\"station,time/2hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum8", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -3987,7 +3987,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderBySum(\"station,time/1hour\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum8b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
@@ -4108,7 +4108,7 @@ expected =
 //        userDapQuery = "time,latitude,longitude,wd&latitude<0&longitude<0&time=2014-01-04T12&orderBySum(\"time/1day\")";
 //        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
 //            eddTable.className() + "_obSum10", ".csv"); 
-//        results = String2.directReadFrom88591File(dir + tName);
+//        results = File2.directReadFrom88591File(dir + tName);
 //        expected = 
 //"time,latitude,longitude,wd\n" +
 //"UTC,degrees_north,degrees_east,degrees_true\n" +
@@ -4119,7 +4119,7 @@ expected =
 //        userDapQuery = "time,latitude,longitude,wd&latitude>0&longitude>0&time=2014-01-04T12&orderBySum(\"time/1day\")";
 //        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, dir, 
 //            eddTable.className() + "_obSum11", ".csv"); 
-//        results = String2.directReadFrom88591File(dir + tName);
+//        results = File2.directReadFrom88591File(dir + tName);
 //        expected = 
 //"time,latitude,longitude,wd\n" +
 //"UTC,degrees_north,degrees_east,degrees_true\n" +
@@ -4204,7 +4204,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4278,7 +4278,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMax(\"station,time/1day,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //note that time is the time that max wtmp occurred.
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4305,7 +4305,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMax(\"station,time/day,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //same expected
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -4314,7 +4314,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMax(\"station,time/86400,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //same expected
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -4323,7 +4323,7 @@ expected =
             "&time>=2005-04-01&time<2005-04-20&orderByMax(\"station,time/1.5days,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax1.5days", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //note that time is the time that max wtmp occurred.
 "time,station,wtmp,atmp\n" +    
 "UTC,,degree_C,degree_C\n" +
@@ -4348,7 +4348,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMax(\"time/1day,station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax2s", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = //note that time is the time that max wtmp occurred.
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4361,7 +4361,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4373,7 +4373,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax4", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4385,7 +4385,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMax(\"station,wtmp/1msec,time\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4410,7 +4410,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMax(\"wd\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -4422,7 +4422,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMax(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmax6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -4601,7 +4601,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMin(\"station,time/1day,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4685,7 +4685,7 @@ expected =
             "&time>=2005-04-19&time<2005-04-20&orderByMin(\"station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin1b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4704,7 +4704,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMin(\"time/1day,station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin2a", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
         //sure enough, it just keep row with min station!
 "time,station,wtmp,atmp\n" +
@@ -4718,7 +4718,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4730,7 +4730,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMin(\"station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin2b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4742,7 +4742,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMin(\"time/1day,station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4769,7 +4769,7 @@ expected =
             "&time>=2005-04-14&time<2005-04-20&orderByMin(\"time/2day,station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin3b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4796,7 +4796,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMin(\"wd\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -4808,7 +4808,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMin(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obmin6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -4911,7 +4911,7 @@ expected =
             "&time>=2005-04-19&time<2005-04-20&orderByMinMax(\"station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4984,7 +4984,7 @@ expected =
             "&time>=2005-04-19T21&time<2005-04-20&orderByMinMax(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -4997,7 +4997,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMinMax(\"time/1day,station,wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wtmp,atmp\n" +
 "UTC,,degree_C,degree_C\n" +
@@ -5016,7 +5016,7 @@ expected =
             "&time>=2005-04-18&time<2005-04-20&orderByMinMax(\"time/1day,station\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax2a", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
         //sure enough, it just keep rows with min+max station!
 "time,station,wtmp,atmp\n" +
@@ -5032,7 +5032,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMinMax(\"wd\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax3a", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5045,7 +5045,7 @@ expected =
             "&time>=2012-01-01&time<=2012-01-01T04&orderByMinMax(\"wtmp\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obminmax3b", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5133,7 +5133,7 @@ expected =
             "&orderByClosest(%22station,time,1 day%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5160,7 +5160,7 @@ expected =
             "&orderByClosest(%22time,1day%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5175,7 +5175,7 @@ expected =
             "&orderByClosest(%22time/1day%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obc3", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5193,7 +5193,7 @@ expected =
 //            "&orderByClosest(%22time/1day,station,wtmp,18%22)";
 //        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
 //            eddTable.className() + "_obClosest4", ".csv"); 
-//        results = String2.directReadFrom88591File(dir + tName);
+//        results = File2.directReadFrom88591File(dir + tName);
 //        expected = 
 //"zz\n";
 //        Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -5203,7 +5203,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-01T10&orderByClosest(\"time/4hours\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obClosest5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5325,7 +5325,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-01T10&orderByClosest(\"wd/90\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obClosest6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5458,7 +5458,7 @@ expected =
             "&orderByLimit(%22station,time/1day,3%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5488,7 +5488,7 @@ expected =
             "&orderByLimit(%22station,time/1day,1%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5506,7 +5506,7 @@ expected =
             "&orderByLimit(%22station,3%22)";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5533,7 +5533,7 @@ expected =
             "&orderByLimit(%223%22)";  //3
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "longitude,latitude,time,wtmp,station\n" +
 "degrees_east,degrees_north,UTC,degree_C,\n" +
@@ -5547,7 +5547,7 @@ expected =
             "&time>=2012-01-01&time<2012-01-01T12&orderByLimit(\"time/4hours,2\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl5", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5565,7 +5565,7 @@ expected =
             "&time>=2012-01-02&time<2012-01-03&orderByLimit(\"wtmp/10,1\")";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obl6", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
@@ -5691,7 +5691,7 @@ expected =
         userDapQuery = "station,longitude,latitude&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_sll", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
@@ -5731,7 +5731,7 @@ expected =
         Test.ensureEqual(edv.destinationMax(), -106.11667, "");
 
         tName = csub.makeNewFileForDapQuery(language, null, null, csubDapQuery, dir, baseName, ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "ID,line_station,line,station,longitude,latitude,time,depth,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
@@ -7026,7 +7026,7 @@ expected =
         //*** .das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, "gtspp", ".das"); 
         String2.log("results fileName=" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes {\n" +
 " s {\n" +
@@ -7346,7 +7346,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             "gtspp", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -7371,7 +7371,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&station_id=1254666", 
             dir, "gtspp1254666", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -7401,7 +7401,7 @@ expected =
                     dir, "gtspp" + test, ".csv"); 
                 String2.log("\n*** finished testing " + tests[test] + 
                     " time=" + (System.currentTimeMillis() - eTime) + "ms");
-                results = String2.directReadFrom88591File(dir + tName);
+                results = File2.directReadFrom88591File(dir + tName);
             } catch (Throwable t) {
                 error = MustBe.throwableToString(t);
             }
@@ -7414,7 +7414,7 @@ expected =
         //should succeed quickly (except for println statements here)
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&latitude=-78.579002", 
             dir, "gtspp77", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -7432,7 +7432,7 @@ expected =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&time>2000-01-01T02:59:59Z&time<2000-01-01T03:00:01Z&orderBy(\"station_id,depth\")", 
             dir, "gtsppLL", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -7770,7 +7770,7 @@ expected =
         dapQuery = "time,irradiance&time=\"2011-07-01\"";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_ModTime2",  ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         debugMode = oDebugMode;    
@@ -8424,7 +8424,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"Los Angeles\"&fish=\"Barracuda, California\"&year=1929", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -8446,7 +8446,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&year>=1976&year<=1977", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = SL == 'S'?
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -8506,7 +8506,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&time>=1976-01-01&time<=1977-12-31", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
 
@@ -8516,7 +8516,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"Los Angeles\"&fish=\"Barracuda, California\"&year=1929", 
                 dir, eddTable.className() + "_" + SL + "Y", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = 
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -8527,7 +8527,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&year>=1971&year<=1980", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             expected = SL == 'S'?
 "time,year,fish,port,landings\n" +
 "UTC,,,,pounds\n" +
@@ -8559,7 +8559,7 @@ landings.time_series[12]
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&port=\"All\"&fish=\"Salmon\"&time>=1971-01-01&time<=1980-12-31", 
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
         
@@ -9045,7 +9045,7 @@ String expected2 =
         // .ncCFHeader
         tName = tedd.makeNewFileForDapQuery(language, null, null, query,
             dir, "ncCF1a", ".ncCFHeader"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         results += "}\n";
         results = results.replaceAll("\\d{4}-\\d{2}-\\d{2}", "9999-99-99");
         results = results.replaceAll("\\d{2}:\\d{2}:\\d{2}", "99:99:99");
@@ -11456,7 +11456,7 @@ String expected3 = expected2 +
         //.ncCFMAHeader
         tName = tedd.makeNewFileForDapQuery(language, null, null, query,
             dir, "ncCFMA2b", ".ncCFMAHeader"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         tPo = results.indexOf("(erd.data at noaa.gov).");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 23), expected, 
@@ -11482,7 +11482,7 @@ String expected3 = expected2 +
         EDDTable tableDataset = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet"); 
         String dir = EDStatic.fullTestCacheDirectory;
         String fileName = dir + "tableTestSpeedDAF.txt";
-        Writer writer = new BufferedWriter(new FileWriter(fileName));
+        Writer writer = File2.getBufferedFileWriterUtf8(fileName);
         tableDataset.writeDapHtmlForm(language, null, "", writer);
 
         //time it DAF
@@ -11583,7 +11583,7 @@ String expected3 = expected2 +
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&trajectory=%22ME_BA_067F_66021%2014%22&time=2014-01-01T00:00:00Z&salinity=NaN",
             dir, "equalsNaN", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -11627,49 +11627,49 @@ String expected3 = expected2 +
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth<=17&time>=2007-09-26T22",  //what we want to work
             dir, "depth1", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // > 
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth<18&time>=2007-09-26T22",  //what we want to work
             dir, "depth2", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // <= 
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth<=11&time>=2007-09-26T22",  //what we want to work
             dir, "depth3", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // <
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth>10.9&time>=2007-09-26T22",  //what we want to work
             dir, "depth4", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // =
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth=11&time>=2007-09-26T22",  //what we want to work
             dir, "depth5", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // !=
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth!=10&time>=2007-09-26T22",  //what we want to work
             dir, "depth6", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         // =~
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth=~\"(1000|11\\.0)\"&time>=2007-09-26T22",  //what we want to work
             dir, "depth7", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -11681,7 +11681,7 @@ String expected3 = expected2 +
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&depth=2",  //what we want to work
             dir, "depth8", ".csv"); 
-        results = String2.readFromFile(dir + tName)[1];
+        results = File2.readFromFile88591(dir + tName)[1];
         //String2.log(results);
         expected = 
 "station_name,station,latitude,longitude,time,depth,WaterTemperature,salinity,chlorophyll,Nitrogen,Phosphate,Ammonium\n" +
@@ -11709,7 +11709,7 @@ String expected3 = expected2 +
 
             tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, baseName, ".csv"); 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             String2.log(results);
             expected = "Shouldn't get here!";  
             Test.ensureEqual(results, expected, "results=\n" + results); //should fail
@@ -12252,7 +12252,7 @@ String expected3 = expected2 +
         String2.log("\n*** EDDTableFromNcFiles.test das dds for entire dataset\n");
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir, 
             globecBottle.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         String expectedDas1 = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -12401,7 +12401,7 @@ String expected3 = expected2 +
         //*** test getting dds for entire dataset
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir, 
             globecBottle.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -12448,7 +12448,7 @@ String expected3 = expected2 +
         //.asc
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".asc"); 
-        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -12471,7 +12471,7 @@ String expected3 = expected2 +
         //.csv
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, globecBottle.className() + "_Data", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -12489,7 +12489,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&units(\"UCUM\")", 
             dir, 
             globecBottle.className() + "_Data", ".csvp"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude (deg{east}),NO3 (umol.l-1),time (UTC),ship\n" +
@@ -12506,7 +12506,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, 
             globecBottle.className() + "_Data", ".csv0"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
@@ -12523,7 +12523,7 @@ String expected3 = expected2 +
             "&s.latitude>0&altitude>-5&s.time>=2002-08-03";
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, dotDapQuery, dir, 
             globecBottle.className() + "_DotNotation", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,altitude,NO3,time,ship\n" +
@@ -12539,7 +12539,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, regexDapQuery, dir, 
             globecBottle.className() + "_NumRegex", ".csv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -12570,7 +12570,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_StrEq", ".csv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -12602,7 +12602,7 @@ String expected3 = expected2 +
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_GTLT", ".csv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -12644,7 +12644,7 @@ String expected3 = expected2 +
             //"&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\".*Horiz.*\"";       //source works with this
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_regex", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,NO3,time,ship\n" +
@@ -12675,7 +12675,7 @@ String expected3 = expected2 +
             "&time>=2002-08-07T00&time<=2002-08-07T06&ship=~\"(zztop|.*Horiz.*)\""; //source fails with this
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_regex_dataTable", ".dataTable"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected =   //note that month is 0-based
 "{\"cols\":[{\"id\":\"longitude\",\"label\":\"longitude (degrees_east) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"NO3\",\"label\":\"NO3 (micromoles L-1) \",\"pattern\":\"\",\"type\":\"number\"},{\"id\":\"time\",\"label\":\"time\",\"pattern\":\"\",\"type\":\"datetime\"},{\"id\":\"ship\",\"label\":\"ship\",\"pattern\":\"\",\"type\":\"string\"}],\n" +
@@ -12707,7 +12707,7 @@ String expected3 = expected2 +
         //.das     das isn't affected by userDapQuery
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         Test.ensureEqual(
             results.substring(0, expectedDas1.length()), expectedDas1, "results=\n" + results);
@@ -12718,7 +12718,7 @@ String expected3 = expected2 +
         //.dds 
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".dds"); 
-        results = String2.annotatedString(String2.directReadFrom88591File(dir + tName));
+        results = String2.annotatedString(File2.directReadFrom88591File(dir + tName));
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +
@@ -12770,7 +12770,7 @@ String expected3 = expected2 +
             "&time>=2002-08-03", 
             dir, 
             "testEsri5", ".esriCsv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "cruise_id,ship,cast,X,Y,altitude,date,time,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n" +
@@ -12786,7 +12786,7 @@ String expected3 = expected2 +
         //.geoJson    mapDapQuery so lon and lat are in query
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, dir, 
             globecBottle.className() + "_DataGJ", ".geoJson"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -12832,7 +12832,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03",
             dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -12856,7 +12856,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03" + "&.jsonp=" + SSR.percentEncode(jsonp),
             dir, globecBottle.className() + "_DataGJLL", ".geoJson"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -12881,7 +12881,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".htmlTable"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String)null, language), "EDDTableFromNcFiles_Data") + "\n" +
@@ -12926,7 +12926,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
         //.json
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\n" +
@@ -12953,7 +12953,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".json"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(" +
 "{\n" +
@@ -12977,7 +12977,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
         //.jsonlCSV1
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".jsonlCSV1"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "[\"longitude\", \"NO3\", \"time\", \"ship\"]\n" +
@@ -12994,7 +12994,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
         //.jsonlCSV
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".jsonlCSV"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
@@ -13012,7 +13012,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".jsonlCSV"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(\n" +
 "[-124.4, 35.7, \"2002-08-03T01:29:00Z\", \"New_Horizon\"]\n" +
@@ -13028,7 +13028,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
         //.jsonlKVP
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".jsonlKVP"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n" +
@@ -13046,7 +13046,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
             userDapQuery + "&.jsonp=" + SSR.percentEncode(jsonp), 
             dir, 
             globecBottle.className() + "_Data", ".jsonlKVP"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = jsonp + "(\n" +
 "{\"longitude\":-124.4, \"NO3\":35.7, \"time\":\"2002-08-03T01:29:00Z\", \"ship\":\"New_Horizon\"}\n" +
@@ -13292,7 +13292,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".ncHeader"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         String2.log(results);
 
         tResults = results.substring(0, tHeader1.length());
@@ -13311,7 +13311,7 @@ expected =
             "&latitude>0&time>=2002-08-03", 
             dir, globecBottle.className() + "_ODV", ".odvTxt"); 
         String2.log("ODV fileName=" + dir + tName);
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
                                      "<CreateTime>9999-99-99T99:99:99");
         expected = 
@@ -13363,7 +13363,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude\tNO3\ttime\tship\n" +
@@ -13379,7 +13379,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsvp"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude (degrees_east)\tNO3 (micromoles L-1)\ttime (UTC)\tship\n" +
@@ -13394,7 +13394,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv0"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "-124.4\t35.7\t2002-08-03T01:29:00Z\tNew_Horizon\n";
@@ -13408,7 +13408,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".xhtml"); 
         //SSR.displayInBrowser("file://" + dir + tName);
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -13461,7 +13461,7 @@ expected =
             "longitude,latitude&time>=2002-08-03&time<=2002-08-04", 
             dir, 
             globecBottle.className() + "Map", ".csv");
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "longitude,latitude\n" +
@@ -13526,7 +13526,7 @@ expected =
             tName = eddTable2.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
                 eddTable2.className() + "_Itself", ".xhtml"); 
             //SSR.displayInBrowser("file://" + dir + tName);
-            results = String2.directReadFromUtf8File(dir + tName);
+            results = File2.directReadFromUtf8File(dir + tName);
             //String2.log(results);
             expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -13585,7 +13585,7 @@ expected =
         //kml
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             dir, globecBottle.className() + "_MapKml", ".kml"); 
-        //String2.log(String2.readFromFile(dir + tName)[1]);
+        //String2.log(File2.readFromFile(dir + tName)[1]);
         SSR.displayInBrowser("file://" + dir + tName);
     }
 
@@ -13606,7 +13606,7 @@ expected =
             //kml
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapKml", ".kml"); 
-            //String2.log(String2.readFromFile(dir + tName)[1]);
+            //String2.log(File2.readFromFile(dir + tName)[1]);
             SSR.displayInBrowser("file://" + dir + tName);
 
         if (doAll) {
@@ -13679,7 +13679,7 @@ expected =
             //kml
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapKml", ".kml"); 
-            //String2.log(String2.readFromFile(dir + tName)[1]);
+            //String2.log(File2.readFromFile(dir + tName)[1]);
             SSR.displayInBrowser("file://" + dir + tName);
 
 
@@ -13923,7 +13923,7 @@ expected =
         //an easy query
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, dir, 
             tedd.className() + "_bird1", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -13945,7 +13945,7 @@ expected =
         //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&flight_dir>=40", 
             dir, tedd.className() + "_bird2", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
 ",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
@@ -14008,7 +14008,7 @@ expected =
        
         tName = edd.makeNewFileForDapQuery(language, null, null, query, dir, 
             edd.className() + "_LL", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "cruise_id,station_id,longitude,latitude\n" +
 ",,degrees_east,degrees_north\n" +
@@ -14069,7 +14069,7 @@ expected =
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "erdCalcofiBio");         
         tName = tableDataset.makeNewFileForDapQuery(language, null, null, "",
             dir, tableDataset.className() + "testTableWithAltitude", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -14093,7 +14093,7 @@ expected =
         //ISO 19115 should deal with altitude correctly
         tName = tableDataset.makeNewFileForDapQuery(language, null, null, "",
             dir, tableDataset.className() + "testTableWithAltitude", ".iso19115"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
 
         po = results.indexOf(
 "codeListValue=\"vertical\">");
@@ -14138,7 +14138,7 @@ expected =
         EDDTableFromNcFiles tableDataset = (EDDTableFromNcFiles)oneFromDatasetsXml(null, "testTableWithDepth");         
         tName = tableDataset.makeNewFileForDapQuery(language, null, null, "",
             dir, tableDataset.className() + "testTableWithDepth", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         po = results.indexOf("depth {");
         Test.ensureTrue(po > 0, "results=\n" + results);
         expected = 
@@ -14168,7 +14168,7 @@ expected =
                           " destinationMax=" + timeEdv.destinationMaxDouble() + "=" + timeEdv.destinationMaxString());
         tName = tableDataset.makeNewFileForDapQuery(language, null, null, "",
             dir, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
-        results = String2.directReadFromUtf8File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
 
         expected = 
         "<gmd:EX_Extent>\n" +
@@ -14394,7 +14394,7 @@ expected =
 
         //*** .das
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, "testAirt", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = results.replaceAll("Float64 actual_range 2\\.476656e\\+8, .{8,16};",
                                      "Float64 actual_range 2.476656e+8, [endTime];");
         results = results.replaceAll("String time_coverage_end \"2...-..-..T12:00:00Z\";",
@@ -14545,7 +14545,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2021-11-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2021-12-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14606,7 +14606,7 @@ expected =
         //*** .dds
         tName = tedd.makeNewFileForDapQuery(language, null, null, "", dir, 
             "testAirt", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -14633,7 +14633,7 @@ expected =
         //  (It is unfortunate that this is hard-coded.)
         tName = tedd.makeNewFileForDapQuery(language, null, null, "station&distinct()", 
             dir, "testAirtStations", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         //good test of salinity values: I hand checked this from 1989427.nc in gtspp_at199505.zip
         expected = 
@@ -14830,7 +14830,7 @@ So the changes seem good. */
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&station=\"2s180w\"&time>2011-07-14&time<2011-07-25", 
             dir, "testAirtData", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "array,station,wmo_platform_code,longitude,latitude,time,depth,AT_21,QAT_5021,SAT_6021\n" +
@@ -14870,7 +14870,7 @@ So the changes seem good. */
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&station=~%22(41004|RCPT2|SANF1)%22&time%3E=2020-01-01&time%3C=2020-01-01T01", 
             dir, "testOdvTimeSeries", ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(dir + tName));
         results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
 
         expected = 
@@ -14941,7 +14941,7 @@ So the changes seem good. */
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&time%3C=2007-09-01T00:03:00Z&flag=~%22ZZZ.*%22", 
             dir, "testOdvTrajectory", ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(dir + tName));
         results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
         expected = 
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
@@ -14994,7 +14994,7 @@ So the changes seem good. */
         tName = tedd.makeNewFileForDapQuery(language, null, null, 
             "&time>=2020-01-01T12&time<=2020-01-02&depth<100&trajectory=~\"(ME_BA_09WX_VNVZ%2020|ME_DB_33TT_51011%2020|ME_DB_33TT_51018%2020)\"&orderBy(\"trajectory,time\")", 
             dir, "testOdvTrajectoryProfile", ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(dir + tName));
         results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
         expected = 
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
@@ -15077,7 +15077,7 @@ So the changes seem good. */
         tedd = (EDDTable)oneFromDatasetsXml(null, "erdNph");
         tName = tedd.makeNewFileForDapQuery(language, null, null, "&year=1985", 
             dir, "testOdvPoint", ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(dir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(dir + tName));
         results = results.replaceAll("<CreateTime>.*</CreateTime>", "<CreateTime>[CREATION_TIME]</CreateTime>");
         expected = 
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
@@ -15320,7 +15320,7 @@ So the changes seem good. */
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -15340,7 +15340,7 @@ So the changes seem good. */
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,ECEF_X,IB_time\n" +
 "UTC,m,UTC\n" +
@@ -15355,7 +15355,7 @@ So the changes seem good. */
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -15396,7 +15396,7 @@ So the changes seem good. */
         //.json  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -15479,7 +15479,7 @@ So the changes seem good. */
         /* can't test because it needs lon lat values
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "zztop\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -15488,7 +15488,7 @@ So the changes seem good. */
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -15552,7 +15552,7 @@ So the changes seem good. */
         //all  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             fName, ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
 "UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
@@ -15565,7 +15565,7 @@ So the changes seem good. */
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -15592,7 +15592,7 @@ So the changes seem good. */
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
 "UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
@@ -15606,7 +15606,7 @@ So the changes seem good. */
         //.geoJson  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".geoJson"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"type\": \"FeatureCollection\",\n" +
@@ -15666,7 +15666,7 @@ So the changes seem good. */
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -15742,7 +15742,7 @@ So the changes seem good. */
         //.json  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -15761,7 +15761,7 @@ So the changes seem good. */
         //.kml  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".kml"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
@@ -16064,7 +16064,7 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(tDir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(tDir + tName));
         results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
                                      "<CreateTime>9999-99-99T99:99:99");
         expected = 
@@ -16102,7 +16102,7 @@ expected =
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
@@ -16212,7 +16212,7 @@ expected =
         //.asc  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".asc"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -16233,7 +16233,7 @@ expected =
         //.csv  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,millis,latitude,longitude,doubles,Strings\n" +
 "UTC,UTC,degrees_north,degrees_east,,\n" +
@@ -16246,7 +16246,7 @@ expected =
         //.geoJson  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".geoJson"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"type\": \"FeatureCollection\",\n" +
@@ -16281,7 +16281,7 @@ expected =
         //.htmlTable
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".htmlTable"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -16324,7 +16324,7 @@ expected =
         //.json  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".json"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "{\n" +
 "  \"table\": {\n" +
@@ -16342,7 +16342,7 @@ expected =
         //.kml  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".kml"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
@@ -16563,7 +16563,7 @@ expected =
         //.odvTxt
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".odvTxt"); 
-        results = String2.annotatedString(String2.directReadFromUtf8File(tDir + tName));
+        results = String2.annotatedString(File2.directReadFromUtf8File(tDir + tName));
         results = results.replaceAll("<CreateTime>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}", 
                                      "<CreateTime>9999-99-99T99:99:99");
         expected = 
@@ -16594,7 +16594,7 @@ expected =
         //.xhtml  
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             fName, ".xhtml"); 
-        results = String2.directReadFromUtf8File(tDir + tName);
+        results = File2.directReadFromUtf8File(tDir + tName);
         expected = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
@@ -16681,7 +16681,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&station=\"41024\"&time>=\"2015-01-23T17:00:00Z\"&addVariablesWhere(\"nonsense\",\"Wind\")", 
             tDir, eddTable.className() + "_avw_2", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
@@ -16697,7 +16697,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&station=\"41024\"&time>=\"2015-01-23T17:00:00Z\"&addVariablesWhere(\"ioos_category\",\"nonsense\")", 
             tDir, eddTable.className() + "_avw_2", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //same expected
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -16705,7 +16705,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&station=\"41024\"&time>=\"2015-01-23T17:00:00Z\"&addVariablesWhere(\"ioos_category\",\"Wind\")", 
             tDir, eddTable.className() + "_avw_3", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,wd,wspd,gst,wspu,wspv\n" +
 "UTC,degrees_true,m s-1,m s-1,m s-1,m s-1\n" +
@@ -16722,7 +16722,7 @@ expected =
             "&addVariablesWhere(\"long_name\",\"Latitude\")" +
             "&addVariablesWhere(\"long_name\",\"Longitude\")", 
             tDir, eddTable.className() + "_avw_4", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "time,latitude,longitude\n" +
 "UTC,degrees_north,degrees_east\n" +
@@ -16796,7 +16796,7 @@ expected =
         //subsetVariables
         tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_0sub", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //time min/max
@@ -16827,7 +16827,7 @@ expected =
         String2.log("\n*** read original data\n");       
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddTable.className() + "_update_0d", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
         //*** rename a data file so it doesn't match regex
@@ -16843,7 +16843,7 @@ expected =
             //subsetVariables should be different
             tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
                 eddTable.className() + "_update_1sub", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             expected = 
 "station,longitude,latitude\n" +
 ",degrees_east,degrees_north\n" +
@@ -16886,7 +16886,7 @@ expected =
             //data will be different
             tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
                 eddTable.className() + "_update_1d", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             expected = 
 "station,longitude,latitude,geolon,geolat,luckySeven,time,atmp\n" +
 ",degrees_east,degrees_north,degrees_north,degrees_north,m,UTC,degree_C\n" +
@@ -16913,7 +16913,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_2sub", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -16943,19 +16943,19 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddTable.className() + "_update_2d", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
         //*** rename a non-data file so it matches the regex
         try {
             String2.log("\n*** make invalid file and rename to be a valid name\n");       
-            String2.writeToFile(dataDir + "image.png", "junk contents");
+            File2.writeToFileUtf8(dataDir + "image.png", "junk contents");
             File2.rename(dataDir, "image.png", "NDBC_image_met.nc");
 
             //should be original subsetVariables
             tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
                 eddTable.className() + "_update_3sub", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
             //should be original min/max time
@@ -16985,7 +16985,7 @@ expected =
             //should be original data
             tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
                 eddTable.className() + "_update_3d", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
 
@@ -17002,7 +17002,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
             eddTable.className() + "_update_4sub", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedSubset, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -17032,7 +17032,7 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddTable.className() + "_update_4d", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
     }
@@ -17412,7 +17412,7 @@ expected =
         //das
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "_qr_0das", ".das"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
         po = results.indexOf(originalDas2.substring(0, 80));
@@ -17421,7 +17421,7 @@ expected =
         //subsetVariables
         tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
             eddTable.className() + "_qr_0sub", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
         //original min/max time
@@ -17452,7 +17452,7 @@ expected =
         String2.log("\n*** read original data\n");       
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddTable.className() + "_qr_0d", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
 
@@ -17470,7 +17470,7 @@ expected =
             //should be original das
             tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 eddTable.className() + "_qr_1das", ".das"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
             po = results.indexOf(originalDas2.substring(0, 80));
@@ -17479,7 +17479,7 @@ expected =
             //should be original subsetVariables
             tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
                 eddTable.className() + "_qr_1sub", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
             //should be original min/max time
@@ -17546,7 +17546,7 @@ expected =
         //das
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "_qr_2das", ".das"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results.substring(0, originalDas1.length()), originalDas1, "\nresults=\n" + results);
 
         po = results.indexOf(originalDas2.substring(0, 80));
@@ -17555,7 +17555,7 @@ expected =
         //should be original subsetVariables
         tName = eddTable.makeNewFileForDapQuery(language, null, null, subsetQuery, tDir, 
             eddTable.className() + "_qr_2sub", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalSubsetExpected, "\nresults=\n" + results);
 
         //should be original min/max time
@@ -17585,7 +17585,7 @@ expected =
         //should be original data
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dataQuery, tDir, 
             eddTable.className() + "_qr_2d", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
 
     }
@@ -17630,7 +17630,7 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "station,time,atmp&time>=" + destMaxD, 
             tDir, eddTable.className() + "_newTime1", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         expected = 
 "station,time,atmp\n" +
 ",UTC,degree_C\n" +
@@ -17668,7 +17668,7 @@ expected =
         userDapQuery = "station,longitude,latitude,time,wd,wspd,vis,wspu,wspv&station=%2246088%22&time>=2016-02-03T04:00:00&time<=2016-02-03T06:00:00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "Igor1", ".itx"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         results = String2.replaceAll(results, '\r', '\n');
         //String2.log(results);
         expected = 
@@ -17777,7 +17777,7 @@ expected =
         userDapQuery = "&time=2014-01-15T00";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "tpfn", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n" +
@@ -17791,7 +17791,7 @@ expected =
         userDapQuery = "&time>=2014-01-15T00&time<=2014-01-15T01";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             "tpfn", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
 "station,parentDir,longitude,latitude,time,luckySeven,geoLatMin,globalZztop,latActualRangeMin,depthPositive,depthZztop,wd,wspdRange\n" +
@@ -17817,7 +17817,7 @@ expected =
         //set hardFlag
         String startTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
         Math2.sleep(1000);
-        String2.writeToFile(EDStatic.fullHardFlagDirectory + "testTimeSince19000101", "test");
+        File2.writeToFileUtf8(EDStatic.fullHardFlagDirectory + "testTimeSince19000101", "test");
         String2.log("I just set a hardFlag for testTimeSince19000101.\n" +
             "Now I'm waiting 10 seconds.");
         Math2.sleep(10000);
@@ -17825,7 +17825,7 @@ expected =
         String tIndex = SSR.getUrlResponseStringUnchanged("http://127.0.0.1:8080/cwexperimental/status.html");
         Math2.sleep(5000);
         //read the log file
-        String tLog = String2.readFromFile(EDStatic.fullLogsDirectory + "log.txt")[1];
+        String tLog = File2.readFromFileUtf8(EDStatic.fullLogsDirectory + "log.txt")[1];
         String expected = // ***
           "unloading datasetID=testTimeSince19000101\n" +
 "\\*\\*\\* deleting cached dataset info for datasetID=testTimeSince19000101\n" +
@@ -17944,7 +17944,7 @@ expected =
             String2.log(msg);
             bigResults.append(msg);
 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             //String2.log(results);            
             expected =  //ensure that order is correct
 /* pre 2020-06-16 was:   (I did full gtspp reprocessing 2020-06-13. Same results, but slightly different order.)
@@ -18062,7 +18062,7 @@ nThreads=4 time=26
             String2.log(msg);
             bigResults.append(msg);
 
-            results = String2.directReadFrom88591File(dir + tName);
+            results = File2.directReadFrom88591File(dir + tName);
             //String2.log(results);            
             expected =  //ensure that order is correct   //2019-07-27 results change once in awhile
 "station,latitude,longitude,time,wd,wspd,wtmp\n" +
@@ -18526,7 +18526,7 @@ FileVisitorDNLS.debugMode = true;
         String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "_Entire", ".das"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -18657,7 +18657,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -18688,7 +18688,7 @@ expected =
         userDapQuery = "area&distinct()";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddTable.className() + "_areaList", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
 "area\n" +
@@ -18711,7 +18711,7 @@ expected =
         userDapQuery = "&area=\"Central California\"&nominal_species=\"ABLN\"&time>=1976-01-01&time<=1976-04-01";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             eddTable.className() + "_1areaGTLT", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);   
         expected = 
 "row,region,year,market_category,month,block,pounds,area,imported,region_caught,time,description,nominal_species,species_group,comments\n" +
@@ -18782,7 +18782,7 @@ FileVisitorDNLS.debugMode = true;
         String2.log("\n****************** EDDTableCopyFiles  das and dds for entire dataset\n");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "TestCache_Entire", ".das"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -19037,7 +19037,7 @@ FileVisitorDNLS.debugMode = true;
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", tDir, 
             eddTable.className() + "TestCache_Entire", ".dds"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -19073,7 +19073,7 @@ FileVisitorDNLS.debugMode = true;
             tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                 "&station_id=1254666", //hard, must look in lots of files
                 tDir, "gtspp1254666", ".csv"); 
-            results = String2.directReadFrom88591File(tDir + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = 
     "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
@@ -19107,7 +19107,7 @@ FileVisitorDNLS.debugMode = true;
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "&time>2000-01-01T02:59:59Z&time<2000-01-01T03:00:01Z&orderBy(\"station_id,depth\")", 
             tDir, "gtsppLL", ".csv"); 
-        results = String2.directReadFrom88591File(tDir + tName);
+        results = File2.directReadFrom88591File(tDir + tName);
         //String2.log(results);
         expected = 
 "trajectory,org,type,platform,cruise,station_id,longitude,latitude,time,depth,temperature,salinity\n" +

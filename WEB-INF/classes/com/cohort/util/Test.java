@@ -31,7 +31,7 @@ import javax.imageio.ImageIO;
  */
 public class Test {
 
-    public static String utilDir = String2.getClassPath() + //with / separator and / at the end
+    public static String utilDir = File2.getClassPath() + //with / separator and / at the end
         "com/cohort/util/";
 
     /** 

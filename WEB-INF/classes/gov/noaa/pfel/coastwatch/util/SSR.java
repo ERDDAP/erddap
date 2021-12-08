@@ -185,16 +185,16 @@ public class SSR {
      * This finds the first line in the specified text file which startsWith 
      * 'start'.
      * 
-     * @param fileName the name of the text file
+     * @param fileName the name of the file
+     * @param charset e.g., File2.ISO_8859_1.
      * @param start the text which must be at the beginning of the line
      * @return the first line in the specified text file which startsWith 
      *     'start' (or null if none found).
-     * @throws IOException if error opening, reading, or closing the file
+     * @throws Exception if error opening, reading, or closing the file
      */
-    public static String getFirstLineStartsWith(String fileName, String start) 
-            throws java.io.IOException {
-        BufferedReader bufferedReader = 
-            new BufferedReader(new FileReader(fileName));       
+    public static String getFirstLineStartsWith(String fileName, String charset, String start) 
+            throws Exception {
+        BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);       
         try {
             String s;
             while ((s = bufferedReader.readLine()) != null) { //null = end-of-file
@@ -213,15 +213,15 @@ public class SSR {
      * 'regex'.
      * 
      * @param fileName the name of the text file
+     * @param charset e.g., File2.ISO_8859_1.
      * @param regex the regex text to be matched
      * @return the first line in the specified text file which matches regex
      *     (or null if none found).
-     * @throws IOException if error opening, reading, or closing the file
+     * @throws Exception if error opening, reading, or closing the file
      */
-    public static String getFirstLineMatching(String fileName, String regex) 
-            throws java.io.IOException {
-        BufferedReader bufferedReader = 
-            new BufferedReader(new FileReader(fileName));       
+    public static String getFirstLineMatching(String fileName, String charset, String regex) 
+            throws Exception {
+        BufferedReader bufferedReader = File2.getDecompressedBufferedFileReader(fileName, charset);       
         try {
             String s;
             Pattern pattern = Pattern.compile(regex);
@@ -1296,7 +1296,7 @@ public class SSR {
                     MimeMessage msg = new MimeMessage(session);
                     msg.setFrom(new InternetAddress(fromAddress));
                     msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
-                    msg.setSubject(subject, String2.UTF_8);
+                    msg.setSubject(subject, File2.UTF_8);
                     msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); 
                     msg.setHeader("X-Mailer", "msgsend");
                     msg.setSentDate(new Date());
@@ -1422,7 +1422,7 @@ public class SSR {
     public static String percentEncode(String query) throws Exception {
         if (query == null)
             return "";
-        return String2.replaceAll(URLEncoder.encode(query, String2.UTF_8), "+", "%20");
+        return String2.replaceAll(URLEncoder.encode(query, File2.UTF_8), "+", "%20");
     }
 
     /**
@@ -1438,7 +1438,7 @@ public class SSR {
     public static String percentDecode(String query) throws Exception {
         if (query == null)
             return "";
-        return URLDecoder.decode(query, String2.UTF_8);
+        return URLDecoder.decode(query, File2.UTF_8);
     }
 
     /**
@@ -1669,7 +1669,7 @@ public class SSR {
      *   AWS S3 URLs specially, via the Java S3 SDK. If false, this handles 
      *   them like any other URL (which will only work for public buckets).
      * @return [connection, inputStream, charset]. If url is an AWS S3 url, 
-     *    connection will be null and charset will always be String2.UTF_8.
+     *    connection will be null and charset will always be File2.UTF_8.
      *    If requestCompression=true, this will be a decompressed inputStream
      */
     public static Object[] getUrlConnBufferedInputStream(String urlString, int connectTimeOutMillis, 
@@ -1690,7 +1690,7 @@ public class SSR {
             if (bro != null) {
                 //not File2.getDecompressedBufferedInputStream(). Read as is.
                 InputStream is = File2.getBufferedInputStream(urlString, firstByte, lastByte); 
-                return new Object[]{null, is, String2.UTF_8}; //connection, is, charset=UTF_8 is an assumption
+                return new Object[]{null, is, File2.UTF_8}; //connection, is, charset=UTF_8 is an assumption
             }
         }
 
@@ -1855,7 +1855,7 @@ public class SSR {
         //typical: Content-Type: text/html; charset=utf-8
         //default charset="ISO-8859-1"
         //see https://www.w3.org/International/articles/http-charset/index
-        String charset = String2.ISO_8859_1; 
+        String charset = File2.ISO_8859_1; 
         String cType = conn.getContentType();
         if (String2.isSomething(cType)) {
             //isolate charset name
@@ -1928,7 +1928,7 @@ public class SSR {
     public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
         try {
             if (!String2.isUrl(urlString))
-                return String2.readLinesFromFile(urlString, String2.ISO_8859_1, 1);
+                return File2.readLinesFromFile(urlString, File2.ISO_8859_1, 1);
 
             long time = System.currentTimeMillis();
             BufferedReader in = getBufferedUrlReader(urlString);
@@ -2007,7 +2007,7 @@ public class SSR {
         }
 
         //if file -- Trouble! it assumes 8859-1 encoding.  Who uses this?
-        String sar[] = String2.readFromFile(urlString, String2.ISO_8859_1, 2); //uses newline
+        String sar[] = File2.readFromFile(urlString, File2.ISO_8859_1, 2); //uses newline
         if (sar[0].length() > 0) throw new IOException(sar[0]);
         return sar[1];
     }
@@ -2028,7 +2028,7 @@ public class SSR {
             return readerToString(urlString, getBufferedUrlReader(urlString));
 
         //if file -- Trouble! it assumes 8859-1 encoding. Who uses this?
-        return String2.directReadFrom88591File(urlString); //throws exception
+        return File2.directReadFrom88591File(urlString); //throws exception
     }
 
     /** 
@@ -2191,7 +2191,7 @@ public class SSR {
      */
     public static String getTempDirectory() {
         if (tempDirectory == null) {
-            String tdir = String2.webInfParentDirectory() + "WEB-INF/temp/";
+            String tdir = File2.webInfParentDirectory() + "WEB-INF/temp/";
             //make it, because Git doesn't track empty dirs
             File2.makeDirectory(tdir);            
             //then set it if successful
@@ -2509,7 +2509,7 @@ public class SSR {
         con.setDoInput(true);
 
         //send the content
-        Writer writer = String2.getBufferedOutputStreamWriterUtf8(
+        Writer writer = File2.getBufferedWriterUtf8(
             new BufferedOutputStream(con.getOutputStream()));
         try {
             writer.write(content);  

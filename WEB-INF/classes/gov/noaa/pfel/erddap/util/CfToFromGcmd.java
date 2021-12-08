@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -86,12 +87,12 @@ public class CfToFromGcmd {
     static {
         //this is done only once so no concurrency issues
         //use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-        String fileName = String2.getClassPath() + //with / separator and / at the end
+        String fileName = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/erddap/util/CfToGcmd.txt";
         String2.log("CfToFromGcmd static loading " + fileName);
         StringArray lines;
         try {
-            lines = StringArray.fromFile(fileName, String2.ISO_8859_1); //actually, 7bit ASCII
+            lines = StringArray.fromFile(fileName, File2.ISO_8859_1); //actually, 7bit ASCII
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

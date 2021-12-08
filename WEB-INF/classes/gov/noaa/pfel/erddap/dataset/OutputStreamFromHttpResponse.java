@@ -209,7 +209,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         } else if (extension.equals(".hdf")) { 
             contentType = "application/x-hdf"; 
 
-        } else if (extension.equals(".html")) { //ERDDAP always writes as String2.UTF_8
+        } else if (extension.equals(".html")) { //ERDDAP always writes as File2.UTF_8
             contentType = HTML_MIME_TYPE; 
 
         } else if (extension.equals(".ief")) { 
@@ -760,7 +760,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
      * ever compress the response.
      * See usage of hasRangeRequest in this class.
      *
-     * @param characterEncoding e.g., "" (for none specified), String2.UTF_8, or "" (for DAP).
+     * @param characterEncoding e.g., "" (for none specified), File2.UTF_8, or "" (for DAP).
      *     This parameter only matters the first time this method is called.
      *     This only matters for some subclasses.
      * @param tLength The length of the entire file for the response, if known 

@@ -786,21 +786,21 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         //uncompressed
         tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
         expected = String2.replaceAll(expected, "mergeIR;", "mergeIRZ;");
         tName = eddZ.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddZ.className() + "_Z", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
         expected = String2.replaceAll(expected, "mergeIRZ;", "mergeIRgz;");
         tName = eddgz.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddgz.className() + "_gz", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);
 
 
@@ -906,7 +906,7 @@ String expected2 =
         //uncompressed
         tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -916,7 +916,7 @@ String expected2 =
         expected2 = String2.replaceAll(expected2, "mergeIR.das", "mergeIRZ.das");
         tName = eddZ.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddZ.className() + "_Z", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "Z results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -926,7 +926,7 @@ String expected2 =
         expected2 = String2.replaceAll(expected2, "mergeIRZ.das", "mergeIRgz.das");
         tName = eddgz.makeNewFileForDapQuery(language, null, null, "", 
             dir, eddgz.className() + "_gz", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results.substring(0, expected.length()), expected, "gz results=\n" + results);
 
         po = results.indexOf(expected2.substring(0, 20));
@@ -981,19 +981,19 @@ String expected2 =
         //uncompressed
         tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, edd.className() + "_", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //Z
         tName = eddZ.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddZ.className() + "_Z", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "Z results=\n" + results);
 
         //gz
         tName = eddgz.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddgz.className() + "_gz", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "gz results=\n" + results);
 
         String2.log("\n*** EDDGridFromMergeIRFiles.testMergeIR() finished successfully");

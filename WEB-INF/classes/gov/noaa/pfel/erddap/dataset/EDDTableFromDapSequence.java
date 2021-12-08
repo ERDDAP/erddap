@@ -1500,7 +1500,7 @@ expected =
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".csv"); 
-        String results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        String results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
 //        String expected = 
 //"";
@@ -1573,20 +1573,20 @@ expected =
         //the basicQuery
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_psdac", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //basicQuery + String= constraint that shouldn't change the results
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=\"T402\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacNonTime", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
         
         //basicQuery + String> String< constraints that shouldn't change the results
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station>\"T3\"&station<\"T5\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacGTLT", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
        
         //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS WORKS SO SOURCE REGEX PARTLY WORKS 
@@ -1595,7 +1595,7 @@ expected =
             //always =~ (regardless of what source needs) because this is an erddap request
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=~\"T40.\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //REGEX: If dataset is setup with sourceCanConstraintStringRegex ~=, THIS DOESN'T WORK.
@@ -1605,13 +1605,13 @@ expected =
             //always =~ (regardless of what source needs) because this is an erddap request
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&station=~\"(T402|t403)\"", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacRegex", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //basicQuery + time= (a string= test) constraint that shouldn't change the results
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery + "&time=2002-06-25T14:55:00Z", 
             EDStatic.fullTestCacheDirectory, tedd.className() + "_psdacTime", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);      
     }
 
@@ -1628,7 +1628,7 @@ expected =
         //the basicQuery
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_newport", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1731,7 +1731,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 */
         tName = tedd.makeNewFileForDapQuery(language, null, null, baseQuery, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_CalCaltch", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
@@ -1757,7 +1757,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
            
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_FP_EQ", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //pre 2015-12-28 was sorted lexically, now case insensitive. pre 2013-05-28 wasn't sorted
 "longitude,latitude,time,common_name\n" +
 "degrees_east,degrees_north,UTC,\n" +
@@ -1802,7 +1802,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 //&WATERLEVEL_6MIN_VFD_PX._BEGIN_DATE="20100825"&WATERLEVEL_6MIN_VFD_PX._END_DATE="20100826"            
         tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
             edd.className() + "_RWL", ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
 //trouble: java.time (was Joda) doesn't like space-padded hour values
 
         expected = 
@@ -1861,7 +1861,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
 
         String tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             edd.className() + "_Entire", ".das"); 
-        String results = String2.annotatedString(String2.directReadFrom88591File(
+        String results = String2.annotatedString(File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName));
         String tResults;
         String expected = 

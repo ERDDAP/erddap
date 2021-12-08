@@ -270,7 +270,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             
         Table table = new Table();
         table.readJson(jsonUrl, 
-            new String(sourceInfoBytes, String2.UTF_8));  //.json should always be UTF-8
+            new String(sourceInfoBytes, File2.UTF_8));  //.json should always be UTF-8
 
         //go through the rows of table from bottom to top
         int nRows = table.nRows();
@@ -1097,7 +1097,7 @@ expected =
             String2.log("\n****************** EDDGridFromErddap test entire dataset\n");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".das"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 "Attributes \\{\n" +
@@ -1255,7 +1255,7 @@ expected2 =
             //*** test getting dds for entire dataset
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Entire", ".dds"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset \\{\n" +
@@ -1287,7 +1287,7 @@ expected2 =
             query = "time%5B0:100:200%5D,longitude%5Blast%5D";
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".asc"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1317,7 +1317,7 @@ expected2 =
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1338,7 +1338,7 @@ expected2 =
             query = SSR.minimalPercentEncode("chlorophyll.time[0:100:200],chlorophyll.longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_AxisG.A", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
@@ -1359,7 +1359,7 @@ expected2 =
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".dods"); 
-            results = String2.annotatedString(String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
+            results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName));
             //String2.log(results);
             expected = 
     "Dataset {[10]\n" +
@@ -1423,7 +1423,7 @@ expected2 =
             query = SSR.minimalPercentEncode("time[0:100:200],longitude[last]");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Axis", ".ncHeader"); 
-            results = String2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
             expected = 
 //"netcdf EDDGridFromErddap_Axis.nc {\n" +
@@ -1479,7 +1479,7 @@ expected2 =
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 gridDataset.className() + "_Data", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =  //missing values are "NaN"
 // pre 2010-10-26 was 
 //"time, altitude, latitude, longitude, chlorophyll\n" +
@@ -1518,7 +1518,7 @@ expected2 =
             String2.log("\n*** EDDGridFromErddap test get .CSV data\n");
             tName = gridDataset.makeNewFileForDapQuery(language, null, null, "chlorophyll." + userDapQuery, 
                 EDStatic.fullTestCacheDirectory, gridDataset.className() + "_DotNotation", ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 // pre 2010-10-26 was 
 //"time, altitude, latitude, longitude, chlorophyll\n" +

@@ -389,7 +389,7 @@ public class RegexFilenameFilter implements FilenameFilter {
      */
     public static void basicTest() throws Exception {
         String2.log("\n* RegexFilenameFilter.basicTest ...");
-        String coastwatchDir = String2.webInfParentDirectory() + //with / separator and / at the end
+        String coastwatchDir = File2.webInfParentDirectory() + //with / separator and / at the end
             "WEB-INF/classes/gov/noaa/pfel/coastwatch/";
 
         //test list

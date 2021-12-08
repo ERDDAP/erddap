@@ -532,7 +532,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         table.addColumn("dateEstablished", date);
         table.addColumn("shefID", shef);
         table.addColumn("deployment", deployment);
-        String s2[] = String2.readFromFile(stationsFileName);
+        String s2[] = File2.readFromFileUtf8(stationsFileName);
         String stationsXML = s2[1];
 
 //was
@@ -656,7 +656,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 "https://opendap.co-ops.nos.noaa.gov/axis/webservices/activecurrentstations/response.jsp?format=xml&Submit=Submit",
                 fileName, true);
 
-        String2.log(String2.readFromFile(fileName)[1].substring(0, 4000));
+        String2.log(File2.readFromFileUtf8(fileName)[1].substring(0, 4000));
 
         //read from file
         SimpleXMLReader xmlReader = new SimpleXMLReader(File2.getDecompressedBufferedInputStream(fileName), "soapenv:Envelope");
@@ -1080,7 +1080,7 @@ These datasets were hard to work with:
                 "21:00&time<=" + yesterday + "22:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected =   //this changes every day
 //9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063," + yesterday + "21:00:00Z,MLLW,1,WL,1.094,0.04,NaN,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,dcp,sensor,waterLevel,sigma,O,F,R,L\n" +
@@ -1111,7 +1111,7 @@ These datasets were hard to work with:
                 "21:00&time<=" + yesterday + "21:10";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063,2015-02-02T21:00:00Z,MLLW,1,WL,1.097
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,dcp,sensor,waterLevel\n" +
@@ -1148,7 +1148,7 @@ These datasets were hard to work with:
                                                          "&time<=" + daysAgo + "22:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = //changes every day
 //9414290,San Francisco,CA,1854-06-30T00:00:00Z,FTPC1,"NWLON,PORTS",-122.4659,37.8063,2014-12-25T21:00:00Z,MLLW,1.841,0.048,0,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
@@ -1184,7 +1184,7 @@ These datasets were hard to work with:
                                                     "14:00&time<=" + daysAgo + "23:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg     8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4011,41.8067,2014-12-25T14:00:00Z,MLLW,1.641,0.002,0,0
 //2020-04-27 was -71.4006,41.8067
@@ -1221,7 +1221,7 @@ These datasets were hard to work with:
                                                     "00:00&time<=" + daysAgo + "23:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //number of lines in results varies
             String sar[] = String2.split(results, '\n');
             expected = 
@@ -1255,7 +1255,7 @@ These datasets were hard to work with:
                                      "00:00&time<=" + daysAhead + "23:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //number of lines in results varies
             String sar[] = String2.split(results, '\n');
             expected = 
@@ -1290,7 +1290,7 @@ These datasets were hard to work with:
                                                     "00:00&time<=" + daysAhead + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
 //2020-04-27 was -71.4006,41.8067
@@ -1331,7 +1331,7 @@ These datasets were hard to work with:
                                      "00:00&time<=" + daysAhead + "10:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,"NWLON,PORTS",-71.4006,41.8067,2015-02-08T00:00:00Z,MLLW,0.597
 //2020-04-27 was -71.4006,41.8067
@@ -1369,7 +1369,7 @@ These datasets were hard to work with:
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,AT,-1.0,0,0,0
 //2020-04-27 was -71.4006,41.8067
@@ -1407,7 +1407,7 @@ These datasets were hard to work with:
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,BP,1019.5,0,0,0
 //2020-04-27 was -71.4006,41.8067
@@ -1450,7 +1450,7 @@ These datasets were hard to work with:
                                         "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3267,41.505,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
 //8452660,Newport,RI,1930-09-11T00:00:00Z,NWPR1,"NWLON,PORTS",-71.3261,41.5044,2014-12-25T00:00:00Z,1,CN,31.16,0,0,0
@@ -1488,7 +1488,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                      "00:00&time<=" + daysAgo + "00:54";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //9752619,"Isabel Segunda, Vieques Island",PR,2007-09-13T00:00:00Z,VQSP4,COASTAL,-65.444,18.153,2015-02-02T00:00:00Z,1,J1,0.0,0,0
 //2019-03-19 was -65.4438, now -65-4439
@@ -1525,7 +1525,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //9063063,Cleveland,OH,1860-01-01T00:00:00Z,CNDO1,NWLON,-81.6355,41.5409,2015-02-02T00:00:00Z,1,RH,91.4,0,0,0
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,dcp,sensor,RH,X,N,R\n" +
@@ -1563,7 +1563,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2010-10-24T00:00:00Z,1,WT,14.8,0,0,0
 //2020-04-27 was -71.4006,41.8067
@@ -1601,7 +1601,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //eg 8454000,Providence,RI,1938-06-03T00:00:00Z,FOXR1,\"NWLON,PORTS\",-71.4006,41.8067,2015-02-02T00:00:00Z,1,WS,1.86,22.72,3.2,0,0
 //2020-04-27 was -71.4006,41.8067
@@ -1640,7 +1640,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                      "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "stationID,stationName,state,dateEstablished,shefID,deployment,longitude,latitude,time,Vis\n" +
 ",,,UTC,,,degrees_east,degrees_north,UTC,nautical_miles\n";
@@ -1673,7 +1673,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                                     "00:00&time<=" + daysAgo + "01:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 //db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1396,39.9462,2010-11-21T00:03:00Z,1.526,199.0
 "stationID,stationName,dateEstablished,longitude,latitude,time,CS,CD\n" +
@@ -1708,7 +1708,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
                 "00:00&time<=" + daysAgo70 + "00:00";             
             tName = edd.makeNewFileForDapQuery(language, null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
-            results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             expected = 
 "zztop\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      

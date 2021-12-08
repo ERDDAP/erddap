@@ -710,7 +710,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         //.dds
         tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".dds"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
 "  Float64 time[time = 2];\n" +
@@ -728,7 +728,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
         //*** .das
         tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             dir, edd.className() + "_", ".das"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Attributes {\n" +
 "  time {\n" +
@@ -829,7 +829,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "2014-11-19T00:20:00Z,3.5923333333333334,-9568\n";
         tName = edd.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, edd.className() + "_", ".csv"); 
-        results = String2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFrom88591File(dir + tName);
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //*** data

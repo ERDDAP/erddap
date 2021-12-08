@@ -412,7 +412,7 @@ Fix perfectly if need to make active
         GridDataSetCWOpendap.verbose = true;
         GridDataSetCWOpendap gridDataSet = new GridDataSetCWOpendap(fnu, internalName, null); 
 
-        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String dir = File2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
         String fileName = "OQNux10S1day_20060610";
         StringObject resultingFileName = new StringObject(null);
         Grid grid = gridDataSet.makeGrid(dir, "OQNux10S1day_20060610",

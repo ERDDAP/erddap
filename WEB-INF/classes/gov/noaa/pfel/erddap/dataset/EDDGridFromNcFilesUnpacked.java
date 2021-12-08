@@ -425,7 +425,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
         String2.log("\n*** test das dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".das"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Attributes {\n" +
@@ -538,7 +538,7 @@ expected =
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".dds"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {\n" +
@@ -562,7 +562,7 @@ expected =
         userDapQuery = "analysed_sst[0][0:2:6][0:2:6]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             eddGrid.className(), ".csv"); 
-        results = String2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "time,latitude,longitude,analysed_sst\n" +
@@ -970,7 +970,7 @@ expected =
         //.das     das isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Attributes {\n" +
 "  time {\n" +
@@ -1082,7 +1082,7 @@ expected =
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
 "Dataset {\n" +
@@ -1112,7 +1112,7 @@ expected =
         userDapQuery = "sst[0][0:100:2159][(-134.95833513)],sst_quality[0][0:100:2159][(-134.95833513)]"; 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
@@ -1349,7 +1349,7 @@ expected =
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
 "Dataset {\n" +
@@ -1451,7 +1451,7 @@ expected =
         userDapQuery = "time"; 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "time", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = //difference from testUInt16Dap: lat lon are float here, not double
@@ -1856,7 +1856,7 @@ NcHelper.debugMode = true;
         //.das     
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
-        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
         expected = 
 "Attributes {\n" +
 "  time {\n" +
@@ -1983,7 +1983,7 @@ expected =
         //.dds     dds isn't affected by userDapQuery
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {\n" +
@@ -2005,7 +2005,7 @@ expected =
         userDapQuery = "time"; 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "time", ".csv"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
@@ -2021,7 +2021,7 @@ expected =
         userDapQuery = "poc[(2003-01-01T12:00:00Z)][0:1000:4000][0:1000:8000]"; //match direct read above
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc1", ".csv"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
@@ -2078,7 +2078,7 @@ expected =
         userDapQuery = "poc[(2016-08-28T12:00:00Z)][70:1000:4100][70:1000:8100]"; //match direct read above
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "poc2", ".csv"); 
-        results = String2.directReadFrom88591File(
+        results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         String2.log(results);
         expected = 
