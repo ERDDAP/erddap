@@ -3317,11 +3317,11 @@ java.lang.IllegalArgumentException: illegal dataType: long not supported in netc
         String[] list = RegexFilenameFilter.recursiveFullNameList(
             "c:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/ucar4", ".*\\.java", false);
         for (int i = 0; i < list.length; i++) {
-            String content[] = File2.readFromFile(list[i]);
+            String content[] = File2.readFromFileUtf8(list[i]);
             if (content[0].length() == 0) {
                 String2.log("processing " + list[i]);
                 content[1] = String2.replaceAll(content[1], "ucar.", "ucar4.");
-                File2.writeToFile(list[i], content[1]);
+                File2.writeToFileUtf8(list[i], content[1]);
             } else {
                 String2.log(content[0]);
             } 
@@ -6367,7 +6367,7 @@ project)
         for (int f = 0; f < fileNames.length; f++) {
             try {
                 String2.log("\n#" + f + " " + fileNames[f]);
-                ArrayList<String> lines = File2.readLinesFromFile(inDir + fileNames[f], null, 2);
+                ArrayList<String> lines = File2.readLinesFromFile(inDir + fileNames[f], File2.ISO_8859_1, 2);
 
                 //BOTTLE,20030711WHPSIODMB
                 //#code : jjward hyd_to_exchange.pl 
@@ -6984,10 +6984,9 @@ project)
      */
     public static void fixKeywords(String fileName) throws Exception {
         String2.log("fixKeywords " + fileName);
-        String charset = File2.ISO_8859_1;
         String attKeywords = "<att name=\"keywords\">";
         int attKeywordsLength = attKeywords.length();
-        StringArray lines = StringArray.fromFile(fileName, charset);
+        StringArray lines = StringArray.fromFileUtf8(fileName);
         int linesSize = lines.size();
         for (int i = 0; i < linesSize; i++) {
             //start keywords?
@@ -7012,7 +7011,7 @@ project)
                 }
             }
         }
-        lines.toFile(fileName);
+        lines.toFile(fileName, File2.UTF_8, null);
     }
 
     /**
@@ -7339,7 +7338,7 @@ project)
     public static void splitRockfish() throws Exception {
         String2.log("\n*** splitRockfish");
         String fileDir = "c:/data/globec/";
-        StringArray sa = StringArray.fromFile(fileDir + "rockfish_view.csv");
+        StringArray sa = StringArray.fromFile88591(fileDir + "rockfish_view.csv");
         int size = sa.size();
 
         //this file has \N for missing values.  change to ""
@@ -7352,7 +7351,7 @@ project)
         while (size > 1) { 
             int stop = Math.min(100000, size - 1);
             sa.subset(subset, 0, 1, stop); //stop is inclusive
-            subset.toFile(fileDir + "rockfish" + (chunk++) + ".csv");
+            subset.toFile(fileDir + "rockfish" + (chunk++) + ".csv", File2.ISO_8859_1, null);
             sa.removeRange(1, stop + 1); //end is exclusive
             size = sa.size();
         }
@@ -9504,7 +9503,7 @@ towTypesDescription);
 
         //String names[] = RegexFilenameFilter.list(dir, regex);
         ArrayList<String> names = File2.readLinesFromFile(
-            "/u00/satellite/PH2/" + sstdn + "/names.txt", null, 1);
+            "/u00/satellite/PH2/" + sstdn + "/names.txt", File2.ISO_8859_1, 1);
 
         //for each file
         int nNames = names.size();
@@ -9559,7 +9558,7 @@ towTypesDescription);
             for (int daynight = 0; daynight < 2; daynight++) {
 
                 ArrayList<String> names = File2.readLinesFromFile(
-                    ncmlDir + dayNight[daynight] + "names" + year + ".txt", null, 1);
+                    ncmlDir + dayNight[daynight] + "names" + year + ".txt", File2.ISO_8859_1, 1);
                 HashMap<String,String> hm = new HashMap();
                 //for each file
                 //19811101145206-NODC-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.2_NOAA07_G_1981305_day-v02.0-fv01.0.nc

@@ -1002,7 +1002,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
+"            <att name=\"_FillValue\" type=\"long\">9223372036854775807</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does post hoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Long</att>\n" +
 "        </addAttributes>\n" +
@@ -1014,7 +1014,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
+"            <att name=\"_FillValue\" type=\"int\">2147483647</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does post hoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">An Int</att>\n" +
 "        </addAttributes>\n" +
@@ -1026,7 +1026,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does post hoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Short</att>\n" +
 "        </addAttributes>\n" +
@@ -1038,7 +1038,7 @@ String expected =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does posthoc
+"            <att name=\"_FillValue\" type=\"byte\">127</att>\n" + //important test of auto-add _FillValue, like addFillValueAttributes does post hoc
 "            <att name=\"ioos_category\">Unknown</att>\n" +
 "            <att name=\"long_name\">A Byte</att>\n" +
 "        </addAttributes>\n" +

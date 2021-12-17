@@ -3488,7 +3488,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             "'" + directory + name + "_" + randomInt + ".hdf'," +
             "'" + varName + "'," + lonSpacing + "," + latSpacing + ")\n");
         matlabControl.append("quit\n");
-        String error = File2.writeToFile(directory + randomInt + ".control", matlabControl.toString());
+        String error = File2.writeToFile88591(directory + randomInt + ".control", matlabControl.toString());
         if (error.length() > 0) 
             throw new RuntimeException(error);
   

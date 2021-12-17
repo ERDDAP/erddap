@@ -1887,10 +1887,10 @@ public class TestUtil {
         //for (int i = 0; i < 10000000; i++)
         //    sb.append("a");
         //String s9 = sb2.toString();
-        //File2.writeToFile(fileName, s9); //warm up
-        //File2.writeToFile(fileName, s9);
+        //File2.writeToFile88591(fileName, s9); //warm up
+        //File2.writeToFile88591(fileName, s9);
         //long tTime = System.currentTimeMillis();
-        //File2.writeToFile(fileName, s9);
+        //File2.writeToFile88591(fileName, s9);
         //String2.log("time=" + (System.currentTimeMillis() - tTime));
         //sb2 = null;
         //s9 = null;
@@ -2973,13 +2973,13 @@ public class TestUtil {
                 "\nOracle Java versus AdoptOpenJDK may be slightly different for these."); 
         }
 
-        String2.log("getCurrentISODateTimeString = " + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarLocal()));
-        String2.log("    *** Check that HOUR accounts for daylight saving time!\n");
-        String2.log("current UTC time = " + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarZulu()));
-        String2.log("    *** Check that HOUR is local+7 in summer (DST), local+8 in winter (in California).");
-        String2.log("    See current UTC time at http://www.xav.com/time.cgi");
-        String2.pressEnterToContinue();
-
+        String2.pressEnterToContinue(
+            "getCurrentISODateTimeString = " + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarLocal()) +
+            "    *** Check that HOUR accounts for daylight saving time!\n\n" +
+            "current UTC time = " + Calendar2.formatAsISODateTimeT(Calendar2.newGCalendarZulu()) + "\n" +
+            "    *** Check that HOUR is local+7 in summer (DST), local+8 in winter (in California)\n" +
+            "                        or local+4 in summer (DST), local+5 in winter (on East Coast).\n" +
+            "    See current UTC time at http://www.xav.com/time.cgi");
     }
 
     /**

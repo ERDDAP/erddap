@@ -3320,8 +3320,8 @@ public abstract class EDDTable extends EDD {
             try {
 
                 if (!File2.isFile(fullName)) {
-                    String error = File2.writeToFile(fullName + random, 
-                        NcHelper.ncdump(cacheFullName, "-h"), File2.UTF_8); //!!!this doesn't do anything to internal " in a String attribute value.
+                    String error = File2.writeToFileUtf8(fullName + random, 
+                        NcHelper.ncdump(cacheFullName, "-h")); //!!!this doesn't do anything to internal " in a String attribute value.
                     if (error.length() == 0) {
                         File2.rename(fullName + random, fullName); //make available in an instant
                         File2.isFile(fullName, 5); //for possible waiting thread, wait till file is visible via operating system

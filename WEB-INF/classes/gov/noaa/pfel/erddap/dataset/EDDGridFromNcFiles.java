@@ -5358,7 +5358,7 @@ expected =
         int bytes[]    = new int[]   {
             5875592, 23734053, 23734063, 23733974, 
             6006, 303, 2085486, 4701074, 
-            60787, 51428, 11980027, 
+            60787, 60196, 11980027, 
             31827797, 28198736, 28198830, 54118736, 2085800, 
             2090600, 5285, 
             25961828, 5244, 5877820,
@@ -15256,6 +15256,148 @@ expected =
 
 
     /**
+     * This tests reading the amdar bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrAmdar() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrAmdar() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/amdar_20210824044903_IUAX11_EGRR_240436.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the Amdar bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the temp amvir test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrAmvir() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrAmvir() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/amvir_20210825035138_IXCS24_RJTD_250300.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the amvir bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the amvwv bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrAmvwv() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrAmvwv() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/amvwv_20210824124354_IXCN66_RJTD_241200.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the amvwv bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the ascat bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrAscat() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrAscat() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/ascat_20210824114228_ISXX04_EHDB_241013.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the ascat bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the buoy bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrBuoy() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrBuoy() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/buoy_20210824193000_IOBX10_LFVW_241929.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the buoy bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the ship bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrShip() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrShip() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/ship_20210824130025_ISSN01_VHHH_241200.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the ship bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+    /**
+     * This tests reading the temp bufr test file from Andy Ziegler.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBufrTemp() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testBufrTemp() *****************\n");
+        testVerboseOn();
+
+        try {
+            String results, expected;
+            results = NcHelper.ncdump(EDStatic.unitTestDataDir + "bufr/temp_20210824133030_IUSK11_AMMC_241200.bufr", "-c");
+            //2021-12-14: "Unable to open file or file not .nc-compatible."
+            expected = "zztop";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Throwable t) {
+            Test.knownProblem("UNFINISHED: I can't read data from the temp bufr file. The problem was reported to the netcdf-java mailing list.", t);
+        }
+    }
+
+
+
+    /**
      * This runs all of the interactive or not interactive tests for this class.
      *
      * @param errorSB all caught exceptions are logged to this.
@@ -15269,7 +15411,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 14 : 59;
+            lastTest = interactive? 14 : 69;
         String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true; 
@@ -15357,11 +15499,20 @@ expected =
                     if (test == 53) testPrivateAwsS3(true);  //deleteCachedFiles
                     if (test == 54) testPrivateAwsS3(false); //deleteCachedFiles  
 
-                    if (test == 55 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
-                    if (test == 56 && doSlowTestsToo) testNThreads(3);
-                    if (test == 57 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
-                    if (test == 58 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
-                    if (test == 59 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
+                    //UNFINISHED TESTS
+                    if (test == 57) testBufrAmdar();
+                    if (test == 58) testBufrAmvir();
+                    if (test == 59) testBufrAmvwv();
+                    if (test == 60) testBufrAscat();
+                    //if (test == 61) testBufrBuoy();
+                    //if (test == 62) testBufrShip();
+                    //if (test == 63) testBufrTemp();
+
+                    if (test == 65 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
+                    if (test == 66 && doSlowTestsToo) testNThreads(3);
+                    if (test == 67 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
+                    if (test == 68 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
+                    if (test == 69 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
                     //NOT FINISHED
                     //none

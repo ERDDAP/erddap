@@ -68,17 +68,18 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
 <h2><a class="selfLink" id="changes2.16" href="#changes2.16" rel="bookmark">Changes</a> 
-in ERDDAP version 2.16 (released 2021-??-??)</h2>
+in ERDDAP version 2.16 (released 2021-12-17)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
   <li>CHANGES/BUG FIXES: Numerous small changes to the translation system
     thanks to suggestions from language-specific editors.
-    Thanks to Mike Smit, Jennifer Sevadjian. 
+    Thanks to Melanie Abecassis, Marco Alba, Jessy Barrette, Filipe Fernandes, 
+    Etienne Godin, Jennifer Sevadjian, and Mike Smit. 
     <br>&nbsp;
   <li>ADDED a proper disclaimer and attribution for Google Translate, 
     as required by the terms of Google Translate. 
@@ -94,14 +95,25 @@ in ERDDAP version 2.16 (released 2021-??-??)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
-  <li>TO DO: 
-    <ul>
-    <li>
+  <li>CHANGE: Just so you know, 
+    <a rel="bookmark" href="https://adoptium.net/?variant=openjdk8">Adoptium<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>     
+    has replaced AdoptOpenJDK as the main/recommended source of Java (OpenJDK).
     <br>&nbsp;
 
-  <li>CHANGE: The log output files from GenerateDatasetsXml and DasDds are now
+  <li>CHANGE: The log files from ERDDAP, GenerateDatasetsXml, and DasDds are now
     UTF-8, not the computer's default character set.
-    ERDDAP's email log file is now UTF-8, not the computer's default character set.
+    I did a lot of checking and made a few changes to ensure that ERDDAP always 
+    specifies the proper character set when reading or writing all kinds of files, and no
+    longer (in several cases) relies on the computer's default character set.
+    This corrected a few mistakes and moved as close as I could to the goal of using UTF-8 
+    for as many file types as possible
+    (e.g., .log, .xml, .html, .json, .jsonl, .ncHeader).
+    Note that many older file types are required to use ISO-8859-1
+    (e.g., OPeNDAP .das, .dds, .csv, .tsv, .nc3, .nccsv, .cpt).
+    I previously tried to work with the CF group and with Unidata to 
+    add support for UTF-8 in .nc3 files; both were resistant.
     <br>&nbsp;
 
   <li>NEW: When downloading files from AWS S3, ERDDAP's cacheFromUrl system 
@@ -120,6 +132,18 @@ in ERDDAP version 2.16 (released 2021-??-??)</h2>
     Thanks to Rich Signell.
     <br>&nbsp;
 
+  <li>CHANGE: searchEngine=Lucene is, for now, deprecated. 
+    It is a complex system which often yields results which are different from
+    the more desirable behavior of searchEngine=original. 
+    The time savings of Lucene don't offset the differences in results.
+    <br>&nbsp;
+       
+  <li>CHANGE: The Lucene searchEngine now behaves more like the original searchEngine. 
+    There are no longer any cases where lucene thinks a dataset matches and original doesn't.
+    Also, lucene's rankings now equal original's rankings (because original is now always 
+    used to compute the rankings).
+    <br>&nbsp;
+
   <li>BUG FIX: Starting in a recent release, ERDDAP stopped seeing more than
     the first 1000 objects in a given AWS S3 bucket. Now, ERDDAP again sees
     all of the objects.
@@ -132,6 +156,7 @@ in ERDDAP version 2.16 (released 2021-??-??)</h2>
     Thanks to Eric Geletti.
     <br>&nbsp;
   </ul>
+</ul>
 
 
 <!-- ****************************************************************************** -->
@@ -202,6 +227,7 @@ in ERDDAP version 2.15 (released 2021-11-19)</h2>
         &lt;theShortDescriptionHtml&gt; in 35 different files to provide 35 different translated
         versions of that tag.
       </ul>
+    </ul>
     <br>&nbsp;
 
   <li>CHANGED: Some errors are now handled slightly differently and so may
@@ -213,6 +239,7 @@ in ERDDAP version 2.15 (released 2021-11-19)</h2>
     now excludes source datasets with datasetID=~".*_LonPM180" and datasetID=~".*_Lon0360", respectively. 
     <br>&nbsp;
   </ul>
+</ul>
 
 
 
@@ -270,6 +297,7 @@ in ERDDAP version 2.14 (released 2021-07-02)</h2>
     Thanks to ONC.
     <br>&nbsp;
   </ul>
+</ul>
 
 
 <!-- ****************************************************************************** -->
@@ -4737,10 +4765,10 @@ in ERDDAP version 1.40 (released 2012-10-25)</h2>
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
      Multidimensional Array options,
-    and which therefore conforms to the 
-    <a href="https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/">NODC templates<img 
+    and which therefore conforms to the NODC templates
+    [2021: now the <a href="https://www.ncei.noaa.gov/netcdf-templates">NCEI templates<img 
       src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
+      title="This link to an external website does not constitute an endorsement."></a>]
     for storing this type of data.
     Thanks to NODC.
   <li>tabledap requests can now include time constraints such as <kbd>&amp;time&gt;now-5days</kbd>.
@@ -6580,7 +6608,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.15
+<p>ERDDAP, Version 2.16
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

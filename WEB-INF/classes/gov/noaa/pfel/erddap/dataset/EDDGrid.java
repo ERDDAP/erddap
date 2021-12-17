@@ -484,6 +484,7 @@ public abstract class EDDGrid extends EDD {
         StringBuilder sb = startOfSearchString();
 
         //add axisVariable info
+        //doing all varNames, then all attributes, treats varNames as more important
         for (int av = 0; av < axisVariables.length; av++) {
             sb.append("variableName=" + axisVariables[av].destinationName() + "\n");
             sb.append("sourceName="   + axisVariables[av].sourceName() + "\n");

@@ -294,12 +294,16 @@ public class StringArray extends PrimitiveArray {
     } */
 
     /**
-     * This reads the text contents of the specified file using this computer's default charset.
-     * 
+     * This reads the text contents of the specified file using File2.ISO_8859_1.
      */
-    public static StringArray fromFile(String fileName) throws Exception {
-   
-        return fromFile(fileName, null);
+    public static StringArray fromFile88591(String fileName) throws Exception {
+        return fromFile(fileName, File2.ISO_8859_1);
+    }
+    /**
+     * This reads the text contents of the specified file using File2.UTF_8.
+     */
+    public static StringArray fromFileUtf8(String fileName) throws Exception {
+        return fromFile(fileName, File2.UTF_8);
     }
 
 
@@ -2508,11 +2512,12 @@ public class StringArray extends PrimitiveArray {
      *  
      * @param fileName1 a complete file name
      * @param fileName2 a complete file name
+     * @param charset e.g., File2.ISO_8859_1 or File2.UTF_8.
      * @throws Exception if files are different
      */
-    public static void diff(String fileName1, String fileName2) throws Exception {
-        StringArray sa1 = fromFile(fileName1);
-        StringArray sa2 = fromFile(fileName2);
+    public static void diff(String fileName1, String fileName2, String charset) throws Exception {
+        StringArray sa1 = fromFile(fileName1, charset);
+        StringArray sa2 = fromFile(fileName2, charset);
         sa1.diff(sa2);
     }
 
@@ -2523,15 +2528,16 @@ public class StringArray extends PrimitiveArray {
      *  
      * @param fileName1 a complete file name
      * @param fileName2 a complete file name
+     * @param charset e.g., File2.ISO_8859_1 or File2.UTF_8.
      * @throws Exception if files are different
      */
-    public static void repeatedDiff(String fileName1, String fileName2) throws Exception {
+    public static void repeatedDiff(String fileName1, String fileName2, String charset) throws Exception {
         while (true) {
             try {
                 String2.log("\nComparing " + fileName1 + 
                             "\n      and " + fileName2);
-                StringArray sa1 = fromFile(fileName1);
-                StringArray sa2 = fromFile(fileName2);
+                StringArray sa1 = fromFile(fileName1, charset);
+                StringArray sa2 = fromFile(fileName2, charset);
                 sa1.diff(sa2);
                 String2.log("!!! The files are the same!!!");
                 break;

@@ -722,7 +722,7 @@ public class ArchiveADataset {
 
             //make the .md5.txt file of the tgzName
             String2.log("\n*** making " + tgzName + digestExtension + ".txt");
-            error = File2.writeToFile(  tgzName + digestExtension + ".txt", 
+            error = File2.writeToFile(    tgzName + digestExtension + ".txt", 
                 String2.fileDigest(digestType, tgzName) + 
                     "  " + File2.getNameAndExtension(tgzName) + "\n",
                 textFileEncoding);
