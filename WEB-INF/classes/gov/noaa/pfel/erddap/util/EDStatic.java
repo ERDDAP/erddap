@@ -181,6 +181,7 @@ public class EDStatic {
      * <br>2.13 none
      * <br>2.14 released on 2021-07-02
      * <br>2.15 released on 2021-11-19
+     * <br>2.16 released on 2021-12-17
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -1699,7 +1700,7 @@ public static boolean developmentMode = false;
      */
     static {
 
-    String erdStartup = "ERD Low Level Startup";
+    String erdStartup = "EDStatic Low Level Startup";
     String errorInMethod = "";
     try {
 
@@ -5293,7 +5294,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         table.addColumn("fullName", col2);
         ArrayList<String> lines = File2.readLinesFromFile(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericAcronyms.tsv",
-            File2.ISO_8859_1, 1);
+            File2.UTF_8, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) { //1 because skip colNames
             String s = lines.get(i).trim();
@@ -5326,7 +5327,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         table.addColumn("fullName", col2);
         ArrayList<String> lines = File2.readLinesFromFile(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/OceanicAtmosphericVariableNames.tsv",
-            File2.ISO_8859_1, 1);
+            File2.UTF_8, 1);
         int nLines = lines.size();
         for (int i = 1; i < nLines; i++) {
             String s = lines.get(i).trim();
@@ -5435,7 +5436,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Table table = new Table();
         table.readASCII(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/FipsCounty.tsv", 
-            File2.ISO_8859_1, "", "",
+            File2.UTF_8, "", "",
             0, 1, "", null, null, null, null, false); //false = don't simplify
         return table;
     }
@@ -5447,7 +5448,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @throws Exception if trouble (e.g., file not found)
      */
     public static Table keywordsCfTable() throws Exception {
-        StringArray sa = StringArray.fromFile(
+        StringArray sa = StringArray.fromFileUtf8(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
         Table table = new Table();
         table.addColumn("CfStandardNames", sa);
@@ -5461,7 +5462,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @throws Exception if trouble (e.g., file not found)
      */
     public static Table keywordsGcmdTable() throws Exception {
-        StringArray sa = StringArray.fromFile(
+        StringArray sa = StringArray.fromFileUtf8(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
         Table table = new Table();
         table.addColumn("GcmdScienceKeywords", sa);
@@ -5476,7 +5477,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @throws Exception if trouble (e.g., file not found)
      */
     public static Table keywordsCfToGcmdTable() throws Exception {
-        StringArray sa = StringArray.fromFile(
+        StringArray sa = StringArray.fromFileUtf8(
             webInfParentDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
         Table table = new Table();
         table.addColumn("CfToGcmd", sa);

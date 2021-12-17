@@ -1918,7 +1918,7 @@ public class SSR {
      * This tries to use compression.
      *
      * @param urlString The query MUST be already percentEncoded as needed.
-     *   This can be a url or a local file (with or without file://).
+     *   This can be a url or a local file (with or without file://, using UTF_8 -- reasonable assumption for URLs).
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
      * @return an ArrayList with strings from the response (one string per line of the file)
@@ -1928,7 +1928,7 @@ public class SSR {
     public static ArrayList<String> getUrlResponseArrayList(String urlString) throws Exception {
         try {
             if (!String2.isUrl(urlString))
-                return File2.readLinesFromFile(urlString, File2.ISO_8859_1, 1);
+                return File2.readLinesFromFile(urlString, File2.UTF_8, 1);
 
             long time = System.currentTimeMillis();
             BufferedReader in = getBufferedUrlReader(urlString);

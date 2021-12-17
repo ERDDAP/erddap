@@ -174,7 +174,7 @@ public class TestAll  {
     } /* */
 
 //    String tFileName = String2.unitTestBigDataDir + "nccf/wod/wod_xbt_2005.nc";
-//    File2.writeToFile(tFileName + ".ncdump.txt", NcHelper.ncdump(tFileName, "-h"));
+//    File2.writeToFileUtf8(tFileName + ".ncdump.txt", NcHelper.ncdump(tFileName, "-h"));
 
 //    String2.log(EDDGrid.findTimeGaps("https://coastwatch.pfeg.noaa.gov/erddap/griddap/nceiPH53sstn1day"));
 
@@ -329,7 +329,7 @@ public class TestAll  {
 */
 
 //    s = Projects.makeAwsS3FilesDatasets(".*"); //all: .*   tests: nrel-pds-wtk\\.yaml, silo\\.yaml (has ?Name: but ? doesn't show in EditPlus)
-//    File2.writeToFile(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
+//    File2.writeToFileUtf8(EDStatic.bigParentDirectory + "logs/awsS3Files.txt", s);
 //    String2.log(EDD.testDasDds("radar_vola")); 
 
     /*  
@@ -443,7 +443,7 @@ public class TestAll  {
 
        /*   //tallyXml
         String tfn = EDStatic.fullLogsDirectory + "tallyLterSbsStorageUnitsMV.log";
-        File2.writeToFile(tfn, 
+        File2.writeToFileUtf8(tfn, 
             FileVisitorDNLS.tallyXml(
             "/u00/data/points/lterSbc/", "knb-lter-sbc\\.\\d+", false,
             new String[]{
@@ -474,11 +474,11 @@ public class TestAll  {
 //    Table.debugMode = true; DasDds.main(new String[]{"NTL_DEIMS_5672_t1", "-verbose"});
 
 //    make flag files for all knb datasets
-//    ArrayList<String> tsa = File2.readLinesFromFile("/downloads/allKnb.txt", "", 1);
+//    ArrayList<String> tsa = File2.readLinesFromFile("/downloads/allKnb.txt", File2.ISO_8859_1, 1);
 //    int nTsa = tsa.size();
 //    String2.log("allKnb n=" + nTsa);
 //    for (int tsai = 0; tsai < nTsa; tsai++)
-//        File2.writeToFile("/flag/" + tsa.get(tsai), "flag");
+//        File2.writeToFileUtf8("/flag/" + tsa.get(tsai), "flag");
 
 //    EDDTableFromHttpGet.testStatic();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
@@ -551,6 +551,7 @@ public class TestAll  {
 //          was from GTSPP dir: /nodc/data/gtspp/bestcopy/netcdf
 //          was /pub/data.nodc/gtspp/bestcopy/netcdf
 //      to my local: c:/data/gtspp/bestNcZip
+//      !!! Be sure do pre-delete older files, so you don't download as filename(1) .
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
 
@@ -566,7 +567,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 8, 2021, 10, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 9, 2021, 11, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -599,7 +600,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 8, 2021, 10); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 9, 2021, 11); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
@@ -784,7 +785,7 @@ public class TestAll  {
 //    SSR.testForBrokenLinks("http://localhost:8080/cwexperimental/images/erddapTalk/erdData.html");
 //    SSR.testForBrokenLinks("g:/NOAA-Navy-SanctSound_CI01_01_BB_1h.xml");
 //
-//    StringArray.repeatedDiff("c:/downloads/f1.txt", "c:/downloads/f2.txt");
+//    StringArray.repeatedDiff("c:/downloads/f1.txt", "c:/downloads/f2.txt", File2.UTF_8);
 //    XML.prettyXml("c:/programs/mapserver/WVBoreholeResponse.xml", 
 //                  "c:/programs/mapserver/WVBoreholeResponsePretty.xml");
 
@@ -1390,9 +1391,9 @@ WaitThenTryAgainException wttae;
 
         if (errorSB != null && errorSB.length() > 0) {
             String fileName = EDStatic.fullLogsDirectory + "/TestAllErrorSB.txt";
-            String2.log(File2.writeToFile(fileName, 
+            String2.log(File2.writeToFileUtf8(fileName, 
                 "errorSB from TestAll which finished at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" + 
-                errorSB.toString(), File2.UTF_8));
+                errorSB.toString()));
             SSR.displayInBrowser("file://" + fileName);
         }
 

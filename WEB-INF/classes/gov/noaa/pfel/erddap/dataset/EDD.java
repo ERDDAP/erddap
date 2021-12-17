@@ -1831,8 +1831,7 @@ public abstract class EDD {
                         StringWriter writer = new StringWriter(65536);  //most are ~40KB
                         writeFGDC(0, writer);  //language=0 so error is consistent
                         accessibleViaFGDC = String2.canonical(
-                            File2.writeToFile(
-                                tName + tmp, writer.toString(), File2.UTF_8));
+                            File2.writeToFileUtf8(tName + tmp, writer.toString()));
 
                         //then swap into place to replace old version quickly
                         if (accessibleViaFGDC.length() == 0)
@@ -1905,8 +1904,7 @@ public abstract class EDD {
                         StringWriter writer = new StringWriter(65536);  //most are ~40KB
                         writeISO19115(0, writer);
                         accessibleViaISO19115 = String2.canonical(
-                            File2.writeToFile(
-                                tName + tmp, writer.toString(), File2.UTF_8));
+                            File2.writeToFileUtf8(tName + tmp, writer.toString()));
 
                         //then swap into place to replace old version quickly
                         if (accessibleViaISO19115.length() == 0)
@@ -2724,7 +2722,8 @@ public abstract class EDD {
         if (accessibleViaMAG().length()      == 0) sb.append("service=MakeAGraph\n");
         if (accessibleViaNcCF().length()     == 0) sb.append("service=NcCF\n");
         if (accessibleViaSubset().length()   == 0) sb.append("service=Subset\n");
-        for (int dv = 0; dv < dataVariables.length; dv++) {
+        //doing all varNames, then all attributes, treats varNames as more important
+        for (int dv = 0; dv < dataVariables.length; dv++) { 
             sb.append("variableName=" + dataVariables[dv].destinationName() + "\n");
             sb.append("sourceName="   + dataVariables[dv].sourceName() + "\n");
             sb.append("long_name="    + dataVariables[dv].longName() + "\n");
@@ -10734,7 +10733,7 @@ public abstract class EDD {
                 sb.append(String2.toJson("graphIntWESN") + ": [" + pa.toJsonCsvString() + "],\n");
                 sb.append("}\n");
 
-                String tError = File2.writeToFile(infoFileName, sb.toString(), File2.UTF_8); //json always UTF-8
+                String tError = File2.writeToFileUtf8(infoFileName, sb.toString()); //json always UTF-8
                 if (tError.length() == 0) {
                     if (verbose) String2.log("  writePngInfo succeeded"); 
                 } else {
@@ -11747,8 +11746,8 @@ sb.append(
      */
     public void writeInPortXmlFile(String fullFileName, String archiveLocation,
         String archiveOther, String archiveNone) {
-        String error = File2.writeToFile(fullFileName, 
-            getInPortXmlString(archiveLocation, archiveOther, archiveNone), File2.UTF_8);
+        String error = File2.writeToFileUtf8(fullFileName, 
+            getInPortXmlString(archiveLocation, archiveOther, archiveNone));
         if (error.length() > 0)
             throw new RuntimeException(error);
     }
@@ -11985,13 +11984,12 @@ if (nSuccess >= 2)
 "<dataset type=\"EDD" + String2.toTitleCase(gridTable) + "FromErddap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/" + gridTable + "dap/" + tDatasetID + "</sourceUrl>\n" +
 "</dataset>\n");        
-        String error = File2.writeToFile(dir + fileName, 
+        String error = File2.writeToFileUtf8(dir + fileName, 
             edd.getInPortXmlString(
                 "No Archiving Intended",
                 "",
                 "This data is derived from data in an archive. " +
-                "The archives only want to archive the source data."), 
-            File2.UTF_8);
+                "The archives only want to archive the source data."));
         if (error.length() > 0)
             throw new RuntimeException(error);
         String results = File2.directReadFromUtf8File(dir + fileName);
@@ -12399,8 +12397,8 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
      * This isn't aware of comment vs not a comment. 
      * This approach has advantages and disadvantages.
      * 
-     * @param datasetsXmlFileName the full file name of the datasets.xml file.
-     * @param csvChangesFileName the full file name of the csv file with 3 columns: 
+     * @param datasetsXmlFileName the full file name of the UTF-8 datasets.xml file.
+     * @param csvChangesFileName the full file name of the UTF-8 csv file with 3 columns: 
      *    datasetID, sourceName, and toBeAdded.
      * @return results and error messages
      * @throws Exception if serious trouble
@@ -12416,11 +12414,11 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
                compactDateTime = String2.replaceAll(compactDateTime, "-", "");
 
         //read datasets.xml file
-        StringArray dxLines = StringArray.fromFile(datasetsXmlFileName, "ISO-8859-1");
+        StringArray dxLines = StringArray.fromFileUtf8(datasetsXmlFileName);
 
         //read csvChangesFileName
         Table table = new Table();
-        table.readASCII(csvChangesFileName, File2.ISO_8859_1,
+        table.readASCII(csvChangesFileName, File2.UTF_8,
             "", "", 0, 1, null, null, null, null, null, false); //simplify?     
         int nChanges = table.nRows();
         if (table.nColumns() != 3 ||
@@ -12482,7 +12480,7 @@ BIND(if(EXISTS{?dt skos:definition ?def},?def,"") as ?defx) } order by ?pl
         }
 
         //save changed dxLines 
-        dxLines.toFile(datasetsXmlFileName + "temp");
+        dxLines.toFile(datasetsXmlFileName + "temp", File2.UTF_8, null);
 
         //save errors to file and write to console
         String errorLogName = File2.getDirectory(csvChangesFileName) + "addFillValueAttributesErrors" + compactDateTime + ".txt";

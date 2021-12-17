@@ -2356,7 +2356,7 @@ Clique em <kbd>Submit</kbd> .
 <EDDMetadata>Metadados</EDDMetadata>
 <EDDBackground>Fundo</EDDBackground>
 <EDDInstitution>Instituição</EDDInstitution>
-<EDDInformation>Em formação</EDDInformation>
+<EDDInformation>Informação</EDDInformation>
 <EDDSummary>Resumo</EDDSummary>
 <EDDDatasetTitle>Título do conjunto de dados</EDDDatasetTitle>
 <EDDDownloadData>Baixar dados</EDDDownloadData>
@@ -3414,7 +3414,7 @@ Você pode ignorar as páginas da web do ERDDAP e usar os serviços da web RESTf
 <infoAboutFrom>Informações sobre {0}, de {1}</infoAboutFrom>
 <infoTableTitleHtml>Variáveis e atributos do conjunto de dados</infoTableTitleHtml>
 <infoRequestForm>As solicitações de {0} / info devem estar no formato {0} / info / [datasetID] / index [fileType].</infoRequestForm>
-<information>Em formação</information>
+<information>Informação</information>
 <inotifyFix>Este pode ser o problema que pode ser resolvido no Linux chamando:
 {0}
 Ou use números mais altos se o problema persistir.

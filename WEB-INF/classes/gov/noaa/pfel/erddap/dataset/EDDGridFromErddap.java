@@ -947,7 +947,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 "-->\n");
 */
         //get the griddap datasets in a json table
-        String jsonUrl = url + "/griddap/index.json";
+        String jsonUrl = url + "/griddap/index.json?page=1&itemsPerPage=100000";
         String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
         if (sourceInfo.indexOf("\"table\"") > 0) {

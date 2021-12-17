@@ -93,9 +93,9 @@ You can <a rel="help" href="#customize">customize</a> your ERDDAP's appearance
 so ERDDAP reflects your organization and fits in with the rest of your website.
 
 <h2><a class="selfLink" id="organizations" href="#organizations" rel="bookmark">ERDDAP 
- has been installed by over 90 organizations in at least 15 countries</a></h2>
+ has been installed by over 90 organizations in at least 16 countries</a></h2>
  (Australia, Belgium, Canada, China, France, India, Ireland, 
- Italy, New Zealand, Sri Lanka, South Africa, Spain, Thailand, UK, USA),
+ Italy, New Zealand, Russia, South Africa, Spain, Sri Lanka, Thailand, UK, USA),
  including:
 <ul>
 <li><a rel="bookmark" href="https://apdrc.soest.hawaii.edu/erddap/index.html">APDRC<img 
@@ -177,10 +177,8 @@ Joint Research Centre of the European Commission)
   <!-- 2015-03-19 Damian Smyth -->
 <li>Marine Instruments S.A. (Spain)
   <!-- 2015-03-25 Iago Tejeda Pérez -->
-<li><a rel="bookmark" href="https://nrm-erddap.nci.org.au/erddap/index.html">NCI<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-  (Australia's National Computational Infrastructure)
+<li>NCI (Australia's National Computational Infrastructure)
+   <!-- was https ://nrm-erddap.nci.org.au/erddap/index.html -->
 <li><a rel="bookmark" href="https://coastwatch.noaa.gov/erddap/index.html">NOAA CoastWatch<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>  
@@ -258,7 +256,7 @@ Joint Research Centre of the European Commission)
       title="This link to an external website does not constitute an endorsement."></a> 
   (National Centers for Environmental Information) 
   <!-- 2019-08-13 I assumed public. Tim Boyer?  was Charles Carleton  -->
-  <!-- 2020-11-25 gone?   <li><a rel="bookmark" href="https://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI</a> 
+  <!-- 2020-11-25 gone?   <li><a rel="bookmark" href="https ://ecowatch.ncddc.noaa.gov/erddap/index.html">NOAA NCEI</a> 
   (National Centers for Environmental Information) / NCDDC -->
   <!-- 2015-03-17 (was NCDDC) Glenn Rutledge, Charles Carleton -->
 <li>NOAA NGDC STP (National Geophysical Data Center, Solar -- Terrestrial Physics)
@@ -303,22 +301,18 @@ Joint Research Centre of the European Commission)
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
   (Ocean Observatories Initiative)
-<br>OOI / Uncabled Data <!-- <a rel="bookmark" href="https://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"> -->  
+<br>OOI / Uncabled Data <!-- <a rel="bookmark" href="https ://erddap-uncabled.oceanobservatories.org/uncabled/erddap/index.html"> -->  
   <!-- 2017-10-19 They made it public. 2020-10-21 Jessica Austin -->
 <li>Princeton, Hydrometeorology Research Group
   <!-- 2017-05-17 James Smith  was http://hydromet-thredds.princeton.edu:8000/erddap/index.html-->
 <li>R.Tech Engineering, France 
   <!-- 2015-03-20 Philippe Makowski  was https://meteo.rtech.fr/erddap/index.html -->
-<li><a rel="bookmark" href="http://www.myroms.org:8080/erddap/index.html"
-  >Rutgers University, Department of Marine and Coastal Sciences<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
- and
- <a rel="bookmark" href="https://tds.marine.rutgers.edu/erddap/index.html"
- >a second ERDDAP<img 
+<li><a rel="bookmark" href="https://tds.marine.rutgers.edu/erddap/index.html"
+ >Rutgers University, Department of Marine and Coastal Sciences<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
   <!-- 2017-05-16 John Wilkin -->
+  <!-- there was a 2nd one at http ://www.myroms.org:8080/erddap/index.html -->
 <li><!-- was http://sfbaynutrients.sfei.org/erddap/index.html -->
 San Francisco Estuary Institute
   <!-- 2016-10-26 Rusty Holleman -->
@@ -427,18 +421,18 @@ or Mac server instead.
 <ol>
 <li><a class="selfLink" id="java" href="#java" rel="bookmark">Set up Java 8 (also known as 1.8).</a>  
     <br>For security reasons, it is almost always best to use the latest version of Java 8.
-    <br>Please download and install the latest version of  
-    <br><a rel="bookmark" href="https://adoptopenjdk.net/">AdoptOpenJDK's OpenJDK 8 (LTS) + HotSpot<img 
+    <br>Please download and install the latest version of 
+    <br><a rel="bookmark" href="https://adoptium.net/?variant=openjdk8">Adoptium's OpenJDK (Temurin) 8 (LTS)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
     <br><kbd>/usr/local/jdk8u292-b10/jre/bin/java -version</kbd> <!-- javaVersion -->
 
-    <p>ERDDAP works with Java from other sources, but we recommend AdoptOpenJDK because it is the 
+    <p>ERDDAP works with Java from other sources, but we recommend Adoptium because it is the 
     main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
     that offers Long Term Support (free upgrades until at least September 2023).
     For security reasons, please update your ERDDAP's version of Java periodically 
-    as new versions of Java 8 become available from AdoptOpenJDK. <!-- javaVersion -->
+    as new versions of Java 8 become available from Adoptium. <!-- javaVersion -->
 
     <p>ERDDAP has been tested and used extensively with Java 8 (also known as 1.8), 
     not other versions.
@@ -448,7 +442,7 @@ or Mac server instead.
     <a rel="help" href="https://www.oracle.com/technetwork/java/eol-135779.html">end of life<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
-    and so is no longer supported by Oracle or AdoptOpenJDK. 
+    and so is no longer supported by Oracle or Adoptium. 
 
     <br>&nbsp;
 
@@ -721,7 +715,7 @@ or Mac server instead.
         <ul>
         <li>On Linux:
           <ul>
-          <li>For Linux AdoptOpenJDK Java distributions, see 
+          <li>For Linux Adoptium Java distributions, see 
             <a rel="help" href="https://blog.adoptopenjdk.net/2021/01/prerequisites-for-font-support-in-adoptopenjdk/"
             >these instructions<img 
             src="../images/external.png" alt=" (external link)" 
@@ -4031,7 +4025,7 @@ N  128  128  128
 href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#ncCFMA">.ncCFMA</a>    
   for tabular datasets, as specified by the 
   <a rel="help"
-href="https://www.nodc.noaa.gov/data/formats/netcdf/v2.0/">NCEI NetCDF Templates v2.0<img 
+href="https://www.ncei.noaa.gov/data/oceans/ncei/formats/netcdf/v2.0/index.html">NCEI NetCDF Templates v2.0<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>).
 
@@ -4564,7 +4558,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     The ERDDAP pom.xml file for Maven is included in the GitHub ERDDAP distribution.
   <li>We use a batch file which deletes all of the .class files in the source tree
     to ensure that we have a clean compile (with javac).
-  <li>We currently use AdoptOpenJDK's javac jdk8u292-b10 <!-- javaVersion --> 
+  <li>We currently use Adoptium's javac jdk8u292-b10 <!-- javaVersion --> 
      to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
      and run the tests.       
@@ -4935,7 +4929,7 @@ add the project below and give credit where credit is due.]
 <li>CoastWatch Browser
   <br>ERDDAP uses code from the 
     CoastWatch Browser 
-    <!-- DECOMMISSIONED: <a rel="help" href="https://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> -->
+    <!-- DECOMMISSIONED: <a rel="help" href="https ://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> -->
     project (now decomissioned) from the
     <a rel="bookmark" href="https://coastwatch.noaa.gov">NOAA CoastWatch</a>
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
@@ -5218,7 +5212,7 @@ add the project below and give credit where credit is due.]
     <li><a rel="help" href="https://github.com/google/guava">guava.jar<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
-      (license: <a rel="bookmark" href="https://code.google.com/p/guava-libraries/">Apache 2.0<img 
+      (license: <a rel="bookmark" href="https://github.com/google/guava/blob/master/COPYING">Apache 2.0<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>).
 
@@ -5471,7 +5465,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.15
+<p>ERDDAP, Version 2.16
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
