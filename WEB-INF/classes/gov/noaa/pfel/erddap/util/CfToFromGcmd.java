@@ -92,7 +92,7 @@ public class CfToFromGcmd {
         String2.log("CfToFromGcmd static loading " + fileName);
         StringArray lines;
         try {
-            lines = StringArray.fromFile(fileName, File2.ISO_8859_1); //actually, 7bit ASCII
+            lines = StringArray.fromFile88591(fileName); //actually, 7bit ASCII
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }

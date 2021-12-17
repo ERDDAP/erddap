@@ -158,7 +158,7 @@ public class CompoundColorMap extends ColorMap {
     protected static void populate(CompoundColorMap ccm, String cptFileName) 
         throws Exception {
         //set up a colorMap based on info in the .cpt file
-        ArrayList<String> lines = File2.readLinesFromFile(cptFileName, null, 3);
+        ArrayList<String> lines = File2.readLinesFromFile(cptFileName, File2.ISO_8859_1, 3);
 
         //set up temporary PrimitiveArrays
         DoubleArray rangeLowAr  = new DoubleArray(); //stores the low ends of a piece

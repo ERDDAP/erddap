@@ -1939,57 +1939,57 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
         sb.append("This is using localhost erddap2.css and files from testMediaFiles.\n" +
             "<p>This is some text in the SANS_SERIF_STYLE.\n");
         sb.append("<br>This html tooltip doesn't work initially because wings.gif height and width aren't specified: " +
-            htmlTooltipImage(imageDir + "QuestionMark.jpg", "?",
+            htmlTooltipImage(imageDir + "QuestionMark.png", "?",
             "Hi <strong>bold</strong>\n<br>there \\/'\"&amp;&brvbar;!" +
             //height=\"331\" width=\"375\" 
             "<br><img src=\"http://www.cohort.com/wings.gif\" alt=\"wings\">", ""));
         sb.append("<br>Large image scaled down to max=600:\n" +
             imageInTooltip(
             "/programs/_tomcat/webapps/cwexperimental/images/HowDoISpecifyARegion.png", 
-            "https://coastwatch.pfeg.noaa.gov/coastwatch/images/HowDoISpecifyARegion.png",
-            "https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
+            "http://localhost:8080/cwexperimental/images/HowDoISpecifyARegion.png",
+            "http://localhost:8080/cwexperimental/images/QuestionMark.png"));
 
         sb.append("<br>Small image (plus1000.gif):\n" +
             imageInTooltip(
             "/programs/_tomcat/webapps/cwexperimental/images/plus1000.gif", 
-            "https://coastwatch.pfeg.noaa.gov/erddap/images/plus1000.gif",
-            "https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg"));
+            "http://localhost:8080/cwexperimental/images/plus1000.gif",
+            "http://localhost:8080/cwexperimental/images/QuestionMark.png"));
 
         //pure CSS image tooltip    
         //try to defer loading the image
         sb.append("\n<br>cssTooltipImage: ");
         sb.append(cssTooltipImage(
-            "http://localhost:8080/cwexperimental/images/QuestionMark.jpg", "?", "",
+            "http://localhost:8080/cwexperimental/images/QuestionMark.png", "?", "",
             "http://localhost:8080/cwexperimental/files/testMediaFiles/ShouldWork/19020101.png", 
             "img1"));
         sb.append("[something after]");
 
         sb.append("\n<br>cssTooltipVideo: ");
         sb.append(cssTooltipVideo(
-            "http://localhost:8080/cwexperimental/images/QuestionMark.jpg", "?", "",
+            "http://localhost:8080/cwexperimental/images/QuestionMark.png", "?", "",
             "http://localhost:8080/cwexperimental/files/testMediaFiles/ShouldWork/small.mp4"));
         sb.append("(testMediaFiles must be in localhost ERDDAP)");
 
         sb.append("\n<br>cssTooltipAudio: ");
         sb.append(cssTooltipAudio(
-            "http://localhost:8080/cwexperimental/images/QuestionMark.jpg", "?", "",
+            "http://localhost:8080/cwexperimental/images/QuestionMark.png", "?", "",
             "http://localhost:8080/cwexperimental/files/testMediaFiles/ShouldWork/M1F1-int16-AFsp.wav"));
         sb.append("(testMediaFiles must be in localhost ERDDAP)");
 
         /*sb.append(        
             "<a href=\"\" class=\"cssTooltip\">" +  
-                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\" " +
+                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.png\" alt=\"?\" " +
                 "onmouseover=\"var el=document.getElementById('img1'); el.setAttribute('src',el.getAttribute('data-src'));\">" +
             "<span>" +
                 "<strong>CSS only Tooltip</strong><br>And more.<br>" + //test text+image
-                "<img id=\"img1\" src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"jplMURSST20150103090000.png\" " +
+                "<img id=\"img1\" src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.png\" alt=\"jplMURSST20150103090000.png\" " +
                     "data-src=\"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png\">" + 
             "</span></a>Subsequent text.\n");
 
         /* //original plain pre-load image
         sb.append(
             "<a href=\"#\" class=\"cssTooltip\">" +
-                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.jpg\" alt=\"?\">" +
+                "<img src=\"https://coastwatch.pfeg.noaa.gov/erddap/images/QuestionMark.png\" alt=\"?\">" +
             "<span>" +
                 "<strong>CSS only Tooltip</strong><br>And more.<br>" + //test text+image
                 "<img src=\"http://localhost:8080/cwexperimental/files/testFileNames/jplMURSST20150103090000.png\">" + //" style=\"float:right;\" 
@@ -2223,7 +2223,7 @@ sb.append(twoClickMap[2]);
             "</body>\n" +
             "</html>\n");
         String2.log("writeToFile result=" + 
-            File2.writeToFile(fullName, sb.toString(), File2.UTF_8));
+            File2.writeToFileUtf8(fullName, sb.toString()));
 
         SSR.displayInBrowser("file://" + fullName);
         debugMode = oDebugMode;

@@ -899,15 +899,15 @@ sb.append(
         results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 74];\n" +    //changes
+"  Float64 time[time = 75];\n" +    //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 11985];\n" +
 "  Float64 longitude[longitude = 9333];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chla[time = 74][altitude = 1][latitude = 11985][longitude = 9333];\n" +  //changes
+"      Float32 chla[time = 75][altitude = 1][latitude = 11985][longitude = 9333];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 74];\n" +  //changes
+"      Float64 time[time = 75];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 11985];\n" +
 "      Float64 longitude[longitude = 9333];\n" +

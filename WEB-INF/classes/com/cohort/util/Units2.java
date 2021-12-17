@@ -1796,7 +1796,7 @@ String2.log("5/9=" + (5/9.0));
      */
     public static void checkUdunits2File(String fileName) throws Exception {
         String2.log("\n*** Units2.checkUdUnits2File " + fileName);
-        StringArray sa = StringArray.fromFile(fileName);
+        StringArray sa = StringArray.fromFileUtf8(fileName);
         StringArray names = new StringArray();
         int n = sa.size();
         int nDef = 0, nPlural = 0, nSingular = 0, nSymbol = 0;
@@ -1952,7 +1952,7 @@ String2.log("5/9=" + (5/9.0));
                  f == 1? "datasetsFEDCW.xml" :
                          "uniqueCFUnits.txt");
 
-            ArrayList<String> lines = File2.readLinesFromFile(fileName, File2.ISO_8859_1, 1); //nAttempts
+            ArrayList<String> lines = File2.readLinesFromFile(fileName, File2.UTF_8, 1); //nAttempts
             int nLines = lines.size();
             for (int i = 0; i < nLines; i++) {
                 String s = String2.extractCaptureGroup(lines.get(i), pattern, 1); //captureGroupNumber
@@ -2207,7 +2207,7 @@ String2.log("5/9=" + (5/9.0));
      * This tests if the canonical units for each unique CF unit is unique.
      */
     public static void testIfCFCanonicalUnitsUnique() throws Throwable {
-        StringArray sa = StringArray.fromFile(cfUnique, File2.UTF_8);
+        StringArray sa = StringArray.fromFileUtf8(cfUnique);
         Attributes atts = new Attributes(); //use it as a hashmap: canon -> source
         for (int i = 0; i < sa.size(); i++) {
             String s = sa.get(i);

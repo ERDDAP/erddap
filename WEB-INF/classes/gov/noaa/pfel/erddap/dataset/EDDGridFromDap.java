@@ -7174,10 +7174,10 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 "    </LatLonBox>\n" +
 "  </GroundOverlay>\n" +
 "  <ScreenOverlay id=\"Logo\">\n" +
-"    <description>" + EDStatic.erddapUrl + //in tests, always non-https url
+"    <description>" + EDStatic.preferredErddapUrl +
         "</description>\n" +
 "    <name>Logo</name>\n" +
-"    <Icon><href>" + EDStatic.erddapUrl + "/" + EDStatic.IMAGES_DIR + //in tests, always non-https url
+"    <Icon><href>" + EDStatic.preferredErddapUrl + "/" + EDStatic.IMAGES_DIR + //in tests, always non-https url
       "nlogo.gif</href></Icon>\n" +
 "    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
 "    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +

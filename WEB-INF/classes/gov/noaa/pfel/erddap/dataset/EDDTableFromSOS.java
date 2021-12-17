@@ -587,7 +587,7 @@ public class EDDTableFromSOS extends EDDTable{
                
         //if (debugMode)
         //    String2.log(SSR.getUrlResponseStringUnchanged(tUrl));
-        //File2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseStringUnchanged(tUrl));
+        //File2.writeToFileUtf8("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseStringUnchanged(tUrl));
 
         //get getCapabilities   (perhaps reuse quickRestartFile)
         String quickRestartFileName = File2.forceExtension(quickRestartFullFileName(), ".xml");
@@ -5484,15 +5484,15 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
                 "&station_id=\"urn:ioos:station:wmo:46013\"&time>=2008-08-01T14:00&time<2008-08-01T20:00", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWTemp", ".csv"); 
             results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
-            expected = //2019-03-19 was -0.6, now -1.0
+            expected = //2021-12-13 lon, lat, alt all changed slightly  2019-03-19 was -0.6, now -1.0
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
 "degrees_east,degrees_north,,m,UTC,,degree_C\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T17:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T18:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.0\n" +
-"-123.307,38.238,urn:ioos:station:wmo:46013,-1.0,2008-08-01T19:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.1\n";
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T17:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T18:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.0\n" +
+"-123.303,38.253,urn:ioos:station:wmo:46013,-1.5,2008-08-01T19:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.1\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             throw new RuntimeException("Small changes are common. NDBC Server is in flux.", t); 

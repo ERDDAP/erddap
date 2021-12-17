@@ -650,7 +650,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 "-->\n");
 */
         //get the tabledap datasets in a json table
-        String jsonUrl = tLocalSourceUrl + "/tabledap/index.json";
+        String jsonUrl = tLocalSourceUrl + "/tabledap/index.json?page=1&itemsPerPage=100000";
         String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
         if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
         if (sourceInfo.indexOf("\"table\"") > 0) {

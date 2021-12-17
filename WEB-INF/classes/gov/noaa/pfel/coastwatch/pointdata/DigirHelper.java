@@ -444,7 +444,7 @@ public class DigirHelper  {
         String xml = getMetadataXml(url, version);
         BufferedReader reader = new BufferedReader(new StringReader(xml));
         //for testing:
-        //Test.ensureTrue(File2.writeToFile("c:/temp/ObisMetadata.xml", xml).equals(""), 
+        //Test.ensureTrue(File2.writeToFileUtf8("c:/temp/ObisMetadata.xml", xml).equals(""), 
         //    "Unable to save c:/temp/Obis.Metadata.xml.");
         //Reader reader = File2.getDecompressFileReaderUtf8("c:/programs/digir/ObisMetadata.xml");
         try {
@@ -693,7 +693,7 @@ String2.log("DigirHelper.getInventoryTable(resource[0]=" + resource[0] + " var="
                 resultsVariable);
             //used for testing:
             //String fileName = "c:/programs/digir/ObisInventory" + res + ".xml";
-            //Test.ensureTrue(File2.writeToFile(fileName, xml).equals(""), 
+            //Test.ensureTrue(File2.writeToFileUtf8(fileName, xml).equals(""), 
             //    "Unable to save " + fileName);
             //String xml = File2.readFromFile(fileName)[1];
             //String2.log("xml=" + xml);
@@ -1121,7 +1121,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 String response = SSR.getUrlResponseStringUnchanged(url + "?request=" + 
                     SSR.percentEncode(request));
                 //for testing:
-                //File2.writeToFile("c:/temp/SearchDigirResponse" + resource + ".xml", response);
+                //File2.writeToFileUtf8("c:/temp/SearchDigirResponse" + resource + ".xml", response);
                 //String response = File2.readFromFile("c:/temp/SearchDigirResponse" + resource + ".xml")[1];
 
                 if (verbose) String2.log(resources[resource] + 

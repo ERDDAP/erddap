@@ -96,9 +96,9 @@ Si vous avez des suggestions de liens supplémentaires, contactez <kbd>bob dot s
 <advl_latitudeSpacing>Espacement moyen de latitude de grille</advl_latitudeSpacing>
 <advl_minAltitude>Altitude minimale (ou profondeur négative)</advl_minAltitude>
 <advl_maxAltitude>Altitude maximale (ou profondeur négative)</advl_maxAltitude>
-<advl_minTime>Durée minimale</advl_minTime>
+<advl_minTime>​Début de période</advl_minTime>
 <advc_maxTime>Si dataStructure=table et minTime sont spécifiés et maxTime ne l&#39;est pas, il s&#39;agit d&#39;un ensemble de données en temps quasi réel.</advc_maxTime>
-<advl_maxTime>Durée maximale</advl_maxTime>
+<advl_maxTime>​Fin de période</advl_maxTime>
 <advl_timeSpacing>Espacement temporel moyen de la grille</advl_timeSpacing>
 <advc_griddap>Ajoutez .html pour afficher une page Web de demande de données.</advc_griddap>
 <advl_griddap>URL de base du service de grille OPeNDAP</advl_griddap>
@@ -150,8 +150,7 @@ Il n&#39;y a peut-être pas d&#39;ensembles de données en temps quasi réel dan
 <advancedSearchTooltip><![CDATA[
 La recherche avancée combine toutes les techniques de recherche et ajoute des recherches d&#39;ensembles de données qui contiennent des données dans des plages de longitude, latitude et temps, afin que vous puissiez rechercher des ensembles de données en fonction de nombreux critères différents simultanément.
 ]]></advancedSearchTooltip>
-<advancedSearchBounds>Rechercher des ensembles de données qui ont des données dans la longitude, la latitude,
-et plages horaires</advancedSearchBounds>
+<advancedSearchBounds>Recherche des ensembles de données par interval de latitude, de longitude et de temps</advancedSearchBounds>
 <advancedSearchMinLat>Latitude minimale</advancedSearchMinLat>
 <advancedSearchMaxLat>Latitude maximale</advancedSearchMaxLat>
 <advancedSearchMinLon>Longitude minimale</advancedSearchMinLon>
@@ -159,7 +158,7 @@ et plages horaires</advancedSearchBounds>
 <advancedSearchMinMaxLon>Longitude min et max</advancedSearchMinMaxLon>
 <advancedSearchMinTime>Durée minimale</advancedSearchMinTime>
 <advancedSearchMaxTime>Durée maximale</advancedSearchMaxTime>
-<advancedSearchClear>Dégager</advancedSearchClear>
+<advancedSearchClear>Effacer</advancedSearchClear>
 <advancedSearchClearHelp>Effacer tous les champs de texte Longitude et Latitude
 et le rectangle sur la carte.</advancedSearchClearHelp>
 <advancedSearchCategoryTooltip><![CDATA[
@@ -168,12 +167,11 @@ Les ensembles de données peuvent être classés de différentes manières en fo
 Pour rechercher plus d&#39;une valeur, entrez des valeurs supplémentaires dans le champ de texte Full Text ci-dessus, par exemple, <kbd>&quot;long_name=Sea Surface Temperature&quot;</kbd> .
 ]]></advancedSearchCategoryTooltip>
 <advancedSearchRangeTooltip><![CDATA[
-Les ensembles de données correspondront à ces critères s&#39;ils ont au moins quelques données correspondantes.
-<p>Tous les ensembles de données de grille qui ont des variables de longitude, latitude et temps
-<br>disposer des informations sur la plage de données nécessaires pour effectuer ces tests.
-<br>Malheureusement, certains ensembles de données tabulaires ont les variables, mais n&#39;ont pas
-<br>les informations de plage de données.
-Ils seront exclus des résultats de la recherche.
+Les ensembles de données correspondront à ces critères s'ils ont au moins quelques données correspondantes.
+<p> Tous les ensembles de données de grille qui ont des variables de longitude, de latitude et de temps
+<br>ont les informations de plage de données nécessaires pour effectuer ces tests.
+<br>Malheureusement, certains ensembles de données tabulaires ont les variables, mais n'ont pas
+<br>les informations de plage de données. Ceux-ci seront exclus des résultats de la recherche.
 ]]></advancedSearchRangeTooltip>
 <advancedSearchMapTooltip><![CDATA[
 Ceci est facultatif.
@@ -259,7 +257,7 @@ Si vous êtes prêt à éviter ces problèmes, veuillez envoyer un e-mail à {0}
 <!--  Ces messages sont liés à la recherche par catégorie. -->
 <categoryTitleHtml>Rechercher des ensembles de données par catégorie</categoryTitleHtml>
 <categoryHtml><![CDATA[
-Les ensembles de données peuvent être classés de différentes manières par les valeurs de divers attributs de métadonnées.
+Les ensembles de données peuvent être classés de différentes manières len fonction des valeurs de divers attributs de métadonnées.
 <br>Cliquez sur un attribut {0} pour voir une liste de catégories (valeurs) pour cet attribut.
 ]]></categoryHtml>
 <category3Html><![CDATA[
@@ -505,7 +503,7 @@ Il existe des
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
 ]]></convertOAVariableNamesService>
-<convertFipsCounty>Convertir un code de comté FIPS vers/depuis un nom de comté</convertFipsCounty>
+<convertFipsCounty>Convertir un code de comté FIPS vers/depuis un nom de comté (USA)</convertFipsCounty>
 <!--  Ne changez pas les exemples (de defaultN...). -->
 <!--  « Code de comté FIPS » était un lien vers http://www.itl.nist.gov/fipspubs/fip6-4.htm
      puis https://www.census.gov/geo/reference/codes/cou.html
@@ -866,10 +864,10 @@ Il existe des
 Essayer de traduire un nom standard CF ou un mot-clé scientifique GCMD partiel ou invalide, ou utiliser une casse différente (majuscule ou minuscule), entraînera une erreur HTML.
 <br>&nbsp;
 ]]></convertKeywordsService>
-<convertTime>Convertir une heure de chaîne en/depuis une heure numérique</convertTime>
+<convertTime>Convertir une date+heure en "string" en/depuis une date+heure numérique</convertTime>
 <convertTimeReference><![CDATA[
 ERDDAP dispose d&#39;
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">un service pour convertir une heure de chaîne vers/depuis une heure numérique</a> .
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">un service pour convertir une date+heure en "string" en/depuis une date+heure numérique</a> .
 ]]></convertTimeReference>
 <!--  Ne modifiez pas les valeurs d&#39;exemple (de defaultN...). -->
 <convertTimeIntro><![CDATA[
@@ -2310,7 +2308,7 @@ Cliquez sur <kbd>Submit</kbd> .
 <EDDIso19115>ISO 19115</EDDIso19115>
 <EDDIso19115Metadata>Métadonnées ISO 19115-2/19139</EDDIso19115Metadata>
 <EDDMetadata>Métadonnées</EDDMetadata>
-<EDDBackground>Fond</EDDBackground>
+<EDDBackground>​Contexte</EDDBackground>
 <EDDInstitution>Institution</EDDInstitution>
 <EDDInformation>Informations</EDDInformation>
 <EDDSummary>Sommaire</EDDSummary>
@@ -2441,9 +2439,9 @@ Sélectionnez une ou plusieurs variables de grille.
 <EDDGridGridVariableHtml><![CDATA[
 <strong>Variables de grille</strong> (qui téléchargent toujours également toutes les variables de dimension)
 ]]></EDDGridGridVariableHtml>
-<EDDGridCheckAll>Vérifie tout</EDDGridCheckAll>
+<EDDGridCheckAll>​Sélectioner tout</EDDGridCheckAll>
 <EDDGridCheckAllTooltip>Cliquez ici pour sélectionner toutes les variables de données.</EDDGridCheckAllTooltip>
-<EDDGridUncheckAll>Décocher tout</EDDGridUncheckAll>
+<EDDGridUncheckAll>​Déselectionner tout</EDDGridUncheckAll>
 <EDDGridUncheckAllTooltip>Cliquez ici pour désélectionner toutes les variables de données.</EDDGridUncheckAllTooltip>
 <!-- Exemples Griddap Ce groupe de paramètres est utilisé pour créer des exemples pour la documentation griddap qui apparaît sur [baseUrl]/erddap/griddap/documentation.html et ailleurs.
 Les caractères spéciaux (par exemple, &amp; &lt; &gt;) doivent être encodés en HTML.
@@ -2522,9 +2520,9 @@ Les variables sont les colonnes du tableau.
 Sélectionnez (cochez) les variables que vous souhaitez inclure dans le tableau des résultats.
 Les contraintes déterminent quelles lignes de données de la table d&#39;origine sont incluses dans la table de résultats.
 ]]></EDDTableTabularDatasetTooltip>
-<EDDTableCheckAll>Vérifie tout</EDDTableCheckAll>
+<EDDTableCheckAll>​Sélectioner tout</EDDTableCheckAll>
 <EDDTableCheckAllTooltip>Cliquez ici pour sélectionner toutes les variables.</EDDTableCheckAllTooltip>
-<EDDTableUncheckAll>Décocher tout</EDDTableUncheckAll>
+<EDDTableUncheckAll>​Déselectionner tout</EDDTableUncheckAll>
 <EDDTableUncheckAllTooltip>Cliquez ici pour désélectionner toutes les variables.</EDDTableUncheckAllTooltip>
 <EDDTableVariable>Variable</EDDTableVariable>
 <EDDTableMinimumTooltip>Pour votre information : ce sont les valeurs minimales des variables.</EDDTableMinimumTooltip>
@@ -2640,7 +2638,7 @@ Si vous voulez que les exemples pointent vers votre ERDDAP, la méthode la plus 
 <EDDTableFromHttpGetAuthorDescription>The values in this column identify the author who added each row of data to the dataset.</EDDTableFromHttpGetAuthorDescription>
 <EDDTableFromHttpGetTimestampDescription>The values in this column are added by ERDDAP to identify when each row of data was added to the data file.</EDDTableFromHttpGetTimestampDescription>
 <erddapIs><![CDATA[
-ERDDAP est un serveur de données qui vous offre un moyen simple et cohérent de télécharger des sous-ensembles d&#39;ensembles de données scientifiques dans des formats de fichiers courants et de créer des graphiques et des cartes.
+ERDDAP est un serveur de données qui vous offre un moyen simple et cohérent de télécharger des sous-ensembles de données scientifiques dans des formats de fichiers courants et de créer des graphiques et des cartes.
 ]]></erddapIs>
 <erddapVersionHTML><![CDATA[
 
@@ -2746,7 +2744,7 @@ Par exemple:
 <filesDescription>Le système de &quot;fichiers&quot; d&#39;ERDDAP vous permet de parcourir un système de fichiers virtuel et de télécharger des fichiers de données sources.</filesDescription>
 <filesSort>Cliquez sur un en-tête (par exemple, Nom, Dernière modification, Taille) pour modifier l&#39;ordre de tri. &quot;Dernière modification&quot; utilise le fuseau horaire zoulou.</filesSort>
 <filesWarning><![CDATA[
-Les métadonnées de l&#39;ensemble de données et les noms de variables dans ces fichiers sources peuvent être différents d&#39;ailleurs dans ERDDAP ! Vous préférerez peut-être utiliser le formulaire d&#39;accès aux données de l&#39;ensemble de données.
+Les métadonnées de l&#39;ensemble de données et les noms de variables dans ces fichiers sources peuvent être différents  de ceux qui se trouvent ailleurs dans ERDDAP! Il peut être préférable d’utiliser le formulaire d&#39;accès aux données de l&#39;ensemble de données.
 ]]></filesWarning>
 <filesDocumentation><![CDATA[
 Le système de &quot;files&quot; d&#39; ERDDAP vous permet de parcourir un système de fichiers virtuel et de télécharger des fichiers de données sources.
@@ -3339,8 +3337,8 @@ Une fois que vous êtes membre, vous pouvez y poster votre question ou effectuer
 <!--  texte pour le côté droit de index.html -->
 <indexViewAll>Afficher une liste de tous les {0} ensembles de données</indexViewAll>
 <indexSearchWith>Rechercher des ensembles de données avec {0}</indexSearchWith>
-<indexDevelopersSearch>Développeurs de programmes informatiques et de pages Web JavaScript
-peut rechercher des ensembles de données via</indexDevelopersSearch>
+<indexDevelopersSearch>Les développeurs de programmes informatiques et de pages Web JavaScript
+peuvent rechercher des ensembles de données via</indexDevelopersSearch>
 <indexProtocol>Protocole</indexProtocol>
 <indexDescription>La description</indexDescription>
 <indexDatasets><![CDATA[
@@ -3351,8 +3349,8 @@ peut rechercher des ensembles de données via</indexDevelopersSearch>
 {0}&nbsp;Documentation
 ]]></indexDocumentation>
 <indexRESTfulSearch>Les services de recherche RESTful de l&#39;ERDDAP</indexRESTfulSearch>
-<indexAllDatasetsSearch>Ensemble de données tabulaire allDatasets d&#39;ERDDAP contenant une ligne d&#39;informations pour chaque ensemble de données</indexAllDatasetsSearch>
-<indexOpenSearch>Service OpenSearch 1.1 de l&#39;ERDDAP</indexOpenSearch>
+<indexAllDatasetsSearch>L'Ensemble de données tabulaire allDatasets d&#39;ERDDAP contenant une ligne d&#39;informations pour chaque ensemble de données</indexAllDatasetsSearch>
+<indexOpenSearch>Le Service OpenSearch 1.1 de l&#39;ERDDAP</indexOpenSearch>
 <indexMetadata>Métadonnées</indexMetadata>
 <!--  {0} {1} est un lien vers un seul des FGDC ou ISO 19115 WAF -->
 <indexWAF1>ERDDAP a un {0} avec {1} fichiers de métadonnées pour tous les ensembles de données géospatiales dans cet ERDDAP.</indexWAF1>
@@ -3362,7 +3360,7 @@ peut rechercher des ensembles de données via</indexDevelopersSearch>
 <indexDescribeConverters>En plus de servir des données, ERDDAP dispose de quelques convertisseurs pratiques :</indexDescribeConverters>
 <indexServices>Services Web RESTful</indexServices>
 <indexDescribeServices><![CDATA[
-Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services Web RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme qui vous écrivez) et même à partir de pages Web (via des balises d&#39;image HTML ou JavaScript).
+Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services Web RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme qui vous écrivez) et même à partir de pages Web (via des tags d&#39;image HTML ou JavaScript).
 <a rel="help" href="{0}/rest.html">Documentation des services Web RESTful</a>
 ]]></indexDescribeServices>
 <infoAboutFrom>Informations sur {0}, à partir de {1}</infoAboutFrom>
@@ -3448,7 +3446,7 @@ La valeur par défaut est rien (inutilisé).
 <license>Licence</license>
 <likeThis>comme ça</likeThis>
 <!--  par exemple, {0}=WMS ou listAll -->
-<listOfDatasets>Liste de {0} ensembles de données</listOfDatasets>
+<listOfDatasets>Liste de {0} les ensembles de données</listOfDatasets>
 <listAll>Tous</listAll>
 <LogIn>Connexion</LogIn>
 <login>connexion</login>
@@ -3687,7 +3685,7 @@ Ces contraintes facultatives déterminent quelles lignes de données du
 <br>Une ou toutes les contraintes peuvent être laissées vides.
 ]]></magConstraintHelp>
 <magDocumentation><![CDATA[
-Documentation&nbsp;/&nbsp;Contourne&nbsp;cette&nbsp;former
+Documentation&nbsp;/&nbsp;Contourner&nbsp;ce&nbsp;​formulaire
 ]]></magDocumentation>
 <magDownload>Télécharger les données ou une image</magDownload>
 <magDownloadTooltip><![CDATA[
@@ -4009,7 +4007,7 @@ Il existe des
 <protocolSearchHtml>Rechercher des ensembles de données par protocole</protocolSearchHtml>
 <protocolSearch2Html><![CDATA[
 Les protocoles sont les normes qui spécifient comment demander des données.
-Différents protocoles sont appropriés pour différents types de données et pour différentes applications clientes.
+Certains protocoles sont mieux adaptés à certains types de données ou d'applications clientes.
 ]]></protocolSearch2Html>
 <protocolClick>Cliquez pour voir une liste des ensembles de données disponibles via le protocole {0}.</protocolClick>
 <queryError>Erreur de requête :</queryError>
@@ -4348,10 +4346,10 @@ Voir
 <restfulViaService>via un service web RESTful</restfulViaService>
 <rows>Lignes</rows>
 <rssNo>Actuellement, il n&#39;y a pas de flux RSS pour ce datasetID.</rssNo>
-<searchTitle>Chercher</searchTitle>
+<searchTitle>Rechercher</searchTitle>
 <searchDoFullTextHtml>Effectuez une recherche en texte intégral pour les ensembles de données</searchDoFullTextHtml>
 <searchFullTextHtml>Recherche de texte intégral pour les ensembles de données</searchFullTextHtml>
-<searchButton>Chercher</searchButton>
+<searchButton>Rechercher</searchButton>
 <!--  Le texte de l&#39;info-bulle du bouton Soumettre de la recherche en texte intégral. -->
 <searchClickTip>Cliquez ici pour soumettre votre demande de recherche.</searchClickTip>
 <!--  Il s&#39;agit du code HTML pour décrire les détails de la recherche en texte intégral.
@@ -4391,7 +4389,7 @@ Par exemple, la recherche de <kbd>spee</kbd> trouvera des ensembles de données 
 </ul>
 
 ]]></searchHintsLuceneTooltip>
-<searchMultipleERDDAPs>Rechercher plusieurs ERDDAP</searchMultipleERDDAPs>
+<searchMultipleERDDAPs>Rechercher dans plusieurs ERDDAP</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Il existe deux manières non officielles de rechercher des ensembles de données dans plusieurs ERDDAP :
 <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
@@ -4471,7 +4469,7 @@ Certaines pièces doivent être spécifiées séparément.
 <ssUse><![CDATA[
 
 <li>N&#39;importe qui peut utiliser le
-<a rel="help" href="&erddapUrl;/slidesorter.html">Slide Sorter</a> d&#39; ERDDAP pour créer une page Web personnelle qui affiche des graphiques avec les dernières données (ou d&#39;autres images ou contenu HTML), chacun dans sa propre diapositive déplaçable.
+<a rel="help" href="&erddapUrl;/slidesorter.html">Trieur de Diapos</a> d&#39; ERDDAP pour créer une page Web personnelle qui affiche des graphiques avec les dernières données (ou d&#39;autres images ou contenu HTML), chacun dans sa propre diapositive déplaçable.
 ]]></ssUse>
 <ssDisabled>Le système &quot;Slide Sorter&quot; a été désactivé sur cet ERDDAP.</ssDisabled>
 <ssBePatient>Sois patient. Ou, vérifiez l&#39;URL. Ou appuyez à nouveau sur « Envoyer ».</ssBePatient>
@@ -4563,7 +4561,7 @@ ERDDAP suit
   >les directives de la politique de confidentialité de la NOAA</a> .
 ]]></standardPrivacyPolicy>
 <status>Statut</status>
-<statusHtml>La page Web d&#39;état est un moyen rapide de vérifier l&#39;état/l&#39;état actuel
+<statusHtml>La page Web du statut d'ERDDAP est un moyen rapide de vérifier l&#39;état/l&#39;état actuel
 de cet ERDDAP, y compris une liste des ensembles de données qui n&#39;ont pas pu être chargés.</statusHtml>
 <!--  Texte pour le bouton Soumettre sur divers formulaires. -->
 <submit>Soumettre</submit>
@@ -4722,11 +4720,11 @@ Cela peut faire référence à &erddapUrl;
 Notre objectif est de vous permettre d&#39;obtenir plus facilement des données scientifiques.
 <p><strong>Différentes communautés scientifiques ont développé différents types de serveurs de données.</strong>
 <p>Par exemple, OPeNDAP, WCS, SOS, OBIS et d&#39;innombrables pages Web personnalisées avec des formulaires.
-Chacun est grand en soi.
+Chaque service est indépendamment très utile.
 Mais sans ERDDAP, il est difficile d&#39;obtenir des données de différents types de serveurs :
 <ul>
 <li>Différents serveurs de données vous obligent à formater votre demande de données de différentes manières.
-<li>Différents serveurs de données renvoient des données dans différents formats, généralement pas le format de fichier commun que vous souhaitez.
+<li>Différents serveurs de données renvoient des données dans différents formats, généralement pas le format que vous souhaitez.
 <li>Différents ensembles de données utilisent différents formats pour les données temporelles, les résultats sont donc difficiles à comparer.
 </ul>
 <!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
@@ -4735,7 +4733,7 @@ make it easier for you to get scientific data.-->
 <ul>
 <li>ERDDAP agit comme intermédiaire entre vous et divers serveurs de données distants.
 Lorsque vous demandez des données à ERDDAP, ERDDAP reformate la demande dans le format requis par le serveur distant, envoie la demande au serveur distant, récupère les données, reformate les données dans le format que vous avez demandé et vous envoie les données.
-Vous n&#39;avez plus besoin d&#39;aller sur différents serveurs de données pour obtenir des données à partir de différents ensembles de données.
+Vous n&#39;avez plus besoin d&#39;aller sur différents serveurs pour obtenir des données à partir de différents ensembles de données.
 <br>&nbsp;
 <li>ERDDAP offre un moyen simple et cohérent de demander des données :
 via la norme OPeNDAP .
@@ -4748,27 +4746,30 @@ Ainsi, vous n&#39;avez plus à perdre de temps et d&#39;efforts à reformater le
 <li>ERDDAP peut également renvoyer une image .png ou .pdf avec un graphique ou une carte personnalisé.
 <br>&nbsp;
 <li>ERDDAP standardise les dates+heures dans les résultats.
-Les données d&#39;autres serveurs de données sont difficiles à comparer car les dates+heures sont souvent exprimées dans des formats différents (par exemple, &quot;2 janvier 2018&quot;, 02-JAN-2018, 1/2/18, 2/1/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
-Pour les heures de chaîne, ERDDAP utilise toujours le format standard ISO 8601:2004(E), par exemple, 2018-01-02T00:00:00Z.
-Pour les heures numériques, ERDDAP utilise toujours &quot;seconds since 1970-01-01T00:00:00Z&quot; .
-ERDDAP utilise toujours le fuseau horaire Zulu (UTC, GMT) pour éliminer les difficultés de travailler avec différents fuseaux horaires et l&#39;heure standard par rapport à l&#39;heure d&#39;été.
+Les données d&#39;autres serveurs de données sont difficiles à comparer car les 
+dates+heures sont souvent exprimées dans des formats différents 
+(par exemple, &quot;2 janvier 2018&quot;, 02-JAN-2018, 1/2/18, 2/1/18, 2018 -01-02, &quot;days since Jan 1, 1900&quot; ).
+Pour les dates+heures en format “string”, ERDDAP utilise toujours le format standard ISO 8601:2004(E), par exemple, 2018-01-02T00:00:00Z.
+Pour les dates+heures numériques, ERDDAP utilise toujours &quot;seconds since 1970-01-01T00:00:00Z&quot; .
+ERDDAP utilise toujours le fuseau horaire Zulu (UTC, GMT) pour éliminer les difficultés
+de travailler avec différents fuseaux horaires et l&#39;heure standard par rapport à l&#39;heure d&#39;été.
 &convertTimeReference;
 <br>&nbsp;
 <li>ERDDAP a des pages Web (pour les humains avec des navigateurs) et
-<a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;la toile&nbsp;services</a> (pour programmes informatiques).
-Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services Web RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme qui vous écrivez) et même à partir de pages Web (via des balises d&#39;image HTML ou Java Script).
+<a rel="help" href="&erddapUrl;/rest.html">des&nbsp;services&nbsp;RESTful</a> (pour programmes informatiques).
+Vous pouvez contourner les pages Web d&#39; ERDDAP et utiliser les services RESTful d&#39; ERDDAP (par exemple, pour rechercher des ensembles de données, pour télécharger des données, pour créer des cartes) directement à partir de n&#39;importe quel programme informatique (par exemple, Matlab, R ou un programme que vous écrivez) et même à partir de pages Web (via des tags d&#39;image HTML ou Java Script).
 Vous pouvez également créer d&#39;autres choses utiles et intéressantes en plus des services Web d&#39; ERDDAP - voir le
 <a rel="bookmark" href="https://github.com/IrishMarineInstitute/awesome-erddap">Awesome ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> liste des projets liés Awesome ERDDAP .
 </ul>
-<p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Pour une introduction rapide à ERDDAP, regardez la première moitié de ce<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vidéo <img 
+<p><strong><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">Pour une introduction rapide à ERDDAP, regardez la première moitié de cette<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vidéo <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .</strong>
 <a class="selfLink" id="video" href="#video" rel="help">(5 minutes)</a> Dans ce document, un scientifique télécharge les données de prévision des courants océaniques d&#39; ERDDAP pour modéliser un déversement toxique dans l&#39;océan à l&#39;aide
 <a rel="bookmark" href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">du logiciel GNOME de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> (dans 5 minutes!).
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> (en 5 minutes!).
 Merci à Rich Signell.
 (Une petite erreur dans la vidéo :
 lors de la recherche d&#39;ensembles de données, n&#39;utilisez pas <kbd>AND</kbd> entre les termes de recherche.
@@ -4777,13 +4778,13 @@ C&#39;est implicite.)
 <p><strong>Fournisseurs de données :
 Vous pouvez
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">configurer votre propre serveur ERDDAP</a> et servir vos propres données.</strong> ERDDAP est gratuit et open source.
-Il utilise des licences de type Apache, vous pouvez donc en faire tout ce que vous voulez.
+ERDDAP utilise des licences de type Apache, vous pouvez donc en faire tout ce que vous voulez.
 L&#39;apparence d&#39; ERDDAP est personnalisable, de sorte que votre ERDDAP reflétera votre institution, et non la NOAA .
 Le petit effort pour mettre en place ERDDAP apporte de nombreux avantages.
-Si vous disposez déjà d&#39;un service web pour diffuser vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou la base de données.
-Ensuite, les gens auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
+Si vous disposez déjà d&#39;un service web pour diffuser vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou une base de données.
+Du coup, les utilisateurs auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
 ERDDAP a été installé par plus de 90 organisations dans au moins 14 pays.
-<a rel="bookmark"
+La <a rel="bookmark"
 href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations">Directive de procédure d&#39;accès aux données de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> inclut ERDDAP dans sa liste de serveurs de données recommandés pour une utilisation par des groupes au sein de la NOAA .
@@ -5659,8 +5660,8 @@ Maintenant, s&#39;il vous plaît, considérez-le simplement comme un nom, pas un
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>configurer votre propre serveur ERDDAP</strong></a> et servir vos propres données.
 <ul>
 <li>Le petit effort pour mettre en place ERDDAP apporte de nombreux avantages.
-<li>Si vous disposez déjà d&#39;un service web pour diffuser vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou la base de données.
-Ensuite, les gens auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
+<li>Si vous disposez déjà d&#39;un service web pour diffuser vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou une base de données.
+Du coup, les utilisateurs auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
 <li>Si vous avez des ensembles de données très demandés, vous pouvez installer
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"

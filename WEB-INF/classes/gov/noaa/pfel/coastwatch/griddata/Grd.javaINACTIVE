@@ -267,7 +267,7 @@ public class Grd {
                     //String2.log("grdinfo = " + String2.toCSSVString(info));
 
                     //write the header and the data
-                    String error = File2.writeToFile(fullResultName + randomInt + ".asc", 
+                    String error = File2.writeToFile88591(fullResultName + randomInt + ".asc", 
                         "ncols " + info[9] + "\n" +
                         "nrows " + info[10] + "\n" +
                         "xllcenter " + Math2.anglePM180(String2.parseDouble(info[1])) + "\n" +
@@ -822,7 +822,7 @@ public class Grd {
                     //for (int i = 1; i < dar.length; i++) //yes 1: since use i-1 below
                     //    bathSB.append(dar[i-1] + "\t"+i+"\t"+i+"\t"+i+"\t" + dar[i] + "\t"+i+"\t"+i+"\t"+i+"\n"); 
                     //String2.log("AString=" + AString + "\nbathSB=" + bathSB);
-                    error = File2.writeToFile(bathymetryConFile, bathSB.toString());
+                    error = File2.writeToFile88591(bathymetryConFile, bathSB.toString());
                     if (error.length() > 0)
                         throw new RuntimeException(error);
                 }
@@ -866,7 +866,7 @@ public class Grd {
                     //for (int i = 1; i < dar.length; i++) //yes 1: since use i-1 below
                     //    contSB.append(dar[i-1] + "\t"+i+"\t"+i+"\t"+i+"\t" + dar[i] + "\t"+i+"\t"+i+"\t"+i+"\n"); 
                     //String2.log("AString=" + AString + "\ncontSB=" + contSB);
-                    error = File2.writeToFile(contourConFile, contSB.toString());
+                    error = File2.writeToFile88591(contourConFile, contSB.toString());
                     if (error.length() > 0)
                         throw new RuntimeException(error);
                 }
@@ -938,7 +938,7 @@ public class Grd {
                 " -Y-" + ypos + " >> " + tmpFullPsFileName);
 
             // make metadata box 
-            error = File2.writeToFile(fullTmpTxtFile,
+            error = File2.writeToFile88591(fullTmpTxtFile,
                 "8.4 0.25\n" +
                 "10.3 0.25\n" +
                 "10.3 7.75\n" +
@@ -1053,7 +1053,7 @@ public class Grd {
             }
 
             //draw the text
-            error = File2.writeToFile(fullTmpTxtFile, sb.toString());
+            error = File2.writeToFile88591(fullTmpTxtFile, sb.toString());
             if (error.length() > 0)
                 throw new RuntimeException(error);
             SSR.cShell("pstext " + fullTmpTxtFile + 

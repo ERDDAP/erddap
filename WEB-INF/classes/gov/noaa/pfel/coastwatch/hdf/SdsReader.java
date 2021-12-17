@@ -194,7 +194,7 @@ public class SdsReader  {
         String dir = File2.getClassPath() + //with / separator and / at the end
             "gov/noaa/pfel/coastwatch/hdf/";
         //Test.ensureEqual(
-        //    File2.writeToFile(dir + "mini.hdf.hexDump", File2.hexDump(dir + "mini.hdf", 7262)), 
+        //    File2.writeToFileUtf8(dir + "mini.hdf.hexDump", File2.hexDump(dir + "mini.hdf", 7262)), 
         //    "", "Grid.miniTestSaveAsHDF error message");
 
         String2.setupLog(true, false, dir + "mini.hdf.dump", 
