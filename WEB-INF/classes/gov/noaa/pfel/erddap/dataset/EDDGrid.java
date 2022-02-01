@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.security.MessageDigest;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -1266,6 +1267,45 @@ public abstract class EDDGrid extends EDD {
      */
     public void parseDataDapQuery(int language, String userDapQuery, StringArray destinationNames,
         IntArray constraints, boolean repair) throws Throwable {
+    	parseDataDapQuery(language, userDapQuery, destinationNames, constraints, repair, new DoubleArray());
+    }
+
+    /** 
+     * This parses an OPeNDAP DAP-style grid-style query for grid data (not axis) variables, 
+     *   e.g., var1,var2 or
+     *   var1[start],var2[start] or
+     *   var1[start:stop],var2[start:stop] or
+     *   var1[start:stride:stop][start:stride:stop][].
+     * <ul>
+     * <li>An ERDDAP extension of the OPeNDAP standard: If within parentheses, 
+     *   start and/or stop are assumed to be specified in destination units (not indices).
+     * <li>If only two values are specified for a dimension (e.g., [a:b]),
+     *   it is interpreted as [a:1:b].
+     * <li>If only one value is specified for a dimension (e.g., [a]),
+     *   it is interpreted as [a:1:a].
+     * <li>If 0 values are specified for a dimension (e.g., []),
+     *     it is interpreted as [0:1:max].
+     * <li> Currently, if more than one variable is requested, all variables must
+     *     have the same [] constraints.
+     * <li> If userDapQuery is "", it is treated as a request for the entire dataset.
+     * <li> The query may also have &amp; clauses at the end.
+     *   Currently, they must all start with "." (for graphics commands).
+     * </ul>
+     *
+     * @param language the index of the selected language
+     * @param userDapQuery the part of the user's request after the '?', still percentEncoded (shouldn't be null).
+     * @param destinationNames will receive the list of requested destination variable names
+     * @param constraints will receive the list of constraints,
+     *    stored in axisVariables.length groups of 3 int's: 
+     *    start0, stride0, stop0, start1, stride1, stop1, ...
+     * @param repair if true, this method tries to do its best repair problems (guess at intent), 
+     *     not to throw exceptions 
+     * @param inputValues the double values parsed from the query are stored here.
+     * @throws Throwable if invalid query
+     *     (0 resultsVariables is a valid query)
+     */
+    public void parseDataDapQuery(int language, String userDapQuery, StringArray destinationNames,
+        IntArray constraints, boolean repair, DoubleArray inputValues) throws Throwable {
 
         destinationNames.clear();
         constraints.clear();
@@ -1393,7 +1433,7 @@ public abstract class EDDGrid extends EDD {
 
             //get the axis constraints
             for (int axis = 0; axis < axisVariables.length; axis++) {
-                int sssp[] = parseAxisBrackets(language, query, destinationName, po, axis, repair);
+                int sssp[] = parseAxisBrackets(language, query, destinationName, po, axis, repair, inputValues);
                 int startI  = sssp[0];
                 int strideI = sssp[1];
                 int stopI   = sssp[2];
@@ -1538,7 +1578,7 @@ public abstract class EDDGrid extends EDD {
 
             if (hasBrackets) {
                 //get the axis constraints
-                int sssp[] = parseAxisBrackets(language, userDapQuery, destinationName, leftPo, axis, repair);
+                int sssp[] = parseAxisBrackets(language, userDapQuery, destinationName, leftPo, axis, repair, new DoubleArray());
                 constraints.add(sssp[0]); //start
                 constraints.add(sssp[1]); //stride
                 constraints.add(sssp[2]); //stop
@@ -1569,11 +1609,12 @@ public abstract class EDDGrid extends EDD {
      * @param leftPo the position of the "["
      * @param axis the axis number, 0..
      * @param repair if true, this tries to do its best not to throw an exception (guess at intent)
+     * @param inputValues the double values parsed from the query are stored here.
      * @return int[4], 0=startI, 1=strideI, 2=stopI, and 3=newPo (rightPo+1)
      * @throws Throwable if trouble
      */
     protected int[] parseAxisBrackets(int language, String deQuery, String destinationName, 
-        int leftPo, int axis, boolean repair) throws Throwable {
+        int leftPo, int axis, boolean repair, DoubleArray inputValues) throws Throwable {
 
         EDVGridAxis av = axisVariables[axis];
         int nAvSourceValues = av.sourceValues().size();
@@ -1715,7 +1756,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridMissingAr[language], EDStatic.EDDGridStartAr[language])));
                 double startDestD = av.destinationToDouble(startS); //ISO 8601 times -> to epochSeconds w/millis precision
                 //String2.log("\n! startS=" + startS + " startDestD=" + startDestD + "\n");
-
+                inputValues.add(startDestD);
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(startDestD)) {
                     if (repair)
@@ -1778,7 +1819,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridMissingAr[language], EDStatic.EDDGridStopAr[language])));                    
                 double stopDestD = av.destinationToDouble(stopS); //ISO 8601 times -> to epochSeconds w/millis precision
                 //String2.log("\n! stopS=" + stopS + " stopDestD=" + stopDestD + "\n");
-
+                inputValues.add(stopDestD);
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(stopDestD)) {
                     if (repair)
@@ -5581,7 +5622,9 @@ Attributes {
             //modify the query to get no more data than needed
             StringArray reqDataNames = new StringArray();
             IntArray constraints     = new IntArray();
-            parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, false);
+            DoubleArray inputValues  = new DoubleArray();
+            // TransparentPng repairs input ranges during parsing and stores raw input values in the inputValues array.
+            parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, transparentPng /* repair */, inputValues);
 
             //for now, just plot first 1 or 2 data variables
             int nDv = reqDataNames.size();
@@ -6713,6 +6756,55 @@ Attributes {
                 //do after removeLegend
                 bufferedImage = SgtUtil.trimBottom(bufferedImage, trim);
             }
+
+            // transparentPng supports returning requests outside of data range to enable tiles that
+            // partially contain data. This section adjusts the output to match the requested inputs.
+        	if (transparentPng) {
+        		// inputValues contains the inputs for time, y, and x in that order with a min value
+        		// and max value for each axis.
+        		// Get the X input values.
+        		double inputMinX = inputValues.get(4);
+        		double inputMaxX = inputValues.get(5);
+        		if (inputMinX > inputMaxX) { double d = inputMinX; inputMinX = inputMaxX; inputMaxX = d; }
+        		// Get the Y input values.
+	        	double inputMinY = inputValues.get(2);
+	    		double inputMaxY = inputValues.get(3);
+	    		if (inputMinY > inputMaxY) {double d = inputMinY; inputMinY = inputMaxY; inputMaxY = d;}
+	    		
+	    		int adjustedImageWidth = imageWidth;
+	    		int adjustedImageHeight = imageHeight;
+	    		double diffAllowance = 1;
+	    		
+	    		double minXDiff = Math.abs(minX- inputMinX);
+	    		double maxXDiff = Math.abs(inputMaxX - maxX);
+	    		double minYDiff = Math.abs(minY- inputMinY);
+	    		double maxYDiff = Math.abs(inputMaxY - maxY);
+	    		// Use the inputParams compared to the repaired axis to determine if we need to adjust
+	    		// the image width or height.
+	    		if (minXDiff < diffAllowance && maxXDiff < diffAllowance) {
+	    			// xAxis good
+	    		} else {
+	    			double repairedWidth =  maxX - minX;
+	    			double inputWidth = inputMaxX - inputMinX; 
+	    			adjustedImageWidth = (int) (imageWidth * inputWidth / repairedWidth);
+	    		}
+	    		if (minYDiff < diffAllowance && maxYDiff < diffAllowance) {
+	    			// yAxis good
+	    		} else {
+	    			double repairedHeight=  maxY - minY;
+	    			double inputHeight= inputMaxY - inputMinY; 
+	    			adjustedImageHeight = (int) (imageHeight * inputHeight / repairedHeight);
+	    		}
+
+            	// Make a new buffered image of the adjusted size.
+	    		BufferedImage adjImage = SgtUtil.getBufferedImage(adjustedImageWidth, adjustedImageHeight);
+	    		int xOffset = (int)(minXDiff * adjustedImageWidth /  (Math.max(inputMaxX, maxX) - Math.min(inputMinX, minX)));
+	    		int yOffset = (int)(minYDiff * adjustedImageHeight /  (Math.max(inputMaxY, maxY) - Math.min(inputMinY, minY)));
+            	// Copy the rendered image into the appropriate section of the new larger buffered image.
+	    		adjImage.setRGB(xOffset, yOffset, imageWidth, imageHeight,
+	    				bufferedImage.getRGB(0,  0, imageWidth, imageHeight, null, 0, imageWidth), 0, imageWidth);
+	    		bufferedImage = adjImage;
+        	}
 
         } catch (WaitThenTryAgainException wttae) {
             throw wttae;
@@ -14405,7 +14497,120 @@ writer.write(
             new DoubleArray(pa);
         return times.findTimeGaps();
     }
+    
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        if (lastTest < 0)
+            lastTest = interactive? -1 : 0;
+        String msg = "\n^^^ EDD.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
+                    if (test ==  0) testSaveAsImage();
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
+    }
 
 
+    /**
+     * Test saveAsImage, specifically to make sure a transparent png that's partially outside of the range of the dataset
+     * still returns the image for the part that is within range.
+     */
+    public static void testSaveAsImage() throws Throwable {
+    	String2.log("\n*** EDDGrid.testSaveAsImage()");
+    	EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdNavgem05DPres_LonPM180");
+    	String dir = EDStatic.fullTestCacheDirectory;
+    	String requestUrl = "/erddap/griddap/erdNavgem05DPres_LonPM180.transparentPng";
+    	String fileTypeName = ".transparentPng";
+    	String userDapQueryTemplate = "pres_reduced_msl%5B(2022-01-26T18:00:00Z):1:(2022-01-26T18:00:00Z)%5D%5B({0}):1:({1})%5D%5B({2}):1:({3})%5D";
+    	
+    	// Make fully valid image
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -90.00001, 89.99999, -180.0, 179.5),
+    			 fileTypeName, "5c6050219f71608cd66b069b0b93098d696ded431aabc16fe45c1ae0417525ce" /* expected */);
+    	
+    	// Invalid min x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -90, 90, -200, 180),
+    			fileTypeName, "8ac095a702c194a91a9a476f0a95b445dc1492e87f4af07310a7da549df1921f" /* expected */);
+    	
+    	// Invalid max x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 200),
+    			fileTypeName, "1d9ace2eb43d254801aacdffcc342cba491a6e55690297ccf6a0cb323fe3b69d" /* expected */);
+    	
+    	// Invalid min y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -100, 90, -180, 180),
+    			fileTypeName, "7efa532abc28d80696e6164f81cf7df2ea36264dc4aeca423a5bd7d49e2b0bd3" /* expected */);
+    	
+    	// Invalid max y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -90, 100, -180, 180),
+    			fileTypeName, "f7f3ec80564c38fd9ff6ea2b20e4e8741a6f52acf1a7b2e93cc01fcf220f4d4f" /* expected */);
+    	
+    	// All invalid.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 200),
+    			fileTypeName, "a92bbbb8ac0cc408b722445b7eeeceab6c909e904d730a93b7200d16ef8d9e33" /* expected */);
+    }
+    
+    private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir, String requestUrl,
+    		String userDapQuery, String fileTypeName, String expected) throws Throwable {
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
+
+    	eddGrid.saveAsImage(0 /* language */, null /* loggedInAs */, requestUrl, 
+    			userDapQuery, dir, "filename" /* fileName */, 
+    			osss /* outputStreamSource */, fileTypeName);
+    	
+    	try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(baos.toByteArray());
+            StringBuilder hexString = new StringBuilder();
+
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if(hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+
+            String results = hexString.toString();
+            
+            //String2.log(results);        
+            Test.ensureEqual(results.substring(0, expected.length()), expected, 
+                    "\nresults=\n" + results.substring(0, Math.min(256, results.length())));
+        } catch(Exception ex){
+            throw new RuntimeException(ex);
+        }
+    }
     
 }
