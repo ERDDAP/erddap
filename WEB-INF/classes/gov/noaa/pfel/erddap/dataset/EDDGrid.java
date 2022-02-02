@@ -1867,13 +1867,9 @@ public abstract class EDDGrid extends EDD {
             }
         }
 
-        //test for no data
+        //fix startI > stopI requests
         if (startI > stopI) {
-            if (repair) {
-                int ti = startI; startI = stopI; stopI = ti;
-            } else throw new SimpleException(EDStatic.bilingual(language,
-                EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridSLessSAr[0]       , "" + startI, "" + stopI),
-                EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridSLessSAr[language], "" + startI, "" + stopI)));
+            int ti = startI; startI = stopI; stopI = ti;
         }
 
         //return
