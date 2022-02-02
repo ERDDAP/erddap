@@ -1766,21 +1766,8 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.notAllowedAr[language], EDStatic.EDDGridStartAr[language] + "=NaN (invalid format?)")));
                 }
 
-                if (Math2.greaterThanAE(precision, startDestD, av.destinationCoarseMin())) {
-                } else {
-                    if (repair) startDestD = av.firstDestinationValue();
-                    else throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , startS, av.destinationMinString(), av.destinationToString(av.destinationCoarseMin())),
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], startS, av.destinationMinString(), av.destinationToString(av.destinationCoarseMin()))));
-                }
-
-                if (Math2.lessThanAE(precision, startDestD, av.destinationCoarseMax())) {
-                } else {
-                    if (repair) startDestD = av.lastDestinationValue();
-                    else throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , startS, av.destinationMaxString(), av.destinationToString(av.destinationCoarseMax())),
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], startS, av.destinationMaxString(), av.destinationToString(av.destinationCoarseMax()))));
-                }
+                startDestD = validateGreaterThanThrowOrRepair(precision, startDestD, startS, av, repair, language, diagnostic0, diagnosticl);
+                startDestD = validateLessThanThrowOrRepair(precision, startDestD, startS, av, repair, language, diagnostic0, diagnosticl);
 
                 startI = av.destinationToClosestIndex(startDestD);
                 //String2.log("!ParseAxisBrackets startS=" + startS + " startD=" + startDestD + " startI=" + startI);
@@ -1828,22 +1815,9 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.notAllowedAr[0]       , EDStatic.EDDGridStopAr[0]        + "=NaN (invalid format?)"),
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.notAllowedAr[language], EDStatic.EDDGridStopAr[language] + "=NaN (invalid format?)")));
                 }
-
-                if (Math2.greaterThanAE(precision, stopDestD, av.destinationCoarseMin())) {
-                } else {
-                    if (repair) stopDestD = av.firstDestinationValue();
-                    else throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStopAr[0]       , stopS, av.destinationMinString(), av.destinationToString(av.destinationCoarseMin())),
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStopAr[language], stopS, av.destinationMinString(), av.destinationToString(av.destinationCoarseMin()))));
-                }
-
-                if (Math2.lessThanAE(   precision, stopDestD, av.destinationCoarseMax())) {
-                } else {
-                    if (repair) stopDestD = av.lastDestinationValue();
-                    else throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStopAr[0]       , stopS, av.destinationMaxString(), av.destinationToString(av.destinationCoarseMax())),
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStopAr[language], stopS, av.destinationMaxString(), av.destinationToString(av.destinationCoarseMax()))));
-                }
+                
+                stopDestD = validateGreaterThanThrowOrRepair(precision, stopDestD, stopS, av, repair, language, diagnostic0, diagnosticl);
+                stopDestD = validateLessThanThrowOrRepair(precision, stopDestD, stopS, av, repair, language, diagnostic0, diagnosticl);
 
                 stopI = av.destinationToClosestIndex(stopDestD);
                 //String2.log("!ParseAxisBrackets stopS=" + stopS + " stopD=" + stopDestD + " stopI=" + stopI);
@@ -6893,6 +6867,44 @@ Attributes {
         return ok;
     }
     
+    private double validateLessThanThrowOrRepair(int precision, double value, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
+        return validateLessThanThrowOrRepair(precision, value, ""+value, av, repair, language, diagnostic0, diagnosticl);
+    }
+    
+    private double validateGreaterThanThrowOrRepair(int precision, double value, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
+    	return validateGreaterThanThrowOrRepair(precision, value, ""+value, av, repair, language, diagnostic0, diagnosticl);
+    }
+    
+    private double validateLessThanThrowOrRepair(int precision, double value, String stringValue, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
+    	return validateLessThanThrowOrRepair(precision, value, stringValue, av.destinationMaxString(), av.lastDestinationValue(), av.destinationCoarseMax(), repair, language, diagnostic0, diagnosticl);
+    }
+    
+    private double validateGreaterThanThrowOrRepair(int precision, double value, String stringValue, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
+    	return validateGreaterThanThrowOrRepair(precision, value, stringValue, av.destinationMinString(), av.firstDestinationValue(), av.destinationCoarseMin(), repair, language, diagnostic0, diagnosticl);
+    }
+    
+    private double validateLessThanThrowOrRepair(int precision, double value, String stringValue, String max, double repairTo, double coarseMax, boolean repair, int language, String diagnostic0, String diagnosticl) {
+        if (Math2.lessThanAE(precision, value, coarseMax)) {
+        } else {
+            if (repair) value = repairTo;
+            else throw new SimpleException(EDStatic.bilingual(language,
+                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , stringValue, max, ""+coarseMax),
+                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], stringValue, max, ""+coarseMax)));
+        }
+        return value;
+    }
+    
+    private double validateGreaterThanThrowOrRepair(int precision, double value, String stringValue, String min, double repairTo, double coarseMin, boolean repair, int language, String diagnostic0, String diagnosticl) {
+    	if (Math2.greaterThanAE(precision, value, coarseMin)) {
+        } else {
+            if (repair) value = repairTo;
+            else throw new SimpleException(EDStatic.bilingual(language,
+                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , stringValue, min, ""+coarseMin),
+                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], stringValue, min, ""+coarseMin)));
+        }
+    	return value;
+    }
+    
     /**
      * Validates the provided min/max lat/lon values are valid and throws SimpleException if they are not.
      * Invalid vales are if any value is outside the range of valid lat/lon values.
@@ -6905,66 +6917,30 @@ Attributes {
      * @param maxY the minimum Y / latitude value to check. minY should be < maxY
      */
     public void validateLatLon(int language, double minX, double maxX, double minY, double maxY) {
-    	// X / longitude is axis 2.
+        int precision = 9; // Precision 9 for doubles.
+        // Note the max/min lat/lon checks are one larger/smaller than expected to allow for slightly outside of range inputs.
+        
+        // X / longitude is axis 2.
     	EDVGridAxis av = axisVariables[2];
     	String diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 2, av.destinationName());
         String diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 2, av.destinationName());
-        // minX too low for longitude.
-    	if (minX < -180) {
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minX, "-180", "-180"),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], "" + minX, "-180", "-180")));
-    	}
-        // maxX too high for longitude.
-    	if (maxX > 180) {
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxX, "180", "180"),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStopAr[language], "" + maxX, "180", "180")));
-    	}
-        // minX greater than the max of the data range.
-    	if (minX > av.destinationMaxDouble()) {
-    		String maxDestString = av.destinationMaxString();
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minX, maxDestString, maxDestString),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], "" + minX, maxDestString, maxDestString)));
-    	}
-    	// maxX less than the min of the data range.
-    	if (maxX < av.destinationMinDouble()) {
-    		String minDestString = av.destinationMinString();
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxX, minDestString, minDestString),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStopAr[language], "" + maxX, minDestString, minDestString)));
-    	}
+        // Validate Longitude values.
+        validateGreaterThanThrowOrRepair(precision, minX, ""+minX, "-180", -180 /* repairTo */, -181 /* coarseMin */, false /* repair */, language, diagnostic0, diagnosticl);
+        validateLessThanThrowOrRepair(precision, maxX, ""+maxX, "180", 180 /* repairTo */, 181 /* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
+        // Validate request contains some data.
+    	validateLessThanThrowOrRepair(precision, minX, av, false /* repair */, language, diagnostic0, diagnosticl);
+    	validateGreaterThanThrowOrRepair(precision, maxX, av, false /* repair */, language, diagnostic0, diagnosticl);
+    	
     	// Y / Latitude is axis 1.
     	av = axisVariables[1];
     	diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 1, av.destinationName());
         diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 1, av.destinationName());
-        // minY too low for latitude.
-    	if (minY < -90) {
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minY, "-90", "-90"),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], "" + minY, "-90", "-90")));
-    	}
-        // maxY too high for latitude.
-    	if (maxY > 90) {
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxY, "90", "90"),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStopAr[language], "" + maxY, "90", "90")));
-    	}
-        // minY greater than the max of the data range.
-    	if (minY > av.destinationMaxDouble()) {
-    		String maxDestString = av.destinationMaxString();
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minY, maxDestString, maxDestString),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], "" + minY, maxDestString, maxDestString)));
-    	}
-        // maxY less than the min of the data range.
-    	if (maxY < av.destinationMinDouble()) {
-    		String minDestString = av.destinationMinString();
-    		throw new SimpleException(EDStatic.bilingual(language,
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxY, minDestString, minDestString),
-                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStopAr[language], "" + maxY, minDestString, minDestString)));
-    	}
+        // Validate Latitude values.
+        validateGreaterThanThrowOrRepair(precision, minY, ""+minY, "-90", -90 /* repairTo */, -91 /* coarseMin */, false /* repair */, language, diagnostic0, diagnosticl);
+        validateLessThanThrowOrRepair(precision, maxY, ""+maxY, "90", 90/* repairTo */, 91 /* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
+        // Validate request contains some data.
+    	validateLessThanThrowOrRepair(precision, minY, av, false /* repair */, language, diagnostic0, diagnosticl);
+    	validateGreaterThanThrowOrRepair(precision, maxY, av, false /* repair */, language, diagnostic0, diagnosticl);
     }
 
     /**
@@ -14630,8 +14606,10 @@ writer.write(
     	String dir = EDStatic.fullTestCacheDirectory;
     	String requestUrl = "/erddap/griddap/erdNavgem05DPres_LonPM180.transparentPng";
     	String fileTypeName = ".transparentPng";
-    	String userDapQueryTemplate = "pres_reduced_msl%5B(2022-01-26T18:00:00Z):1:(2022-01-26T18:00:00Z)%5D%5B({0}):1:({1})%5D%5B({2}):1:({3})%5D";
+    	String userDapQueryTemplate = "pres_reduced_msl%5B(2022-01-26T18:00:00Z):1:(2022-01-26T18:00:00Z)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
     	
+    	String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
+
     	// Make fully valid image
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90.00001, 89.99999, -180.0, 179.5),
@@ -14640,27 +14618,27 @@ writer.write(
     	// Invalid min x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -200, 180),
-    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
+    			fileTypeName, expectedHashForInvalidInput);
     	
     	// Invalid max x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 200),
-    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
+    			fileTypeName, expectedHashForInvalidInput);
     	
     	// Invalid min y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 90, -180, 180),
-    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
+    			fileTypeName, expectedHashForInvalidInput);
     	
     	// Invalid max y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 100, -180, 180),
-    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
+    			fileTypeName, expectedHashForInvalidInput);
     	
     	// All invalid.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 200),
-    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
+    			fileTypeName, expectedHashForInvalidInput);
     }
     
     private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir, String requestUrl,
