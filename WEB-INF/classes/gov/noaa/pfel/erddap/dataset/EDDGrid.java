@@ -14644,27 +14644,27 @@ writer.write(
     	// Invalid min x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -200, 180),
-    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
+    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
     	
     	// Invalid max x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 200),
-    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
+    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
     	
     	// Invalid min y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 90, -180, 180),
-    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
+    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
     	
     	// Invalid max y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 100, -180, 180),
-    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
+    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
     	
     	// All invalid.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 200),
-    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
+    			fileTypeName, "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e" /* expected */);
     }
     
     private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir, String requestUrl,
