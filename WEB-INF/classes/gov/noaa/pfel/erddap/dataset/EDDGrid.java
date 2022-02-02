@@ -5625,6 +5625,27 @@ Attributes {
             DoubleArray inputValues  = new DoubleArray();
             // TransparentPng repairs input ranges during parsing and stores raw input values in the inputValues array.
             parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, transparentPng /* repair */, inputValues);
+            
+            double inputMinX = Double.MIN_VALUE;
+            double inputMaxX = Double.MAX_VALUE;
+            double inputMinY = Double.MIN_NORMAL;
+            double inputMaxY = Double.MAX_VALUE;
+            // transparentPng supports returning requests outside of data range to enable tiles that
+            // partially contain data. This section validates there is data to return before continuing.
+        	if (transparentPng) {
+        		// inputValues contains the inputs for time, y, and x in that order with a min value
+        		// and max value for each axis.
+        		// Get the X input values.
+        		inputMinX = inputValues.get(4);
+        		inputMaxX = inputValues.get(5);
+        		if (inputMinX > inputMaxX) { double d = inputMinX; inputMinX = inputMaxX; inputMaxX = d; }
+        		// Get the Y input values.
+	        	inputMinY = inputValues.get(2);
+	    		inputMaxY = inputValues.get(3);
+	    		if (inputMinY > inputMaxY) {double d = inputMinY; inputMinY = inputMaxY; inputMaxY = d;}
+	    		
+	    		validateLatLon(language, inputMinX, inputMaxX, inputMinY, inputMaxY);
+        	}
 
             //for now, just plot first 1 or 2 data variables
             int nDv = reqDataNames.size();
@@ -6760,17 +6781,6 @@ Attributes {
             // transparentPng supports returning requests outside of data range to enable tiles that
             // partially contain data. This section adjusts the output to match the requested inputs.
         	if (transparentPng) {
-        		// inputValues contains the inputs for time, y, and x in that order with a min value
-        		// and max value for each axis.
-        		// Get the X input values.
-        		double inputMinX = inputValues.get(4);
-        		double inputMaxX = inputValues.get(5);
-        		if (inputMinX > inputMaxX) { double d = inputMinX; inputMinX = inputMaxX; inputMaxX = d; }
-        		// Get the Y input values.
-	        	double inputMinY = inputValues.get(2);
-	    		double inputMaxY = inputValues.get(3);
-	    		if (inputMinY > inputMaxY) {double d = inputMinY; inputMinY = inputMaxY; inputMaxY = d;}
-	    		
 	    		int adjustedImageWidth = imageWidth;
 	    		int adjustedImageHeight = imageHeight;
 	    		double diffAllowance = 1;
@@ -6885,6 +6895,80 @@ Attributes {
         if (reallyVerbose) String2.log("  EDDGrid.saveAsImage done. TIME=" + 
             (System.currentTimeMillis() - time) + "ms\n");
         return ok;
+    }
+    
+    /**
+     * Validates the provided min/max lat/lon values are valid and throws SimpleException if they are not.
+     * Invalid vales are if any value is outside the range of valid lat/lon values.
+     * It is also invalid if no part of the requested range overlaps with the requested data set. 
+     * 
+     * @param language the index of the selected language
+     * @param minX the minimum X / longitude value to validate. minX should be < maxX
+     * @param maxX the maximum X / longitude value to check. minX should be < maxX
+     * @param minY the minimum Y / latitude value to check. minY should be < maxY
+     * @param maxY the minimum Y / latitude value to check. minY should be < maxY
+     */
+    public void validateLatLon(int language, double minX, double maxX, double minY, double maxY) {
+    	// X / longitude is axis 2.
+    	EDVGridAxis av = axisVariables[2];
+    	String diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 2, av.destinationName());
+        String diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 2, av.destinationName());
+        // minX too low for longitude.
+    	if (minX < -180) {
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minX, "-180", "-180"),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], "" + minX, "-180", "-180")));
+    	}
+        // maxX too high for longitude.
+    	if (maxX > 180) {
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxX, "180", "180"),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStopAr[language], "" + maxX, "180", "180")));
+    	}
+        // minX greater than the max of the data range.
+    	if (minX > av.destinationMaxDouble()) {
+    		String maxDestString = av.destinationMaxString();
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minX, maxDestString, maxDestString),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], "" + minX, maxDestString, maxDestString)));
+    	}
+    	// maxX less than the min of the data range.
+    	if (maxX < av.destinationMinDouble()) {
+    		String minDestString = av.destinationMinString();
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxX, minDestString, minDestString),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStopAr[language], "" + maxX, minDestString, minDestString)));
+    	}
+    	// Y / Latitude is axis 1.
+    	av = axisVariables[1];
+    	diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 1, av.destinationName());
+        diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 1, av.destinationName());
+        // minY too low for latitude.
+    	if (minY < -90) {
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minY, "-90", "-90"),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], "" + minY, "-90", "-90")));
+    	}
+        // maxY too high for latitude.
+    	if (maxY > 90) {
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxY, "90", "90"),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStopAr[language], "" + maxY, "90", "90")));
+    	}
+        // minY greater than the max of the data range.
+    	if (minY > av.destinationMaxDouble()) {
+    		String maxDestString = av.destinationMaxString();
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , "" + minY, maxDestString, maxDestString),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], "" + minY, maxDestString, maxDestString)));
+    	}
+        // maxY less than the min of the data range.
+    	if (maxY < av.destinationMinDouble()) {
+    		String minDestString = av.destinationMinString();
+    		throw new SimpleException(EDStatic.bilingual(language,
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStopAr[0]       , "" + maxY, minDestString, minDestString),
+                    MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStopAr[language], "" + maxY, minDestString, minDestString)));
+    	}
     }
 
     /**
@@ -14560,27 +14644,27 @@ writer.write(
     	// Invalid min x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -200, 180),
-    			fileTypeName, "8ac095a702c194a91a9a476f0a95b445dc1492e87f4af07310a7da549df1921f" /* expected */);
+    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
     	
     	// Invalid max x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 200),
-    			fileTypeName, "1d9ace2eb43d254801aacdffcc342cba491a6e55690297ccf6a0cb323fe3b69d" /* expected */);
+    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
     	
     	// Invalid min y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 90, -180, 180),
-    			fileTypeName, "7efa532abc28d80696e6164f81cf7df2ea36264dc4aeca423a5bd7d49e2b0bd3" /* expected */);
+    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
     	
     	// Invalid max y.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90, 100, -180, 180),
-    			fileTypeName, "f7f3ec80564c38fd9ff6ea2b20e4e8741a6f52acf1a7b2e93cc01fcf220f4d4f" /* expected */);
+    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
     	
     	// All invalid.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 200),
-    			fileTypeName, "a92bbbb8ac0cc408b722445b7eeeceab6c909e904d730a93b7200d16ef8d9e33" /* expected */);
+    			fileTypeName, "8aa9fcfc327954c8ed9f513706121fc7c023bcfd9d8028f44be475166f0040e6" /* expected */);
     }
     
     private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir, String requestUrl,
