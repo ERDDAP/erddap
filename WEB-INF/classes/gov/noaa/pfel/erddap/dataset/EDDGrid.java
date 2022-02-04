@@ -5603,15 +5603,15 @@ Attributes {
             // transparentPng supports returning requests outside of data range to enable tiles that
             // partially contain data. This section validates there is data to return before continuing.
         	if (transparentPng) {
-        		// inputValues contains the inputs for time, y, and x in that order with a min value
-        		// and max value for each axis.
         		// Get the X input values.
-        		inputMinX = inputValues.get(4);
-        		inputMaxX = inputValues.get(5);
+        		int lonAxisIndex =  getLonAxisIndex();
+        		inputMinX = inputValues.get(lonAxisIndex * 2);
+        		inputMaxX = inputValues.get(lonAxisIndex * 2 + 1);
         		if (inputMinX > inputMaxX) { double d = inputMinX; inputMinX = inputMaxX; inputMaxX = d; }
         		// Get the Y input values.
-	        	inputMinY = inputValues.get(2);
-	    		inputMaxY = inputValues.get(3);
+        		int latAxisIndex =  getLatAxisIndex();
+	        	inputMinY = inputValues.get(latAxisIndex * 2);
+	    		inputMaxY = inputValues.get(latAxisIndex * 2 + 1);
 	    		if (inputMinY > inputMaxY) {double d = inputMinY; inputMinY = inputMaxY; inputMaxY = d;}
 	    		
 	    		validateLatLon(language, inputMinX, inputMaxX, inputMinY, inputMaxY);
@@ -6905,6 +6905,24 @@ Attributes {
     	return value;
     }
     
+    private int getLatAxisIndex() {
+    	for (int i = 0; i < axisVariables.length; i++) {
+    		if (EDVGridAxis.LAT_LONGNAME.equals(axisVariables[i].longName())) {
+    			return i;
+    		}
+		}
+    	return -1;
+    }
+    
+    private int getLonAxisIndex() {
+    	for (int i = 0; i < axisVariables.length; i++) {
+    		if (EDVGridAxis.LON_LONGNAME.equals(axisVariables[i].longName())) {
+    			return i;
+    		}
+		}
+    	return -1;
+    }
+    
     /**
      * Validates the provided min/max lat/lon values are valid and throws SimpleException if they are not.
      * Invalid vales are if any value is outside the range of valid lat/lon values.
@@ -6920,19 +6938,20 @@ Attributes {
         int precision = 9; // Precision 9 for doubles.
         // Note the max/min lat/lon checks are one larger/smaller than expected to allow for slightly outside of range inputs.
         
-        // X / longitude is axis 2.
-    	EDVGridAxis av = axisVariables[2];
+        // X / longitude.
+    	EDVGridAxis av = axisVariables[getLonAxisIndex()];
     	String diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 2, av.destinationName());
         String diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 2, av.destinationName());
         // Validate Longitude values.
         validateGreaterThanThrowOrRepair(precision, minX, ""+minX, "-180", -180 /* repairTo */, -181 /* coarseMin */, false /* repair */, language, diagnostic0, diagnosticl);
-        validateLessThanThrowOrRepair(precision, maxX, ""+maxX, "180", 180 /* repairTo */, 181 /* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
+        // Use 360 for max (not 180) to support datasets that are 0-360 for longitude.
+        validateLessThanThrowOrRepair(precision, maxX, ""+maxX, "360", 360/* repairTo */, 361/* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
         // Validate request contains some data.
     	validateLessThanThrowOrRepair(precision, minX, av, false /* repair */, language, diagnostic0, diagnosticl);
     	validateGreaterThanThrowOrRepair(precision, maxX, av, false /* repair */, language, diagnostic0, diagnosticl);
     	
-    	// Y / Latitude is axis 1.
-    	av = axisVariables[1];
+    	// Y / Latitude.
+    	av = axisVariables[getLatAxisIndex()];
     	diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 1, av.destinationName());
         diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 1, av.destinationName());
         // Validate Latitude values.
@@ -14602,18 +14621,19 @@ writer.write(
      */
     public static void testSaveAsImage() throws Throwable {
     	String2.log("\n*** EDDGrid.testSaveAsImage()");
-    	EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdNavgem05DPres_LonPM180");
+    	EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "etopo180");
     	String dir = EDStatic.fullTestCacheDirectory;
-    	String requestUrl = "/erddap/griddap/erdNavgem05DPres_LonPM180.transparentPng";
+    	String requestUrl = "/erddap/griddap/etopo180.transparentPng";
     	String fileTypeName = ".transparentPng";
-    	String userDapQueryTemplate = "pres_reduced_msl%5B(2022-01-26T18:00:00Z):1:(2022-01-26T18:00:00Z)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
+    	String userDapQueryTemplate = "altitude%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
     	
     	String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
 
     	// Make fully valid image
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
     			MessageFormat.format(userDapQueryTemplate, -90.00001, 89.99999, -180.0, 179.5),
-    			 fileTypeName, "5c6050219f71608cd66b069b0b93098d696ded431aabc16fe45c1ae0417525ce" /* expected */);
+    			 fileTypeName,
+    			 "a1b6bbc52e9a06904fa6cf1aa5792df4aff413b7dbf7f1510ea01a976cb897b3" /* expected */);
     	
     	// Invalid min x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
@@ -14622,7 +14642,7 @@ writer.write(
     	
     	// Invalid max x.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 200),
+    			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 370),
     			fileTypeName, expectedHashForInvalidInput);
     	
     	// Invalid min y.
@@ -14637,7 +14657,68 @@ writer.write(
     	
     	// All invalid.
     	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 200),
+    			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 370),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	PAOne minValue = PAOne.fromDouble(-1);
+    	PAOne maxValue = PAOne.fromDouble(1);
+    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationMinMax(minValue, maxValue);
+    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationCoarseMin(-1);
+    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationCoarseMax(1);
+    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationMinMax(minValue, maxValue);
+    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationCoarseMin(-1);
+    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationCoarseMax(-1);
+    	
+    	// Make fully valid image
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 1, -1, 1),
+    			 fileTypeName,
+    			 "116e52a8afa58319ae6088dac6955cf7c4c2a0226295efd16ba802138acceeaf");
+    	/*
+    	 * todo get a dataset that naturally has a smaller valid range for the data than valid lat/lon.
+    	// Out of range min x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -2, 1, -2, 1),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Out of range max x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 2, -1, 1),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Out of range min y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 1, -2, 1),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Out of range max y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 1, -1, 2),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// All out of range.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -2, 2, -2, 2),
+    			fileTypeName, "97435b86bb3287e027fc868b680f58e8a7ca9b4283ae05d4fb30742dc2c9a40a");
+    	*/
+    	// Fully out of range min x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -3, -2, -2, 1),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Fully out of range max x.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, 2, 3, -1, 1),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Fully out of range min y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 1, -3, -2),
+    			fileTypeName, expectedHashForInvalidInput);
+    	
+    	// Fully out of range max y.
+    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+    			MessageFormat.format(userDapQueryTemplate, -1, 1, 2, 3),
     			fileTypeName, expectedHashForInvalidInput);
     }
     
