@@ -1766,8 +1766,12 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.notAllowedAr[language], EDStatic.EDDGridStartAr[language] + "=NaN (invalid format?)")));
                 }
 
-                startDestD = validateGreaterThanThrowOrRepair(precision, startDestD, startS, av, repair, language, diagnostic0, diagnosticl);
-                startDestD = validateLessThanThrowOrRepair(precision, startDestD, startS, av, repair, language, diagnostic0, diagnosticl);
+                startDestD = validateGreaterThanThrowOrRepair(precision,
+                        startDestD, startS, av, repair, language, diagnostic0,
+                        diagnosticl);
+                startDestD = validateLessThanThrowOrRepair(precision,
+                        startDestD, startS, av, repair, language, diagnostic0,
+                        diagnosticl);
 
                 startI = av.destinationToClosestIndex(startDestD);
                 //String2.log("!ParseAxisBrackets startS=" + startS + " startD=" + startDestD + " startI=" + startI);
@@ -1816,8 +1820,11 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.notAllowedAr[language], EDStatic.EDDGridStopAr[language] + "=NaN (invalid format?)")));
                 }
                 
-                stopDestD = validateGreaterThanThrowOrRepair(precision, stopDestD, stopS, av, repair, language, diagnostic0, diagnosticl);
-                stopDestD = validateLessThanThrowOrRepair(precision, stopDestD, stopS, av, repair, language, diagnostic0, diagnosticl);
+                stopDestD = validateGreaterThanThrowOrRepair(precision,
+                        stopDestD, stopS, av, repair, language, diagnostic0,
+                        diagnosticl);
+                stopDestD = validateLessThanThrowOrRepair(precision, stopDestD,
+                        stopS, av, repair, language, diagnostic0, diagnosticl);
 
                 stopI = av.destinationToClosestIndex(stopDestD);
                 //String2.log("!ParseAxisBrackets stopS=" + stopS + " stopD=" + stopDestD + " stopI=" + stopI);
@@ -5600,22 +5607,32 @@ Attributes {
             double inputMaxX = Double.MAX_VALUE;
             double inputMinY = Double.MIN_NORMAL;
             double inputMaxY = Double.MAX_VALUE;
-            // transparentPng supports returning requests outside of data range to enable tiles that
-            // partially contain data. This section validates there is data to return before continuing.
-        	if (transparentPng) {
-        		// Get the X input values.
-        		int lonAxisIndex =  getLonAxisIndex();
-        		inputMinX = inputValues.get(lonAxisIndex * 2);
-        		inputMaxX = inputValues.get(lonAxisIndex * 2 + 1);
-        		if (inputMinX > inputMaxX) { double d = inputMinX; inputMinX = inputMaxX; inputMaxX = d; }
-        		// Get the Y input values.
-        		int latAxisIndex =  getLatAxisIndex();
-	        	inputMinY = inputValues.get(latAxisIndex * 2);
-	    		inputMaxY = inputValues.get(latAxisIndex * 2 + 1);
-	    		if (inputMinY > inputMaxY) {double d = inputMinY; inputMinY = inputMaxY; inputMaxY = d;}
-	    		
-	    		validateLatLon(language, inputMinX, inputMaxX, inputMinY, inputMaxY);
-        	}
+            // transparentPng supports returning requests outside of data range
+            // to enable tiles that partially contain data. This section
+            // validates there is data to return before continuing.
+            if (transparentPng) {
+                // Get the X input values.
+                int lonAxisIndex = getLonAxisIndex();
+                inputMinX = inputValues.get(lonAxisIndex * 2);
+                inputMaxX = inputValues.get(lonAxisIndex * 2 + 1);
+                if (inputMinX > inputMaxX) {
+                    double d = inputMinX;
+                    inputMinX = inputMaxX;
+                    inputMaxX = d;
+                }
+                // Get the Y input values.
+                int latAxisIndex = getLatAxisIndex();
+                inputMinY = inputValues.get(latAxisIndex * 2);
+                inputMaxY = inputValues.get(latAxisIndex * 2 + 1);
+                if (inputMinY > inputMaxY) {
+                    double d = inputMinY;
+                    inputMinY = inputMaxY;
+                    inputMaxY = d;
+                }
+
+                validateLatLon(language, inputMinX, inputMaxX, inputMinY,
+                        inputMaxY);
+            }
 
             //for now, just plot first 1 or 2 data variables
             int nDv = reqDataNames.size();
@@ -6631,6 +6648,42 @@ Attributes {
             } else {
                 fontScale *= imageWidth < 500? 1: 1.25;
                 logoImageFile = sizeIndex <= 1? EDStatic.lowResLogoImageFile : EDStatic.highResLogoImageFile;
+                
+                // transparentPng supports returning requests outside of data
+                // range to enable tiles that partially contain data. This
+                // section adjusts the map output to match the requested
+                // inputs.
+                if (transparentPng) {
+                    double diffAllowance = 1;
+                    double minXDiff = Math.abs(minX - inputMinX);
+                    double maxXDiff = Math.abs(inputMaxX - maxX);
+                    double minYDiff = Math.abs(minY - inputMinY);
+                    double maxYDiff = Math.abs(inputMaxY - maxY);
+                    // Use the inputParams compared to the repaired axis to
+                    // determine if we need to adjust
+                    // the image width or height.
+                    if (minXDiff < diffAllowance && maxXDiff < diffAllowance) {
+                        // xAxis good
+                    } else {
+                        double repairedWidth = maxX - minX;
+                        double inputWidth = inputMaxX - inputMinX;
+                        imageWidth = (int) (imageWidth * inputWidth
+                                / repairedWidth);
+                        minX = inputMinX;
+                        maxX = inputMaxX;
+                    }
+                    if (minYDiff < diffAllowance && maxYDiff < diffAllowance) {
+                        // yAxis good
+                    } else {
+                        double repairedHeight = maxY - minY;
+                        double inputHeight = inputMaxY - inputMinY;
+                        imageHeight = (int) (imageHeight * inputHeight
+                                / repairedHeight);
+                        minY = inputMinY;
+                        maxY = inputMaxY;
+                    }
+                }
+                
                 bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
                 g2 = (Graphics2D)bufferedImage.getGraphics();
             }
@@ -6748,44 +6801,6 @@ Attributes {
                 bufferedImage = SgtUtil.trimBottom(bufferedImage, trim);
             }
 
-            // transparentPng supports returning requests outside of data range to enable tiles that
-            // partially contain data. This section adjusts the output to match the requested inputs.
-        	if (transparentPng) {
-	    		int adjustedImageWidth = imageWidth;
-	    		int adjustedImageHeight = imageHeight;
-	    		double diffAllowance = 1;
-	    		
-	    		double minXDiff = Math.abs(minX- inputMinX);
-	    		double maxXDiff = Math.abs(inputMaxX - maxX);
-	    		double minYDiff = Math.abs(minY- inputMinY);
-	    		double maxYDiff = Math.abs(inputMaxY - maxY);
-	    		// Use the inputParams compared to the repaired axis to determine if we need to adjust
-	    		// the image width or height.
-	    		if (minXDiff < diffAllowance && maxXDiff < diffAllowance) {
-	    			// xAxis good
-	    		} else {
-	    			double repairedWidth =  maxX - minX;
-	    			double inputWidth = inputMaxX - inputMinX; 
-	    			adjustedImageWidth = (int) (imageWidth * inputWidth / repairedWidth);
-	    		}
-	    		if (minYDiff < diffAllowance && maxYDiff < diffAllowance) {
-	    			// yAxis good
-	    		} else {
-	    			double repairedHeight=  maxY - minY;
-	    			double inputHeight= inputMaxY - inputMinY; 
-	    			adjustedImageHeight = (int) (imageHeight * inputHeight / repairedHeight);
-	    		}
-
-            	// Make a new buffered image of the adjusted size.
-	    		BufferedImage adjImage = SgtUtil.getBufferedImage(adjustedImageWidth, adjustedImageHeight);
-	    		int xOffset = (int)(minXDiff * adjustedImageWidth /  (Math.max(inputMaxX, maxX) - Math.min(inputMinX, minX)));
-	    		int yOffset = (int)(minYDiff * adjustedImageHeight /  (Math.max(inputMaxY, maxY) - Math.min(inputMinY, minY)));
-            	// Copy the rendered image into the appropriate section of the new larger buffered image.
-	    		adjImage.setRGB(xOffset, yOffset, imageWidth, imageHeight,
-	    				bufferedImage.getRGB(0,  0, imageWidth, imageHeight, null, 0, imageWidth), 0, imageWidth);
-	    		bufferedImage = adjImage;
-        	}
-
         } catch (WaitThenTryAgainException wttae) {
             throw wttae;
 
@@ -6867,99 +6882,263 @@ Attributes {
         return ok;
     }
     
-    private double validateLessThanThrowOrRepair(int precision, double value, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
-        return validateLessThanThrowOrRepair(precision, value, ""+value, av, repair, language, diagnostic0, diagnosticl);
+    /**
+     * Validates that the input value is less than (or approximately equal
+     * based on the precision) the coarseMax value. If the check fails then
+     * this throws an error or repairs the value based on the repair param.
+     * 
+     * @param precision Significant digits to compare. 0 to 18 are allowed;
+     *      5, 9, and 14 are common
+     * @param value The value to validate.
+     * @param stringValue A string representation of the input, this is used in
+     *      the error message. 
+     * @param av The grid axis that is used for the comparison. The
+     *      destinationCoarseMax is used as the max value to compare against.
+     *      The lastDestinationValue is used as the repairTo value. The
+     *      destinationMaxString is used in the error messages. 
+     * @param repair If true and the less than check fails, this returns
+     *      the repaired value. If false and the check fails, then an error
+     *      is thrown.
+     * @param language the index of the selected language
+     * @param diagnostic0 Informational string about the axis for this check.
+     *      In language 0.
+     * @param diagnosticl Informational string about the axis for this check.
+     *      In the language that matches the language input.
+     * @return the value or the repaired value.
+     */
+    private double validateLessThanThrowOrRepair(int precision, double value,
+            String stringValue, EDVGridAxis av, boolean repair, int language,
+            String diagnostic0, String diagnosticl) {
+        return validateLessThanThrowOrRepair(precision, value, stringValue,
+                av.destinationMaxString(), av.lastDestinationValue(),
+                av.destinationCoarseMax(), repair, language, diagnostic0,
+                diagnosticl);
     }
-    
-    private double validateGreaterThanThrowOrRepair(int precision, double value, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
-    	return validateGreaterThanThrowOrRepair(precision, value, ""+value, av, repair, language, diagnostic0, diagnosticl);
+
+    /**
+     * Validates that the input value is greater than (or approximately equal
+     * based on the precision) the coarseMin value. If the check fails then
+     * this throws an error or repairs the value based on the repair param.
+     * 
+     * @param precision Significant digits to compare. 0 to 18 are allowed;
+     *      5, 9, and 14 are common
+     * @param value The value to validate.
+     * @param stringValue A string representation of the input, this is used in
+     *      the error message. 
+     * @param av The grid axis that is used for the comparison. The
+     *      destinationCoarseMin is used as the max value to compare against.
+     *      The firstDestinationValue is used as the repairTo value. The
+     *      destinationMinString is used in the error messages.
+     * @param repair If true and the less than check fails, this returns
+     *      the repaired value. If false and the check fails, then an error
+     *      is thrown.
+     * @param language the index of the selected language
+     * @param diagnostic0 Informational string about the axis for this check.
+     *      In language 0.
+     * @param diagnosticl Informational string about the axis for this check.
+     *      In the language that matches the language input.
+     * @return the value or the repaired value.
+     */
+    private double validateGreaterThanThrowOrRepair(int precision, double value,
+            String stringValue, EDVGridAxis av, boolean repair, int language,
+            String diagnostic0, String diagnosticl) {
+        return validateGreaterThanThrowOrRepair(precision, value, stringValue,
+                av.destinationMinString(), av.firstDestinationValue(),
+                av.destinationCoarseMin(), repair, language, diagnostic0,
+                diagnosticl);
     }
-    
-    private double validateLessThanThrowOrRepair(int precision, double value, String stringValue, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
-    	return validateLessThanThrowOrRepair(precision, value, stringValue, av.destinationMaxString(), av.lastDestinationValue(), av.destinationCoarseMax(), repair, language, diagnostic0, diagnosticl);
-    }
-    
-    private double validateGreaterThanThrowOrRepair(int precision, double value, String stringValue, EDVGridAxis av, boolean repair, int language, String diagnostic0, String diagnosticl) {
-    	return validateGreaterThanThrowOrRepair(precision, value, stringValue, av.destinationMinString(), av.firstDestinationValue(), av.destinationCoarseMin(), repair, language, diagnostic0, diagnosticl);
-    }
-    
-    private double validateLessThanThrowOrRepair(int precision, double value, String stringValue, String max, double repairTo, double coarseMax, boolean repair, int language, String diagnostic0, String diagnosticl) {
+
+    /**
+     * Validates that the input value is less than (or approximately equal
+     * based on the precision) the coarseMax value. If the check fails then
+     * this throws an error or repairs the value based on the repair param.
+     * 
+     * @param precision Significant digits to compare. 0 to 18 are allowed;
+     *      5, 9, and 14 are common
+     * @param value The value to validate.
+     * @param stringValue A string representation of the input, this is used in
+     *      the error message. 
+     * @param max The exact maximum value. This is used in the error message.
+     * @param repairTo The value to repair to if repair is true.
+     * @param coarseMax The maximum value to check against.
+     * @param repair If true and the less than check fails, this returns
+     *      the repaired value. If false and the check fails, then an error
+     *      is thrown.
+     * @param language the index of the selected language
+     * @param diagnostic0 Informational string about the axis for this check.
+     *      In language 0.
+     * @param diagnosticl Informational string about the axis for this check.
+     *      In the language that matches the language input.
+     * @return the value or the repaired value.
+     */
+    private double validateLessThanThrowOrRepair(int precision, double value,
+            String stringValue, String max, double repairTo, double coarseMax,
+            boolean repair, int language, String diagnostic0,
+            String diagnosticl) {
         if (Math2.lessThanAE(precision, value, coarseMax)) {
         } else {
-            if (repair) value = repairTo;
-            else throw new SimpleException(EDStatic.bilingual(language,
-                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[0]       , EDStatic.EDDGridStartAr[0]       , stringValue, max, ""+coarseMax),
-                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridGreaterMaxAr[language], EDStatic.EDDGridStartAr[language], stringValue, max, ""+coarseMax)));
+            if (repair)
+                value = repairTo;
+            else
+                throw new SimpleException(EDStatic.bilingual(language,
+                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]
+                                + diagnostic0 + ": " + MessageFormat.format(
+                                        EDStatic.queryErrorGridGreaterMaxAr[0],
+                                        EDStatic.EDDGridStartAr[0], stringValue,
+                                        max, "" + coarseMax),
+                        MustBe.THERE_IS_NO_DATA + " "
+                                + EDStatic.queryErrorAr[language] + diagnosticl
+                                + ": "
+                                + MessageFormat.format(
+                                        EDStatic.queryErrorGridGreaterMaxAr[language],
+                                        EDStatic.EDDGridStartAr[language],
+                                        stringValue, max, "" + coarseMax)));
         }
         return value;
     }
-    
-    private double validateGreaterThanThrowOrRepair(int precision, double value, String stringValue, String min, double repairTo, double coarseMin, boolean repair, int language, String diagnostic0, String diagnosticl) {
-    	if (Math2.greaterThanAE(precision, value, coarseMin)) {
-        } else {
-            if (repair) value = repairTo;
-            else throw new SimpleException(EDStatic.bilingual(language,
-                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[0]       , EDStatic.EDDGridStartAr[0]       , stringValue, min, ""+coarseMin),
-                MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridLessMinAr[language], EDStatic.EDDGridStartAr[language], stringValue, min, ""+coarseMin)));
-        }
-    	return value;
-    }
-    
-    private int getLatAxisIndex() {
-    	for (int i = 0; i < axisVariables.length; i++) {
-    		if (EDVGridAxis.LAT_LONGNAME.equals(axisVariables[i].longName())) {
-    			return i;
-    		}
-		}
-    	return -1;
-    }
-    
-    private int getLonAxisIndex() {
-    	for (int i = 0; i < axisVariables.length; i++) {
-    		if (EDVGridAxis.LON_LONGNAME.equals(axisVariables[i].longName())) {
-    			return i;
-    		}
-		}
-    	return -1;
-    }
-    
+
     /**
-     * Validates the provided min/max lat/lon values are valid and throws SimpleException if they are not.
-     * Invalid vales are if any value is outside the range of valid lat/lon values.
-     * It is also invalid if no part of the requested range overlaps with the requested data set. 
+     * Validates that the input value is greater than (or approximately equal
+     * based on the precision) the coarseMin value. If the check fails then
+     * this throws an error or repairs the value based on the repair param.
+     * 
+     * @param precision Significant digits to compare. 0 to 18 are allowed;
+     *      5, 9, and 14 are common
+     * @param value The value to validate.
+     * @param stringValue A string representation of the input, this is used in
+     *      the error message. 
+     * @param min The exact minimum value. This is used in the error message.
+     * @param repairTo The value to repair to if repair is true.
+     * @param coarseMin The minimum value to check against.
+     * @param repair If true and the greater than check fails, this returns
+     *      the repaired value. If false and the check fails, then an error
+     *      is thrown.
+     * @param language the index of the selected language
+     * @param diagnostic0 Informational string about the axis for this check.
+     *      In language 0.
+     * @param diagnosticl Informational string about the axis for this check.
+     *      In the language that matches the language input.
+     * @return the value or the repaired value.
+     */
+    private double validateGreaterThanThrowOrRepair(int precision, double value,
+            String stringValue, String min, double repairTo, double coarseMin,
+            boolean repair, int language, String diagnostic0,
+            String diagnosticl) {
+        if (Math2.greaterThanAE(precision, value, coarseMin)) {
+        } else {
+            if (repair)
+                value = repairTo;
+            else
+                throw new SimpleException(EDStatic.bilingual(language,
+                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]
+                                + diagnostic0 + ": " + MessageFormat.format(
+                                        EDStatic.queryErrorGridLessMinAr[0],
+                                        EDStatic.EDDGridStartAr[0], stringValue,
+                                        min, "" + coarseMin),
+                        MustBe.THERE_IS_NO_DATA + " "
+                                + EDStatic.queryErrorAr[language] + diagnosticl
+                                + ": "
+                                + MessageFormat.format(
+                                        EDStatic.queryErrorGridLessMinAr[language],
+                                        EDStatic.EDDGridStartAr[language],
+                                        stringValue, min, "" + coarseMin)));
+        }
+        return value;
+    }
+
+    /**
+     * Gets the index of the axis that represents latitude.
+     * @return
+     */
+    private int getLatAxisIndex() {
+        for (int i = 0; i < axisVariables.length; i++) {
+            if (EDV.LAT_LONGNAME.equals(axisVariables[i].longName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Gets the index of the axis that represents longitude.
+     * @return
+     */
+    private int getLonAxisIndex() {
+        for (int i = 0; i < axisVariables.length; i++) {
+            if (EDV.LON_LONGNAME.equals(axisVariables[i].longName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Validates the provided min/max lat/lon values are valid and throws
+     * SimpleException if they are not. Invalid vales are if any value is
+     * outside the range of valid lat/lon values. It is also invalid if no part
+     * of the requested range overlaps with the requested data set.
      * 
      * @param language the index of the selected language
-     * @param minX the minimum X / longitude value to validate. minX should be < maxX
-     * @param maxX the maximum X / longitude value to check. minX should be < maxX
-     * @param minY the minimum Y / latitude value to check. minY should be < maxY
-     * @param maxY the minimum Y / latitude value to check. minY should be < maxY
+     * @param minX     the minimum X / longitude value to validate. minX should
+     *                 be < maxX
+     * @param maxX     the maximum X / longitude value to check. minX should be
+     *                 < maxX
+     * @param minY     the minimum Y / latitude value to check. minY should be <
+     *                 maxY
+     * @param maxY     the minimum Y / latitude value to check. minY should be <
+     *                 maxY
      */
-    public void validateLatLon(int language, double minX, double maxX, double minY, double maxY) {
+    public void validateLatLon(int language, double minX, double maxX,
+            double minY, double maxY) {
         int precision = 9; // Precision 9 for doubles.
-        // Note the max/min lat/lon checks are one larger/smaller than expected to allow for slightly outside of range inputs.
-        
+        // Note the max/min lat/lon checks are one larger/smaller than expected
+        // to allow for slightly outside of range inputs.
+
         // X / longitude.
-    	EDVGridAxis av = axisVariables[getLonAxisIndex()];
-    	String diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 2, av.destinationName());
-        String diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 2, av.destinationName());
+        EDVGridAxis av = axisVariables[getLonAxisIndex()];
+        String diagnostic0 = MessageFormat.format(
+                EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
+                "" + getLonAxisIndex(), av.destinationName());
+        String diagnosticl = MessageFormat.format(
+                EDStatic.queryErrorGridDiagnosticAr[language],
+                av.destinationName(), "" + getLonAxisIndex(),
+                av.destinationName());
         // Validate Longitude values.
-        validateGreaterThanThrowOrRepair(precision, minX, ""+minX, "-180", -180 /* repairTo */, -181 /* coarseMin */, false /* repair */, language, diagnostic0, diagnosticl);
-        // Use 360 for max (not 180) to support datasets that are 0-360 for longitude.
-        validateLessThanThrowOrRepair(precision, maxX, ""+maxX, "360", 360/* repairTo */, 361/* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
+        validateGreaterThanThrowOrRepair(precision, minX, "" + minX, "-180",
+                -180 /* repairTo */, -181 /* coarseMin */, false /* repair */,
+                language, diagnostic0, diagnosticl);
+        // Use 360 for max (not 180) to support datasets that are 0-360 for
+        // longitude.
+        validateLessThanThrowOrRepair(precision, maxX, "" + maxX, "360",
+                360/* repairTo */, 361/* coarseMax */, false /* repair */,
+                language, diagnostic0, diagnosticl);
         // Validate request contains some data.
-    	validateLessThanThrowOrRepair(precision, minX, av, false /* repair */, language, diagnostic0, diagnosticl);
-    	validateGreaterThanThrowOrRepair(precision, maxX, av, false /* repair */, language, diagnostic0, diagnosticl);
-    	
-    	// Y / Latitude.
-    	av = axisVariables[getLatAxisIndex()];
-    	diagnostic0 = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[0]       , av.destinationName(), "" + 1, av.destinationName());
-        diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], av.destinationName(), "" + 1, av.destinationName());
+        validateLessThanThrowOrRepair(precision, minX, "" + minX, av,
+                false /* repair */, language, diagnostic0, diagnosticl);
+        validateGreaterThanThrowOrRepair(precision, maxX, "" + maxX, av,
+                false /* repair */, language, diagnostic0, diagnosticl);
+
+        // Y / Latitude.
+        av = axisVariables[getLatAxisIndex()];
+        diagnostic0 = MessageFormat.format(
+                EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
+                "" + getLatAxisIndex(), av.destinationName());
+        diagnosticl = MessageFormat.format(
+                EDStatic.queryErrorGridDiagnosticAr[language],
+                av.destinationName(), "" + getLatAxisIndex(),
+                av.destinationName());
         // Validate Latitude values.
-        validateGreaterThanThrowOrRepair(precision, minY, ""+minY, "-90", -90 /* repairTo */, -91 /* coarseMin */, false /* repair */, language, diagnostic0, diagnosticl);
-        validateLessThanThrowOrRepair(precision, maxY, ""+maxY, "90", 90/* repairTo */, 91 /* coarseMax */, false /* repair */, language, diagnostic0, diagnosticl);
+        validateGreaterThanThrowOrRepair(precision, minY, "" + minY, "-90",
+                -90 /* repairTo */, -91 /* coarseMin */, false /* repair */,
+                language, diagnostic0, diagnosticl);
+        validateLessThanThrowOrRepair(precision, maxY, "" + maxY, "90",
+                90/* repairTo */, 91 /* coarseMax */, false /* repair */,
+                language, diagnostic0, diagnosticl);
         // Validate request contains some data.
-    	validateLessThanThrowOrRepair(precision, minY, av, false /* repair */, language, diagnostic0, diagnosticl);
-    	validateGreaterThanThrowOrRepair(precision, maxY, av, false /* repair */, language, diagnostic0, diagnosticl);
+        validateLessThanThrowOrRepair(precision, minY, "" + minY, av,
+                false /* repair */, language, diagnostic0, diagnosticl);
+        validateGreaterThanThrowOrRepair(precision, maxY, "" + maxY, av,
+                false /* repair */, language, diagnostic0, diagnosticl);
     }
 
     /**
@@ -14576,180 +14755,175 @@ writer.write(
     /**
      * This runs all of the interactive or not interactive tests for this class.
      *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
+     * @param errorSB        all caught exceptions are logged to this.
+     * @param interactive    If true, this runs all of the interactive tests;
+     *                       otherwise, this runs all of the non-interactive
+     *                       tests.
      * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
+     * @param firstTest      The first test to be run (0...). Test numbers may
+     *                       change.
+     * @param lastTest       The last test to be run, inclusive (0..., or -1 for
+     *                       the last test). Test numbers may change.
      */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
+    public static void test(StringBuilder errorSB, boolean interactive,
+            boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
+            lastTest = interactive ? -1 : 0;
         String msg = "\n^^^ EDD.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
             try {
                 long time = System.currentTimeMillis();
                 String2.log(msg + test);
-            
+
                 if (interactive) {
-                    //if (test ==  0) ...;
+                    // if (test == 0) ...;
 
                 } else {
-                    if (test ==  0) testSaveAsImage();
+                    if (test == 0)
+                        testSaveAsImage();
                 }
 
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+                String2.log(msg + test + " finished successfully in "
+                        + (System.currentTimeMillis() - time) + " ms.");
             } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
+                String eMsg = msg + test + " caught throwable:\n"
+                        + MustBe.throwableToString(testThrowable);
                 errorSB.append(eMsg);
                 String2.log(eMsg);
-                if (interactive) 
+                if (interactive)
                     String2.pressEnterToContinue("");
             }
         }
     }
 
-
     /**
-     * Test saveAsImage, specifically to make sure a transparent png that's partially outside of the range of the dataset
-     * still returns the image for the part that is within range.
+     * Test saveAsImage, specifically to make sure a transparent png that's
+     * partially outside of the range of the dataset still returns the image for
+     * the part that is within range.
      */
     public static void testSaveAsImage() throws Throwable {
-    	String2.log("\n*** EDDGrid.testSaveAsImage()");
-    	EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "etopo180");
-    	String dir = EDStatic.fullTestCacheDirectory;
-    	String requestUrl = "/erddap/griddap/etopo180.transparentPng";
-    	String fileTypeName = ".transparentPng";
-    	String userDapQueryTemplate = "altitude%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
-    	
-    	String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
+        String2.log("\n*** EDDGrid.testSaveAsImage()");
+        EDDGrid eddGrid = (EDDGrid) oneFromDatasetsXml(null, "_bd83_ab94_3c47");
+        String dir = EDStatic.fullTestCacheDirectory;
+        String requestUrl = "/erddap/griddap/_bd83_ab94_3c47.transparentPng";
+        String fileTypeName = ".transparentPng";
+        String userDapQueryTemplate = "MWchla%5B(2022-01-16T12:00:00Z):1:(2022-01-16T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
 
-    	// Make fully valid image
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -90.00001, 89.99999, -180.0, 179.5),
-    			 fileTypeName,
-    			 "a1b6bbc52e9a06904fa6cf1aa5792df4aff413b7dbf7f1510ea01a976cb897b3" /* expected */);
-    	
-    	// Invalid min x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -90, 90, -200, 180),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Invalid max x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -90, 90, -180, 370),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Invalid min y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -100, 90, -180, 180),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Invalid max y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -90, 100, -180, 180),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// All invalid.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 370),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	PAOne minValue = PAOne.fromDouble(-1);
-    	PAOne maxValue = PAOne.fromDouble(1);
-    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationMinMax(minValue, maxValue);
-    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationCoarseMin(-1);
-    	eddGrid.axisVariables[eddGrid.getLonAxisIndex()].setDestinationCoarseMax(1);
-    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationMinMax(minValue, maxValue);
-    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationCoarseMin(-1);
-    	eddGrid.axisVariables[eddGrid.getLatAxisIndex()].setDestinationCoarseMax(-1);
-    	
-    	// Make fully valid image
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 1, -1, 1),
-    			 fileTypeName,
-    			 "116e52a8afa58319ae6088dac6955cf7c4c2a0226295efd16ba802138acceeaf");
-    	/*
-    	 * todo get a dataset that naturally has a smaller valid range for the data than valid lat/lon.
-    	// Out of range min x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -2, 1, -2, 1),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Out of range max x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 2, -1, 1),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Out of range min y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 1, -2, 1),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Out of range max y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 1, -1, 2),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// All out of range.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -2, 2, -2, 2),
-    			fileTypeName, "97435b86bb3287e027fc868b680f58e8a7ca9b4283ae05d4fb30742dc2c9a40a");
-    	*/
-    	// Fully out of range min x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -3, -2, -2, 1),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Fully out of range max x.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, 2, 3, -1, 1),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Fully out of range min y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 1, -3, -2),
-    			fileTypeName, expectedHashForInvalidInput);
-    	
-    	// Fully out of range max y.
-    	testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-    			MessageFormat.format(userDapQueryTemplate, -1, 1, 2, 3),
-    			fileTypeName, expectedHashForInvalidInput);
+        String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
+
+        // Make fully valid image
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220),
+                fileTypeName,
+                "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /*
+                                                                                    * expected
+                                                                                    */);
+        // Invalid min x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, -200, 220),
+                fileTypeName, expectedHashForInvalidInput);
+        // Invalid max x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 370),
+                fileTypeName, expectedHashForInvalidInput);
+        // Invalid min y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, -100, 40, 210, 220),
+                fileTypeName, expectedHashForInvalidInput);
+        // Invalid max y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220),
+                fileTypeName, expectedHashForInvalidInput);
+        // All invalid.
+        testSaveAsImageVsExpected(
+                eddGrid, dir, requestUrl, MessageFormat
+                        .format(userDapQueryTemplate, -100, 100, -200, 370),
+                fileTypeName, expectedHashForInvalidInput);
+        // Out of range min x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 200, 210),
+                fileTypeName,
+                "1f5e14c90dd31ba4f42e6264c3b4d731ca39f47271d9857a06f972da4b3e607e");
+        // Out of range max x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 250, 260),
+                fileTypeName,
+                "282fdd986eeb3a5d4025873d930f6ee978ad8cc66fcc30ec36568b4bcf4072de");
+        // Out of range min y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 20, 30, 210, 220),
+                fileTypeName,
+                "38ca7930368e8fe2942657650a4afa288facc131020bc9f1cfdaaf4f62f8d4e5");
+        // Out of range max y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 50, 60, 210, 220),
+                fileTypeName,
+                "f421b8304d03f1e02fb47da6f6c9677d93f2fffb019226470d2fadb014418445");
+        // Fully out of range min x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 190, 200),
+                fileTypeName, expectedHashForInvalidInput);
+        // Fully out of range max x.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 260, 270),
+                fileTypeName, expectedHashForInvalidInput);
+        // Fully out of range min y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 10, 20, 210, 220),
+                fileTypeName, expectedHashForInvalidInput);
+        // Fully out of range max y.
+        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
+                MessageFormat.format(userDapQueryTemplate, 60, 70, 210, 220),
+                fileTypeName, expectedHashForInvalidInput);
     }
-    
-    private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir, String requestUrl,
-    		String userDapQuery, String fileTypeName, String expected) throws Throwable {
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    	OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
 
-    	eddGrid.saveAsImage(0 /* language */, null /* loggedInAs */, requestUrl, 
-    			userDapQuery, dir, "filename" /* fileName */, 
-    			osss /* outputStreamSource */, fileTypeName);
-    	
-    	try{
+    /**
+     * Tests input for saveAsImage against the provided output. Specifically the
+     * output is provided as a hash (sha-256) of the output bytes.
+     * 
+     * @param eddGrid      EDDGrid that saveAsImage is called on.
+     * @param dir          Directory used for temporary/cache files.
+     * @param requestUrl   The part of the user's request, after
+     *                     EDStatic.baseUrl, before '?'.
+     * @param userDapQuery An OPeNDAP DAP-style query string, still
+     *                     percentEncoded (shouldn't be null). e.g.,
+     *                     ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
+     * @param fileTypeName File type being requested (eg: .transparentPng)
+     * @param expected     The expected hash of the output of the saveAsImage
+     *                     call.
+     * @throws Throwable
+     */
+    private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir,
+            String requestUrl, String userDapQuery, String fileTypeName,
+            String expected) throws Throwable {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
+
+        eddGrid.saveAsImage(0 /* language */, null /* loggedInAs */, requestUrl,
+                userDapQuery, dir, "filename" /* fileName */,
+                osss /* outputStreamSource */, fileTypeName);
+
+        try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(baos.toByteArray());
             StringBuilder hexString = new StringBuilder();
 
             for (int i = 0; i < hash.length; i++) {
                 String hex = Integer.toHexString(0xff & hash[i]);
-                if(hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1)
+                    hexString.append('0');
                 hexString.append(hex);
             }
 
             String results = hexString.toString();
-            
-            //String2.log(results);        
-            Test.ensureEqual(results.substring(0, expected.length()), expected, 
-                    "\nresults=\n" + results.substring(0, Math.min(256, results.length())));
-        } catch(Exception ex){
+
+            // String2.log(results);
+            Test.ensureEqual(results.substring(0, expected.length()), expected,
+                    "\nresults=\n" + results.substring(0,
+                            Math.min(256, results.length())));
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
-    
 }
