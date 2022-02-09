@@ -3661,33 +3661,22 @@ Este posibil ca unele seturi de date să nu fie disponibile în prezent sau să 
 <logoutOpenID>Deconectați-vă de la furnizorul dvs. OpenID.</logoutOpenID>
 <!--  logoutSuccess ultima actualizare 2019-12-19 -->
 <logoutSuccess>Te-ai deconectat cu succes.
-Nu utilizați butonul Înapoi al browserului dvs.
-Utilizați linkul „ERDDAP ” de mai sus, apoi utilizați alte link-uri pentru a accesa paginile ERDDAP care vă interesează.
+
+Nu utilizați butonul Înapoi al browserului dvs. Utilizați linkul „ERDDAP” de mai sus,
+apoi utilizați alte link-uri pentru a accesa paginile ERDDAP care vă interesează.
 Dacă o pagină web stocată în cache spune că sunteți încă conectat, reîncărcați pagina.
+
 Pentru o securitate sporită (mai ales dacă acesta este un computer partajat), ar trebui să:
-* Dacă ați folosit ORCHID, accesați https://orcid.org/my-orcid și deconectați-vă și de acolo.
-* Goliți memoria cache a browserului:
-* În Chrome, utilizați „Mai multe instrumente:
-Ștergeți datele de navigare:
-imagini și fișiere stocate în cache” și „Cookie-uri”.
-* În Edge, utilizați „Setări:
-Confidențialitate și securitate:
-Ștergeți datele de navigare”.
-* În Firefox, utilizați „Opțiuni:
-Avansat:
-Rețea:
-Conținut web în cache:
-Ștergeți acum”.
-* În Opera, utilizați „Meniu:
-Mai multe instrumente:
-Ștergeți datele de navigare”.
-* În Safari, utilizați „Safari:
-Preferințe:
-Avansat:
-Afișați Dezvoltare”, apoi „Safari:
-Dezvoltare:
-Cache goale”.
-* Închideți această filă de browser.</logoutSuccess>
+ * Dacă ați folosit ORCHID, accesați https://orcid.org/my-orcid și deconectați-vă și de acolo.
+ * Goliți memoria cache a browserului dvs.:
+   * În Chrome, utilizați „Mai multe instrumente: Ștergeți datele de navigare: imagini și fișiere stocate în cache”
+       și „Cookies”.
+   * În Edge, utilizați „Setări: confidențialitate și securitate: ștergeți datele de navigare”.
+   * În Firefox, utilizați „Opțiuni: Avansat: Rețea: Conținut web în cache: Ștergeți acum”.
+   * În Opera, utilizați „Meniu: Mai multe instrumente: Ștergeți datele de navigare”.
+   * În Safari, utilizați „Safari: Preferințe: Avansat: Afișați Dezvoltare”,
+       apoi „Safari: Dezvoltare: Cache goale”.
+ * Închideți această filă de browser.</logoutSuccess>
 <mag>Faceți un grafic</mag>
 <magAxisX>Axa X</magAxisX>
 <magAxisY>Axa Y</magAxisY>

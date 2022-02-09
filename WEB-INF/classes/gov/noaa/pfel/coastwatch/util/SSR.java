@@ -81,10 +81,12 @@ import jakarta.mail.Transport;
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.S3Client;
-//for Transfer Manager:
-import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.FileDownload;
+import software.amazon.awssdk.transfer.s3.FileUpload;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest.Builder;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate 
@@ -1485,6 +1487,71 @@ public class SSR {
         return (BufferedInputStream)getUrlConnBufferedInputStream(urlString, 120000, false)[1]; //2 minute timeout
     } 
 
+    /**
+     * This builds an S3TransferManager
+     *
+     * @param region The S3 region from bro[1].
+     */
+    public static S3TransferManager buildS3TransferManager(String region) {
+        return S3TransferManager.builder()
+            .s3ClientConfiguration(b -> b.region(Region.of(region))
+                                       //.credentialsProvider(credentialProvider)  //handled by default credentials provider
+                                         .targetThroughputInGbps(20.0)  //??? make a separate setting?
+                                         .minimumPartSizeInBytes(new Long(8 * Math2.BytesPerMB)))
+            .build();
+    }
+
+    /**
+     * This uploads a file to AWS S3.
+     * If the file already exists, it is just touched.
+     *
+     * @param tm The S3TransferManager. If null, one will be temporarily created.
+     * @param localFileName The full name of the local file
+     * @param awsUrl Must be in the format used by String2.parseAwsS3Url.
+     * @param contentType may be null
+     * @throws IOException if touble
+     */
+    public static void uploadFileToAwsS3(S3TransferManager tm, 
+        String localFileName, String awsUrl, String contentType) throws IOException {
+
+        String bro[] = String2.parseAwsS3Url(awsUrl); //bucket, region, object key
+        if (bro == null) 
+            throw new IOException(String2.ERROR + " in uploadFileToAwsS3: incorrect format for awsUrl=" + awsUrl);
+
+        //sample code and javadoc: https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
+        try {
+            long time = System.currentTimeMillis();
+
+            //if the file already exists, touch it and we're done
+            if (File2.length(awsUrl) >= 0) {
+//...touch(awsUrl);                
+                if (verbose) String2.log("uploadFileToAwsS3 file=" + awsUrl + " already exists.");
+                return;
+            }
+
+            if (tm == null)
+                tm = buildS3TransferManager(bro[1]);
+            PutObjectRequest.Builder request = PutObjectRequest.builder()
+                .bucket(bro[0])
+                .key(bro[2])
+                .contentLength(File2.length(localFileName));
+            if (contentType != null) 
+                request.contentType(contentType);
+            FileUpload upload = tm.uploadFile(u -> u.source(Paths.get(localFileName))
+                .putObjectRequest(request.build()));
+            upload.completionFuture().join();    //wait for completion. exception if trouble
+
+            if (verbose) String2.log("uploadFileToAwsS3 successfully uploaded (in " + 
+                (System.currentTimeMillis() - time) + " ms)\n" + 
+                "  from: " + localFileName + "\n" +
+                "  to:   " + awsUrl);
+        } catch (Exception e) {
+            //File2.delete(url);
+            throw new IOException(String2.ERROR + " in uploadFileToAwsS3 while uploading to " + awsUrl, e);
+        }
+    }
+
+
 
     /** A variant that sets attributeTo to "downloadFile". */
     public static void downloadFile(String urlString,
@@ -1540,19 +1607,14 @@ public class SSR {
         if (bro != null) {
             //sample code and javadoc: https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/transfer/s3/S3TransferManager.html
             try {
-                S3TransferManager tm = S3TransferManager.builder()
-                    .s3ClientConfiguration(b -> b.region(Region.of(bro[1]))
-                                                 //.credentialsProvider(credentialProvider)  //handled by default credentials provider
-                                                 .targetThroughputInGbps(20.0)  //??? make a separate setting?
-                                                 .minimumPartSizeInBytes(new Long(8 * Math2.BytesPerMB)))
-                    .build();
+                S3TransferManager tm = buildS3TransferManager(bro[1]);  //!!! ??? reuse these???
                 FileDownload download =
                     tm.downloadFile(d -> d.getObjectRequest(g -> g.bucket(bro[0]).key(bro[2]))
                                           .destination(Paths.get(fullFileName + random)));
                 download.completionFuture().join();                //exception if trouble
                 File2.rename(fullFileName + random, fullFileName); //exception if trouble
 
-                if (verbose) String2.log(attributeTo + " (AWS Transfer Manager) successfully downloaded (in " + 
+                if (verbose) String2.log(attributeTo + " (via AWS Transfer Manager) successfully downloaded (in " + 
                     (System.currentTimeMillis() - time) + " ms)\n" + 
                     "  from: " + urlString + "\n" +
                     "  to:   " + fullFileName);

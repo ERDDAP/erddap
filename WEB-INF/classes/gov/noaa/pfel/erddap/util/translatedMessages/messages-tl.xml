@@ -3634,33 +3634,22 @@ Posibleng kasalukuyang hindi available ang ilang dataset o wala kang pahintulot 
 <logoutOpenID>Mag-log out mula sa iyong OpenID provider.</logoutOpenID>
 <!--  logoutSuccess huling na-update noong 2019-12-19 -->
 <logoutSuccess>Matagumpay kang naka-log out.
-Huwag gamitin ang Back button ng iyong browser.
-Gamitin ang link na &quot;ERDDAP&quot; sa itaas, pagkatapos ay gumamit ng iba pang mga link upang pumunta sa mga pahina ERDDAP kung saan interesado ka.
-Kung sinabi ng isang naka-cache na web page na naka-log in ka pa, i-reload ang pahina.
+
+Huwag gamitin ang Back button ng iyong browser. Gamitin ang link na &quot;ERDDAP&quot; sa itaas,
+pagkatapos ay gumamit ng iba pang mga link upang pumunta sa mga pahina ng ERDDAP kung saan interesado ka.
+Kung ang isang naka-cache na web page ay nagsasabing naka-log in ka pa rin, i-reload ang pahina.
+
 Para sa mas mataas na seguridad (lalo na kung ito ay isang shared computer), dapat mong:
-* Kung gumamit ka ng ORCHID, pumunta sa https://orcid.org/my-orcid at mag-log out din doon.
-* I-clear ang cache ng iyong browser:
-* Sa Chrome, gumamit ng &quot;Higit pang mga tool :
-I-clear ang data sa pagba-browse :
-Mga naka-cache na larawan at file&quot; at &quot;Cookies&quot;.
-* Sa Edge, gamitin ang &quot;Mga Setting :
-Privacy at seguridad :
-I-clear ang data sa pagba-browse&quot;.
-* Sa Firefox, gamitin ang &quot;Mga Opsyon :
-Advanced :
-Network :
-Naka-cache na Nilalaman sa Web :
-I-clear Ngayon&quot;.
-* Sa Opera, gamitin ang &quot;Menu :
-Higit pang mga tool :
-I-clear ang data sa pagba-browse&quot;.
-* Sa Safari, gamitin ang &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot;, pagkatapos ay &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Isara ang tab ng browser na ito.</logoutSuccess>
+ * Kung gumamit ka ng ORCHID, pumunta sa https://orcid.org/my-orcid at mag-log out din doon.
+ * I-clear ang cache ng iyong browser:
+   * Sa Chrome, gumamit ng &quot;Higit pang mga tool : I-clear ang data sa pagba-browse : Mga naka-cache na larawan at file&quot;
+       at &quot;Cookies&quot;.
+   * Sa Edge, gamitin ang &quot;Mga Setting : Privacy at seguridad : I-clear ang data sa pagba-browse&quot;.
+   * Sa Firefox, gamitin ang &quot;Options : Advanced : Network : Cached Web Content : Clear Now&quot;.
+   * Sa Opera, gamitin ang &quot;Menu : Higit pang mga tool : I-clear ang data sa pagba-browse&quot;.
+   * Sa Safari, gamitin ang &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       pagkatapos ay &quot;Safari : Develop : Empty Caches&quot;.
+ * Isara ang tab ng browser na ito.</logoutSuccess>
 <mag>Gumawa ng Graph</mag>
 <magAxisX>X Axis</magAxisX>
 <magAxisY>Y Axis</magAxisY>

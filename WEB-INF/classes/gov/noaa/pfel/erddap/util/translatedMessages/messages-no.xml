@@ -3673,33 +3673,22 @@ Det er mulig at enkelte datasett for øyeblikket ikke er tilgjengelige, eller at
 <logoutOpenID>Logg ut fra OpenID-leverandøren din.</logoutOpenID>
 <!--  logoutSuccess sist oppdatert 2019-12-19 -->
 <logoutSuccess>Du har logget ut.
-Ikke bruk tilbakeknappen i nettleseren.
-Bruk &quot;ERDDAP&quot;-koblingen ovenfor, og bruk deretter andre linker for å gå til ERDDAP sider du er interessert i.
+
+Ikke bruk tilbakeknappen i nettleseren. Bruk &quot;ERDDAP&quot;-lenken ovenfor,
+bruk deretter andre lenker for å gå til ERDDAP-sider du er interessert i.
 Hvis en bufret nettside sier at du fortsatt er pålogget, last inn siden på nytt.
+
 For økt sikkerhet (spesielt hvis dette er en delt datamaskin), bør du:
-* Hvis du brukte ORCHID, gå til https://orcid.org/my-orcid og logge ut der også.
-* Tøm nettleserens hurtigbuffer:
-* I Chrome bruker du &quot;Flere verktøy :
-Tøm nettlesingsdata :
-Bufrede bilder og filer&quot; og &quot;informasjonskapsler&quot;.
-* I Edge bruker du &quot;Innstillinger:
-Personvern og sikkerhet:
-Slett nettleserdata&quot;.
-* I Firefox bruker du &quot;Alternativer :
-Avansert :
-Nettverk :
-Bufret webinnhold :
-Slett nå&quot;.
-* I Opera, bruk &quot;Meny :
-Flere verktøy :
-Slett nettleserdata&quot;.
-* I Safari bruker du &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot;, deretter &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Lukk denne nettleserfanen.</logoutSuccess>
+ * Hvis du brukte ORCHID, gå til https://orcid.org/my-orcid og logg ut der også.
+ * Tøm nettleserens buffer:
+   * I Chrome bruker du «Flere verktøy : Tøm nettlesingsdata : Bufrede bilder og filer»
+       og &quot;informasjonskapsler&quot;.
+   * I Edge, bruk &quot;Innstillinger: Personvern og sikkerhet: Slett nettleserdata&quot;.
+   * I Firefox bruker du &quot;Alternativer : Avansert : Nettverk : Bufret webinnhold : Slett nå&quot;.
+   * I Opera bruker du &quot;Meny : Flere verktøy : Slett nettleserdata&quot;.
+   * I Safari, bruk &quot;Safari : Innstillinger : Avansert : Vis utvikling&quot;,
+       deretter &quot;Safari : Develop : Empty Caches&quot;.
+ * Lukk denne nettleserfanen.</logoutSuccess>
 <mag>Lag en graf</mag>
 <magAxisX>X-akse</magAxisX>
 <magAxisY>Y-akse</magAxisY>

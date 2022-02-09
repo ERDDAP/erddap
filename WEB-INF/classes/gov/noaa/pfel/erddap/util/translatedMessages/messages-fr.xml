@@ -3625,33 +3625,22 @@ Il est possible que certains ensembles de données ne soient pas disponibles act
 <logoutOpenID>Déconnectez-vous de votre fournisseur OpenID.</logoutOpenID>
 <!--  déconnexionSuccess dernière mise à jour 2019-12-19 -->
 <logoutSuccess>Vous vous êtes déconnecté avec succès.
-N&#39;utilisez pas le bouton Retour de votre navigateur.
-Utilisez le lien &quot;ERDDAP&quot; ci-dessus, puis utilisez d&#39;autres liens pour accéder aux pages ERDDAP qui vous intéressent.
+
+N&#39;utilisez pas le bouton Retour de votre navigateur. Utilisez le lien &quot;ERDDAP&quot; ci-dessus,
+puis utilisez d&#39;autres liens pour accéder aux pages ERDDAP qui vous intéressent.
 Si une page Web mise en cache indique que vous êtes toujours connecté, rechargez la page.
-Pour une sécurité accrue (surtout s&#39;il s&#39;agit d&#39;un ordinateur partagé), vous devez :
-* Si vous avez utilisé ORCHID, allez sur https://orcid.org/my-orcid et déconnectez-vous également.
-* Videz le cache de votre navigateur :
-* Dans Chrome, utilisez &quot;Plus d&#39;outils :
-Effacer les données de navigation :
-Images et fichiers mis en cache&quot; et &quot;Cookies&quot;.
-* Dans Edge, utilisez &quot;Paramètres :
-Confidentialité et sécurité :
-Effacer les données de navigation&quot;.
-* Dans Firefox, utilisez &quot;Options :
-Avancé :
-Réseau :
-Contenu Web mis en cache :
-Effacer maintenant&quot;.
-* Dans Opera, utilisez &quot;Menu :
-Plus d&#39;outils :
-Effacer les données de navigation&quot;.
-* Dans Safari, utilisez &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot;, puis &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Fermez cet onglet du navigateur.</logoutSuccess>
+
+Pour une sécurité accrue (surtout s&#39;il s&#39;agit d&#39;un ordinateur partagé), vous devez :
+ * Si vous avez utilisé ORCHID, rendez-vous sur https://orcid.org/my-orcid et déconnectez-vous également.
+ * Videz le cache de votre navigateur :
+   * Dans Chrome, utilisez &quot;Plus d&#39;outils : Effacer les données de navigation : Images et fichiers mis en cache&quot;
+       et &quot;Cookies&quot;.
+   * Dans Edge, utilisez &quot;Paramètres : Confidentialité et sécurité : Effacer les données de navigation&quot;.
+   * Dans Firefox, utilisez &quot;Options : Avancé : Réseau : Contenu Web mis en cache : Effacer maintenant&quot;.
+   * Dans Opera, utilisez &quot;Menu : Plus d&#39;outils : Effacer les données de navigation&quot;.
+   * Dans Safari, utilisez &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       puis &quot;Safari : Develop : Empty Caches&quot;.
+ * Fermez cet onglet du navigateur.</logoutSuccess>
 <mag>Faire un graphique</mag>
 <magAxisX>Axe X</magAxisX>
 <magAxisY>Axe Y</magAxisY>

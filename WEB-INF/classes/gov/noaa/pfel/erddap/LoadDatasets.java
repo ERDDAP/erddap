@@ -503,6 +503,14 @@ public class LoadDatasets extends Thread {
                         new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(ts).toArray())); //so canonical
                     String2.log("angularDegreeTrueUnits=" + String2.toCSVString(EDStatic.angularDegreeTrueUnitsSet));
 
+                } else if (tags.equals("<erddapDatasets><awsS3OutputBucketUrl>")) {
+                } else if (tags.equals("<erddapDatasets></awsS3OutputBucketUrl>")) {
+                    String ts = xmlReader.content();
+                    if (!String2.isSomething(ts))
+                        ts = null;
+                    EDStatic.awsS3OutputBucketUrl = ts; 
+                    String2.log("awsS3OutputBucketUrl=" + ts);
+
                 } else if (tags.equals("<erddapDatasets><cacheMinutes>")) {
                 } else if (tags.equals("<erddapDatasets></cacheMinutes>")) {
                     int tnt = String2.parseInt(xmlReader.content());

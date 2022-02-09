@@ -3705,33 +3705,22 @@ Bazı veri kümelerinin şu anda mevcut olmaması veya bunlara erişim izninizin
 <logoutOpenID>OpenID sağlayıcınızdan çıkış yapın.</logoutOpenID>
 <!--  çıkışBaşarılı son güncelleme 2019-12-19 -->
 <logoutSuccess>Başarıyla çıkış yaptınız.
-Tarayıcınızın Geri düğmesini kullanmayın.
-Yukarıdaki &quot;ERDDAP&quot; bağlantısını kullanın, ardından ilgilendiğiniz ERDDAP sayfalarına gitmek için diğer bağlantıları kullanın.
+
+Tarayıcınızın Geri düğmesini kullanmayın. Yukarıdaki &quot;ERDDAP&quot; bağlantısını kullanın,
+daha sonra ilgilendiğiniz ERDDAP sayfalarına gitmek için diğer bağlantıları kullanın.
 Önbelleğe alınmış bir web sayfası hala giriş yaptığınızı söylüyorsa, sayfayı yeniden yükleyin.
-Daha fazla güvenlik için (özellikle bu paylaşılan bir bilgisayarsa) şunları yapmalısınız:
-* ORCHID kullandıysanız, https://orcid.org/my-orcid adresine gidin ve oradan da çıkış yapın.
-* Tarayıcınızın önbelleğini temizleyin:
-* Chrome&#39;da &quot;Diğer araçlar :
-Tarama verilerini temizle :
-Önbelleğe alınmış resimler ve dosyalar&quot; ve &quot;Çerezler&quot;i kullanın.
-* Edge&#39;de &quot;Ayarlar :
-Gizlilik ve güvenlik :
-Tarama verilerini temizle&quot; seçeneğini kullanın.
-* Firefox&#39;ta &quot;Seçenekler :
-Gelişmiş :
-Ağ :
-Önbelleğe Alınmış Web İçeriği :
-Şimdi Temizle&quot; seçeneğini kullanın.
-* Opera&#39;da &quot;Menü :
-Diğer araçlar :
-Tarama verilerini temizle&quot; seçeneğini kullanın.
-* Safari&#39;de &quot;Safari :
-Tercihler :
-Gelişmiş :
-Geliştirmeyi Göster&quot;i, ardından &quot;Safari :
-Geliştirme :
-Boş Önbellekleri&quot; kullanın.
-* Bu tarayıcı sekmesini kapatın.</logoutSuccess>
+
+Daha fazla güvenlik için (özellikle bu paylaşılan bir bilgisayarsa), şunları yapmalısınız:
+ * ORCHID kullandıysanız, https://orcid.org/my-orcid adresine gidin ve oradan da çıkış yapın.
+ * Tarayıcınızın önbelleğini temizleyin:
+   * Chrome&#39;da &quot;Diğer araçlar : Tarama verilerini temizle : Önbelleğe alınmış resimler ve dosyalar&quot; seçeneğini kullanın
+       ve &quot;Çerezler&quot;.
+   * Edge&#39;de &quot;Ayarlar : Gizlilik ve güvenlik : Tarama verilerini temizle&quot; seçeneğini kullanın.
+   * Firefox&#39;ta &quot;Seçenekler : Gelişmiş : Ağ : Önbelleğe Alınmış Web İçeriği : Şimdi Temizle&quot; seçeneğini kullanın.
+   * Opera&#39;da &quot;Menü : Diğer araçlar : Tarama verilerini temizle&quot; seçeneğini kullanın.
+   * Safari&#39;de &quot;Safari : Tercihler : Gelişmiş : Geliştirmeyi Göster&quot; seçeneğini kullanın,
+       ardından &quot;Safari: Geliştirme: Boş Önbellekler&quot;.
+ * Bu tarayıcı sekmesini kapatın.</logoutSuccess>
 <mag>Grafik Yap</mag>
 <magAxisX>X ekseni</magAxisX>
 <magAxisY>Y Ekseni</magAxisY>

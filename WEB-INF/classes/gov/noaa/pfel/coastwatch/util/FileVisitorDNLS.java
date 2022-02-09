@@ -142,6 +142,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public static ConcurrentHashMap<String,Long> pruneCacheDirSize = new ConcurrentHashMap(); /* dirName, bytes */
     /** Max allowed is 1000. Only use smaller number for testing. */
     public static int S3_MAX_KEYS = 1000;
+    /** Don't change this here. Only use a smaller number for testing. */
+    public static int S3_CHUNK_TO_FILE = 10000;
 
     /** things set by constructor */
     public String dir;  //with \\ or / separators. With trailing slash (to match).
@@ -359,8 +361,8 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             //Is it an S3 bucket with "files"?
             //If testing a "dir", url should have a trailing slash.
             //S3 gives precise file size and lastModified
-            Matcher matcher = String2.AWS_S3_PATTERN.matcher(File2.addSlash(tDir)); //force trailing slash
-            if (matcher.matches()) {
+            String bro[] = String2.parseAwsS3Url(File2.addSlash(tDir)); //force trailing slash
+            if (bro != null) {
                 try {
                     //it matches with /, so actually add it (if not already there)
                     tDir = File2.addSlash(tDir);
@@ -388,13 +390,14 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                         Math2.random(1000000) + ".jsonlCsv";
                     boolean writtenToFile = false;
 
-                    String bucketName = matcher.group(1); 
-                    String region     = matcher.group(2); 
-                    String prefix     = matcher.group(3); 
-                    String baseURL = tDir.substring(0, matcher.start(3));
+                    String bucketName = bro[0]; 
+                    String region     = bro[1]; 
+                    String prefix     = bro[2]; 
+                    String baseURL = tDir.substring(0, tDir.length() - prefix.length());
                     if (verbose) 
                         String2.log("FileVisitorDNLS.oneStep getting info from AWS S3 at" + 
                             "\nURL=" + tDir);
+                            //+ " baseUrl=" + baseURL +
                             //"\nbucket=" + bucketName + " prefix=" + prefix);
 
                     //I wanted to generate lastMod for dir based on lastMod of files
@@ -452,8 +455,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                                     //Store this dir and parents back to tDir.
                                     String choppedKeyDir = keyDir;
                                     while (choppedKeyDir.length() >= tDir.length()) {
+                                        //String2.log(">> choppedKeyDir=" + choppedKeyDir);
                                         if (!dirHashSet.add(choppedKeyDir)) 
-                                            break; //hash set already had this, so will already have parents
+                                            break; //hash set already had this, so it will already have parents
 
                                         //chop off last subdirectory
                                         choppedKeyDir = File2.getDirectory(
@@ -475,7 +479,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                             }
 
                             //write a chunk to file?
-                            if ((response.isTruncated() && table.nRows() > 10000) ||  //write a chunk
+                            if ((response.isTruncated() && table.nRows() > S3_CHUNK_TO_FILE) ||  //write a chunk
                                 (!response.isTruncated() && writtenToFile)) {         //write final chunk
                                 if (!writtenToFile)
                                     File2.makeDirectory(File2.getDirectory(dnlsFileName));  //ensure dir exists
@@ -497,7 +501,9 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                     //read the file
                     if (writtenToFile) {
                         table = new Table();
-                        table.readJsonlCSV(dnlsFileName, null, null, false); //simplify
+                        table.readJsonlCSV(dnlsFileName, 
+                            new StringArray(new String[]{DIRECTORY, NAME, LASTMODIFIED, SIZE}), 
+                            new String[]{"String", "String", "long", "long" }, false); //simplify
                         int col = table.findColumnNumber(LASTMODIFIED);
                         table.setColumn(col, new LongArray(table.getColumn(col)).setMaxIsMV(true));
                         col = table.findColumnNumber(SIZE);
@@ -508,9 +514,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 
                     //add directories to the table
                     if (tDirectoriesToo) {
+                        //if writtenToFile, this is a new table. Find new pa's
+                        directoryPA    = (StringArray)table.getColumn(DIRECTORY);
+                        namePA         = (StringArray)table.getColumn(NAME);
+                        lastModifiedPA = (  LongArray)table.getColumn(LASTMODIFIED);
+                        sizePA         = (  LongArray)table.getColumn(SIZE);
+
                         Iterator<String> it = dirHashSet.iterator();
                         while (it.hasNext()) {
-                            directoryPA.add(it.next());
+                            String s = it.next();
+                            //String2.log(">> add dir=" + s);
+                            directoryPA.add(s);
                             namePA.add("");
                             lastModifiedPA.add(Long.MAX_VALUE); 
                             sizePA.add(Long.MAX_VALUE);
@@ -528,7 +542,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             //HYRAX before THREDDS
             //http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/
             //hyrax displays precise size and lastModified
-            matcher = HYRAX_PATTERN.matcher(tDir); 
+            Matcher matcher = HYRAX_PATTERN.matcher(tDir); 
             if (matcher.matches()) {
                 try {
                     if (verbose) 
@@ -2986,6 +3000,8 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
         //test that the results are identical regardless of page size
         int maxKeys[] = new int[]{10, 100, 1000}; //expectedCount is ~870.
+        int oS3Chunk = S3_CHUNK_TO_FILE; 
+        S3_CHUNK_TO_FILE = 8; //small, to test chunking to temp file
         for (int mk = 0; mk < maxKeys.length; mk++) {
             FileVisitorDNLS.S3_MAX_KEYS = maxKeys[mk];
 
@@ -3012,6 +3028,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
 
         }
         debugMode = false;
+        S3_CHUNK_TO_FILE = oS3Chunk; 
     }
 
     /** 

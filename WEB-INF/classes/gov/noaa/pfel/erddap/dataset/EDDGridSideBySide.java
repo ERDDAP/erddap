@@ -375,8 +375,20 @@ public class EDDGridSideBySide extends EDDGrid {
                 childDatasets[c].dataVariables().length);
         }
 
+        //right before ensureValid, make sure sourceNames are unique (by prefixing dv_)
+        //This is kludgey, but it is simple and it solves the problem.  I think there are no side effects.
+        for (int dv = 0; dv < nDv; dv++) 
+            //using \n# at end avoids messing up searchString (e.g., "sourceName=sst\n0\n")
+            dataVariables[dv].setSourceName(dataVariables[dv].sourceName() + "\n" + dv); 
+
         //ensure the setup is valid
         ensureValid();
+
+        //right after ensureValid, undo changes that made sourceNames unique
+        for (int dv = 0; dv < nDv; dv++) {
+            int po = dataVariables[dv].sourceName().lastIndexOf('\n');
+            dataVariables[dv].setSourceName(dataVariables[dv].sourceName().substring(0, po));
+        }
 
         //If any child is a FromErddap, try to subscribe to the remote dataset.
         for (int c = 0; c < childDatasets.length; c++)
@@ -1084,6 +1096,41 @@ public class EDDGridSideBySide extends EDDGrid {
         */
     }
 
+
+    /** This tests allowing datasets with duplicate sourceNames (they would be in different datasets).
+     */
+    public static void testDuplicateSourceNames() throws Throwable {
+        String2.log("\n*** EDDGridSideBySide.testDuplicateSourceNames");
+        testVerboseOn();
+        int language = 0;
+        String dir = EDStatic.fullTestCacheDirectory;
+        String name, tName, userDapQuery, results, expected, error;
+        String dapQuery;
+
+        //if there is trouble, this will throw an exception
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDuplicateSourceNames");
+
+        //get some data
+        dapQuery = "analysed_sst_a[1][(10):100:(12)][(-20):100:(-18)],analysed_sst_b[1][(10):100:(12)][(-20):100:(-18)]";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, dapQuery, EDStatic.fullTestCacheDirectory, 
+            "sbsDupNames", ".csv"); 
+        results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+        //String2.log(results);
+        expected =  //note that all _a and _b values are the same
+"time,latitude,longitude,analysed_sst_a,analysed_sst_b\n" +
+"UTC,degrees_north,degrees_east,degree_C,degree_C\n" +
+"2002-06-02T09:00:00Z,10.0,-20.0,25.709,25.709\n" + 
+"2002-06-02T09:00:00Z,10.0,-19.0,27.203,27.203\n" +
+"2002-06-02T09:00:00Z,10.0,-18.0,28.371,28.371\n" +
+"2002-06-02T09:00:00Z,11.0,-20.0,25.175,25.175\n" +
+"2002-06-02T09:00:00Z,11.0,-19.0,26.355,26.355\n" +
+"2002-06-02T09:00:00Z,11.0,-18.0,28.309,28.309\n" +
+"2002-06-02T09:00:00Z,12.0,-20.0,25.331,25.331\n" +
+"2002-06-02T09:00:00Z,12.0,-19.0,26.343,26.343\n" +
+"2002-06-02T09:00:00Z,12.0,-18.0,27.215,27.215\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+    }
+
     /** This test making transparentPngs.
      */
     public static void testTransparentPng() throws Throwable {
@@ -1284,7 +1331,7 @@ public class EDDGridSideBySide extends EDDGrid {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 1 : 2;
+            lastTest = interactive? 1 : 3;
         String msg = "\n^^^ EDDGridSideBySide.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -1300,6 +1347,7 @@ public class EDDGridSideBySide extends EDDGrid {
                     if (test ==  0) testQSWind(false); //doGraphicsTests 
                     if (test ==  1) testQSStress();
                     if (test ==  2) testFiles();
+                    if (test ==  3) testDuplicateSourceNames();
 
                     //not usually done
                     if (test == 1000) testOneTime();

@@ -754,8 +754,8 @@ public class EDDTableFromDatabase extends EDDTable{
                         int v = String2.indexOf(dataVariableDestinationNames(), tQueryOrderBy.get(oi));
                         if (v < 0)
                             throw new SimpleException(EDStatic.bilingual(language,
-                                EDStatic.queryErrorAr[0]        + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[0]       , queryOrderBy.get(oi)),
-                                EDStatic.queryErrorAr[language] + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[language], queryOrderBy.get(oi)))); 
+                                EDStatic.queryErrorAr[0]        + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[0]       , tQueryOrderBy.get(oi)),
+                                EDStatic.queryErrorAr[language] + MessageFormat.format(EDStatic.queryErrorUnknownVariableAr[language], tQueryOrderBy.get(oi)))); 
                         String tSourceName = dataVariableSourceNames()[v];
                         tQueryOrderBy.set(oi, tSourceName);
                         HashSet<String> tNeedsColumns = scriptNeedsColumns.get(tSourceName);
@@ -780,7 +780,6 @@ public class EDDTableFromDatabase extends EDDTable{
             resultsVariables.justKeep(keep);
 
             //then ensure needOtherSourceNames are in resultsVariables
-            //this can 
             for (String sourceName : needOtherSourceNames) {
                 if (sourceNamesSet.add(sourceName))  //if not already present
                     resultsVariables.add(sourceName);

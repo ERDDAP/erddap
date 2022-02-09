@@ -3624,33 +3624,22 @@ Ada kemungkinan bahwa beberapa kumpulan data saat ini tidak tersedia atau Anda t
 <logoutOpenID>Keluar dari penyedia OpenID Anda.</logoutOpenID>
 <!--  logoutSuccess terakhir diperbarui 2019-12-19 -->
 <logoutSuccess>Anda telah berhasil logout.
-Jangan gunakan tombol Kembali browser Anda.
-Gunakan tautan &quot;ERDDAP&quot; di atas, lalu gunakan tautan lain untuk membuka halaman ERDDAP yang Anda minati.
+
+Jangan gunakan tombol Kembali browser Anda. Gunakan tautan &quot;ERDDAP&quot; di atas,
+kemudian gunakan tautan lain untuk membuka halaman ERDDAP yang Anda minati.
 Jika halaman web yang di-cache mengatakan Anda masih login, muat ulang halaman tersebut.
+
 Untuk meningkatkan keamanan (terutama jika ini adalah komputer bersama), Anda harus:
-* Jika Anda menggunakan ORCHID, buka https://orcid.org/my-orcid dan keluar dari sana juga.
-* Bersihkan cache browser Anda:
-* Di Chrome, gunakan &quot;Alat lainnya:
-Hapus data penjelajahan:
-Gambar dan file cache&quot; dan &quot;Cookie&quot;.
-* Di Edge, gunakan &quot;Pengaturan:
-Privasi &amp; keamanan:
-Hapus data penelusuran&quot;.
-* Di Firefox, gunakan &quot;Opsi:
-Lanjutan:
-Jaringan:
-Konten Web Tembolok:
-Hapus Sekarang&quot;.
-* Di Opera, gunakan &quot;Menu:
-Lebih banyak alat:
-Hapus data penjelajahan&quot;.
-* Di Safari, gunakan &quot;Safari :
-Preferensi :
-Lanjutan :
-Tampilkan Kembangkan&quot;, lalu &quot;Safari :
-Kembangkan :
-Cache Kosong&quot;.
-* Tutup tab peramban ini.</logoutSuccess>
+ * Jika Anda menggunakan ORCHID, buka https://orcid.org/my-orcid dan logout di sana juga.
+ * Bersihkan cache browser Anda:
+   * Di Chrome, gunakan &quot;Alat lainnya: Hapus data penjelajahan: Gambar dan file dalam cache&quot;
+       dan &quot;Kue&quot;.
+   * Di Edge, gunakan &quot;Pengaturan: Privasi &amp; keamanan: Hapus data penelusuran&quot;.
+   * Di Firefox, gunakan &quot;Opsi: Lanjutan: Jaringan: Konten Web Tembolok: Hapus Sekarang&quot;.
+   * Di Opera, gunakan &quot;Menu: Lebih banyak alat: Hapus data penjelajahan&quot;.
+   * Di Safari, gunakan &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       lalu &quot;Safari: Kembangkan: Cache Kosong&quot;.
+ * Tutup tab peramban ini.</logoutSuccess>
 <mag>Buat Grafik</mag>
 <magAxisX>sumbu X</magAxisX>
 <magAxisY>sumbu Y</magAxisY>

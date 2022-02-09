@@ -3674,33 +3674,22 @@ Seu navegador pode ter armazenado em cache a página da web antes de você efetu
 <logoutOpenID>Saia do seu provedor de OpenID.</logoutOpenID>
 <!--  logoutSuccess atualizado pela última vez em 19/12/2019 -->
 <logoutSuccess>Você se desconectou com sucesso.
-Não use o botão Voltar do seu navegador.
-Use o link &quot;ERDDAP&quot; acima e, a seguir, use outros links para ir para as páginas ERDDAP de seu interesse.
+
+Não use o botão Voltar do seu navegador. Use o link &quot;ERDDAP&quot; acima,
+em seguida, use outros links para ir para as páginas ERDDAP de seu interesse.
 Se uma página da web em cache disser que você ainda está conectado, recarregue a página.
-Para aumentar a segurança (especialmente se este for um computador compartilhado), você deve:
-* Se você usou o ORCHID, vá para https://orcid.org/my-orcid e faça logout também.
-* Limpe o cache do seu navegador:
-* No Chrome, use &quot;Mais ferramentas:
-Limpar dados de navegação:
-imagens e arquivos armazenados em cache&quot; e &quot;Cookies&quot;.
-* No Edge, use &quot;Configurações:
-Privacidade e segurança:
-Limpar dados de navegação&quot;.
-* No Firefox, use &quot;Opções:
-Avançado:
-Rede:
-Conteúdo da Web em cache:
-Limpar agora&quot;.
-* No Opera, use &quot;Menu:
-Mais ferramentas:
-Limpar dados de navegação&quot;.
-* No Safari, use &quot;Safari:
-Preferências:
-Avançado:
-Mostrar Desenvolver&quot; e, em seguida, &quot;Safari:
-Desenvolver:
-Caches Vazios&quot;.
-* Feche esta guia do navegador.</logoutSuccess>
+
+Para maior segurança (especialmente se este for um computador compartilhado), você deve:
+ * Se você usou o ORCHID, vá para https://orcid.org/my-orcid e faça logout também.
+ * Limpe o cache do seu navegador:
+   * No Chrome, use &quot;Mais ferramentas: limpar dados de navegação: imagens e arquivos em cache&quot;
+       e &quot;Cookies&quot;.
+   * No Edge, use &quot;Configurações: Privacidade e segurança: Limpar dados de navegação&quot;.
+   * No Firefox, use &quot;Opções: Avançado: Rede: Conteúdo da Web em cache: Limpar agora&quot;.
+   * No Opera, use &quot;Menu: Mais ferramentas: Limpar dados de navegação&quot;.
+   * No Safari, use &quot;Safari: Preferências: Avançado: Mostrar Desenvolver&quot;,
+       em seguida, &quot;Safari: Develop: Empty Caches&quot;.
+ * Feche esta guia do navegador.</logoutSuccess>
 <mag>Faça um Gráfico</mag>
 <magAxisX>Eixo X</magAxisX>
 <magAxisY>Eixo Y</magAxisY>

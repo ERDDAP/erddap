@@ -3262,24 +3262,23 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <logout>ออกจากระบบ</logout>
 <logoutOpenID>ออกจากระบบผู้ให้บริการ OpenID ของคุณ</logoutOpenID>
 <!--  ออกจากระบบสำเร็จ อัพเดทล่าสุด 2019-12-19 -->
-<logoutSuccess>คุณออกจากระบบเรียบร้อยแล้ว อย่าใช้ปุ่มย้อนกลับของเบราว์เซอร์ ใช้ลิงก์ &quot;ERDDAP&quot; ด้านบน จากนั้นใช้ลิงก์อื่นๆ เพื่อไปยังหน้า ERDDAP ที่คุณสนใจ หากหน้าเว็บที่แคชแจ้งว่าคุณยังเข้าสู่ระบบอยู่ ให้โหลดหน้านี้ซ้ำ เพื่อความปลอดภัยที่เพิ่มขึ้น (โดยเฉพาะถ้าเป็นคอมพิวเตอร์ที่ใช้ร่วมกัน) คุณควร:
-* หากคุณใช้ ORCHID ให้ไปที่ https://orcid.org/my-orcid และออกจากระบบที่นั่นด้วย * ล้างแคชของเบราว์เซอร์:
-* ใน Chrome ให้ใช้ &quot;เครื่องมือเพิ่มเติม :
-ล้างข้อมูลการท่องเว็บ :
-รูปภาพและไฟล์ที่แคชไว้&quot; และ &quot;คุกกี้&quot; * ใน Edge ใช้ &quot;การตั้งค่า:
-ความเป็นส่วนตัวและความปลอดภัย:
-ล้างข้อมูลการท่องเว็บ&quot; * ใน Firefox ให้ใช้ &quot;Options :
-Advanced :
-Network :
-Cached Web Content :
-Clear Now&quot; * ใน Opera ให้ใช้ &quot;เมนู :
-เครื่องมือเพิ่มเติม :
-ล้างข้อมูลการท่องเว็บ&quot; * ใน Safari ให้ใช้ &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot; ตามด้วย &quot;Safari :
-Develop :
-Empty Caches&quot; * ปิดแท็บเบราว์เซอร์นี้</logoutSuccess>
+<logoutSuccess>คุณออกจากระบบเรียบร้อยแล้ว
+
+อย่าใช้ปุ่มย้อนกลับของเบราว์เซอร์ ใช้ลิงก์ &quot;ERDDAP&quot; ด้านบน
+จากนั้นใช้ลิงก์อื่นเพื่อไปยังหน้า ERDDAP ที่คุณสนใจ
+หากหน้าเว็บที่แคชแจ้งว่าคุณยังเข้าสู่ระบบอยู่ ให้โหลดหน้าซ้ำ
+
+เพื่อความปลอดภัยที่เพิ่มขึ้น (โดยเฉพาะถ้าเป็นคอมพิวเตอร์ที่ใช้ร่วมกัน) คุณควร:
+ * หากคุณใช้ ORCHID ให้ไปที่ https://orcid.org/my-orcid และออกจากระบบที่นั่นด้วย
+ * ล้างแคชของเบราว์เซอร์ของคุณ:
+   * ใน Chrome ให้ใช้ &quot;เครื่องมือเพิ่มเติม : ล้างข้อมูลการท่องเว็บ : รูปภาพและไฟล์ที่แคชไว้&quot;
+       และ &quot;คุกกี้&quot;
+   * ใน Edge ใช้ &quot;การตั้งค่า: ความเป็นส่วนตัวและความปลอดภัย: ล้างข้อมูลการท่องเว็บ&quot;
+   * ใน Firefox ให้ใช้ &quot;Options : Advanced : Network : Cached Web Content : Clear Now&quot;
+   * ใน Opera ให้ใช้ &quot;เมนู : เครื่องมือเพิ่มเติม : ล้างข้อมูลการท่องเว็บ&quot;
+   * ใน Safari ให้ใช้ &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       จากนั้น &quot;Safari : Develop : Empty Caches&quot;
+ * ปิดแท็บเบราว์เซอร์นี้</logoutSuccess>
 <mag>สร้างกราฟ</mag>
 <magAxisX>แกน X</magAxisX>
 <magAxisY>แกน Y</magAxisY>
