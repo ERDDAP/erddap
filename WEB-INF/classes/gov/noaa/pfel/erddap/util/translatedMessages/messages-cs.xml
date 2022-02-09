@@ -3696,33 +3696,22 @@ Je možné, že některé datové sady nejsou aktuálně dostupné nebo že k ni
 <logoutOpenID>Odhlaste se od svého poskytovatele OpenID.</logoutOpenID>
 <!--  logoutSuccess naposledy aktualizováno 19.12.2019 -->
 <logoutSuccess>Úspěšně jste se odhlásili.
-Nepoužívejte tlačítko Zpět ve svém prohlížeči.
-Použijte výše uvedený odkaz &quot;ERDDAP&quot; a poté pomocí dalších odkazů přejděte na stránky ERDDAP, které vás zajímají.
-Pokud webová stránka uložená v mezipaměti uvádí, že jste stále přihlášeni, načtěte stránku znovu.
+
+Nepoužívejte tlačítko Zpět ve svém prohlížeči. Použijte výše uvedený odkaz „ERDDAP“,
+pak pomocí dalších odkazů přejděte na stránky ERDDAP, které vás zajímají.
+Pokud webová stránka uložená v mezipaměti říká, že jste stále přihlášeni, načtěte stránku znovu.
+
 Pro zvýšení bezpečnosti (zejména pokud se jedná o sdílený počítač) byste měli:
-* Pokud jste používali ORCHID, přejděte na https://orcid.org/my-orcid a odhlaste se také tam.
-* Vymažte mezipaměť prohlížeče:
-* V prohlížeči Chrome použijte „Další nástroje:
-Vymazat data prohlížení:
-Obrázky a soubory uložené v mezipaměti“ a „Soubory cookie“.
-* V Edge použijte &quot;Nastavení:
-Soukromí a zabezpečení:
-Vymazat údaje o prohlížení&quot;.
-* Ve Firefoxu použijte &quot;Možnosti:
-Pokročilé:
-Síť:
-Webový obsah v mezipaměti:
-Vymazat nyní&quot;.
-* V Opeře použijte &quot;Menu:
-Další nástroje:
-Vymazat údaje o prohlížení&quot;.
-* V Safari použijte &quot;Safari:
-Předvolby:
-Pokročilé:
-Zobrazit vývoj&quot; a poté &quot;Safari:
-Vyvíjet:
-Prázdné mezipaměti&quot;.
-* Zavřete tuto kartu prohlížeče.</logoutSuccess>
+ * Pokud jste použili ORCHID, přejděte na https://orcid.org/my-orcid a tam se také odhlaste.
+ * Vymažte mezipaměť prohlížeče:
+   * V prohlížeči Chrome použijte „Další nástroje: Vymazat údaje o prohlížení: Obrázky a soubory uložené v mezipaměti“
+       a &quot;cookies&quot;.
+   * V Edge použijte &quot;Nastavení: Soukromí a zabezpečení: Vymazat údaje o prohlížení&quot;.
+   * Ve Firefoxu použijte &quot;Možnosti: Pokročilé: Síť: Webový obsah v mezipaměti: Vymazat nyní&quot;.
+   * V Opeře použijte &quot;Menu: Další nástroje: Vymazat údaje o prohlížení&quot;.
+   * V Safari použijte &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       pak &quot;Safari: Develop: Empty Caches&quot;.
+ * Zavřete tuto kartu prohlížeče.</logoutSuccess>
 <mag>Vytvořte graf</mag>
 <magAxisX>Osa X</magAxisX>
 <magAxisY>Osa Y</magAxisY>

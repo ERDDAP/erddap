@@ -4676,10 +4676,18 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         }
 
         String cacheDir = dataset.cacheDirectory(); //it is created by EDD.ensureValid
-        OutputStreamSource outputStreamSource = new OutputStreamFromHttpResponse(
-            request, response, fileName, 
-            jsonp == null? fileTypeName : ".jsonp",  //.jsonp pseudo fileTypeName to get correct mime type
-            extension);
+        OutputStreamSource outputStreamSource;
+        if (EDStatic.awsS3OutputBucketUrl == null) {
+            outputStreamSource = new OutputStreamFromHttpResponse(
+                request, response, fileName, 
+                jsonp == null? fileTypeName : ".jsonp",  //.jsonp pseudo fileTypeName to get correct mime type
+                extension);
+        } else {
+            outputStreamSource = new OutputStreamFromHttpResponseViaAwsS3(
+                request, response, cacheDir, fileName, 
+                jsonp == null? fileTypeName : ".jsonp",  //.jsonp pseudo fileTypeName to get correct mime type
+                extension);
+        }
 
         //*** tell the dataset to send the data
         try {
@@ -5117,6 +5125,27 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         if (String2.isRemote(localDir) && !edd.filesInPrivateS3Bucket()) {
             //remote, including public AWS S3
             sendRedirect(response, localDir + nameAndExt);  
+
+        } else if (EDStatic.awsS3OutputBucketUrl != null) {            
+//need lock to ensure other thread isn't working with local file?
+            if (edd.filesInPrivateS3Bucket()) { 
+                String cacheDir = edd.cacheDirectory() + (nextPath == null? "" : nextPath); //nextPath keeps fileNames unique
+                if (File2.isFile(cacheDir + nameAndExt)) {
+                    //touch it
+                    File2.touch(cacheDir + nameAndExt);
+                } else { 
+                    //copy to local cache
+                    SSR.downloadFile(localDir + nameAndExt, cacheDir + nameAndExt, true); //tryToUseCompression is irrelevant
+                }
+                localDir = cacheDir;
+            }
+
+            //copy to awsS3OutputBucket and redirect
+            String contentType = OutputStreamFromHttpResponse.getFileContentType(request, ext, ext);
+            String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + edd.datasetID() + "/" + (nextPath == null? "" : nextPath) + nameAndExt;
+            SSR.uploadFileToAwsS3(EDStatic.awsS3OutputTransferManager, localDir + nameAndExt, fullAwsUrl, contentType);
+            response.sendRedirect(fullAwsUrl);  
+
         } else {
             //local and AWS S3
             OutputStreamSource outSource = new OutputStreamFromHttpResponse(

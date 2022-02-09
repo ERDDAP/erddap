@@ -1757,7 +1757,7 @@ public class EDDTableFromCassandra extends EDDTable{
         }
 
         //clusterColumn and indexColumn (could be accumulated as a Set)
-        StringArray clusterColumnSA = new StringArray(); //souceNames
+        StringArray clusterColumnSA = new StringArray(); //sourceNames
         List<ColumnMetadata> cc = tm.getClusteringColumns();
         for (int i = 0; i < cc.size(); i++) 
             clusterColumnSA.add(cc.get(i).getName());
@@ -1766,7 +1766,7 @@ public class EDDTableFromCassandra extends EDDTable{
         Table dataAddTable = new Table();
         List<ColumnMetadata> cmList = tm.getColumns();
         boolean isList[] = new boolean[cmList.size()];
-        StringArray indexColumnSA = new StringArray(); //souceNames
+        StringArray indexColumnSA = new StringArray(); //sourceNames
         for (int col = 0; col < cmList.size(); col++) {
 
             ColumnMetadata cm = cmList.get(col);

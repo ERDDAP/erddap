@@ -280,7 +280,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         addGlobalAttributes      = (Attributes)tChildDataset.addGlobalAttributes().clone();
         combinedGlobalAttributes = (Attributes)tChildDataset.combinedGlobalAttributes().clone();
         combinedGlobalAttributes.set("title", 
-             combinedGlobalAttributes.getString("title") + ", Lon+/-180");
+             combinedGlobalAttributes.getString("title").trim() + ", Lon+/-180");
 
         //make/copy the local axisVariables
         int nAv = tChildDataset.axisVariables.length;
@@ -385,6 +385,8 @@ public class EDDGridLonPM180 extends EDDGrid {
         EDVLonGridAxis newEDVLon = new EDVLonGridAxis(tDatasetID, EDV.LON_NAME,
             new Attributes(childLon.combinedAttributes()), new Attributes(),
             newLonValues);
+        newEDVLon.combinedAttributes().remove("valid_min");
+        newEDVLon.combinedAttributes().remove("valid_max");
         axisVariables[lonIndex] = newEDVLon; 
 
         //ensure the setup is valid
@@ -1471,15 +1473,15 @@ expected =
         results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 148];\n" + //changes
+"  Float64 time[time = 158];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 148][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 158][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 148];\n" +  //changes
+"      Float64 time[time = 158];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1969,6 +1971,52 @@ expected =
     }
 
 
+    /** 
+     * This tests that longitude valid_min and valid_max in child are removed by constructor,
+     * because they are now out-of-date.
+     * E.g., source dataset may have lon valid_min=0 and valid_max=360, which 
+     * becomes incorrect in the -180 to 180 dataset.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testValidMinMax() throws Throwable {
+
+        String2.log("\n****************** EDDGridLonPM180.testValidMinMax() *****************\n");
+        testVerboseOn();
+        int language = 0;
+        String name, tName, userDapQuery, results, expected, error;
+        int po;
+        String dir = EDStatic.fullTestCacheDirectory;
+
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testPM180LonValidMinMax");       
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
+            eddGrid.className() + "_validMinMax_Entire", ".das"); 
+        results = File2.directReadFrom88591File(dir + tName);
+
+        expected = 
+ "longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range -179.875, 179.875;\n" +
+"    String axis \"X\";\n" +
+"    String grids \"Uniform grid from 0.125 to 359.875 by 0.25\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+//"    Float32 valid_max 359.875;\n" + //removed because out-of-date
+//"    Float32 valid_min 0.125;\n" +
+"  }";
+        po = results.indexOf("longitude {");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+        expected = 
+    "Float64 geospatial_lon_max 179.875;\n" +
+"    Float64 geospatial_lon_min -179.875;";
+        po = results.indexOf("Float64 geospatial_lon_max");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+    }
+
+
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -1984,7 +2032,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 7;
+            lastTest = interactive? -1 : 8;
         String msg = "\n^^^ EDDGridLonPM180.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -2003,6 +2051,7 @@ expected =
                     if (test ==  5) testHardFlag(); //if fails, try again
                     if (test ==  6) testBadFilesFlag(); 
                     if (test ==  7) testFiles();
+                    if (test ==  8) testValidMinMax(); 
 
                     //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
                     //so there is a test for that in the constructor, 

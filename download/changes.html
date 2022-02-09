@@ -68,8 +68,59 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** -->
+<!-- ****************************************************************************** 
 
+
+<h2><a class="selfLink" id="changes2.17" href="#changes2.17" rel="bookmark">Changes</a> 
+in ERDDAP version 2.17 (released 2022-??-??)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>* CHANGE: Previously, ERDDAP rejected griddap requests where the index values
+      for a given dimension were [high:low]. 
+      Now it makes those requests valid by swapping the low and high values.
+      This solves a longstanding problem for users and for external programs like xtracto
+      which had to keep track of the few datasets that have latitude values
+      which range from high to low in order to make request like [(50):(20)]
+      so that the request in index space was [low:high]. See
+      https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplAquariusSSS3MonthV5.html
+      Now, a request like [(20):(50)] for one of these datasets is automatically
+      interpreted as [(50):(20)].
+    <br>&nbsp;
+
+  <li>CHANGED: .esriAscii requests now trigger a "File : Save As" dialog box in the user's browser.
+    Thanks to Joel Van Noord.
+    <br>&nbsp;
+
+  <li>BUG FIX: Now, if the longitude variable of a child dataset of a 
+    EDDGridLonPM180 or EDDGridLon0360 dataset
+    has a valid_min and/or valid_max attribute, they are removed in the 
+    EDDGridLonPM180 or EDDGridLon0360 dataset.
+    Thanks to Roy Mendelssohn.
+    <br>&nbsp;
+
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul>
+  <li>TO DO:
+    <br>&nbsp;
+
+  <li>BUG FIX: When an AWS S3 dirctory had more than 10000 files, ERDDAP threw an "Internal Error".
+    This is now fixed.
+    Thanks to Andy Ziegler.
+    <br>&nbsp;
+
+  <li>BUG FIX: EDDGridSideBySide didn't allow to variable's sourceNames in different 
+    child datasets to be the same.
+    Thanks to Joshua Stanford.
+    <br>&nbsp;
+
+  </ul>
+</ul>
+
+-->
+
+<!-- ****************************************************************************** -->
 
 <h2><a class="selfLink" id="changes2.16" href="#changes2.16" rel="bookmark">Changes</a> 
 in ERDDAP version 2.16 (released 2021-12-17)</h2>
@@ -88,6 +139,10 @@ in ERDDAP version 2.16 (released 2021-12-17)</h2>
     having been machine translated.
     Thanks to Mike Smit.
     <br>&nbsp;
+  <li>BUG FIX: The login web pages are now working properly with 
+    different language settings.
+    Thanks to Mike Smit.
+    <br>&nbsp;
   <li>NEW orderBySum filter. And new Check All and Uncheck All buttons on 
     EDDGrid Data Access Form web page. Thanks to the code contribution 
     by Marco Alba.
@@ -95,6 +150,12 @@ in ERDDAP version 2.16 (released 2021-12-17)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>TO DO: If you have
+    <br><kbd>&lt;questionMarkImageFile&gt;QuestionMark.jpg&lt;/questionMarkImageFile&gt;</kbd>
+    <br>in your setup.xml file, you need to either remove the whole tag (recommended, so the default file is used) or change it to:
+    <br><kbd>&lt;questionMarkImageFile&gt;QuestionMark.png&lt;/questionMarkImageFile&gt;</kbd>
+    <br>&nbsp;
+
   <li>CHANGE: Just so you know, 
     <a rel="bookmark" href="https://adoptium.net/?variant=openjdk8">Adoptium<img 
       src="../images/external.png" alt=" (external link)" 
@@ -123,7 +184,7 @@ in ERDDAP version 2.16 (released 2021-12-17)</h2>
     but especially ones which have excellent "Networking Performance".
     With this change ERDDAP's cacheFromUrl system now offers comparable speeds 
     to xarray's approach of parallelized downloads of pre-chunked files, 
-    but without the need to convert the source files from .nc and .hdf into xarray files.
+    but without the need to convert the source files from .nc and .hdf into chunked xarray files.
     In fact, ERDDAP's system is better if there is a subsequent request to read from the same file,
     because ERDDAP now has a local copy of the file.
     Our community has spent years standardizing on .nc and .hdf files. Now
@@ -133,9 +194,11 @@ in ERDDAP version 2.16 (released 2021-12-17)</h2>
     <br>&nbsp;
 
   <li>CHANGE: searchEngine=Lucene is, for now, deprecated. 
-    It is a complex system which often yields results which are different from
+    It is a complex system which often yields results which are slightly different from
     the more desirable behavior of searchEngine=original. 
-    The time savings of Lucene don't offset the differences in results.
+    For almost all ERDDAP installations, the time savings of Lucene don't offset the differences in results.
+    Please use searchEngine=original instead if possible.
+    If that causes problems, please email Bob.
     <br>&nbsp;
        
   <li>CHANGE: The Lucene searchEngine now behaves more like the original searchEngine. 
@@ -153,7 +216,7 @@ in ERDDAP version 2.16 (released 2021-12-17)</h2>
   <li>BUG FIX: Now EDDTableAggregateRows removes the actual_range attribute
     whenever one or more of the child datasets doesn't ever know its variables' actual_range
     (e.g., EDDTableFromDatabase).
-    Thanks to Eric Geletti.
+    Thanks to Erik Geletti.
     <br>&nbsp;
   </ul>
 </ul>

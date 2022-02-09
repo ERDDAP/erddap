@@ -33,7 +33,7 @@ import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
-import ucar.nc2.dods.*;
+//import ucar.nc2.dods.*;  //2022-01-24 no longer needed
 import ucar.nc2.util.*;
 import ucar.nc2.write.NetcdfFormatWriter;
 
@@ -173,8 +173,8 @@ public class CacheOpendapStation {
 
         try {
             //open the opendap url
-            DODSNetcdfFile in = new DODSNetcdfFile(url); //bug? showed no global attributes //but fixed in 2.2.16
-            //NetcdfDataset in = NetcdfDatasets.openDataset(url); //can't recognize mbari non-udunits  //2021: 's' is new API
+            //DODSNetcdfFile in = new DODSNetcdfFile(url); //bug? showed no global attributes //but fixed in 2.2.16  //2022-01-24 DODSNetcdfFile gone in netcdf-java 5.5.2
+            NetcdfDataset in = NetcdfDatasets.openDataset(url); //can't recognize mbari non-udunits  //2021: 's' is new API
 
             try {
                 //open the file (before 'try'); if it fails, no temp file to delete
@@ -793,36 +793,35 @@ public class CacheOpendapStation {
 
         //***************
         //M0: get ascii response
-        try {
-            response = SSR.getUrlResponseStringUnchanged(
-                "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m0/200607/m0_adcp1267_20060731.nc.ascii?" + 
-                "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]");
-            Test.ensureEqual(response,
+        response = SSR.getUrlResponseStringUnchanged(
+            "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m0/200607/m0_adcp1267_20060731.nc.ascii?" + 
+            "u_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0],v_component_uncorrected[0:1:0][0:1:1][0:1:0][0:1:0]");
+        Test.ensureEqual(response,
 /* pre 6/22/2007, was
-                "u_component_uncorrected, [1][2][1][1]\n" +
-                "[0][0][0], 20.3\n" +
-                "[0][1][0], 6.9\n" +
-                "time, [1]\n" +
-                "1154396111\n" +
-                "depth, [2]\n" +
-                "6, 10\n" +
-                "latitude, [1]\n" + //was adcp_latitude
-                "36.833333\n" +
-                "longitude, [1]\n" + //was adcp_longitude
-                "-121.903333\n" +
-                "\n" +
-                "v_component_uncorrected, [1][2][1][1]\n" +
-                "[0][0][0], -24.3\n" +
-                "[0][1][0], -8.2\n" +
-                "time, [1]\n" +
-                "1154396111\n" +
-                "depth, [2]\n" +
-                "6, 10\n" +
-                "latitude, [1]\n" + //was adcp_latitude
-                "36.833333\n" +
-                "longitude, [1]\n" + //was adcp_longitude
-                "-121.903333\n" +
-                "\n", */
+            "u_component_uncorrected, [1][2][1][1]\n" +
+            "[0][0][0], 20.3\n" +
+            "[0][1][0], 6.9\n" +
+            "time, [1]\n" +
+            "1154396111\n" +
+            "depth, [2]\n" +
+            "6, 10\n" +
+            "latitude, [1]\n" + //was adcp_latitude
+            "36.833333\n" +
+            "longitude, [1]\n" + //was adcp_longitude
+            "-121.903333\n" +
+            "\n" +
+            "v_component_uncorrected, [1][2][1][1]\n" +
+            "[0][0][0], -24.3\n" +
+            "[0][1][0], -8.2\n" +
+            "time, [1]\n" +
+            "1154396111\n" +
+            "depth, [2]\n" +
+            "6, 10\n" +
+            "latitude, [1]\n" + //was adcp_latitude
+            "36.833333\n" +
+            "longitude, [1]\n" + //was adcp_longitude
+            "-121.903333\n" +
+            "\n", */
 //post 2010-07-19 is
 "Dataset: m0_adcp1267_20060731.nc\n" +
 "u_component_uncorrected.longitude, -121.903333\n" +
@@ -831,48 +830,41 @@ public class CacheOpendapStation {
 "v_component_uncorrected.longitude, -121.903333\n" +
 "v_component_uncorrected.v_component_uncorrected[v_component_uncorrected.time=1154396111][v_component_uncorrected.depth=6][v_component_uncorrected.latitude=36.833333], -24.3\n" +
 "v_component_uncorrected.v_component_uncorrected[v_component_uncorrected.time=1154396111][v_component_uncorrected.depth=10][v_component_uncorrected.latitude=36.833333], -8.2\n",
-                "response=" + response);
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
-        }
+            "response=" + response);
 
         //M0: make cache file 
-        try {
-            fileName = "c:/temp/MBARI_M0_NRT_adcp.nc";
-            cos = new CacheOpendapStation( //throws exception if trouble
-                "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m0/200607/m0_adcp1267_20060731.nc",
-                fileName,
-                new String[]{"u_component_uncorrected", "v_component_uncorrected"});
-            Test.ensureTrue(cos.createNewCache(), "m0 adcp"); 
+        fileName = "c:/temp/MBARI_M0_NRT_adcp.nc";
+        cos = new CacheOpendapStation( //throws exception if trouble
+            "http://dods.mbari.org/cgi-bin/nph-nc/data/ssdsdata/deployments/m0/200607/m0_adcp1267_20060731.nc",
+            fileName,
+            new String[]{"u_component_uncorrected", "v_component_uncorrected"});
+        Test.ensureTrue(cos.createNewCache(), "m0 adcp"); 
 
-            //M0: compare first part of cache file to ascii response
-            //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
-            table.clear();
-            table.read4DNc(fileName, null, 1, null, -1); //unpackWaht=1
-            //String2.log(table.toString(10));
-            Test.ensureEqual(table.nColumns(), 6, "");
-            Test.ensureEqual(table.getColumnName(0), "longitude", ""); //was adcp_longitude
-            Test.ensureEqual(table.getColumnName(1), "latitude", ""); //was adcp_latitude
-            Test.ensureEqual(table.getColumnName(2), "depth", "");
-            Test.ensureEqual(table.getColumnName(3), "time", "");
-            Test.ensureEqual(table.getColumnName(4), "u_component_uncorrected", "");
-            Test.ensureEqual(table.getColumnName(5), "v_component_uncorrected", "");
-            Test.ensureEqual(table.getFloatData(0,0), -121.903333f, "");
-            Test.ensureEqual(table.getFloatData(1,0), 36.833333f, "");
-            Test.ensureEqual(table.getFloatData(2,0), 6f, "");
-            Test.ensureEqual(table.getDoubleData(3,0), 1154396111, "");
-            Test.ensureEqual(table.getFloatData(4,0), 20.3f, "");
-            Test.ensureEqual(table.getFloatData(5,0), -24.3f, "");
+        //M0: compare first part of cache file to ascii response
+        //***THE TEST WILL CHANGE IF THEY THROW OUT OLD NRT DATA.
+        table.clear();
+        table.read4DNc(fileName, null, 1, null, -1); //unpackWaht=1
+        //String2.log(table.toString(10));
+        Test.ensureEqual(table.nColumns(), 6, "");
+        Test.ensureEqual(table.getColumnName(0), "longitude", ""); //was adcp_longitude
+        Test.ensureEqual(table.getColumnName(1), "latitude", ""); //was adcp_latitude
+        Test.ensureEqual(table.getColumnName(2), "depth", "");
+        Test.ensureEqual(table.getColumnName(3), "time", "");
+        Test.ensureEqual(table.getColumnName(4), "u_component_uncorrected", "");
+        Test.ensureEqual(table.getColumnName(5), "v_component_uncorrected", "");
+        Test.ensureEqual(table.getFloatData(0,0), -121.903333f, "");
+        Test.ensureEqual(table.getFloatData(1,0), 36.833333f, "");
+        Test.ensureEqual(table.getFloatData(2,0), 6f, "");
+        Test.ensureEqual(table.getDoubleData(3,0), 1154396111, "");
+        Test.ensureEqual(table.getFloatData(4,0), 20.3f, "");
+        Test.ensureEqual(table.getFloatData(5,0), -24.3f, "");
 
-            Test.ensureEqual(table.getFloatData(0,1), -121.903333f, "");
-            Test.ensureEqual(table.getFloatData(1,1), 36.833333f, "");
-            Test.ensureEqual(table.getFloatData(2,1), 10f, "");
-            Test.ensureEqual(table.getDoubleData(3,1), 1154396111, "");
-            Test.ensureEqual(table.getFloatData(4,1), 6.9f, "");
-            Test.ensureEqual(table.getFloatData(5,1), -8.2f, "");
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e)); 
-        }
+        Test.ensureEqual(table.getFloatData(0,1), -121.903333f, "");
+        Test.ensureEqual(table.getFloatData(1,1), 36.833333f, "");
+        Test.ensureEqual(table.getFloatData(2,1), 10f, "");
+        Test.ensureEqual(table.getDoubleData(3,1), 1154396111, "");
+        Test.ensureEqual(table.getFloatData(4,1), 6.9f, "");
+        Test.ensureEqual(table.getFloatData(5,1), -8.2f, "");
 
 /* M1 and M2 tests work, but slow and no need to do all the time
         //****************

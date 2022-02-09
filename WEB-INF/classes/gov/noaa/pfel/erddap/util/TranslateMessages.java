@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.util;
 
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.File2;
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.TestUtil;
@@ -96,7 +97,7 @@ I will try to summarize the steps as below:
    https://cloud.google.com/translate/docs/setup#windows 
    (This guide is for computers with a Windows system.)
    [Bob used instructions at https://phoenixnap.com/kb/windows-set-environment-variable 
-     but that didn't work. So I run from a DOS window:
+     but that didn't work. So I ran from a DOS window:
      set GOOGLE_APPLICATION_CREDENTIALS=C:\Users\BobSi\erddap-noaa-erd-5941b340777e.json   
      but that didn't work. 
      (Both set the environment variable, but the code still gave an error indicating the credentials were missing.)
@@ -177,7 +178,7 @@ FUTURE?  Things to think about.
 */
 
 public class TranslateMessages {
-    private static boolean debugMode = false;
+    private static boolean debugMode = true;
     private static String credentialsFileName = "C:\\Users\\BobSi\\erddap-noaa-erd-5941b340777e.json"; //for windows, use backslashes
     private static TranslationServiceClient translationClient = null;
 
@@ -218,8 +219,8 @@ public class TranslateMessages {
     //For testing with just one language, use these mini lists.
     //To do all languages, comment these out.
     static {
-//        languageList     = new String[]{"English", "Italian"};
-//        languageCodeList = new String[]{"en",      "it"};
+        //languageList     = new String[]{"English", "German"};
+        //languageCodeList = new String[]{"en",      "de"};
     }
     
     
@@ -263,7 +264,7 @@ public class TranslateMessages {
         //don't translate the comment before these opening tags (hence, no leading '/')
         "admKeywords", "advl_datasetID", "startBodyHtml5"));
     private static String[] messageFormatEntities = {"{0}", "{1}", "''"};
-    private static String[] HTMLEntities = {"&lt;", "&gt;", "&quot;", "&amp;", "<p>", "<br>", "</a>", "<kbd>", "<strong>", "<li>"};
+    private static String[] HTMLEntities = {"<p>", "<br>", "</a>", "<kbd>", "<strong>", "<li>"}; //2021-12-21 was also "&lt;", "&gt;", "&quot;", "&amp;", but they are used in plain text in xml
     private static int translationCounter = 0;  //should be in translate() but easier to have it here and static
     private static String verboseLanguage = ""; //should be in translate() but easier to have it here and static
 
@@ -1015,8 +1016,8 @@ public class TranslateMessages {
                             fileWriters[languagei].write(translatedTagMaps[languagei].get(tagName));
                         } else {
                             //translate it
-                            boolean html = Arrays.stream(HTMLEntities).anyMatch(toTranslate::contains);
-                            boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(toTranslate::contains);
+                            boolean html = isHtml(toTranslate);
+                            boolean messageFormat = isMessageFormat(toTranslate);
                             String result = translateTag(toTranslate, languageCodeList[languagei], html, messageFormat);
                             fileWriters[languagei].write(result);
                         }
@@ -1072,15 +1073,25 @@ public class TranslateMessages {
      *
      * @throws Exception when something goes wrong
      */
-    public static void findTagsMissingCDATA() throws Exception{        
+    public static void findTagsMissingCDATA() throws Exception {        
+        String2.log("\n*** TranslateMessages.findTagsMissingCDATA()");
         SimpleXMLReader xmlReader = new SimpleXMLReader(new FileInputStream(messagesXmlFileName));
         int nTagsProcessed = 0;
         int nBad = 0;
         while (true) {
             xmlReader.nextTag();
             nTagsProcessed++;
-            if (xmlReader.stackSize() == 3) {  //<erddapMessages><someTag></kbd>
-                String2.log(xmlReader.allTags());
+            String rawContent = xmlReader.rawContent().trim();  //rawContent isn't already trimmed!
+            //skip comments
+            if (rawContent.startsWith("<!--") && rawContent.endsWith("-->"))
+                continue; 
+            if (Arrays.stream(HTMLEntities).anyMatch(rawContent::contains) &&
+                !isHtml(rawContent)) {  //html content must be within cdata
+                String2.log(nBad + " HTMLEntities >>" + rawContent + "<<");
+                nBad++;
+            }
+            if (xmlReader.stackSize() == 3) {  //tag not within cdata is trouble, e.g., <erddapMessages><someTag><kbd>
+                String2.log(nBad + " stackSize >> " + xmlReader.allTags());
                 nBad++;
             }
             if (xmlReader.stackSize() == 0) //done
@@ -1090,6 +1101,27 @@ public class TranslateMessages {
         String2.log("\nfindTagsMissingCDATA finished. nTagsProcessed=" + nTagsProcessed);
         if (nBad > 0)
             throw new RuntimeException("ERROR: findTagsMissingCDATA found " + nBad + " bad tags (above). FIX THEM!");
+    }
+
+    /**
+     * This indicates if the rawContent is not a comment and has HTML content (i.e., has CDATA markers).
+     *
+     * @param rawContent
+     * @return true if the rawContent is HTML content (i.e., has CDATA markers).
+     */
+    public static boolean isHtml(String rawContent) {
+        return rawContent.trim().startsWith("<![CDATA[");  //findTagsMissingCDATA() ensures that all tags with HTMLEntities start with "<![CDADA["
+        //was Arrays.stream(HTMLEntities).anyMatch(rawContent::contains);     
+    }
+
+    /**
+     * This indicates if rawContent uses the MessageFormat system ({0}, {1}).
+     *
+     * @param rawContent
+     * @return true if the rawContent uses the MessageFormat system.
+     */
+    public static boolean isMessageFormat(String rawContent) {
+        return Arrays.stream(messageFormatEntities).anyMatch(rawContent::contains);      
     }
 
     /**
@@ -1116,7 +1148,7 @@ public class TranslateMessages {
      */
     public static String preProcessHtml(String rawContent) {
 
-        if (debugMode) String2.log("\nbefore preProcess=" + rawContent + "\n");
+        if (debugMode) String2.log("\n>> before preProcessHtml=" + rawContent + "\n");
 
         //handle separately:
         //rawContent = String2.replaceAll(rawContent, "&amp;",  "&amp;amp;");   //&amp; was converted to &amp;amp;   //Qi did this. Bob doesn't.
@@ -1170,7 +1202,7 @@ public class TranslateMessages {
                 sb.append(rcChar);
         }
 
-        if (debugMode) String2.log("\nafter preProcess=" + sb.toString() + "\n");
+        if (debugMode) String2.log("\n>> after preProcessHtml=" + sb.toString() + "\n");
                return sb.toString();
     }
 
@@ -1184,7 +1216,7 @@ public class TranslateMessages {
      * @return the text ready to be written in the xml file
      */
     private static String postProcessHtml(String s, String original) {
-        if (debugMode) String2.log("\nbefore postProcess=" + s + "\n");
+        if (debugMode) String2.log("\n>> before postProcessHtml=" + s + "\n");
 
         //Google Translate converts all &psuedoentity; to &amp;psuedoentity; (to make valid HTML).
         //They are now in START_SPAN/STOP_SPAN pairs. 
@@ -1321,6 +1353,7 @@ public class TranslateMessages {
      * @return the translated content
      */
     static String lowTranslateTag(String rawContent, String languageCode, boolean html, boolean messageFormat) throws Exception {
+        if (debugMode) String2.log(">> lowTranslateTag langCode=" + languageCode + " isHtml=" + html);
         String result = rawContent;
         if (messageFormat) {
             //convert all '' to ' 
@@ -1363,9 +1396,10 @@ public class TranslateMessages {
      * [WAS: This uses the glossary feature to keep selected words untranslated.]
      * This is based on the sample Google code in the next method.
      *
-     * @param text to be translated
-     * @param languageCode target language code
-     * @param html if the text contains html entities to be preserved
+     * @param languageFrom The source language code
+     * @param languageTo The target language code
+     * @param text The text (rawContent) to be translated
+     * @param html true if the text is html (has CDATA markers (which should be true if it has HTML tags))
      * @return the translated text
      * @throws Exception
      */
@@ -1379,6 +1413,7 @@ public class TranslateMessages {
         }
 
         // Supported Mime Types: https://cloud.google.com/translate/docs/supported-formats
+        if (debugMode) String2.log(">> translateTextV3 lang=" + languageTo + " html=" + html + " text=[[[" + text + "]]]");
         TranslateTextRequest request = TranslateTextRequest.newBuilder()
             .setParent(parent.toString())
             .setMimeType(html? "text/html" : "text/plain")
@@ -1407,7 +1442,7 @@ public class TranslateMessages {
      * https://cloud.google.com/translate/docs/advanced/quickstart
      * It can be called directly to test authentication and permissions (i.e., setup stuff).
      */
-    public static void translateText(String projectId, String targetLanguage, String text)
+    public static String googleSampleCode(String projectId, String targetLanguage, String text)
         throws IOException {
 
         // Initialize client that will be used to send requests. This client only needs to be created
@@ -1430,9 +1465,10 @@ public class TranslateMessages {
             TranslateTextResponse response = client.translateText(request);
 
             // Display the translation for each input text provided
-            for (Translation translation : response.getTranslationsList()) {
-                System.out.printf("Translated text: %s\n", translation.getTranslatedText());
-            }
+            String result = "";
+            for (Translation translation : response.getTranslationsList()) 
+                result += translation.getTranslatedText();
+            return result;
         } 
     }
 
@@ -1710,62 +1746,68 @@ import org.xml.sax.SAXException;
     }
 */
 
-
+    /******************* TESTS **************************************/
 
     /**
-     * Un/comment code below, then run this to do things with this class.
+     * This checks if a short dontTranslate (DAP) exists before a long dontTranslate.
+     * This is REQUIRED for my use of START_SPAN/STOP_SPAN to not translate some text;
+     * otherwise, there can be e.g., 2 START_SPAN in a row, and that messes up undoing the system.       
      */
-    public static void main(String args[]) throws Throwable {
-        String2.log("*** TranslateMessages.main()");
-
-        //ALWAYS check if a short dontTranslate (DAP) exists before a long dontTranslate.
-        //This is REQUIRED for my used of START_SPAN/STOP_SPAN to not translate some text;
-        //otherwise, there can be e.g., 2 START_SPAN in a row, and that messes up undoing the system.       
+    public static void testDontTranslateOrdering() throws Exception {
+        String2.log("\n*** TranslateMessages.testDontTranslateOrdering()");
+        StringBuilder errors = new StringBuilder();
         for (int i1 = 0; i1 < nDontTranslate; i1++) {
             String s1 = dontTranslate[i1];
             for (int i2 = i1+1; i2 < nDontTranslate; i2++) {
-                if (dontTranslate[i2].indexOf(s1) >= 0) {
-                    String2.log("dontTranslate[" + i1 + "]=" + s1 + " must not be before [" + i2 + "]=" + dontTranslate[i2]);
-                    System.exit(0);
-                }
+                if (dontTranslate[i2].indexOf(s1) >= 0) 
+                    errors.append("dontTranslate[" + i1 + "]=" + s1 + " must not be before [" + i2 + "]=" + dontTranslate[i2] + "\n");
             }
         }
+        if (errors.length() > 0)
+            throw new RuntimeException("Errors from testDontTranslateOrdering:\n" + 
+                errors.toString());
+    }
 
-        //ALWAYS call findTagsMissingCDATA()
-        findTagsMissingCDATA();
-        
-        //*** Uncomment this to run the String2 tests.
-        //TestUtil.testString2();
+    /**
+     * This tests that the connections to Google are correct with simple test code from Google.
+     */
+    public static void testGoogleSampleCode() throws Exception {
+        String2.log("\n*** TranslateMessages.testGoogleSampleCode()");
+        Test.ensureEqual(
+            googleSampleCode(googleProjectId, "de",   
+                "The variable name \"sst\" converts to the full name \"Sea Surface Temperature\"."),
+            //2022-01-28 was \"sst\"
+            //2022-01-28 was \"Sea Surface Temperature\" 
+            "Der Variablenname \u201esst\u201c wird in den vollständigen Namen \u201eMeeresoberflächentemperatur\u201c umgewandelt.",
+            "");
+    }
 
-        //*** Uncomment this to test that the connections to Google are correct with this simple test code from Google:
-        //TranslateMessages.translateText("erddap-noaa-erd", "de",   
-        //    "The variable name \"sst\" converts to the full name \"Sea Surface Temperature\".");
-
-        //*** Uncomment this to get a list of &xxx; (or some other regex) in messages.xml
-        /* 
+    /**
+     * This extracts all instances of some regex from the messages.xml file.
+     *
+     * @param regex  The first capture group is the part that will be extracted.
+     *   Common regexes: ".*(\\&[a-zA-Z0-9]+?;).*",  ".*(<kbd>.*</kbd>).*",  ".*(&lt;\\w*&gt;).*"
+     * @return a String[] 
+     */
+    public static String[] extractRegex(String regex) throws Exception {
         String s = File2.directReadFromUtf8File(messagesXmlFileName);
         String2.log(s);
-        //common regexes: ".*(\\&[a-zA-Z0-9]+?;).*",  ".*(<kbd>.*</kbd>).*",  ".*(&lt;\\w*&gt;).*"
-        String oa[] = String2.extractAllCaptureGroupsAsHashSet(s, ".*(&lt;.{1,25}&gt;).*", 1).toArray(new String[0]);
-        String2.log("oa.length=" + oa.length);
+        String oa[] = String2.extractAllCaptureGroupsAsHashSet(s, regex, 1).toArray(new String[0]);
         Arrays.sort(oa, new StringComparatorIgnoreCase());
         String2.log(String2.toNewlineString(oa));
-        /* */
+        String2.log("nFound=" + oa.length);
+        return oa;
+    }
 
-        //*** DEPRECATED: Uncomment this to ensure erddap-glossary.csv is syntactically correct (correct number of values on each row):
-        //THE GLOSSARY IS NO LONGER USED.
-        //Table table = new Table();
-        //table.readASCII(translatedMessagesDir + "erddap-glossary.csv", 0, 1); 
-        //String2.log("nCols=" + table.nColumns() + " nRows=" + table.nRows());
-
-        //*** DEPRECATED: Uncomment this to update the glossary after uploading the erddap-glossary.csv file to the bucket to tell Google about the change
-        //THE GLOSSARY IS NO LONGER USED.
-        //updateGlossary(); 
-
-        //*** Uncomment this to test the translation of HTML 
-        /* 
+    /**
+     * This test the translation of a difficult HTML test case.
+     *
+     * @throws Exception if trouble
+     */
+    public static void testTranslateHtml() throws Exception {
+        String2.log("\n*** TranslateMessages.testTranslateHtml()");
         String raw = //a devious string with numerous of test cases
-"<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\nTest &mdash; test2? Test3 &ndash; test4?\n" + //90?\n tests ?[whitespace]
+"<![CDATA[<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\nTest &mdash; test2? Test3 &ndash; test4?\n" + //90?\n tests ?[whitespace]
 "<br>Does test5 &rarr; test6? \"&micro;\" means micro. Temperature is &plusmn;5 degrees.\n" +
 "<br>This is a question? This is an answer.\n" +  //even here, Google removes the space after the '?'!
 "<br>E = &sum;(w Y)/&sum;(w). This is a &middot; (middot).\n" + //E =... is a dontTranslate string
@@ -1775,113 +1817,146 @@ import org.xml.sax.SAXException;
 "<br>Convert &amp; into %26.\n" + //&amp; by itself
 "<br>This is version=&wmsVersion; and <kbd>&adminEmail;</kbd>.\n" +  //both are in dontTranslate
 "See <a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Data Provider Form</a>.\n" +  // &entity; in <a href="">
-"See <img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n";  // &entity; in <a href="">
+"See <img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n]]";  // &entity; in <a href="">
+        boolean oDebugMode = debugMode;
         debugMode = true;
-        boolean html          = Arrays.stream(HTMLEntities         ).anyMatch(raw::contains);
-        boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(raw::contains);
-        StringBuilder results = new StringBuilder("\nRESULTS: html=" + html + " messageFormat=" + messageFormat + "\n" +
+        boolean html          = isHtml(raw);
+        boolean messageFormat = isMessageFormat(raw);
+        StringBuilder results = new StringBuilder("RESULTS: html=" + html + " messageFormat=" + messageFormat + "\n" +
             "en=" + raw);
-        String tLang[] = {"en", "de"};       //{"en", "de"}; {"en", "zh-cn", "de", "hi", "ja", "ru", "th"};  or languageCodeList
+        String tLang[] = {"en", "de"};   //{"en", "de"}; {"en", "zh-cn", "de", "hi", "ja", "ru", "th"};  or languageCodeList
         for (int ti = 1; ti < tLang.length; ti++) {   // skip 0="en"
             String2.log("lan[" + ti + "]=" + tLang[ti]);
             results.append("\n\n" + tLang[ti] + "=" + lowTranslateTag(raw, tLang[ti], html, messageFormat));
         }
         String2.setClipboardString(results.toString());
         String2.log("The results are on the clipboard.");
-        /* */
+        Test.ensureEqual(results.toString(),
+"RESULTS: html=true messageFormat=false\n" +
+"en=<![CDATA[<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\n" +
+"Test &mdash; test2? Test3 &ndash; test4?\n" +
+"<br>Does test5 &rarr; test6? \"&micro;\" means micro. Temperature is &plusmn;5 degrees.\n" +
+"<br>This is a question? This is an answer.\n" +
+"<br>E = &sum;(w Y)/&sum;(w). This is a &middot; (middot).\n" +
+"<h1>ERDDAP</h1> [standardShortDescriptionHtml] Add \"&amp;units=...\" to the query. \n" +
+"<br>Add \"<kbd>&amp;time&gt;now-7days</kbd>\" to the query.\n" +
+"<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" +
+"<br>Convert &amp; into %26.\n" +
+"<br>This is version=&wmsVersion; and <kbd>&adminEmail;</kbd>.\n" +
+"See <a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Data Provider Form</a>.\n" +
+"See <img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" +
+"]]\n" +
+"\n" +
+"de=<![CDATA[\n" +
+"<br>• &lt;subsetVariables&gt; wurde nicht angegeben.\n" +
+"Ist x &gt; 90?\n" +
+"Test — test2?\n" +
+"Test3 – Test4?\n" +
+"<br>Bedeutet test5 → test6?\n" +
+"&quot;µ&quot; bedeutet Mikro.\n" +
+"Die Temperatur beträgt ±5 Grad.\n" +
+"<br>Das ist eine Frage?\n" +
+"Dies ist eine Antwort.\n" +
+"<br>E = ∑(w Y)/∑(w) .\n" +
+"Dies ist ein · (Mittelpunkt).\n" +
+"<h1>ERDDAP</h1>\n" +
+"[standardShortDescriptionHtml] Fügen Sie der Abfrage &quot;&amp;units=...&quot; hinzu.\n" +
+"<br>Fügen Sie der Abfrage &quot;<kbd>&amp;time&gt;now-7days</kbd>&quot; hinzu.\n" +
+"<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>\n" +
+"<br>Wandle &amp; in %26 um.\n" +
+"<br>Dies ist version= &wmsVersion; und <kbd>&adminEmail;</kbd> .\n" +
+"Siehe\n" +
+"<a rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">Datenanbieterformular</a> .\n" +
+"Sehen<img rel=\"bookmark\" href=\"&tErddapUrl;/dataProviderForm1.html\">.\n" +
+"]]",  //!Bad: missing space after Sehen
+//chinese zh-cn translation often varies a little, so don't test it
+            results.toString());
+//The results seem to change a little sometimes!
+        debugMode = oDebugMode;
+    }
 
-/* ^V the results here to inspect them.
-Languages that don't look right: ar
+    /**
+     * This test the translation of a difficult HTML test case.
+     *
+     * @throws Exception if trouble
+     */
+    public static void testTranslateComment() throws Exception {
+        String2.log("\n*** TranslateMessages.testTranslateComment()");
+        String raw = "<!-- This tests a devious comment with <someTag> and <b> and {0}\nand a newline. -->";
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+        boolean html          = isHtml(raw);
+        boolean messageFormat = isMessageFormat(raw);
+        StringBuilder results = new StringBuilder("RESULTS: html=" + html + " messageFormat=" + messageFormat + "\n" +
+            "en=" + raw);
+        String tLang[] = {"en", "de"}; //, "zh-cn"};  //Chinese results vary and are hard to test
+        for (int ti = 1; ti < tLang.length; ti++) {   // skip 0="en"
+            String2.log("lan[" + ti + "]=" + tLang[ti]);
+            results.append("\n\n" + tLang[ti] + "=" + lowTranslateTag(raw, tLang[ti], html, messageFormat));
+        }
+        String2.setClipboardString(results.toString());
+        String2.log("The results are on the clipboard.");
+        Test.ensureEqual(results.toString(),
+"RESULTS: html=false messageFormat=true\n" +
+"en=<!-- This tests a devious comment with <someTag> and <b> and {0}\n" +
+"and a newline. -->\n" +
+"\n" +
+"de=&lt;!-- Dies testet einen hinterhältigen Kommentar mit &lt;someTag&gt; und &lt;b&gt; und {0}\n" +
+"und ein Zeilenumbruch. --&gt;",
+            results.toString());
+        debugMode = oDebugMode;
+    }
 
 
-RESULTS: html=true messageFormat=false
-en=<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?
-Test &mdash; test2? Test3 &ndash; test4?
-<br>Does test5 &rarr; test6? "&micro;" means micro. Temperature is &plusmn;5 degrees.
-<br>This is a question? This is an answer.
-<br>E = &sum;(w Y)/&sum;(w). This is a &middot; (middot).
-<h1>ERDDAP</h1> [standardShortDescriptionHtml] Add "&amp;units=..." to the query. 
-<br>Add "<kbd>&amp;time&gt;now-7days</kbd>" to the query.
-<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>
-<br>Convert &amp; into %26.
-<br>This is version=&wmsVersion; and <kbd>&adminEmail;</kbd>.
-See <a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">Data Provider Form</a>.
-See <img rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">.
-
-
-de=
-<br>• &lt;subsetVariables&gt; wurde nicht angegeben.
-Ist x&gt;90?
-Test – Test2?
-Test3 – Test4?
-<br>Ist test5 → test6?
-&quot;µ&quot; bedeutet Mikro.
-Die Temperatur beträgt ±5 Grad.
-<br>Das ist eine Frage?
-Dies ist eine Antwort.
-<br>E = ∑(w Y)/∑(w) .
-Dies ist ein · (Mittelpunkt).
-<h1>ERDDAP</h1>
-[standardShortDescriptionHtml] Fügen Sie der Abfrage &quot;&amp;units=...&quot; hinzu.
-<br>Fügen Sie der Abfrage &quot;<kbd>&amp;time&gt;now-7days</kbd>&quot; hinzu.
-<br><kbd>https://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</kbd>
-<br>Wandeln Sie &amp; in %26 um.
-<br>Dies ist version= &wmsVersion; und <kbd>&adminEmail;</kbd> .
-Siehe
-<a rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">Datenanbieterformular</a> .
-Sehen<img rel="bookmark" href="&tErddapUrl;/dataProviderForm1.html">.
-
-*/
-
-
-        //*** Uncomment this to test the translation of plain text which uses MessageFormat.
-        /* 
+    /**
+     * This test the translation of difficult plain text which uses MessageFormat.
+     *
+     * @throws Exception if trouble
+     */
+    public static void testTranslatePlainText() throws Exception {
+        String2.log("\n*** TranslateMessages.testTranslatePlainText()");
         String raw = //a devious string with numerous of test cases
 "To download tabular data from ERDDAP''s RESTful services via &tErddapUrl;,\n" +
 "make sure latitude >30 and <50, or \"BLANK\". Add & before every constraint.\n" +
 "For File type, choose one of\n" +
 "the non-image {0} (anything but .kml, .pdf, or .png).\n";
+        boolean oDebugMode = debugMode;
         debugMode = true;
-        boolean html          = Arrays.stream(HTMLEntities         ).anyMatch(raw::contains);
-        boolean messageFormat = Arrays.stream(messageFormatEntities).anyMatch(raw::contains);
-        StringBuilder results = new StringBuilder("\nRESULTS: html=" + html + " messageFormat=" + messageFormat + "\n" +
+        boolean html          = isHtml(raw);
+        boolean messageFormat = isMessageFormat(raw);
+        StringBuilder results = new StringBuilder("RESULTS: html=" + html + " messageFormat=" + messageFormat + "\n" +
             "en=" + raw);
-        String tLang[] = languageCodeList;       //{"en", "de"}; {"en", "zh-cn", "de", "hi", "ja", "ru", "th"};  or languageCodeList
+        String tLang[] = {"en", "de"}; //, "zh-cn"}; //chinese results vary and are hard to test
         for (int ti = 1; ti < tLang.length; ti++) {   // skip 0="en"
             String2.log("lan[" + ti + "]=" + tLang[ti]);
             results.append("\n\n" + tLang[ti] + "=" + lowTranslateTag(raw, tLang[ti], html, messageFormat));
         }
         String2.setClipboardString(results.toString());
         String2.log("The results (encoded for storage in XML) are on the clipboard.");
-        /* */
-/* ^V the results here to inspect them.
+        Test.ensureEqual(results.toString(),
+"RESULTS: html=false messageFormat=true\n" +
+"en=To download tabular data from ERDDAP''s RESTful services via &tErddapUrl;,\n" +
+"make sure latitude >30 and <50, or \"BLANK\". Add & before every constraint.\n" +
+"For File type, choose one of\n" +
+"the non-image {0} (anything but .kml, .pdf, or .png).\n" +
+"\n" +
+"\n" +
+"de=Um tabellarische Daten von den RESTful-Diensten von ERDDAP über &tErddapUrl; herunterzuladen,\n" +
+"Stellen Sie sicher, dass der Breitengrad &gt;30 und &lt;50 oder &quot;BLANK&quot; ist. Fügen Sie &amp; vor jeder Einschränkung hinzu.\n" +
+"Wählen Sie für Dateityp einen der folgenden aus\n" +
+"das Nicht-Bild {0} (alles außer .kml, .pdf oder .png).\n",
 
+            results.toString());
+        debugMode = oDebugMode;
+    }
 
-RESULTS: html=false messageFormat=true
-en=To download tabular data from ERDDAP''s RESTful services via &tErddapUrl;,
-make sure latitude >30 and <50, or "BLANK". Add & before every constraint.
-For File type, choose one of
-the non-image {0} (anything but .kml, .pdf, or .png).
-
-
-de=Um tabellarische Daten von den RESTful-Diensten von ERDDAP über &tErddapUrl; herunterzuladen,
-Stellen Sie sicher, dass Breitengrad &gt;30 und &lt;50 oder &quot;BLANK&quot; sind. Fügen Sie &amp; vor jeder Einschränkung hinzu.
-Wählen Sie für Dateityp einen von
-das Nicht-Bild {0} (alles außer .kml, .pdf oder .png).
-
-
-*/
-
-        //*** Uncomment this to translate all of messages.xml.
-        // To work with just one language (e.g., German), uncomment "use these mini lists" above
-        // If you like the translation, rename new-messages-[langCode].xml to be messages-[langCode].xml   
-        // If you like the translation for all languages, copy messages.xml to be messagesOld.xml.
-        translate(-1, "all"); //params: justTranslateNTags (-1 for all), verboseLanguage (e.g., "" (none), "de" (German) or "all")
-
-
-        //*** Uncomment this to run tests which search for &amp;term; or ZtermZ on web pages in localhost ERDDAP.
-        //This REQUIRES localhost ERDDAP be running with <datasetsRegex>(etopo.*|jplMURSST41|cwwcNDBCMet)</datasetsRegex>
-        /* 
+    /** 
+     * This checks lots of webpages on localhost ERDDAP for uncaught special text (&amp;term; or ZtermZ).
+     * This REQUIRES localhost ERDDAP be running with at least <datasetsRegex>(etopo.*|jplMURSST41|cwwcNDBCMet)</datasetsRegex>.
+     */
+    public static void checkForUncaughtSpecialText() throws Exception {
+        String2.log("\n*** TranslateMessages.checkForUncaughtSpecialText()\n" +
+            "THIS REQUIRES localhost ERDDAP with at least (etopo.*|jplMURSST41|cwwcNDBCMet)");
         String tErddapUrl = "http://localhost:8080/cwexperimental/de/";
         String pages[] = {
             "index.html",
@@ -1899,14 +1974,14 @@ das Nicht-Bild {0} (alles außer .kml, .pdf oder .png).
             "dataProviderForm2.html",
             "dataProviderForm3.html",
             "dataProviderForm4.html",
-            "download/AccessToPrivateDatasets.html",
-            "download/changes.html",
-            "download/EDDTableFromEML.html",
-            "download/grids.html",
-            "download/NCCSV.html",
-            "download/NCCSV_1.00.html",
-            "download/setup.html",
-            "download/setupDatasetsXml.html",
+            //"download/AccessToPrivateDatasets.html",
+            //"download/changes.html",
+            //"download/EDDTableFromEML.html",
+            //"download/grids.html",
+            //"download/NCCSV.html",
+            //"download/NCCSV_1.00.html",
+            //"download/setup.html",
+            //"download/setupDatasetsXml.html",
             "files/",
             "files/cwwcNDBCMet/",
             "files/documentation.html",
@@ -1931,49 +2006,141 @@ das Nicht-Bild {0} (alles außer .kml, .pdf oder .png).
             "tabledap/cwwcNDBCMet.subset",
             "wms/documentation.html",
             "wms/jplMURSST41/index.html"};
+        StringBuilder results = new StringBuilder();
         for (int i = 0; i < pages.length; i++) {
             String content;
             String sa[];
             HashSet<String> hs;
+            try {
+                content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
+            } catch (Exception e) {
+                results.append("\n* Trouble: " + e.toString() + "\n");
+                continue;
+            }
 
             //Look for ZsomethingZ
-            //content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
-            //hs = new HashSet();
-            //hs.addAll(Arrays.asList(String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1).toArray(new String[0])));
-            //sa = hs.toArray(new String[0]);
-            //if (sa.length > 0) {
-            //    String2.log("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " ZtermsZ :");
-            //    Arrays.sort(sa, new StringComparatorIgnoreCase());
-            //    String2.log(String2.toNewlineString(sa));
-            //}
+            hs = new HashSet();
+            hs.addAll(Arrays.asList(String2.extractAllCaptureGroupsAsHashSet(content, "(Z[a-zA-Z0-9]Z)", 1).toArray(new String[0])));
+            sa = hs.toArray(new String[0]);
+            if (sa.length > 0) {
+                results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " ZtermsZ :\n");
+                Arrays.sort(sa, new StringComparatorIgnoreCase());
+                results.append(String2.toNewlineString(sa));
+            }
 
             //Look for &something; that are placeholders that should have been replaced by replaceAll().
             //There are some legit uses in changes.html, setup.html, and setupDatasetsXml.html.
-            content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
             hs = new HashSet();
             hs.addAll(Arrays.asList(String2.extractAllCaptureGroupsAsHashSet(content, "(&amp;[a-zA-Z]+?;)", 1).toArray(new String[0])));
             sa = hs.toArray(new String[0]);
             if (sa.length > 0) {
-                String2.log("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " &entities; :");
+                results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " &entities; :\n");
                 Arrays.sort(sa, new StringComparatorIgnoreCase());
-                String2.log(String2.toNewlineString(sa));
+                results.append(String2.toNewlineString(sa));
             }
 
             //Look for {0}, {1}, etc  that should have been replaced by replaceAll().
             //There are some legit values on setupDatasetsXml.html in regexes ({nChar}: 12,14,4,6,7,8).
-            content = SSR.getUrlResponseStringUnchanged(tErddapUrl + pages[i]);
             hs = new HashSet();
             hs.addAll(Arrays.asList(String2.extractAllCaptureGroupsAsHashSet(content, "(\\{\\d+\\})", 1).toArray(new String[0])));
             sa = hs.toArray(new String[0]);
             if (sa.length > 0) {
-                String2.log("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " {#} :");
+                results.append("\n* url=" + tErddapUrl + pages[i] + " has " + sa.length + " {#} :\n");
                 Arrays.sort(sa, new StringComparatorIgnoreCase());
-                String2.log(String2.toNewlineString(sa));
+                results.append(String2.toNewlineString(sa));
             }
         }
-        /* */           
+        if (results.length() > 0)
+            throw new RuntimeException(results.toString());
+    }
+
+
+    /**
+     * Un/comment code below, then run this to do things with this class.
+     */
+    public static void main(String args[]) throws Throwable {
+        String2.log("*** TranslateMessages.main()");
+
+        //ALWAYS call testDontTranslateOrdering()
+        testDontTranslateOrdering();
+
+        //ALWAYS call findTagsMissingCDATA()
+        findTagsMissingCDATA();
+        
+        //*** DEPRECATED: Uncomment this to ensure erddap-glossary.csv is syntactically correct (correct number of values on each row):
+        //THE GLOSSARY IS NO LONGER USED.
+        //Table table = new Table();
+        //table.readASCII(translatedMessagesDir + "erddap-glossary.csv", 0, 1); 
+        //String2.log("nCols=" + table.nColumns() + " nRows=" + table.nRows());
+
+        //*** DEPRECATED: Uncomment this to update the glossary after uploading the erddap-glossary.csv file to the bucket to tell Google about the change
+        //THE GLOSSARY IS NO LONGER USED.
+        //updateGlossary(); 
+
+        //*** system unit tests
+        //testGoogleSampleCode();
+        //testTranslateHtml();
+        //testTranslateComment();
+        //testTranslatePlainText();
+        //checkForUncaughtSpecialText(); 
+
+        //*** Uncomment this to translate all of messages.xml.
+        // To work with just one language (e.g., German), uncomment "use these mini lists" above
+        // If you like the translation, rename new-messages-[langCode].xml to be messages-[langCode].xml   
+        // If you like the translation for all languages, copy messages.xml to be messagesOld.xml.
+        translate(-1, "all"); //params: justTranslateNTags (-1 for all), verboseLanguage (e.g., "" (none), "de" (German) or "all")
+
 
         String2.log("*** TranslateMessages.main() finished.");
+    }
+
+
+    /**
+     * This runs all of the interactive or not interactive tests for this class.
+     *
+     * @param errorSB all caught exceptions are logged to this.
+     * @param interactive  If true, this runs all of the interactive tests; 
+     *   otherwise, this runs all of the non-interactive tests.
+     * @param doSlowTestsToo If true, this runs the slow tests, too.
+     * @param firstTest The first test to be run (0...).  Test numbers may change.
+     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
+     *   Test numbers may change.
+     */
+    public static void test(StringBuilder errorSB, boolean interactive, 
+        boolean doSlowTestsToo, int firstTest, int lastTest) {
+        int language = 0;
+        if (lastTest < 0)
+            lastTest = interactive? 0 : 6;
+        String msg = "\n^^^ TranslateMessages.test(" + interactive + ") test=";
+
+        for (int test = firstTest; test <= lastTest; test++) {
+            try {
+                long time = System.currentTimeMillis();
+                String2.log(msg + test);
+            
+                if (interactive) {
+                    //if (test ==  0) testSomething();
+
+                } else {
+                    if (test ==  0) testDontTranslateOrdering();
+                    if (test ==  1) findTagsMissingCDATA();
+                    if (test ==  2) testGoogleSampleCode();
+                    if (test ==  3) testTranslateHtml();
+                    if (test ==  4) testTranslateComment();
+                    if (test ==  5) testTranslatePlainText();
+                    if (test ==  6) checkForUncaughtSpecialText(); 
+                }
+
+                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
+            } catch (Throwable testThrowable) {
+                String eMsg = msg + test + " caught throwable:\n" + 
+                    MustBe.throwableToString(testThrowable);
+                errorSB.append(eMsg);
+                String2.log(eMsg);
+                if (interactive) 
+                    String2.pressEnterToContinue("");
+            }
+        }
     }
 
 }

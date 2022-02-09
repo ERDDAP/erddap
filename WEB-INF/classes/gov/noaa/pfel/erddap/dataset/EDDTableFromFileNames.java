@@ -1263,14 +1263,14 @@ public class EDDTableFromFileNames extends EDDTable{
         }
 
         if (tFromOnTheFly) {
-            Matcher matcher = String2.AWS_S3_PATTERN.matcher(tFromFilesActualSource); //force trailing slash
+            String bro[] = String2.parseAwsS3Url(tFromFilesActualSource); //force trailing slash?
             String tBucket = "";
             String tOther  = "";
             String tTitle2 = "";
-            if (matcher.matches()) {
+            if (bro != null) {
                 //bucket names are globally unique
-                tBucket = "the AWS S3 " + matcher.group(1) + " bucket at ";
-                tTitle2 = "the AWS S3 " + matcher.group(1) + " Bucket";
+                tBucket = "the AWS S3 " + bro[0] + " bucket at ";
+                tTitle2 = "the AWS S3 " + bro[0] + " Bucket";
                 tOther  = " AWS S3 doesn't offer a simple way to browser the files in buckets. " +
                     "This dataset is a solution to that problem for this bucket.";
             } else {
@@ -2618,7 +2618,7 @@ String expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
-"2018, 2019, 2020, 2021";  
+"2018, 2019, 2020, 2021, 2022";  
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
             msg = "get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)";

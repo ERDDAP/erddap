@@ -3658,33 +3658,22 @@ Inawezekana kwamba baadhi ya seti za data hazipatikani kwa sasa au huna ruhusa y
 <logoutOpenID>Ondoka kutoka kwa mtoa huduma wako wa OpenID.</logoutOpenID>
 <!--  logoutSuccess ilisasishwa mwisho 2019-12-19 -->
 <logoutSuccess>Umefanikiwa kutoka.
-Usitumie kitufe cha Nyuma cha kivinjari chako.
-Tumia kiungo cha &quot;ERDDAP&quot; hapo juu, kisha utumie viungo vingine kwenda kwa kurasa za ERDDAP unazozipenda.
+
+Usitumie kitufe cha Nyuma cha kivinjari chako. Tumia kiungo cha &quot;ERDDAP&quot; hapo juu,
+kisha tumia viungo vingine kwenda kwa kurasa za ERDDAP unazopenda.
 Ikiwa ukurasa wa wavuti ulioakibishwa unasema bado umeingia, pakia upya ukurasa.
-Kwa usalama ulioimarishwa (hasa ikiwa hii ni kompyuta inayoshirikiwa), unapaswa:
-* Ikiwa ulitumia ORCHID, nenda kwa https://orcid.org/my-orcid na utoke huko pia.
-* Futa akiba ya kivinjari chako:
-* Katika Chrome, tumia &quot;Zana Zaidi :
-Futa data ya kuvinjari :
-Picha na faili zilizoakibishwa&quot; na &quot;Vidakuzi&quot;.
-* Katika Edge, tumia &quot;Mipangilio :
-Faragha na usalama :
-Futa data ya kuvinjari&quot;.
-* Katika Firefox, tumia &quot;Chaguo :
-Ya Juu :
-Mtandao :
-Maudhui ya Wavuti Yaliyohifadhiwa :
-Futa Sasa&quot;.
-* Katika Opera, tumia &quot;Menyu :
-Zana Zaidi :
-Futa data ya kuvinjari&quot;.
-* Katika Safari, tumia &quot;Safari :
-Mapendeleo :
-Ya Juu :
-Onyesha Kuendeleza&quot;, kisha &quot;Safari :
-Tengeneza :
-Akiba Tupu&quot;.
-* Funga kichupo hiki cha kivinjari.</logoutSuccess>
+
+Kwa usalama ulioongezeka (haswa ikiwa hii ni kompyuta iliyoshirikiwa), unapaswa:
+ * Ikiwa ulitumia ORCHID, nenda kwa https://orcid.org/my-orcid na uondoke huko pia.
+ * Futa akiba ya kivinjari chako:
+   * Katika Chrome, tumia &quot;Zana zaidi : Futa data ya kuvinjari : Picha na faili zilizoakibishwa&quot;
+       na &quot;Vidakuzi&quot;.
+   * Katika Edge, tumia &quot;Mipangilio : Faragha &amp; usalama : Futa data ya kuvinjari&quot;.
+   * Katika Firefox, tumia &quot;Chaguo : Ya Juu : Mtandao : Maudhui ya Wavuti Yaliyohifadhiwa : Futa Sasa&quot;.
+   * Katika Opera, tumia &quot;Menyu : Zana Zaidi : Futa data ya kuvinjari&quot;.
+   * Katika Safari, tumia &quot;Safari : Mapendeleo : Advanced : Onyesha Kuendeleza&quot;,
+       kisha &quot;Safari : Tengeneza : Akiba Tupu&quot;.
+ * Funga kichupo hiki cha kivinjari.</logoutSuccess>
 <mag>Tengeneza Grafu</mag>
 <magAxisX>Mhimili wa X</magAxisX>
 <magAxisY>Mhimili wa Y</magAxisY>

@@ -87,13 +87,10 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.Directory;
 
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+//import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-//import software.amazon.awssdk.services.s3.model.CommonPrefix;
-//import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
-//import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
-//import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -180,8 +177,9 @@ public class EDStatic {
      * <br>2.12 released on 2021-05-14
      * <br>2.13 none
      * <br>2.14 released on 2021-07-02
-     * <br>2.15 released on 2021-11-19
+     * <br>2.15 released on 2021-11-19 Just to coastwatch, to test translations.
      * <br>2.16 released on 2021-12-17
+     * <br>2.17 released on 2022-??-??
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -195,7 +193,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.16"; //see comment above
+    public static String erddapVersion = "2.17"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -650,9 +648,10 @@ public static boolean developmentMode = false;
     public final static int minimumPasswordLength = 8;
 
     //these are all non-null if in awsS3Output mode, otherwise all are null
-    public static String   awsS3OutputBucketUrl = null;  
-    public static String   awsS3OutputBucket    = null;  //the short name of the bucket
-    public static S3Client awsS3OutputClient    = null;
+    public static String            awsS3OutputBucketUrl       = null;  //ends in slash
+    public static String            awsS3OutputBucket          = null;  //the short name of the bucket
+    public static S3TransferManager awsS3OutputTransferManager = null;
+    //public static S3Client          awsS3OutputClient          = null;
 
     public static boolean listPrivateDatasets, 
         reallyVerbose,
@@ -1966,30 +1965,21 @@ public static boolean developmentMode = false;
         if (!String2.isSomething(awsS3OutputBucketUrl))
             awsS3OutputBucketUrl = null;
         if (awsS3OutputBucketUrl != null) {
-            //If something was specified, ERDDAP insists that it be valid, so set it up.
-            //This code is based on https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#list-object
-            //  was v1.1 https://docs.aws.amazon.com/AmazonS3/latest/dev/ListingObjectKeysUsingJava.html
 
             //ensure that it is valid
-            String s3parts[] = String2.parseAwsS3Url(awsS3OutputBucketUrl);
-            if (s3parts == null)
+            awsS3OutputBucketUrl = File2.addSlash(awsS3OutputBucketUrl);
+            String bro[] = String2.parseAwsS3Url(awsS3OutputBucketUrl);
+            if (bro == null)
                 throw new RuntimeException(
                     "The value of <awsS3OutputBucketUrl> specified in setup.xml doesn't match this regular expression: " +
-                    String2.AWS_S3_REGEX);
+                    String2.AWS_S3_REGEX());
 
-            //ensure that the keyName (or prefix) is ""
-            awsS3OutputBucket = s3parts[0]; 
-            String region     = s3parts[1]; 
-            String prefix     = s3parts[2]; 
-            if (prefix.length() > 0) 
-                throw new RuntimeException(
-                    "The value of <awsS3OutputBucket> specified in setup.xml must not include an object key (AKA directory or file name).");
+            awsS3OutputBucket = bro[0]; 
+            String region     = bro[1]; 
+            String prefix     = bro[2]; 
 
-            //build the s3client for use with awsS3OutputBucket
-            S3Client awsS3OutputClient = S3Client.builder()
-//                .credentials(ProfileCredentialsProvider.create())
-                .region(Region.of(region))  
-                .build();               
+            //build the awsS3OutputTransferManager
+            awsS3OutputTransferManager = SSR.buildS3TransferManager(region);
 
             //note that I could set LifecycleRule(s) for the bucket via
             //awsS3OutputClient.putBucketLifecycleConfiguration

@@ -3707,34 +3707,23 @@ Is féidir nach bhfuil roinnt tacar sonraí ar fáil faoi láthair nó nach bhfu
 <logout>Logáil Amach</logout>
 <logoutOpenID>Logáil amach ó do sholáthraí OpenID.</logoutOpenID>
 <!--  logoutSuccess nuashonraithe go deireanach 2019-12-19 -->
-<logoutSuccess>D&#39;éirigh leat logáil amach go rathúil.
-Ná húsáid cnaipe Ar ais do bhrabhsálaí.
-Úsáid an nasc &quot;ERDDAP&quot; thuas, ansin bain úsáid as naisc eile chun dul chuig leathanaigh ERDDAP a bhfuil suim agat iontu.
-Má deir leathanach gréasáin taiscthe go bhfuil tú logáilte isteach fós, athlódáil an leathanach.
+<logoutSuccess>D&#39;éirigh leat logáil amach.
+
+Ná húsáid cnaipe Cúl do bhrabhsálaí. Úsáid an nasc &quot;ERDDAP&quot; thuas,
+ansin bain úsáid as naisc eile chun dul chuig leathanaigh ERDDAP a bhfuil suim agat iontu.
+Má deir leathanach gréasáin i dtaisce go bhfuil tú logáilte isteach fós, athlódáil an leathanach.
+
 Le haghaidh slándála méadaithe (go háirithe más ríomhaire roinnte é seo), ba cheart duit:
-* Má d&#39;úsáid tú ORCHID, téigh chuig https://orcid.org/my-orcid agus logáil amach ansin freisin.
-* Glan taisce do bhrabhsálaí:
-* I Chrome, bain úsáid as &quot;Tuilleadh uirlisí:
-Glan sonraí brabhsála:
-Íomhánna agus comhaid i dtaisce&quot; agus &quot;Fianáin&quot;.
-* In Edge, bain úsáid as &quot;Socruithe:
-Príobháideacht &amp; slándáil:
-Glan sonraí brabhsála&quot;.
-* In Firefox, bain úsáid as &quot;Options:
-Advanced:
-Network:
-Cached Web Content:
-Clear Now&quot;.
-* In Opera, bain úsáid as &quot;Roghchlár:
-Tuilleadh uirlisí:
-Glan sonraí brabhsála&quot;.
-* I Safari, bain úsáid as &quot;Safari:
-Preferences:
-Advanced:
-Show Develop&quot;, ansin &quot;Safari:
-Develop:
-Empty Caches&quot;.
-* Dún an cluaisín brabhsálaí seo.</logoutSuccess>
+ * Má d&#39;úsáid tú ORCHID, téigh chuig https://orcid.org/my-orcid agus logáil amach ansin freisin.
+ * Glan taisce do bhrabhsálaí:
+   * I Chrome, úsáid &quot;Tuilleadh uirlisí: Glan sonraí brabhsála: Íomhánna agus comhaid i dtaisce&quot;
+       agus &quot;Fianáin&quot;.
+   * In Edge, bain úsáid as &quot;Socruithe: Príobháideacht &amp; amp; slándáil: Glan sonraí brabhsála&quot;.
+   * In Firefox, bain úsáid as &quot;Options: Advanced: Network: Cached Web Content: Clear Now&quot;.
+   * In Opera, bain úsáid as &quot;Roghchlár: Tuilleadh uirlisí: Glan sonraí brabhsála&quot;.
+   * I Safari, bain úsáid as &quot;Safari: Preferences: Advanced: Show Develop&quot;,
+       ansin &quot;Safari: Forbair: Caches Folamh&quot;.
+ * Dún an cluaisín brabhsálaí seo.</logoutSuccess>
 <mag>Déan Graf</mag>
 <magAxisX>X Ais</magAxisX>
 <magAxisY>Y Ais</magAxisY>

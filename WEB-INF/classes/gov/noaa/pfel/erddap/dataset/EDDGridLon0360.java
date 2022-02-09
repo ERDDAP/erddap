@@ -280,7 +280,7 @@ public class EDDGridLon0360 extends EDDGrid {
         addGlobalAttributes      = (Attributes)tChildDataset.addGlobalAttributes().clone();
         combinedGlobalAttributes = (Attributes)tChildDataset.combinedGlobalAttributes().clone();
         combinedGlobalAttributes.set("title", 
-             combinedGlobalAttributes.getString("title") + ", Lon0360");
+             combinedGlobalAttributes.getString("title").trim() + ", Lon0360");
 
         //make/copy the local axisVariables
         int nAv = tChildDataset.axisVariables.length;
@@ -393,6 +393,8 @@ public class EDDGridLon0360 extends EDDGrid {
         EDVLonGridAxis newEDVLon = new EDVLonGridAxis(tDatasetID, EDV.LON_NAME,
             new Attributes(childLon.combinedAttributes()), new Attributes(),
             newLonValues);
+        newEDVLon.combinedAttributes().remove("valid_min");
+        newEDVLon.combinedAttributes().remove("valid_max");
         axisVariables[lonIndex] = newEDVLon; 
 
         //ensure the setup is valid
@@ -899,15 +901,15 @@ sb.append(
         results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 75];\n" +    //changes
+"  Float64 time[time = 76];\n" +    //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 11985];\n" +
 "  Float64 longitude[longitude = 9333];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chla[time = 75][altitude = 1][latitude = 11985][longitude = 9333];\n" +  //changes
+"      Float32 chla[time = 76][altitude = 1][latitude = 11985][longitude = 9333];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 75];\n" +  //changes
+"      Float64 time[time = 76];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 11985];\n" +
 "      Float64 longitude[longitude = 9333];\n" +
@@ -1230,6 +1232,54 @@ expected =
 //        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
         /*  */
         String2.log("\n*** EDDGridLon0360.testPM181 finished.");
+    }
+
+
+    /** 
+     * This tests that longitude valid_min and valid_max in child are removed by constructor,
+     * because they are now out-of-date.
+     * E.g., source dataset may have lon valid_min=-180 and valid_max=180, which 
+     * becomes incorrect in the 0360 dataset.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testValidMinMax() throws Throwable {
+
+        String2.log("\n****************** EDDGridLon0360.testValidMinMax() *****************\n");
+        testVerboseOn();
+        int language = 0;
+        String name, tName, userDapQuery, results, expected, error;
+        int po;
+        String dir = EDStatic.fullTestCacheDirectory;
+
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "ecocast_Lon0360");       
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
+            eddGrid.className() + "_validMinMax_Entire", ".das"); 
+        results = File2.directReadFrom88591File(dir + tName);
+
+        expected = 
+ "longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 228.4086, 244.32899808000002;\n" +
+"    String axis \"X\";\n" +
+"    String comment \"Longitude values are the centers of the grid cells\";\n" +
+"    String coverage_content_type \"coordinate\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+//"    Float64 valid_max -115;\n" + //removed because out-of-date
+//"    Float64 valid_min -132;\n" +
+"  }";
+        po = results.indexOf("longitude {");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
+
+        expected = 
+    "Float64 geospatial_lon_max 244.32899808000002;\n" +
+"    Float64 geospatial_lon_min 228.4086;";
+        po = results.indexOf("Float64 geospatial_lon_max");
+        Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
     }
 
 
@@ -1738,7 +1788,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 4;
+            lastTest = interactive? -1 : 5;
         String msg = "\n^^^ EDDGridLon0360.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -1754,6 +1804,7 @@ expected =
                     if (test ==  2) testPM181();
                     if (test ==  3) testPM180();
                     if (test ==  4) testInsert(); 
+                    if (test ==  5) testValidMinMax(); 
 
                     //note that I have NO TEST of dataset where lon isn't the rightmost dimension.
                     //so there is a test for that in the constructor, 

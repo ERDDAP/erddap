@@ -3707,33 +3707,22 @@ Möglicherweise sind einige Datensätze derzeit nicht verfügbar oder Sie haben 
 <logoutOpenID>Melden Sie sich bei Ihrem OpenID-Anbieter ab.</logoutOpenID>
 <!--  logoutErfolg zuletzt aktualisiert 19.12.2019 -->
 <logoutSuccess>Du hast dich erfolgreich abgemeldet.
-Verwenden Sie nicht die Zurück-Schaltfläche Ihres Browsers.
-Verwenden Sie den Link &quot;ERDDAP&quot; oben, und verwenden Sie dann andere Links, um zu den ERDDAP Seiten zu gelangen, die Sie interessieren.
-Wenn eine im Cache gespeicherte Webseite anzeigt, dass Sie noch angemeldet sind, laden Sie die Seite neu.
-Für erhöhte Sicherheit (insbesondere wenn es sich um einen gemeinsam genutzten Computer handelt) sollten Sie:
-* Wenn Sie ORCHID verwendet haben, gehen Sie zu https://orcid.org/my-orcid und melden Sie sich dort ebenfalls ab.
-* Löschen Sie den Cache Ihres Browsers:
-* Verwenden Sie in Chrome &quot;Weitere Tools:
-Browserdaten löschen:
-Bilder und Dateien im Cache&quot; und &quot;Cookies&quot;.
-* Verwenden Sie in Edge &quot;Einstellungen:
-Datenschutz &amp; Sicherheit:
-Browserdaten löschen&quot;.
-* Verwenden Sie in Firefox &quot;Optionen:
-Erweitert:
-Netzwerk:
-Zwischengespeicherter Webinhalt:
-Jetzt löschen&quot;.
-* Verwenden Sie in Opera &quot;Menü:
-Weitere Tools:
-Browserdaten löschen&quot;.
-* Verwenden Sie in Safari &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot; und dann &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Schließen Sie diesen Browser-Tab.</logoutSuccess>
+
+Verwenden Sie nicht die Zurück-Schaltfläche Ihres Browsers. Verwenden Sie den Link &quot;ERDDAP&quot; oben,
+Verwenden Sie dann andere Links, um zu den ERDDAP-Seiten zu gelangen, die Sie interessieren.
+Wenn eine zwischengespeicherte Webseite anzeigt, dass Sie noch angemeldet sind, laden Sie die Seite neu.
+
+Um die Sicherheit zu erhöhen (insbesondere wenn es sich um einen gemeinsam genutzten Computer handelt), sollten Sie:
+ * Wenn Sie ORCHID verwendet haben, gehen Sie zu https://orcid.org/my-orcid und melden Sie sich dort ebenfalls ab.
+ * Löschen Sie den Cache Ihres Browsers:
+   * Verwenden Sie in Chrome &quot;Weitere Tools: Browserdaten löschen: Bilder und Dateien im Cache&quot;
+       und „Cookies“.
+   * Verwenden Sie in Edge &quot;Einstellungen: Datenschutz und Sicherheit: Browserdaten löschen&quot;.
+   * Verwenden Sie in Firefox &quot;Optionen: Erweitert: Netzwerk: Zwischengespeicherter Webinhalt: Jetzt löschen&quot;.
+   * Verwenden Sie in Opera &quot;Menü: Weitere Tools: Browserdaten löschen&quot;.
+   * Verwenden Sie in Safari &quot;Safari: Preferences: Advanced: Show Develop&quot;,
+       dann &quot;Safari: Entwickeln: Caches leeren&quot;.
+ * Schließen Sie diesen Browser-Tab.</logoutSuccess>
 <mag>Erstellen Sie ein Diagramm</mag>
 <magAxisX>X-Achse</magAxisX>
 <magAxisY>Y-Achse</magAxisY>

@@ -3664,33 +3664,22 @@ Det är möjligt att vissa datauppsättningar inte är tillgängliga för närva
 <logoutOpenID>Logga ut från din OpenID-leverantör.</logoutOpenID>
 <!--  logoutSuccess senast uppdaterad 2019-12-19 -->
 <logoutSuccess>Du har loggat ut.
-Använd inte webbläsarens bakåtknapp.
-Använd länken &quot;ERDDAP&quot; ovan, använd sedan andra länkar för att gå till ERDDAP sidor du är intresserad av.
+
+Använd inte webbläsarens bakåtknapp. Använd länken &quot;ERDDAP&quot; ovan,
+använd sedan andra länkar för att gå till ERDDAP-sidor du är intresserad av.
 Om en cachad webbsida säger att du fortfarande är inloggad, ladda om sidan.
+
 För ökad säkerhet (särskilt om detta är en delad dator), bör du:
-* Om du använde ORCHID, gå till https://orcid.org/my-orcid och logga ut där också.
-* Rensa webbläsarens cache:
-* I Chrome, använd &quot;Fler verktyg :
-Rensa webbinformation:
-Cachade bilder och filer&quot; och &quot;Cookies&quot;.
-* I Edge, använd &quot;Inställningar:
-Sekretess och säkerhet:
-Rensa webbinformation&quot;.
-* I Firefox använder du &quot;Alternativ :
-Avancerat :
-Nätverk :
-Cachat webbinnehåll :
-Rensa nu&quot;.
-* I Opera, använd &quot;Meny :
-Fler verktyg :
-Rensa webbinformation&quot;.
-* I Safari, använd &quot;Safari :
-Inställningar :
-Avancerat :
-Visa utveckla&quot;, sedan &quot;Safari :
-Utveckla :
-tomma cacher&quot;.
-* Stäng den här webbläsarfliken.</logoutSuccess>
+ * Om du använde ORCHID, gå till https://orcid.org/my-orcid och logga ut där också.
+ * Rensa webbläsarens cache:
+   * I Chrome använder du &quot;Fler verktyg : Rensa webbinformation : Cachade bilder och filer&quot;
+       och &quot;Cookies&quot;.
+   * I Edge, använd &quot;Inställningar: Sekretess och säkerhet: Rensa webbinformation&quot;.
+   * I Firefox använder du &quot;Alternativ : Avancerat : Nätverk : Cachat webbinnehåll : Rensa nu&quot;.
+   * I Opera, använd &quot;Meny : Fler verktyg : Rensa webbinformation&quot;.
+   * I Safari, använd &quot;Safari : Inställningar : Avancerat : Visa utveckling&quot;,
+       sedan &quot;Safari : Develop : Empty Caches&quot;.
+ * Stäng den här webbläsarfliken.</logoutSuccess>
 <mag>Gör en graf</mag>
 <magAxisX>X-axeln</magAxisX>
 <magAxisY>Y-axel</magAxisY>

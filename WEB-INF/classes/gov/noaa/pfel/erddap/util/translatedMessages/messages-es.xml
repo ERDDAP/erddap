@@ -3772,33 +3772,22 @@ Es posible que algunos conjuntos de datos no estén disponibles actualmente o qu
 <logoutOpenID>Cierre la sesión de su proveedor de OpenID.</logoutOpenID>
 <!--  Éxito actualizado por última vez 2019-12-19 -->
 <logoutSuccess>Has terminado tu sesion satisfactoriamente.
-No utilice el botón Atrás de su navegador.
-Utilice el enlace &quot;ERDDAP&quot; anterior, luego utilice otros enlaces para ir a las páginas de ERDDAP que le interesan.
-Si una página web almacenada en caché dice que todavía está conectado, vuelva a cargar la página.
+
+No utilice el botón Atrás de su navegador. Utilice el enlace &quot;ERDDAP&quot; de arriba,
+luego use otros enlaces para ir a las páginas de ERDDAP que le interesan.
+Si una página web almacenada en caché dice que aún está conectado, vuelva a cargar la página.
+
 Para mayor seguridad (especialmente si se trata de una computadora compartida), debe:
-* Si usó ORCHID, vaya a https://orcid.org/my-orcid y cierre la sesión allí también.
-* Borre la caché de su navegador:
-* En Chrome, use &quot;Más herramientas:
-Borrar datos de navegación:
-imágenes y archivos en caché&quot; y &quot;Cookies&quot;.
-* En Edge, use &quot;Configuración:
-Privacidad y seguridad:
-Borrar datos de navegación&quot;.
-* En Firefox, use &quot;Opciones:
-Avanzadas:
-Red:
-Contenido web en caché:
-Limpiar ahora&quot;.
-* En Opera, use &quot;Menú:
-Más herramientas:
-Borrar datos de navegación&quot;.
-* En Safari, use &quot;Safari:
-Preferencias:
-Avanzado:
-Mostrar Desarrollar&quot;, luego &quot;Safari:
-Desarrollar:
-Vaciar cachés&quot;.
-* Cierre esta pestaña del navegador.</logoutSuccess>
+ * Si usó ORCHID, vaya a https://orcid.org/my-orcid y cierre la sesión allí también.
+ * Limpia la memoria caché de tu navegador:
+   * En Chrome, use &quot;Más herramientas: Borrar datos de navegación: imágenes y archivos en caché&quot;
+       y &quot;Cookies&quot;.
+   * En Edge, use &quot;Configuración: Privacidad y seguridad: Borrar datos de navegación&quot;.
+   * En Firefox, use &quot;Opciones: Avanzadas: Red: Contenido web almacenado en caché: Limpiar ahora&quot;.
+   * En Opera, use &quot;Menú: Más herramientas: Borrar datos de navegación&quot;.
+   * En Safari, utilice &quot;Safari: Preferencias: Avanzado: Mostrar desarrollo&quot;,
+       luego &quot;Safari: Desarrollar: Cachés vacíos&quot;.
+ * Cierre esta pestaña del navegador.</logoutSuccess>
 <mag>Hacer un gráfico</mag>
 <magAxisX>Eje X</magAxisX>
 <magAxisY>Eje Y</magAxisY>

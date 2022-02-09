@@ -47,8 +47,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 //DO    use "software.amazon.awssdk" (v2 of the SDK).
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.S3Client;
 
 /**
@@ -240,6 +243,46 @@ public class File2 {
             return false;
         }
     }
+
+    /**
+     * This indicates if the named file is an existing AWS S3 file and you have access to it.
+     *
+     * @param awsUrl the URL of the file
+     * @return true if the file exists
+     */
+    public static boolean isAwsS3File(String awsUrl) {
+        return length(awsUrl) >= 0;
+    }
+    //    "tl;dr; It's faster to list objects with prefix being the full key path, than to use HEAD to find out of a object is in an S3 bucket."
+    //    says https://www.peterbe.com/plog/fastest-way-to-find-out-if-a-file-exists-in-s3
+    //So use FileVisitorDNLS.isAwsS3File().
+    //And I never got the code below to work correctly
+    /*    try {
+            String bro[] = String2.parseAwsS3Url(awsUrl);
+            if (bro == null) {
+                return false;
+            } else {
+                //I think deleteMarker means "marked for deletion"
+                HeadObjectResponse response = getS3Client(bro[1]).headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build());
+                if (response == null) {
+                    String2.log("response=null");
+                    return false;
+                }
+                Boolean marker = response.deleteMarker();
+                if (marker == null) { //it isn't marked for deletion
+                    String2.log("marker=null");
+                    return true;
+                }
+                return !marker.booleanValue();
+            }
+        } catch (NoSuchKeyException nske) { //object doesn't exist
+            return false;
+        } catch (Exception e) { //unexpected errors
+            if (verbose) String2.log(MustBe.throwable("File2.isAwsS3File(" + awsUrl + ")", e));
+            return false;
+        }
+    }
+    */
 
     /**
      * This returns an index into ICON_FILENAME and ICON_ALT suitable for the fileName. 
@@ -517,6 +560,32 @@ public class File2 {
         }
     }
 
+    /** 
+     * This deletes an AWS file.
+     *
+     * @param awsUrl
+     * @return true if the file existed and was successfully deleted; 
+     *    otherwise returns false.
+     */
+    public static boolean deleteAwsS3File(String awsUrl) {
+        //from https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html#delete-object
+        String bro[] = String2.parseAwsS3Url(awsUrl);
+        if (bro == null) 
+            return false;        
+        try {
+            getS3Client(bro[1]).deleteObject(DeleteObjectRequest.builder()
+                .bucket(bro[0])
+                .key(bro[2])
+                .build());            
+            return true;
+        } catch (Exception e) {
+            String2.log("Caught exception while deleting " + awsUrl + " : " + e.toString());
+            return false;
+        }
+        //even with response, no easy way to determine if successfull
+        //DeleteObjectResponse response = getS3Client(bro[1]).deleteObject(deleteObjectRequest);
+    }
+
     /**
      * This renames the specified file.
      * If the dir+newName file already exists, it will be deleted.
@@ -677,7 +746,7 @@ public class File2 {
     /**
      * This returns the length of the named file (or -1 if trouble).
      *
-     * @param fullName the full name of the file
+     * @param fullName the full name of the file or AWS S3 object
      * @return the length of the named file (or -1 if trouble).
      */
     public static long length(String fullName) {
@@ -693,6 +762,8 @@ public class File2 {
                 return getS3Client(bro[1]).headObject(HeadObjectRequest.builder().bucket(bro[0]).key(bro[2]).build())
                     .contentLength().longValue();
             }
+        } catch (NoSuchKeyException nske) { //if aws key/object doesn't exist
+            return -1;
         } catch (Exception e) {
             if (verbose) String2.log(MustBe.throwable("File2.length(" + fullName + ")", e));
             return -1;
@@ -1363,14 +1434,21 @@ public class File2 {
     /**
      * Creating a buffered FileWriter this way helps me check that charset is set.
      * (Instead of the default charset used by "new File(outputStream)").
+     *
+     * @param charset Must not be "" or null.
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedFileWriter(String fullFileName, String charset) throws IOException {
-        return getBufferedWriter(new FileOutputStream(fullFileName), charset);
+        return getBufferedFileWriter(fullFileName, Charset.forName(charset));
     }
 
     /**
-     * Creating a buffered FileWriter this way helps me check that charset is set.
-     * (Instead of the default charset used by "new File(outputStream)").
+     * Creating a buffered FileWriter this way helps me check that charset is set
+     * (instead of using the default charset).
+     *
+     * @param fullFileName Must be a local file, not AWS S3 object.
+     * @param charset Must not be "" or null.
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedFileWriter(String fullFileName, Charset charset) throws IOException {
         return getBufferedWriter(new FileOutputStream(fullFileName), charset);
@@ -1379,6 +1457,8 @@ public class File2 {
     /**
      * Creating a buffered outputStreamWriter this way helps me check that charset is set.
      * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
+     *
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedWriter88591(OutputStream os) {
         return getBufferedWriter(os, ISO_8859_1_CHARSET);
@@ -1387,6 +1467,8 @@ public class File2 {
     /**
      * Creating a buffered outputStreamWriter this way helps me check that charset is set.
      * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
+     *
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedWriterUtf8(OutputStream os) {
         return getBufferedWriter(os, UTF_8_CHARSET);
@@ -1395,14 +1477,22 @@ public class File2 {
     /**
      * Creating a buffered outputStreamWriter this way helps me check that charset is set.
      * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
+     *
+     * @param os the OutputStream
+     * @param charset Must not be "" or null.
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedWriter(OutputStream os, String charset) throws UnsupportedEncodingException {
-        return new BufferedWriter(new OutputStreamWriter(os, charset));
+        return getBufferedWriter(os, Charset.forName(charset));
     }
 
     /**
      * Creating a buffered outputStreamWriter this way helps me check that charset is set.
      * (Instead of the default charset used by "new OutputStreamWriter(outputStream)").
+     *
+     * @param os the OutputStream
+     * @param charset Must not be null.
+     * @return the BufferedWriter
      */
     public static BufferedWriter getBufferedWriter(OutputStream os, Charset charset) {
         return new BufferedWriter(new OutputStreamWriter(os, charset));

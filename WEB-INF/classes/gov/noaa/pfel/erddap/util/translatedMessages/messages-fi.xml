@@ -3698,33 +3698,22 @@ On mahdollista, että jotkin tietojoukot eivät ole tällä hetkellä saatavilla
 <logoutOpenID>Kirjaudu ulos OpenID-palveluntarjoajaltasi.</logoutOpenID>
 <!--  logoutSuccess päivitetty viimeksi 19.12.2019 -->
 <logoutSuccess>Olet onnistuneesti kirjautunut ulos.
-Älä käytä selaimen Takaisin-painiketta.
-Käytä yllä olevaa &quot;ERDDAP&quot; -linkkiä ja käytä sitten muita linkkejä siirtyäksesi kiinnostaville ERDDAP sivuille.
-Jos välimuistissa oleva verkkosivu ilmoittaa, että olet edelleen kirjautuneena sisään, lataa sivu uudelleen.
+
+Älä käytä selaimen Takaisin-painiketta. Käytä yllä olevaa &quot;ERDDAP&quot;-linkkiä,
+Käytä sitten muita linkkejä päästäksesi sinua kiinnostaville ERDDAP-sivuille.
+Jos välimuistissa oleva verkkosivu sanoo, että olet edelleen kirjautuneena sisään, lataa sivu uudelleen.
+
 Turvallisuuden lisäämiseksi (varsinkin jos tämä on jaettu tietokone) sinun tulee:
-* Jos käytit ORCHIDia, mene osoitteeseen https://orcid.org/my-orcid ja kirjaudu myös ulos sieltä.
-* Tyhjennä selaimen välimuisti:
-* Käytä Chromessa &quot;Lisää työkaluja :
-Tyhjennä selaustiedot :
-Välimuistissa olevat kuvat ja tiedostot&quot; ja &quot;Evästeet&quot;.
-* Käytä Edgessä &quot;Asetukset :
-Yksityisyys ja suojaus :
-Tyhjennä selaustiedot&quot;.
-* Käytä Firefoxissa &quot;Asetukset :
-Lisäasetukset :
-Verkko :
-Välimuistissa oleva verkkosisältö :
-Tyhjennä nyt&quot;.
-* Käytä Operassa &quot;Valikko :
-Lisää työkaluja :
-Tyhjennä selaustiedot&quot;.
-* Käytä Safarissa &quot;Safari :
-Preferences :
-Advanced :
-Show Develop&quot; ja sitten &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Sulje tämä selaimen välilehti.</logoutSuccess>
+ * Jos käytit ORCHIDia, mene osoitteeseen https://orcid.org/my-orcid ja kirjaudu myös ulos sieltä.
+ * Tyhjennä selaimen välimuisti:
+   * Käytä Chromessa &quot;Lisää työkaluja : Tyhjennä selaustiedot : Välimuistissa olevat kuvat ja tiedostot&quot;
+       ja &quot;evästeet&quot;.
+   * Käytä Edgessä &quot;Asetukset : Yksityisyys ja suojaus : Tyhjennä selaustiedot&quot;.
+   * Käytä Firefoxissa &quot;Asetukset : Lisäasetukset : Verkko : Välimuistissa oleva verkkosisältö : Tyhjennä nyt&quot;.
+   * Käytä Operassa &quot;Valikko : Lisää työkaluja : Tyhjennä selaustiedot&quot;.
+   * Käytä Safarissa &quot;Safari : Preferences : Advanced : Show Develop&quot;,
+       sitten &quot;Safari : Develop : Empty Caches&quot;.
+ * Sulje tämä selaimen välilehti.</logoutSuccess>
 <mag>Tee kaavio</mag>
 <magAxisX>X-akseli</magAxisX>
 <magAxisY>Y-akseli</magAxisY>

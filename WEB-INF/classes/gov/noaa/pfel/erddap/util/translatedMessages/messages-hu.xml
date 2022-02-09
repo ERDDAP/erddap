@@ -3780,33 +3780,22 @@ Lehetséges, hogy egyes adatkészletek jelenleg nem érhetők el, vagy nincs eng
 <logoutOpenID>Jelentkezzen ki az OpenID szolgáltatójából.</logoutOpenID>
 <!--  logoutSuccess utolsó frissítése: 2019-12-19 -->
 <logoutSuccess>Sikeresen kijelentkezett.
-Ne használja a böngésző Vissza gombját.
-Használja a fenti &quot;ERDDAP&quot; hivatkozást, majd más hivatkozásokat használva lépjen az Önt érdeklő ERDDAP oldalakra.
+
+Ne használja a böngésző Vissza gombját. Használja a fenti &quot;ERDDAP&quot; linket,
+majd használjon más hivatkozásokat az Önt érdeklő ERDDAP oldalakra.
 Ha egy gyorsítótárazott weboldal azt mondja, hogy még mindig bejelentkezett, töltse be újra az oldalt.
-A fokozott biztonság érdekében (különösen, ha ez egy megosztott számítógép) tegye a következőket:
-* Ha ORCHID-ot használt, lépjen a https://orcid.org/my-orcid oldalra, és ott is jelentkezzen ki.
-* Törölje a böngésző gyorsítótárát:
-* A Chrome-ban használja a &quot;További eszközök :
-Böngészési adatok törlése :
-Gyorsítótárazott képek és fájlok&quot; és a &quot;Cookie-k&quot; lehetőséget.
-* Az Edge-ben használja a &quot;Beállítások:
-Adatvédelem és biztonság:
-Böngészési adatok törlése&quot; lehetőséget.
-* Firefoxban használja az &quot;Opciók :
-Speciális :
-Hálózat :
-Gyorsítótárazott webtartalom :
-Törölje most&quot; parancsot.
-* Az Operában használja a &quot;Menü :
-További eszközök :
-Böngészési adatok törlése&quot; menüpontot.
-* A Safariban használja a „Safari :
-Preferences :
-Advanced :
-Show Develop”, majd a „Safari :
-Develop :
-Empty Caches” (gyorsítótárak ürítése) parancsot.
-* Zárja be ezt a böngészőlapot.</logoutSuccess>
+
+A nagyobb biztonság érdekében (különösen, ha ez egy megosztott számítógép), tegye a következőket:
+ * Ha az ORCHID-ot használta, lépjen a https://orcid.org/my-orcid oldalra, és ott is jelentkezzen ki.
+ * Törölje a böngésző gyorsítótárát:
+   * A Chrome-ban használja a „További eszközök : Böngészési adatok törlése : Gyorsítótárazott képek és fájlok” lehetőséget.
+       és &quot;Cookie-k&quot;.
+   * Az Edge-ben használja a &quot;Beállítások : Adatvédelem és biztonság : Böngészési adatok törlése&quot; lehetőséget.
+   * Firefoxban használja az &quot;Opciók : Speciális : Hálózat : Gyorsítótárazott webtartalom : Törölje most&quot; parancsot.
+   * Az Operában használja a &quot;Menü : További eszközök : Böngészési adatok törlése&quot; menüpontot.
+   * A Safariban használja a „Safari : Preferences : Advanced : Show Develop” parancsot.
+       majd &quot;Safari : Develop : Empty Caches&quot;.
+ * Zárja be ezt a böngészőlapot.</logoutSuccess>
 <mag>Készíts egy grafikont</mag>
 <magAxisX>X tengely</magAxisX>
 <magAxisY>Y tengely</magAxisY>

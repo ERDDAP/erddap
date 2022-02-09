@@ -99,12 +99,17 @@ public class String2 {
         https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
     public static boolean OSIsMacOSX = OSName.contains("OS X");
 
-    //see https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html including Legacy Bucket names
-    //the capture groups are bucketName, regionName, and objectName (or perhaps it is just a prefix)
-    public final static String  AWS_S3_REGEX = "https?://([\\w\\-\\._]+)\\.s3\\.([\\w\\-]+)\\.amazonaws\\.com/(.*)";
+    /** See https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html including Legacy Bucket names.
+     * The capture groups are bucketName, (.|-website-), regionName, and objectName (AKA key, or perhaps it is just a prefix).
+     * This works with standardized urls in the form https://bucketName.s3.aws-region.amazonaws.com/subdirectory/key 
+     * where region is something like us-east-1.
+     * This also works with https://bucketName.s3-website-region.amazonaws.com/subdirectory/key .
+     */
+    private final static String  AWS_S3_REGEX = "https?://([\\w\\-\\._]+)\\.s3(\\.|\\-website\\-)([\\w\\-]+)\\.amazonaws\\.com/(.*)";
+    
     /** If testing a "dir", url should have a trailing slash.
         Patterns are thread-safe. */
-    public final static Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
+    private final static Pattern AWS_S3_PATTERN = Pattern.compile(AWS_S3_REGEX);
 
     /** 
      * email regex used to identify likely email addresses.
@@ -6433,6 +6438,13 @@ and zoom and pan with controls in
         else a.append(isSomething(b)? b.trim() : "");
     }
 
+   /** 
+    * This returns AWS_S3_REGEX (hopefullly just so it can be displayed, not matched).
+    * This makes AWS_S3_REGEX read-only.
+    */
+   public static String AWS_S3_REGEX() {
+       return AWS_S3_REGEX; 
+   }
 
     /** 
      * This indicates if the URL is an AWS S3 URL.
@@ -6471,7 +6483,7 @@ and zoom and pan with controls in
             url += "/";
         Matcher matcher = AWS_S3_PATTERN.matcher(url); 
         if (matcher.matches()) 
-            return new String[]{matcher.group(1), matcher.group(2), matcher.group(3)};
+            return new String[]{matcher.group(1), matcher.group(3), matcher.group(4)};
         return null;
     }
 
@@ -6590,6 +6602,22 @@ and zoom and pan with controls in
                  set.remove(val);
              }
          }
+    }
+
+    /**
+     * This encodes special regex characters to turn a string into a regex for that string.
+     * I'm not at all sure this is perfect!
+     */
+    public static String encodeAsRegex(String s) {
+        int length = s.length();
+        StringBuilder sb = new StringBuilder(length * 3 / 2);
+        for (int po = 0; po < length; po++) {
+            char ch = s.charAt(po);
+            if (".^$[](){}?*+\\".indexOf(ch) >= 0)
+                sb.append('\\');
+            sb.append(ch);
+        }
+        return sb.toString();
     }
 
 

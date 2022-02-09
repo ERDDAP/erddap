@@ -114,11 +114,16 @@ at the University of Hawaii (UH)
       title="This link to an external website does not constitute an endorsement."></a>
   (Canadian Watershed Information Network) at the Centre for Earth Observation Science (CEOS), University of Manitoba
   <!-- 2021-02-22 email from Claire Herbert, portalco@umanitoba.ca -->
-<li><a rel="bookmark" href=" https://erddap.cdip.ucsd.edu/erddap/index.html">CDIP<img 
+<li><a rel="bookmark" href="https://erddap.cdip.ucsd.edu/erddap/index.html">CDIP<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
   (Coastal Data Information Program at UCSD)
   <!-- 2021-03-18 email Darren Wright -->
+<li><a rel="bookmark" href="https://data.iadc.cnr.it/erddap/index.html">CNR-ISP<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>
+  (National Research Council of Italy, Institute of Polar Sciences)
+  <!-- 2022-01-07 email Giulio Verazzo -->
 <li>CSIRO and IMOS
   (Australia's Commonwealth Scientific and Industrial Research Organisation and the Integrated Marine Observing System)
   <!-- 2015-06-28 email Jonathan Hodge  was http://rs-data1-mel.csiro.au/erddap/index.html -->
@@ -331,11 +336,12 @@ San Francisco Estuary Institute
   <!-- 2015-08-24 Paul Janecek -->
 <li>Stanford University, Hopkins Marine Station 
   <!-- 2015-03-24 James Ganong -->
-<li><a rel="bookmark" href="https://geoport.usgs.esipfed.org/erddap/index.html">USGS CMGP<img 
+<li><a rel="bookmark" href="https://erddap.oa.iode.org/erddap/index.html"
+  >UNESCO IODE<img 
       src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> 
-  USGS Coastal and Marine Geology Program 
-  <!-- 2015-03-18 Ellyn Montgomery -->
+      title="This link to an external website does not constitute an endorsement."></a>
+      (International Oceanographic and Information Data Exchange)
+  <!-- 2022-01-21 Simeon Wilkinson -->
 <li><a rel="bookmark" href="https://salishsea.eos.ubc.ca/erddap/index.html"
   >University of British Columbia, Earth, Ocean &amp; Atmospheric Sciences Department<img 
       src="../images/external.png" alt=" (external link)" 
@@ -353,6 +359,11 @@ San Francisco Estuary Institute
   <!-- 2020-02-20  Matthew Shatley -->
 <li>University of Washington, Applied Physics Laboratory
   <!-- 2015-04-02 Mike Harrington -->
+<li><a rel="bookmark" href="https://geoport.usgs.esipfed.org/erddap/index.html">USGS CMGP<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> 
+  (Coastal and Marine Geology Program)
+  <!-- 2015-03-18 Ellyn Montgomery -->
 </ul>
 This is a list of just some of the organizations where ERDDAP has been installed 
 by some individual or some group. 
@@ -426,7 +437,7 @@ or Mac server instead.
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
-    <br><kbd>/usr/local/jdk8u292-b10/jre/bin/java -version</kbd> <!-- javaVersion -->
+    <br><kbd>/usr/local/jdk8u312-b07/jre/bin/java -version</kbd> <!-- javaVersion -->
 
     <p>ERDDAP works with Java from other sources, but we recommend Adoptium because it is the 
     main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
@@ -460,7 +471,7 @@ or Mac server instead.
 
     <li>Download Tomcat and unpack it on your server or PC.
       <br>For security reasons, it is almost always best to use the latest version of 
-      Tomcat 9 (although 8.5+ is fine too) <!-- tomcatVersion -->
+      Tomcat 9 (8.5+ is fine too, but 10+ is not) <!-- tomcatVersion -->
       which is designed to work with Java 8 (1.8). <!-- javaVersion -->
       Below, the Tomcat directory will be referred to as <i>tomcat</i>.
       <p>Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
@@ -475,7 +486,7 @@ or Mac server instead.
           title="This link to an external website does not constitute an endorsement."></a> 
         and unpack it. We recommend unpacking it in /usr/local.
       <li>On a Mac, Tomcat is probably already installed in /Library/Tomcat,
-        but you may want to update it to the latest version of Tomcat 9. <!-- tomcatVersion -->
+        but you may want to update it to the latest version of Tomcat 9 (not 10+). <!-- tomcatVersion -->
         <br>If you download it,     <!-- tomcatVersion below -->
         <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
@@ -491,7 +502,7 @@ or Mac server instead.
         We make a <kbd>/programs</kbd> directory and unpack it there.)
         Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features.
         If the distribution is a Windows installer, it will probably put Tomcat 
-        in, for example, <kbd>/Program Files/apache-tomcat-9.0.39</kbd> . <!-- tomcatVersion -->
+        in, for example, <kbd>/Program Files/apache-tomcat-9.0.56</kbd> . <!-- tomcatVersion -->
         <br>&nbsp;
       </ul>
 
@@ -580,17 +591,17 @@ or Mac server instead.
       <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
         <ul>
         <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
-          <br><kbd>chown -R tomcat apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chown -R tomcat apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
           <br>(but substitute the actual name of your tomcat directory). 
         <li>Change the "group" to be tomcat, your username, 
           or the name of a small group that includes tomcat and 
           all the administrators of Tomcat/ERDDAP, e.g., 
-          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
         <li>Change permissions so that tomcat and the group have 
           read, write, execute privileges, e.g,. 
-          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
         <li>Remove "other" user's permissions to read, write, or execute:
-          <br><kbd>chmod -R o-rwx apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R o-rwx apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
           <br>This is important, because it prevents other users from
             reading possibly sensitive information in ERDDAP setup files.
         </ul>
@@ -608,10 +619,10 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<kbd>
-      <br>export JAVA_HOME=/usr/local/jdk8u292-b10/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk8u312-b07/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>9.0.39</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>9.0.39</i></kbd>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>9.0.56</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -621,10 +632,10 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<kbd>
-      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u292-b10\jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u312-b07\jre"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
-      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"         <!-- tomcatVersion -->
-      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>9.0.39</i>"</kbd>  <!-- tomcatVersion -->
+      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>9.0.56</i>"         <!-- tomcatVersion -->
+      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>9.0.56</i>"</kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).
       <br>If this is just for local testing, remove "-server".      
       <br>(If you previously set JRE_HOME, you can remove that.)
@@ -805,10 +816,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.14.zip -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.16.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddapContent.zip">erddapContent.zip</a>
-    (version 2.14, 19,826 bytes, MD5=8C9FCE5C47654BCC7F7E924A935755E7, dated 2021-07-02)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.16/erddapContent.zip">erddapContent.zip</a>
+    (version 2.16, 19,792 bytes, MD5=2DC26FB4464516B08DDA628E7F27F821, dated 2021-12-17)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -837,6 +848,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddapContent.zip">2.12</a>
     (19,826 bytes, MD5=D0942715DD11A036A6941D1C5C1BB1E3, dated 2021-05-14)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddapContent.zip">2.14</a>
+    (19,826 bytes, MD5=8C9FCE5C47654BCC7F7E924A935755E7, dated 2021-07-02)
     ]
 
   <p>Then,
@@ -913,13 +927,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.14.war  
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.16.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.16/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.14, 516,963,012 bytes, MD5=59514A1FCEB0922FADCF45CF8B07FA0A, dated
-    <span class="N">2021-07-02</span>)
+    <br>(version 2.16, 573,349,586 bytes, MD5=C8D8A48707724C7488CF6214FBBA0A1D, dated
+    <span class="N">2021-12-17</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -939,6 +953,9 @@ or Mac server instead.
     <a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.12/erddap.war">2.12</a>
     (516,793,807 bytes, MD5=05A22E605D01ECA206A5740C413A21C0, dated 2021-05-14)
+    <a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddap.war">2.14</a>
+    (516,963,012 bytes, MD5=59514A1FCEB0922FADCF45CF8B07FA0A, dated 2021-07-02)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1125,10 +1142,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.14/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.16/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.14, 516,963,012 bytes, MD5=59514A1FCEB0922FADCF45CF8B07FA0A, dated
-    <span class="N">2021-07-02</span>)
+    <br>(version 2.16, 573,349,586 bytes, MD5=C8D8A48707724C7488CF6214FBBA0A1D, dated
+    <span class="N">2021-12-17</span>)
 
   <br>&nbsp;
 
@@ -4558,7 +4575,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     The ERDDAP pom.xml file for Maven is included in the GitHub ERDDAP distribution.
   <li>We use a batch file which deletes all of the .class files in the source tree
     to ensure that we have a clean compile (with javac).
-  <li>We currently use Adoptium's javac jdk8u292-b10 <!-- javaVersion --> 
+  <li>We currently use Adoptium's javac jdk8u312-b07 <!-- javaVersion --> 
      to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
      and run the tests.       

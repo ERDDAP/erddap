@@ -202,9 +202,9 @@ public class SimpleXMLReader {
     }
 
     /**
-     * Get the rawContent that occured before the last tag, i.e. keep CDATA and comment syntax.
+     * Get the rawContent that occurred before the last tag, i.e. keep CDATA markers and comment syntax.
      *
-     * @return the rawContent of a tag
+     * @return the rawContent of a tag. This is not trim'd and e.g., has CDATA markers.
      */
     public String rawContent() {
         return rawContent;

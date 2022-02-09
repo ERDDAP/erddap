@@ -2926,11 +2926,11 @@ public abstract class EDDTable extends EDD {
 
             } catch (Exception e) {
                 EDStatic.rethrowClientAbortException(e);  //first thing in catch{}
+                String2.log(String2.ERROR + " when writing web page:\n" + MustBe.throwableToString(e));  //before writer.write's
                 writer.write(EDStatic.htmlForException(language, e));
                 writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
                 writer.write("\n</html>\n");
                 writer.flush(); //essential
-                String2.log(String2.ERROR + " when writing web page:\n" + MustBe.throwableToString(e));
                 throw e; 
             }
         }
@@ -3334,20 +3334,32 @@ public abstract class EDDTable extends EDD {
             }
         }
 
-        //copy file to outputStream
-        //(I delayed getting actual outputStream as long as possible.)
-        OutputStream out = outputStreamSource.outputStream(
-            ncXHeader? File2.UTF_8 : 
-            fileTypeName.equals(".kml")? File2.UTF_8 : "");
-        try {
-            if (!File2.copy(fullName, out)) { 
-                //outputStream contentType already set,
-                //so I can't go back to html and display error message
-                //note than the message is thrown if user cancels the transmission; so don't email to me
-                throw new SimpleException(String2.ERROR + " while transmitting file.");
+
+        //copy file to ...
+        if (EDStatic.awsS3OutputBucketUrl == null) {
+
+            //copy file to outputStream
+            //(I delayed getting actual outputStream as long as possible.)
+            OutputStream out = outputStreamSource.outputStream(
+                ncXHeader? File2.UTF_8 : 
+                fileTypeName.equals(".kml")? File2.UTF_8 : "");
+            try {
+                if (!File2.copy(fullName, out)) { 
+                    //outputStream contentType already set,
+                    //so I can't go back to html and display error message
+                    //note than the message is thrown if user cancels the transmission; so don't email to me
+                    throw new SimpleException(String2.ERROR + " while transmitting file.");
+                }
+            } finally {
+                try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
             }
-        } finally {
-            try {out.close();} catch (Exception e) {} //downloads of e.g., erddap2.css don't work right if not closed. (just if gzip'd?)
+        } else {
+
+            //copy file to AWS and redirect user
+            String contentType = OutputStreamFromHttpResponse.getFileContentType(request, fileTypeName, fileTypeExtension);
+            String fullAwsUrl = EDStatic.awsS3OutputBucketUrl + File2.getNameAndExtension(fullName);
+            SSR.uploadFileToAwsS3(EDStatic.awsS3OutputTransferManager, fullName, fullAwsUrl, contentType);
+            response.sendRedirect(fullAwsUrl);          
         }
 
         //done
