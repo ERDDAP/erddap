@@ -3808,33 +3808,22 @@ Có thể một số bộ dữ liệu hiện không khả dụng hoặc bạn kh
 <logoutOpenID>Đăng xuất khỏi nhà cung cấp OpenID của bạn.</logoutOpenID>
 <!--  logout Cập nhật lần cuối 2019-12-19 -->
 <logoutSuccess>Bạn đã đăng xuất thành công.
-Không sử dụng nút Quay lại của trình duyệt của bạn.
-Sử dụng liên kết &quot;ERDDAP&quot; ở trên, sau đó sử dụng các liên kết khác để truy cập các trang ERDDAP mà bạn quan tâm.
-Nếu trang web được lưu trong bộ nhớ cache cho biết bạn vẫn đang đăng nhập, hãy tải lại trang.
+
+Không sử dụng nút Quay lại trên trình duyệt của bạn. Sử dụng liên kết &quot;ERDDAP&quot; ở trên,
+sau đó sử dụng các liên kết khác để chuyển đến các trang ERDDAP mà bạn quan tâm.
+Nếu một trang web được lưu trong bộ nhớ cache cho biết bạn vẫn đang đăng nhập, hãy tải lại trang đó.
+
 Để tăng cường bảo mật (đặc biệt nếu đây là máy tính dùng chung), bạn nên:
-* Nếu bạn đã sử dụng ORCHID, hãy truy cập https://orcid.org/my-orcid và đăng xuất luôn ở đó.
-* Xóa bộ nhớ cache của trình duyệt:
-* Trong Chrome, sử dụng &quot;Các công cụ khác:
-Xóa dữ liệu duyệt web:
-Hình ảnh và tệp được lưu trong bộ nhớ cache&quot; và &quot;Cookie&quot;.
-* Trong Edge, sử dụng &quot;Cài đặt:
-Quyền riêng tư &amp; bảo mật:
-Xóa dữ liệu duyệt web&quot;.
-* Trong Firefox, sử dụng &quot;Tùy chọn:
-Nâng cao:
-Mạng:
-Nội dung web được lưu trong bộ đệm:
-Xóa ngay&quot;.
-* Trong Opera, sử dụng &quot;Menu:
-Các công cụ khác:
-Xóa dữ liệu duyệt web&quot;.
-* Trong Safari, sử dụng &quot;Safari:
-Preferences:
-Advanced:
-Show Develop&quot;, sau đó &quot;Safari:
-Develop:
-Empty Caches&quot;.
-* Đóng tab trình duyệt này.</logoutSuccess>
+ * Nếu bạn đã sử dụng ORCHID, hãy truy cập https://orcid.org/my-orcid và đăng xuất khỏi đó.
+ * Xóa bộ nhớ cache của trình duyệt của bạn:
+   * Trong Chrome, sử dụng &quot;Các công cụ khác: Xóa dữ liệu duyệt web: Tệp và hình ảnh được lưu trong bộ nhớ đệm&quot;
+       và &quot;Cookies&quot;.
+   * Trong Edge, sử dụng &quot;Cài đặt: Quyền riêng tư &amp; bảo mật: Xóa dữ liệu duyệt web&quot;.
+   * Trong Firefox, sử dụng &quot;Tùy chọn: Nâng cao: Mạng: Nội dung web được lưu trong bộ đệm: Xóa ngay&quot;.
+   * Trong Opera, sử dụng &quot;Menu: Các công cụ khác: Xóa dữ liệu duyệt web&quot;.
+   * Trong Safari, sử dụng &quot;Safari: Preferences: Advanced: Show Develop&quot;,
+       sau đó là &quot;Safari: Develop: Empty Caches&quot;.
+ * Đóng tab trình duyệt này.</logoutSuccess>
 <mag>Tạo đồ thị</mag>
 <magAxisX>Trục X</magAxisX>
 <magAxisY>Trục Y</magAxisY>

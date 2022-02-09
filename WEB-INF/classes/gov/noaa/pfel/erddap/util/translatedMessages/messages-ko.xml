@@ -3813,33 +3813,22 @@ http URL을 사용하는 경우 ERDDAP 은 사용자가 https를 사용하더라
 <logoutOpenID>OpenID 제공업체에서 로그아웃합니다.</logoutOpenID>
 <!--  logoutSuccess 마지막 업데이트 2019-12-19 -->
 <logoutSuccess>당신은 성공적으로 로그 아웃했습니다.
-브라우저의 뒤로 버튼을 사용하지 마십시오.
-위의 &quot;ERDDAP&quot; 링크를 사용한 다음 다른 링크를 사용하여 관심 있는 ERDDAP 페이지로 이동하십시오.
+
+브라우저의 뒤로 버튼을 사용하지 마십시오. 위의 &quot;ERDDAP&quot; 링크를 사용하고,
+그런 다음 다른 링크를 사용하여 관심 있는 ERDDAP 페이지로 이동하십시오.
 캐시된 웹 페이지에 아직 로그인되어 있다고 표시되면 페이지를 새로고침하세요.
+
 보안을 강화하려면(특히 공유 컴퓨터인 경우) 다음을 수행해야 합니다.
-* ORCHID를 사용한 경우 https://orcid.org/my-orcid로 이동하여 그곳에서도 로그아웃합니다.
-* 브라우저 캐시 지우기:
-* Chrome에서 &quot;추가 도구:
-인터넷 사용 기록 지우기:
-캐시된 이미지 및 파일&quot; 및 &quot;쿠키&quot;를 사용합니다.
-* Edge에서 &quot;설정 :
-개인정보 및 보안 :
-인터넷 사용정보 지우기&quot;를 사용하세요.
-* Firefox에서 &quot;옵션:
-고급:
-네트워크:
-캐시된 웹 콘텐츠:
-지금 지우기&quot;를 사용하십시오.
-* Opera에서 &quot;메뉴 :
-추가 도구 :
-인터넷 사용 기록 지우기&quot;를 사용하세요.
-* Safari에서 &quot;Safari :
-환경 설정 :
-고급 :
-현상 표시&quot;를 사용한 다음 &quot;Safari :
-현상 :
-캐시 비우기&quot;를 사용하십시오.
-* 이 브라우저 탭을 닫습니다.</logoutSuccess>
+ * ORCHID를 사용하셨다면 https://orcid.org/my-orcid에 접속하셔서 로그아웃도 해주세요.
+ * 브라우저 캐시 지우기:
+   * Chrome에서 &quot;추가 도구 : 인터넷 사용 기록 삭제 : 캐시된 이미지 및 파일&quot;을 사용하세요.
+       및 &quot;쿠키&quot;.
+   * Edge에서 &quot;설정 : 개인정보 보호 및 보안 : 인터넷 사용 기록 지우기&quot;를 사용하세요.
+   * Firefox에서 &quot;옵션: 고급: 네트워크: 캐시된 웹 콘텐츠: 지금 지우기&quot;를 사용하십시오.
+   * Opera에서 &quot;메뉴 : 추가 도구 : 인터넷 사용 기록 지우기&quot;를 사용하세요.
+   * Safari에서 &quot;Safari : 환경 설정 : 고급 : 현상 표시&quot;를 사용하십시오.
+       그런 다음 &quot;Safari : Develop : Empty Caches&quot;.
+ * 이 브라우저 탭을 닫습니다.</logoutSuccess>
 <mag>그래프 만들기</mag>
 <magAxisX>X축</magAxisX>
 <magAxisY>Y축</magAxisY>

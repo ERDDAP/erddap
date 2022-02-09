@@ -12,7 +12,7 @@ since this is impossible for AWS S3 dependencies without Maven.
   mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
 
 * Update ERDDAP version number below in ...
-   <version>2.16-SNAPSHOT</version>
+   <version>2.17-SNAPSHOT</version>
 
 * Update the version numbers starting with <dependencyManagement> section.
   Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
@@ -29,14 +29,17 @@ since this is impossible for AWS S3 dependencies without Maven.
       //mvn -help 
       //add -e for full error messages
       //add -X for debug messages
-      cd /programs/mavenERDDAP/ERDDAP   //pom.xml is there
+      cd /programs/mavenERDDAP/ERDDAP   //that's where pom.xml is
       set "JAVA_HOME=C:\programs\jdk8u312-b07"
       mvn clean               //removes previously generated .class files and ...
       mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
       mvn dependency:analyze  //Identifies excess or missing dependencies/.jars.
                               //  Expected: WARNINGS for Cassandra dependencies:
-                              //    guava, lz4, metrics, netty, snappy.
+                              //    slf4j, guava, lz4, metrics, netty, snappy.
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
+      (then copy netcdfAll-x.x.x.jar into /lib)
+
+   or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
    
 * Temporarily rename tomcat/webapps/cwexperimental/WEB-INF/lib to today's date: /libYYYYMMDD
 
@@ -54,7 +57,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.16-SNAPSHOT</version>
+    <version>2.17-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -64,13 +67,13 @@ since this is impossible for AWS S3 dependencies without Maven.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
+    <!-- was repositories>
         <repository>
             <id>unidata-releases</id>
             <name>UNIDATA Releases</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-releases/</url>
         </repository>
-    </repositories>
+    </repositories  -->
 
     <build>
         <resources>
@@ -144,6 +147,31 @@ since this is impossible for AWS S3 dependencies without Maven.
                     <path>/erddap</path>
                 </configuration>
             </plugin>
+
+            <!-- from Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml 
+              I think this isn't needed/doesn't work(?). 
+              Instead, just download netcdfAll 
+                from https://artifacts.unidata.ucar.edu/#browse/browse:downloads-netcdf-java
+                to c:/programs/mavenERDDAP/ERDDAP/external_libs/
+            -->
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://artifacts.unidata.ucar.edu/repository/downloads-netcdf-java/5.5.2/netcdfAll-5.5.2.jar</url>
+                            <outputFileName>netcdfAll-5.5.2.jar</outputFileName>
+                            <outputDirectory>${project.basedir}/external_libs</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -189,7 +217,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.17.99</version>
+              <version>2.17.123</version>
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -263,7 +291,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>8.11.0</version>
+            <version>8.11.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -271,7 +299,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>8.11.0</version>
+            <version>8.11.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -338,25 +366,35 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>1.2.0</version>
         </dependency>
 
-        <!-- https://artifacts.unidata.ucar.edu/service/rest/repository/browse/unidata-releases/edu/ucar/netcdfAll/
+        <!-- From Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml
+             https://artifacts.unidata.ucar.edu/service/rest/repository/browse/unidata-releases/edu/ucar/netcdfAll/
              which gets jars from repository=https://artifacts.unidata.ucar.edu/repository/unidata-releases/ as specified above
              This is not up-to-date: https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
              This is the netcdf-java library. -->
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>netcdfAll</artifactId>
-            <version>5.4.2</version>
+            <version>5.5.2</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/external_libs/netcdfAll-5.5.2.jar</systemPath>
         </dependency>
+        <!-- was
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdfAll</artifactId>
+            <version>5.5.2</version>
+        </dependency>  -->
 
-        <!-- NO LONGER NEEDED! It's in netcdf-all.jar  
-             and something else gets slf4j-api-...jar
-             https://mvnrepository.com/artifact/org.slf4j/slf4j-simple  
+        <!-- 2021-12-21: I think it is needed.
+             WAS: NO LONGER NEEDED! It's in netcdf-all.jar  
+             and something else gets slf4j-api-...jar 
+             https://mvnrepository.com/artifact/org.slf4j/slf4j-simple  -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.32</version>
+            <version>1.7.35</version>
             <scope>runtime</scope>
-        </dependency  -->
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-jexl3 
              This is the expression parser/processor used by EDDTableFromFiles Derived Variables. -->
@@ -371,7 +409,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.1</version>
+            <version>42.3.2</version>
         </dependency>
 
 
@@ -406,7 +444,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.5</version>
+            <version>4.2.8</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -414,7 +452,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.71.Final</version>
+            <version>4.1.73.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -446,7 +484,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.17.99</version>
+          <version>2.17.123</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -454,7 +492,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.17.99</version>
+            <version>2.17.123</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -462,37 +500,47 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.17.99-PREVIEW</version>
+            <version>2.17.123-PREVIEW</version>
         </dependency>
 
 
         <!-- Google -->
         <!-- Added by Qi for translation purpose -->
         <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
+        <!-- WARNING:
+             2022-02-07 2.1.10 caused a timeout error. Revert to 2.1.7 again.
+             2021-12-22 2.1.8 caused:   Exception in thread "grpc-default-executor-0" java.lang.NoSuchMethodError: 
+             com.google.protobuf.GeneratedMessageV3.isStringEmpty(Ljava/lang/Object;)Z
+             so revert to 2.1.7 for now -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.1.8</version>
+            <version>2.1.7</version>
         </dependency>
 
         <!-- Added by Bob for translation project -->
+        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
+        <!-- WARNING:
+             2022-02-07 2.1.10 caused a timeout error. Revert to 2.1.7 again.
+             2021-12-22 2.1.8 caused:   Exception in thread "grpc-default-executor-0" java.lang.NoSuchMethodError: 
+             com.google.protobuf.GeneratedMessageV3.isStringEmpty(Ljava/lang/Object;)Z
+             so revert to 2.1.7 for now -->
+        <dependency>
+            <groupId>com.google.api.grpc</groupId>
+            <artifactId>proto-google-cloud-translate-v3</artifactId>
+            <version>2.1.7</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.3.0</version>
+            <version>1.4.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.7.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.1.8</version>
+            <version>2.12.0</version>
         </dependency>
 
     </dependencies>

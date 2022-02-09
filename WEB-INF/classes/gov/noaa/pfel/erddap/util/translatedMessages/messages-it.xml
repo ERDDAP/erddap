@@ -3682,33 +3682,22 @@ Il tuo browser potrebbe aver memorizzato nella cache la pagina web prima di acce
 <logoutOpenID>Esci dal tuo provider OpenID.</logoutOpenID>
 <!--  logoutSuccesso ultimo aggiornamento 2019-12-19 -->
 <logoutSuccess>Ti sei disconnesso con successo.
-Non utilizzare il pulsante Indietro del browser.
-Usa il link &quot;ERDDAP&quot; qui sopra, poi usa altri link per andare alle pagine ERDDAP che ti interessano.
+
+Non utilizzare il pulsante Indietro del browser. Usa il link &quot;ERDDAP&quot; qui sopra,
+poi usa altri link per andare alle pagine ERDDAP che ti interessano.
 Se una pagina web memorizzata nella cache dice che sei ancora connesso, ricarica la pagina.
-Per una maggiore sicurezza (specialmente se si tratta di un computer condiviso), dovresti:
-* Se hai utilizzato ORCHID, vai su https://orcid.org/my-orcid e disconnettiti anche da lì.
-* Svuota la cache del browser:
-* In Chrome, usa &quot;Altri strumenti:
-Cancella dati di navigazione:
-Immagini e file memorizzati nella cache&quot; e &quot;Cookie&quot;.
-* In Edge, usa &quot;Impostazioni:
-Privacy e sicurezza:
-Cancella dati di navigazione&quot;.
-* In Firefox, utilizzare &quot;Opzioni:
-Avanzate:
-Rete:
-Contenuti Web memorizzati nella cache:
-Cancella ora&quot;.
-* In Opera, usa &quot;Menu:
-Altri strumenti:
-Cancella dati di navigazione&quot;.
-* In Safari, usa &quot;Safari:
-Preferenze:
-Avanzate:
-Mostra sviluppo&quot;, quindi &quot;Safari:
-Sviluppo:
-Svuota cache&quot;.
-* Chiudi questa scheda del browser.</logoutSuccess>
+
+Per una maggiore sicurezza (soprattutto se si tratta di un computer condiviso), dovresti:
+ * Se hai utilizzato ORCHID, vai su https://orcid.org/my-orcid e disconnettiti anche da lì.
+ * Svuota la cache del browser:
+   * In Chrome, utilizza &quot;Altri strumenti: Cancella dati di navigazione: Immagini e file memorizzati nella cache&quot;
+       e &quot;cookie&quot;.
+   * In Edge, usa &quot;Impostazioni: Privacy e sicurezza: Cancella dati di navigazione&quot;.
+   * In Firefox, utilizzare &quot;Opzioni: Avanzate: Rete: Contenuti Web memorizzati nella cache: Cancella ora&quot;.
+   * In Opera, usa &quot;Menu: Altri strumenti: Cancella dati di navigazione&quot;.
+   * In Safari, usa &quot;Safari: Preferenze: Avanzate: Mostra sviluppo&quot;,
+       quindi &quot;Safari: Sviluppo: Cache vuote&quot;.
+ * Chiudi questa scheda del browser.</logoutSuccess>
 <mag>Crea un grafico</mag>
 <magAxisX>Asse X</magAxisX>
 <magAxisY>Asse Y</magAxisY>

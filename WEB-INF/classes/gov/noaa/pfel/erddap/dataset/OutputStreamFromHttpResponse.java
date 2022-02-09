@@ -75,6 +75,14 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
 
     /**
+     * This is like getFiletypeInfo, but just returns the contentType.
+     * 
+     */
+    public static String getFileContentType(HttpServletRequest request, String fileType, String extension) {
+        return (String)getFileTypeInfo(request, fileType, extension)[0];
+    }
+    
+    /**
      * This returns info related to a fileType.
      *
      * @param request the user's request
@@ -716,6 +724,12 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
     /** 
      * This determines if a response should encourage showing File Save As dialog box in user's browser.
+     *
+     * @param fileType The ERDDAP extension e.g., .esriAscii.
+     *    In a few cases, more than one fileType (e.g., .asc and .esriAscii) 
+     *    convert to the same actual extension (i.e., tExtension) (e.g., .asc).
+     * @param extension the actual standard web file type extension 
+     *    (called fileTypeExtension in ERDDAP, e.g., .asc) for the output
      */
     public static boolean showFileSaveAs(boolean genericCompressed, 
         String fileType, String extension) {        
@@ -723,6 +737,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         return genericCompressed ||         //include all genericCompressed types
             extension.equals(".cdf")  || 
             extension.equals(".csv")  || 
+             fileType.equals(".esriAscii") ||
             extension.equals(".itx")  || 
             extension.equals(".js")   || 
              fileType.equals(".json") || //not .jsonText
@@ -793,7 +808,6 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             String key = (String)it.next();
             response.setHeader(key, (String)headerMap.get(key));
         }
-
 
         //set the characterEncoding
         if (characterEncoding != null && characterEncoding.length() > 0)

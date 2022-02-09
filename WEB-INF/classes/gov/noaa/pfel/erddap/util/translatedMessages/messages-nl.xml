@@ -3688,33 +3688,22 @@ Het is mogelijk dat sommige datasets momenteel niet beschikbaar zijn of dat u ge
 <logoutOpenID>Log uit bij uw OpenID-provider.</logoutOpenID>
 <!--  logoutSucces laatst bijgewerkt 2019-12-19 -->
 <logoutSuccess>Je bent succesvol uitgelogd.
-Gebruik de Terug-knop van uw browser niet.
-Gebruik de &quot;ERDDAP&quot;-link hierboven en gebruik vervolgens andere links om naar ERDDAP pagina&#39;s te gaan waarin u geïnteresseerd bent.
-Als een in het cachegeheugen opgeslagen webpagina aangeeft dat u nog steeds bent ingelogd, laadt u de pagina opnieuw.
-Voor een betere beveiliging (vooral als dit een gedeelde computer is), moet je:
-* Als je ORCHID hebt gebruikt, ga dan naar https://orcid.org/my-orcid en log daar ook uit.
-* Wis de cache van uw browser:
-* Gebruik in Chrome &quot;Meer tools:
-Browsegegevens wissen:
-afbeeldingen en bestanden in cache&quot; en &quot;Cookies&quot;.
-* Gebruik in Edge &quot;Instellingen:
-Privacy en beveiliging:
-Browsegegevens wissen&quot;.
-* Gebruik in Firefox &quot;Opties:
-Geavanceerd:
-Netwerk:
-Webinhoud in cache:
-Nu wissen&quot;.
-* Gebruik in Opera &quot;Menu:
-Meer tools:
-Browsegegevens wissen&quot;.
-* Gebruik in Safari &quot;Safari :
-Voorkeuren :
-Geavanceerd :
-Show Develop&quot; en vervolgens &quot;Safari :
-Develop :
-Empty Caches&quot;.
-* Sluit dit browsertabblad.</logoutSuccess>
+
+Gebruik de Terug-knop van uw browser niet. Gebruik de &quot;ERDDAP&quot;-link hierboven,
+gebruik vervolgens andere links om naar ERDDAP-pagina&#39;s te gaan waarin u geïnteresseerd bent.
+Als een in de cache opgeslagen webpagina aangeeft dat u nog steeds bent ingelogd, laadt u de pagina opnieuw.
+
+Voor een betere beveiliging (vooral als dit een gedeelde computer is), moet u:
+ * Als je ORCHID hebt gebruikt, ga dan naar https://orcid.org/my-orcid en log daar ook uit.
+ * Wis de cache van uw browser:
+   * Gebruik in Chrome &quot;Meer tools: Browsegegevens wissen: Afbeeldingen en bestanden in cache&quot;
+       en &quot;Koekjes&quot;.
+   * Gebruik in Edge &quot;Instellingen: Privacy en beveiliging: Browsegegevens wissen&quot;.
+   * Gebruik in Firefox &quot;Opties: Geavanceerd: Netwerk: Webinhoud in cache: Nu wissen&quot;.
+   * Gebruik in Opera &quot;Menu: Meer tools: Browsegegevens wissen&quot;.
+   * Gebruik in Safari &quot;Safari: Voorkeuren: Geavanceerd: Toon Ontwikkelen&quot;,
+       dan &quot;Safari: Ontwikkelen: lege caches&quot;.
+ * Sluit dit browsertabblad.</logoutSuccess>
 <mag>Maak een grafiek</mag>
 <magAxisX>X-as</magAxisX>
 <magAxisY>Y-as</magAxisY>

@@ -4879,7 +4879,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
-"        <att name=\"history\">Tue Oct 12 11:59:38 HST 2021 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"history\">Fri Jan 28 10:59:19 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
 "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -6895,25 +6895,30 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             "results=\n" + results);    
 
 
-        //***** tests that should fail
+        //***** 2022-02-07 now this succeeds because of change to ERDDAP: now accept [high:low]
         query = //same as above, but depth values are reversed
             "temp[(2001-12-15T00:00:00)][(500):(5.01)][(23.1)][(185.2)]," + 
             "salt[(2001-12-15T00:00:00)][(500):(5.01)][(23.1)][(185.2)]," + 
                "u[(2001-12-15T00:00:00)][(500):(5.01)][(23.1)][(185.2)]," + 
                "v[(2001-12-15T00:00:00)][(500):(5.01)][(23.1)][(185.2)]," + 
                "w[(2001-12-15T00:00:00)][(500):(5.01)][(23.1)][(185.2)]";
-        expected = "SimpleException: Query error: For variable=temp axis#1=depth Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
+        expected = "No error.";
+            //was "SimpleException: Query error: For variable=temp axis#1=depth Constraint=\"[(500):(5.01)]\": StartIndex=18 is greater than StopIndex=0.";
         for (int i = 0; i < dataFileTypeNames.length; i++) {
             String fileType = dataFileTypeNames[i];
 
             //skip the fileTypes that don't look at the query (or don't object to errors in it)
             if (String2.indexOf(new String[]{
-                ".das", ".dds", ".fgdc", ".graph", ".help", ".html", ".iso19115",
-                ".ncml", ".nccsvMetadata", ".timeGaps"}, fileType) >= 0)
+                ".das", ".dds", 
+                ".esriAscii", //fails because request should be for 1 var only
+                ".fgdc", ".graph", ".help", ".html", ".iso19115",
+                ".ncml", ".nccsvMetadata", ".timeGaps",
+                ".wav" //fails because float and double values can't be written to .wav
+                }, fileType) >= 0)
                 continue;
 
-            results = "This shouldn't happen.";
             try {
+                results = "No error.";
                 tName = gridDataset.makeNewFileForDapQuery(language, null, null, query,
                     EDStatic.fullTestCacheDirectory, 
                     gridDataset.className() + "_soda224", fileType); 
@@ -8832,19 +8837,19 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, "");
 
         //end <
-        results = "shouldn't be this";
+        results = "should be this";
         try {
             String dapQuery = 
                 "sst[(2014-03-01):(2014-02-01)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
-            results = "shouldn't get here";
+            results = "should be this";
         } catch (Throwable t) {
             results = MustBe.throwableToString(t);
         }
-        expected = 
-"SimpleException: Query error: For variable=sst axis#0=time " +
-"Constraint=\"[(2014-03-01):(2014-02-01)]\": StartIndex=3877 is greater than StopIndex=3850.";
+        expected = "should be this"; //2022-02-07 because now [high:low] is allowed
+//"SimpleException: Query error: For variable=sst axis#0=time " +
+//"Constraint=\"[(2014-03-01):(2014-02-01)]\": StartIndex=3877 is greater than StopIndex=3850.";
         Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
 
         //end >
@@ -10376,7 +10381,7 @@ expected =
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
 //"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
-"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2021</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -10655,7 +10660,7 @@ expected =
 //"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
 "    String time_coverage_end \"2021-07-20T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" + //2021-05-03 was -present
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2021\";\n" + //2021-05-03 changes between -present and current year
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";

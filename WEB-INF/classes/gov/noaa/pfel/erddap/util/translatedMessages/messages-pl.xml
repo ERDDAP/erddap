@@ -3671,33 +3671,22 @@ Możliwe, że niektóre zbiory danych nie są obecnie dostępne lub nie masz upr
 <logoutOpenID>Wyloguj się z dostawcy OpenID.</logoutOpenID>
 <!--  wylogujSukces ostatnia aktualizacja 2019-12-19 -->
 <logoutSuccess>Pomyślnie się wylogowałeś.
-Nie używaj przycisku Wstecz w przeglądarce.
-Użyj powyższego linku „ERDDAP ”, a następnie użyj innych linków, aby przejść do stron ERDDAP, które Cię interesują.
+
+Nie używaj przycisku Wstecz w przeglądarce. Użyj powyższego linku „ERDDAP”,
+następnie użyj innych linków, aby przejść do stron ERDDAP, które Cię interesują.
 Jeśli strona internetowa z pamięci podręcznej mówi, że nadal jesteś zalogowany, załaduj ponownie stronę.
-W celu zwiększenia bezpieczeństwa (zwłaszcza jeśli jest to komputer współdzielony), powinieneś:
-* Jeśli używałeś ORCHID, wejdź na https://orcid.org/my-orcid i tam się wyloguj.
-* Wyczyść pamięć podręczną przeglądarki:
-* W przeglądarce Chrome użyj opcji „Więcej narzędzi:
-Wyczyść dane przeglądania:
-Obrazy i pliki w pamięci podręcznej” oraz „Pliki cookie”.
-* W Edge użyj opcji „Ustawienia:
-Prywatność i bezpieczeństwo:
-Wyczyść dane przeglądania”.
-* W przeglądarce Firefox użyj opcji „Opcje :
-Zaawansowane :
-Sieć :
-Buforowana zawartość sieci Web :
-Wyczyść teraz”.
-* W Operze użyj &quot;Menu:
-Więcej narzędzi:
-Wyczyść dane przeglądania&quot;.
-* W Safari użyj „Safari :
-Preferencje :
-Zaawansowane :
-Pokaż Develop”, a następnie „Safari :
-Develop :
-Puste pamięci podręczne”.
-* Zamknij tę kartę przeglądarki.</logoutSuccess>
+
+Aby zwiększyć bezpieczeństwo (zwłaszcza jeśli jest to komputer współdzielony), powinieneś:
+ * Jeśli używałeś ORCHID, wejdź na https://orcid.org/my-orcid i tam też się wyloguj.
+ * Wyczyść pamięć podręczną przeglądarki:
+   * W przeglądarce Chrome użyj „Więcej narzędzi: Wyczyść dane przeglądania: Obrazy i pliki w pamięci podręcznej”
+       i „Cookies”.
+   * W Edge użyj opcji „Ustawienia: Prywatność i bezpieczeństwo: Wyczyść dane przeglądania”.
+   * W przeglądarce Firefox użyj opcji „Opcje : Zaawansowane : Sieć : Buforowana zawartość sieci Web : Wyczyść teraz”.
+   * W Operze użyj &quot;Menu: Więcej narzędzi: Wyczyść dane przeglądania&quot;.
+   * W Safari użyj &quot;Safari : Preferencje : Zaawansowane : Pokaż Develop&quot;,
+       następnie „Safari: Develop: Puste pamięci podręczne”.
+ * Zamknij tę kartę przeglądarki.</logoutSuccess>
 <mag>Zrób wykres</mag>
 <magAxisX>Oś X</magAxisX>
 <magAxisY>Oś Y</magAxisY>

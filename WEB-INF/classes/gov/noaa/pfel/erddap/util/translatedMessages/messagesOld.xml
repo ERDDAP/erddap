@@ -4277,7 +4277,7 @@ If a cached web page says you aren't logged in, reload the page.
 
 <!-- logoutSuccess last updated 2019-12-19 -->
 <logoutSuccess>
-You have successfully logged out.
+You have successfully logged out. 
 
 Don't use your browser's Back button. Use the "ERDDAP" link above,
 then use other links to go to ERDDAP pages you are interested in.

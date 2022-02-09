@@ -37,14 +37,14 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
      */
     public static boolean verbose = false; 
 
-    protected HttpServletRequest request;
-    protected HttpServletResponse response;
-    protected String cacheDir;
-    protected String fileName;
-    protected String fileType;
-    protected String extension;
+    HttpServletRequest request;
+    HttpServletResponse response;
+    String localDir;
+    String fileName;
+    String fileType;
+    String extension;
 
-    protected String usingCompression = ""; //not yet set
+    protected String usingCompression = ""; //see usingCompression() below
     protected OutputStream outputStream;
     protected boolean hasRangeRequest;
 
@@ -53,10 +53,8 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
      *
      * @param tRequest  information is extracted from the header of the request
      * @param tResponse the outputStream is created from/for the response
-     * @param tCacheDir the directory that will hold the file temporarily
+     * @param tLocalDir the local directory that will hold the temporary file
      * @param tFileName without the directory or extension.
-     *    This is only used for fileExtensions that encourage the client to 
-     *    save the contents in a file (e.g., .csv).
      * @param tFileType The ERDDAP extension e.g., .esriAscii.
      *    In a few cases, more than one fileType (e.g., .asc and .esriAscii) 
      *    convert to the same actual extension (i.e., tExtension) (e.g., .asc).
@@ -64,18 +62,21 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
      *    (called fileTypeExtension in ERDDAP, e.g., .asc) for the output
      */
     public OutputStreamFromHttpResponseViaAwsS3(HttpServletRequest tRequest,
-        HttpServletResponse tResponse, String tCacheDir, String tFileName, String tFileType, 
+        HttpServletResponse tResponse, String tLocalDir, String tFileName, String tFileType, 
         String tExtension) {
 
         request = tRequest;
         response = tResponse;
-        cacheDir = File2.addSlash(tCacheDir);
+        localDir = File2.addSlash(tLocalDir);
         fileName = tFileName;
         fileType = tFileType;
         extension = tExtension;
 
-//EEEK! How should this handle range requests?  Best to disallow range requests??
         hasRangeRequest = request.getHeader("Range") != null; 
+//EEEK! How should this handle range requests?  Best to disallow range requests??
+//  For now, don't allow
+        if (hasRangeRequest)
+            throw new RuntimeException("Range requests are not allowed by the outputToAwsS3 system in ERDDAP.");
     }
 
     public OutputStream outputStream(String characterEncoding) throws Throwable {
@@ -117,7 +118,7 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
             return outputStream;
 
         //make an OutpuStreamViaAwsS3 which has special close() method
-        return outputStream = new OutputStreamViaAwsS3(this);
+        return outputStream = new OutputStreamViaAwsS3(this, characterEncoding);
     }
 
     /** 
@@ -126,8 +127,8 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
      * or "identity" if no compression.
      */
     public String usingCompression() {
-//!!! deal with this
-        return usingCompression;
+//for now, no compression 
+        return "identity"; //ideally: usingCompression;  
     }
 
     /**

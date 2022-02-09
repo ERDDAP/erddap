@@ -3699,33 +3699,22 @@ Det er muligt, at nogle datasæt ikke er tilgængelige i øjeblikket, eller at d
 <logoutOpenID>Log ud fra din OpenID-udbyder.</logoutOpenID>
 <!--  logoutSuccess sidst opdateret 2019-12-19 -->
 <logoutSuccess>Du har logget ud.
-Brug ikke din browsers Tilbage-knap.
-Brug linket &quot;ERDDAP&quot; ovenfor, og brug derefter andre links til at gå til ERDDAP sider, du er interesseret i.
+
+Brug ikke din browsers Tilbage-knap. Brug linket &quot;ERDDAP&quot; ovenfor,
+brug derefter andre links til at gå til ERDDAP-sider, du er interesseret i.
 Hvis en cachelagret webside siger, at du stadig er logget ind, skal du genindlæse siden.
+
 For øget sikkerhed (især hvis dette er en delt computer), bør du:
-* Hvis du brugte ORCHID, skal du gå til https://orcid.org/my-orcid og også logge ud der.
-* Ryd din browsers cache:
-* I Chrome skal du bruge &quot;Flere værktøjer:
-Ryd browserdata:
-Cachelagrede billeder og filer&quot; og &quot;Cookies&quot;.
-* I Edge skal du bruge &quot;Indstillinger:
-Privatliv og sikkerhed:
-Ryd browserdata&quot;.
-* I Firefox skal du bruge &quot;Indstillinger :
-Avanceret :
-Netværk :
-Cachelagt webindhold :
-Ryd nu&quot;.
-* I Opera skal du bruge &quot;Menu:
-Flere værktøjer:
-Ryd browserdata&quot;.
-* I Safari skal du bruge &quot;Safari :
-Præferencer :
-Avanceret :
-Vis udvikle&quot;, derefter &quot;Safari :
-Udvikle :
-tomme caches&quot;.
-* Luk denne browserfane.</logoutSuccess>
+ * Hvis du brugte ORCHID, skal du gå til https://orcid.org/my-orcid og også logge ud der.
+ * Ryd din browsers cache:
+   * I Chrome skal du bruge &quot;Flere værktøjer : Ryd browserdata : Cachelagrede billeder og filer&quot;
+       og &quot;Cookies&quot;.
+   * I Edge skal du bruge &quot;Indstillinger: Privatliv og sikkerhed: Ryd browserdata&quot;.
+   * I Firefox skal du bruge &quot;Indstillinger : Avanceret : Netværk : Cachelagt webindhold : Ryd nu&quot;.
+   * I Opera skal du bruge &quot;Menu: Flere værktøjer: Ryd browserdata&quot;.
+   * I Safari skal du bruge &quot;Safari : Præferencer : Avanceret : Vis udvikling&quot;,
+       derefter &quot;Safari : Develop : Empty Caches&quot;.
+ * Luk denne browserfane.</logoutSuccess>
 <mag>Lav en graf</mag>
 <magAxisX>X-akse</magAxisX>
 <magAxisY>Y-akse</magAxisY>

@@ -3011,18 +3011,23 @@ URL 標識數據集、響應所需的文件類型、要查看的數據子集以�
 <logout>登出</logout>
 <logoutOpenID>從您的 OpenID 提供商註銷。</logoutOpenID>
 <!--  logoutSuccess 最後更新時間 2019-12-19 -->
-<logoutSuccess>您已成功註銷。不要使用瀏覽器的後退按鈕。使用上面的“ ERDDAP ”鏈接，然後使用其他鏈接轉到您感興趣的ERDDAP頁面。如果緩存的網頁顯示您仍處於登錄狀態，請重新加載該頁面。為了提高安全性（特別是如果這是共享計算機），您應該： * 如果您使用 ORCHID，請訪問 https://orcid.org/my-orcid 並在那裡註銷。
-* 清除瀏覽器的緩存： * 在 Chrome 中，使用“更多工具：清除瀏覽數據：緩存的圖像和文件”和“Cookie”。
-* 在 Edge 中，使用“設置：隱私和安全：清除瀏覽數據”。
-* 在 Firefox 中，使用“選項：高級：網絡：緩存的 Web 內容：立即清除”。
-* 在 Opera 中，使用“菜單：更多工具：清除瀏覽數據”。
-* 在 Safari 中，使用“Safari :
-Preferences :
-Advanced :
-Show Develop”，然後使用“Safari :
-Develop :
-Empty Caches”。
-* 關閉此瀏覽器選項卡。</logoutSuccess>
+<logoutSuccess>您已成功註銷。
+
+不要使用瀏覽器的後退按鈕。使用上面的“ERDDAP”鏈接，
+然後使用其他鏈接轉到您感興趣的 ERDDAP 頁面。
+如果緩存的網頁顯示您仍處於登錄狀態，請重新加載該頁面。
+
+為了提高安全性（特別是如果這是一台共享計算機），您應該：
+ * 如果您使用 ORCHID，請訪問 https://orcid.org/my-orcid 並在那裡註銷。
+ * 清除瀏覽器緩存：
+   * 在 Chrome 中，使用“更多工具：清除瀏覽數據：緩存的圖像和文件”
+       和“餅乾”。
+   * 在 Edge 中，使用“設置：隱私和安全：清除瀏覽數據”。
+   * 在 Firefox 中，使用“選項：高級：網絡：緩存的 Web 內容：立即清除”。
+   * 在 Opera 中，使用“菜單：更多工具：清除瀏覽數據”。
+   * 在 Safari 中，使用“Safari : Preferences : Advanced : Show Develop”，
+       然後是“Safari：開發：清空緩存”。
+ * 關閉此瀏覽器選項卡。</logoutSuccess>
 <mag>製作圖表</mag>
 <magAxisX>X軸</magAxisX>
 <magAxisY>Y軸</magAxisY>

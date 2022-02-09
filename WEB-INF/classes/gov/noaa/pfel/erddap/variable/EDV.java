@@ -908,13 +908,13 @@ will show NaN).
 
     /**
      * This is used by constructors to set the sourceName and fixedValue
-     * (if souceName starts with "=" and contains a single number or a single
+     * (if sourceName starts with "=" and contains a single number or a single
      * Json-like string).
      *
      * @param tSourceName
      * @throws Throwable if trouble (e.g., if fixed value parses to NaN).
      */
-    protected void setSourceName(String tSourceName) throws Throwable {
+    public void setSourceName(String tSourceName) throws Throwable {
         sourceName = tSourceName;
         fixedValue = extractFixedValue(tSourceName);
     }

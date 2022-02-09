@@ -578,8 +578,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2021-11-22</att>\n" +  //changes
-"        <att name=\"date_issued\">2021-11-22</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2021-12-20</att>\n" +  //changes
+"        <att name=\"date_issued\">2021-12-20</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -660,7 +660,7 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2021-11-22T17:40:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_end\">2021-12-20T17:40:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
 "        <att name=\"time_coverage_start\">2021-11-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
@@ -3677,8 +3677,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-11-22\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2021-11-22\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-01-18\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-01-18\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4072,8 +4072,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-11-22\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2021-11-22\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-01-18\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-01-18\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -5289,8 +5289,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2021-11-22\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2021-11-22\";\n" +  // ""
+"  :date_created = \"2022-01-18\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2022-01-18\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -7138,7 +7138,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 44684971;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 44956400;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7183,7 +7183,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.63792908e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.64034828e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7245,7 +7245,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2021-12-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-01-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7273,9 +7273,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2021-12-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-01-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2021-12-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-01-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7293,7 +7293,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2021-12-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-01-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7318,7 +7318,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the November 2021 data) but is a subset of the " + //month changes
+    "up to and including the December 2021 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7331,7 +7331,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2021-11-26T12:18:00Z\";\n" + //changes
+"    String time_coverage_end \"2021-12-24T12:18:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -14545,7 +14545,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2021-12-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2022-02-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -14877,7 +14877,7 @@ So the changes seem good. */
 "//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14947,7 +14947,7 @@ So the changes seem good. */
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14970,7 +14970,7 @@ So the changes seem good. */
 "//<DataVariable>label=\"airTemperature [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Air Temperature\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"conductivity [siemens meter-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Conductivity\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"relativeHumidity [percent]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Relative Humidity\" </DataVariable>[10]\n" +
-"//<DataVariable>label=\"salinity\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Practical Salinity\" </DataVariable>[10]\n" +  //was [PSU]
+"//<DataVariable>label=\"salinity [PSU]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Practical Salinity\" </DataVariable>[10]\n" +  //has/doesn't have " [PSU]"
 "//<DataVariable>label=\"seaTemperature [degree_C]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Sea Water Temperature\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"windDirection [degrees (clockwise from true north)]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Earth Relative Wind Direction\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"windSpeed [meter second-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Earth Relative Wind Speed\" </DataVariable>[10]\n" +
@@ -14980,7 +14980,7 @@ So the changes seem good. */
 "//<DataVariable>label=\"platformWindDirection [degrees (clockwise from bow)]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Relative Wind Direction\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"platformWindSpeed [meter second-1]\" value_type=\"FLOAT\" is_primary_variable=\"F\" comment=\"Platform Relative Wind Speed\" </DataVariable>[10]\n" +
 "//<DataVariable>label=\"flag\" value_type=\"INDEXED_TEXT\" is_primary_variable=\"F\" comment=\"Quality Control Flags\" </DataVariable>[10]\n" +
-"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]site[9]time_ISO8601[9]IMO[9]cruise_id[9]expocode[9]facility[9]platform[9]platform_version[9]airPressure [millibar][9]airTemperature [degree_C][9]conductivity [siemens meter-1][9]relativeHumidity [percent][9]salinity[9]seaTemperature [degree_C][9]windDirection [degrees (clockwise from true north)][9]windSpeed [meter second-1][9]platformCourse [degrees_true][9]platformHeading [degrees_true][9]platformSpeed [meter second-1][9]platformWindDirection [degrees (clockwise from bow)][9]platformWindSpeed [meter second-1][9]flag[10]\n" +
+"Cruise[9]Station[9]Type[9]yyyy-mm-ddThh:mm:ss.sss[9]Longitude [degrees_east][9]Latitude [degrees_north][9]site[9]time_ISO8601[9]IMO[9]cruise_id[9]expocode[9]facility[9]platform[9]platform_version[9]airPressure [millibar][9]airTemperature [degree_C][9]conductivity [siemens meter-1][9]relativeHumidity [percent][9]salinity [PSU][9]seaTemperature [degree_C][9]windDirection [degrees (clockwise from true north)][9]windSpeed [meter second-1][9]platformCourse [degrees_true][9]platformHeading [degrees_true][9]platformSpeed [meter second-1][9]platformWindDirection [degrees (clockwise from bow)][9]platformWindSpeed [meter second-1][9]flag[10]\n" + //has/doesn't have " [PSU]"
 "WTEP[9][9]*[9][9]201.8352[9]55.69271[9]OSCAR DYSON[9]2007-09-01T00:00:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.6[9]16.8[9][9]35.1[9][9]12.12[9]205.31[9]1.640936[9]29.65[9]33.06[9]1.38888[9]152.38[9]0.28292[9]ZZZZZZZZZZZZGZ[10]\n" +
 "WTEP[9][9]*[9][9]201.83586[9]55.69335[9]OSCAR DYSON[9]2007-09-01T00:01:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.58[9]16.3[9][9]33.6[9][9]12.08[9]208.04[9]1.599784[9]29.58[9]31.84[9]1.38888[9]165.08[9]0.236624[9]ZZZZZZZZZZZZGZ[10]\n" +
 "WTEP[9][9]*[9][9]201.83647[9]55.69401[9]OSCAR DYSON[9]2007-09-01T00:02:00.000Z[9]unknown at this time[9]Cruise_id undefined for now[9]EXPOCODE undefined for now[9]NOAA[9]SCS[9]4.0[9]1008.6[9]16.1[9][9]39.5[9][9]12.07[9]207.75[9]1.486616[9]28.12[9]31.63[9]1.38888[9]164.03[9]0.123456[9]ZZZZZZZZZZZZGZ[10]\n" +
@@ -15000,7 +15000,7 @@ So the changes seem good. */
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -15083,7 +15083,7 @@ So the changes seem good. */
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16071,7 +16071,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16570,7 +16570,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.16</Software>[10]\n" +
+"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -17863,7 +17863,7 @@ expected =
         int po5 = tLog.indexOf(
             "*** EDDTableFromFiles testTimeSince19000101 constructor finished. TIME=",
             po4);
-        Test.ensureTrue(po5 > po4, "po5=" + po5 + " isn't greater than po4=" + po4 + " !");
+        Test.ensureTrue(po5 > po4, "\n\n>>tLog=" + tLog + "\n[end log]\npo5=" + po5 + " isn't greater than po4=" + po4 + " !");
     }
 
     /**
@@ -19445,8 +19445,9 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 "(Error {\n" +
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
-    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to 202";
-//2020-05-04T19:50:00Z, and hasNaN=false.)\n"; //end date changes
+//error message is one of these two (changes periodically):
+//"(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=202";
+    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to 202";  //2022-01-18T21:00:00Z, and hasNaN=false.)\n"; //end date changes
         Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);
 

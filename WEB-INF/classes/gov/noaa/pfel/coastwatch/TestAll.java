@@ -121,10 +121,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/fred/biooracle.nc"; 
-//      String2.log(NcHelper.ncdump(tFileName, "-h"));  
+//      String tFileName = "/data/glos/MI-D10_monthly.nc"; 
+//      String2.log(NcHelper.ncdump(tFileName, "-v Time"));  
 
-//      DasDds.main(new String[]{"nesdisVHNnoaaSNPPnoaa20chlaGapfilledDaily", "-verbose"});
+//      DasDds.main(new String[]{"testSideBySidec", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -567,7 +567,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 9, 2021, 11, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 10, 2021, 12, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -581,7 +581,7 @@ public class TestAll  {
 //       to the date I started processing in step 2 above. 
 //       (If processed in chunks, use date of start of last chunk.)
 //    4) Run:  (should fail at current calendar month)
-//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2021);
+//          EDDTableFromNcFiles.testGtspp15FilesExist(1990, 2022);
 //    5) * In [tomcat]/content/erddap/subset/
 //          delete erdGtsppBestNc.json and erdGtsppBest.json
 //       * Load erdGtsppBestNc in localHost ERDDAP.     (20-40 minutes)
@@ -600,10 +600,10 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 9, 2021, 11); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 10, 2021, 12); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
-//       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2021);
+//       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
 //    9) * Load erdGtsppBest in localHost ERDDAP.  (1-10 minutes)
 //       * Generate .json file from
 //         http://localhost:8080/cwexperimental/tabledap/erdGtsppBest.json?trajectory,org,type,platform,cruise&distinct()
@@ -1090,6 +1090,11 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
+//TestSSR.testAwsTransferManager();
+//DasDds.main(new String[]{"nceiPH53sstn1day", "-verbose"});
+
+//EDDGridFromNcFiles.testNcml();
+
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
 
@@ -1259,6 +1264,7 @@ WaitThenTryAgainException wttae;
         //EDDTableCopyPost.test(-1, false);                                             //INACTIVE   which, reallyVerbose?
 
         Erddap.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);
+        TranslateMessages.test(          errorSB, interactive, doSlowTestsToo, 0, -1);
         ArchiveADataset.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up

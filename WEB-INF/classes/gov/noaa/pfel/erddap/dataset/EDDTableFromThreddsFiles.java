@@ -1398,7 +1398,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
             eddTable.className() + "_ShipEntire", ".das"); 
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
-        boolean with = false; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeared, 2019-05-20 returned
+        boolean with = true; //2014-01-09 several lines disappeared, 2016-09-16 returned, ... disappeared, 2019-05-20 returned, ...
         expected =           //2019-11-22 ~2 dozen small changes to centerline, precision, instrument, qcindex, ...
 "Attributes \\{\n" +
 " s \\{\n" +

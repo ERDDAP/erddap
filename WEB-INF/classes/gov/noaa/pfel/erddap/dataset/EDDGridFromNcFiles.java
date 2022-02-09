@@ -5468,6 +5468,13 @@ expected =
         String2.log("\n*** EDDGridFromNcFiles.testNcml");
         int language = 0; 
 
+        //2022-02-07 These were the simplest test I could create to demonstrate problems reading .ncml file
+        //when using individual netcdf modules, instead of netcdf-java.
+        String2.log(NcHelper.ncdump("/u00/data/viirs/MappedMonthly4km/V20120012012031.L3m_MO_NPP_CHL_chlor_a_4km", "-h"));  //suceeds. an hdf5 file
+        String2.log(NcHelper.ncdump("/u00/data/viirs/MappedMonthly4km/V20120322012060.L3m_MO_NPP_CHL_chlor_a_4km", "-h"));  //suceeds. an hdf5 file
+        String2.log(NcHelper.ncdump("/u00/data/viirs/MappedMonthly4km/LatLon.nc", "-h"));                                   //suceeds. an hdf5 file
+        String2.log(NcHelper.ncdump("/u00/data/viirs/MappedMonthly4km/m4.ncml", "-h")); //fails
+
         //2013-10-25 netcdf-java's reading of the source HDF4 file changed dramatically.
         //  Attributes that had internal spaces now have underscores.
         //  So the previous m4.ncml was making changes to atts that no longer existed

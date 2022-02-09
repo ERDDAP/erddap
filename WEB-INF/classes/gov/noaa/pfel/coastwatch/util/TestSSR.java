@@ -481,6 +481,16 @@ public class TestSSR {
         Test.ensureEqual(String2.isRemote(     privateErddapSource20), true,  ""); 
         Test.ensureEqual(String2.isTrulyRemote(privateErddapSource20), true,  ""); 
 
+        String bro[] = String2.parseAwsS3Url(privateAwsSource20);
+        Test.ensureEqual(bro[0], "bobsimonsdata", "");
+        Test.ensureEqual(bro[1], "us-east-1",     "");
+        Test.ensureEqual(bro[2], "testMediaFiles/noaa20.gif", "");
+
+        bro = String2.parseAwsS3Url("http://some.bucket.s3-website-us-east-1.amazonaws.com/some/object.gif");
+        Test.ensureEqual(bro[0], "some.bucket", "");
+        Test.ensureEqual(bro[1], "us-east-1",     "");
+        Test.ensureEqual(bro[2], "some/object.gif", "");
+
         //private file length
         Test.ensureEqual(File2.length(localFile20),        1043, ""); 
         Test.ensureEqual(File2.length(privateAwsSource20), 1043, ""); 
@@ -490,25 +500,25 @@ public class TestSSR {
         Test.ensureEqual(File2.getLastModified(privateAwsSource20), 1620243246000L, ""); //the instant I put it in S3
 
         //a public bucket/file should allow access via a simple https request
-        boolean caughtException = false;
+        results = "okay";
         try {
             SSR.touchUrl("https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/doi.txt", 5000, false); //handleS3ViaSDK=false
         } catch (Exception e) {
-            caughtException = true;
+            results = e.toString();
         }
-        Test.ensureEqual(caughtException, false, 
+        Test.ensureEqual(results, "okay", 
             "A public S3 file should be accessible (e.g., touchUrl) via a simple URL.");
 
         //a private bucket/file shouldn't allow access via a simple https request
-        caughtException = false;
+        results = "shouldn't happen";
         try {
             SSR.touchUrl(privateAwsSource20, 5000, false); //handleS3ViaSDK=false
         } catch (Exception e) {
-            caughtException = true;
-            String2.log("Expected exception:\n" + MustBe.throwableToString(e));
+            results = e.toString();
         }
-        Test.ensureEqual(caughtException, true, 
-            "A private S3 file shouldn't be accessible (e.g., touchUrl) via a simple URL (even with credentials on this computer).");
+        expected = "java.io.IOException: HTTP status code=403 for URL: https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/noaa20.gif\n"; 
+        Test.ensureEqual(results.substring(0, expected.length()), expected,
+            "A private S3 file shouldn't be accessible (e.g., touchUrl) via a simple URL (even with credentials on this computer). results=" + results);
 
         //byte range private
         Test.ensureTrue(File2.copy(privateAwsSource20, dest + "1a"), "");
@@ -564,6 +574,96 @@ public class TestSSR {
         Test.ensureEqual(results, expected2, "results=\n" + results);        
     }
 
+    /**
+     * Tests Aws TransferManager.
+     */
+    public static void testAwsTransferManager() throws Exception {
+
+        //*** test a lot of AWS S3 actions on a private AWS bucket
+        //delete a file on S3 to ensure it doesn't exist (ignore result)
+        String origLocal = String2.unitTestDataDir + "ascii/standardizeWhat1.csv";
+        String tempLocal = File2.getSystemTempDirectory() + "testAwsS3.csv";
+        String awsUrl  = "https://bobsimonsdata.s3.us-east-1.amazonaws.com/testMediaFiles/testAwsS3.csv";
+        //bucket is publicly readible in a browser via http but not https
+        String awsUrl2 = "http://bob.simons.public.output.s3-website-us-east-1.amazonaws.com/testAwsS3.csv"; 
+        String content;
+
+        //delete files I will create
+        File2.deleteAwsS3File(awsUrl);
+        File2.delete(tempLocal);
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl), false, "");
+
+        //upload a file to S3
+        SSR.uploadFileToAwsS3(null, origLocal, awsUrl,  "text/csv");
+
+        //length of Aws S3 file
+        Test.ensureEqual(File2.length(awsUrl), 44, "");
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl), true, "");
+
+        //download a file from S3
+        SSR.downloadFile(awsUrl, tempLocal, false);  //tryToUseCompression is ignored
+
+        //read local file
+        content = File2.directReadFrom88591File(tempLocal);
+        Test.ensureEqual(content, 
+            "date,data\n" +
+            "20100101000000,1\n" +
+            "20100102000000,2\n", 
+            "content=" + String2.annotatedString(content));
+
+        //delete files I created
+        File2.deleteAwsS3File(awsUrl);
+        File2.delete(tempLocal);
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl ), false, "");
+
+
+        //**************  again but with awsUrl2
+        //delete files I will create
+        File2.deleteAwsS3File(awsUrl2);
+        File2.delete(tempLocal);
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl2), false, "");
+
+        //upload a file to S3
+        //fails here. 
+        //"software.amazon.awssdk.crt.s3.CrtS3RuntimeException: Retry cannot be attempted 
+        // because the maximum number of retries has been exceeded. AWS_IO_MAX_RETRIES_EXCEEDED(1069)
+        // at com.amazonaws.s3.S3NativeClient$3.onFinished(S3NativeClient.java:313)"
+        //a permissions problem?
+        SSR.uploadFileToAwsS3(null, origLocal, awsUrl2, "text/csv");  
+
+        //length of Aws S3 file
+        Test.ensureEqual(File2.length(awsUrl2), 44, "");
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl2), true, "");
+
+        //download a file from S3
+        SSR.downloadFile(awsUrl2, tempLocal, false);  //tryToUseCompression is ignored
+
+        //read local file
+        content = File2.directReadFrom88591File(tempLocal);
+        Test.ensureEqual(content, 
+            "date,data\n" +
+            "20100101000000,1\n" +
+            "20100102000000,2\n", 
+            "content=" + String2.annotatedString(content));
+
+        //delete files I created
+        File2.deleteAwsS3File(awsUrl2);
+        File2.delete(tempLocal);
+
+        //isAwsS3File
+        Test.ensureEqual(File2.isAwsS3File(awsUrl2), false, "");
+    }
+
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -579,7 +679,7 @@ public class TestSSR {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 2 : 0;
+            lastTest = interactive? 2 : 1;
         String msg = "\n^^^ TestSSR.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -596,6 +696,7 @@ public class TestSSR {
 
                 } else {
                     if (test ==  0) testAwsS3();
+                    if (test ==  1) testAwsTransferManager();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
