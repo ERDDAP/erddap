@@ -1301,6 +1301,14 @@ public abstract class EDDGrid extends EDD {
      * @param repair if true, this method tries to do its best repair problems (guess at intent), 
      *     not to throw exceptions 
      * @param inputValues the double values parsed from the query are stored here.
+     *      These are returned in the order the user provided them, there is no
+     *      correction to make sure the lower value is first. Stride is not
+     *      included, just the start and stop values. If a single value is
+     *      provided, it is duplicated in the inputValues. Index inputs are
+     *      converted to the value for that index on the axis and the value is
+     *      added to the input array (not the index). If the query contains
+     *      'last', then the input values will contain the lastDestinationValue
+     *      for that axis.
      * @throws Throwable if invalid query
      *     (0 resultsVariables is a valid query)
      */
@@ -1610,6 +1618,14 @@ public abstract class EDDGrid extends EDD {
      * @param axis the axis number, 0..
      * @param repair if true, this tries to do its best not to throw an exception (guess at intent)
      * @param inputValues the double values parsed from the query are stored here.
+     *      These are returned in the order the user provided them, there is no
+     *      correction to make sure the lower value is first. Stride is not
+     *      included, just the start and stop values. If a single value is
+     *      provided, it is duplicated in the inputValues. Index inputs are
+     *      converted to the value for that index on the axis and the value is
+     *      added to the input array (not the index). If the query contains
+     *      'last', then the input values will contain the lastDestinationValue
+     *      for that axis.
      * @return int[4], 0=startI, 1=strideI, 2=stopI, and 3=newPo (rightPo+1)
      * @throws Throwable if trouble
      */
@@ -1793,6 +1809,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[0]       , EDStatic.EDDGridStartAr[0]       , startS, "" + (nAvSourceValues - 1)),
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[language], EDStatic.EDDGridStartAr[language], startS, "" + (nAvSourceValues - 1))));
                 }
+                inputValues.add(av.destinationDouble(startI));
             }
 
             //if (startS.equals("last") || stopS.equals("(last)")) {
@@ -1845,6 +1862,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[0]       , EDStatic.EDDGridStopAr[0]       , stopS, "" + (nAvSourceValues - 1)),
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[language], EDStatic.EDDGridStopAr[language], stopS, "" + (nAvSourceValues - 1))));
                 }
+                inputValues.add(av.destinationDouble(stopI));
             }
         }
 
@@ -5602,7 +5620,7 @@ Attributes {
             DoubleArray inputValues  = new DoubleArray();
             // TransparentPng repairs input ranges during parsing and stores raw input values in the inputValues array.
             parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, transparentPng /* repair */, inputValues);
-            
+
             double inputMinX = Double.MIN_VALUE;
             double inputMaxX = Double.MAX_VALUE;
             double inputMinY = Double.MIN_NORMAL;
@@ -5612,18 +5630,16 @@ Attributes {
             // validates there is data to return before continuing.
             if (transparentPng) {
                 // Get the X input values.
-                int lonAxisIndex = getLonAxisIndex();
-                inputMinX = inputValues.get(lonAxisIndex * 2);
-                inputMaxX = inputValues.get(lonAxisIndex * 2 + 1);
+                inputMinX = inputValues.get(lonIndex * 2);
+                inputMaxX = inputValues.get(lonIndex * 2 + 1);
                 if (inputMinX > inputMaxX) {
                     double d = inputMinX;
                     inputMinX = inputMaxX;
                     inputMaxX = d;
                 }
                 // Get the Y input values.
-                int latAxisIndex = getLatAxisIndex();
-                inputMinY = inputValues.get(latAxisIndex * 2);
-                inputMaxY = inputValues.get(latAxisIndex * 2 + 1);
+                inputMinY = inputValues.get(latIndex * 2);
+                inputMaxY = inputValues.get(latIndex * 2 + 1);
                 if (inputMinY > inputMaxY) {
                     double d = inputMinY;
                     inputMinY = inputMaxY;
@@ -7047,32 +7063,6 @@ Attributes {
     }
 
     /**
-     * Gets the index of the axis that represents latitude.
-     * @return
-     */
-    private int getLatAxisIndex() {
-        for (int i = 0; i < axisVariables.length; i++) {
-            if (EDV.LAT_LONGNAME.equals(axisVariables[i].longName())) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * Gets the index of the axis that represents longitude.
-     * @return
-     */
-    private int getLonAxisIndex() {
-        for (int i = 0; i < axisVariables.length; i++) {
-            if (EDV.LON_LONGNAME.equals(axisVariables[i].longName())) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    /**
      * Validates the provided min/max lat/lon values are valid and throws
      * SimpleException if they are not. Invalid vales are if any value is
      * outside the range of valid lat/lon values. It is also invalid if no part
@@ -7095,23 +7085,15 @@ Attributes {
         // to allow for slightly outside of range inputs.
 
         // X / longitude.
-        EDVGridAxis av = axisVariables[getLonAxisIndex()];
+        EDVGridAxis av = axisVariables[lonIndex];
         String diagnostic0 = MessageFormat.format(
                 EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
-                "" + getLonAxisIndex(), av.destinationName());
+                "" + lonIndex, av.destinationName());
         String diagnosticl = MessageFormat.format(
                 EDStatic.queryErrorGridDiagnosticAr[language],
-                av.destinationName(), "" + getLonAxisIndex(),
+                av.destinationName(), "" + lonIndex,
                 av.destinationName());
         // Validate Longitude values.
-        validateGreaterThanThrowOrRepair(precision, minX, "" + minX, "-180",
-                -180 /* repairTo */, -181 /* coarseMin */, false /* repair */,
-                language, diagnostic0, diagnosticl);
-        // Use 360 for max (not 180) to support datasets that are 0-360 for
-        // longitude.
-        validateLessThanThrowOrRepair(precision, maxX, "" + maxX, "360",
-                360/* repairTo */, 361/* coarseMax */, false /* repair */,
-                language, diagnostic0, diagnosticl);
         // Validate request contains some data.
         validateLessThanThrowOrRepair(precision, minX, "" + minX, av,
                 false /* repair */, language, diagnostic0, diagnosticl);
@@ -7119,13 +7101,13 @@ Attributes {
                 false /* repair */, language, diagnostic0, diagnosticl);
 
         // Y / Latitude.
-        av = axisVariables[getLatAxisIndex()];
+        av = axisVariables[latIndex];
         diagnostic0 = MessageFormat.format(
                 EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
-                "" + getLatAxisIndex(), av.destinationName());
+                "" + latIndex, av.destinationName());
         diagnosticl = MessageFormat.format(
                 EDStatic.queryErrorGridDiagnosticAr[language],
-                av.destinationName(), "" + getLatAxisIndex(),
+                av.destinationName(), "" + latIndex,
                 av.destinationName());
         // Validate Latitude values.
         validateGreaterThanThrowOrRepair(precision, minY, "" + minY, "-90",
@@ -14816,17 +14798,9 @@ writer.write(
         testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
                 MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220),
                 fileTypeName,
-                "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /*
-                                                                                    * expected
-                                                                                    */);
-        // Invalid min x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, -200, 220),
-                fileTypeName, expectedHashForInvalidInput);
-        // Invalid max x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 370),
-                fileTypeName, expectedHashForInvalidInput);
+                "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /* expected */);
+        
+
         // Invalid min y.
         testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
                 MessageFormat.format(userDapQueryTemplate, -100, 40, 210, 220),
@@ -14899,9 +14873,10 @@ writer.write(
             String expected) throws Throwable {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
+        String filename = dir +  Math2.random(Integer.MAX_VALUE) + ".png"; 
 
         eddGrid.saveAsImage(0 /* language */, null /* loggedInAs */, requestUrl,
-                userDapQuery, dir, "filename" /* fileName */,
+                userDapQuery, dir, filename,
                 osss /* outputStreamSource */, fileTypeName);
 
         try {
@@ -14917,12 +14892,17 @@ writer.write(
             }
 
             String results = hexString.toString();
-
+            
             // String2.log(results);
             Test.ensureEqual(results.substring(0, expected.length()), expected,
                     "\nresults=\n" + results.substring(0,
                             Math.min(256, results.length())));
         } catch (Exception ex) {
+            FileOutputStream fos = new FileOutputStream(filename);
+            fos.write(baos.toByteArray());
+            fos.flush();
+            fos.close();
+            SSR.displayInBrowser("file://" + filename);
             throw new RuntimeException(ex);
         }
     }
