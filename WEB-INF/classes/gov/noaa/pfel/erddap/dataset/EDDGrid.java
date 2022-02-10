@@ -14751,7 +14751,7 @@ writer.write(
             boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
             lastTest = interactive ? -1 : 0;
-        String msg = "\n^^^ EDD.test(" + interactive + ") test=";
+        String msg = "\n^^^ EDDGrid.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
             try {
@@ -14799,7 +14799,6 @@ writer.write(
                 MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220),
                 fileTypeName,
                 "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /* expected */);
-        
 
         // Invalid min y.
         testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
