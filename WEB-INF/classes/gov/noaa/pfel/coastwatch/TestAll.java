@@ -1205,6 +1205,7 @@ WaitThenTryAgainException wttae;
 
         //EDDGrid
         EDD.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);  
+        EDDGrid.test(					 errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridFromDap.test(             errorSB, interactive, doSlowTestsToo, 0, -1);  
         //EDDGridFromBinaryFile.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  class not finished / not in use
         EDDGridFromErddap.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
