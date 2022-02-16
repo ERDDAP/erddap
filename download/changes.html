@@ -68,15 +68,30 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
 <h2><a class="selfLink" id="changes2.17" href="#changes2.17" rel="bookmark">Changes</a> 
-in ERDDAP version 2.17 (released 2022-??-??)</h2>
+in ERDDAP version 2.17 (released 2022-02-16)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>* CHANGE: Previously, ERDDAP rejected griddap requests where the index values
+  <li>BUG FIX: After changes to the orderBy system a few years ago, 
+    Tabledap's Make A Graph didn't properly handle many queries which used orderBy<i>Xxx</i>. 
+    Now it does.
+    Thanks to Maurice Libes.
+    <br>&nbsp;
+
+  <li>CHANGE: Previously, ERDDAP rejected requests for .transparentPng's when 
+    the latitude and/or longitude values were partly or fully out-of-range. 
+    (ERDDAP GitHub Issues #19, posted by Rob Fuller -- thanks for posting that Rob)
+    Now it returns transparent pixels for any out-of-range areas of the image.
+    This is useful for many client applications.
+    The code changes to make this change were done entirely by Chris John. 
+    Thank you very much, Chris!
+    <br>&nbsp;
+
+  <li>CHANGE: Previously, ERDDAP rejected griddap requests where the index values
       for a given dimension were [high:low]. 
       Now it makes those requests valid by swapping the low and high values.
       This solves a longstanding problem for users and for external programs like xtracto
@@ -102,7 +117,12 @@ in ERDDAP version 2.17 (released 2022-??-??)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
-  <li>TO DO:
+  <li>TO DO: If you had set <kbd>&lt;dataProviderFormActive&gt;</kbd> to <kbd>false</kbd> 
+    to temporarily deal with the XSS vulnerability, please set it back to <kbd>true</kbd>.
+    <br>&nbsp;
+
+  <li>SECURITY BUG FIX: Fixed XSS vulnerability in Data Provider Form.
+    Thanks to Genaro Contreras Gutiérrez.
     <br>&nbsp;
 
   <li>BUG FIX: When an AWS S3 dirctory had more than 10000 files, ERDDAP threw an "Internal Error".
@@ -6671,7 +6691,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.16
+<p>ERDDAP, Version 2.17
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

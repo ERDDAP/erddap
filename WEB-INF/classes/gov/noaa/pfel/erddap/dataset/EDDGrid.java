@@ -7081,12 +7081,12 @@ Attributes {
      * 
      * @param language the index of the selected language
      * @param minX     the minimum X / longitude value to validate. minX should
-     *                 be < maxX
+     *                 be &lt; maxX
      * @param maxX     the maximum X / longitude value to check. minX should be
-     *                 < maxX
-     * @param minY     the minimum Y / latitude value to check. minY should be <
+     *                 &lt; maxX
+     * @param minY     the minimum Y / latitude value to check. minY should be &lt;
      *                 maxY
-     * @param maxY     the minimum Y / latitude value to check. minY should be <
+     * @param maxY     the minimum Y / latitude value to check. minY should be &lt;
      *                 maxY
      */
     public void validateLatLon(int language, double minX, double maxX,
@@ -7451,7 +7451,7 @@ Attributes {
         //.transparentPng uses Sgt.makeCleanMap which projects data (even, e.g., Mercator)
         //so resulting .png will use a geographic projection.
 
-        //although the Google docs say lon must be +-180, lon > 180 is sortof ok!
+        //although the Google docs say lon must be +-180, lon > 180 is sort of ok!
         EDVLonGridAxis lonEdv = (EDVLonGridAxis)axisVariables[lonIndex];
         EDVLatGridAxis latEdv = (EDVLatGridAxis)axisVariables[latIndex];
 
@@ -14762,7 +14762,7 @@ writer.write(
 
         // Make fully valid image
         testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220),
+                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220), //#'s are minY, maxY, minX, maxX
                 fileTypeName,
                 "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /* expected */);
 

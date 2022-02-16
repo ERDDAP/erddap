@@ -240,10 +240,10 @@ public class TestAll  {
 //      1) run:
 //           EDD.verbose = true;
 //           EDDGridFromDap.testUAFSubThreddsCatalog(0); //0= entire official clean catalog  ~16hrs
-//      2) Results file is /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml          
-//         Log file is     /data/_erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml.log.txt
+//      2) Results file is /erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml          
+//         Log file is     /erddapBPD/logs/UAFdatasets[uafi]_[dateTime].xml.log.txt
 //      3) Look at problems, creator_, title, .... Make improvements.
-//         from /data/_erddapBPD/logs:
+//         from /erddapBPD/logs:
 //         grep "SimpleException: Error while getting DAS from" 
 //         grep "unable to get axis" 
 //         grep "unsorted axis" 
@@ -375,7 +375,7 @@ public class TestAll  {
 
       /* 
       //This downloads AWS S3 directory into to a jsonlCSV file 
-      //The lower level copy (written to file as it is downloaded) is in _erddapBPD/datasets/_GenerateDatasetsXml
+      //The lower level copy (written to file as it is downloaded) is in erddapBPD/datasets/_GenerateDatasetsXml
       FileVisitorDNLS.verbose=true; 
       FileVisitorDNLS.reallyVerbose=true;
       FileVisitorDNLS.debugMode=true;
@@ -393,7 +393,7 @@ public class TestAll  {
       String2.log(File2.directReadFrom88591File(outName));
       String2.log("The Results are in " + outName + "\n" +
           "The lower level (partial?) copy (written to file as it is downloaded)\n" +
-          "is in _erddapBPD/datasets/_GenerateDatasetsXml .");
+          "is in erddapBPD/datasets/_GenerateDatasetsXml .");
       /* */      
    
 //    Do this periodically to update the local cache of InPort xml files
@@ -1089,9 +1089,6 @@ WaitThenTryAgainException wttae;
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
         boolean doSlowTestsToo = false;
-
-//TestSSR.testAwsTransferManager();
-//DasDds.main(new String[]{"nceiPH53sstn1day", "-verbose"});
 
 //EDDGridFromNcFiles.testNcml();
 

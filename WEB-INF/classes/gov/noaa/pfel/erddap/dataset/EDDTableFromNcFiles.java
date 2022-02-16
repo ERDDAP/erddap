@@ -5763,9 +5763,9 @@ expected =
             //String tInfoUrl, String tInstitution, String tSummary, String tTitle,
             //Attributes externalAddGlobalAttributes) 
         String2.log(generateDatasetsXml(
-            "c:/data/_erddapBPD/copy/tcPostDet3/",
+            "c:/erddapBPD/copy/tcPostDet3/",
             ".*\\.nc", 
-            "c:/data/_erddapBPD/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
+            "c:/erddapBPD/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
             "",
             100000000, 
             "", "", "", "", "unique_tag_id",
@@ -7138,7 +7138,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 44956400;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 45282398;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7183,7 +7183,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.64034828e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6433712e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7245,7 +7245,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-01-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7273,9 +7273,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-01-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-02-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-01-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-02-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7293,7 +7293,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-01-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7318,7 +7318,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the December 2021 data) but is a subset of the " + //month changes
+    "up to and including the January 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7331,7 +7331,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2021-12-24T12:18:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-01-28T12:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -17851,8 +17851,8 @@ expected =
 
         //test that the dirTable and fileTable weren't found    after that
         expected = 
-"dir/file table doesn't exist: /data/_erddapBPD/dataset/01/testTimeSince19000101/dirTable.nc\n" +
-"dir/file table doesn't exist: /data/_erddapBPD/dataset/01/testTimeSince19000101/fileTable.nc\n" +
+"dir/file table doesn't exist: /erddapBPD/dataset/01/testTimeSince19000101/dirTable.nc\n" +
+"dir/file table doesn't exist: /erddapBPD/dataset/01/testTimeSince19000101/fileTable.nc\n" +
 "creating new dirTable and fileTable (dirTable=null?true fileTable=null?true badFileMap=null?false)";
         int po4 = tLog.indexOf(expected.substring(0, 29), po);
         Test.ensureTrue(po4 > 0, "\n\n************************************\n\"" + 
@@ -19517,6 +19517,45 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     }
 
     /**
+     * This tests orderBy graphs in Make A Graph. 
+     * There were errors in respondToGraphQuery() because it hadn't kept up with
+     * changes to orderBy options over the years.
+     */
+    public static void testMAGOrderByGraphs() throws Throwable {
+
+        String2.log("\n*** EDDTableFromNcFiles.testMAGOrderByGraphs()\n" +
+            "This REQUIRES cwwcNDBCMet in localhost ERDDAP.");
+        int language = 0;
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String dapQuery, tName, start, query, results, expected;
+        EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet");
+
+        //these test very minimal (but common) orderBy requests
+        dapQuery = "http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.graph?" +
+            "time,atmp&time%3E=2021-01-01T00%3A00%3A00Z&time%3C=2021-01-08T00%3A00%3A00Z" +
+            "&station=%2246088%22&.draw=lines&.color=0x000000&.bgColor=0xffccccff";
+
+        SSR.displayInBrowser(dapQuery + "&orderBy(%22atmp%22)"); //goofy request (draw in ascending order of atmp, not time), but ERDDAP does what it was asked
+            
+        SSR.displayInBrowser(dapQuery + "&orderByClosest(%22time/1day%22)");     //value each day which is closest to midnight
+
+        SSR.displayInBrowser(dapQuery + "&orderByCount(%22time/1day%22)");       //!!!y axis units should be 'count'
+
+        SSR.displayInBrowser(dapQuery + "&orderByLimit(%22time/1day,4%22)");     //first 4 values from each day
+
+        SSR.displayInBrowser(dapQuery + "&orderByMax(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
+
+        SSR.displayInBrowser(dapQuery + "&orderByMin(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
+
+        SSR.displayInBrowser(dapQuery + "&orderByMinMax(%22time/1day,atmp%22)"); //the min and max atmp each day (at the time they occurred).  Better if markers.
+
+        SSR.displayInBrowser(dapQuery + "&orderByMean(%22time/1day%22)");        //the mean atmp each day
+
+        SSR.displayInBrowser(dapQuery + "&orderBySum(%22time/1day%22)");         //goofy request, but ERDDAP does what it was asked
+
+    }
+
+    /**
      * This runs all of the interactive or not interactive tests for this class.
      *
      * @param errorSB all caught exceptions are logged to this.
@@ -19530,7 +19569,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 15 : 73;
+            lastTest = interactive? 16 : 73;
         String msg = "\n^^^ EDDTableFromNcFiles.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -19555,6 +19594,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 13) testCopyFilesGenerateDatasetsXml();//requires fedCalLandings
                     if (test == 14) testCopyFilesBasic(true);  //deleteDataFiles?  //requires fedCalLandings
                     if (test == 15) testCopyFilesBasic(false); //uses cachePartialPathRegex  //doesn't require fedCalLandings
+                    if (test == 16) testMAGOrderByGraphs();
 
                 } else {
                     if (test ==  0) test1D(false); //deleteCachedDatasetInfo
