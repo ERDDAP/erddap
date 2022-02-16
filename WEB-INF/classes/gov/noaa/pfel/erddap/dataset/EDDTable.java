@@ -148,18 +148,17 @@ public abstract class EDDTable extends EDD {
     public static String orderByOptions[] = { "",
         "orderBy", "orderByClosest", "orderByCount", "orderByLimit", 
         "orderByMax", "orderByMin", "orderByMinMax", "orderByMean", "orderBySum"};
-    public static String DEFAULT_ORDERBYCLOSEST = "1 hour";
     public static String DEFAULT_ORDERBYLIMIT   = "100";
     /** These are used on web pages when a user changes orderBy. 
      *  They parallel the orderByOptions. */    
     public static String orderByExtraDefaults[] = { "",
-        "", DEFAULT_ORDERBYCLOSEST,         "",      DEFAULT_ORDERBYLIMIT,          
-        "",                     "",         "",      ""};
+        "",    "",     "",      DEFAULT_ORDERBYLIMIT,          
+        "",    "",     "",      "",                    ""};
      /** This is the minimum number of orderBy variables that must be specified
        (not counting the orderByExtra item). */
     public static byte minOrderByVariables[] = { 0,
         1,        1,       0,      0,
-        1,        1,       1,      0};
+        1,        1,       1,      0,     0};
 
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
@@ -10160,16 +10159,20 @@ public abstract class EDDTable extends EDD {
                 StringArray names = StringArray.fromCSV(
                     obPart.substring(start.length(), obPart.length() - 2));
                 StringArray goodNames = new StringArray();
-                boolean usesExtra = orderByExtraDefaults[i].length() > 0; //e.g., orderByLimit, orderByClosest
+                boolean usesExtra = orderByExtraDefaults[i].length() > 0; //e.g., orderByLimit
                 int nNames = names.size() - (usesExtra? 1 : 0); //if uses extra, don't check last item
                 if (nNames < minOrderByVariables[i]) 
                     continue;  //too few items in csv
                 for (int n = 0; n < nNames; n++) {
-                    if (String2.indexOf(dataVariableDestinationNames, names.get(n)) < 0)
+                    String tName = names.get(n);
+                    int divPo = tName.indexOf('/');
+                    if (divPo > 0)
+                        tName = tName.substring(0, divPo);
+                    if (String2.indexOf(dataVariableDestinationNames, tName) < 0)
                         continue;
                     goodNames.add(names.get(n));
-                    if (resultsVariables.indexOf(names.get(n)) < 0)
-                        resultsVariables.add(names.get(n));
+                    if (resultsVariables.indexOf(tName) < 0)
+                        resultsVariables.add(tName);
                 }
                 if (goodNames.size() >= minOrderByVariables[i]) {
                     //success

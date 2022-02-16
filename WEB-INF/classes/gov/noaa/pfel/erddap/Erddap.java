@@ -2268,7 +2268,7 @@ writer.write(dataProviderFormLongDescriptionHTML
                 //convert the info into pseudo datasets.xml
                 String content = 
                     "Data Provider Form - Part 1\n" + //important! Bob's erd.data gmail filter looks for 'Data Provider Form'
-                    "  from " + fromInfo + "\n" +
+                    "  from " + XML.encodeAsHTML(fromInfo) + "\n" +
                     "  ipAddress=" + ipAddress + "\n" +
                     "\n" +
                     "griddedOption=" + griddedOptions[griddedOption] + "\n" +
@@ -2318,7 +2318,7 @@ writer.write(dataProviderFormLongDescriptionHTML
 
             //hidden fields
             writer.write(
-                widgets.hidden("timestamp", XML.encodeAsHTML(tTimestamp)) + 
+                widgets.hidden("timestamp", tTimestamp) + 
                 "\n");
 
 //begin text
@@ -2344,7 +2344,7 @@ String dataProviderContactInfo = EDStatic.dataProviderContactInfoAr[language]
         30, 50, tYourName, ""))
     .replace("&widgetEmailAddress;", widgets.textField("emailAddress", "", //tooltip
         30, 50, tEmailAddress, ""))
-    .replace("&tTimestamp;", tTimestamp);
+    .replace("&tTimestamp;", XML.encodeAsHTML(tTimestamp));
 writer.write(dataProviderContactInfo
 /*
 "<h2>Your Contact Information</h2>\n" +
@@ -2356,7 +2356,7 @@ widgets.textField("yourName", "", //tooltip
 "  <br>What is your email address? " +
 widgets.textField("emailAddress", "", //tooltip
     30, 50, tEmailAddress, "") +
-"  <br>This dataset submission's timestamp is " + tTimestamp + ".\n" + 
+"  <br>This dataset submission's timestamp is " + XML.encodeAsHTML(tTimestamp) + ".\n" + 
 "\n"
 */);
 String dataProviderData = EDStatic.dataProviderDataAr[language]
@@ -2594,7 +2594,7 @@ writer.write(widgets.endForm());
                 tKeywords.sortIgnoreCase();
                 String content = 
 "Data Provider Form - Part 2\n" + //important! Bob's erd.data gmail filter looks for this
-"  from " + fromInfo + "\n" +
+"  from " + XML.encodeAsHTML(fromInfo) + "\n" +
 "  ipAddress=" + ipAddress + "\n" +
 "\n" +
 "    <addAttributes>\n" +
@@ -2671,9 +2671,9 @@ writer.write(widgets.endForm());
             
             //hidden fields
             writer.write(
-                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
-                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
-                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                widgets.hidden("yourName",     tYourName) +
+                widgets.hidden("emailAddress", tEmailAddress) +
+                widgets.hidden("timestamp",    tTimestamp) + 
                 "\n");
 
 //begin text
@@ -3066,7 +3066,7 @@ writer.write(widgets.endForm());
                 StringBuilder content = new StringBuilder();
                 content.append(
                     "Data Provider Form - Part 3\n" + //important! Bob's erd.data gmail filter looks for this
-                    "  from " + fromInfo + "\n" +
+                    "  from " + XML.encodeAsHTML(fromInfo) + "\n" +
                     "  ipAddress=" + ipAddress + "\n" +
                     "\n" +
                     "groupOf10=" + groupOptions[tGroup] + "\n" +
@@ -3138,9 +3138,9 @@ dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   +
 
             //hidden fields
             writer.write(
-                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
-                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
-                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                widgets.hidden("yourName",     tYourName) +
+                widgets.hidden("emailAddress", tEmailAddress) +
+                widgets.hidden("timestamp",    tTimestamp) + 
                 "\n");
 
 //begin text
@@ -3383,7 +3383,7 @@ writer.write(widgets.endForm());
                 //convert the info into pseudo datasets.xml
                 String content = 
                     "Data Provider Form - Part 4\n" + //important! Bob's erd.data gmail filter looks for this
-                    "  from " + fromInfo + "\n" +
+                    "  from " + XML.encodeAsHTML(fromInfo) + "\n" +
                     "  ipAddress=" + ipAddress + "\n" +
                     "\n" +
                     "Other comments:\n" + 
@@ -3432,9 +3432,9 @@ writer.write(widgets.endForm());
 
             //hidden fields
             writer.write(
-                widgets.hidden("yourName",     XML.encodeAsHTML(tYourName)) +
-                widgets.hidden("emailAddress", XML.encodeAsHTML(tEmailAddress)) +
-                widgets.hidden("timestamp",    XML.encodeAsHTML(tTimestamp)) + 
+                widgets.hidden("yourName",     tYourName) +
+                widgets.hidden("emailAddress", tEmailAddress) +
+                widgets.hidden("timestamp",    tTimestamp) + 
                 "\n");
 
 //begin text
@@ -3532,10 +3532,10 @@ writer.write(widgets.endForm());
 
 //begin text
 writer.write(EDStatic.dpf_congratulationAr[language]
-    .replace("&tTimestamp;", tTimestamp)
+    .replace("&tTimestamp;", XML.encodeAsHTML(tTimestamp))
     .replaceAll("&tErddapUrl;", tErddapUrl)
-    .replace("&tYourName;", SSR.minimalPercentEncode(tYourName))
-    .replace("&tEmailAddress;", SSR.minimalPercentEncode(tEmailAddress))
+    .replace("&tYourName;", XML.encodeAsHTML(tYourName))
+    .replace("&tEmailAddress;", XML.encodeAsHTML(tEmailAddress))
 
 // "<h2>You're done! Congratulations! Thank you!</h2>\n" +
 // "The ERDDAP administrator will email you soon to figure out the best way transfer\n" +

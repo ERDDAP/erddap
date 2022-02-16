@@ -1359,7 +1359,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
         //find activation_time is after surgery_time
         TableWriterAll twa = new TableWriterAll(tedd, null, 
-            "c:/data/_erddapBPD/cache/cPostSurg3/", "findSurgeryBeforeActivation");
+            "c:/erddapBPD/cache/cPostSurg3/", "findSurgeryBeforeActivation");
         tedd.getDataForDapQuery(language, loggedInAs, "requestUrl", 
             "unique_tag_id,activation_time,surgery_time,PI", twa);
         Table table = twa.cumulativeTable();

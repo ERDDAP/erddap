@@ -9810,7 +9810,7 @@ Dataset {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test String vars 
-        fiName = "c:/data/_erddapBPD/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
+        fiName = "c:/erddapBPD/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
         table.readNDNc(fiName, null, 0,  //standardizeWhat=0
             null, 0, 0);
         results = table.dataToString(4);
