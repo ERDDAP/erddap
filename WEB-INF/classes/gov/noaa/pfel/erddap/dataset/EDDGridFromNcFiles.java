@@ -7803,7 +7803,7 @@ expected =
         int language = 0; 
 
         //force reload files
-        File2.delete("/data/_erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
+        File2.delete("/erddapBPD/dataset/ay/erdATssta3day/fileTable.nc");
 
         //load dataset
         testVerboseOn();
@@ -15451,7 +15451,7 @@ expected =
                     if (test ==  0) testNc(deleteCachedDatasetInfo);
                     if (test ==  1) testCwHdf(deleteCachedDatasetInfo);
                     if (test ==  2) testHdf();
-                    if (test ==  3) testNcml();
+                    if (test ==  3) testNcml(); //!!!this is the only test which fails when I use separate netcdf-java Maven artifacts 
                     if (test ==  4) testNccsv();
                     if (test ==  5) testGrib_43(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3+
                     if (test ==  6) testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
