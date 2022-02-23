@@ -2660,7 +2660,7 @@ public class Table  {
 
         //ensure the linesReader is closed
         } finally {
-            try {linesReader.close();} catch (Exception e2) {}
+            try {linesReader.close();} catch (Exception e2) {String2.log("Caught: " + MustBe.throwableToString(e2));}
         }
     }
 
@@ -6413,13 +6413,10 @@ Dataset {
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
+        } finally {
             if (netcdfFile != null) {
-                try {netcdfFile.close(); } catch (Throwable t9) {}
+                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
             }
-            throw t;
-
         }
 
     }
@@ -6481,11 +6478,9 @@ Dataset {
                 msg += " finished. nColumns=" + nColumns() +  
                     " TIME=" + (System.currentTimeMillis() - time) + "ms";
 
-        } catch (Throwable t) {
-            String2.log(msg); 
+        } finally {
             if (netcdfFile != null)
-                try {netcdfFile.close(); } catch (Throwable t9) {}
-            throw t;
+                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -6617,11 +6612,9 @@ Dataset {
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
+        } finally {
             if (netcdfFile != null)
-                try {netcdfFile.close(); } catch (Throwable t9) {}
-            String2.log(msg); 
-            throw t;
+                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
     
@@ -6798,11 +6791,9 @@ Dataset {
                 msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
+        } finally {
             if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {}
-            throw t;
+                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
 
     }
@@ -7198,11 +7189,9 @@ Dataset {
                 String2.log(msg + " finished. nRows=" + nRows() + 
                     " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
+        } finally {
             if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {}
-            throw t;
+                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -8054,11 +8043,9 @@ Dataset {
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg +"\n" + Math2.memoryString()); 
+        } finally {
             if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {}
-            throw t;
+                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -9025,11 +9012,9 @@ Dataset {
                 String2.log(msg +  
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
-        } catch (Throwable t) {
-            String2.log(msg + "\n" + Math2.memoryString()); 
+        } finally {
             if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {}
-            throw t;
+                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 */
@@ -11838,10 +11823,8 @@ Dataset {
                 "). nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
-            if (ncFile != null) try {ncFile.close(); } catch (Throwable t2) {};
-            throw t;
+        } finally {
+            if (ncFile != null) try {ncFile.close(); } catch (Throwable t2) {String2.log("Caught: " + MustBe.throwableToString(t2));}
         }
     }
 
@@ -20867,11 +20850,8 @@ String2.log(table.dataToString());
                 " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Exception e) {
-            String2.log(msg); 
-            if (ncFile != null) try {ncFile.close(); } catch (Throwable t) {};
-            throw new Exception(String2.ERROR + " in readInvalidCRA(" + fullName + "): " + 
-                e.toString(), e);
+        } finally {
+            if (ncFile != null) try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
     }
 
@@ -25012,12 +24992,9 @@ String2.log(table.dataToString());
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
-            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t9) {};
-            throw t;
+        } finally {
+            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
-
     }
     
 
@@ -32258,10 +32235,8 @@ String2.log(table.dataToString());
             if (reallyVerbose) String2.log(msg + " finished. nColumns=" + nColumns() +
                 " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - tTime) + "ms");
 
-        } catch (Throwable t) {
-            String2.log(msg); 
-            if (nc != null) try {nc.close(); } catch (Throwable t9) {};
-            throw t;
+        } finally {
+            if (nc != null) try {nc.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
     }
 
@@ -32764,6 +32739,7 @@ String2.log(table.dataToString());
             try {
                 netcdfFile.close(); //make sure it is explicitly closed
             } catch (Exception e) {
+                String2.log("Caught: " + MustBe.throwableToString(e));
             }
         }
 

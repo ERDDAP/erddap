@@ -3677,8 +3677,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-01-18\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-01-18\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-02-18\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-02-18\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4072,8 +4072,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-01-18\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-01-18\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-02-18\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-02-18\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -5289,8 +5289,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-01-18\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2022-01-18\";\n" +  // ""
+"  :date_created = \"2022-02-18\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2022-02-18\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -14877,7 +14877,7 @@ So the changes seem good. */
 "//<Creator>https://www.ndbc.noaa.gov/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/cwwcNDBCMet.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -14947,7 +14947,7 @@ So the changes seem good. */
 "//<Creator>https://tds.coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/fsuNoaaShipWTEP.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -15000,7 +15000,7 @@ So the changes seem good. */
 "//<Creator>https://www.nodc.noaa.gov/GTSPP/</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdGtsppBest.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -15083,7 +15083,7 @@ So the changes seem good. */
 "//<Creator>https://onlinelibrary.wiley.com/doi/10.1002/grl.50100/abstract</Creator>[10]\n" +
 "//<CreateTime>[CREATION_TIME]</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/erdNph.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16071,7 +16071,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -16570,7 +16570,7 @@ expected =
 "//<Creator>???</Creator>[10]\n" +
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
-"//<Software>ERDDAP - Version 2.17</Software>[10]\n" +
+"//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
 "//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
@@ -18895,7 +18895,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 44684971;\n" + //changes
+"    Int32 actual_range 1, 45282398;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18940,7 +18940,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.63792908e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.6433712e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -19002,7 +19002,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2021-12-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
