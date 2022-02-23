@@ -8130,14 +8130,9 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
                 Test.ensureEqual(ncTest, dapTest, "sst values don't match!\n" + msg);
             }
  
-            //always
-            ncFile.close();
-
-        } catch (Throwable t) {
-            //ensure:
+        } finally {
             if (ncFile != null)
                 ncFile.close();
-            throw new RuntimeException("Error using testBigRequest.", t); 
         } 
 
     }

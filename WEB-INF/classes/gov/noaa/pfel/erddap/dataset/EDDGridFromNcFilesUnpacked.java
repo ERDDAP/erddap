@@ -1730,124 +1730,128 @@ NcHelper.debugMode = true;
 "      :valid_max = 180.0f; // float\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        ncFile = NcHelper.openFile(fileDir + fileName2);
+        try {
+            ncFile = NcHelper.openFile(fileDir + fileName2);
 
-        //lon
-        var = ncFile.findVariable("lon");
-        atts = new Attributes();
-        NcHelper.getVariableAttributes(var, atts);
-        results = atts.toString();
-        expected = 
-"    _FillValue=-999.0f\n" +
-"    long_name=Longitude\n" +
-"    units=degree_east\n" + //in file
-"    valid_max=180.0f\n" +
-"    valid_min=-180.0f\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //lon
+            var = ncFile.findVariable("lon");
+            atts = new Attributes();
+            NcHelper.getVariableAttributes(var, atts);
+            results = atts.toString();
+            expected = 
+    "    _FillValue=-999.0f\n" +
+    "    long_name=Longitude\n" +
+    "    units=degree_east\n" + //in file
+    "    valid_max=180.0f\n" +
+    "    valid_min=-180.0f\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
-        results = atts.toString();
-        expected = 
-"    _FillValue=NaNf\n" + //converted to PA standard mv
-"    long_name=Longitude\n" +
-"    units=degrees_east\n" + //stardardized to 's'
-"    valid_max=180.0f\n" +
-"    valid_min=-180.0f\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
+            results = atts.toString();
+            expected = 
+    "    _FillValue=NaNf\n" + //converted to PA standard mv
+    "    long_name=Longitude\n" +
+    "    units=degrees_east\n" + //stardardized to 's'
+    "    valid_max=180.0f\n" +
+    "    valid_min=-180.0f\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //palette
-        var = ncFile.findVariable("palette");
-        atts = new Attributes();
-        NcHelper.getVariableAttributes(var, atts);
-        results = atts.toString();
-        expected = "";
-//"    _FillValue=-1b\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //palette
+            var = ncFile.findVariable("palette");
+            atts = new Attributes();
+            NcHelper.getVariableAttributes(var, atts);
+            results = atts.toString();
+            expected = "";
+    //"    _FillValue=-1b\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
-        results = atts.toString();
-        expected = "";
-//"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
+            results = atts.toString();
+            expected = "";
+    //"    _FillValue=32767s\n"; //byte -> short  //converted to PA standard mv.  gone in netcdf-java 5.2
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //palette as unsigned byte
-        pa = NcHelper.getPrimitiveArray(
-            var.read(new int[]{0,0}, new int[]{1, 10}), true, true); //origin, shape, buildStringFromChar, isUnsigned
-        Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
-        results = pa.toString();
-        expected = 
-"147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //palette as unsigned byte
+            pa = NcHelper.getPrimitiveArray(
+                var.read(new int[]{0,0}, new int[]{1, 10}), true, true); //origin, shape, buildStringFromChar, isUnsigned
+            Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
+            results = pa.toString();
+            expected = 
+    "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //palette ubyte
-        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-        Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
-        results = pa.toString();
-        expected = 
-"147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //palette ubyte
+            pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+            Test.ensureEqual(pa.elementTypeString(), "ubyte", "");
+            results = pa.toString();
+            expected = 
+    "147, 0, 108, 144, 0, 111, 141, 0, 114, 138";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //poc
-        var = ncFile.findVariable("poc");
-        atts = new Attributes();
-        NcHelper.getVariableAttributes(var, atts);
-        results = atts.toString();
-        expected = 
-"    _ChunkSizes=40i,1729i\n" +
-"    _FillValue=-32767s\n" +
-"    add_offset=6400.0f\n" +
-"    display_max=1000.0f\n" +
-"    display_min=10.0f\n" +
-"    display_scale=log\n" +
-"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-"    scale_factor=0.2f\n" +
-"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
-"    units=mg m^-3\n" +  // in file
-"    valid_max=-27000s\n" +
-"    valid_min=-32000s\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //poc
+            var = ncFile.findVariable("poc");
+            atts = new Attributes();
+            NcHelper.getVariableAttributes(var, atts);
+            results = atts.toString();
+            expected = 
+    "    _ChunkSizes=40i,1729i\n" +
+    "    _FillValue=-32767s\n" +
+    "    add_offset=6400.0f\n" +
+    "    display_max=1000.0f\n" +
+    "    display_min=10.0f\n" +
+    "    display_scale=log\n" +
+    "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+    "    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+    "    scale_factor=0.2f\n" +
+    "    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+    "    units=mg m^-3\n" +  // in file
+    "    valid_max=-27000s\n" +
+    "    valid_min=-32000s\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
-        results = atts.toString();
-        expected = 
-"    _ChunkSizes=40i,1729i\n" +
-"    _FillValue=NaNf\n" +  //standardized
-//"    add_offset=6400.0\n" +  //removed
-"    display_max=1000.0f\n" +
-"    display_min=10.0f\n" +
-"    display_scale=log\n" +
-"    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
-"    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
-//"    scale_factor=0.2f\n" + removed
-"    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
-"    units=mg m-3\n" +  //standardized
-"    valid_max=1000.0f\n" + //unpacked
-"    valid_min=0.0f\n";     //unpacked
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
+            results = atts.toString();
+            expected = 
+    "    _ChunkSizes=40i,1729i\n" +
+    "    _FillValue=NaNf\n" +  //standardized
+    //"    add_offset=6400.0\n" +  //removed
+    "    display_max=1000.0f\n" +
+    "    display_min=10.0f\n" +
+    "    display_scale=log\n" +
+    "    long_name=\"Particulate Organic Carbon, D. Stramski, 2007 (443/555 version)\"\n" +
+    "    reference=\"Stramski, D., et al. \"\"Relationships between the surface concentration of particulate organic carbon and optical properties in the eastern South Pacific and eastern Atlantic Oceans.\"\" Biogeosciences 5.1 (2008): 171-201.\"\n" +
+    //"    scale_factor=0.2f\n" + removed
+    "    standard_name=mole_concentration_of_particulate_organic_carbon_in_sea_water\n" +
+    "    units=mg m-3\n" +  //standardized
+    "    valid_max=1000.0f\n" + //unpacked
+    "    valid_min=0.0f\n";     //unpacked
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //poc as packed values (shorts)
-        pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
-            var.read(new Section("(70:4100:1000,70:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride, buildStringFromChar 
-        Test.ensureEqual(pa.elementTypeString(), "short", "");
-        results = pa.toString();
-        expected = 
-"-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
-"-32767, -32767, -31518, -32767, -31186, -32767, -32767, -31609, -32767, -32767, " +
-"-32767, -32767, -32767, -32767, -32767, -32767, -31867, -32767, -32767, -32767, " +
-"-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
-"-32767, -32767, -32767, -32767, -32767";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //poc as packed values (shorts)
+            pa = NcHelper.getPrimitiveArray(   //odd start to catch some data, not just mv
+                var.read(new Section("(70:4100:1000,70:8100:1000)")), true, NcHelper.isUnsigned(var)); //start:end:stride, buildStringFromChar 
+            Test.ensureEqual(pa.elementTypeString(), "short", "");
+            results = pa.toString();
+            expected = 
+    "-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
+    "-32767, -32767, -31518, -32767, -31186, -32767, -32767, -31609, -32767, -32767, " +
+    "-32767, -32767, -32767, -32767, -32767, -32767, -31867, -32767, -32767, -32767, " +
+    "-32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, -32767, " +
+    "-32767, -32767, -32767, -32767, -32767";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //poc as unpacked values (float)
-        pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
-        Test.ensureEqual(pa.elementTypeString(), "float", "");
-        results = pa.toString();
-        expected = 
-"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 96.4, NaN, 162.8, " +
-"NaN, NaN, 78.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 26.6, NaN, NaN, NaN, " +
-"NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+            //poc as unpacked values (float)
+            pa = NcHelper.unpackPA(var, pa, true, true); //lookForStringTimes, lookForUnsigned
+            Test.ensureEqual(pa.elementTypeString(), "float", "");
+            results = pa.toString();
+            expected = 
+    "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 96.4, NaN, 162.8, " +
+    "NaN, NaN, 78.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 26.6, NaN, NaN, NaN, " +
+    "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } finally {
+            try {ncFile.close();} catch (Throwable t9) {}
+        }
 
         
         //***** test erdMPOC1day dataset

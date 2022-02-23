@@ -1258,18 +1258,13 @@ switch to finally clause
                         " readTime=" + readTime + 
                         " TOTAL TIME=" + (System.currentTimeMillis() - time) + "\n");
 
-            //I do care if this throws exception
-            grdFile.close();
-
-        } catch (Exception e) {
-            //make sure grdFile is closed
+        } finally {
+            //close grdFile 
             try {
                 grdFile.close();
             } catch (Exception e2) {
                 //don't care
             }
-
-            throw e;
         }
      
     }
@@ -1371,18 +1366,14 @@ switch to finally clause
                 "\n  Grid.readGrdInfo done. TIME=" + 
                     (System.currentTimeMillis() - time) + "\n");
 
-            //I do care if this throws exception
-            grdFile.close();
 
-        } catch (Exception e) {
-            //make sure grdFile is closed
+        } finally {
+            //close grdFile 
             try {
                 grdFile.close();
             } catch (Exception e2) {
                 //don't care
             }
-
-            throw e;
         }
      
     }
@@ -2251,17 +2242,13 @@ try {
                   "\n  Grid.readNetCDF done. readTime=" + readTime + 
                       ", Total TIME=" + (System.currentTimeMillis() - time) + "\n");
 
-            //make sure ncFile is closed
-            //I care if it throws exception
-            ncFile.close();
 
-        } catch (Exception e) {
+        } finally {
             try {
                 ncFile.close(); //make sure it is explicitly closed
             } catch (Exception e2) {
                 //don't care
             }
-            throw e;
         }
      
     }
@@ -4588,23 +4575,16 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             Test.ensureEqual(pa.size(), 1, "");
             Test.ensureEqual(pa.getDouble(0), Calendar2.isoStringToEpochSeconds("0001-03-04T12:00:00"), ""); 
 
-            //I care about this Exception
-            netcdfFile.close();
-
-        } catch (Exception e) {
+        } finally {
             try {
                 netcdfFile.close(); //make sure it is explicitly closed
             } catch (Exception e2) {
                 //don't care
             }
-            throw e;
         }
-
 
         //delete the file  
         File2.delete(dir + fileName + "Test.nc");
-
-
     }
 
     /**

@@ -9606,13 +9606,17 @@ towTypesDescription);
             fileName + "\n" + 
             varName + " scale=" + scale);
         NetcdfFile file = NcHelper.openFile(fileName);
-        Variable var = file.findVariable(varName);
-        PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
-        int n = pa.size();
-        Tally tally = new Tally();
-        for (int i = 0; i < n; i++)
-            tally.add("value", "" + Math2.roundToInt(pa.getDouble(i) * scale));
-        String2.log(tally.toString());
+        try {
+            Variable var = file.findVariable(varName);
+            PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+            int n = pa.size();
+            Tally tally = new Tally();
+            for (int i = 0; i < n; i++)
+                tally.add("value", "" + Math2.roundToInt(pa.getDouble(i) * scale));
+            String2.log(tally.toString());
+        } finally {
+            file.close();
+        }
     }
 
     /** 
