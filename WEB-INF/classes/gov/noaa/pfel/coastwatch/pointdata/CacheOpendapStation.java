@@ -494,16 +494,12 @@ public class CacheOpendapStation {
                     opendapTimeDimensionSize = otdsPa == null? 0 : otdsPa.getInt(0);
                     if (verbose) String2.log("  opendapTimeDimensionSize=" + opendapTimeDimensionSize);
 
-                    //I care about this exception
-                    stationNcFile.close();
-
-                } catch (Exception e) {
+                } finally {
                     try {
                         stationNcFile.close(); //make sure it is explicitly closed
                     } catch (Exception e2) {
                         //don't care
                     }
-                    throw e;
                 }
             }
             if (verbose) String2.log("  timeDim length old=" + opendapTimeDimensionSize + 
