@@ -7292,4 +7292,8 @@ Veel datasets zijn ook toegankelijk via ERDDAP &#39;s Web Map Service (WMS ).
 <yourEmailAddress>jouw e-mailadres</yourEmailAddress>
 <zoomIn>In zoomen</zoomIn>
 <zoomOut>Uitzoomen</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

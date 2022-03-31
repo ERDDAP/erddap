@@ -7195,4 +7195,8 @@ Banyak dataset juga dapat diakses melalui Web Map Service (WMS ) ERDDAP .
 <yourEmailAddress>Alamat email anda</yourEmailAddress>
 <zoomIn>Perbesar</zoomIn>
 <zoomOut>Perkecil</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

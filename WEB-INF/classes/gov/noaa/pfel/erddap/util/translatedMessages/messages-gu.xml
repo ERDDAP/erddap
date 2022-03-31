@@ -7313,4 +7313,8 @@ You can access it at
 <yourEmailAddress>તમારું ઇમેઇલ સરનામું</yourEmailAddress>
 <zoomIn>મોટું કરો</zoomIn>
 <zoomOut>ઝૂમ આઉટ</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

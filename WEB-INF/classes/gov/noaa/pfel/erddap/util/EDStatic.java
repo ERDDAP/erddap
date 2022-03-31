@@ -1675,7 +1675,10 @@ public static boolean developmentMode = false;
 
         yourEmailAddressAr,
         zoomInAr,
-        zoomOutAr;
+        zoomOutAr,
+        
+        copytexttoclipboardAr,
+        copyimagetoclipboardAr;
 
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
     private static String[] theLongDescriptionHtmlAr; //see the xxx() methods
@@ -3415,6 +3418,8 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         zoomInAr                     = getNotNothingString(messagesAr, "zoomIn",                     errorInMethod); 
         zoomOutAr                    = getNotNothingString(messagesAr, "zoomOut",                    errorInMethod); 
 
+        copytexttoclipboardAr        = getNotNothingString(messagesAr, "copytexttoclipboard",        errorInMethod); 
+        copyimagetoclipboardAr       = getNotNothingString(messagesAr, "copyimagetoclipboard",       errorInMethod); 
 
         for (int tl = 0; tl < nLanguages; tl++) {
             blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], adminEmail);

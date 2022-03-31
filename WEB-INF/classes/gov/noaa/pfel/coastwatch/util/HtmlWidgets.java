@@ -11,6 +11,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
+import gov.noaa.pfel.erddap.util.EDStatic;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.SSR;
@@ -355,6 +356,26 @@ public class HtmlWidgets {
             tooltipHtml +
             "</span></span>";
     }
+    /**
+     * This generates the HTML to add a cssTooltip to the specified item. Modified for base64 images
+     *
+     * @param itemHtml  The html for the thing (e.g., "?"-image) that is always visible
+     * @param spanOther other parameters (e.g., style) for the inner span
+     * @param tooltipHtml
+     * @param buttonHTML
+     * @return the HTML to add a cssTooltip to the specified item.
+     */
+    public static String cssTooltipBase64(String itemHtml, String spanOther, String tooltipHtml, String buttonHTML) {
+        return 
+            "<span class=\"cssTooltip\">" +
+            itemHtml +
+            "<span class=\"cssTooltipInner\"" + 
+                (spanOther.length() == 0? "" : " " + spanOther) +
+                ">" +
+            tooltipHtml +
+            "</span></span>"+
+            "<span class=\"cssTooltip\">" + buttonHTML+ "</span>";                        
+    }
 
 
     /** 
@@ -448,6 +469,60 @@ public class HtmlWidgets {
 
             "</span></span>"; */
 
+    }
+
+    /** 
+     * This creates the html for an base64 encoded image ('?') with a cssTooltip with a 
+     * deferred-load second image.
+     * This is based on CSS-only image tooltip at 
+     *   https://codepen.io/electricalbah/pen/eJRLVd (URL works in browser but not in link tests)
+     *
+     * @param img1Url for the image for the user to hover over, e.g., questionMarkImageUrl.
+     *   It must be in the images directory.
+     * @param img1Alt alt text for the imgUrl, e.g., "?". It will be encoded as HTML attribute.
+     * @param img1Other additional parameter=values for img1. It should end with a space.
+     * @param img2Url
+     * @param img2ID  a unique (for the document) id, e.g., img1. 
+     *   Just simple chars -- it isn't further encoded.
+     * @param language the index of the selected language
+     * @return the html for an image ('?') with a cssTooltip with a deferred-load second image.
+     */
+    public static String cssTooltipImageBase64(String img1Url, String img1Alt, String img1Other,
+        String img2Url, String img2ID,int language) {
+
+        String img1UrlEncoded = XML.encodeAsHTMLAttribute(img1Url);
+        String loadingUrl = File2.getDirectory(img1Url) + "loading.png";
+        String loadingUrlEncoded = XML.encodeAsHTMLAttribute(loadingUrl);
+        return 
+
+            //the original: a popup, no bigger than 90% of screen width
+            //In Chrome, a big image is shrunk to 90%. In Firefox, big image is cropped.
+            cssTooltipBase64(
+            "<img " + img1Other + " src=\"" + img1UrlEncoded + 
+                "\" alt=\"" + XML.encodeAsHTMLAttribute(img1Alt) + "\"\n" +
+                "  onmouseover=\"var el=document.getElementById('" + img2ID + "'); el.setAttribute('src',el.getAttribute('data-src'));\"/>",    
+
+            "style=\"padding:0px; max-width:90%;\"",  
+
+            "<img style=\"max-width:100%;\" " +
+                "id=\"" + img2ID + "\" class=\"B\" src=\"" + loadingUrlEncoded + "\"\n" + //vertical-align: 'b'ottom
+                "  data-src=\"" + img2Url + 
+                "\" alt=\"data:image/png;base64\">",
+
+                "&nbsp;data:image/png;base64&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('copy to clipboardd not available');return false};navigator.clipboard.writeText('" + img2Url +"');\" style=\"cursor: pointer; cursor: hand;\" >["+ EDStatic.copytexttoclipboardAr[language] + "]</a> " +                
+                "&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('copy to clipboardd not available');return false};"+
+                " var img = new Image();"+
+                " img.onload = () => {"+
+                " const c = document.createElement('canvas');"+
+                " const ctx = c.getContext('2d');"+
+                " c.width = img.naturalWidth;"+
+                " c.height = img.naturalHeight;"+
+                " ctx.drawImage(img, 0, 0);"+
+                " const blob=c.toBlob((blob) => {const item = new ClipboardItem({ 'image/png': blob });navigator.clipboard.write([item]);},'image/png',0.75);};"+
+                " img.src = '" + img2Url + "';"+
+                " return false;\""+                 
+                " style=\"cursor: pointer; cursor: hand;\" >["+ EDStatic.copyimagetoclipboardAr[language] + "]</a>"                    
+            );
     }
 
     /** 
