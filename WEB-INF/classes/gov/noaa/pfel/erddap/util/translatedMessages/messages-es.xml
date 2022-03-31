@@ -7410,4 +7410,8 @@ También se puede acceder a muchos conjuntos de datos a través del Servicio de 
 <yourEmailAddress>Tu correo electrónico</yourEmailAddress>
 <zoomIn>Acercarse</zoomIn>
 <zoomOut>Disminuir el zoom</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

@@ -7228,4 +7228,8 @@ You can access it at
 <yourEmailAddress>Ваша електронна адреса</yourEmailAddress>
 <zoomIn>Збільшувати</zoomIn>
 <zoomOut>Зменшення</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

@@ -7403,4 +7403,8 @@ Számos adatkészlet az ERDDAP szolgáltatásán (WMS ) keresztül is elérhető
 <yourEmailAddress>az email címed</yourEmailAddress>
 <zoomIn>Nagyítás</zoomIn>
 <zoomOut>Kicsinyítés</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

@@ -6542,4 +6542,8 @@ You can access it at
 <yourEmailAddress>ਤੁਹਾਡਾ ਈਮੇਲ ਪਤਾ</yourEmailAddress>
 <zoomIn>ਵੱਡਾ ਕਰਨਾ</zoomIn>
 <zoomOut>ਜ਼ੂਮ ਆਉਟ ਕਰੋ</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

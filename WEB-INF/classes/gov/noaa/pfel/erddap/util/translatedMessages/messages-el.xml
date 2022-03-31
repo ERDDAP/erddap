@@ -7241,4 +7241,8 @@ You can access it at
 <yourEmailAddress>η ηλεκτρονική σου διεύθυνση</yourEmailAddress>
 <zoomIn>Μεγέθυνση</zoomIn>
 <zoomOut>Σμίκρυνση</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

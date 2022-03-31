@@ -6548,4 +6548,8 @@ ERDDAP এর ওয়েব ম্যাপ সার্ভিস (WMS ) এ�
 <yourEmailAddress>আপনার ইমেইল ঠিকানা</yourEmailAddress>
 <zoomIn>প্রসারিত করো</zoomIn>
 <zoomOut>ছোট করা</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

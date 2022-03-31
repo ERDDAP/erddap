@@ -7259,4 +7259,8 @@ Do wielu zbiorów danych można również uzyskać dostęp za pośrednictwem Web
 <yourEmailAddress>Twój adres email</yourEmailAddress>
 <zoomIn>Zbliżenie</zoomIn>
 <zoomOut>Pomniejsz</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>
