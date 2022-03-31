@@ -7405,6 +7405,7 @@ Számos adatkészlet az ERDDAP szolgáltatásán (WMS ) keresztül is elérhető
 <zoomOut>Kicsinyítés</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

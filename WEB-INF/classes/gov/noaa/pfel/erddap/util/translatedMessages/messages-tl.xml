@@ -7212,6 +7212,7 @@ Maraming mga dataset ang maaari ding ma-access sa pamamagitan ng Web Map Service
 <zoomOut>Mag-zoom Out</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

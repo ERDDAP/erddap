@@ -6550,6 +6550,7 @@ ERDDAP এর ওয়েব ম্যাপ সার্ভিস (WMS ) এ�
 <zoomOut>ছোট করা</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

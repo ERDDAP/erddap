@@ -7302,6 +7302,7 @@ Auf viele Datensätze kann auch über den Web Map Service (WMS ) von ERDDAP zuge
 <zoomOut>Rauszoomen</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

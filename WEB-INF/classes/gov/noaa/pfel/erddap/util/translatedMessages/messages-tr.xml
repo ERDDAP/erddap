@@ -7310,6 +7310,7 @@ ERDDAP Web Harita Hizmeti (WMS ) üzerinden de birçok veri setine erişilebilir
 <zoomOut>Uzaklaştırmak</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

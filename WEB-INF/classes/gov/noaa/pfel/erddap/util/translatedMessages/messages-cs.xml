@@ -7301,6 +7301,7 @@ K mnoha datovým sadám lze také přistupovat prostřednictvím webové mapové
 <zoomOut>Oddálit</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>
