@@ -7253,6 +7253,7 @@ Många datamängder kan också nås via ERDDAP :s Web Map Service (WMS ).
 <zoomOut>Zooma ut</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

@@ -509,8 +509,8 @@ public class HtmlWidgets {
                 "  data-src=\"" + img2Url + 
                 "\" alt=\"data:image/png;base64\">",
 
-                "&nbsp;data:image/png;base64&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('copy to clipboardd not available');return false};navigator.clipboard.writeText('" + img2Url +"');\" style=\"cursor: pointer; cursor: hand;\" >["+ EDStatic.copytexttoclipboardAr[language] + "]</a> " +                
-                "&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('copy to clipboardd not available');return false};"+
+                "&nbsp;data:image/png;base64&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('" + EDStatic.copytoclipboardnotavailableAr[language] + "');return false};navigator.clipboard.writeText('" + img2Url +"');\" style=\"cursor: pointer; cursor: hand;\" >["+ EDStatic.copytexttoclipboardAr[language] + "]</a> " +                
+                "&nbsp;<a href=\"#\" onclick=\"javascript:if(navigator.clipboard==undefined){alert('" + EDStatic.copytoclipboardnotavailableAr[language] +"');return false};"+
                 " var img = new Image();"+
                 " img.onload = () => {"+
                 " const c = document.createElement('canvas');"+

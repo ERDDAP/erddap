@@ -7271,6 +7271,7 @@ Multe seturi de date pot fi accesate și prin serviciul de hărți web (WMS ) al
 <zoomOut>A micsora</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

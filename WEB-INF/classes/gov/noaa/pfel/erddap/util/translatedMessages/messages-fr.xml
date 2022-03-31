@@ -7205,6 +7205,7 @@ De nombreux ensembles de données sont également accessibles via le Web Map Ser
 <zoomOut>Dézoomer</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

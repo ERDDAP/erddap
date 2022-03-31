@@ -7294,6 +7294,7 @@ Veel datasets zijn ook toegankelijk via ERDDAP &#39;s Web Map Service (WMS ).
 <zoomOut>Uitzoomen</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>
