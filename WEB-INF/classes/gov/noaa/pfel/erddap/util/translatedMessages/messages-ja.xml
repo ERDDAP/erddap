@@ -6245,4 +6245,8 @@ You can access it at
 <yourEmailAddress>あなたのメールアドレス</yourEmailAddress>
 <zoomIn>ズームイン</zoomIn>
 <zoomOut>ズームアウトする</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

@@ -7299,4 +7299,8 @@ K mnoha datovým sadám lze také přistupovat prostřednictvím webové mapové
 <yourEmailAddress>Vaše emailová adresa</yourEmailAddress>
 <zoomIn>Přiblížit</zoomIn>
 <zoomOut>Oddálit</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

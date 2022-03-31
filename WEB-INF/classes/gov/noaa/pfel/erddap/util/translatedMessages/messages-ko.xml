@@ -7476,4 +7476,8 @@ You can access it at
 <yourEmailAddress>귀하의 이메일 주소</yourEmailAddress>
 <zoomIn>확대</zoomIn>
 <zoomOut>축소</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

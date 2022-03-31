@@ -7277,4 +7277,8 @@ You can access it at
 <yourEmailAddress>Il tuo indirizzo di posta elettronica</yourEmailAddress>
 <zoomIn>Ingrandire</zoomIn>
 <zoomOut>Rimpicciolisci</zoomOut>
+
+<copytexttoclipboard>Copia il testo negli appunti</copytexttoclipboard>
+<copyimagetoclipboard>Copia l'immagine negli appunti</copyimagetoclipboard>
+
 </erddapMessages>

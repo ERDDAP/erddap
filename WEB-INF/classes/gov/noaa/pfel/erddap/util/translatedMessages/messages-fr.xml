@@ -7203,4 +7203,8 @@ De nombreux ensembles de données sont également accessibles via le Web Map Ser
 <yourEmailAddress>Votre adresse email</yourEmailAddress>
 <zoomIn>Agrandir</zoomIn>
 <zoomOut>Dézoomer</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

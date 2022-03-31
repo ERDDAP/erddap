@@ -7357,4 +7357,8 @@ You can access it at
 <yourEmailAddress>तुमचा ईमेल पत्ता</yourEmailAddress>
 <zoomIn>प्रतिमेचे दृष्य रूप मोठे करा</zoomIn>
 <zoomOut>झूम कमी करा</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

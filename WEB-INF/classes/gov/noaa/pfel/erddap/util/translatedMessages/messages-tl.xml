@@ -7210,4 +7210,8 @@ Maraming mga dataset ang maaari ding ma-access sa pamamagitan ng Web Map Service
 <yourEmailAddress>ang iyong email address</yourEmailAddress>
 <zoomIn>Palakihin</zoomIn>
 <zoomOut>Mag-zoom Out</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

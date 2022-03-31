@@ -7308,4 +7308,8 @@ ERDDAP Web Harita Hizmeti (WMS ) üzerinden de birçok veri setine erişilebilir
 <yourEmailAddress>e</yourEmailAddress>
 <zoomIn>Yakınlaştır</zoomIn>
 <zoomOut>Uzaklaştırmak</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>
