@@ -7197,6 +7197,7 @@ Banyak dataset juga dapat diakses melalui Web Map Service (WMS ) ERDDAP .
 <zoomOut>Perkecil</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

@@ -7304,6 +7304,7 @@ Monet tietojoukot ovat käytettävissä myös ERDDAP :n Web Map Servicen (WMS ) 
 <zoomOut>Loitontaa</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

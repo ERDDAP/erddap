@@ -7412,6 +7412,7 @@ También se puede acceder a muchos conjuntos de datos a través del Servicio de 
 <zoomOut>Disminuir el zoom</zoomOut>
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
 
 </erddapMessages>

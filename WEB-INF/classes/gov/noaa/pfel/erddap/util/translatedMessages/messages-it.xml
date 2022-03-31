@@ -7279,6 +7279,7 @@ You can access it at
 <zoomOut>Rimpicciolisci</zoomOut>
 
 <copytexttoclipboard>Copia il testo negli appunti</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy nella clipboard non disponibile</copytoclipboardnotavailable>
 <copyimagetoclipboard>Copia l'immagine negli appunti</copyimagetoclipboard>
 
 </erddapMessages>
