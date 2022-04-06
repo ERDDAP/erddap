@@ -5729,4 +5729,9 @@ You can access it at
 <yourEmailAddress>آپ کا ای میل پتہ</yourEmailAddress>
 <zoomIn>زوم ان</zoomIn>
 <zoomOut>دور کرنا</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

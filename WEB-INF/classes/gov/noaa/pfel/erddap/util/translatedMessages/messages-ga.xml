@@ -7342,4 +7342,9 @@ Is féidir teacht ar go leor tacar sonraí trí Sheirbhís Léarscáileanna Gré
 <yourEmailAddress>Do sheoladh ríomhphoist</yourEmailAddress>
 <zoomIn>Zúmáil isteach</zoomIn>
 <zoomOut>Zúmáil Amach</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

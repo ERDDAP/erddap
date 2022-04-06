@@ -6488,4 +6488,9 @@ You can access it at
 <yourEmailAddress>ที่อยู่อีเมลของคุณ</yourEmailAddress>
 <zoomIn>ขยายเข้า</zoomIn>
 <zoomOut>ซูมออก</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>
