@@ -3524,7 +3524,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         try {
             makeTgz(String2.unitTestDataDir + "fileNames/", ".*", true, ".*",
                 tgzName);
-            SSR.displayInBrowser("file://" + tgzName);  //works with .tar.gz, not .tgz
+            Test.displayInBrowser("file://" + tgzName);  //works with .tar.gz, not .tgz
             String2.pressEnterToContinue("Are the contents of the .tar.gz file okay?");
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t));

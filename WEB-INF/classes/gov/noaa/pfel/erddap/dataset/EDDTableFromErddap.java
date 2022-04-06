@@ -1046,7 +1046,7 @@ expected =
             //test .png
             tName = "EDDTableFromErddap_GraphM_" + tRedirect + ".png"; 
             SSR.downloadFile(url + ".png?" + mapDapQuery, dir + tName, true);
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
     } //end of testBasic
 

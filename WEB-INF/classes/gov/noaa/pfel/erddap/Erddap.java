@@ -18959,9 +18959,9 @@ expected =
         String s = https://xmlvalidation.com/   ".../xml/validate/?lang=en" +
             "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
             "request=GetCapabilities&version=";
-        SSR.displayInBrowser(s + "1.1.0");
-        SSR.displayInBrowser(s + "1.1.1");
-        SSR.displayInBrowser(s + "1.3.0");
+        Test.displayInBrowser(s + "1.1.0");
+        Test.displayInBrowser(s + "1.1.1");
+        Test.displayInBrowser(s + "1.3.0");
 */
 
         //more information

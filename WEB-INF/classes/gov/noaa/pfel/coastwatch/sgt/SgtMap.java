@@ -113,7 +113,7 @@ public class SgtMap  {
     private final static double minorIncrements[] = {  45,  30,  15,   5,   2,   1,  .5,  .2,   .1,  .05,   .02,  .01, .005, .002, .001, .0005};    //if decimal deg axis
     private final static int boundaryResolutions[]= {cRes,cRes,cRes,cRes,cRes,lRes,lRes,iRes,iRes, hRes, hRes,  hRes, fRes, fRes, fRes, fRes, fRes}; 
 
-    private final static String testImageExtension = ".png"; //was/could be ".gif"
+    private final static String testImageExtension = ".png"; 
     private static int topoFromCache = 0, topoNotFromCache = 0;
 
     /** 
@@ -2601,11 +2601,16 @@ String2.log("err: " + errCatcher.getString());
                 (Graphics2D)bufferedImage.getGraphics(), 0, 0, 480, 500,
                 0, //no boundaryResAdjust,
                 1);
-            String tName = SSR.getTempDirectory() + "testOceanPalette" + i + ".png";
+            String fileName = "SgtMapOceanPalette" + i;
+            String tName = SSR.getTempDirectory() + fileName + ".png";
             File2.delete(tName); //old version? delete it
             SgtUtil.saveImage(bufferedImage, tName);
             String2.log("displaying " + tName);
-            SSR.displayInBrowser("file://" + tName);
+            //Test.displayInBrowser("file://" + tName);
+            Image2.testImagesIdentical(
+                tName,
+                String2.unitTestImagesDir()    + fileName + ".png",
+                File2.getSystemTempDirectory() + fileName + "_diff.png");
         }
 
     }
@@ -2810,11 +2815,15 @@ String2.log("err: " + errCatcher.getString());
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 640);
             testBathymetryMap(true, (Graphics2D)bufferedImage.getGraphics(), 
                 0, 0, 480, 480, region, 0, 1);
-            String tName = SSR.getTempDirectory() + "Bath" + region + testImageExtension;
+            String fileName = "SgtMapTestBathymetry" + region;
+            String tName = SSR.getTempDirectory() + fileName+ testImageExtension;
             File2.delete(tName); //old version? delete it
             SgtUtil.saveImage(bufferedImage, tName);
-            String2.log("displaying " + tName);
-            SSR.displayInBrowser("file://" + tName);
+            //Test.displayInBrowser("file://" + tName);
+            Image2.testImagesIdentical(
+                tName,
+                String2.unitTestImagesDir()    + fileName + ".png",
+                File2.getSystemTempDirectory() + fileName + "_diff.png");
         }
     }
 
@@ -2830,11 +2839,16 @@ String2.log("err: " + errCatcher.getString());
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 640);
             testBathymetryMap(false, (Graphics2D)bufferedImage.getGraphics(), 
                 0, 0, 480, 480, region, 0, 1);
-            String tName = SSR.getTempDirectory() + "Topo" + region + testImageExtension;
+            String baseName = "SgtMapTestTopography" + region;
+            String tName = SSR.getTempDirectory() + baseName + testImageExtension;
             File2.delete(tName); //old version? delete it
             SgtUtil.saveImage(bufferedImage, tName);
-            String2.log("displaying " + tName);
-            SSR.displayInBrowser("file://" + tName);
+            //String2.log("displaying " + tName);
+            //Test.displayInBrowser("file://" + tName);
+            Image2.testImagesIdentical(
+                tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
     }
 
@@ -2843,8 +2857,9 @@ String2.log("err: " + errCatcher.getString());
     public static void basicTest(boolean allSizes, boolean showInBrowser) throws Exception {
         verbose = true;
         reallyVerbose = true;
-        String2.log("*** test SgtMap");
+        String2.log("*** test SgtMap.basicTest");
         BufferedImage bufferedImage;
+        String baseName, tName;
 
             //String2.getContextDirectory() + "WEB-INF/ref/landmask_pt0125deg_usmex.grd");
 
@@ -2859,12 +2874,17 @@ String2.log("err: " + errCatcher.getString());
                 Test.ensureEqual(regionInfo[region].length, 8, 
                     String2.ERROR + " in SgtMap.makePlainRegionsMap, region=" + region);
             }
+            baseName = "SgtMapBasicTestRegionsMap";
             int regionsResult[] = makeRegionsMap(
                 classRB2.getInt("regionMapMaxWidth",  228),
                 classRB2.getInt("regionMapMaxHeight", 200),
-                regionInfo, SSR.getTempDirectory(), "tempRegionsMap" + testImageExtension);
-            SSR.displayInBrowser("file://" + SSR.getTempDirectory() + 
-                "tempRegionsMap" + testImageExtension);
+                regionInfo, SSR.getTempDirectory(), baseName + testImageExtension);
+            //Test.displayInBrowser("file://" + SSR.getTempDirectory() + 
+            //    "tempRegionsMap" + testImageExtension);
+            Image2.testImagesIdentical(
+                SSR.getTempDirectory() + baseName + testImageExtension,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             //these match the sizes in CWBrowser.properties 
             int imageWidths[]  = new int[]{240, 480, 720};    //these were updated 9/1/06
@@ -2874,14 +2894,19 @@ String2.log("err: " + errCatcher.getString());
             String regionNames[] = new String[]{"_C2_", "_C_", "_USMexico_", };
 
             //make SSR.getTempDirectory() + temp + testImageExtension
-            String2.log("\n*** Test SgtUtil.saveAsGif");
-            File2.delete(SSR.getTempDirectory() + "temp" + testImageExtension); //old version? delete it
+            baseName = "SgtMapBasicTestA";
+            tName = SSR.getTempDirectory() + baseName + testImageExtension;
+            File2.delete(tName); //old version? delete it
             bufferedImage = SgtUtil.getBufferedImage(imageWidths[1], imageHeights[1]);
             testMakeMap((Graphics2D)bufferedImage.getGraphics(), "over",
                 0, 0, imageWidths[1], imageHeights[1], 
                 2, 0, 1);  //region=2
-            SgtUtil.saveImage(bufferedImage, SSR.getTempDirectory() + "temp" + testImageExtension);
-            //SSR.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" + testImageExtension);
+            SgtUtil.saveImage(bufferedImage, tName);
+            //Test.displayInBrowser("file://" + SSR.getTempDirectory() + "temp" + testImageExtension);
+            Image2.testImagesIdentical(
+                tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             //test of properly created maps  and test for memory leak  (testForMemoryLeak)
             //make a series of images and .pdf's: 
@@ -2893,8 +2918,9 @@ String2.log("err: " + errCatcher.getString());
             for (int rep = 0; rep < nReps; rep++) {   //do more reps for harder memory test
                 for (int region = 0; region < 3; region++) { //for all regions, start at 0
                     for (int size = (allSizes? 0 : 1); size < (allSizes? 3 : 2); size++) {
-                        String tName = SSR.getTempDirectory() + "temp" + 
-                            regionNames[region] + size + testImageExtension;
+
+                        baseName =  "SgtMapBasicTest" + regionNames[region] + size;
+                        tName = SSR.getTempDirectory() + baseName + testImageExtension;
                         File2.delete(tName); //old version? delete it
                         bufferedImage = SgtUtil.getBufferedImage(imageWidths[size], imageHeights[size]);
                         testMakeMap((Graphics2D)bufferedImage.getGraphics(), "over",
@@ -2905,7 +2931,11 @@ String2.log("err: " + errCatcher.getString());
                         //view it in browser?
                         if (showInBrowser && rep == 0 && region == 2 && size == 1) {
                             String2.log("displaying " + tName);
-                            SSR.displayInBrowser("file://" + tName);
+                            //Test.displayInBrowser("file://" + tName);
+                            Image2.testImagesIdentical(
+                                tName,
+                                String2.unitTestImagesDir()    + baseName + ".png",
+                                File2.getSystemTempDirectory() + baseName + "_diff.png");
                         }
 
 
@@ -2924,7 +2954,7 @@ String2.log("err: " + errCatcher.getString());
                         //view it in browser?
                         //if (showInBrowser && rep == 0 && region == 2) {
                         //    String2.log("displaying " + tName);
-                        //    SSR.displayInBrowser("file://" + tName);
+                        //    Test.displayInBrowser("file://" + tName);
                         //}
                     }
                 }
@@ -2950,11 +2980,17 @@ String2.log("err: " + errCatcher.getString());
         bufferedImage = SgtUtil.getBufferedImage(600, 600);
         testMakeMap((Graphics2D)bufferedImage.getGraphics(), "over",
             0, 0, 600, 600, 2, 0, 1); 
-        String tranName = SSR.getTempDirectory() + "tempTransparent";
-        File2.delete(tranName + ".png");
-        SgtUtil.saveAsTransparentPng(bufferedImage, oceanColor, tranName);
-        String2.log("  transparentName = " + tranName + ".png");
-        //SSR.displayInBrowser("file://" + tranName + ".png");
+        baseName = "SgtMapBasicTestTransparent";
+        tName = SSR.getTempDirectory() + baseName;
+        File2.delete(tName);
+        SgtUtil.saveAsTransparentPng(bufferedImage, oceanColor, tName);
+        //String2.log("  transparentName = " + tName);
+        //Test.displayInBrowser("file://" + tranName + ".png");
+        Image2.testImagesIdentical(
+            tName + ".png",
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
 
     } 
 
@@ -2999,10 +3035,15 @@ String2.log("err: " + errCatcher.getString());
             g.drawLine(0, size,  size*3, size);
             g.drawLine(size,   0,  size,   size*2);
             g.drawLine(size*2, 0,  size*2, size*2);
-            String tName = SSR.getTempDirectory() + "cleanMap" + im;
+            String baseName = "SgtMapTestMakeCleanMap" + im;
+            String tName = SSR.getTempDirectory() + baseName;
             File2.delete(tName + ".png");
             SgtUtil.saveAsTransparentPng(bufferedImage, null, tName);  //oceanColor?
-            SSR.displayInBrowser("file://" + tName + ".png");
+            //Test.displayInBrowser("file://" + tName + ".png");
+            Image2.testImagesIdentical(
+                tName + ".png",
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
     } 
@@ -3024,19 +3065,20 @@ String2.log("err: " + errCatcher.getString());
             {"0x30FF00FF", "" + (-135 + offset), "" + (-105 + offset), "22", "50", 
                 "" + (-131 + offset), "25", "US+Mexico"}};
         String dir = "c:/temp/";
-        String name = "testRegionsMapW" + minX + "E" + maxX + "S" + minY + "N" + maxY + 
-            testImageExtension;
+        String baseName = "SgtMapTestRegionsMapW" + minX + "E" + maxX + "S" + minY + "N" + maxY;
+        String name = baseName + testImageExtension;
 
         makeRegionsMap(300, 200, //size
             regionInfo, dir, name);
 
         //view it
         //ImageViewer.display("SgtMap", image);
-        SSR.displayInBrowser("file://" + dir + name);
-        Math2.gc(2000); //Part of a test.  Give it time to display image.  
+        //Test.displayInBrowser("file://" + dir + name);
+        Image2.testImagesIdentical(
+            dir + name,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-        //delete it
-        File2.delete(dir + name);
     }
 
     /**
@@ -3352,7 +3394,7 @@ String2.log("err: " + errCatcher.getString());
 
             //view it
             //ImageViewer.display("SgtMap", image);
-            SSR.displayInBrowser("file://" + gridDir + gridName + ".html");
+            Test.displayInBrowser("file://" + gridDir + gridName + ".html");
 
             //delete temp files
             File2.delete(cptName);
@@ -3379,7 +3421,8 @@ String2.log("err: " + errCatcher.getString());
         makeAdvSearchMap(255, 190);
     }
 
-    /** Make a +-180 and a 0-360 map for ERDDAP's Advanced Search 
+    /** 
+     * This was used one time to make a +-180 and a 0-360 map for ERDDAP's Advanced Search.
      * To make -180 to 360, combine them in CoPlot. 
      *
      * @param w image width in pixels (the true width)
@@ -3408,7 +3451,7 @@ landMaskStrokeColor = new Color(0, 0, 0, 0);
             (Graphics2D)(image.getGraphics()), 0, 0, w, h, 0, fontScale);
         String fileName = "C:/data/AdvancedSearch/tWorldPm180.png";
         SgtUtil.saveImage(image, fileName);
-        SSR.displayInBrowser("file://" + fileName);
+        Test.displayInBrowser("file://" + fileName);
 
         grid = createTopographyGrid(SSR.getTempDirectory(),
             0, 360, -90, 90, w-15, (w-15) / 2);
@@ -3422,7 +3465,7 @@ landMaskStrokeColor = new Color(0, 0, 0, 0);
             (Graphics2D)(image.getGraphics()), 0, 0, w, h, 0, fontScale);
         fileName = "C:/data/AdvancedSearch/tWorld0360.png";
         SgtUtil.saveImage(image, fileName);
-        SSR.displayInBrowser("file://" + fileName);
+        Test.displayInBrowser("file://" + fileName);
 }
 
 
@@ -3460,7 +3503,7 @@ landMaskStrokeColor = new Color(0, 0, 0, 0);
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 6 : -1;
+            lastTest = interactive? -1 : 7;
         String msg = "\n^^^ SgtMap.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -3469,16 +3512,17 @@ landMaskStrokeColor = new Color(0, 0, 0, 0);
                 String2.log(msg + test);
             
                 if (interactive) {
-                    if (test ==  0)  testCreateTopographyGrid();
-                    if (test ==  1)  testBathymetry(0, 12);   //0, 12   9 is imperfect but unreasonable request
-                    if (test ==  2)  testTopography(0, 12);   //0, 12   9 is imperfect but unreasonable request
-                    if (test ==  3)  testRegionsMap(-180, 180, -90, 90);
-                    if (test ==  4)  testRegionsMap(0, 360, -90, 90);
-                    if (test ==  5)  basicTest(true, true); 
-                    if (test ==  6)  testMakeCleanMap(0, 5); //5=all
+                    //if (test ==  0) ...;
 
                 } else {
-                    //if (test ==  0) ...;
+                    if (test ==  0)  basicTest(true, true); 
+                    if (test ==  1)  testBathymetry(0, 12);   //0, 12   9 is imperfect but unreasonable request
+                    if (test ==  2)  testCreateTopographyGrid();
+                    if (test ==  3)  testTopography(0, 12);   //0, 12   6 fails because of Known Problem with island
+                    if (test ==  4)  testRegionsMap(-180, 180, -90, 90);
+                    if (test ==  5)  testRegionsMap(0, 360, -90, 90);
+                    if (test ==  6)  testMakeCleanMap(0, 5); //5=all
+                    if (test ==  7)  testOceanPalette(0, 7);
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

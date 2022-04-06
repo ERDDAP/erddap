@@ -805,7 +805,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -853,7 +853,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         //decompress and look at contents 
@@ -952,7 +952,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         //decompress and look at contents 
@@ -1050,7 +1050,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -1099,7 +1099,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         //decompress and look at contents 
@@ -1197,7 +1197,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -1244,7 +1244,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         //decompress and look at contents 
@@ -1340,7 +1340,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -1385,7 +1385,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(5000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(5000);
 
         //decompress and look at contents 
@@ -1479,7 +1479,7 @@ public class ArchiveADataset {
 
         //display it (in 7zip)
         Math2.sleep(10000);
-        SSR.displayInBrowser("file://" + targzName); 
+        Test.displayInBrowser("file://" + targzName); 
         Math2.sleep(10000);
 
         //decompress and look at contents 

@@ -863,7 +863,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //2007-05-01T00:59:00 -> 1.17798114E9
         tName = mwfs.makeNewFileForDapQuery(language, null, userDapQuery, EDStatic.fullTestCacheDirectory, className + "_stations", ".asc"); 
         results = String2.annotatedString(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName)).toArray()));
-        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
 "Dataset {[10]\n" +

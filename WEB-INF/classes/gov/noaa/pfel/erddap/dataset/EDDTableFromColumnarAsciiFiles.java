@@ -2235,7 +2235,7 @@ boolean columnar = false;  // are there any? how detect?
         String2.log("\n*** batchFromEML finished successfully.\n" +
             "The results are in " + resultsFileName);
 
-//        SSR.displayInBrowser("file://" + resultsFileName);
+//        Test.displayInBrowser("file://" + resultsFileName);
     }
 
 

@@ -200,6 +200,13 @@ public class String2 {
     public static String unitTestBigDataDir = "/erddapTestBig/";
 
     /**
+     * This returns the images dir in the unitTestDataDir.
+     */
+    public static String unitTestImagesDir() {
+        return unitTestDataDir + "images/";
+    }
+
+    /**
      * This returns the string which sorts higher.
      * null sorts low.
      *

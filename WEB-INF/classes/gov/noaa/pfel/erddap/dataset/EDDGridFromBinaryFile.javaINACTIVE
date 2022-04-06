@@ -534,7 +534,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         tName = gridDataset.makeNewFileForDapQuery(language, null, "time[0:100:1000]", dir, baseName + "_Axis", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         expected = 
 "time\n" +
 "UTC\n" +
