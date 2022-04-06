@@ -872,7 +872,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 "9.375E-5,-7458\n" +
 "...\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
-        SSR.displayInBrowser("file://" + dir + tName);        
+        Test.displayInBrowser("file://" + dir + tName);        
         String2.pressEnterToContinue("Close audio player when done.");
         File2.delete(dir + tName);
 

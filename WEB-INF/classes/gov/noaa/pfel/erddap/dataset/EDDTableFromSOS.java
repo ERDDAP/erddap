@@ -4916,7 +4916,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
             tName = eddTable.makeNewFileForDapQuery(language, null, null, "station_id,longitude,latitude,altitude,time,zztop" +
                 "&station_id=\"urn:ioos:network:noaa.nws.ndbc:all\"&time=2008-06-14T00",
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_testError", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         } catch (Throwable t) {
             throw new RuntimeException("Small changes are common. NDBC Server is in flux.", t); 
         }

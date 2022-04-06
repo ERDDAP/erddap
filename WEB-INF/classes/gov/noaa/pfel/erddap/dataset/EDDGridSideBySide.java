@@ -832,14 +832,14 @@ public class EDDGridSideBySide extends EDDGrid {
                 "x_wind[2][][(29):(50)][(225):(247)],y_wind[2][][(29):(50)][(225):(247)]"; 
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, vecDapQuery, EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_Vec1", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             vecDapQuery =  //max settings
                 "x_wind[2][][(29):(50)][(225):(247)],y_wind[2][][(29):(50)][(225):(247)]" +
                 "&.color=0xFF9900&.font=1.25&.vec=10"; 
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, vecDapQuery, EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_Vec2", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //graphics requests with .specs -- lines
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
@@ -847,7 +847,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "&.draw=lines&.vars=time|x_wind|&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_lines", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //linesAndMarkers              
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
@@ -856,14 +856,14 @@ public class EDDGridSideBySide extends EDDGrid {
                 "&.draw=linesAndMarkers&.vars=time|x_wind|y_wind&.marker=5|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_linesAndMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //graphics requests with .specs -- markers              
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
                 "x_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|&.marker=1|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_markers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //colored markers
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
@@ -871,7 +871,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "y_wind[0:20][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|y_wind&.marker=5|5&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_coloredMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //surface   
 //needs 4 line legend
@@ -879,7 +879,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "x_wind[2][(10.0)][(-75.0):(75.0)][(10.0):(360.0)]" +
                 "&.draw=surface&.vars=longitude|latitude|x_wind&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_surface", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //sticks
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
@@ -887,7 +887,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "y_wind[0:10][(10.0)][(75.0)][(360.0)]" +
                 "&.draw=sticks&.vars=time|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_sticks", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //vectors
             tName = qsWind8.makeNewFileForDapQuery(language, null, null, 
@@ -895,7 +895,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 "y_wind[2][(10.0)][(22.0):(50.0)][(225.0):(255.0)]" +
                 "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_vectors", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         /* */
         }
     }
@@ -1150,10 +1150,10 @@ public class EDDGridSideBySide extends EDDGrid {
             "&.draw=surface&.vars=longitude|latitude|x_wind";  
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, qsWind8.className() + "_surface", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
             dir, qsWind8.className() + "_surface360150", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //vector  map
         dapQuery = 
@@ -1162,10 +1162,10 @@ public class EDDGridSideBySide extends EDDGrid {
             "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xff0000";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, qsWind8.className() + "_vectors", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
             dir, qsWind8.className() + "_vectors360150", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //lines on a graph
         dapQuery = 
@@ -1173,10 +1173,10 @@ public class EDDGridSideBySide extends EDDGrid {
             "&.draw=lines&.vars=time|x_wind&.color=0xff0000";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, qsWind8.className() + "_lines", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, qsWind8.className() + "_lines500400", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //markers on a graph
         dapQuery = 
@@ -1184,10 +1184,10 @@ public class EDDGridSideBySide extends EDDGrid {
             "&.draw=markers&.vars=time|x_wind&.color=0xff0000";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, qsWind8.className() + "_markers",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, qsWind8.className() + "_markers500400",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //sticks on a graph
         dapQuery = 
@@ -1196,10 +1196,10 @@ public class EDDGridSideBySide extends EDDGrid {
             "&.draw=sticks&.vars=time|x_wind|y_wind&.color=0xff0000";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, qsWind8.className() + "_sticks", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|500", 
             dir, qsWind8.className() + "_sticks500500", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 /* */
     }
 

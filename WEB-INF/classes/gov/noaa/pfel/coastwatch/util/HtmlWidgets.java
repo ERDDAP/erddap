@@ -2225,7 +2225,7 @@ sb.append(twoClickMap[2]);
         String2.log("writeToFile result=" + 
             File2.writeToFileUtf8(fullName, sb.toString()));
 
-        SSR.displayInBrowser("file://" + fullName);
+        Test.displayInBrowser("file://" + fullName);
         debugMode = oDebugMode;
     }
 
@@ -2234,7 +2234,7 @@ sb.append(twoClickMap[2]);
             "Try viewing the images and videos to test range requests with public S3 buckets/files.");
 
          
-        SSR.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+        Test.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
 
         String2.pressEnterToContinue();      
     }
@@ -2244,7 +2244,7 @@ sb.append(twoClickMap[2]);
             "Try viewing the images and videos to test range requests with private S3 buckets/files.");
 
          
-        SSR.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
+        Test.displayInBrowser("http://localhost:8080/cwexperimental/files/testPrivateAwsS3MediaFiles/");
 
         String2.pressEnterToContinue();      
     }

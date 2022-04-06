@@ -783,8 +783,8 @@ String2.log("***end catalog.xml");
             "C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml", 
             "c:/u00/xml/");
         String2.log("first catalog.xml=" + sa.get(0));
-//        SSR.displayInBrowser("file://" + sa.get(0));
-//        SSR.displayInBrowser("file://f:/u00/xml/catalog.xml");
+//        Test.displayInBrowser("file://" + sa.get(0));  //.xml
+//        Test.displayInBrowser("file://f:/u00/xml/catalog.xml");
     }
 
     /**

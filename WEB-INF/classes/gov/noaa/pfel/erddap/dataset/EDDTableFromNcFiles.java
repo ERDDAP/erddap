@@ -3677,8 +3677,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-02-18\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-02-18\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-03-16\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-03-16\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4072,8 +4072,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-02-18\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-02-18\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"2022-03-16\";\n" + //changes every month  Don't regex. I want to see it.
+"  :date_issued = \"2022-03-16\";\n" +  //changes every month  Don't regex. I want to see it.
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -5289,8 +5289,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-02-18\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2022-02-18\";\n" +  // ""
+"  :date_created = \"2022-03-16\";\n" + //changes every month. Don't regex it -- I want to see it.
+"  :date_issued = \"2022-03-16\";\n" +  // ""
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -7138,7 +7138,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 45282398;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 45553271;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7183,7 +7183,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6433712e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.64579496e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7245,7 +7245,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-03-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7273,9 +7273,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-02-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-03-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-02-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-03-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7293,7 +7293,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-03-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7318,7 +7318,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the January 2022 data) but is a subset of the " + //month changes
+    "up to and including the February 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7331,7 +7331,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2022-01-28T12:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-02-25T13:16:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -7617,13 +7617,13 @@ expected =
             "&.draw=markers&.marker=5|5&.color=0xff0000&.colorBar=|||||";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_markersMap",  ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_TPmarkersMap",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, eddTable.className() + "_TPmarkersMap500400",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //vector map
         dapQuery = 
@@ -7632,13 +7632,13 @@ expected =
             "&.draw=vectors&.color=0xff0000";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_vectors", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_TPvectors", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
             dir, eddTable.className() + "_TPvectors360150", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //lines on a graph
         dapQuery = 
@@ -7647,13 +7647,13 @@ expected =
             "&.draw=lines&.color=0xff0000&.colorBar=|||||";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_lines", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_TPlines", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, eddTable.className() + "_TPlines500400", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //markers on a graph
         dapQuery = 
@@ -7662,13 +7662,13 @@ expected =
             "&.draw=markers&.marker=5|5&.color=0xff0000&.colorBar=|||||";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_markers",  ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_TPmarkers",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, eddTable.className() + "_TPmarkers500400",  ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //sticks on a graph
         dapQuery = 
@@ -7677,13 +7677,13 @@ expected =
             "&.draw=sticks&.color=0xff0000";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_sticks", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_TPsticks", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
             dir, eddTable.className() + "_TPsticks500400", ".transparentPng"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 /* */
     }
 
@@ -7739,7 +7739,7 @@ expected =
                 dapQuery = "time,irradiance&time>=" + time[i] + "&.xRange=||" + (lowToHigh == 0);
                 tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
                     dir, eddTable.className() + "_TimeAxis" + i + "_" + lowToHigh,  ".png"); 
-                SSR.displayInBrowser("file://" + dir + tName);
+                Test.displayInBrowser("file://" + dir + tName);
             }
         }
     }
@@ -7896,7 +7896,7 @@ expected =
 
                 //display?
                 if (false && String2.indexOf(imageFileTypeNames, dotExt) >= 0) {
-                    SSR.displayInBrowser("file://" + outName);
+                    Test.displayInBrowser("file://" + outName);
                     Math2.gc(5000); //in a test, pause for image display
                 }
 
@@ -7923,7 +7923,7 @@ expected =
                 //display last image
                 if (ext == extensions.length - 1) {
                     File2.rename(outName, outName + ".png");
-                    SSR.displayInBrowser( outName + ".png");
+                    Test.displayInBrowser( outName + ".png");
                 }
 
                 //data test for .nc (especially string column)
@@ -7973,7 +7973,7 @@ expected =
         "time,landings&port=%22Santa%20Barbara%22&fish=%22Abalone%22&.draw=lines&.color=0x000000";
         String tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             dir, eddTable.className() + "_manyYears",  ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
     }
 
 
@@ -12439,7 +12439,7 @@ String expected3 = expected2 +
         //*** test DAP data access form
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, "", dir, 
             globecBottle.className() + "_Entire", ".html"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
  
 
         //*** test make data files
@@ -12538,7 +12538,7 @@ String expected3 = expected2 +
         //.csv  test of regex on numeric variable
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, regexDapQuery, dir, 
             globecBottle.className() + "_NumRegex", ".csv"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -12569,7 +12569,7 @@ String expected3 = expected2 +
             "&time>=2002-08-07T00&time<=2002-08-07T06&ship=\"New_Horizon\"";
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_StrEq", ".csv"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -12601,7 +12601,7 @@ String expected3 = expected2 +
             "&time>=2002-08-07T00&time<=2002-08-07T06&ship>\"Nev\"&ship<\"Nex\"";
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, tDapQuery, dir, 
             globecBottle.className() + "_GTLT", ".csv"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -12735,7 +12735,7 @@ String expected3 = expected2 +
         //.dods
         //tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
         //    globecBottle.className() + "_Data", ".dods"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         try {
             String2.log("\ndo .dods test");
             String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
@@ -12880,7 +12880,7 @@ expected =
         //.htmlTable
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".htmlTable"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
@@ -13065,7 +13065,7 @@ EDStatic.endBodyHtml(language, EDStatic.erddapUrl((String)null, language), (Stri
         //2010-07-14 Roy can read this file in Matlab, previously. text didn't show up.
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, regexDapQuery, dir, 
             globecBottle.className() + "_Data", ".mat"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.hexDump(dir + tName, 1000000);
         //String2.log(results);
         Test.ensureEqual(
@@ -13291,7 +13291,7 @@ expected =
         //.ncHeader
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".ncHeader"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFromUtf8File(dir + tName);
         String2.log(results);
 
@@ -13362,7 +13362,7 @@ expected =
         //.tsv
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -13378,7 +13378,7 @@ expected =
         //.tsvp
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsvp"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -13393,7 +13393,7 @@ expected =
         //.tsv0
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".tsv0"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
         expected = 
@@ -13407,7 +13407,7 @@ expected =
         //.xhtml
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             globecBottle.className() + "_Data", ".xhtml"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
@@ -13525,7 +13525,7 @@ expected =
             //.xhtml from local dataset made from Erddap
             tName = eddTable2.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
                 eddTable2.className() + "_Itself", ".xhtml"); 
-            //SSR.displayInBrowser("file://" + dir + tName);
+            //Test.displayInBrowser("file://" + dir + tName);
             results = File2.directReadFromUtf8File(dir + tName);
             //String2.log(results);
             expected = 
@@ -13586,7 +13586,7 @@ expected =
         tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
             dir, globecBottle.className() + "_MapKml", ".kml"); 
         //String2.log(File2.readFromFile(dir + tName)[1]);
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
     }
 
     /**
@@ -13607,7 +13607,7 @@ expected =
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapKml", ".kml"); 
             //String2.log(File2.readFromFile(dir + tName)[1]);
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
         if (doAll) {
 
@@ -13617,87 +13617,87 @@ expected =
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.size=128|256&.font=.75", 
                 dir, globecBottle.className() + "_GraphTiny", 
                 ".largePng"); //to show it is irrelevant
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphM", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphL", ".largePng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.size=1700|1800", 
                 dir, globecBottle.className() + "_GraphHuge", 
                 ".smallPng"); //to show it is irrelevant
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphPdfSmall2", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphPdf2", ".pdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphPdfLarge2", ".largePdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
 
             //*** test make MAP
             String2.log("\n*** EDDTableFromNcFiles.test make MAP\n");
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapS", ".smallPng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapM", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapL", ".largePng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapS", ".smallPdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapM", ".pdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapL", ".largePdf"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
   
 
             //kml
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapKml", ".kml"); 
             //String2.log(File2.readFromFile(dir + tName)[1]);
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Off&.trim=10", 
                 dir, globecBottle.className() + "_GraphMLegendOff", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
                 dir, globecBottle.className() + "_GraphSLegendOnly", ".smallPng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
                 dir, globecBottle.className() + "_GraphMLegendOnly", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
                 dir, globecBottle.className() + "_GraphLLegendOnly", ".largePng"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
 
         }
@@ -13711,62 +13711,62 @@ expected =
                 //I specify colorBar, but it isn't used
                 "&.draw=markers&.marker=1|5&.color=0x0000FF&.colorBar=Rainbow|C|Linear", 
                 dir, globecBottle.className() + "_GraphWithMarkersNoColorBar", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=lines&.marker=9|7", 
                 dir, globecBottle.className() + "_GraphWithLines", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=9|7&.colorBar=Rainbow|C|Linear", 
                 dir, globecBottle.className() + "_GraphWithLinesAndMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 //color and colorBar aren't specified; default is used
                 "&.draw=markers&.marker=9|7", 
                 dir, globecBottle.className() + "_GraphWithMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=lines&.color=0xFF8800", 
                 dir, globecBottle.className() + "_MapWithLines", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
                 dir, globecBottle.className() + "_MapWithLinesAndMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=markers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
                 dir, globecBottle.className() + "_MapWithMarkers", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "time,sal00,sal11&altitude>-5&time>=2002-08-03&NO3>=0";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=sticks&.color=0xFF8800", 
                 dir, globecBottle.className() + "_GraphWithSticks", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
                 dir, globecBottle.className() + "_MapWithVectors", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03&cast>200";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
                 dir, globecBottle.className() + "_MapWithVectorsNoData", ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
         }
 
     }
@@ -13785,7 +13785,7 @@ expected =
         //test reading via netcdf-java    similar to .dods test
         //tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
         //    dir, globecBottle.className() + "_Data", ".dods"); 
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         {
             String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
             //!!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
@@ -13884,7 +13884,7 @@ expected =
 
 
         //OTHER APPROACH: GET .NC FILE  -- HOW SPECIFY CONSTRAINT EXPRESSION???
-        //SSR.displayInBrowser("file://" + dir + tName);
+        //Test.displayInBrowser("file://" + dir + tName);
         if (false) {
             try {
                 String2.log("\n*** do netcdf-java .nc test");
@@ -14250,7 +14250,7 @@ expected =
         for (int i = 0; i < queries.length; i++) {
             tName = eddTable.makeNewFileForDapQuery(language, null, null, start + queries[i], 
                 dir, eddTable.className() + "_testLegendA" + i,  ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
         }
 
         //time_precision
@@ -14264,7 +14264,7 @@ expected =
         for (int i = 0; i < queries.length; i++) {
             tName = eddTable.makeNewFileForDapQuery(language, null, null, start + queries[i], 
                 dir, eddTable.className() + "_testLegendB" + i,  ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
         }
         
     }
@@ -14362,7 +14362,7 @@ expected =
             
 
             if (i >= kmli + 1)
-                SSR.displayInBrowser("file://" + dir + tName);
+                Test.displayInBrowser("file://" + dir + tName);
             if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i] ||
                 time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
                 msg = "Unexpected length or time: " + msg;
@@ -14545,7 +14545,7 @@ expected =
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
 //The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2022-02-02 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"2022-03-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -19197,7 +19197,7 @@ FileVisitorDNLS.debugMode = false;
         if (whichChunk < 0 || whichChunk == 0) {
             start = "testTableLogAxis_TimeGst_";
             query = "time,gst&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=|||Log",
                 tDir, start + "XLogIsIgnoredSinceTimeAxis", ".png")); 
 
@@ -19207,39 +19207,39 @@ FileVisitorDNLS.debugMode = false;
             start = "testTableLogAxis_TimeGst_";
             query = "time,gst&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
             /* */
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100||",
                 tDir, start + "0.1_100DefaultIsAscendingLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|log",
                 tDir, start + "AscendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
                 tDir, start + "Wide5RangeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
                 tDir, start + "HardIntraDecadeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
                 tDir, start + "SuperHardIntraDecadeLog", ".png")); 
             /* */
@@ -19254,39 +19254,39 @@ FileVisitorDNLS.debugMode = false;
             query = "gst,time&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
             /* */
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100||",
                 tDir, start + "0.1_100DefaultIsAscendingLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|log",
                 tDir, start + "AscendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
                 tDir, start + "Wide5RangeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
                 tDir, start + "HardIntraDecadeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
                 tDir, start + "SuperHardIntraDecadeLog", ".png")); 
             /* */
@@ -19300,31 +19300,31 @@ FileVisitorDNLS.debugMode = false;
             start = "tableTestLogAxis_TimeChla_";
             query = "time,chl_a_total&time<=\"2002-06-18\"&.draw=lines";  
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query,
                 tDir, start + "DefaultIsLogButNegValues", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50||",
                 tDir, start + "DefaultIsAscendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Linear",
                 tDir, start + "AscendingLinear", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Log",
                 tDir, start + "AscendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|false|Log",
                 tDir, start + "DescendingLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
                 tDir, start + "WideRangeLog", ".png")); 
 
-            SSR.displayInBrowser("file://" + tDir + 
+            Test.displayInBrowser("file://" + tDir + 
                 eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
                 tDir, start + "WideRangeLog5", ".png")); 
             /* */
@@ -19513,7 +19513,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
         dapQuery = "&time>max(time)-3days";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             tDir, eddTable.className() + "_testPrecision",  ".htmlTable"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        Test.displayInBrowser("file://" + tDir + tName);
     }
 
     /**
@@ -19535,23 +19535,23 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
             "time,atmp&time%3E=2021-01-01T00%3A00%3A00Z&time%3C=2021-01-08T00%3A00%3A00Z" +
             "&station=%2246088%22&.draw=lines&.color=0x000000&.bgColor=0xffccccff";
 
-        SSR.displayInBrowser(dapQuery + "&orderBy(%22atmp%22)"); //goofy request (draw in ascending order of atmp, not time), but ERDDAP does what it was asked
+        Test.displayInBrowser(dapQuery + "&orderBy(%22atmp%22)"); //goofy request (draw in ascending order of atmp, not time), but ERDDAP does what it was asked
             
-        SSR.displayInBrowser(dapQuery + "&orderByClosest(%22time/1day%22)");     //value each day which is closest to midnight
+        Test.displayInBrowser(dapQuery + "&orderByClosest(%22time/1day%22)");     //value each day which is closest to midnight
 
-        SSR.displayInBrowser(dapQuery + "&orderByCount(%22time/1day%22)");       //!!!y axis units should be 'count'
+        Test.displayInBrowser(dapQuery + "&orderByCount(%22time/1day%22)");       //!!!y axis units should be 'count'
 
-        SSR.displayInBrowser(dapQuery + "&orderByLimit(%22time/1day,4%22)");     //first 4 values from each day
+        Test.displayInBrowser(dapQuery + "&orderByLimit(%22time/1day,4%22)");     //first 4 values from each day
 
-        SSR.displayInBrowser(dapQuery + "&orderByMax(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
+        Test.displayInBrowser(dapQuery + "&orderByMax(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
 
-        SSR.displayInBrowser(dapQuery + "&orderByMin(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
+        Test.displayInBrowser(dapQuery + "&orderByMin(%22time/1day,atmp%22)");    //the max atmp each day (at the time it occurred)
 
-        SSR.displayInBrowser(dapQuery + "&orderByMinMax(%22time/1day,atmp%22)"); //the min and max atmp each day (at the time they occurred).  Better if markers.
+        Test.displayInBrowser(dapQuery + "&orderByMinMax(%22time/1day,atmp%22)"); //the min and max atmp each day (at the time they occurred).  Better if markers.
 
-        SSR.displayInBrowser(dapQuery + "&orderByMean(%22time/1day%22)");        //the mean atmp each day
+        Test.displayInBrowser(dapQuery + "&orderByMean(%22time/1day%22)");        //the mean atmp each day
 
-        SSR.displayInBrowser(dapQuery + "&orderBySum(%22time/1day%22)");         //goofy request, but ERDDAP does what it was asked
+        Test.displayInBrowser(dapQuery + "&orderBySum(%22time/1day%22)");         //goofy request, but ERDDAP does what it was asked
 
     }
 

@@ -1485,14 +1485,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "longitude,latitude,time&unique_tag_id=%22" + 
             SSR.minimalPercentEncode(unique_tag_id) + "%22&.draw=markers&.colorBar=BlueWhiteRed|D||||", 
             tDir, "cPostDet3_1Det3Map_" + String2.modifyToBeFileNameSafe(unique_tag_id), ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        Test.displayInBrowser("file://" + tDir + tName);
 
         if (showHtmlTable) {
             tName = postDetections.makeNewFileForDapQuery(language, null, EDStatic.loggedInAsSuperuser, 
                 "longitude,latitude,time&unique_tag_id=%22" + 
                 SSR.minimalPercentEncode(unique_tag_id) + "%22", 
                 tDir, "cPostDet3_1Det3Data_" + String2.modifyToBeFileNameSafe(unique_tag_id), ".htmlTable"); 
-            SSR.displayInBrowser("file://" + tDir + tName);
+            Test.displayInBrowser("file://" + tDir + tName);
         }
     }
 
@@ -2045,7 +2045,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             String2.log(msg);
             String2.appendFile(resultsFileName, msg);
 
-            SSR.displayInBrowser("file://" + resultsFileName);    
+            Test.displayInBrowser("file://" + resultsFileName);    
         }
     }
 

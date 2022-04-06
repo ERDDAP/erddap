@@ -1629,6 +1629,23 @@ public class Math2 {
     }
 
     /**
+     * This returns a random &gt;=0 and &lt;1.
+     * For testing purposes, you can call Math2.setSeed(long seed)
+     *    to get repeatable results.
+     * 
+     * @param max a int greater than 0
+     * @return a "random" number in the range 0 .. max-1
+     */
+    public static double random() {
+
+        //Random is threadsafe, but has issues in a multi threaded situation.
+        //So synchronize it to be extra careful
+        synchronized(random) {
+            return random.nextDouble();
+        }
+    }
+
+    /**
      * This returns a random integer between 0 and max-1.
      * For testing purposes, you can call Math2.setSeed(long seed)
      *    to get repeatable results.

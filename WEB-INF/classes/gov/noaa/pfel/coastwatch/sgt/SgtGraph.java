@@ -78,6 +78,7 @@ public class SgtGraph  {
     public static Color DefaultBackgroundColor = new Color(0xCCCCFF); //just the RGB part (no A)
     public int widenOnePoint = 1;  //pixels
     private final static String testImageExtension = ".png"; //was/could be ".gif"
+    public static String fullTestCacheDir = "/erddapBPD/cache/_test/";   //EDStatic resets this if needed
 
     /**
      * Constructor.
@@ -1739,10 +1740,10 @@ public class SgtGraph  {
         PathCartesianRenderer.reallyVerbose = true;
         //AttributedString2.verbose = true;
         long time = System.currentTimeMillis();
-        String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("DejaVu Sans");  //"DejaVu Sans" "Bitstream Vera Sans"); //"SansSerif" is safe choice
         String imageDir = File2.webInfParentDirectory() + //with / separator and / at the end
             "images/";
+        String baseImageName = "SgtGraph_testDiverseGraphs_" + (xIsLogAxis? "X" : "") + (yIsLogAxis? "Y" : "");
 
         int width = 800;  //2 graphs wide 
         int height = 1200;  //3 graphs high 
@@ -1798,13 +1799,14 @@ public class SgtGraph  {
 
         //graph 1: plus 10 random points of each marker type
         int lastMarker = 9;
+        Math2.setSeed(12345);
         for (int i = 1; i <= lastMarker; i++) {
             //make a data file with data
             PrimitiveArray txCol = new DoubleArray();
             PrimitiveArray tyCol = new DoubleArray();
             for (int j = 0; j < 10; j++) {
-                txCol.addDouble(1.500e9 + Math.random() * .0025e9);
-                tyCol.addDouble(15 + 10* Math.random());
+                txCol.addDouble(1.500e9 + Math2.random() * .0025e9);
+                tyCol.addDouble(15 + 10 * Math2.random());
             }
             Table ttable = new Table();
             ttable.addColumn("X", txCol);
@@ -1889,8 +1891,8 @@ public class SgtGraph  {
             PrimitiveArray txCol = new DoubleArray();
             PrimitiveArray tyCol = new DoubleArray();
             for (int j = 0; j < 10; j++) {
-                txCol.addDouble(1.500e9 + Math.random() * .0025e9);
-                tyCol.addDouble(1.5 + Math.random());
+                txCol.addDouble(1.500e9 + Math2.random() * .0025e9);
+                tyCol.addDouble(1.5     + Math2.random());
             }
             Table ttable = new Table();
             ttable.addColumn("X", txCol);
@@ -2086,7 +2088,7 @@ public class SgtGraph  {
             DefaultBackgroundColor, 1); //fontScale
 
         //make sure old files are deleted
-        String fileName = tempDir + "SgtGraphTest";
+        String fileName = fullTestCacheDir + baseImageName;
         File2.delete(fileName + ".png");
         File2.delete(fileName + "1.png");
         File2.delete(fileName + "2.png");
@@ -2109,14 +2111,22 @@ public class SgtGraph  {
         }
 
         //view it
-        SSR.displayInBrowser("file://" + fileName + ".png");  Math2.sleep(2000);
+        //Test.displayInBrowser("file://" + fileName + ".png"); 
+        Image2.testImagesIdentical(
+            fileName + ".png",
+            String2.unitTestImagesDir()    + baseImageName + ".png",
+            File2.getSystemTempDirectory() + baseImageName + "_diff.png");
+         Math2.sleep(2000);
+
         if (testAllAndDisplay) {
-            SSR.displayInBrowser("file://" + fileName + "1.png"); Math2.sleep(400);
-            SSR.displayInBrowser("file://" + fileName + "2.png"); Math2.sleep(400);
-            SSR.displayInBrowser("file://" + fileName + "3.png"); Math2.sleep(400);
-            SSR.displayInBrowser("file://" + fileName + "4.png"); Math2.sleep(400);
-            SSR.displayInBrowser("file://" + fileName + "5.png"); Math2.sleep(400);
-            SSR.displayInBrowser("file://" + fileName + "6.png"); Math2.sleep(400);
+            for (int ti = 1; ti <= 6; ti++) {
+                //Test.displayInBrowser("file://" + fileName + ti + ".png"); 
+                Image2.testImagesIdentical(
+                    fileName + ti + ".png",
+                    String2.unitTestImagesDir()    + baseImageName + ti + ".png",
+                    File2.getSystemTempDirectory() + baseImageName + ti + "_diff.png");
+                Math2.sleep(400);
+            }
         }
 
         //done
@@ -2183,8 +2193,8 @@ public class SgtGraph  {
             PrimitiveArray txCol = new DoubleArray();
             PrimitiveArray tyCol = new DoubleArray();
             for (int j = 0; j < 100; j++) {
-                txCol.addDouble(1.500e9 + Math.random() * .0025e9);
-                tyCol.addDouble(1.5 + Math.random());
+                txCol.addDouble(1.500e9 + Math2.random() * .0025e9);
+                tyCol.addDouble(1.5     + Math2.random());
             }
             Table ttable = new Table();
             ttable.addColumn("X", txCol);
@@ -2227,8 +2237,13 @@ public class SgtGraph  {
             SgtUtil.saveImage(bufferedImage1, fileName);
 
             //view it in browser?
-            if (rep == 0) 
-                SSR.displayInBrowser("file://" + fileName);
+            if (rep == 0) {
+                //Test.displayInBrowser("file://" + fileName);
+                Image2.testImagesIdentical(
+                    fileName,
+                    String2.unitTestImagesDir()    + "SgtGraphMemoryTest" + rep + ".png",
+                    File2.getSystemTempDirectory() + "SgtGraphMemoryTest" + rep + "_diff.png");
+            }
         }
 
         //check memory usage
@@ -2346,12 +2361,17 @@ public class SgtGraph  {
             new Color(0x808080), 1); //gray, fontScale
 
         //save image
-        String fileName = tempDir + "SgtGraphTestSurface.png";
-        SgtUtil.saveImage(bufferedImage, fileName);
+        String fileName = "SgtGraphTestSurface" + (xIsLogAxis? "X" : "") + (yIsLogAxis? "Y" : "");
+        SgtUtil.saveImage(bufferedImage, tempDir + fileName + ".png");
 
         //view it
-        SSR.displayInBrowser("file://" + fileName);
-        Math2.sleep(2000);
+        //Test.displayInBrowser("file://" + fileName);
+        Image2.testImagesIdentical(
+            tempDir + fileName + ".png",
+            String2.unitTestImagesDir()    + fileName + ".png",
+            File2.getSystemTempDirectory() + fileName + "_diff.png");
+
+        Math2.gc(2000);
         //String2.pressEnterToContinue(); 
         
         //delete files        
@@ -2378,7 +2398,7 @@ public class SgtGraph  {
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 6 : -1;
+            lastTest = interactive? -1 : 6;
         String msg = "\n^^^ SgtGraph.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -2387,6 +2407,9 @@ public class SgtGraph  {
                 String2.log(msg + test);
             
                 if (interactive) {
+                    //if (test ==  0) ...;
+
+                } else {
                     if (test ==  0) testDiverseGraphs(true, false, false); //testAllAndDisplay, xIsLogAxis, yIsLogAxis
                     if (test ==  1) testDiverseGraphs(true, false, true);  
                     if (test ==  2) testDiverseGraphs(true, true,  true);  
@@ -2394,9 +2417,6 @@ public class SgtGraph  {
                     if (test ==  4) testSurface(false, false); //xIsLogAxis, yIsLogAxis
                     if (test ==  5) testSurface(false, true); 
                     if (test ==  6) testSurface(true, true); 
-
-                } else {
-                    //if (test ==  0) ...;
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

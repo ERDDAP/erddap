@@ -2265,63 +2265,6 @@ public class SSR {
 
 
 
-    /**
-     * A simple, static class to display a URL in the system browser.
-     * Copied with minimal changes from 
-     *   http://www.javaworld.com/javaworld/javatips/jw-javatip66.html.
-     *
-     * <p>Under Unix, the system browser is hard-coded to be 'netscape'.
-     * Netscape must be in your PATH for this to work.  This has been
-     * tested with the following platforms: AIX, HP-UX and Solaris.
-     *
-     * <p>Under Windows, this will bring up the default browser under windows.
-     * This has been tested under Windows 95/98/NT.
-     *
-     * <p>Examples:
-     *   BrowserControl.displayURL("http://www.javaworld.com")
-     *   BrowserControl.displayURL("file://c:\\docs\\index.html")
-     *   BrowserContorl.displayURL("file:///user/joe/index.html");
-     * 
-     * <p>Note - you must include the url type -- either "http://" or
-     * "file://".
-     *
-     * <p>2011-03-08 Before, this threw Exception if trouble. Now it doesn't.
-     *
-     * @param url the file's url (the url must start with either "http://"  or
-     * "file://").
-     * 
-     */
-    public static void displayInBrowser(String url) {
-        try {
-            String cmd = null;
-            if (String2.OSIsWindows) {
-                // The default system browser under windows.
-                String WIN_PATH = "rundll32";
-                // The flag to display a url.
-                String WIN_FLAG = "url.dll,FileProtocolHandler";
-                // cmd = 'rundll32 url.dll,FileProtocolHandler http://...'
-                cmd = WIN_PATH + " " + WIN_FLAG + " " + url;
-                Process p = Runtime.getRuntime().exec(cmd);
-            } else {
-                //https://linux.die.net/man/1/xdg-open
-                // cmd = 'xdg-open ' + url
-                Process p = Runtime.getRuntime().exec("xdg-open " + 
-                    (url.startsWith("file://")? url.substring(7) : url));
-
-                // wait for exit code -- if it's 0, command worked
-                int exitCode = p.waitFor();
-                if (exitCode != 0) 
-                    throw new RuntimeException("xdg-open exitCode=" + exitCode);
-            }
-        } catch (Throwable t) {
-            String2.log(String2.ERROR + " while trying to display url=" + url + "\n" +
-                "Please use the appropriate program to open and view the file.\n" +
-                "[Underlying error:\n" +
-                MustBe.throwableToString(t) +
-                "]");
-        }
-    }
-
 
 
     /** 

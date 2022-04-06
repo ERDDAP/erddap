@@ -1283,7 +1283,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
         results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +
@@ -1313,7 +1313,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         tName = wind.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_DataLLRange", ".xhtml"); 
         results = String2.annotatedString(File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName));
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
 "Dataset {[10]\n" +
 "  Sequence {[10]\n" +

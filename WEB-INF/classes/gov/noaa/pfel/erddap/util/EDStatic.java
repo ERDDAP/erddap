@@ -181,6 +181,7 @@ public class EDStatic {
      * <br>2.16 released on 2021-12-17
      * <br>2.17 released on 2022-02-16
      * <br>2.18 released on 2022-02-23
+     * <br>2.19 released on 2022-??-??
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -194,7 +195,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.18"; //see comment above
+    public static String erddapVersion = "2.19"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -1880,6 +1881,7 @@ public static boolean developmentMode = false;
         fullSgtMapTopographyCacheDirectory = fullCacheDirectory + "_SgtMapTopography/";
         fullTestCacheDirectory             = fullCacheDirectory + "_test/";
         fullWmsCacheDirectory              = fullCacheDirectory + "_wms/"; //for all-datasets WMS and subdirs for non-data layers
+        SgtGraph.fullTestCacheDir          = fullTestCacheDirectory;
         File2.makeDirectory(fullCptCacheDirectory);
         File2.makeDirectory(fullPlainFileNcCacheDirectory);
         File2.makeDirectory(fullSgtMapTopographyCacheDirectory);       

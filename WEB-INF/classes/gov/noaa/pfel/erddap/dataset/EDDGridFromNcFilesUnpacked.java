@@ -1147,7 +1147,7 @@ expected =
         String2.log("\n\n* PNG ");
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][][]&.land=under", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         NcHelper.debugMode = oNcDebugMode;
         Attributes.debugMode = oAttDebugMode;
@@ -2140,7 +2140,7 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "poc[(2016-08-28T12:00:00Z)][][]", 
             EDStatic.fullTestCacheDirectory, eddGrid.className(), ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         NcHelper.debugMode = oDebugMode;
     }

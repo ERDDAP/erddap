@@ -1544,7 +1544,7 @@ calendar years and months, and does not strictly follow the UDUNITS standard.
 
 <tr>
   <td>metric prefixes
-    <br>(e.g., "kilo" and 'k' mean "times 1000"; "&micro;" and 'u' means "times 10^-6")</td>
+    <br>(e.g., "kilo" and 'k' mean "times 1000"; "&micro;" and 'u' mean "times 10^-6")</td>
   <td>Supported (see UDUNITS udunits2-prefixes.xml)</td>
   <td>Supported (see the c/s column of the
     <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">prefix symbol table<img 

@@ -13,6 +13,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -2685,12 +2686,17 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //img
+        String baseName = "EDDGridFromNcFiles_testAwsS3" + deleteCachedDatasetInfo;
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "tasmin[(2099-12-16T12:00:00Z)][(24.0625):(49.92916665632)][(234.97916666666998):" +
             "(293.51249997659)]&.draw=surface&.vars=longitude|latitude|tasmin" +
             "&.colorBar=|||||&.land=under",
-            tDir, "testAwsS3", ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+            tDir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + tDir + tName);
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
     }
 
@@ -5320,7 +5326,8 @@ expected =
         String baseRequest = "http://localhost:8080/cwexperimental/griddap/testGriddedNcFiles"; 
         String userDapQuery = "?" + SSR.minimalPercentEncode("y_wind[(2008-01-07T12:00:00Z)][0][][0:719]") + //719 avoids esriAsc cross lon=180
             "&.vec="; //avoid get cached response
-        String baseOut = EDStatic.fullTestCacheDirectory + "EDDGridFromNcFilesTestSpeed";
+        String baseName = "EDDGridFromNcFilesTestSpeed";
+        String baseOut = EDStatic.fullTestCacheDirectory + baseName;
         ArrayList al;
         int timeOutSeconds = 120;
         String extensions[] = new String[]{
@@ -5445,7 +5452,7 @@ expected =
                 //display last image
                 if (ext == extensions.length - 1) {
                     File2.rename(outName, outName + ".png");
-                    SSR.displayInBrowser( outName + ".png");
+                    Test.displayInBrowser(outName + ".png"); //complicated to switch to testImagesIdentical
                 }
 
             } catch (Exception e) {
@@ -6303,7 +6310,7 @@ expected =
             "hours[(1970-01-02):(1970-01-05)]&.draw=linesAndMarkers" +
             "&.vars=days|hours|&.marker=5|5&.color=0x000000&.colorBar=|||||",
             tDir, fName,  ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        Test.displayInBrowser("file://" + tDir + tName); //Known problem, so don't switch to testImagesIdentical
         Test.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
             "See SgtGraph \"yIsTimeAxis = false;\".");
         Math2.sleep(10000);       
@@ -8612,9 +8619,14 @@ expected =
 
         //display the image
         String2.log("\n\n* PNG ");
+        String baseName = "EDDGridFromNcFiles_UInt16_Map";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "sst[0][][]&.land=under", 
-            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_UInt16_Map", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            EDStatic.fullTestCacheDirectory, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Image2.testImagesIdentical(
+            EDStatic.fullTestCacheDirectory + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
     }
 
@@ -8839,7 +8851,11 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(1998-02-16T00:00:00Z)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        //Test.displayInBrowser("file://" + tDir + tName);
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + testName + ".png",
+            File2.getSystemTempDirectory() + testName + "_diff.png");
     }
 
 
@@ -9048,7 +9064,11 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(32)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        //Test.displayInBrowser("file://" + tDir + tName);
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + testName + ".png",
+            File2.getSystemTempDirectory() + testName + "_diff.png");
     }
 
     /**
@@ -9256,7 +9276,11 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(32)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        //Test.displayInBrowser("file://" + tDir + tName);
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + testName + ".png",
+            File2.getSystemTempDirectory() + testName + "_diff.png");
     }
 
     /**
@@ -9472,7 +9496,11 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "chlorophyll[(1998032)][(90):(-90)][(-180):(180)]",
             tDir, testName + "_img", ".png"); 
-        SSR.displayInBrowser("file://" + tDir + tName);
+        //Test.displayInBrowser("file://" + tDir + tName);
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + testName + ".png",
+            File2.getSystemTempDirectory() + testName + "_diff.png");
     }
 
     /**
@@ -11645,7 +11673,7 @@ expected =
             //request status.html
             SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
             Math2.sleep(1000);
-            SSR.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
+            Test.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
 
             String2.pressEnterToContinue(
                 "Look at log.txt to see if update was run and successfully "+
@@ -13623,7 +13651,7 @@ expected =
 
         String2.log("\n*** EDDGridFromNcFiles.testLogAxis()");
         String tDir = EDStatic.fullTestCacheDirectory;
-        String tName, start, query, results, expected;
+        String tName, baseName, start, query, results, expected;
         EDDGrid eddGrid;
         int language = 0; 
 
@@ -13633,48 +13661,93 @@ expected =
         if (whichChunk < 0 || whichChunk == 0) {
 
             //test if x is not axis var: not allowed
-            start = "testLogAxis_ErrorXVarMustBeAxisVar";
+            start = "EDDGridFromNcFiles_testLogAxis0_ErrorXVarMustBeAxisVar";
             query = "sst[last-7:last][0][(25)][(242)]&.draw=lines&.vars=sst|time";
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query,
-                    tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
         if (whichChunk < 0 || whichChunk == 1) {
-            start = "testLogAxis_TimeSst_";
+            start = "EDDGridFromNcFiles_testLogAxis1_TimeSst_";
             query = "sst[last-7:last][0][(25)][(242)]&.draw=lines&.vars=time|sst";
             /* */
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
-                tDir, start + "5_500DefaultIsAscendingLinear", ".png")); 
+            baseName = start + "5_500DefaultIsAscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
-                tDir, start + "HardIntraDecadeLog", ".png")); 
+            baseName = start + "HardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=20.2|29||Log", //super hard intra-decade, no power of 10 in range
-                tDir, start + "SuperHardIntraDecadeLog", ".png")); 
+            baseName = start + "SuperHardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=20.2|29||Log", //super hard intra-decade, no power of 10 in range
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
@@ -13683,41 +13756,81 @@ expected =
         if (whichChunk < 0 || whichChunk == 2) {
 
             //swap x and y axes
-            start = "gridTestLogAxis_LonSst_";
+            start = "EDDGridFromNcFiles_gridTestLogAxis2_LonSst_";
             query = "sst[last][0][(25)][]&.draw=lines&.vars=longitude|sst";
             /* */
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
-                tDir, start + "5_500DefaultIsAscendingLinear", ".png")); 
+            baseName = start + "5_500DefaultIsAscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
-                tDir, start + "HardIntraDecadeLog", ".png")); 
+            baseName = start + "HardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=191|199||Log", //super hard intra-decade, no power of 10 in range
-                tDir, start + "SuperHardIntraDecadeLog", ".png")); 
+            baseName = start + "SuperHardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=191|199||Log", //super hard intra-decade, no power of 10 in range
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
@@ -13726,88 +13839,173 @@ expected =
         eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMHchla8day");
 
         if (whichChunk < 0 || whichChunk == 3) {
-            start = "gridTestLogAxis_TimeChla_";
+            start = "EDDGridFromNcFiles_gridTestLogAxis3_TimeChla_";
             String2.log(File2.directReadFrom88591File(tDir +  
                 eddGrid.makeNewFileForDapQuery(language, null, null, "chlorophyll[last][0][(50):(51)][(144):(145)]",
                 tDir, start + "GetData", ".csv"))); 
             query = "chlorophyll[last-7:last][0][(50.7825885)][(144.016668)]&.draw=lines&.vars=time|chlorophyll";  //lat lon chosen for high chl values
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLog", ".png")); 
+            baseName = start + "DefaultIsLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
-                tDir, start + "DefaultIsAscendingLog", ".png")); 
+            baseName = start + "DefaultIsAscendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500||",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Linear",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|true|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5|500|false|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
-                tDir, start + "WideRangeLog5", ".png")); 
+            baseName = start + "WideRangeLog5";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5|false|Log",
-                tDir, start + "WideRangeLog5", ".png")); 
+            baseName = start + "WideRangeLogFalse5";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5|false|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
         if (whichChunk < 0 || whichChunk == 4) {
 
             //swap x and y axes
-            start = "gridTestLogAxis_LonChla_";
+            start = "EDDGridFromNcFiles_gridTestLogAxis4_LonChla_";
             query = "chlorophyll[last][0][(50.7825885)][]&.draw=lines&.vars=longitude|chlorophyll";  //lat chosen for high chl values
             /* */
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
-                tDir, start + "DefaultIsAscendingLinear", ".png")); 
+            baseName = start + "DefaultIsAscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500||",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Linear",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|true|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5|500|false|Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
-                tDir, start + "WideRangeLog5", ".png")); 
+            baseName = start + "WideRangeLog5";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
-                tDir, start + "HardIntraDecadeLog", ".png")); 
+            baseName = start + "HardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=181|310||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            SSR.displayInBrowser("file://" + tDir + 
-                eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=205|229||Log", //super hard intra-decade, no power of 10 in range
-                tDir, start + "SuperHardIntraDecadeLog", ".png")); 
+            baseName = start + "SuperHardIntraDecadeLog";
+            tName = eddGrid.makeNewFileForDapQuery(language, null, null, query + "&.xRange=205|229||Log", //super hard intra-decade, no power of 10 in range
+                tDir, baseName, ".png");
+            //Test.displayInBrowser("file://" + tDir + tName); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
@@ -15254,10 +15452,16 @@ expected =
         String tDir = EDStatic.fullTestCacheDirectory;
 
         for (int i = 1; i <= 4; i++) {
+            String baseName = "EDDGridFromNcFiles_testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i];
             tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
                 "&.land=" + SgtMap.drawLandMask_OPTIONS[i],
-                tDir, "testIslandShift_" + SgtMap.drawLandMask_OPTIONS[i], ".png"); 
-            SSR.displayInBrowser("file://" + tDir + tName);
+                tDir, baseName, ".png"); 
+            Test.displayInBrowser("file://" + tDir + tName);
+            //!!! graphing system works correctly, but island location is knownProblem
+            //Image2.testImagesIdentical(
+            //    tDir + tName,
+            //    String2.unitTestImagesDir()    + baseName + ".png",
+            //    File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
     }
 
@@ -15418,7 +15622,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 14 : 69;
+            lastTest = interactive? 9 : 69;
         String msg = "\n^^^ EDDGridFromNcFiles.test(" + interactive + ") test=";
 
         boolean deleteCachedDatasetInfo = true; 
@@ -15429,20 +15633,16 @@ expected =
                 String2.log(msg + test);
             
                 if (interactive) {
-                    if (test ==  0) testIslandShift();
-                    if (test ==  1) testSpeed(0, 1000);  //0, 1000
-
-                    if (test ==  3) testGenerateDatasetsXmlLong2();
-                    if (test ==  4) testSpecialAxis0GlobalDouble();
-                    if (test ==  5) testMinimalReadSource();
-                    if (test ==  6) testMakeCopyFileTasks(true); 
-                    if (test ==  7) testMakeCopyFileTasks(false);
-                    if (test ==  8) testGenerateDatasetsXmlCopy(); //requires localhost erdMWchla1day
-                    if (test ==  9) testLogAxis(-1); //-1=all
-                    if (test == 10) testCopyFiles(true);  //deleteDataFiles  //does require localhost erddap
-                    if (test == 11) testCopyFiles(false); //uses cachePartialPathRegex  //doesn't require localhost erddap
-                    if (test == 12) testGenerateDatasetsXmlStructuresPrivate();
-                    if (test == 14) testStructurePrivate();
+                    if (test ==  0) testSpeed(0, 1000);  //0, 1000
+                    if (test ==  1) testIslandShift(); //graphing works correctly, but island location is knownProblem!
+                    if (test ==  2) testMinimalReadSource(); //asks you to check log messages
+                    if (test ==  3) testMakeCopyFileTasks(true);   //press Enter when tasks are finished
+                    if (test ==  4) testMakeCopyFileTasks(false);  //press Enter when tasks are finished
+                    if (test ==  5) testGenerateDatasetsXmlCopy(); //press Enter when tasks are finished  //requires localhost erdMWchla1day
+                    if (test ==  6) testCopyFiles(true);  //press Enter when tasks are finished //deleteDataFiles             //does    require localhost erddap
+                    if (test ==  7) testCopyFiles(false); //press Enter when tasks are finished //uses cachePartialPathRegex  //doesn't require localhost erddap
+                    if (test ==  8) testGenerateDatasetsXmlStructuresPrivate();  //press Enter
+                    if (test ==  9) testStructurePrivate(); //not really finished. Asks you to press Enter after looking at output
 
                     //not usually run
                     //if (test == 1000) testQuickRestart2();
@@ -15463,6 +15663,7 @@ expected =
                     if (test == 14) testGenerateDatasetsXmlGroups();
                     if (test == 15) testGenerateDatasetsXmlGroups2();
                     if (test == 16) testGenerateDatasetsXmlStructures(); 
+                    if (test == 17) testGenerateDatasetsXmlLong2();
 
                     if (test == 20) testAVDVSameSource();
                     if (test == 21) test2DVSameSource();
@@ -15474,15 +15675,16 @@ expected =
                     if (test == 27) testSpecialAxis0Time();
                     if (test == 28) testSpecialAxis0FileNameInt();
                     if (test == 29) testSpecialAxis0PathNameInt();
-                    if (test == 30) testFileName(true);
-                    if (test == 31) testFileName(false);
-                    if (test == 32) testReplaceFromFileName(true);
-                    if (test == 33) testReplaceFromFileName(false);
-                    if (test == 34) testDapErrors();
-                    if (test == 35) testFiles();  
-                    if (test == 36) testUInt16File();
-                    if (test == 37) testUnsignedGrid();  
-                    if (test == 38) testStructure();  
+                    if (test == 30) testSpecialAxis0GlobalDouble();
+                    if (test == 31) testFileName(true);
+                    if (test == 32) testFileName(false);
+                    if (test == 33) testReplaceFromFileName(true);
+                    if (test == 34) testReplaceFromFileName(false);
+                    if (test == 35) testDapErrors();
+                    if (test == 36) testFiles();  
+                    if (test == 37) testUInt16File();
+                    if (test == 38) testUnsignedGrid();  
+                    if (test == 39) testStructure();  
 
                     //unfinished: if (test == 39) testRTechHdf();
                     if (test == 40) testUpdate();
@@ -15490,6 +15692,7 @@ expected =
 
                     if (test == 42) testCacheFiles(true);  //deleteDataFiles //does require localhost erddap 
                     if (test == 43) testCacheFiles(false);                   //does require localhost erddap
+                    if (test == 44) testLogAxis(-1); //-1=all
 
                     //tests of remote sources on-the-fly
                     //NetcdfFiles.open(          "https://data.nodc.noaa.gov/thredds/fileServer/aquarius/nodc_binned_V4.0/monthly/sss_binned_L3_MON_SCI_V4.0_2011.nc");

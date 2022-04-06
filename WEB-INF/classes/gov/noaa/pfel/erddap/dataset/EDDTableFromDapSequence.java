@@ -1458,7 +1458,7 @@ expected =
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|||";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_GraphArgo", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         }
     
         if (false) {
@@ -1474,7 +1474,7 @@ expected =
                 "&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|C|Linear|0|30|30";
             tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_GraphArgo30", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         }
 
     }
@@ -1497,7 +1497,7 @@ expected =
         String tq = "longitude,latitude,id&id<=1000000&.draw=markers&.marker=4|5&.color=0x000000&.colorBar=|C|Linear|||";
         String tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         tName = tedd.makeNewFileForDapQuery(language, null, null, tq, EDStatic.fullTestCacheDirectory, 
             tedd.className() + "_Argo", ".csv"); 
         String results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
@@ -1839,7 +1839,7 @@ calcatch.time, calcatch.area, calcatch.block, calcatch.Comments, calcatch.Descri
                 "&longitude>=-132.0&longitude<=-112.0&latitude>=30.0&latitude<=50.0" +
                 "&distinct()&.draw=markers&.colorBar=|D||||", 
                 EDStatic.fullTestCacheDirectory, edd.className() + "_SVGraph", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
             throw new RuntimeException("2016-01-16 THE DATA SOURCE IS GONE.", t); 

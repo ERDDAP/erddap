@@ -1319,7 +1319,7 @@ expected2 =
                 gridDataset.className() + "_Axis", ".csv"); 
             results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
     "time,longitude\n" +
     "UTC,degrees_east\n" +
@@ -1340,7 +1340,7 @@ expected2 =
                 gridDataset.className() + "_AxisG.A", ".csv"); 
             results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
             //String2.log(results);
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
     "time,longitude\n" +
     "UTC,degrees_east\n" +

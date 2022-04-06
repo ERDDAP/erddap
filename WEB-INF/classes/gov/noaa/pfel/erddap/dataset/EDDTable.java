@@ -21335,7 +21335,7 @@ writer.write(
         String dapQuery = eddTable.sosQueryToDapQuery(language, null, sosQuery5png)[0];
         fileName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_testSos5png", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
 
 
         //*** #6   all stations,  1 obsProp, 
@@ -21389,7 +21389,7 @@ writer.write(
             "");
         fileName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery6[0], 
             EDStatic.fullTestCacheDirectory, eddTable.className() + "_testSos6png", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
+        Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + fileName);
 /*  */
 
     }

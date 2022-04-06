@@ -1382,7 +1382,7 @@ public class EDDTableFromHttpGet extends EDDTableFromFiles {
                 true, Double.NaN); 
 
             File2.copy(name, name + ".txt");
-            SSR.displayInBrowser("file://" + name + ".txt");
+            Test.displayInBrowser("file://" + name + ".txt");
             return;
         }
 

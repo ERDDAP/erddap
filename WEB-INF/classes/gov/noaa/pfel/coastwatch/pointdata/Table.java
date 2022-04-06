@@ -3970,7 +3970,7 @@ public class Table  {
         String fileName = dir + "sampleExcel.csv";
         File2.writeToFile88591(fileName, 
             File2.directReadFrom88591File(dir + "testScalar.csv"));
-        SSR.displayInBrowser("file://" + fileName);
+        Test.displayInBrowser("file://" + fileName); //.csv
         String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel.csv : yes : yes.");
         Table table = new Table();
         table.readNccsv(fileName); 
@@ -23872,7 +23872,7 @@ String2.log(table.dataToString());
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        SSR.displayInBrowser("file://" + fullName);
+        Test.displayInBrowser("file://" + fullName); //.wav
         String2.pressEnterToContinue("Close the audio player if file is okay.");
     }
 
@@ -23921,7 +23921,7 @@ String2.log(table.dataToString());
 "-3.0517578E-5,-1.2207031E-4\n" +
 "...\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
-        SSR.displayInBrowser("file://" + fullName);
+        Test.displayInBrowser("file://" + fullName); //audio
         String2.pressEnterToContinue("Close the audio player if file is okay.");
     }
 
@@ -24193,7 +24193,7 @@ String2.log(table.dataToString());
                 table.writeWaveFile(outName);
                 table.readAudioFile(outName, true, false);  //readData, addElapsedTime
                 String2.log(table.dataToString(16));
-                SSR.displayInBrowser("file://" + outName);
+                Test.displayInBrowser("file://" + outName); //audio
 
             } catch (Exception e) {
                 String2.log(MustBe.throwableToString(e));
@@ -24215,7 +24215,7 @@ String2.log(table.dataToString());
         //DEAL WITH JAVA 8 BUG
         boolean java8 = System.getProperty("java.version").startsWith("1.8.");
         if (java8)
-            SSR.displayInBrowser("file://" + fullName);
+            Test.displayInBrowser("file://" + fullName); //.wav
         else testReadFloatAudioFile(fullName);
         String2.pressEnterToContinue("Close the audio player if file is okay.");
     }
@@ -31609,7 +31609,7 @@ String2.log(table.dataToString());
         String fileName = testDir + "tempTable.json";
         table.saveAsJson(fileName, 0, true);
         //String2.log(fileName + "=\n" + File2.readFromFile(fileName)[1]);
-        //SSR.displayInBrowser("file://" + fileName);
+        //Test.displayInBrowser("file://" + fileName); //.json
 
         //read it from the file
         String results = File2.directReadFromUtf8File(fileName);
@@ -32498,7 +32498,7 @@ String2.log(table.dataToString());
             null, BGCOLOR, 1, true, 0, true, //needEncodingAsHtml
             false);
         //String2.log(fileName + "=\n" + File2.directReadFromUtf8File(fileName));
-        SSR.displayInBrowser("file://" + fileName);
+        Test.displayInBrowser("file://" + fileName); //.html
 
         //read it from the file
         String results = File2.directReadFromUtf8File(fileName);

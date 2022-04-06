@@ -1030,7 +1030,7 @@ expected =
         userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_GT180", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
@@ -1212,7 +1212,7 @@ expected =
         userDapQuery = "dhw[(2001-10-16T12:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_1to359", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
 //THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files available
         //test of /files/ system for fromErddap in local host dataset
@@ -1426,7 +1426,7 @@ expected =
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_0to360", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
 //!!!??? what's with that gap near lon=0? It's from the source.
 //The source has odd gaps at lon 358 to 360, see
@@ -1744,7 +1744,7 @@ expected =
         userDapQuery = "sst[(2008-04-16T00:00:00Z)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_120to320", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
         debugMode = oDebugMode;
@@ -1835,7 +1835,7 @@ expected =
         //read the log file
         String tLog = File2.readFromFileUtf8(EDStatic.fullLogsDirectory + "log.txt")[1];
         String expected = // ***
-          "deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n" +
+/*"deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n" +
 "\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
 "\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
 "\n" +
@@ -1843,12 +1843,25 @@ expected =
 "\n" +
 "\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
 "LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
+"  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false"; */
+
+"deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180Child\n" +
+"File2.deleteIfOld\\(/erddapBPD/dataset/ld/hawaii_d90f_20ee_c4cb_LonPM180Child/\\) nDir=   . nDeleted=   . nRemain=   .\n" +
+"\\*\\*\\* unloading datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+"nActions=0\n" +
+"\\*\\*\\* deleting cached dataset info for datasetID=hawaii_d90f_20ee_c4cb_LonPM180\n" +
+"File2.deleteIfOld\\(/erddapBPD/dataset/80/hawaii_d90f_20ee_c4cb_LonPM180/  \\) nDir=   . nDeleted=   . nRemain=   .\n" +
+"\n" +
+"\\*\\*\\* RunLoadDatasets is starting a new hardFlag LoadDatasets thread at (..........T..............)\n" +
+"\n" +
+"\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\\*\n" +
+"LoadDatasets.run EDStatic.developmentMode=true ..........T..............\n" +
 "  datasetsRegex=\\(hawaii_d90f_20ee_c4cb_LonPM180\\) inputStream=null majorLoad=false";
         
-        int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 77)));
-        int po2 = Math.min(po + expected.length(), tLog.indexOf("majorLoad=false", po) + 15);
-        String tResults = tLog.substring(po, po + expected.length());
-        String2.log("tResults=\"\n" + tResults + "\n\"\n");
+        int po = Math.max(0, tLog.lastIndexOf(expected.substring(0, 78)));
+        int po2 = tLog.indexOf("majorLoad=false", po) + 15;
+        String tResults = tLog.substring(po, po2);
+        String2.log("\ntResults=<quote>" + tResults + "</quote>\n");
         Test.testLinesMatch(tResults, expected, "tResults and expected don't match!");
         
         //so far so good, tResults matches expected

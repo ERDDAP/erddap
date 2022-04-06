@@ -1070,6 +1070,8 @@ These datasets were hard to work with:
             Calendar2.backNDays(-5, Double.NaN)).substring(0, 11);
         String daysAhead7 = Calendar2.epochSecondsToIsoStringTZ(
             Calendar2.backNDays(-7, Double.NaN)).substring(0, 11);
+        String commonProblems = "Small differences (e.g., a missing line) and \"Your query produced no matching results\" are common.";
+
 
         //Raw 6 minute          
         if ("nosCoopsWLR6".matches(idRegex)) {
@@ -1099,7 +1101,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1131,7 +1133,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1167,7 +1169,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1203,7 +1205,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1235,7 +1237,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1269,7 +1271,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
 
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1310,7 +1312,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1351,7 +1353,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1389,7 +1391,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1427,7 +1429,7 @@ These datasets were hard to work with:
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1470,15 +1472,13 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Unexpected error. Sometimes a row is missing from source. Otherwise: Unexpected error.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
 
         //Rain Fall
-        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/plain/response.jsp?
-        //timeZone=0&metadata=yes&Submit=Submit&stationId=9752619
-        //&beginDate=20101024+00:00&endDate=20101026+00:00
+        //works https://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/plain/response.jsp?timeZone=0&metadata=yes&Submit=Submit&stationId=9752619&beginDate=20101024+00:00&endDate=20101026+00:00
         if ("nosCoopsMRF".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetsXml(null, "nosCoopsMRF"); 
@@ -1507,7 +1507,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1544,7 +1544,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1583,7 +1583,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1621,7 +1621,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            Test.knownProblem("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1655,7 +1655,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
 
@@ -1691,7 +1691,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,(0|1)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
-            throw new RuntimeException("Small differences (e.g., a missing line) are common.", t); 
+            Test.knownProblem(commonProblems, t); 
         }
         }
   

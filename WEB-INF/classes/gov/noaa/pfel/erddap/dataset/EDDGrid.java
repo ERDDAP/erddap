@@ -1267,7 +1267,7 @@ public abstract class EDDGrid extends EDD {
      */
     public void parseDataDapQuery(int language, String userDapQuery, StringArray destinationNames,
         IntArray constraints, boolean repair) throws Throwable {
-    	parseDataDapQuery(language, userDapQuery, destinationNames, constraints, repair, new DoubleArray());
+        parseDataDapQuery(language, userDapQuery, destinationNames, constraints, repair, new DoubleArray());
     }
 
     /** 
@@ -1301,6 +1301,7 @@ public abstract class EDDGrid extends EDD {
      * @param repair if true, this method tries to do its best repair problems (guess at intent), 
      *     not to throw exceptions 
      * @param inputValues the double values parsed from the query are stored here.
+     *      The initial size must be 0.
      *      These are returned in the order the user provided them, there is no
      *      correction to make sure the lower value is first. Stride is not
      *      included, just the start and stop values. If a single value is
@@ -1617,7 +1618,7 @@ public abstract class EDDGrid extends EDD {
      * @param leftPo the position of the "["
      * @param axis the axis number, 0..
      * @param repair if true, this tries to do its best not to throw an exception (guess at intent)
-     * @param inputValues the double values parsed from the query are stored here.
+     * @param inputValues the double values parsed from the query for the current axis will be added to this DoubleArray.
      *      These are returned in the order the user provided them, there is no
      *      correction to make sure the lower value is first. Stride is not
      *      included, just the start and stop values. If a single value is
@@ -1640,6 +1641,10 @@ public abstract class EDDGrid extends EDD {
         String diagnosticl = MessageFormat.format(EDStatic.queryErrorGridDiagnosticAr[language], destinationName, "" + axis, av.destinationName());
         //if (reallyVerbose) String2.log("parseAxisBrackets " + diagnostic0 + ", leftPo=" + leftPo);
         int defaults[] = {0, 1, nAvSourceValues - 1, deQuery.length()};
+        //and add defaults in inputValues
+        int inputValuesOldSize = inputValues.size();
+        inputValues.add(av.destinationMinDouble());
+        inputValues.add(av.destinationMaxDouble());
 
         //leftPo must be '['
         int po = leftPo;
@@ -1772,7 +1777,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridMissingAr[language], EDStatic.EDDGridStartAr[language])));
                 double startDestD = av.destinationToDouble(startS); //ISO 8601 times -> to epochSeconds w/millis precision
                 //String2.log("\n! startS=" + startS + " startDestD=" + startDestD + "\n");
-                inputValues.add(startDestD);
+                inputValues.set(inputValuesOldSize, startDestD);
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(startDestD)) {
                     if (repair)
@@ -1809,7 +1814,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[0]       , EDStatic.EDDGridStartAr[0]       , startS, "" + (nAvSourceValues - 1)),
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[language], EDStatic.EDDGridStartAr[language], startS, "" + (nAvSourceValues - 1))));
                 }
-                inputValues.add(av.destinationDouble(startI));
+                inputValues.set(inputValuesOldSize, av.destinationDouble(startI));
             }
 
             //if (startS.equals("last") || stopS.equals("(last)")) {
@@ -1827,7 +1832,7 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridMissingAr[language], EDStatic.EDDGridStopAr[language])));                    
                 double stopDestD = av.destinationToDouble(stopS); //ISO 8601 times -> to epochSeconds w/millis precision
                 //String2.log("\n! stopS=" + stopS + " stopDestD=" + stopDestD + "\n");
-                inputValues.add(stopDestD);
+                inputValues.set(inputValuesOldSize + 1, stopDestD);
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(stopDestD)) {
                     if (repair)
@@ -1862,13 +1867,16 @@ public abstract class EDDGrid extends EDD {
                         EDStatic.queryErrorAr[0]        + diagnostic0 + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[0]       , EDStatic.EDDGridStopAr[0]       , stopS, "" + (nAvSourceValues - 1)),
                         EDStatic.queryErrorAr[language] + diagnosticl + ": " + MessageFormat.format(EDStatic.queryErrorGridBetweenAr[language], EDStatic.EDDGridStopAr[language], stopS, "" + (nAvSourceValues - 1))));
                 }
-                inputValues.add(av.destinationDouble(stopI));
+                inputValues.set(inputValuesOldSize + 1, av.destinationDouble(stopI));
             }
         }
 
         //fix startI > stopI requests
         if (startI > stopI) {
             int ti = startI; startI = stopI; stopI = ti;
+            double d = inputValues.get(axis*2); 
+            inputValues.set(inputValuesOldSize, inputValues.get(axis*2+1));
+            inputValues.set(inputValuesOldSize + 1, d);
         }
 
         //return
@@ -5629,6 +5637,7 @@ Attributes {
             StringArray reqDataNames = new StringArray();
             IntArray constraints     = new IntArray();
             DoubleArray inputValues  = new DoubleArray();
+
             // TransparentPng repairs input ranges during parsing and stores raw input values in the inputValues array.
             parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, transparentPng /* repair */, inputValues);
 
@@ -12467,7 +12476,7 @@ Attributes {
         fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
         eddGrid.wcsGetCoverage(0, "someIPAddress", loggedInAs, endOfRequest, wcsQuery3, 
             new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-        SSR.displayInBrowser("file://" + fileName);
+        Test.displayInBrowser("file://" + fileName);
 
 /*
         //*** observations   for all stations and with BBOX  (but just same 1 station)
@@ -14867,7 +14876,7 @@ writer.write(
             fos.write(baos.toByteArray());
             fos.flush();
             fos.close();
-            SSR.displayInBrowser("file://" + filename);
+            Test.displayInBrowser("file://" + filename);
             throw new RuntimeException(ex);
         }
     }

@@ -5408,7 +5408,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             "get=gridData&dataSet=TMBchla&timePeriod=8day&centeredTime=2006-01-23T00:00:00" +
             "&maxLat=50&minLon=220&maxLon=250&minLat=20&fileType=GoogleEarth";
         SSR.downloadFile(url, testDir + tName, true);
-        SSR.displayInBrowser("file://" + testDir + tName);
+        Test.displayInBrowser("file://" + testDir + tName);  //.kml
         String2.pressEnterToContinue(
             "Is GoogleEarth showing a coverage? \n" +
             "Close it, then..."); 
@@ -5423,7 +5423,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             "&endTime=2008-09-26T22:00:00&minLon=220.0&maxLon=250.0&minLat=20.0&maxLat=50.0" +
             "&minDepth=0&maxDepth=0&fileType=GoogleEarth",
             testDir + tName, true);
-        SSR.displayInBrowser("file://" + testDir + tName);
+        Test.displayInBrowser("file://" + testDir + tName);  //.kml
         String2.pressEnterToContinue(
             "Is GoogleEarth showing stations? \n" +
             "Close it, then..."); 
