@@ -6052,4 +6052,9 @@ You can access it at
 <yourEmailAddress>您的電子郵件地址</yourEmailAddress>
 <zoomIn>放大</zoomIn>
 <zoomOut>縮小</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

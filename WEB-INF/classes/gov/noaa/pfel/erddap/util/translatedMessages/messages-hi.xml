@@ -6523,4 +6523,9 @@ You can access it at
 <yourEmailAddress>आपका ईमेल पता</yourEmailAddress>
 <zoomIn>ज़ूम इन</zoomIn>
 <zoomOut>ज़ूम आउट</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

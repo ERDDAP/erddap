@@ -7471,4 +7471,9 @@ Nhiều bộ dữ liệu cũng có thể được truy cập thông qua Dịch v
 <yourEmailAddress>địa chỉ email của bạn</yourEmailAddress>
 <zoomIn>Phóng to</zoomIn>
 <zoomOut>Thu nhỏ</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>
