@@ -1044,7 +1044,7 @@ public class EDDTableCopy extends EDDTable{
             expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
             Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
             Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
 
             //*** test make data files
@@ -1112,7 +1112,7 @@ public class EDDTableCopy extends EDDTable{
             //.dods
             //tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             //    edd.className() + "_Data", ".dods"); 
-            //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             String2.log("\ndo .dods test");
             String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + edd.datasetID();
@@ -1139,7 +1139,7 @@ public class EDDTableCopy extends EDDTable{
             //test .png
             tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_GraphM", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         } catch (Throwable t) {
             throw new RuntimeException("*** This EDDTableCopy test requires testTableCopy", t); 

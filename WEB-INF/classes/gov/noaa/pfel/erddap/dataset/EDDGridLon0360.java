@@ -12,6 +12,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -1012,7 +1013,7 @@ expected =
         userDapQuery = "chla[(2015-03-16)][][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_NEPacificNowLon0360", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //test of /files/ system for fromErddap in local host dataset
         results = SSR.getUrlResponseStringUnchanged(
@@ -1097,6 +1098,24 @@ expected =
 
         //lon values
         //this tests entire range
+        userDapQuery = "longitude[0]";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM181_lon0", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 0.018749999999981976, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        userDapQuery = "longitude[last]";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddGrid.className() + "_PM181_lonLast", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        results = String2.replaceAll(results, "\n", ", ");
+        expected = 
+"longitude, degrees_east, 359.98125, ";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
         userDapQuery = "longitude[(0.01875):1000:(359.98125)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_lon", ".csv"); 
@@ -1117,35 +1136,30 @@ expected =
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //entire new lon range
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
-// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.25625):1900:(-0.98)%5D
         expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
-
-"2021-03-05T12:00:00Z,0.0,27.01875,214.74374999999998,0.087049656\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,285.99375,0.062160246\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
-
-"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n" +
-
-"2021-03-05T12:00:00Z,0.0,26.98125,214.74374999999998,0.08402522\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,285.99375,0.0637603\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
+"2021-03-22T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,143.49374999999998,0.121356696\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,214.74374999999998,0.11257772\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,285.99375,0.08762298\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,143.49374999999998,0.12836951\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,214.74374999999998,0.11623266\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,285.99375,0.082867384\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //0-180 subset
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
@@ -1154,75 +1168,94 @@ expected =
         expected =    
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n";
+"2021-03-22T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,143.49374999999998,0.121356696\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,143.49374999999998,0.12836951\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //0-181 subset with not relevant spillover  //yes, it is correctly handled by "all from new left"
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-22T12:00:00Z):1:(2021-03-22T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(0.98):1900:(179.98)%5D
         expected =    
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,143.49374999999998,0.16770716\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,143.49374999999998,0.16694945\n";
+"2021-03-22T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,143.49374999999998,0.121356696\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,143.49374999999998,0.12836951\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
         //180-360 subset
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
         //String2.log(results);
-// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-05T12:00:00Z):1:(2021-03-05T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.26):1900:(-0.98)%5D
+// https://coastwatch.pfeg.noaa.gov/erddap/griddap/nesdisVHNchlaWeekly.htmlTable?chlor_a%5B(2021-03-22T12:00:00Z):1:(2021-03-22T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B(27.018749999999996):1:(26.99)%5D%5B(-145.26):1900:(-0.98)%5D
         expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,214.74374999999998,0.087049656\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,285.99375,0.062160246\n" +
-"2021-03-05T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,214.74374999999998,0.08402522\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,285.99375,0.0637603\n" +
-"2021-03-05T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
+"2021-03-22T12:00:00Z,0.0,27.01875,214.74374999999998,0.11257772\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,285.99375,0.08762298\n" +
+"2021-03-22T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,214.74374999999998,0.11623266\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,285.99375,0.082867384\n" +
+"2021-03-22T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test image entire world
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][][]&.land=under";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][][]&.land=under";
+        String baseName = eddGrid.className() + "_PM181_entireWorld";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_entireWorld_PM181", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
-
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image subset near 180
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(71):(-61)][(120):(245)]&.land=under";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(71):(-61)][(120):(245)]&.land=under";
+        baseName = eddGrid.className() + "_PM181_subsetNear180";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_subsetNear180_PM181", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image just new left
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(41):(-61)][(10):(175)]&.land=under";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(41):(-61)][(10):(175)]&.land=under";
+        baseName = eddGrid.className() + "_PM181_justNewLeft";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_justNewLeft_PM181", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image just new right
-        userDapQuery = "chlor_a[(2021-03-05T12:00:00Z)][][(41):(-61)][(190):(355)]&.land=under";
+        userDapQuery = "chlor_a[(2021-03-22T12:00:00Z)][][(41):(-61)][(190):(355)]&.land=under";
+        baseName = eddGrid.className() + "_PM181_justNewRight";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_justNewRight_PM181", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
 //SOURCE is ultimately a remote THREDDS so no source files
 //        String2.log("\n* Test getting /files/ from local host erddap...");
@@ -1479,19 +1512,19 @@ expected =
         userDapQuery = "altitude[][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_PM180", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //test new left image
         userDapQuery = "altitude[][(0):(170)]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_PM180left", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         //test new image
         userDapQuery = "altitude[][(190):(359.99)]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_PM180right", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
 
 
@@ -1765,7 +1798,7 @@ expected =
         userDapQuery = "sst[(2020-12-16T12:00:00Z)][][]&.land=under";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, eddGrid.className() + "_Insert", ".png"); 
-        SSR.displayInBrowser("file://" + dir + tName);
+        Test.displayInBrowser("file://" + dir + tName);
 
         String2.log("\n*** EDDGridLon0360.testInsert finished.");
         debugMode = oDebugMode;

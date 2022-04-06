@@ -14,6 +14,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -758,28 +759,48 @@ expected =
 
 
         if (doGraphicsTests) {
+            String baseName = data180.className() + "_Map180";
             tName = data180.makeNewFileForDapQuery(language, null, null, 
                 "altitude[(-90):(90)][(-180):(180)]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Ocean|C|Linear|-8000|0&.drawLand=Over", 
-                EDStatic.fullTestCacheDirectory, data180.className() + "_Map180", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                EDStatic.fullTestCacheDirectory, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Image2.testImagesIdentical(
+                EDStatic.fullTestCacheDirectory + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
     
+            baseName = data360.className() + "_Map360";
             tName = data360.makeNewFileForDapQuery(language, null, null, "altitude[(-90):(90)][(0):(360)]", 
-                EDStatic.fullTestCacheDirectory, data360.className() + "_Map360", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                EDStatic.fullTestCacheDirectory, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Image2.testImagesIdentical(
+                EDStatic.fullTestCacheDirectory + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = data360.className() + "_TopoUnder";
             tName = data360.makeNewFileForDapQuery(language, null, null, 
                 "altitude[][]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=under", 
-                EDStatic.fullTestCacheDirectory, data360.className() + "_TopoUnder", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                EDStatic.fullTestCacheDirectory, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Image2.testImagesIdentical(
+                EDStatic.fullTestCacheDirectory + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
     
             //same data subset.  Is cached file used?
+            baseName = data360.className() + "_TopoOver";
             tName = data360.makeNewFileForDapQuery(language, null, null, 
                 "altitude[][]" +
                 "&.vars=longitude|latitude|altitude&.colorBar=Topography|C|Linear|-8000|8000&.land=over", 
-                EDStatic.fullTestCacheDirectory, data360.className() + "_TopoOver", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+                EDStatic.fullTestCacheDirectory, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            Image2.testImagesIdentical(
+                EDStatic.fullTestCacheDirectory + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
    
         }
 
@@ -897,7 +918,7 @@ expected =
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? 0 : 2;
+            lastTest = interactive? -1 : 2;
         String msg = "\n^^^ EDDGridFromEtopo.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -906,10 +927,9 @@ expected =
                 String2.log(msg + test);
             
                 if (interactive) {
-                    if (test ==  0) testBasic(true); //testGraphics?
 
                 } else {
-                    if (test ==  0) testBasic(false); //testGraphics?
+                    if (test ==  0) testBasic(true); //testGraphics?
                     if (test ==  1) testFiles("etopo180");
                     if (test ==  2) testFiles("etopo360");
                 }

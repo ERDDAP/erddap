@@ -124,7 +124,7 @@ public class TestAll  {
 //      String tFileName = "/data/glos/MI-D10_monthly.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-v Time"));  
 
-//      DasDds.main(new String[]{"testSideBySidec", "-verbose"});
+//      DasDds.main(new String[]{"glisa_CFSR_Precip_S3", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -186,7 +186,7 @@ public class TestAll  {
         //EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeFGDC(writer, null); 
         EDD.oneFromDatasetsXml(null, "erdMHchla8day").writeISO19115(language, writer, null); 
         writer.close();
-        SSR.displayInBrowser("file://" + dirName);
+        Test.displayInBrowser("file://" + dirName); //.xml
     }*/
 
 //      CCMP 
@@ -207,13 +207,13 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/data/goes16/20190101000000-STAR-L3C_GHRSST-SSTsubskin-ABI_G16-ACSPO_V2.70-v02.0-fv01.0.nc", 
 //        "-v sea_surface_temperature(0,0:10,0:10)")); //2nd param, e.g., "LAT;LON"));
 //   EDD.debugMode=true;
-/*    s = EDDGridFromDap.generateDatasetsXml(
-      "https://www.star.nesdis.noaa.gov/thredds/dodsC/CoastWatch/VIIRS/npp/chlora/WeeklyGlobal/WW00",
-      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
-      -1, null);
-      String2.setClipboardString(s); String2.log(s); 
+//    s = EDDGridFromDap.generateDatasetsXml(
+//      "https://thredds.jpl.nasa.gov/thredds/dodsC/SalinityDensity/OISSS_L4_multimission_monthly_v1.nc",
+//      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
+//      -1, null);
+//      String2.setClipboardString(s); String2.log(s); 
     /* */
-//    DasDds.main(new String[]{"testGraphs_Lon0360", "-verbose"});
+//    DasDds.main(new String[]{"jplOISSSmm1_mday", "-verbose"});
 
 //    String tFileName = "/programs/_tomcat/webapps/cwexperimental/download/setupDatasetsXml.html";
 //    String ts = File2.directReadFromUtf8File(tFileName + "Old");
@@ -456,7 +456,7 @@ public class TestAll  {
                 //"<eml:eml><dataset><dataTable><physical><dataFormat><complex><textFixed>"
                 }
                 ).toString());
-        SSR.displayInBrowser("file://" + tfn);
+        Test.displayInBrowser("file://" + tfn);  //.log
      /* */
 //EDDTableFromDapSequence.testGenerateDatasetsXml2();
 
@@ -542,6 +542,7 @@ public class TestAll  {
     // */
     //Table.debugMode = true; DasDds.main(new String[]{"hsu2", "-verbose"});
 
+
 //    *** To update GTSPP (~10th of every month):
       //Don't add source_id or stream_ident: they are usually (always?) empty
 //    1) By hand (thanks (not), NCEI!), download newly changed files 
@@ -567,7 +568,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 10, 2021, 12, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021,  5, 2022,  2, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -600,7 +601,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 10, 2021, 12); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021,  5, 2022,  2); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -773,7 +774,7 @@ public class TestAll  {
 //    Projects.splitOBIS("S:\\occurrence.csv.gz", "S:\\obisOccurrence\\"); //next time: try using .zip directly   //~3 hours
 
 
-//    SSR.displayInBrowser("file://" + tName);
+//    Test.displayInBrowser("file://" + tName); 
 //    SSR.downloadFile("",
 //            String fullFileName, boolean tryToUseCompression);  //throws Exception
 //    String2.log(SSR.getURLResponseStringUnchanged(
@@ -1090,7 +1091,6 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-//EDDGridFromNcFiles.testNcml();
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
@@ -1398,7 +1398,7 @@ WaitThenTryAgainException wttae;
             String2.log(File2.writeToFileUtf8(fileName, 
                 "errorSB from TestAll which finished at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" + 
                 errorSB.toString()));
-            SSR.displayInBrowser("file://" + fileName);
+            Test.displayInBrowser("file://" + fileName); //.txt
         }
 
         String2.returnLoggingToSystemOut();

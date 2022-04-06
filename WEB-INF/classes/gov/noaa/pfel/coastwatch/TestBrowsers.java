@@ -1813,28 +1813,28 @@ String2.ERROR + " getting .asc");
         SSR.downloadFile( //throws Exception
             url + "?get=bathymetryData&minLon=-180&maxLon=180&minLat=-90&maxLat=90&fileType=medium.png",
             testName + "0.png", true);
-        SSR.displayInBrowser(testName + "0.png");
+        Test.displayInBrowser(testName + "0.png");
 
         //grid
         SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=medium.png",
             testName + "1.png", true);
-        SSR.displayInBrowser(testName + "1.png");
+        Test.displayInBrowser(testName + "1.png");
 
         //grid time series
         SSR.downloadFile( //throws Exception
             url + "?get=gridTimeSeries&dataSet=TQNux10&timePeriod=1day" +
             "&beginTime=2006-10-21T12:00:00&endTime=2006-11-21T12:00:00&lon=-124.81&lat=38.69&fileType=medium.png",
             testName + "2.png", true);
-        SSR.displayInBrowser(testName + "2.png");
+        Test.displayInBrowser(testName + "2.png");
 
         //vector
         SSR.downloadFile( //throws Exception
             url + "?get=gridVectorData&dataSet=VTQNu10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=medium.png",
             testName + "3.png", true);
-        SSR.displayInBrowser(testName + "3.png");
+        Test.displayInBrowser(testName + "3.png");
 
         //station 
         SSR.downloadFile( //throws Exception
@@ -1842,7 +1842,7 @@ String2.ERROR + " getting .asc");
             "&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
             "&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=medium.png",
             testName + "4.png", true);
-        SSR.displayInBrowser(testName + "4.png");
+        Test.displayInBrowser(testName + "4.png");
 
         //station vector
         SSR.downloadFile( //throws Exception
@@ -1850,14 +1850,14 @@ String2.ERROR + " getting .asc");
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&minDepth=0&maxDepth=0" +
             "&beginTime=2006-11-21T12:00:00&endTime=2006-11-21T12:00:00&fileType=medium.png",
             testName + "5.png", true);
-        SSR.displayInBrowser(testName + "5.png");
+        Test.displayInBrowser(testName + "5.png");
 
         //transparent grid
         SSR.downloadFile( //throws Exception
             url + "?get=gridData&dataSet=TQNux10&timePeriod=1day&centeredTime=2006-11-21T12:00:00" +
             "&minLon=-135.0&maxLon=-105.0&minLat=22.0&maxLat=50.0&fileType=transparent.png",
             testName + "6.png", true);
-        SSR.displayInBrowser(testName + "6.png");
+        Test.displayInBrowser(testName + "6.png");
 
         //delete the files
         Math2.sleep(2000);
@@ -1894,7 +1894,7 @@ String2.ERROR + " getting .asc");
             Test.ensureTrue(po >= 0, String2.ERROR + ": (po) image file not found in\n" + response); 
             int po2 = response.indexOf(".png", po);
             Test.ensureTrue(po2 >= 0, String2.ERROR + ": (po2) image file not found in\n" + response); 
-            SSR.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
+            Test.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
         }
 
         if (true) {
@@ -1909,7 +1909,7 @@ String2.ERROR + " getting .asc");
             Test.ensureTrue(po >= 0, String2.ERROR + ": (po) image file not found in\n" + response); 
             int po2 = response.indexOf(".png", po);
             Test.ensureTrue(po2 >= 0, String2.ERROR + ": (po2) image file not found in\n" + response); 
-            SSR.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
+            Test.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
         }
 
         if (true) {
@@ -1925,7 +1925,7 @@ String2.ERROR + " getting .asc");
             Test.ensureTrue(po >= 0, String2.ERROR + ": (po) image file not found in\n" + response); 
             int po2 = response.indexOf(".png", po);
             Test.ensureTrue(po2 >= 0, String2.ERROR + ": (po2) image file not found in\n" + response); 
-            SSR.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
+            Test.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
         }
 
         if (true) {
@@ -1945,7 +1945,7 @@ String2.ERROR + " getting .asc");
             Test.ensureTrue(po >= 0, String2.ERROR + ": (po) image file not found in\n" + response); 
             int po2 = response.indexOf(".png", po);
             Test.ensureTrue(po2 >= 0, String2.ERROR + ": (po2) image file not found in\n" + response); 
-            SSR.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
+            Test.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
         }
 
         if (true) {
@@ -1961,7 +1961,7 @@ String2.ERROR + " getting .asc");
             Test.ensureTrue(po >= 0, String2.ERROR + ": (po) image file not found in\n" + response); 
             int po2 = response.indexOf(".png", po);
             Test.ensureTrue(po2 >= 0, String2.ERROR + ": (po2) image file not found in\n" + response); 
-            SSR.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
+            Test.displayInBrowser(baseUrl + response.substring(po, po2 + 4));
         }
 
     }

@@ -63,21 +63,20 @@ public class Image2 {
      * This tries to load the specified image (gif/jpg/png).
      *
      * @param urlString is the url string
-     * @param waitMS the timeout time in milliseconds
-     *   (2000 is recommended for small images)
-     * @param javaShouldCache true if you want Java to cache this image (for
-     *   fast access in future, but at the expense of memory)
      * @return the image. If unsuccessful, it returns null.
      */
-    public static Image getImageFromURL(String urlString, int waitMS, 
-            boolean javaShouldCache) {
+    public static BufferedImage getImageFromURL(String urlString) {
         try {
+            return ImageIO.read(new URL(urlString));
+
+            /*
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             URL url = new URL(urlString);
             Image image = javaShouldCache? toolkit.getImage(url) :
                 toolkit.createImage(url);
             waitForImage(image, waitMS);
             return image;
+            */
 
         } catch (Exception e) {
             String2.log(MustBe.throwable("Image2.getImageFromUrl("
@@ -97,7 +96,7 @@ public class Image2 {
      *   fast access in future, but at the expense of memory)
      * @return the image. If unsuccessful, it returns null.
      */
-    public static Image getImage(String fullFileName, int waitMS, 
+    public static BufferedImage getImage(String fullFileName, int waitMS, 
             boolean javaShouldCache) {
         try {
             if (!File2.isFile(fullFileName)) {
@@ -106,11 +105,15 @@ public class Image2 {
                 return null;
             }
 
+            return ImageIO.read(new File(fullFileName));
+
+            /*
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Image image= javaShouldCache? toolkit.getImage(fullFileName) :
                 toolkit.createImage(fullFileName);
             waitForImage(image, waitMS);
             return image;
+            */
 
         } catch (Exception e) {
             String2.log(MustBe.throwable("Image2.getImage("
@@ -130,9 +133,14 @@ public class Image2 {
      *   fast access in future, but at the expense of memory)
      * @return the image. If unsuccessful, it returns null.
      */
-    public static Image getImageFromResource(String resourceName, int waitMS, 
+    public static BufferedImage getImageFromResource(String resourceName, int waitMS, 
             boolean javaShouldCache) {     
         try {
+            BufferedInputStream bis = new BufferedInputStream(
+                ClassLoader.getSystemClassLoader().getResourceAsStream(resourceName));
+            return ImageIO.read(bis);
+
+            /*
             URL url = Image2.class.getResource(resourceName);
             if (url == null) 
                 return null;
@@ -141,6 +149,7 @@ public class Image2 {
                 toolkit.createImage(url);
             waitForImage(image, waitMS);
             return image;
+            */
 
         } catch (Exception e) {
             String2.log(MustBe.throwable(
@@ -255,24 +264,6 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
             String2.log.fine(MustBe.throwableToString(e));
             return null;
         }
-    }
-
-    /* *
-     * If icon is null, this returns the specified resource image as an icon.
-     *
-     * @param icon the initial value of the icon
-     * @param resourceName for example, packagePath + "Error.gif"
-     * @return icon (if it isn't null), else the specified resource image
-     *      as an icon, else null if it isn't found
-     */
-/*    public static Icon getIcon(Icon icon, String resourceName) {
-        if (icon != null) 
-            return icon;
-        
-        Image image = getImageFromResource(resourceName);     
-        if (image == null)
-            return null;
-        else return new ImageIcon(image);
     }
 
     /**
@@ -421,11 +412,17 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      * @param width  the width of the image  
      * @param height the height of the image 
      * @param millis 10000 milliseconds is a good timeout
-     * @return an Image object
+     * @return a BufferedImage object
      * @throws Exception
      */
-    public static Image makeImageFromArray(int ar[], int width, int height, 
+    public static BufferedImage makeImageFromArray(int ar[], int width, int height, 
             int millis) throws Exception {
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, width, height, ar, 0, width);
+        return image;
+
+        /* 2022-02-28 was:
         ImageProducer ip = new MemoryImageSource(width, height, ar, 0, width);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Image image = toolkit.createImage(ip);
@@ -440,6 +437,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
             throw new Exception("Image2.makeImageFromArray: Timeout while making image: " + 
                 width + "x" + height); 
         return image;
+        */
     }
       
     /**
@@ -449,10 +447,10 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      * @param image is the image
      * @param background the color to be made transparent
      * @param millis 10000 milliseconds is a good timeout
-     * @return an Image object
+     * @return a BufferedImage object
      * @throws Exception
      */
-    public static Image makeImageBackgroundTransparent(Image image, 
+    public static BufferedImage makeImageBackgroundTransparent(Image image, 
             Color background, int millis) throws Exception {
 
         int opaqueColor = 0xFF000000 | background.getRGB(); 
@@ -471,39 +469,61 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      * This tests if fileName1 generates the same image as fileName2.
      * If different, the differences are saved in diffName.
      *
-     * @param fileName1 the name of a .gif, .jpg, or .png image file
-     * @param fileName2 the name of a .gif, .jpg, or .png image file
-     * @param diffName the name of a .gif, .jpg, or .png image file
-     * @return an error string ("" if no error)
-     * @throws Exception
+     * @param observed the full name of the image file to be tested (.gif, .jpg, or .png)
+     * @param expected the full name of the expected/standard/correct image file (.gif, .jpg, or .png)
+     * @param diffName the full name of a .png image file that will be created
+     *    highlighting the differences between observed and expected.
+     * @throws Exception if the images are different or there is trouble
      */
-    public static String compareImages(String fileName1, String fileName2, 
+    public static void testImagesIdentical(String observed, String expected, 
             String diffName) throws Exception {
-        String cmd = "Image2.compareImages(" + fileName1 + ", " + 
-            fileName2 + ", " + diffName + "):\n";
 
-        //Call the garbage collector. This uses a lot of memory.
-        Math2.gcAndWait(); //in compareImages
+        //if expected doesn't exist, save observed as expected?
+        if (!File2.isFile(expected)) {
+            Test.displayInBrowser("file://" + observed);
+            if (String2.getStringFromSystemIn("Error at\n" + MustBe.getStackTrace() + 
+                "testImagesIdentical: expected image file doesn't exist. Create it from observed (y/n)? ").equals("y")) {
+                File2.copy(observed, expected);
+                return;
+            } 
+            throw new RuntimeException("expectedFile=" + expected + " doesn't exist.");
+        }
 
+        //if diffName not .png, throw exception
+        if (!diffName.endsWith(".png"))
+            throw new RuntimeException("diffName=" + diffName + " MUST end in .png .");
+            
         //get the images
-        Image image1 = getImage(fileName1, 10000, false);
-        Image image2 = getImage(fileName2, 10000, false);
-        return compareImages(image1, image2, diffName);
+        Image obsImg = getImage(observed, 10000, false);
+        Image expImg = getImage(expected, 10000, false);
+        String error = compareImages(obsImg, expImg, diffName);  //might throw exception
+        if (error.length() == 0)
+            return;
+        Test.displayInBrowser("file://" + observed);
+        Test.displayInBrowser("file://" + expected);
+        if (File2.isFile(diffName))
+            Test.displayInBrowser("file://" + diffName);
+        throw new RuntimeException(
+            "testImagesIdentical found differences:\n" +
+            error + "\n" +
+            "observed=" + observed + "\n" + 
+            "expected=" + expected);
     }
 
     /**
      * This tests if image1 is the same as image2.
-//     * If different, the differences are saved in diffName.
+     * If different, the differences are saved in diffName.
      *
      * @param image1 an image
      * @param image2 an image
      * @param diffName the name of a .gif, .jpg, or .png image file
-     * @return an error string ("" if no error)
+     *   that is sometimes created if there are differences
+     * @return a string describing the differences ("" if no differences)
      * @throws Exception
      */
     public static String compareImages(Image image1, Image image2, 
             String diffName) throws Exception {
-        String cmd = "Image2.compareImages:\n";
+        String cmd = "Image2.compareImages: ";
 
         //are they the same size?
         int width1  = image1.getWidth(null);
@@ -535,13 +555,13 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //recover some memory
         image1 = null;
         image2 = null;
-        Math2.gcAndWait(); //in compareImages
 
         //if different, make array of differences
         int[] pixels3 = new int[widthHeight];
         Arrays.fill(pixels3, 0xFF909090); //opaque gray
         int nDifferent = 0;
         int diff, lastDiff = 0, tMaxDiff, maxDiff = 0;
+        String error = "";
         if (!Arrays.equals(pixels1, pixels2)) {
             for (int i = 0; i < widthHeight; i++) {
                 diff = pixels1[i] - pixels2[i];
@@ -553,12 +573,12 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
                         int gDiff = Math.abs(((pixels1[i] >> 8)  & 255) - ((pixels2[i] >> 8)  & 255));
                         int bDiff = Math.abs(((pixels1[i])       & 255) - ((pixels2[i])       & 255)); 
                         lastDiff = diff;
-                        tMaxDiff = Math.max(rDiff, Math.max(gDiff, Math.max(aDiff, bDiff)));
+                        tMaxDiff = rDiff + gDiff + aDiff + bDiff;
                         if (tMaxDiff > maxDiff) {
-                            System.err.println("Image2.compareImages newMaxDiff: " +
+                            error = cmd + "maxDiff: " +
                                 aDiff + " " + rDiff + " " + gDiff + " " + bDiff +
                                 " " + Integer.toHexString(pixels1[i]) +
-                                " " + Integer.toHexString(pixels2[i])); 
+                                " " + Integer.toHexString(pixels2[i]); 
                             maxDiff = tMaxDiff;
                         }
                     }
@@ -567,28 +587,15 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
                 }
             } 
         }
+        if (nDifferent == 0)
+            return "";
 
-        //recover some memory
-        pixels1 = null;
-        pixels2 = null;
-        Math2.gcAndWait(); //in compareImages
-
-        //if different, save as a file 
-        if (nDifferent > 0) {
-            //convert to image
-            Image image3 = makeImageFromArray(pixels3, width1, height1, 5000);
-            String error = "";
-/*            //save as ...
-            FileOutput out = new FileOutput();
-            error = out.open(diffName);
-            if (error.length() == 0)
-                error = imageToStream(diffType, out);
-*/
-            return cmd + "maxDiff = " + maxDiff + ". " +  
-                "There were " + nDifferent + " different pixels.\n" +
-                ((error.length() > 0) ? error : ("See " + diffName + "."));
-        }
-        return "";
+        //if different, save differences as an image file 
+        RenderedImage image3 = makeImageFromArray(pixels3, width1, height1, 5000);
+        saveAsPng(image3, diffName);
+        return cmd + "There were " + nDifferent + " different pixels in the images.\n" +
+            error + "\n" +
+            "See the differences in " + diffName + " .";
     }
 
     /**
@@ -646,11 +653,11 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     /**
      * Save an image (with any number of colors) as a .png file.
      *
-     * @param image
+     * @param image may be a BufferedImage, too
      * @param fullFileName (e.g., c:\myDir\myFile.png)
      * @throws Exception if trouble
      */
-    public static void saveAsPng(BufferedImage image, String fullFileName) 
+    public static void saveAsPng(RenderedImage image, String fullFileName) 
             throws Exception {
         OutputStream out = new BufferedOutputStream(
             new FileOutputStream(fullFileName));
@@ -745,6 +752,39 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     //}
 
     /**
+     * This intentionally throws an Exception to test testImagesIdentical().
+     */
+    public static void testTestImagesIdentical() throws Exception {
+        String2.log("\n*** Image2.testTestImagesIdentical");
+
+        //test images which are identical
+        String testDir = String2.unitTestDataDir + "images/"; 
+        String tempDir = File2.getSystemTempDirectory();
+        testImagesIdentical(
+            testDir + "testImagesIdentical_1.png",
+            testDir + "testImagesIdentical_1.png",
+            tempDir + "testImagesIdentical_diff.png");
+
+        //test images which aren't identical
+        try {
+
+            //one time: createImage with transparent background
+            //BufferedImage image2 = getImage(testDir + "testImagesIdentical_1.png", 2000, false); 
+            //image2 = makeImageBackgroundTransparent(image2, Color.white, 10000); 
+            //saveAsPng(image2, testDir + "testImagesIdentical_2.png");
+
+            //test images which aren't identical
+            testImagesIdentical(
+                testDir + "testImagesIdentical_1.png",
+                testDir + "testImagesIdentical_2.png",
+                tempDir + "testImagesIdentical_diff.png");
+        } catch (Exception e) {
+            Test.knownProblem("I'm just testing that Image2.testImagesIdentical() works.");
+        }
+        throw new RuntimeException("shouldn't get here");
+    }
+
+    /**
      * Test the methods in Image2.
      */
     public static void basicTest() throws Exception {
@@ -758,21 +798,6 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         Graphics g = bi.getGraphics(); 
         ImageIO.write(bi, "png", new File(imageDir + "temp.png"));
         Image2.saveAsGif(bi, imageDir + "temp.gif");
-
-    /*        //createImage
-        //TestImage1.gif has white background
-        //TestImage2.gif is same image, but with transparent background
-        String2.log("test createImage compareImage makeImageFromArray " +
-            "makeArrayFromImage\n  makeImageBackgroundTransparent");
-        ensureEqual("a", compareImages("TestImage1.gif", "TestImage2.gif", 
-            "TestImage2Diff.gif").length() == 0, false); 
-        Image image1 = Image2.createImage("TestImage1.gif", 2000, false); 
-        Image image2 = Image2.createImage("TestImage2.gif", 2000, false); 
-        ensureEqual("b", compareImages(image1, image2, 
-            "TestImage2Diff.gif").length() == 0, false); 
-        image1 = Image2.makeImageBackgroundTransparent(image1, Color.white, 10000); 
-        ensureEqual("c", compareImages(image1, image2, "TestImage2Diff.gif"), ""); //now the same
-        */
 
         long localTime = System.currentTimeMillis();
         String2.log("test() here 1");
@@ -810,7 +835,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
+            lastTest = interactive? -1 : 1;
         String msg = "\n^^^ Image2.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -823,6 +848,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
 
                 } else {
                     if (test ==  0) basicTest();
+                    if (test ==  1) testTestImagesIdentical();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

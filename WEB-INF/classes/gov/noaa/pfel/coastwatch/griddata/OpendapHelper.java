@@ -1149,19 +1149,12 @@ public class OpendapHelper  {
 //2018-09-13 https: works in browser by not yet in Java
         String dArrayUrl = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
-        try {
         dConnect = new DConnect(dArrayUrl, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
         expected = 
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
         Test.ensureEqual(results, expected, "results=" + results);
-        } catch (Throwable t) {
-            Test.knownProblem(
-                "Known problem with https://tds.coaps.fsu.edu: \"unable to find valid certification path\"\n" +
-                "then 2019-11-25 'Connection cannot be opened'.",
-                "Fix this someday:", t);
-        }
 
 
         //***** test of DGrid DAP dataset
@@ -2180,10 +2173,8 @@ public class OpendapHelper  {
 
     /** This tests getting attibutes, notably the DODS_strlen attribute. */
     public static void testGetAttributes() throws Throwable {
-        //https almost works, but java objects to invalid certificate.  2019-06 https works in Java
         String url = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
         String2.log("\n* OpendapHelper.testGetAttributes\n" + url);
-        try {
         DConnect dConnect = new DConnect(url, true, 1, 1);
         DAS das = dConnect.getDAS(DEFAULT_TIMEOUT);
         Attributes atts = new Attributes();
@@ -2220,11 +2211,6 @@ public class OpendapHelper  {
 "    Y=Suspect between X-flags\n" +
 "    Z=Good data\n";
         Test.ensureEqual(results, expected, "results=" + results);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) +
-                "Fix this someday: Expected error (server timed out 2013-10-24, then connection cannot be opened 2019-11-25)");
-        }
     }
 
 
@@ -2236,13 +2222,12 @@ public class OpendapHelper  {
 
         fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
         String dArrayUrl = "https://tds.coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
-        try {
-            dapToNc(dArrayUrl, 
-                //note that request for zztop is ignored (because not found)
-                new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
-                fileName, false); //jplMode
-            results = NcHelper.ncdump(fileName, ""); //printData
-            expected = 
+        dapToNc(dArrayUrl, 
+            //note that request for zztop is ignored (because not found)
+            new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
+            fileName, false); //jplMode
+        results = NcHelper.ncdump(fileName, ""); //printData
+        expected = 
 "netcdf testDapToNcDArray.nc {\n" +
 "  dimensions:\n" +
 "    time = 144;\n" +
@@ -2363,14 +2348,8 @@ public class OpendapHelper  {
 "      {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
 "    flag =   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZEZZSZZZZ\",   \"ZZZZZEZZSZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\",   \"ZZZZZZZZZZZZZ\"\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "results=" + results);
-            File2.delete(fileName);
-        } catch (Throwable t) {
-            String2.pressEnterToContinue(
-                MustBe.throwableToString(t) +
-                "Fix this someday:\n" +
-                "Expected error (server timed out 2013-10-24, then 2019-11-25 'Connection cannot be opened'."); 
-        }
+        Test.ensureEqual(results, expected, "results=" + results);
+        File2.delete(fileName);
 
         //test subset
         try {
@@ -2495,7 +2474,7 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
         } catch (Throwable t) {
             throw new Exception(
                 "\nUnexpected error." +
-                "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is common)." + 
+                "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be opened' is common)." + 
                 "\n(server timed out 2013-10-24)", t); 
         }
 

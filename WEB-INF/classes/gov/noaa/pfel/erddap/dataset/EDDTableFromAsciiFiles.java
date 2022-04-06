@@ -1548,7 +1548,7 @@ expected=
 "longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
             tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test,  ".png"); 
-            SSR.displayInBrowser("file://" + dir + tName);
+            Test.displayInBrowser("file://" + dir + tName);
         }
 
         EDD.debugMode = oDebugMode;
@@ -6203,7 +6203,7 @@ String expected =
             //request status.html
             SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl + "/status.html");
             Math2.sleep(1000);
-            SSR.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
+            Test.displayInBrowser("file://" + EDStatic.bigParentDirectory + "logs/log.txt");
 
             String2.pressEnterToContinue(
                 "Look at log.txt to see if update was run and successfully "+
