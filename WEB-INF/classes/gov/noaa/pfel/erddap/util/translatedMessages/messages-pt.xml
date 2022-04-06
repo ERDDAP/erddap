@@ -7289,4 +7289,9 @@ Muitos conjuntos de dados também podem ser acessados via Web Map Service (WMS )
 <yourEmailAddress>Seu endereço de email</yourEmailAddress>
 <zoomIn>Mais Zoom</zoomIn>
 <zoomOut>Reduzir o zoom</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

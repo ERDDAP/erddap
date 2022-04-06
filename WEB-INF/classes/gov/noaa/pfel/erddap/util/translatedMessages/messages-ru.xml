@@ -7402,4 +7402,9 @@ You can access it at
 <yourEmailAddress>Ваш адрес электронной почты</yourEmailAddress>
 <zoomIn>Увеличить</zoomIn>
 <zoomOut>Уменьшить</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

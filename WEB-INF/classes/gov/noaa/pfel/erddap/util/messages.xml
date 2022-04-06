@@ -8668,4 +8668,9 @@ Many datasets can also be accessed via ERDDAP's Web Map Service (WMS).
 <zoomIn>Zoom In</zoomIn>
 <zoomOut>Zoom Out</zoomOut>
 
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>

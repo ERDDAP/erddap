@@ -7328,4 +7328,9 @@ Mange datasæt kan også tilgås via ERDDAP &#39;s Web Map Service (WMS ).
 <yourEmailAddress>Din email adresse</yourEmailAddress>
 <zoomIn>Zoom ind</zoomIn>
 <zoomOut>Zoome ud</zoomOut>
+
+<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
+
 </erddapMessages>
