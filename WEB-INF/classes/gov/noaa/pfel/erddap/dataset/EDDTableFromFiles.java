@@ -3919,32 +3919,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 futureTasks.add(futureTask);
                 //To isolate requests, I make a new executorService each time.
                 if (tnThreads > 1) {
-                    if (executorService == null) 
-                        executorService = Executors.newFixedThreadPool(tnThreads - 1);
+                    if (executorService == null)
+                        executorService = Executors.newFixedThreadPool(tnThreads);
                     executorService.submit(futureTask);
                 } else {
                     futureTask.run();
                 }
                 task++;
-
-                //if executorService is full, process a result
-                if (task - nProcessed >= tnThreads) {
-                    //get results table from a futureTask
-                    //Put null that position in futureTasks so it can be gc'd after this method
-                    futureTask = futureTasks.set(nProcessed++, null);                
-                    Table resultsTable = (Table)(futureTask.get());   //blocks until done, throws ExecutionException
-                    if (resultsTable == null) {
-                        nReadNoMatch++;
-                    } else {
-                        nReadHaveMatch++;
-                        if (debugMode) String2.log(">> task #" + (nProcessed-1) + " is writing to tableWriter.");
-                        //int tc = resultsTable.findColumnNumber("testULong");
-                        //if (tc >= 0) String2.log(">> EDDTableFromFiles testULong.maxIsMV=" + resultsTable.getColumn(tc).getMaxIsMV());
-                        tableWriter.writeSome(resultsTable);  //if exception, will be caught below
-                        if (tableWriter.noMoreDataPlease) 
-                            throw new NoMoreDataPleaseException();
-                    }
-                }
             }  //end of FILE_LOOP
             if (debugMode) String2.log(">> File loop is done.");
 
