@@ -184,14 +184,25 @@ public class String2 {
 
     //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
     //to be bigger and makes synchronized contention less common.
-    private static Map canonicalMap[] = new Map[6];
-    private static Map canonicalStringHolderMap[] = new Map[6];
-    static {
-        for (int i = 0; i < canonicalMap.length; i++) {
-            canonicalMap[i]             = new WeakHashMap();
-            canonicalStringHolderMap[i] = new WeakHashMap();
+    private static final int canonicalMapCount = 6;
+    private static ThreadLocal<Map[]> canonicalMap = new ThreadLocal<Map[]>() {
+        @Override protected Map[] initialValue() {
+            Map[] map = new Map[6];
+            for (int i = 0; i < 6; i++) {
+                map[i]= new WeakHashMap();
+            }
+            return map;
         }
-    }
+    };
+    private static ThreadLocal<Map[]> canonicalStringHolderMap = new ThreadLocal<Map[]>() {
+        @Override protected Map[] initialValue() {
+            Map[] map = new Map[6];
+            for (int i = 0; i < 6; i++) {
+                map[i]= new WeakHashMap();
+            }
+            return map;
+        }
+    };
     private static Map canonicalLockMap = new WeakHashMap();
     public static int longTimeoutSeconds = 300; //5 minutes. This is >= other timeouts in the system. This is used in places that previously waited forever.
 
@@ -6040,7 +6051,7 @@ and zoom and pan with controls in
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
         char ch0 = s.charAt(0);
-        Map tCanonicalMap = canonicalMap[
+        Map tCanonicalMap = canonicalMap.get()[
             ch0 < 'A'? 0 : ch0 < 'N'? 1 : //divide uppercase into 2 parts
             ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
             ch0 < 'r'? 4 : 5];
@@ -6091,7 +6102,7 @@ and zoom and pan with controls in
             b < 'A'? 0 : b < 'N'? 1 : //divide uppercase into 2 parts
             b < 'a'? 2 : b < 'j'? 3 : //divide lowercase into 3 parts
             b < 'r'? 4 : 5;
-        Map tCanonicalStringHolderMap = canonicalStringHolderMap[which];
+        Map tCanonicalStringHolderMap = canonicalStringHolderMap.get()[which];
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
@@ -6143,16 +6154,16 @@ and zoom and pan with controls in
     public static String canonicalStatistics() {
         StringBuilder sb = new StringBuilder("canonical map sizes: ");
         int sum = 0;
-        for (int i = 0; i < canonicalMap.length; i++) {
-            int tSize = canonicalMap[i].size();
+        for (int i = 0; i < canonicalMap.get().length; i++) {
+            int tSize = canonicalMap.get()[i].size();
             sum += tSize;
             sb.append((i==0? "" : " + ") + tSize);
         }
         sb.append(" = " + sum + 
             "\ncanonicalStringHolder map sizes: ");
         sum = 0;
-        for (int i = 0; i < canonicalStringHolderMap.length; i++) {
-            int tSize = canonicalStringHolderMap[i].size();
+        for (int i = 0; i < canonicalStringHolderMap.get().length; i++) {
+            int tSize = canonicalStringHolderMap.get()[i].size();
             sum += tSize;
             sb.append((i==0? "" : " + ") + tSize);
         }
@@ -6163,16 +6174,16 @@ and zoom and pan with controls in
     /** This is only used to test canonical. */
     public static int canonicalSize() {
         int sum = 0;
-        for (int i = 0; i < canonicalMap.length; i++)
-            sum += canonicalMap[i].size();
+        for (int i = 0; i < canonicalMap.get().length; i++)
+            sum += canonicalMap.get()[i].size();
         return sum;
     }
 
     /** This is only used to test canonicalStringHolder. */
     public static int canonicalStringHolderSize() {
         int sum = 0;
-        for (int i = 0; i < canonicalStringHolderMap.length; i++)
-            sum += canonicalStringHolderMap[i].size();
+        for (int i = 0; i < canonicalStringHolderMap.get().length; i++)
+            sum += canonicalStringHolderMap.get()[i].size();
         return sum;
     }
 
