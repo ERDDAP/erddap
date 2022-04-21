@@ -198,7 +198,7 @@ public class CacheOpendapStation {
                         //if (verbose) String2.log("  globalAtt name=" + att.getName());
                         Array values = att.getValues();
                         if (attName.equals("history")) {
-                            history = PrimitiveArray.factory(NcHelper.getArray(values)).getString(0) +
+                            history = NcHelper.getPrimitiveArray(values).getString(0) +
                                 "\n" + newHistory;
                             outRootGroup.addAttribute(new ucar.nc2.Attribute(attName, history));
                         } else {
