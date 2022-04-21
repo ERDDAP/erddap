@@ -3924,6 +3924,19 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     executorService.submit(futureTask);
                 } else {
                     futureTask.run();
+                    // When running on 1 thread, clear out the just completed future task from the futureTasks list
+                    // to allow it to be garbage collected. This is important when running large jobs on a single thread.
+                    futureTasks.set(nProcessed++, null);                
+                    Table resultsTable = (Table)(futureTask.get());   //blocks until done, throws ExecutionException
+                    if (resultsTable == null) {
+                        nReadNoMatch++;
+                    } else {
+                        nReadHaveMatch++;
+                        if (debugMode) String2.log(">> task #" + (nProcessed-1) + " is writing to tableWriter.");
+                        tableWriter.writeSome(resultsTable);  //if exception, will be caught below
+                        if (tableWriter.noMoreDataPlease) 
+                            throw new NoMoreDataPleaseException();
+                    }
                 }
                 task++;
             }  //end of FILE_LOOP
