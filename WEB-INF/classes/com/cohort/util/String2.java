@@ -184,21 +184,21 @@ public class String2 {
 
     //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
     //to be bigger and makes synchronized contention less common.
-    private static final int canonicalMapCount = 6;
-    private static ThreadLocal<Map[]> canonicalMap = new ThreadLocal<Map[]>() {
-        @Override protected Map[] initialValue() {
-            Map[] map = new Map[6];
-            for (int i = 0; i < 6; i++) {
-                map[i]= new WeakHashMap();
+    private static final int CANONICAL_MAP_COUNT = 6;
+    private static ThreadLocal<Map<String, WeakReference<String>>[]> canonicalMap = new ThreadLocal<Map<String, WeakReference<String>>[]>() {
+        @Override protected Map<String, WeakReference<String>>[] initialValue() {
+            Map<String, WeakReference<String>>[] map = new Map[CANONICAL_MAP_COUNT];
+            for (int i = 0; i < CANONICAL_MAP_COUNT; i++) {
+                map[i]= new WeakHashMap<String, WeakReference<String>>();
             }
             return map;
         }
     };
-    private static ThreadLocal<Map[]> canonicalStringHolderMap = new ThreadLocal<Map[]>() {
-        @Override protected Map[] initialValue() {
-            Map[] map = new Map[6];
-            for (int i = 0; i < 6; i++) {
-                map[i]= new WeakHashMap();
+    private static ThreadLocal<Map<StringHolder, WeakReference<StringHolder>>[]> canonicalStringHolderMap = new ThreadLocal<Map<StringHolder, WeakReference<StringHolder>>[]>() {
+        @Override protected Map<StringHolder, WeakReference<StringHolder>>[] initialValue() {
+            Map<StringHolder, WeakReference<StringHolder>>[] map = new Map[CANONICAL_MAP_COUNT];
+            for (int i = 0; i < CANONICAL_MAP_COUNT; i++) {
+                map[i]= new WeakHashMap<StringHolder, WeakReference<StringHolder>>();
             }
             return map;
         }
@@ -6051,7 +6051,7 @@ and zoom and pan with controls in
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
         char ch0 = s.charAt(0);
-        Map tCanonicalMap = canonicalMap.get()[
+        Map<String, WeakReference<String>> tCanonicalMap = canonicalMap.get()[
             ch0 < 'A'? 0 : ch0 < 'N'? 1 : //divide uppercase into 2 parts
             ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
             ch0 < 'r'? 4 : 5];
@@ -6060,14 +6060,14 @@ and zoom and pan with controls in
         //  (and use a few times in consistent state)
         //than to synchronize canonicalMap and lock/unlock twice
         synchronized(tCanonicalMap) {
-            WeakReference wr = (WeakReference)tCanonicalMap.get(s);
+            WeakReference<String> wr = tCanonicalMap.get(s);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
-            String canonical = wr == null? null : (String)(wr.get());
+            String canonical = wr == null? null : (wr.get());
             if (canonical == null) {
                 //For proof that new String(s.substring(,)) is just storing relevant chars,
                 //not a reference to the parent string, see TestUtil.testString2canonical2()
                 canonical = new String(s); //in case s is from s2.substring, copy to be just the characters
-                tCanonicalMap.put(canonical, new WeakReference(canonical));
+                tCanonicalMap.put(canonical, new WeakReference<>(canonical));
                 //log("new canonical string: " + canonical);
             }
             return canonical;
@@ -6102,18 +6102,18 @@ and zoom and pan with controls in
             b < 'A'? 0 : b < 'N'? 1 : //divide uppercase into 2 parts
             b < 'a'? 2 : b < 'j'? 3 : //divide lowercase into 3 parts
             b < 'r'? 4 : 5;
-        Map tCanonicalStringHolderMap = canonicalStringHolderMap.get()[which];
+        Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap = canonicalStringHolderMap.get()[which];
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalStringHolderMap and lock/unlock twice
         synchronized(tCanonicalStringHolderMap) {
-            WeakReference wr = (WeakReference)tCanonicalStringHolderMap.get(sh);
+            WeakReference<StringHolder> wr = tCanonicalStringHolderMap.get(sh);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
-            StringHolder canonical = wr == null? null : (StringHolder)(wr.get());
+            StringHolder canonical = wr == null? null : (wr.get());
             if (canonical == null) {
                 canonical = sh; //use this object
-                tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
+                tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
                 //log("new canonical string: " + canonical);
             }
             return canonical;
