@@ -355,10 +355,12 @@ public class GridDataAccessor {
         //if current memory usage plus this request is even slightly high, 
         //  set nThreads for this request to 1
         boolean reducedNThreads = false;
-        if (nThreads > 1 &&
+        
+        // If the threads are going to use too much memory, reduce the threads to an appropriate number.
+        while (nThreads > 1 &&
             (nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 8 ||   //this alone justifies nThreads=1
             Math2.getMemoryInUse() + nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 4)) {
-            nThreads = 1;
+            nThreads--;
             reducedNThreads = true;
         }
 
@@ -579,25 +581,25 @@ public class GridDataAccessor {
         //String2.pressEnterToContinue("chunk=" + chunk + " task=" + task + " at start of getChunk.");
 
         try {
-            //If first call to getChunk, actually start getting actual data.
-            //Don't do this in constructor because some users of GridDataAccessor
-            //  just want to check request sizes and that no errors in request.
-            if (executorService == null && nThreads > 1) {
-                executorService = Executors.newFixedThreadPool(Math.max(1, nThreads-1));
-                for (int thread = 1; thread < nThreads; thread++) //yes, 1, so nThreads-1
-                    startAnotherTask();
-                //String2.pressEnterToContinue("\nstackTrace=\n" + MustBe.stackTrace() + 
-                //    "task=" + task + " at end of Constructor.");
+            if (futureTasks.isEmpty()) {
+                //If first call to getChunk, actually start getting actual data.
+                //Don't do this in constructor because some users of GridDataAccessor
+                //  just want to check request sizes and that no errors in request.
+                if (executorService == null && nThreads > 1) {
+                    executorService = Executors.newFixedThreadPool(Math.max(1, nThreads));
+                }
+                enqueTasks();
             }
-
-            startAnotherTask();  //for nThreads==1, that task will be for the current chunk
 
             //get chunk's results from futureTasks
             if (chunk >= futureTasks.size())
                 throw new RuntimeException("GridDataAccessor.increment: driverIndex failed to increment" +
                     "at chunk=" + chunk + " driverIndex.current=" + String2.toCSSVString(driverIndex.getCurrent()));
             //Put null that position in futureTasks so it can be gc'd after this method
-            FutureTask futureTask = futureTasks.set(chunk, null);                
+            FutureTask futureTask = futureTasks.set(chunk, null);
+            if (executorService == null) {
+                futureTask.run();
+            }
             tPartialDataValues = (PrimitiveArray[])(futureTask.get());   //blocks until done, throws ExecutionException
 
         } catch (Throwable t) {
@@ -640,25 +642,25 @@ public class GridDataAccessor {
     }
 
     /** 
-     * This increments the driver index (so done in calling thead),
-     * creates another FutureTask (or null) from a new GetChunkCallable,
-     * adds it (or null) to futureTasks and executorService (if active).
-     * If beyond end of driveIndex, this doesn't create a futureTask.
-     *
+     * This enques tasks to the futureTasks list and increments the
+     * driver index (so done in calling thead). If thre's an
+     * executorService futureTasks are submitted, otherwise create the
+     * FutureTask and only adds it to the futureTask list.
+     * This creates FutureTasks until it reaches the end of the driveIndex
+     * and then if there is an executorService, it initiates a shutdown.
      */ 
-    protected void startAnotherTask() {
-        boolean tb = rowMajor? driverIndex.increment() : driverIndex.incrementCM();
-        if (tb) {
+    protected void enqueTasks() {
+        while (rowMajor? driverIndex.increment() : driverIndex.incrementCM()) {
             FutureTask futureTask = new FutureTask(new GetChunkCallable(task, this));  
             futureTasks.add(futureTask);
-            if (executorService == null)   //just this thread
-                 futureTask.run();
-            else executorService.submit(futureTask);
-            task++;
-        } else {
             if (executorService != null) {
-                try {executorService.shutdown();} catch (Exception e) {} //it's done
+                executorService.submit(futureTask);
             }
+            task++;
+        }
+        if (executorService != null) {
+            // Shutdown will execute currently submitted tasks.
+            try {executorService.shutdown();} catch (Exception e) {} //it's done
         }
     }
 
