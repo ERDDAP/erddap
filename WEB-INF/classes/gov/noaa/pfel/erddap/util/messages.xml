@@ -1952,6 +1952,10 @@ ERDDAP will respond with just the text result, but modified to have updated URLs
   cookies are hard to work with. Sorry.
 ]]></cookiesHelp>
 
+<copyImageToClipboard>Copy image to clipboard</copyImageToClipboard>
+<copyTextToClipboard>Copy text to clipboard</copyTextToClipboard>
+<copyToClipboardNotAvailable>Copy to clipboard not available</copyToClipboardNotAvailable>
+
 <daf>Data Access Form</daf>
 
 <dafGridBypassTooltip><![CDATA[

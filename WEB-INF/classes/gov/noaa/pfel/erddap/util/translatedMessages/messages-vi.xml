@@ -1338,9 +1338,9 @@ Một số đơn vị có các ký tự khác không được chuyển đổi</t
 </tr>
 <tr>
 <td>trường hợp nhạy cảm</td>
-<td>Đúng.
+<td>Vâng.
 Khi cho phép các cách viết hoa khác nhau, các biến thể được xác định rõ ràng.</td>
-<td>Đúng.
+<td>Vâng.
 Bộ chuyển đổi hoạt động với dạng đơn vị UCUM phân biệt chữ hoa chữ thường (&quot;c/s&quot; ).</td>
 <td>(Không cần thay đổi)</td>
 <td>(Không cần thay đổi)</td>
@@ -1373,7 +1373,7 @@ Các tên UCUM không được công nhận được giữ nguyên.</td>
 <td>dấu cách (phổ biến nhất), &#39;-&#39; (lỗi đánh máy trong thông số kỹ thuật ???), &#39;.&#39;, &#39;*&#39;, &#39;·&#39;</td>
 <td>&#39;.&#39;</td>
 <td>dấu cách, &#39;*&#39; và &#39;·&#39;, được chuyển đổi thành &#39;.&#39;</td>
-<td>luôn được chuyển đổi thành khoảng trắng (để nhất quán)</td>
+<td>luôn được chuyển đổi thành một khoảng trắng (để nhất quán)</td>
 </tr>
 <tr>
 <td>toán tử phân chia</td>
@@ -1488,11 +1488,11 @@ Một số tiêu chuẩn (ví dụ:
     src="../images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a>), sử dụng Deg_east và Deg_north để xác định các biến kinh độ và vĩ độ trong tệp dữ liệu.</td>
 <td>UCUM nhận ra các đơn vị độ nhiệt độ riêng biệt (ví dụ, [degF], Cel, K), nhưng không nhận ra các đơn vị độ hướng riêng biệt.
-Tất cả chúng đều được đại diện bởi &quot;deg&quot; .</td>
+Tất cả chúng đều được đại diện bằng &quot;deg&quot; .</td>
 <td>Để phân biệt giữa các đơn vị độ hướng khác nhau, bộ chuyển đổi thêm chú thích vào các đơn vị độ hướng (ví dụ:
 &quot;degree_north&quot; trở thành &quot;deg{north}&quot; ).</td>
 <td>Nếu bạn thêm một nhận xét ({east}, {north}, {west} hoặc {true} ), trình chuyển đổi sẽ chuyển đổi thành đơn vị hướng (ví dụ:
-&quot;deg{north}&quot; trở thành &quot;degree_north&quot; ); nếu không, không có cách nào để bộ chuyển đổi tạo ra đơn vị độ hướng, vì vậy &quot;deg&quot; được chuyển đổi thành &quot;degree&quot; .</td>
+&quot;deg{north}&quot; trở thành &quot;degree_north&quot; ); nếu không, không có cách nào để bộ chuyển đổi tạo ra đơn vị độ hướng, do đó, &quot;deg&quot; được chuyển đổi thành &quot;degree&quot; .</td>
 </tr>
 <tr>
 <td>thời gian cụ thể</td>
@@ -1758,6 +1758,9 @@ Cho phép&quot;
 Nếu bạn đang thực hiện các yêu cầu ERDDAP từ một chương trình máy tính (không phải trình duyệt), cookie sẽ khó hoạt động.
 Xin lỗi.
 ]]></cookiesHelp>
+<copyImageToClipboard>Sao chép hình ảnh vào khay nhớ tạm</copyImageToClipboard>
+<copyTextToClipboard>Sao chép văn bản vào khay nhớ tạm</copyTextToClipboard>
+<copyToClipboardNotAvailable>Sao chép vào khay nhớ tạm không khả dụng</copyToClipboardNotAvailable>
 <daf>Biểu mẫu truy cập dữ liệu</daf>
 <dafGridBypassTooltip><![CDATA[
 Trang web này chỉ đơn giản hóa việc tạo các URL sơ đồ lưới.
@@ -5330,7 +5333,7 @@ Tìm kiếm nâng cao kết hợp tất cả các kỹ thuật tìm kiếm và t
 <li>ERDDAP cung cấp dữ liệu dạng lưới thông qua bản đồ lưới (ERDDAP triển khai
 <a rel="help" href="&erddapUrl;/griddap/index.html">giao thức kết hợp OPeNDAP</a>) và
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP làm cho dữ liệu dạng bảng có sẵn thông qua bản đồ dạng bảng (việc triển khai
+<li>ERDDAP cung cấp dữ liệu dạng bảng thông qua bản đồ dạng bảng (việc triển khai
 <a rel="help" href="&erddapUrl;/tabledap/index.html">giao thức ràng buộc OPeNDAP của OPeNDAP</a> tabledap ERDDAP <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -5386,7 +5389,7 @@ Xem danh sách đầy đủ các
 <li>độ cao luôn tính bằng mét với dương = lên.
 <li>độ sâu luôn tính bằng mét với dương = xuống.
 <li>thời gian, khi được định dạng dưới dạng số, luôn tính bằng &quot;seconds since 1970-01-01T00:00:00Z&quot; (được gọi là
-<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix time <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">thời gian Unix <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> hoặc kỷ nguyên giây, là<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
@@ -5404,7 +5407,7 @@ Xem danh sách đầy đủ các
 Điều này giúp bạn dễ dàng chỉ định các ràng buộc trong các yêu cầu mà không phải lo lắng về định dạng dữ liệu độ cao (giá trị dương lên hay xuống?
 Tính bằng mét hay định nghĩa?) Hoặc định dạng dữ liệu thời gian (một lĩnh vực tối tăm của các định dạng có thể có, ví dụ:
 &quot;Jan 2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;, hoặc các ngày kể từ ngày 1 tháng 1 năm 1980).
-Điều này giúp dễ dàng so sánh kết quả từ các nguồn dữ liệu khác nhau.
+Điều này làm cho kết quả từ các nguồn dữ liệu khác nhau dễ dàng so sánh.
 <p>ERDDAP có một tiện ích để
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">chuyển đổi một số thời gian thành / từ một chuỗi thời gian</a> .
 <br>Để biết thêm chi tiết, hãy xem
@@ -5506,13 +5509,13 @@ Với curl, thêm <kbd>--compressed</kbd> vào dòng lệnh để yêu cầu cur
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP làm cho các loại máy chủ dữ liệu khác nhau (OPeNDAP, OBIS, SOS, WMS, ...) có thể tương tác với nhau.</a></strong>
 <br>Các loại máy chủ dữ liệu khác nhau được sử dụng trong các cộng đồng khoa học khác nhau.
 Trong tương lai gần, không có khả năng sẽ có bất kỳ loại hình nào trở nên thống trị và thay thế các loại hình khác.
-Vì vậy, ERDDAP đóng vai trò là cầu nối giữa các loại chương trình khách khác nhau (trình duyệt web, IDV, Matlab, chương trình netCDF, máy khách ODV, WMS, v.v.) và các loại máy chủ dữ liệu khác nhau.
+Vì vậy, ERDDAP hoạt động như một cầu nối giữa các loại chương trình khách khác nhau (trình duyệt web, IDV, Matlab, chương trình netCDF, máy khách ODV, WMS, v.v.) và các loại máy chủ dữ liệu khác nhau.
 <ol>
 <li>ERDDAP chấp nhận các yêu cầu của khách hàng đối với dữ liệu ở các định dạng khác nhau (ví dụ:
 OPeNDAP, WMS ).
 <li>ERDDAP chuyển đổi một yêu cầu nhất định thành định dạng yêu cầu được sử dụng bởi máy chủ dữ liệu nguồn (ví dụ:
 OPeNDAP, SOS, OBIS, ...) và gửi yêu cầu đó đến máy chủ dữ liệu nguồn.
-<li>ERDDAP chuyển đổi dữ liệu phản hồi từ máy chủ dữ liệu nguồn thành định dạng nội bộ, bao gồm chuyển đổi dữ liệu mọi thời đại sang định dạng chung:
+<li>ERDDAP chuyển đổi dữ liệu phản hồi từ máy chủ dữ liệu nguồn thành định dạng nội bộ, bao gồm cả việc chuyển đổi dữ liệu mọi lúc sang định dạng chung:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
 <li>ERDDAP chuyển đổi dữ liệu từ định dạng nội bộ thành định dạng tệp được khách hàng yêu cầu (ví dụ:
 .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
@@ -5542,7 +5545,7 @@ Họ chỉ nhận được dữ liệu họ muốn, ở định dạng tệp h�
 <li>Chúng tôi rất biết rằng nếu bạn đã quen làm việc với dữ liệu trong các cấu trúc dữ liệu khác, ban đầu bạn có thể nghĩ rằng cách tiếp cận này là đơn giản hoặc không đủ.
 Nhưng tất cả các cấu trúc dữ liệu đều có sự đánh đổi.
 Không có cái nào là hoàn hảo.
-Ngay cả cấu trúc do-it-all cũng có mặt trái của chúng:
+Ngay cả các cấu trúc do-it-all cũng có mặt trái của chúng:
 làm việc với chúng rất phức tạp và các tệp chỉ có thể được viết hoặc đọc bằng các thư viện phần mềm đặc biệt.
 Nếu bạn chấp nhận cách tiếp cận của ERDDAP đủ để cố gắng làm việc với nó, bạn có thể thấy rằng nó có những ưu điểm (đặc biệt là hỗ trợ cho nhiều loại tệp có thể chứa các phản hồi dữ liệu).
 Bản
@@ -5588,7 +5591,7 @@ Máy khách RSS yêu cầu định kỳ (mỗi giờ?) Và đọc tài liệu RS
 Vì vậy, thông thường, một máy khách RSS sẽ không phát hiện ra sự thay đổi đối với tập dữ liệu một cách nhanh chóng (trung bình là 30 phút?).
 Ngược lại, hệ thống đăng ký email / URL sẽ hoạt động ngay lập tức bất cứ khi nào ERDDAP phát hiện ra thay đổi đối với tập dữ liệu.
 Cách tiếp cận chủ động hơn của hệ thống email / URL cũng hiệu quả hơn nhiều:
-Bạn có thể đặt ứng dụng RSS của mình để kiểm tra các thay đổi mỗi phút (đừng làm như vậy!), Nhưng điều đó sẽ chỉ dẫn đến nhiều yêu cầu không cần thiết đến máy chủ ERDDAP và nó vẫn không phát hiện ra các thay đổi ngay lập tức.
+Bạn có thể đặt ứng dụng khách RSS của mình để kiểm tra các thay đổi mỗi phút (đừng làm như vậy!), Nhưng điều đó sẽ chỉ dẫn đến nhiều yêu cầu không cần thiết đến máy chủ ERDDAP và nó vẫn không phát hiện ra các thay đổi ngay lập tức.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP là một</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">ứng dụng web <img 
@@ -5627,7 +5630,7 @@ Tập dữ liệu có thể được định cấu hình để có thể truy c�
 (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">thông tin thêm</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP xử lý dữ liệu theo từng phần.</a></strong>
-<br>Để tiết kiệm bộ nhớ (một vấn đề lớn) và bắt đầu phản hồi sớm hơn, ERDDAP xử lý các yêu cầu dữ liệu theo từng phần - liên tục lấy một phần dữ liệu từ nguồn, làm sạch nó (ví dụ:
+<br>Để tiết kiệm bộ nhớ (một vấn đề lớn) và làm cho phản hồi bắt đầu sớm hơn, ERDDAP xử lý các yêu cầu dữ liệu theo từng phần - liên tục lấy một phần dữ liệu từ nguồn, làm sạch nó (ví dụ:
 thêm
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">siêu dữ liệu <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5646,7 +5649,7 @@ hỗ trợ cho các yêu cầu OPeNDAP và khả năng lưu dữ liệu ở mộ
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Truyền bá dữ liệu / Mạng phân phối dữ liệu:
 Công nghệ Push và Pull</a></strong>
 <br>Thông thường, ERDDAP hoạt động như một trung gian:
-nó nhận yêu cầu từ người dùng; lấy dữ liệu từ một nguồn dữ liệu từ xa; định dạng lại dữ liệu; và gửi cho người dùng.
+nó nhận yêu cầu từ người dùng; lấy dữ liệu từ một nguồn dữ liệu từ xa; định dạng lại dữ liệu; và gửi nó cho người dùng.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Công nghệ Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> :
@@ -5740,10 +5743,10 @@ Những cấu trúc dữ liệu đơn giản hơn này không nhằm thay thế 
 <p>Có, tôi là nhà phát triển chính của ERDDAP .
 Tôi là một nhân viên liên bang được tài trợ đầy đủ.
 Nguồn tài trợ của tôi không phải là tiền&quot;mềm&quot;, vì vậy tôi không nhận hoặc dựa vào các khoản tài trợ.
-Tôi dành hơn một nửa thời gian để phát triển ERDDAP .
+Tôi dành hơn một nửa thời gian của mình để phát triển ERDDAP .
 Thời gian còn lại của tôi dành để quản lý các tập dữ liệu.
 Công việc đó rất hữu ích cho ERDDAP vì tôi cần làm việc với các bộ dữ liệu thực để biết chi tiết những gì ERDDAP cần phải làm.
-Các sếp của tôi hoàn toàn ủng hộ công việc của tôi về ERDDAP vì nó thực hiện công việc mà tôi được thuê:
+Các sếp của tôi hoàn toàn ủng hộ công việc của tôi về ERDDAP vì nó thực hiện những gì tôi được thuê:
 giúp các nhà khoa học thủy sản (chủ yếu, nhưng thực sự là tất cả mọi người) dễ dàng lấy dữ liệu khoa học hơn từ các nguồn khác nhau.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Điều kỳ diệu về phần mềm là nó không có chi phí để sao chép.</a> Vì vậy, để thực hiện công việc của mình, tôi viết ERDDAP để sử dụng tại ERD .
 Tôi nghĩ đó là cách tốt nhất có thể để tôi thực hiện công việc của mình.
@@ -5755,36 +5758,65 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">tải xuống
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >Hơn 90 tổ chức ở ít nhất 14 quốc gia sử dụng ERDDAP</a> .
-Có thể có một thứ như một bữa ăn trưa miễn phí.
+Có thể có một thứ như một bữa trưa miễn phí.
 <p>ERDDAP là một chương trình Java .
 Mã nguồn cho mọi phiên bản đều có trên
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a>, hệ thống được sử dụng phổ biến nhất cho các dự án phần mềm hợp tác.
-Cho đến nay, bốn nhóm khác đã đóng góp mã cho ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> được viết và đóng góp bởi Jonathan Lafite và Philippe Makowski của R.Tech Engineering (giấy phép:
+Cho đến nay, các nhóm / người này đã đóng góp mã cho ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> được viết và đóng góp bởi Jonathan Lafite và Philippe Makowski của R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (giấy phép:
 mã nguồn mở có bản quyền).
 Cảm ơn bạn, Jonathan và Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> được viết và đóng góp bởi Roland Schweitzer của NOAA (giấy phép:
 mã nguồn mở có bản quyền).
 Cảm ơn bạn, Roland!
-<li>Phiên bản ban đầu của Tập
+<br>&nbsp;
+<li>json-ld
+<br>Phiên bản ban đầu của Tập
 <a href="#jsonld" rel="bookmark">dữ liệu đánh dấu ngữ nghĩa với tính năng json-ld (Dữ liệu được liên kết JSON)</a> (và do đó, tất cả công việc khó khăn trong việc thiết kế nội dung) được viết và đóng góp (giấy phép:
 mã nguồn mở có bản quyền) bởi Adam Leadbetter và Rob Fuller của Viện Hàng hải ở Ireland.
 Cảm ơn bạn, Adam và Rob!
-<li>Mã cho
+<br>&nbsp;
+<li>orderBy
+<br>Mã cho
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >bộ orderByMean</a> orderByMean trong tabledap và những thay đổi sâu rộng đối với mã để hỗ trợ
+  >bộ orderByMean</a> orderByMean trong tabledap và các thay đổi sâu rộng đối với mã để hỗ trợ
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   ><i>biến Tên / số chia:
-ký hiệu bù đắp</i></a> cho tất cả các bộ lọc orderBy đã được viết và đóng góp (giấy phép:
+ký hiệu bù đắp</i></a> cho tất cả các bộ lọc orderBy được viết và đóng góp (giấy phép:
 mã nguồn mở có bản quyền) bởi Rob Fuller và Adam Leadbetter của Viện Hàng hải tại Ai-len.
 Cảm ơn Rob và Adam!
-<li>Mã cho ba loại điểm đánh dấu mới (Hình vuông được lấp đầy không viền, Hình tròn được lấp đầy không viền, Tam giác được lấp đầy không viền) do Marco Alba của ETT / EMODnet Physics đóng góp.
-Cảm ơn Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Các loại điểm đánh dấu không viền
+<br>Mã cho ba loại điểm đánh dấu mới (Hình vuông không viền, Hình tròn điền đầy không viền, Tam giác được lấp đầy không viền) do Marco Alba của ETT / EMODnet Physics đóng góp.
+Cảm ơn, Marco Alba!
+<br>&nbsp;
+<li>Bản dịch của messages.xml
+<br>Phiên bản đầu tiên của mã trong TranslateMessages.java sử dụng dịch vụ dịch thuật của Google để dịch messages.xml sang các ngôn ngữ khác nhau được viết bởi Qi Zeng, người đang làm việc với tư cách là thực tập sinh Google Summer of Code.
+Cảm ơn bạn, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>Mã cho
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >bộ lọc OrderBy orderBy</a> trong tabledap (dựa trên orderByMean của Rob Fuller và Adam Leadbetter) và các nút Kiểm tra Tất cả và Bỏ chọn Tất cả trên Biểu mẫu truy cập dữ liệu EDDGrid được viết và đóng góp (giấy phép:
+nguồn mở có bản quyền) bởi Marco Alba của ETT Solutions và EMODnet.
+Cảm ơn, Marco!
+<br>&nbsp;
+<li>Yêu cầu .transparentPng nằm ngoài phạm vi
+<br>ERDDAP hiện chấp nhận các yêu cầu đối với .transparentPng khi giá trị vĩ độ và / hoặc kinh độ nằm ngoài phạm vi một phần hoặc hoàn toàn.
+(Đây là ERDDAP GitHub Issues # 19, được đăng bởi Rob Fuller - cảm ơn vì đã đăng bài đó, Rob.) Mã để sửa lỗi này được viết bởi Chris John.
+Cảm ơn bạn, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Tôi hy vọng những người khác sẽ đóng góp mã trong tương lai.
@@ -5839,8 +5871,8 @@ Nếu thực tế, sẽ là một dấu hiệu xấu nếu ERDDAP yêu cầu nhi
 ERDDAP đó chỉ có một nhà phát triển chính có nghĩa là nó không phải là một nhiệm vụ lớn đòi hỏi nguồn vốn liên tục lớn; đó là một nhiệm vụ tương đối nhỏ đòi hỏi nỗ lực và kinh phí tối thiểu.
 Đó là bền vững hơn, không ít hơn.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Người ta có thể nghĩ rằng thuê một công ty hợp đồng để viết phần mềm là một ý kiến hay.</a> Với một khoản phí, họ sẽ cung cấp cho các nhà phát triển và hứa hẹn tính liên tục (điều này là tốt trừ khi / cho đến khi họ ngừng kinh doanh).
-Nhưng họ cũng có bạn quá mức:
-bạn phải trả cho họ những gì họ yêu cầu hoặc không có sự phát triển nào nữa, <strong>trừ khi</strong> phần mềm là FOSS và bạn chỉ trả tiền cho họ để làm việc trên mã.
+Nhưng họ cũng có bạn hơn một thùng:
+bạn phải trả cho họ những gì họ yêu cầu hoặc không có sự phát triển nào nữa, <strong>trừ khi</strong> phần mềm là phần mềm nguồn mở và bạn chỉ trả tiền cho họ để làm việc trên mã.
 Với phần mềm nguồn mở, bạn luôn có các lựa chọn về cách tiến lên phía trước.
 Vì ERDDAP là FOSS, nên nhà thầu luôn là lựa chọn tốt cho bạn hoặc bất kỳ ai liên quan đến ERDDAP :
 nếu có điều gì xảy ra với tôi (một nhà phát triển chính) hoặc nếu tôi không có thời gian để thực hiện một số thay đổi mà bạn muốn, hoặc tôi nghỉ hưu và bạn không thích công việc của người thay thế tôi, bạn luôn có thể thuê một công ty hợp đồng để thực hiện những thay đổi bạn muốn (hoặc tự thực hiện chúng).
@@ -5860,7 +5892,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Cách trích dẫn tập dữ liệu trên giấy</a></strong>
 <br>Điều quan trọng là phải cho người đọc biết cách bạn lấy dữ liệu mà bạn đã sử dụng trong bài báo của mình.
-Đối với mỗi tập dữ liệu mà bạn đã sử dụng, vui lòng xem siêu dữ liệu của tập dữ liệu trong phần Cấu trúc thuộc tính tập dữ liệu ở cuối trang .html cho tập dữ liệu, ví dụ:
+Đối với mỗi tập dữ liệu mà bạn đã sử dụng, vui lòng xem siêu dữ liệu của tập dữ liệu trong phần Cấu trúc thuộc tính tập dữ liệu ở cuối trang .html để biết tập dữ liệu, ví dụ:
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
@@ -5874,7 +5906,7 @@ Nếu siêu dữ liệu của tập dữ liệu bao gồm
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
   >Mã nhận dạng đối tượng kỹ thuật số (DOI ) <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a>, vui lòng bao gồm điều đó trong trích dẫn bạn tạo.
+  title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a>, hãy bao gồm điều đó trong trích dẫn bạn tạo.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cách trích dẫn ERDDAP trên giấy</a></strong>
 <br>Nếu bạn muốn trích dẫn chính ERDDAP trong một bài báo khoa học, vui lòng sử dụng một cái gì đó như
@@ -5909,7 +5941,7 @@ Nếu bạn có câu hỏi, đề xuất hoặc nhận xét về ERDDAP nói chu
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> và nhấp vào&quot;Đăng ký thành viên&quot;.
-Khi đã là thành viên, bạn có thể đăng câu hỏi của mình lên đó hoặc tìm kiếm để xem câu hỏi đã được hỏi và trả lời chưa.
+Khi bạn đã là thành viên, bạn có thể đăng câu hỏi của mình lên đó hoặc tìm kiếm để xem câu hỏi đã được hỏi và trả lời chưa.
 <p>KHUYẾN CÁO:
 Các ý kiến trên trang web này là ý kiến cá nhân của Bob Simons và không nhất thiết phản ánh bất kỳ quan điểm nào của Chính phủ hoặc National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
@@ -7471,9 +7503,7 @@ Nhiều bộ dữ liệu cũng có thể được truy cập thông qua Dịch v
 <yourEmailAddress>địa chỉ email của bạn</yourEmailAddress>
 <zoomIn>Phóng to</zoomIn>
 <zoomOut>Thu nhỏ</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Sao chép văn bản vào khay nhớ tạm</copytexttoclipboard>
+<copytoclipboardnotavailable>Sao chép vào khay nhớ tạm không khả dụng</copytoclipboardnotavailable>
+<copyimagetoclipboard>Sao chép hình ảnh vào khay nhớ tạm</copyimagetoclipboard>
 </erddapMessages>

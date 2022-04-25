@@ -1271,7 +1271,7 @@ UDUNITS käyttää ASCII-standardia, ISO 8859-1 (Latin-1) ja UTF-8-koodausta ISO
 <td>Pelkkä ASCII</td>
 <td>Kaikki UDUNITS yksiköt, joissa on vain ASCII- ja ISO 8859-1 -merkkejä, muunnetaan.
 Muutamia muita merkkejä sisältäviä yksiköitä ei muunneta</td>
-<td>Useimmat UCUM-yksiköt muunnetaan.</td>
+<td>Suurin osa UCUM-yksiköistä muunnetaan.</td>
 </tr>
 <tr>
 <td>kirjainkoolla</td>
@@ -1342,7 +1342,7 @@ Sitten kerto- ja jakolasku lasketaan vasemmalta oikealle.</td>
 <tr>
 <td>numeroita</td>
 <td>kokonaisluku ja liukuluku (esim.
-1.23456E-5)</td>
+1,23456E-5)</td>
 <td>vain kokonaisluku</td>
 <td>Liukulukuluvut muunnetaan rationaalisiksi luvuiksi (esim.
 12,34:stä tulee 1234,10^-2 (muista, että &#39;.&#39; tarkoittaa &quot;times&quot; )</td>
@@ -1431,7 +1431,7 @@ Niitä kaikkia edustaa &quot;deg&quot; .</td>
 <td>Eri suunnan asteyksiköiden erottamiseksi muunnin lisää kommentin suunnan asteyksiköihin (esim.
 &quot;degree_north&quot; muuttuu &quot;deg{north}&quot; ).</td>
 <td>Jos liität kommentin ({east}, {north}, {west} tai {true} ), muunnin muuntaa suuntayksiköksi (esim.
-&quot;deg{north}&quot; muuttuu &quot;degree_north&quot; ); Muuten muuntimella ei ole mahdollisuutta luoda suunta-asteyksiköitä, joten &quot;deg&quot; muunnetaan &quot;degree&quot; .</td>
+&quot;deg{north}&quot; muuttuu &quot;degree_north&quot; ); Muutoin muunnin ei voi luoda suunta-asteyksiköitä, joten &quot;deg&quot; muunnetaan &quot;degree&quot; .</td>
 </tr>
 <tr>
 <td>tietyt ajat</td>
@@ -1483,7 +1483,7 @@ Celsius-asteet tunnistetaan <kbd>Cel</kbd> :n avulla.</td>
 <td>&PSU; (Practical Salinity Units)</td>
 <td>&PSU; ei ole määritelty.</td>
 <td>&PSU; ei ole määritelty.</td>
-<td>&PSU; ja &PSU; muunnetaan muotoon { &PSU; } noudattaen UCUM-menetelmää dimensioimattomien (mielivaltaisten) yksiköiden nimien merkitsemiseksi.</td>
+<td>&PSU; ja &PSU; muunnetaan muotoon { &PSU; } noudattaen UCUM-menetelmää dimensioimattomien (mielivaltaisten) yksiköiden nimen merkitsemiseksi.</td>
 <td>{ &PSU; } muunnetaan &PSU;, koska CF:n suosittelema 1e-3 ei ole hyödyllinen tai oikea kuvaus.</td>
 </tr>
 <tr>
@@ -1687,6 +1687,9 @@ Salli&quot;
 Jos teet ERDDAP pyyntöjä tietokoneohjelmasta (muusta kuin selaimesta), evästeiden kanssa on vaikea työskennellä.
 Anteeksi.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopioi kuva leikepöydälle</copyImageToClipboard>
+<copyTextToClipboard>Kopioi teksti leikepöydälle</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopioi leikepöydälle ei ole käytettävissä</copyToClipboardNotAvailable>
 <daf>Tietojen käyttölomake</daf>
 <dafGridBypassTooltip><![CDATA[
 Tämä verkkosivu vain yksinkertaistaa griddap-URL-osoitteiden luomista.
@@ -5077,7 +5080,7 @@ Tämä voi viitata osoitteisiin &erddapUrl;, &ssUse; .
 <ul>
 <li><a rel="bookmark" href="#video">Katso tämän ensimmäisen puoliskon nopea esittely ERDDAP :iin<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 minuuttia)
-<li><a rel="bookmark" href="#localAndRemote">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytetään verkon kautta).</a>
+<li><a rel="bookmark" href="#localAndRemote">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytettävä verkon kautta).</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP voi palvella monenlaista tieteellistä dataa, ei vain merentutkimusta.</a>
 <li><a rel="bookmark" href="#search">ERDDAP tarjoaa useita tapoja etsiä kiinnostavia tietojoukkoja.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP avulla voit pyytää tietoja standardoidulla tavalla.</a>
@@ -5091,7 +5094,7 @@ Tämä voi viitata osoitteisiin &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#dataStructures">ERDDAP käyttää vain kahta perustietorakennetta tietojen säilyttämiseen.</a>
 <li><a rel="bookmark" href="#subscriptions">ERDDAP tarjoaa sähköposti-/URL- ja RSS -tilauspalveluita.</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP on verkkosovellus ja verkkopalvelu.</a>
-<li><a rel="bookmark" href="#rest">ERDDAP on REST - ja ROA -tyylisiä linkkejä, joiden avulla sen palvelut ovat tietokoneohjelmien käytettävissä.</a>
+<li><a rel="bookmark" href="#rest">ERDDAP on REST - ja ROA -tyylisiä linkkejä, jotka tuovat palvelunsa tietokoneohjelmien saataville.</a>
 <li><a rel="bookmark" href="#security">Turvallisuus</a>
 <li><a rel="bookmark" href="#chunks">ERDDAP käsittelee tiedot paloina.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP on modulaarinen.</a>
@@ -5231,8 +5234,8 @@ Muut protokollat tietojen pyytämiseen (esim.
 ERDDAP on rakennettu näitä lisäyksiä varten, eikä sillä näytä olevan mitään esteitä.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Ruudukkotietopyyntöjä voidaan tehdä käyttäjäyksiköissä.</a></strong>
-<br>Vaikka ERDDAP :n ruudukkotietojen pyyntöjä voidaan tehdä jonoindekseillä (OPeNDAP -määrityksen mukaisesti), pyynnöt voivat olla myös käyttäjäyksiköissä (esimerkiksi asteet itään)
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">suluissa</a>, koska käyttäjät ajattelevat näissä yksiköissä, ei indekseissä.
+<br>Vaikka ERDDAP :n ruudukkotietojen pyyntöjä voidaan tehdä taulukko-indekseillä (OPeNDAP -määrityksen mukaisesti), pyynnöt voivat olla myös käyttäjäyksiköissä (esimerkiksi asteet itään)
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">suluissa</a>, koska käyttäjät ajattelevat niissä yksiköissä, ei indekseissä.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP lähettää tulokset yleisissä tiedostomuodoissa.</a></strong>
 <br>Tulokset voidaan palauttaa missä tahansa useista yleisistä datatiedostomuodoista &requestFormatExamplesHtml;, pelkän alkuperäisen muodon tai vain OPeNDAP -siirtomuodon sijaan (jolla ei ole vakiomuotoista tiedostomuotoa).
@@ -5325,7 +5328,7 @@ Kun pyydät dataa tai kaaviota
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF-metatiedot <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>) kuvaavat tiedot.
-ERDDAP antaa (ja rohkaisee) järjestelmänvalvojan kuvaamaan metatietoja, jotka lisätään tietokokonaisuuksiin ja niiden muuttujiin lennossa.
+ERDDAP antaa (ja rohkaisee) järjestelmänvalvojan kuvailemaan metatietoja, jotka lisätään tietokokonaisuuksiin ja niiden muuttujiin lennossa.
 Katso järjestelmänvalvojille tarkoitettujen
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">ohjeiden</a>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">AddAttributes -osio</a> .
@@ -5353,7 +5356,7 @@ Sen sijaan ERDDAP etsii
     >hyväksyntäkoodausta <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> asiakkaan lähettämässä HTTP GET -pyynnön otsikossa.
-Jos hyväksytty pakkaustyyppi (gzip, x-gzip tai deflate ) löytyy hyväksymiskoodausluettelosta, ERDDAP sisällyttää <kbd>content-encoding</kbd> vastauksen otsikkoon ja pakkaa tiedot lähettäessään sitä.
+Jos hyväksymiskoodausluettelosta löytyy tuettu pakkaustyyppi (gzip, x-gzip tai deflate ), ERDDAP sisällyttää <kbd>content-encoding</kbd> vastauksen otsikkoon ja pakkaa tiedot lähettäessään sitä.
 Asiakasohjelman tehtävänä on etsiä <kbd>content-encoding</kbd> ja purkaa tiedot.
 Pakatut vastaukset ovat usein 3-10 kertaa nopeampia, vaikka pakattujen .png-tiedostojen pyytämisestä ei ole mitään hyötyä, koska tiedostojen sisältö on jo pakattu.
 Selaimet ja OPeNDAP asiakkaat tekevät tämän oletusarvoisesti.
@@ -5365,7 +5368,7 @@ Lisää <kbd>--compressed</kbd> komentoriville curl curl pakattua vastausta ja p
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP tekee erityyppiset tietopalvelimet (OPeNDAP, OBIS, SOS, WMS, ...) yhteentoimivia.</a></strong>
 <br>Eri tieteellisissä yhteisöissä käytetään erityyppisiä tietopalvelimia.
 Lähitulevaisuudessa on epätodennäköistä, että yksikään tyyppi tulee hallitsevaksi ja korvaisi muut.
-ERDDAP toimii siis siltana erityyppisten asiakasohjelmien (verkkoselaimet, IDV, Matlab, netCDF-ohjelmat, ODV, WMS -asiakkaat jne.) ja erityyppisten tietopalvelimien välillä.
+Joten ERDDAP toimii siltana erityyppisten asiakasohjelmien (verkkoselaimet, IDV, Matlab, netCDF-ohjelmat, ODV, WMS -asiakkaat jne.) ja erityyppisten tietopalvelimien välillä.
 <ol>
 <li>ERDDAP hyväksyy asiakkaiden tietopyynnöt eri muodoissa (esim.
 OPeNDAP, WMS ).
@@ -5458,7 +5461,7 @@ ERDDAP palvelimelle, eikä se silti havaitse muutoksia välittömästi.
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> (<a rel="help" href="&erddapUrl;/rest.html">tietokoneohjelmien palveluilla</a>).</strong>
 <br>Itse asiassa ERDDAP :n web-sivuilla olevat lomakkeet vain luovat erityisesti muotoiltuja URL-osoitteita, jotka lähetetään sitten ERDDAP :n verkkopalveluihin.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP :lla on</a>
+<li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP on</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> - ja
@@ -5475,7 +5478,7 @@ Lue lisää ERDDAP :n
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Suojaus</a></strong> - Oletusarvoisesti ERDDAP toimii täysin julkisena palvelimena ilman kirjautumisjärjestelmää tai rajoituksia tietojen käyttöön.
 ERDDAP -järjestelmänvalvoja voi kuitenkin määrittää ERDDAP :n rajoittamaan pääsyn joihinkin tai kaikkiin tietojoukkoihin kirjautuville käyttäjille, joille on määritetty tietyt roolit.
 ERDDAP :ssa on sisäänrakennetut todennusmenetelmät (sisäänkirjautuminen).
-Jos ERDDAP -asennuksessa on todennus käytössä, jokaisen verkkosivun yläreunassa on&quot;kirjaudu sisään&quot;-linkki.
+Jos ERDDAP -asennuksessa on todennus käytössä, jokaisen verkkosivun yläosassa on&quot;kirjaudu sisään&quot;-linkki.
 Käyttäjien ei koskaan tarvitse kirjautua sisään päästäkseen julkisesti saatavilla oleviin tietokokonaisuuksiin.
 Käyttäjät, jotka ovat kirjautuneet sisään, voivat käyttää julkisia tietojoukkoja ja yksityisiä tietojoukkoja, joihin heillä on pääsy.
 Käyttäjien on käytettävä https::tä (Secure Sockets Layer) kirjautuakseen sisään ja käyttääkseen yksityisiä tietojoukkoja.
@@ -5612,29 +5615,58 @@ Jokaisen version lähdekoodi on
 <a rel="bookmark" href="https://github.com/BobSimons">GitHubissa <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>, yleisimmin käytetty järjestelmä yhteistyöohjelmistoprojekteihin.
-Tähän mennessä neljä muuta ryhmää on toimittanut koodia ERDDAP :iin:
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.javan</a> ovat kirjoittaneet ja toimittaneet Jonathan Lafite ja Philippe Makowski R.Tech Engineeringistä (lisenssi:
-tekijänoikeudella suojattu avoimen lähdekoodin).
+Toistaiseksi nämä ryhmät/henkilöt ovat toimittaneet koodia ERDDAP :iin:
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">YhdistäIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.javan</a> ovat kirjoittaneet ja osallistuneet Jonathan Lafite ja Philippe Makowski R.Tech Engineeringistä <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (lisenssi:
+tekijänoikeudella suojattu avoin lähdekoodi).
 Kiitos, Jonathan ja Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> on kirjoittanut ja toimittanut Roland Schweitzer NOAA :sta (lisenssi:
 tekijänoikeudella suojattu avoin lähdekoodi).
 Kiitos, Roland!
-<li><a href="#jsonld" rel="bookmark">Json-ld (JSON Linked Data) -ominaisuuden sisältävän tietojoukkojen semanttisen merkinnän</a> alkuperäisen version (ja siten kaiken kovan työn sisällön suunnittelussa) ovat kirjoittaneet ja toimittaneet (lisenssi:
+<br>&nbsp;
+<li>json-ld
+<br><a href="#jsonld" rel="bookmark">Json-ld (JSON Linked Data) -ominaisuuden sisältävän tietojoukkojen semanttisen merkinnän</a> alkuperäisen version (ja siten kaiken kovan työn sisällön suunnittelussa) ovat kirjoittaneet ja toimittaneet (lisenssi:
 tekijänoikeudella suojattu avoin lähdekoodi) Adam Leadbetter ja Rob Fuller.
 Marine Institute Irlannissa.
 Kiitos Adam ja Rob!
-<li>Tabledapin tabledap -
+<br>&nbsp;
+<li>orderBy
+<br>Tabledapin tabledap -
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean</a> koodin ja koodiin tehdyt laajat muutokset, jotka tukevat
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   ><i>muuttujanName/divisor:offset</i> -merkintää</a> kaikille orderBy suodattimille, ovat kirjoittaneet ja toimittaneet (lisenssi:
 tekijänoikeudella suojattu avoimen lähdekoodin) Rob Fuller ja Adam Leadbetter Marine Institutesta vuonna Irlanti.
 Kiitos, Rob ja Adam!
-<li>Kolmen uuden merkkityypin (Reunaton täytetty neliö, Reunaton Täytetty ympyrä, Reunaton täytetty kolmio) koodin toimitti Marco Alba ETT / EMODnet Physicsistä.
-Kiitos Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Reunattomat merkkityypit
+<br>Kolmen uuden merkkityypin (Reunaton täytetty neliö, Reunaton Täytetty ympyrä, Reunaton täytetty kolmio) koodin toimitti Marco Alba ETT / EMODnet Physicsistä.
+Kiitos, Marco Alba!
+<br>&nbsp;
+<li>Viestien käännökset.xml
+<br>TranslateMessages.javan koodin alkuperäisen version, joka käyttää Googlen käännöspalvelua messages.xml:n kääntämiseen eri kielille, kirjoitti Qi Zeng, joka työskenteli Google Summer of Code -harjoittelijana.
+Kiitos, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum -suodattimen</a> koodi tabledap (perustuu Rob Fullerin ja Adam Leadbetterin orderByMean ) ja EDDGrid Data Access Form -lomakkeen Check All- ja Uncheck All -painikkeet ovat kirjoittaneet ja toimittaneet (lisenssi:
+tekijänoikeudella suojattu avoimen lähdekoodin) Marco Alba ETT Solutionsista.
+ja EMODnet.
+Kiitos, Marco!
+<br>&nbsp;
+<li>Alueen ulkopuolella olevat .transparentPng-pyynnöt
+<br>ERDDAP hyväksyy nyt .transparentPng-pyynnöt, kun leveys- ja/tai pituusastearvot ovat osittain tai kokonaan alueen ulkopuolella.
+(Tämä oli ERDDAP GitHub Issues #19, lähettäjä Rob Fuller – kiitos viestistäsi, Rob.) Koodi tämän korjaamiseksi on kirjoittanut Chris John.
+Kiitos, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Toivon, että muut lisäävät koodia tulevaisuudessa.
@@ -5692,7 +5724,7 @@ Mutta heillä on myös yli tynnyri:
 sinun on maksettava heille mitä he pyytävät, tai kehitystä ei enää tehdä, <strong>ellei</strong> ohjelmisto ole FOSS ja maksat heille vain koodin työstämisestä.
 FOSS:n avulla sinulla on aina valinnanvaraa siitä, miten edetä.
 Koska ERDDAP on FOSS, urakoitsijat ovat aina hyvä vaihtoehto sinulle tai kenelle tahansa ERDDAP :n suhteen:
-jos minulle (yksi pääkehittäjälle) tapahtuu jotain tai jos minulla ei ole aikaa tehdä jotain haluamaasi muutosta, tai minä jää eläkkeelle etkä pidä sijaiseni työstä, voit aina palkata urakoitsijan tekemään haluamasi muutokset (tai tehdä ne itse).
+jos minulle (yksi pääkehittäjälle) tapahtuu jotain tai jos minulla ei ole aikaa tehdä jotain haluamaasi muutosta, tai minä jää eläkkeelle ja et pidä sijaiseni työstä, voit aina palkata urakoitsijan tekemään haluamasi muutokset (tai tehdä ne itse).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Yhteenvetona voidaan todeta, että ERDDAP :lla on kaksi tärkeintä kestävän kehityksen ominaisuutta:</a>
 <ol>
 <li>ERDDAP on pieni projekti (riittävän pieni yhden pääkehittäjän hoitamaan muutaman muun epävirallisen avun kanssa), joten se ei vaadi valtavia resursseja.
@@ -7302,9 +7334,7 @@ Monet tietojoukot ovat käytettävissä myös ERDDAP :n Web Map Servicen (WMS ) 
 <yourEmailAddress>Sähköpostiosoitteesi</yourEmailAddress>
 <zoomIn>Lähennä</zoomIn>
 <zoomOut>Loitontaa</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Kopioi teksti leikepöydälle</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopioi leikepöydälle ei ole käytettävissä</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopioi kuva leikepöydälle</copyimagetoclipboard>
 </erddapMessages>
