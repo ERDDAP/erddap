@@ -184,15 +184,25 @@ public class String2 {
 
     //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
     //to be bigger and makes synchronized contention less common.
-    private final static int nCanonicalMaps = 6;
-    private static Map canonicalMap[] = new Map[nCanonicalMaps];
-    private static Map canonicalStringHolderMap[] = new Map[nCanonicalMaps];
-    static {
-        for (int i = 0; i < nCanonicalMaps; i++) {
-            canonicalMap[i]             = new WeakHashMap();
-            canonicalStringHolderMap[i] = new WeakHashMap();
+    private static final int CANONICAL_MAP_COUNT = 6;
+    private static ThreadLocal<Map<String, WeakReference<String>>[]> canonicalMap = new ThreadLocal<Map<String, WeakReference<String>>[]>() {
+        @Override protected Map<String, WeakReference<String>>[] initialValue() {
+            Map<String, WeakReference<String>>[] map = new Map[CANONICAL_MAP_COUNT];
+            for (int i = 0; i < CANONICAL_MAP_COUNT; i++) {
+                map[i]= new WeakHashMap<String, WeakReference<String>>();
+            }
+            return map;
         }
-    }
+    };
+    private static ThreadLocal<Map<StringHolder, WeakReference<StringHolder>>[]> canonicalStringHolderMap = new ThreadLocal<Map<StringHolder, WeakReference<StringHolder>>[]>() {
+        @Override protected Map<StringHolder, WeakReference<StringHolder>>[] initialValue() {
+            Map<StringHolder, WeakReference<StringHolder>>[] map = new Map[CANONICAL_MAP_COUNT];
+            for (int i = 0; i < CANONICAL_MAP_COUNT; i++) {
+                map[i]= new WeakHashMap<StringHolder, WeakReference<StringHolder>>();
+            }
+            return map;
+        }
+    };
     private static Map canonicalLockMap = new WeakHashMap();
     public static int longTimeoutSeconds = 300; //5 minutes. This is >= other timeouts in the system. This is used in places that previously waited forever.
 
@@ -6040,20 +6050,20 @@ and zoom and pan with controls in
         if (s.length() == 0)
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
-        Map tCanonicalMap = canonicalMap[s.charAt(s.length() / 2) % nCanonicalMaps];
+        Map<String, WeakReference<String>> tCanonicalMap = canonicalMap.get()[s.charAt(s.length() / 2) % CANONICAL_MAP_COUNT];
        
         //faster and logically better to use synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalMap and lock/unlock twice
         synchronized(tCanonicalMap) {
-            WeakReference wr = (WeakReference)tCanonicalMap.get(s);
+            WeakReference<String> wr = tCanonicalMap.get(s);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
-            String canonical = wr == null? null : (String)(wr.get());
+            String canonical = wr == null? null : (wr.get());
             if (canonical == null) {
                 //For proof that new String(s.substring(,)) is just storing relevant chars,
                 //not a reference to the parent string, see TestUtil.testString2canonical2()
                 canonical = new String(s); //in case s is from s2.substring, copy to be just the characters
-                tCanonicalMap.put(canonical, new WeakReference(canonical));
+                tCanonicalMap.put(canonical, new WeakReference<>(canonical));
                 //log("new canonical string: " + canonical);
             }
             return canonical;
@@ -6083,18 +6093,18 @@ and zoom and pan with controls in
             return STRING_HOLDER_NULL;
         if (car.length == 0)
             return STRING_HOLDER_ZERO;
-        Map tCanonicalStringHolderMap = canonicalStringHolderMap[car[car.length / 2] % nCanonicalMaps];
+        Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap = canonicalStringHolderMap.get()[car[car.length / 2] % CANONICAL_MAP_COUNT];
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
         //than to synchronize canonicalStringHolderMap and lock/unlock twice
         synchronized(tCanonicalStringHolderMap) {
-            WeakReference wr = (WeakReference)tCanonicalStringHolderMap.get(sh);
+            WeakReference<StringHolder> wr = tCanonicalStringHolderMap.get(sh);
             //wr won't be garbage collected, but reference might (making wr.get() return null)
-            StringHolder canonical = wr == null? null : (StringHolder)(wr.get());
+            StringHolder canonical = wr == null? null : (wr.get());
             if (canonical == null) {
                 canonical = sh; //use this object
-                tCanonicalStringHolderMap.put(canonical, new WeakReference(canonical));
+                tCanonicalStringHolderMap.put(canonical, new WeakReference<>(canonical));
                 //log("new canonical string: " + canonical);
             }
             return canonical;
@@ -6135,16 +6145,16 @@ and zoom and pan with controls in
     public static String canonicalStatistics() {
         StringBuilder sb = new StringBuilder("canonical map sizes: ");
         int sum = 0;
-        for (int i = 0; i < canonicalMap.length; i++) {
-            int tSize = canonicalMap[i].size();
+        for (int i = 0; i < canonicalMap.get().length; i++) {
+            int tSize = canonicalMap.get()[i].size();
             sum += tSize;
             sb.append((i==0? "" : " + ") + tSize);
         }
         sb.append(" = " + sum + 
             "\ncanonicalStringHolder map sizes: ");
         sum = 0;
-        for (int i = 0; i < canonicalStringHolderMap.length; i++) {
-            int tSize = canonicalStringHolderMap[i].size();
+        for (int i = 0; i < canonicalStringHolderMap.get().length; i++) {
+            int tSize = canonicalStringHolderMap.get()[i].size();
             sum += tSize;
             sb.append((i==0? "" : " + ") + tSize);
         }
@@ -6155,16 +6165,16 @@ and zoom and pan with controls in
     /** This is only used to test canonical. */
     public static int canonicalSize() {
         int sum = 0;
-        for (int i = 0; i < canonicalMap.length; i++)
-            sum += canonicalMap[i].size();
+        for (int i = 0; i < canonicalMap.get().length; i++)
+            sum += canonicalMap.get()[i].size();
         return sum;
     }
 
     /** This is only used to test canonicalStringHolder. */
     public static int canonicalStringHolderSize() {
         int sum = 0;
-        for (int i = 0; i < canonicalStringHolderMap.length; i++)
-            sum += canonicalStringHolderMap[i].size();
+        for (int i = 0; i < canonicalStringHolderMap.get().length; i++)
+            sum += canonicalStringHolderMap.get()[i].size();
         return sum;
     }
 
