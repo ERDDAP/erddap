@@ -1273,8 +1273,7 @@ UDUNITS χρησιμοποιεί ASCII, ISO 8859-1 (Λατινικά-1) και �
 </tr>
 <tr>
 <td>μετρικά προθέματα
-<br>(π.χ.
-&quot;kilo&quot; και &quot;k&quot; σημαίνουν &quot;times 1000&quot;, &quot;µ&quot; και &#39;u&#39; σημαίνει &quot;φορές 10^-6&quot;)</td>
+<br>(π.χ., &quot;kilo&quot; και &quot;k&quot; σημαίνουν &quot;times 1000&quot;, &quot;µ&quot; και &#39;u&#39; σημαίνει &quot;φορές 10^-6&quot;)</td>
 <td>Υποστηρίζεται (δείτε UDUNITS udunits2-prefixes.xml)</td>
 <td>Υποστηρίζεται (δείτε τη στήλη c/s του
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">πίνακα συμβόλων προθέματος <img 
@@ -1413,7 +1412,7 @@ m-2 = m^-2)</td>
 <tr>
 <td>συγκεκριμένες ώρες</td>
 <td>UDUNITS έχει ένα σύστημα για τον καθορισμό συγκεκριμένων ωρών ως
-<br>&quot;<i>μονάδες</i> από <i>ISO8601Time</i>&quot;,
+<br>&quot;<i>μονάδες</i> από το <i>ISO8601Time</i>&quot;,
 <br>π.χ.
 &quot;seconds since 1970-01-01T00:00:00Z&quot; .
 <td>Το UCUM δεν φαίνεται να διαθέτει σύστημα που να καθορίζει συγκεκριμένες ώρες.
@@ -1663,6 +1662,9 @@ Cookies και δεδομένα ιστότοπου :
 Εάν κάνετε αιτήματα ERDDAP από ένα πρόγραμμα υπολογιστή (εκτός από ένα πρόγραμμα περιήγησης), τα cookies είναι δύσκολο να εργαστούν.
 Συγνώμη.
 ]]></cookiesHelp>
+<copyImageToClipboard>Αντιγραφή εικόνας στο πρόχειρο</copyImageToClipboard>
+<copyTextToClipboard>Αντιγραφή κειμένου στο πρόχειρο</copyTextToClipboard>
+<copyToClipboardNotAvailable>Η αντιγραφή στο πρόχειρο δεν είναι διαθέσιμη</copyToClipboardNotAvailable>
 <daf>Φόρμα πρόσβασης δεδομένων</daf>
 <dafGridBypassTooltip><![CDATA[
 Αυτή η ιστοσελίδα απλώς απλοποιεί τη δημιουργία διευθύνσεων URL griddap.
@@ -5060,12 +5062,12 @@ Push and Pull Technology</a>
 <li><a rel="bookmark" href="#setup">Μπορείτε να ρυθμίσετε τον δικό σας διακομιστή ERDDAP .</a>
 <li><a rel="bookmark" href="#contact">Επικοινωνήστε μαζί μας</a>
 </ul>
-<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Τα προβλήματα που προσπαθεί να λύσει το ERDDAP</a></h2>
+<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Τα προβλήματα που προσπαθεί να λύσει η ERDDAP</a></h2>
 Χωρίς ERDDAP, όταν ένα άτομο (ή ένα πρόγραμμα υπολογιστή) αναζητά στο Διαδίκτυο έναν συγκεκριμένο τύπο επιστημονικών δεδομένων (για παράδειγμα, δεδομένα θερμοκρασίας της επιφάνειας της θάλασσας από δορυφόρους), υπάρχουν προβλήματα ...
 <ul>
 <li>Ενδιαφέροντα σύνολα δεδομένων είναι δύσκολο να βρεθούν επειδή βρίσκονται σε πολλούς διαφορετικούς ιστότοπους.
 <br>&nbsp;
-<li>Κάθε τοποθεσία απαιτεί διαφορετικό πρωτόκολλο για να ζητήσει τα δεδομένα:
+<li>Κάθε ιστότοπος απαιτεί διαφορετικό πρωτόκολλο για να ζητήσει τα δεδομένα:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
 <li>Κάθε τοποθεσία επιστρέφει τα δεδομένα σε διαφορετική μορφή (για παράδειγμα, XML, SOAP+XML, δυαδική ροή δεδομένων OPeNDAP, κείμενο ASCII, HDF 4, HDF 5, NetCDF, ...) και δεν είναι η κοινή μορφή αρχείου που εσείς θέλω.
@@ -5137,7 +5139,7 @@ Push and Pull Technology</a>
 <li>ERDDAP καθιστά διαθέσιμα δεδομένα πλέγματος μέσω ERDDAP (εφαρμογή του
 <a rel="help" href="&erddapUrl;/griddap/index.html">πρωτοκόλλου OPeNDAP OPeNDAP</a> από το ERDDAP) και
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP καθιστά διαθέσιμα δεδομένα σε πίνακα μέσω tabledap (εφαρμογή του
+<li>ERDDAP καθιστά διαθέσιμα δεδομένα πινάκων μέσω tabledap (εφαρμογή του
 <a rel="help" href="&erddapUrl;/tabledap/index.html">πρωτοκόλλου περιορισμού OPeNDAP</a> ERDDAP το ERDDAP).
 <!--and
      
@@ -5192,7 +5194,7 @@ ERDDAP είναι δομημένο για αυτές τις προσθήκες �
 <li>Το γεωγραφικό πλάτος είναι πάντα σε degrees_north .
 <li>το υψόμετρο είναι πάντα σε μέτρα με θετικό=πάνω.
 <li>το βάθος είναι πάντα σε μέτρα με θετικό=κάτω.
-<li>ο χρόνος, όταν μορφοποιείται ως αριθμός, είναι πάντα σε &quot;seconds since 1970-01-01T00:00:00Z&quot; (γνωστός ως
+<li>Ο χρόνος, όταν μορφοποιείται ως αριθμός, είναι πάντα σε &quot;seconds since 1970-01-01T00:00:00Z&quot; (γνωστός ως
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">χρόνος Unix <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> ή epoch seconds, που είναι<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
@@ -5255,7 +5257,7 @@ ERDDAP είναι δομημένο για αυτές τις προσθήκες �
 μπορείτε να το καθορίσετε με την ετικέτα <kbd>&lt;units_standard&gt;</kbd> στο setup.xml.) Μπορείτε να μετατρέψετε UDUNITS σε/από μονάδες ERDDAP με τον
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">μετατροπέα μονάδων</a> του ERDDAP .
 Όταν ζητάτε δεδομένα ή ένα γράφημα από ένα
-<a href="&erddapUrl;/tabledap/index.html">σύνολο δεδομένων tabledap</a>, μπορείτε να προσαρτήσετε <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> ή <kbd>&amp;units(&quot;UCUM&quot;)</kbd> στο τέλος της διεύθυνσης URL για να ζητήσετε UDUNITS ή UCUM μονάδες.
+<a href="&erddapUrl;/tabledap/index.html">σύνολο δεδομένων tabledap</a>, μπορείτε να προσαρτήσετε <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> ή <kbd>&amp;units(&quot;UCUM&quot;)</kbd> στο τέλος της διεύθυνσης URL για να ζητήσετε UDUNITS ή μονάδες UCUM.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">περισσότερες πληροφορίες</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP μπορεί να προσθέσει ή να τροποποιήσει μεταδεδομένα.</a></strong>
@@ -5306,7 +5308,7 @@ ERDDAP επιτρέπει (και ενθαρρύνει) τον διαχειρι�
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP καθιστά διαλειτουργικούς διαφορετικούς τύπους διακομιστών δεδομένων (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
 <br>Διαφορετικοί τύποι διακομιστών δεδομένων χρησιμοποιούνται σε διαφορετικές επιστημονικές κοινότητες.
 Στο άμεσο μέλλον, είναι απίθανο κάποιος τύπος να γίνει κυρίαρχος και να αντικαταστήσει τους άλλους.
-Έτσι, ERDDAP λειτουργεί ως γέφυρα μεταξύ των διαφορετικών τύπων προγραμμάτων-πελατών (προγράμματα περιήγησης ιστού, IDV, Matlab, προγράμματα netCDF, ODV, πελάτες WMS, κ.λπ.) και των διαφορετικών τύπων διακομιστών δεδομένων.
+Έτσι, ERDDAP λειτουργεί ως γέφυρα μεταξύ των διαφορετικών τύπων προγραμμάτων πελατών (προγράμματα περιήγησης ιστού, IDV, Matlab, προγράμματα netCDF, ODV, πελάτες WMS, κ.λπ.) και των διαφορετικών τύπων διακομιστών δεδομένων.
 <ol>
 <li>ERDDAP δέχεται αιτήματα πελατών για δεδομένα σε διαφορετικές μορφές (π.χ.
 OPeNDAP, WMS ).
@@ -5335,7 +5337,7 @@ OPeNDAP, SOS, OBIS, ...) και το στέλνει στον διακομιστ�
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> προγράμματα).
 <li>Αυτό διευκολύνει τη δημιουργία ερωτημάτων δεδομένων.
-<li>Αυτό κάνει τις αποκρίσεις δεδομένων να έχουν μια απλή δομή, η οποία διευκολύνει την προβολή των δεδομένων σε μια ευρύτερη ποικιλία τυπικών τύπων αρχείων (που συχνά υποστηρίζουν απλές δομές δεδομένων).
+<li>Αυτό κάνει τις απαντήσεις δεδομένων να έχουν μια απλή δομή, η οποία διευκολύνει την προβολή των δεδομένων σε μια ευρύτερη ποικιλία τυπικών τύπων αρχείων (που συχνά υποστηρίζουν απλώς απλές δομές δεδομένων).
 Αυτός είναι ο κύριος λόγος που δημιουργήσαμε το ERDDAP με αυτόν τον τρόπο.
 <li>Αυτό, με τη σειρά του, καθιστά πολύ εύκολο για εμάς (ή οποιονδήποτε) να γράψουμε λογισμικό πελάτη που λειτουργεί με όλα τα σύνολα δεδομένων ERDDAP .
 <li>Αυτό διευκολύνει τη σύγκριση δεδομένων από διαφορετικές πηγές, για παράδειγμα για μια ολοκληρωμένη ανάλυση οικοσυστήματος (IEA).
@@ -5344,7 +5346,7 @@ OPeNDAP, SOS, OBIS, ...) και το στέλνει στον διακομιστ�
 Κανένα δεν είναι τέλειο.
 Ακόμη και οι δομές «do-it-all» έχουν τα μειονεκτήματά τους:
 η εργασία με αυτές είναι περίπλοκη και τα αρχεία μπορούν να γραφτούν ή να διαβαστούν μόνο με ειδικές βιβλιοθήκες λογισμικού.
-Εάν αποδέχεστε την προσέγγιση του ERDDAP αρκετά ώστε να προσπαθήσετε να εργαστείτε μαζί της, μπορεί να διαπιστώσετε ότι έχει τα πλεονεκτήματά της (κυρίως την υποστήριξη πολλών τύπων αρχείων που μπορούν να κρατήσουν τις αποκρίσεις δεδομένων).
+Εάν αποδεχτείτε την προσέγγιση του ERDDAP αρκετά ώστε να προσπαθήσετε να εργαστείτε μαζί της, μπορεί να διαπιστώσετε ότι έχει τα πλεονεκτήματά της (κυρίως την υποστήριξη πολλών τύπων αρχείων που μπορούν να κρατήσουν τις αποκρίσεις δεδομένων).
 Η
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">αρχική ERDDAP</a> (ιδιαίτερα η
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">διαφάνεια δομών δεδομένων</a>) μιλά για αυτά τα ζητήματα.
@@ -5364,7 +5366,7 @@ OPeNDAP, SOS, OBIS, ...) και το στέλνει στον διακομιστ�
 <li>ERDDAP θα εντοπίσει πότε αυτό το σύνολο δεδομένων γίνει ξανά διαθέσιμο.
 <li>ERDDAP δεν υπόσχεται την καταλληλότητα ή την ακρίβεια αυτών των υπηρεσιών (βλ
 <a rel="license" href="&erddapUrl;/legal.html">.
-ΑΠΟΠΟΙΗΣΗ ευθυνών του ERDDAP</a>).
+ΑΠΟΠΟΙΗΣΗ ΕΥΘΥΝΩΝ του ERDDAP</a>).
 </ul>
 <p><strong>Συνδρομές
 <a rel="help" href="&erddapUrl;/subscriptions/index.html">email/URL</a></strong> (δεν είναι διαθέσιμες σε ορισμένες εγκαταστάσεις ERDDAP ) Κάθε φορά που αλλάζει ένα σύνολο δεδομένων, το σύστημα συνδρομής email/URL θα σας στείλει <strong>αμέσως</strong> ένα email ή θα επικοινωνήσει με μια διεύθυνση URL που έχετε καθορίσει.
@@ -5517,7 +5519,7 @@ ERDDAP, ως διακομιστής δεδομένων γενικής χρήση
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >σχεσιακή βάση δεδομένων <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> μπορεί να αποθηκεύσει ένα σύνθετο σύνολο δεδομένων χρησιμοποιώντας μόνο μία απλή δομή δεδομένων (έναν πίνακα), ERDDAP μπορεί να εξυπηρετήσει τα δεδομένα από πιο σύνθετα σύνολα δεδομένων σπάζοντας το σύνολο δεδομένων προέλευσης σε μερικά σύνολα δεδομένων ERDDAP, το καθένα με παρόμοιες, απλές δομές δεδομένων.
+      title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> μπορεί να αποθηκεύσει ένα σύνθετο σύνολο δεδομένων χρησιμοποιώντας μόνο μία απλή δομή δεδομένων (έναν πίνακα), ERDDAP μπορεί να εξυπηρετήσει τα δεδομένα από πιο σύνθετα σύνολα δεδομένων σπάζοντας το σύνολο δεδομένων προέλευσης σε λίγα σύνολα δεδομένων ERDDAP, το καθένα με παρόμοιες, απλές δομές δεδομένων.
 Για παράδειγμα, ορισμένα πλέγματα δεδομένων περιβαλλοντικών μοντέλων μπορούν να αποθηκευτούν στο ERDDAP βάζοντας τις μεταβλητές της επιφάνειας της θάλασσας ([time][latitude][longitude]) σε ένα σύνολο δεδομένων ERDDAP και βάζοντας τις μεταβλητές με υψόμετρο ([time][altitude][ γεωγραφικό πλάτος][γεωγραφικό μήκος]) σε άλλο σύνολο δεδομένων ERDDAP .
 Γνωρίζουμε ότι αυτό δεν είναι ιδανικό, αλλά είναι απαραίτητο να επιτραπεί στο ERDDAP να επιστρέφει δεδομένα σε κοινές μορφές αρχείων (μερικές από τις οποίες είναι αρκετά απλές).
 <p>Μια άλλη προσέγγιση για την αντιμετώπιση σύνθετων συνόλων δεδομένων (π.χ.
@@ -5554,32 +5556,61 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a>, το πιο συχνά χρησιμοποιούμενο σύστημα για συνεργατικά έργα λογισμικού.
-Μέχρι στιγμής, τέσσερις άλλες ομάδες έχουν συνεισφέρει κώδικα στο ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> γράφτηκε και συνεισέφεραν οι Jonathan Lafite και Philippe Makowski της R.Tech Engineering (άδεια:
+Μέχρι στιγμής, αυτές οι ομάδες/άτομα έχουν συνεισφέρει κώδικα στο ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> γράφτηκε και συνεισέφεραν οι Jonathan Lafite και Philippe Makowski της R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (άδεια:
 ανοιχτού κώδικα με πνευματικά δικαιώματα).
 Σας ευχαριστώ, Jonathan και Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >Το .dataTable (TableWriterDataTable.java)</a> γράφτηκε και συνεισφέρθηκε από τον Roland Schweitzer του NOAA (άδεια:
 ανοιχτού κώδικα με πνευματικά δικαιώματα).
 Ευχαριστώ, Roland!
-<li>Η αρχική έκδοση της
+<br>&nbsp;
+<li>json-ld
+<br>Η αρχική έκδοση της
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a> (και επομένως όλη η σκληρή δουλειά για τη σχεδίαση του περιεχομένου) γράφτηκε και συνεισφέρθηκε (άδεια:
 ανοιχτού κώδικα με πνευματικά δικαιώματα) από τους Adam Leadbetter και Rob Fuller του το Ναυτικό Ινστιτούτο στην Ιρλανδία.
 Σας ευχαριστώ, Adam και Rob!
-<li>Ο κώδικας για το
+<br>&nbsp;
+<li>orderBy
+<br>Ο κώδικας για το
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >φίλτρο orderByMean</a> στο tabledap και οι εκτενείς αλλαγές στον κώδικα για την υποστήριξη της
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >σημείωσης <i>variableName/divisor:offset</i></a> για όλα τα φίλτρα orderBy γράφτηκαν και συνεισφέρθηκαν (άδεια:
 ανοιχτού κώδικα με πνευματικά δικαιώματα) από τους Rob Fuller και Adam Leadbetter του Marine Institute στο Ιρλανδία.
 Σας ευχαριστώ, Rob και Adam!
-<li>Ο κώδικας για τρεις νέους τύπους δεικτών (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) συνεισέφερε ο Marco Alba του ETT / EMODnet Physics.
-Ευχαριστώ Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Τύποι δεικτών χωρίς περιθώρια
+<br>Ο κώδικας για τρεις νέους τύπους δεικτών (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) συνεισέφερε ο Marco Alba του ETT / EMODnet Physics.
+Ευχαριστώ, Marco Alba!
+<br>&nbsp;
+<li>Μεταφράσεις μηνυμάτων.xml
+<br>Η αρχική έκδοση του κώδικα στο TranslateMessages.java που χρησιμοποιεί την υπηρεσία μετάφρασης της Google για τη μετάφραση του messages.xml σε διάφορες γλώσσες γράφτηκε από τον Qi Zeng, ο οποίος εργαζόταν ως ασκούμενος στο Google Summer of Code.
+Ευχαριστώ, Qi!
+<br>&nbsp;
+<li>orderBy Άθροισμα
+<br>Ο κώδικας για το
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >φίλτρο orderBy Sum</a> στο tabledap (με βάση το orderByMean των Rob Fuller και Adam orderByMean ) και τα κουμπιά Check All και Uncheck All στη φόρμα πρόσβασης δεδομένων EDDGrid γράφτηκαν και συνεισφέρθηκαν (άδεια:
+ανοιχτός κώδικας με πνευματικά δικαιώματα) από τον Marco Alba της ETT Solutions και EMODnet.
+Ευχαριστώ Μάρκο!
+<br>&nbsp;
+<li>Αιτήματα εκτός εύρους .transparentPng
+<br>ERDDAP δέχεται πλέον αιτήματα για .transparentPng όταν οι τιμές γεωγραφικού πλάτους και/ή μήκους είναι εν μέρει ή πλήρως εκτός εύρους.
+(Αυτό ήταν το ERDDAP GitHub Issues #19, που δημοσιεύτηκε από τον Rob Fuller -- ευχαριστώ που το δημοσιεύσατε, Rob.) Ο κώδικας για να το διορθώσετε γράφτηκε από τον Chris John.
+Ευχαριστώ, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-Ελπίζω ότι άλλοι θα συνεισφέρουν κώδικα στο μέλλον.
+Ελπίζω ότι και άλλοι θα συνεισφέρουν κώδικα στο μέλλον.
 Αν μου συμβεί κάτι, τα αφεντικά μου θα προσλάβουν αντικαταστάτη με συγκεκριμένο στόχο να συνεχίσει την ανάπτυξη της ERDDAP .
 Επιπλέον, προσπαθώ να γράψω πολύ καθαρό κώδικα.
 Γράφω σχόλια Java Doc.
@@ -5587,7 +5618,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Επέλεξα τα ονόματα των μεταβλητών προσεκτικά.
 Ακολουθώ τις οδηγίες μορφοποίησης Java .
 Όλα αυτά είναι μια προσπάθεια να γίνει ο κώδικας πιο ευανάγνωστος, για άλλους προγραμματιστές που θέλουν να τον κατανοήσουν ή/και να τον αλλάξουν, και για μένα, γιατί, σε ένα ή δύο χρόνια, θα έχω ξεχάσει τις λεπτομέρειες για το πώς και γιατί ο κώδικας γράφτηκε όπως ήταν.
-Ο καθαρός κώδικας με καλά σχόλια διευκολύνει τη συνεχή εργασία μου στο ERDDAP, επομένως έχω ένα μεγάλο κίνητρο να γράφω καθαρό κώδικα με καλά σχόλια.
+Ο καθαρός κώδικας με καλά σχόλια διευκολύνει τη συνεχή εργασία μου στο ERDDAP, επομένως έχω μεγάλο κίνητρο να γράφω καθαρό κώδικα με καλά σχόλια.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Αλλά όλες οι απαντήσεις μου μέχρι τώρα δεν είναι πολύ σημαντικές.</a> Μόνο ένα πράγμα είναι πραγματικά σημαντικό.
 Μόνο ένα πράγμα εγγυάται τη βιωσιμότητα για ERDDAP ή οποιοδήποτε έργο λογισμικού:
 ότι το ERDDAP είναι
@@ -5685,13 +5716,13 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Μπορείτε να</a></strong>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>ρυθμίσετε τον δικό σας διακομιστή ERDDAP</strong></a> και να εξυπηρετήσετε τα δικά σας δεδομένα.
 <ul>
-<li>Η μικρή προσπάθεια για τη σύσταση του ERDDAP φέρνει πολλά οφέλη.
+<li>Η μικρή προσπάθεια για τη σύσταση της ERDDAP φέρνει πολλά οφέλη.
 <li>Εάν διαθέτετε ήδη μια υπηρεσία web για τη διανομή των δεδομένων σας, μπορείτε να ρυθμίσετε το ERDDAP για πρόσβαση στα δεδομένα σας μέσω της υπάρχουσας υπηρεσίας ή μέσω των αρχείων προέλευσης ή της βάσης δεδομένων.
 Στη συνέχεια, οι χρήστες θα έχουν έναν άλλο τρόπο πρόσβασης στα δεδομένα σας και θα μπορούν να κάνουν λήψη των δεδομένων σε πρόσθετες μορφές αρχείων ή ως γραφήματα ή χάρτες.
 <li>Εάν διαθέτετε σύνολα δεδομένων που έχουν μεγάλη ζήτηση, μπορείτε να εγκαταστήσετε
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
-  >πολλά ERDDAP που λειτουργούν μαζί</a> για να επεκτείνονται και να καλύπτουν τις ανάγκες ενός μεγάλου κέντρου διανομής δεδομένων.
+  >πολλά ERDDAP που συνεργάζονται για</a> να επεκτείνονται και να καλύπτουν τις ανάγκες ενός μεγάλου κέντρου διανομής δεδομένων.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Επικοινωνήστε μαζί μας</a></h2>
 Εάν έχετε ερωτήσεις, προτάσεις ή σχόλια σχετικά με το ERDDAP γενικά (όχι αυτή τη συγκεκριμένη εγκατάσταση ERDDAP ), στείλτε ένα email στο <kbd>bob dot simons at noaa dot gov</kbd> και συμπεριλάβετε τη διεύθυνση URL ERDDAP που σχετίζεται άμεσα με την ερώτηση ή το σχόλιό σας.
@@ -7241,9 +7272,7 @@ You can access it at
 <yourEmailAddress>η ηλεκτρονική σου διεύθυνση</yourEmailAddress>
 <zoomIn>Μεγέθυνση</zoomIn>
 <zoomOut>Σμίκρυνση</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Αντιγραφή κειμένου στο πρόχειρο</copytexttoclipboard>
+<copytoclipboardnotavailable>Η αντιγραφή στο πρόχειρο δεν είναι διαθέσιμη</copytoclipboardnotavailable>
+<copyimagetoclipboard>Αντιγραφή εικόνας στο πρόχειρο</copyimagetoclipboard>
 </erddapMessages>

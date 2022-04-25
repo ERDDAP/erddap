@@ -1544,7 +1544,7 @@ calendar years and months, and does not strictly follow the UDUNITS standard.
 
 <tr>
   <td>metric prefixes
-    <br>(e.g., "kilo" and 'k' mean "times 1000"; "&micro;" and 'u' means "times 10^-6")</td>
+    <br>(e.g., "kilo" and 'k' mean "times 1000"; "&micro;" and 'u' mean "times 10^-6")</td>
   <td>Supported (see UDUNITS udunits2-prefixes.xml)</td>
   <td>Supported (see the c/s column of the
     <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">prefix symbol table<img 
@@ -1951,6 +1951,10 @@ ERDDAP will respond with just the text result, but modified to have updated URLs
   If you are making ERDDAP requests from a computer program (other than a browser),
   cookies are hard to work with. Sorry.
 ]]></cookiesHelp>
+
+<copyImageToClipboard>Copy image to clipboard</copyImageToClipboard>
+<copyTextToClipboard>Copy text to clipboard</copyTextToClipboard>
+<copyToClipboardNotAvailable>Copy to clipboard not available</copyToClipboardNotAvailable>
 
 <daf>Data Access Form</daf>
 
@@ -6740,25 +6744,36 @@ for every version is on
     title="This link to an external website does not constitute an endorsement."></a>,
 the most commonly used system for collaborative
 software projects. 
-So far, four other groups have contributed code to ERDDAP:
+So far, these groups/people have contributed code to ERDDAP:
 <ul> 
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+  <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGridFromMergeIRFiles.java</a> was written and contributed by
    Jonathan Lafite and Philippe Makowski of R.Tech Engineering
+   <!-- <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> -->
    (license: copyrighted open source). Thank you, Jonathan and Philippe!
+  <br>&nbsp;
 
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<li>TableWriterDataTable
+  <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> was written and contributed by Roland Schweitzer of NOAA
    (license: copyrighted open source). Thank you, Roland!
+  <br>&nbsp;
 
-<li>The initial version of the 
+<li>json-ld
+  <br>The initial version of the 
   <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a>
   feature (and thus all of the hard work in designing the content) was 
   written and contributed (license: copyrighted open source)
   by Adam Leadbetter and Rob Fuller of the Marine Institute in Ireland.
   Thank you, Adam and Rob!
+  <br>&nbsp;
 
-<li>The code for the 
+<li>orderBy
+  <br>The code for the 
   <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filter</a> 
   in tabledap and the extensive changes to the code to
@@ -6769,10 +6784,40 @@ So far, four other groups have contributed code to ERDDAP:
   was written and contributed (license: copyrighted open source)
   by Rob Fuller and Adam Leadbetter of the Marine Institute in Ireland.
   Thank you, Rob and Adam!
+  <br>&nbsp;
 
-<li>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
+<li>Borderless Marker Types
+  <br>The code for three new marker types (Borderless Filled Square, Borderless Filled Circle,  
     Borderless Filled Up Triangle) was contributed by Marco Alba of ETT / EMODnet Physics.
-    Thank you Marco Alba.
+    Thank you, Marco Alba!
+  <br>&nbsp;
+
+<li>Translations of messages.xml
+  <br>The initial version of the code in TranslateMessages.java which uses
+    Google's translation service to translate messages.xml into various languages
+    was written by Qi Zeng, who was working as a Google Summer of Code intern. 
+    Thank you, Qi!
+  <br>&nbsp;
+
+<li>orderBySum
+  <br>The code for the 
+  <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBySum filter</a> 
+  in tabledap (based on Rob Fuller and Adam Leadbetter's orderByMean) and 
+  the Check All and Uncheck All buttons on the EDDGrid Data Access Form 
+  were written and contributed (license: copyrighted open source)
+  by Marco Alba of ETT Solutions and EMODnet.
+  Thank you, Marco!
+  <br>&nbsp;
+
+<li>Out-of-range .transparentPng Requests
+  <br>ERDDAP now accepts requests for .transparentPng's when 
+    the latitude and/or longitude values are partly or fully out-of-range. 
+    (This was ERDDAP GitHub Issues #19, posted by Rob Fuller -- thanks for posting that, Rob.)
+    The code to fix this was written by Chris John. 
+    Thank you, Chris!
+  <br>&nbsp;
+
 
 <!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
 </ul>
@@ -8626,6 +8671,7 @@ Many datasets can also be accessed via ERDDAP's Web Map Service (WMS).
 <yourEmailAddress>Your email address</yourEmailAddress>
 <zoomIn>Zoom In</zoomIn>
 <zoomOut>Zoom Out</zoomOut>
+
 
 <copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
 <copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>

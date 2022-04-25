@@ -1286,195 +1286,194 @@ Mar sin, léirmhíníonn ERDDAP &quot;years since&quot; agus &quot;months since&
 <th style="width:8%;">Eisiúint</th>
 <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a></th>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a></th>
-<th style="width:23%;">UDUNITS → Tiontaire UCUM</th>
-<th style="width:23%;">Tiontaire UDUNITS</th>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a></th>
+<th style="width:23%;">UDUNITS → UCUM Tiontaire</th>
+<th style="width:23%;">UCUM → UDUNITS Tiontaire</th>
 </tr>
 <tr>
-<td>Sraith Carachtair</td>
-<td>UDUNITS -1 plain ASCII.
-Úsáideann UDUNITS ASCII, ISO 8859-1 (Latin-1), agus ionchódú UTF-8 ar ISO 10646 (Unicode).</td>
-<td>Plain ASCII</td>
-<td>Tiontaítear gach aonad UDUNITS nach bhfuil ach carachtair ASCII agus ISO 8859-1 acu.
-Ní dhéantar an cúpla aonad le carachtair eile a thiontú</td>
-<td>Tiontaítear an chuid is mó d’aonaid UCUM.</td>
+<td>Tacar Carachtair</td>
+<td>UDUNITS -1 ASCII simplí.
+Úsáideann UDUNITS ASCII, ISO 8859-1 (Laidin-1), agus ionchódú UTF-8 ISO 10646 (Unicode).</td>
+<td>ASCII simplí</td>
+<td>Tiontaítear gach aonad UDUNITS le carachtair ASCII agus ISO 8859-1 díreach.
+Ní dhéantar na cúpla aonad le carachtair eile a thiontú</td>
+<td>Tiontaítear formhór na n-aonad UCUM.</td>
 </tr>
 <tr>
 <td>cás-íogair</td>
-<td>Sea.
-Nuair a cheadaítear caipitlithe éagsúla, sainmhínítear na leaganacha go sainráite.</td>
-<td>Sea.
+<td>Tá.
+Nuair a cheadaítear caipitlithe éagsúla, sainítear na malairtí go sainráite.</td>
+<td>Tá.
 Oibríonn na tiontairí leis an bhfoirm cás-íogair (&quot;c/s&quot; ) d&#39;aonaid UCUM.</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
-<td>Iolraí agus Ailiasanna</td>
-<td>Tacaíochtaí iolra agus ailiasanna don aonad céanna.</td>
-<td>Úsáidtear giorrúchán / acrainm amháin do gach aonad.</td>
-<td>Tiontaítear na iolraí agus na ailiasanna éagsúla go dtí an t-aonad comhfhreagrach UCUM.
-Tiontaítear ainmneacha UDUNITS neamhaitheanta go tráchtanna.</td>
-<td>Déanann an modh seo iarracht ailiasanna UDUNITS coitianta, gearr, singil (ní iolra) a thabhairt ar ais.
-Fágtar ainmneacha UCUM neamh-aitheanta gan athrú.</td>
+<td>Iolra agus Ailiasanna</td>
+<td>Tacaíonn sé le hiolra agus ailiasanna don aonad céanna.</td>
+<td>Ní úsáidtear ach giorrúchán/acrainm amháin do gach aonad.</td>
+<td>Tiontaítear na hiolra agus na hailiasanna éagsúla go dtí an t-aonad UCUM comhfhreagrach.
+Tiontaítear ainmneacha UDUNITS neamhaitheanta go nótaí tráchta.</td>
+<td>Déanann an modh seo iarracht ailiasanna coitianta, gearr, singil (ní iolra) UDUNITS a thabhairt ar ais.
+Fágtar ainmneacha UCUM nach n-aithnítear gan athrú.</td>
 </tr>
 <tr>
-<td>réimíreanna méadracha
-<br>(m.sh., &quot;kilo&quot; agus &#39;k&#39; &quot;times 1000&quot; ; &quot;µ&quot; agus &#39;u&#39; &quot;amanna 10 ^ -6&quot;)</td>
+<td>réimíreanna méadrach
+<br>(m.sh., &quot;kilo&quot; agus &#39;k&#39; &quot;times 1000&quot; ; &quot;µ&quot; agus &#39;u&#39; &quot;uaireanta 10^-6&quot;)</td>
 <td>Tacaithe (féach UDUNITS udunits2-prefixes.xml)</td>
-<td>Tacaithe (féach an colún c / s sa
+<td>Tacaithe (féach an colún c/s den
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">tábla siombailí réimír <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>)</td>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>)</td>
 <td>Tiontaítear an réimír ina acrainm (m.sh., &#39;u&#39; )</td>
-<td>Fágtar an réimír mar acrainm (m.sh., &#39;u&#39; )</td>
+<td>Fágtar an réimír mar a acrainm (m.sh., &#39;u&#39; )</td>
 </tr>
 <tr>
 <td>oibreoirí iolraithe</td>
-<td>spás (is coitianta), &#39;-&#39; (typo sa spec ???), &#39;.&#39;, &#39;*&#39;, &#39;·&#39;</td>
+<td>spás (is coitianta), &#39;-&#39; (typo sa spec???), &#39;.&#39;, &#39;*&#39;, &#39;·&#39;</td>
 <td>&#39;.&#39;</td>
-<td>déantar spás, &#39;*&#39;, agus &#39;·&#39;, a thiontú go &#39;.&#39;</td>
-<td>tiontaithe i gcónaí i spás (ar mhaithe le comhsheasmhacht)</td>
+<td>tiontaítear spás, &#39;*&#39;, agus &#39;·&#39;, go &#39;.&#39;</td>
+<td>thiontú i gcónaí go spás (le haghaidh comhsheasmhachta)</td>
 </tr>
 <tr>
 <td>oibreoirí rannáin</td>
 <td>&#39;/&#39;, &quot;per&quot;, &quot;PER&quot;</td>
 <td>&#39;/&#39;</td>
-<td>Tiontaítear &quot;per&quot; agus &quot;PER&quot; go léiritheoirí diúltacha.</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>tiontaítear &quot;per&quot; agus &quot;PER&quot; go easpórtálaithe diúltacha.</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
 <td>oibreoirí easpónantúla</td>
-<td>&quot;**&quot;, &#39;^&#39;, faic (m.sh., m-2 = m ^ -2)</td>
-<td>&#39;*&#39; (i ndáiríre!), &#39;^&#39; (i líon amháin), rud ar bith (m.sh., m-2)</td>
-<td>Tiontaítear &quot;**&quot; go rud ar bith (nó &#39;^&#39; laistigh de na huimhreacha, m.sh., 10 ^ -6).</td>
-<td>tiontaithe i gcónaí go &#39;^&#39; (ar mhaithe le comhsheasmhacht).</td>
+<td>&quot;**&quot;, &#39;^&#39;, rud ar bith (m.sh., m-2 = m^-2)</td>
+<td>&#39;*&#39; (i ndáiríre!), &#39;^&#39; (in uimhreacha amháin), faic (m.sh., m-2)</td>
+<td>Ní thiontaítear &quot;**&quot; go rud ar bith (nó &#39;^&#39; laistigh d&#39;uimhreacha, m.sh., 10^-6).</td>
+<td>i gcónaí thiontú go &#39;^&#39; (le haghaidh comhsheasmhachta).</td>
 </tr>
 <tr>
-<td>tosaíocht oibreora</td>
-<td>Is iad na taispeántóirí is airde.
+<td>tosaíocht oibreoir</td>
+<td>Tá na heaspórtálaithe is airde.
 Ansin déantar iolrú agus roinnt a mheas ó chlé go deas.</td>
-<td>Is iad na taispeántóirí is airde.
+<td>Tá na heaspórtálaithe is airde.
 Ansin déantar iolrú agus roinnt a mheas ó chlé go deas.</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
 <td>uimhreacha</td>
 <td>slánuimhir agus snámhphointe (m.sh., 1.23456E-5)</td>
 <td>slánuimhir amháin</td>
-<td>Tiontaítear uimhreacha snámhphointí go huimhreacha réasúnach (m.sh., déantar 12.34 de 1234.10 ^ -2 (cuimhnigh go gciallaíonn &#39;.&#39; &quot;times&quot; )</td>
-<td>Tiontaítear na huimhreacha go slánuimhreacha nó go huimhreacha snámhphointe (m.sh., 1.23456E-5).</td>
+<td>Tiontaítear uimhreacha snámhphointe go huimhreacha réasúnacha (m.sh., déantar 1234.10^-2 de 12.34 (cuimhnigh go gciallaíonn &#39;.&#39; &quot;times&quot; )</td>
+<td>Tiontaítear uimhreacha go slánuimhreacha nó go huimhreacha snámhphointe (eg, 1.23456E-5).</td>
 </tr>
 <tr>
 <td>_ (béim)</td>
-<td>Úsáidtear laistigh d’ainmneacha aonaid aonair.</td>
-<td>Úsáidtear é chun nóta síntiúis a léiriú laistigh d’ainm aonaid (m.sh., &quot;mo_g&quot; ar feadh míosa Gregorian)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>Úsáidtear é in ainmneacha aonaid aonair.</td>
+<td>Úsáidtear é chun nóta síntiús a léiriú laistigh d&#39;ainm aonaid (m.sh., &quot;mo_g&quot; do mhí Gregorian)</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
-<td>&#39;(collóg)</td>
-<td>Gan úsáid.</td>
-<td>Úsáidtear é chun focail in ainm ilfhocail a scaradh (m.sh., &quot;[todd&#39;U]&quot; d&#39;aonad Todd )</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>&#39; (sliocht)</td>
+<td>Ní úsáidtear.</td>
+<td>Úsáidtear é chun focail a scaradh in ainm ilfhoclach (m.sh., &quot;[todd&#39;U]&quot; le haghaidh aonad Todd )</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
 <td>( )</td>
-<td>Úsáidtear chun míreanna a ghrúpáil.</td>
-<td>Úsáidtear chun míreanna a ghrúpáil.</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>Úsáidtear é chun míreanna a ghrúpáil.</td>
+<td>Úsáidtear é chun míreanna a ghrúpáil.</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
 <td>[ ]</td>
-<td>Gan úsáid.</td>
-<td>Úsáidtear iad chun grúpaí siombailí a iamh ba chóir a láimhseáil mar ghrúpa (m.sh., &quot;[in_i]&quot; d&#39;orlach idirnáisiúnta)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>(Níl aon athruithe ag teastáil)</td>
+<td>Ní úsáidtear.</td>
+<td>Úsáidtear é chun grúpaí siombailí a chur faoi iamh ar cheart déileáil leo mar ghrúpa (m.sh., &quot;[in_i]&quot; le haghaidh orlach idirnáisiúnta)</td>
+<td>(Níl gá le hathruithe)</td>
+<td>(Níl gá le hathruithe)</td>
 </tr>
 <tr>
 <td>{ }</td>
-<td>Gan úsáid.</td>
-<td>Úsáidtear le haghaidh nótaí (m.sh., &quot;%{vol}&quot; faoin gcéad de réir toirte).</td>
-<td>(Níl aon athruithe ag teastáil)</td>
-<td>Má shainmhínítear an trácht i gcaighdeán UCUM, athrófar é.
-Mura sainmhínítear an téarma, { } go ( ) .</td>
+<td>Ní úsáidtear.</td>
+<td>Úsáidte le haghaidh nótaí (m.sh., &quot;%{vol}&quot; le haghaidh faoin gcéad de réir toirte).</td>
+<td>(Níl gá le hathruithe)</td>
+<td>Má shainmhínítear an trácht i gcaighdeán UCUM, déanfar é a thiontú.
+Mura sainmhínítear an téarma, tiontófar { } go ( ) .</td>
 </tr></table>
 <p>&nbsp;
 <hr>
 <h2><a class="selfLink" id="unitsComparison" href="#unitsComparison" rel="help"
->Comparáid idir Aonaid UDUNITS agus UCUM</a></h2>
-I gcás fhormhór na n-aonad, tá comhfhreagras duine le duine idir aonaid in UDUNITS agus UCUM.
-Ach tá cúpla deacracht agus cásanna speisialta ann:
+>Comparáid idir UDUNITS agus Aonaid UCUM</a></h2>
+I gcás fhormhór na n-aonad, bíonn comhfhreagras duine le duine idir aonaid in UDUNITS agus UCUM.
+Ach tá roinnt deacrachtaí agus cásanna speisialta ann:
 <br>&nbsp;
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Aonaid</th>
 <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a></th>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a></th>
-<th style="width:23%;">UDUNITS → Tiontaire UCUM</th>
-<th style="width:23%;">Tiontaire UDUNITS</th>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a></th>
+<th style="width:23%;">UDUNITS → UCUM Tiontaire</th>
+<th style="width:23%;">UCUM → UDUNITS Tiontaire</th>
 </tr>
 <tr>
 <td>comhaireamh</td>
-<td>Is aonad bunúsach é &quot;count&quot; .</td>
-<td>Gan a choibhéis bheacht, ós rud é gur aonad gan toise é.</td>
-<td>athraítear &quot;count&quot; go &quot;{count}&quot; (anótáil gan toise).</td>
-<td>athraítear &quot;{count}&quot; go &quot;count&quot; .</td>
+<td>Is aonad bonn é &quot;count&quot; .</td>
+<td>Níl aon choibhéis chruinn ann, toisc gur neamhaonad gan toise é.</td>
+<td>Tiontaítear &quot;count&quot; go &quot;{count}&quot; (nótáil gan toise).</td>
+<td>Tiontaítear &quot;{count}&quot; go &quot;count&quot; .</td>
 </tr>
 <tr>
 <td>cineálacha éagsúla céimeanna</td>
-<td>Déileálann UDUNITS le degF, degC, degK, degree_north, degree_east, degree_west, degree_true, agus a n-ailiasanna mar aonaid ar leithligh.
-Roinnt caighdeán (m.sh.
+<td>Déileálann UDUNITS le degF, degC, degK, degree_north, degree_east, degree_west, degree_true, agus a gcuid ailiasanna mar aonaid ar leith.
+Roinnt caighdeán (m.sh.,
 <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> agus
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF.
-<img 
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> agus
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
     src="../images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>), bain úsáid as degree_east agus degree_north chun na hathróga domhanfhad agus domhanleithead i gcomhad sonraí a aithint.</td>
-<td>Aithníonn UCUM aonaid céime teochta ar leithligh (m.sh., [degF], Cel, K), ach ní aonaid céime treo ar leithligh.
-Déanann &quot;deg&quot; ionadaíocht orthu go léir.</td>
-<td>Chun idirdhealú a dhéanamh idir na haonaid chéime treo éagsúla, cuireann an tiontaire trácht ar aonaid chéime treorach (m.sh., déantar &quot;deg{north}&quot; &quot;degree_north&quot; ).</td>
-<td>Má ghabhann tú trácht ({east}, {north}, {west}, nó {true} ), athróidh an tiontaire go haonad treorach (m.sh., déantar &quot;degree_north&quot; &quot;deg{north}&quot; &quot;); murach sin, níl aon bhealach ann don tiontaire aonaid céime treorach a ghiniúint, mar sin athraítear&quot;deg&quot;go&quot;degree&quot;.</td>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>), bain úsáid as céim_east agus céim_north chun na hathróga domhanfhad agus domhanleithead i gcomhad sonraí a shainaithint.</td>
+<td>Aithníonn UCUM aonaid céime teochta ar leithligh (m.sh., [degF], Cel, K), ach ní aithníonn sé aonaid céime treo ar leithligh.
+Léirítear iad go léir le &quot;deg&quot; .</td>
+<td>Chun idirdhealú a dhéanamh idir na haonaid céime treo éagsúla, cuireann an tiontaire trácht ar na haonaid treochéime (m.sh., &quot;degree_north&quot; a bheith ina &quot;deg{north}&quot; ).</td>
+<td>Má chuireann tú nóta tráchta i gceangal leis ({east}, {north}, {west}, nó {true} ), déanfar an tiontaire a thiontú ina aonad treorach (m.sh., &quot;deg{north}&quot; degree_north&quot;a thiocfaidh&quot;degree_north&quot;); ar shlí eile, níl aon bhealach ann don tiontaire aonaid céime treo a ghiniúint, mar sin déantar&quot;deg&quot;a thiontú go&quot;degree&quot;.</td>
 </tr>
 <tr>
 <td>amanna ar leith</td>
-<td>Tá córas ag UDUNITS chun amanna ar leith a shonrú mar
+<td>Tá córas ag UDUNITS chun amanna sonracha a shonrú mar
 <br>&quot; <i>aonaid</i> ó <i>ISO8601Time</i> &quot;,
 <br>m.sh.,&quot;seconds since 1970-01-01T00:00:00Z&quot;.
-<td>Is cosúil nach bhfuil córas ag UCUM chun amanna ar leith a shonrú.
+<td>Is cosúil nach bhfuil córas ag UCUM chun amanna sonracha a shonrú.
 <td>Athraíonn an tiontaire, m.sh.
 <br>&quot;seconds since 1970-01-01T00:00:00Z&quot;
-<br>go&quot;s{since 1970-01-01T00:00:00Z}&quot;.
-<td>Athraíonn an tiontaire m.sh.
-<br>&quot;s{since 1970-01-01T00:00:00Z}&quot;go
+<br>chuig&quot;s{since 1970-01-01T00:00:00Z}&quot;.
+<td>Athraíonn an tiontaire m.sh.,
+<br>&quot;s{since 1970-01-01T00:00:00Z}&quot;chuig
 <br>&quot;seconds since 1970-01-01T00:00:00Z&quot;.</td>
 </tr>
 <tr>
 <td>&C;</td>
-<td>&quot;&amp;C;&quot;ciallaíonn Coulomb, ach is minic a úsáidtear trí dhearmad é chun <kbd>degree_C</kbd> a chiallaíonn.
+<td>&quot;&amp;C;&quot;Ciallaíonn Coulomb, ach is minic a úsáidtear de dhearmad é <kbd>degree_C</kbd> .
 <td>&quot;&amp;C;&quot;ciallaíonn Coulomb.
-Aithnítear Céimeanna Celsius trí <kbd>Cel</kbd> .</td>
-<td>&quot;&amp;C;&quot;tiontaítear go <kbd>Cel</kbd> é, ar an teoiric go bhfuil &C; úsáideadh go mícheart.</td>
+Aithnítear céimeanna Celsius trí <kbd>Cel</kbd> .</td>
+<td>&quot;&amp;C;&quot;a thiontú go <kbd>Cel</kbd>, ar an teoiric go &C; úsáideadh go mícheart.</td>
 <td>&quot;&amp;C;&quot;fágtha mar&quot;&amp;C;&quot;.</td>
 </tr>
 <tr>
 <td>&g;</td>
-<td>In UDUNITS -1, &g; ciallaíonn saor-thitim (cé gur minic a úsáidtear&quot;gram&quot;trí dhearmad).
+<td>In UDUNITS -1, &g; ciallaíonn sé saor-titim (cé go n-úsáidtear go minic de dhearmad mar&quot;gram&quot;).
 <br>In UDUNITS -2, &g; ciallaíonn gram.</td>
 <td>&g; ciallaíonn gram.
-[ &g; ] ciallaíonn saor-titim.</td>
-<td>Ní dhéantar aon rud.
-&g; glactar leis go gciallóidh UDUNITS gram.</td>
+[ &g; ] ciallaíonn titim saor.</td>
+<td>Ní dhéantar tada.
+&g; in UDUNITS glactar leis gurb ionann gram.</td>
 <td>&g; a thiontú go&quot;gram&quot;.</td>
 </tr>
 <tr>
@@ -1488,22 +1487,22 @@ Aithnítear Céimeanna Celsius trí <kbd>Cel</kbd> .</td>
 <td>&NTU; (Nephelometric Turbidity Unit)</td>
 <td>&NTU; nach bhfuil sainithe.</td>
 <td>&NTU; nach bhfuil sainithe.</td>
-<td>&NTU; tiontaítear go { &NTU; } ag leanúint modh UCUM chun ainm na n-aonad gan toise (treallach) a thabhairt faoi deara.</td>
+<td>&NTU; a thiontú go { &NTU; } ag leanúint mhodh UCUM chun ainm na n-aonad gan toise (treallach) a thabhairt faoi deara.</td>
 <td>{ &NTU; } a thiontú go &NTU; .</td>
 </tr>
 <tr>
 <td>&PSU; (Practical Salinity Units)</td>
 <td>&PSU; nach bhfuil sainithe.</td>
 <td>&PSU; nach bhfuil sainithe.</td>
-<td>&PSU; agus &PSU; déantar iad a thiontú go { &PSU; } ag leanúint modh UCUM chun ainm na n-aonad gan toise (treallach) a thabhairt faoi deara.</td>
-<td>{ &PSU; } a thiontú go &PSU;, toisc nach cur síos úsáideach ná ceart é an 1e-3 a mhol CF.</td>
+<td>&PSU; agus &PSU; a thiontú go { &PSU; } ag leanúint mhodh UCUM chun ainm na n-aonad gan toise (treallach) a thabhairt faoi deara.</td>
+<td>{ &PSU; } a thiontú go &PSU;, toisc nach bhfuil an CF-molta 1e-3 cur síos úsáideach nó ceart.</td>
 </tr>
 <tr>
 <td>Tuairimí agus Téarmaí Neamhchaighdeánacha</td>
-<td>Ní cheadaíonn UDUNITS tráchtanna nó téarmaí neamhchaighdeánacha, dá bhrí sin tá go leor teaghráin aonad neamhbhailí.</td>
+<td>Ní cheadaíonn UDUNITS tráchtanna nó téarmaí neamhchaighdeánacha, mar sin tá go leor aonad teaghráin neamhbhailí.</td>
 <td>Ní cheadaíonn UDUNITS téarmaí neamhchaighdeánacha, ach ceadaíonn sé tráchtanna in { } .</td>
-<td>Tiontaítear téarmaí neamhchaighdeánacha go tráchtanna.</td>
-<td>Tá tuairimí neamh-chomhcheangailte ionas nach gcaillfear aon fhaisnéis; áfach, d’fhéadfadh gur sreang neamhbhailí UDUNITS an toradh.
+<td>Tiontaítear téarmaí neamhchaighdeánacha go tuairimí.</td>
+<td>Ní thugtar trácht ar thuairimí ionas nach gcailltear aon fhaisnéis; d’fhéadfadh gur teaghrán UDUNITS neamhbhailí an toradh, áfach.
 </tr></table>
 ]]></convertUnitsComparison>
 <convertUnitsFilter><![CDATA[
@@ -1704,6 +1703,9 @@ Ceadaigh&quot;
 Má tá iarratais ERDDAP á ndéanamh agat ó chlár ríomhaire (seachas brabhsálaí), tá sé deacair oibriú le fianáin.
 Tá brón orm.
 ]]></cookiesHelp>
+<copyImageToClipboard>Cóipeáil an íomhá chuig an ngearrthaisce</copyImageToClipboard>
+<copyTextToClipboard>Cóipeáil téacs chuig an ngearrthaisce</copyTextToClipboard>
+<copyToClipboardNotAvailable>Níl cóip chuig an ngearrthaisce ar fáil</copyToClipboardNotAvailable>
 <daf>Foirm Rochtana Sonraí</daf>
 <dafGridBypassTooltip><![CDATA[
 Ní dhéanann an leathanach gréasáin seo ach cruthú URLanna griddap.
@@ -5085,33 +5087,33 @@ Is féidir leis seo tagairt a dhéanamh do &amp; erddapUrl ;, &amp; ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>Is freastalaí sonraí é ERDDAP a thugann bealach simplí, comhsheasmhach duit fo-thacair tacar sonraí eolaíochta a íoslódáil i bhformáidí comhaid choitianta agus graif agus léarscáileanna a dhéanamh.
+<html>Is freastalaí sonraí é ERDDAP a thugann bealach simplí comhsheasmhach duit chun fo-thacair de thacair sonraí eolaíocha a íoslódáil i bhformáidí coitianta comhaid agus graif agus léarscáileanna a dhéanamh.
 <h2>Clár ábhair</h2>
 <ul>
-<li><a rel="bookmark" href="#problems">Na Fadhbanna a dhéanann ERDDAP iarracht iad a réiteach</a>
+<li><a rel="bookmark" href="#problems">Na Fadhbanna a Déanann ERDDAP Iarracht a Réiteach</a>
 <li><a rel="bookmark" href="#solutions">ERDDAP</a>
 <ul>
-<li><a rel="bookmark" href="#video">Le haghaidh réamhrá tapa ar ERDDAP, féach ar an gcéad leath de seo<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > físeán</a> .
+<li><a rel="bookmark" href="#video">Chun réamhrá tapa a fháil ar ERDDAP, féach ar an gcéad leath de seo<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > físeán</a> .
 (5 nóiméad)
-<li><a rel="bookmark" href="#localAndRemote">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó shonraí iargúlta (a bhfuil rochtain orthu tríd an ngréasán).</a>
-<li><a rel="bookmark" href="#scientificData">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíochta, ní amháin sonraí aigéaneolaíochta.</a>
-<li><a rel="bookmark" href="#search">Cuireann ERDDAP bealaí éagsúla ar fáil chun tacar sonraí suimiúla a chuardach.</a>
+<li><a rel="bookmark" href="#localAndRemote">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó fhoinsí sonraí cianda (a bhfuil rochtain orthu tríd an ngréasán).</a>
+<li><a rel="bookmark" href="#scientificData">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíocha, ní hamháin sonraí aigéaneolaíochta.</a>
+<li><a rel="bookmark" href="#search">Cuireann ERDDAP roinnt bealaí ar fáil chun tacair sonraí suimiúla a chuardach.</a>
 <li><a rel="bookmark" href="#standardizedRequests">Ligeann ERDDAP duit sonraí a iarraidh ar bhealach caighdeánaithe.</a>
-<li><a rel="bookmark" href="#userUnits">Is féidir iarratais ar shonraí gridded a dhéanamh in aonaid úsáideora.</a>
-<li><a rel="bookmark" href="#fileFormats">Seolann ERDDAP torthaí i bhformáidí comhaid sonraí coitianta.</a>
-<li><a rel="bookmark" href="#LLAT">ERDDAP na hainmneacha agus na haonaid athraitheacha a chaighdeánú maidir le domhanfhad, domhanleithead, airde agus am sna torthaí.</a>
+<li><a rel="bookmark" href="#userUnits">Is féidir iarratais ar shonraí greille a dhéanamh in aonaid úsáideoirí.</a>
+<li><a rel="bookmark" href="#fileFormats">Seolann ERDDAP torthaí i bhformáidí coiteanna comhaid sonraí.</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP na hainmneacha agus na haonaid athróg a chaighdeánú maidir le domhanfhad, domhanleithead, airde agus am sna torthaí.</a>
 <li><a rel="bookmark" href="#metadata">Is féidir le ERDDAP a chur leis nó a mhodhnú.</a>
 <li><a rel="bookmark" href="#images">Ligeann ERDDAP duit comhaid íomhá .png agus .pdf a iarraidh le graif agus léarscáileanna.</a>
-<li><a rel="bookmark" href="#compression">Comhaid Chomhbhrúite a Iarraidh</a>
+<li><a rel="bookmark" href="#compression">Comhaid Chomhbhrúite á Iarraidh</a>
 <li><a rel="bookmark" href="#interoperable">Déanann ERDDAP cineálacha éagsúla freastalaithe sonraí (OPeNDAP, OBIS, SOS, WMS, ...) idir-inoibritheach.</a>
-<li><a rel="bookmark" href="#dataStructures">Ní úsáideann ERDDAP ach dhá struchtúr sonraí bunúsacha chun sonraí a choinneáil.</a>
-<li><a rel="bookmark" href="#subscriptions">Cuireann ERDDAP seirbhísí síntiúis ríomhphoist / URL agus RSS ar fáil.</a>
-<li><a rel="bookmark" href="#diverseSources">Is feidhmchlár gréasáin agus seirbhís gréasáin é ERDDAP .</a>
-<li><a rel="bookmark" href="#rest">Tá naisc REST - agus ROA -stíl ag ERDDAP chun a sheirbhísí a chur ar fáil do chláir ríomhaire.</a>
+<li><a rel="bookmark" href="#dataStructures">Ní úsáideann ERDDAP ach dhá struchtúr sonraí bhunúsacha chun sonraí a choinneáil.</a>
+<li><a rel="bookmark" href="#subscriptions">Cuireann ERDDAP seirbhísí síntiúis ríomhphoist/URL agus RSS ar fáil.</a>
+<li><a rel="bookmark" href="#diverseSources">Feidhmchlár gréasáin agus seirbhís gréasáin is ea ERDDAP .</a>
+<li><a rel="bookmark" href="#rest">Tá naisc ar stíl REST - agus ROA ag ERDDAP chun a chuid seirbhísí a chur ar fáil do chláir ríomhaire.</a>
 <li><a rel="bookmark" href="#security">Slándáil</a>
-<li><a rel="bookmark" href="#chunks">Próiseálann ERDDAP sonraí i smutáin.</a>
+<li><a rel="bookmark" href="#chunks">Próiseálann ERDDAP sonraí ina smután.</a>
 <li><a rel="bookmark" href="#modular">Tá struchtúr modúlach ag ERDDAP .</a>
-<li><a rel="bookmark" href="#pushPull">Líonraí Scaipeadh Sonraí / Dáileacháin Sonraí:
+<li><a rel="bookmark" href="#pushPull">Líonraí Scaipthe Sonraí / Dáilte Sonraí:
 Teicneolaíocht Push agus Pull</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP ?
@@ -5119,94 +5121,95 @@ OPeNDAP ?
 DODS ?
 ERDDAP ?
 Cad é an difríocht?</a>
-<li><a rel="bookmark" href="#sweetSpot">An réiteach é ERDDAP ar fhadhbanna dáileadh sonraí / rochtana sonraí gach duine?</a>
-<li><a rel="bookmark" href="#sustainable">Cé chomh inbhuanaithe agus atá tionscadal ERDDAP ?</a>
-<li><a rel="bookmark" href="#citeDataset">Conas tacar sonraí a lua i bpáipéar</a>
+<li><a rel="bookmark" href="#sweetSpot">An réiteach é ERDDAP ar fhadhbanna dáilte sonraí / rochtana sonraí gach duine?</a>
+<li><a rel="bookmark" href="#sustainable">Cé chomh inbhuanaithe atá an tionscadal ERDDAP ?</a>
+<li><a rel="bookmark" href="#citeDataset">Conas Tacar Sonraí a Luadh i bPáipéar</a>
 <li><a rel="bookmark" href="#cite">Conas ERDDAP a lua i bPáipéar</a>
 <li><a rel="bookmark" href="#acronym">Cad dó a seasann an t-acrainm &quot;ERDDAP&quot;?</a>
-<li><a rel="bookmark" href="#dataDistributionSystems">Treoirlínte do Chórais Dáileacháin Sonraí</a>
-<li><a rel="bookmark" href="#setup">Féadfaidh tú do fhreastalaí ERDDAP féin a chur ar bun.</a>
+<li><a rel="bookmark" href="#dataDistributionSystems">Treoirlínte do Chórais Dáilte Sonraí</a>
+<li><a rel="bookmark" href="#setup">Is féidir leat do fhreastalaí ERDDAP féin a bhunú.</a>
 <li><a rel="bookmark" href="#contact">Glaoigh orainn</a>
 </ul>
-<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Na Fadhbanna a dhéanann ERDDAP iarracht iad a réiteach</a></h2>
-Gan ERDDAP, nuair a fhéachann duine (nó clár ríomhaire) ar an Idirlíon le haghaidh cineál sonrach sonraí eolaíochta (mar shampla, sonraí teochta dromchla farraige satailíte), bíonn fadhbanna ann ...
+<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Na Fadhbanna a Déanann ERDDAP Iarracht a Réiteach</a></h2>
+Gan ERDDAP, nuair a fhéachann duine (nó clár ríomhaire) ar an Idirlíon le haghaidh cineál sonrach sonraí eolaíocha (mar shampla, sonraí teochta dromchla farraige satailíte), tá fadhbanna ann ...
 <ul>
-<li>Tá sé deacair teacht ar thacair sonraí suimiúla toisc go bhfuil siad ag go leor suíomhanna Gréasáin éagsúla.
+<li>Is deacair tacair sonraí suimiúla a aimsiú mar go bhfuil siad ar go leor suíomhanna gréasáin éagsúla.
 <br>&nbsp;
 <li>Teastaíonn prótacal difriúil ó gach suíomh chun na sonraí a iarraidh:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Seolann gach suíomh na sonraí ar ais i bhformáid dhifriúil (mar shampla, XML, SOAP+XML, sruth sonraí dénártha OPeNDAP, téacs ASCII, HDF 4, HDF 5, NetCDF, ...) agus ní hé an fhormáid comhaid choitianta atá agat iarraidh.
+<li>Seolann gach suíomh na sonraí ar ais i bhformáid dhifriúil (mar shampla, XML, SOAP+XML, sruth sonraí dénártha OPeNDAP, téacs ASCII, HDF 4, HDF 5, NetCDF, ...) agus ní hí an fhormáid chomhaid choiteann atá agat.
+ag iarraidh.
 <br>&nbsp;
-<li>Tá sé deacair comparáid a dhéanamh idir sonraí ó shuímh éagsúla toisc go gcuirtear na dátaí + na hamanna in iúl i bhformáidí éagsúla mar shampla, &quot;2 Eanáir, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;,&quot;1985-01-02&quot;, nó laethanta ó 1 Eanáir, 1980, nó ...).
+<li>Is deacair sonraí ó shuímh éagsúla a chur i gcomparáid toisc go gcuirtear na dátaí+amanna in iúl i bhformáidí éagsúla mar shampla, &quot;2 Eanáir, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;,&quot;1985-01-02&quot;, nó laethanta ó 1 Eanáir, 1980, nó ...).
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAP</a></h2>
 <ul>
-<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Le haghaidh réamhrá tapa ar ERDDAP,</a>
+<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Chun réamhrá tapa a fháil ar ERDDAP,</a>
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">féach ar an gcéad leath de seo<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > físeán <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> .</strong> (5 nóiméad)
-<br>Istigh ann, déanann eolaí sonraí réamhaisnéise sruthanna aigéin a íoslódáil ó ERDDAP chun doirteadh tocsaineach san aigéan a shamhaltú ag baint úsáide as
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> .</strong> (5 nóiméad)
+<br>Inti, íoslódálann eolaí sonraí réamhaisnéise faoi sreafaí aigéin ó ERDDAP chun doirteadh tocsaineach san aigéan a shamhaltú ag baint úsáide as
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">bogearraí GNOME NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> (i gceann 5 nóiméad!).
-Taispeánann an físeán seo:
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> (i 5 nóiméad!).
+Léiríonn an físeán seo:
 <ul>
-<li>Le ERDDAP, is féidir leat tacar sonraí a
-<a href="#search">chuardach</a> go héasca,
+<li>Le ERDDAP, is féidir leat
+<a href="#search">tacair shonraí a chuardach</a> go héasca,
 <a href="#images">sonraí a shamhlú</a>, agus
 <a href="#fileFormats">sonraí a íoslódáil</a> .
-<li>ERDDAP sonraí a fháil ó
-<a href="#localAndRemote">fhoinsí sonraí áitiúla agus iargúlta</a> trí
+<li>Is féidir le ERDDAP sonraí a fháil ó
+<a href="#localAndRemote">fhoinsí sonraí áitiúla agus cianda</a> trí
 <a href="#standardizedRequests">iarratais chaighdeánaithe</a> .
 <li>Cuireann ERDDAP
 <a href="#rest">seirbhísí RESTful ar fáil</a> .
-Sonraíonn URL iarraidh iomlán.
+Sonraíonn URL iarratas iomlán.
 <li>Is féidir le ERDDAP
 <a href="#images">léarscáileanna agus graif</a> a dhéanamh.
 <li>Cuireann ERDDAP
-<a href="#fileFormats">sonraí ar</a> fáil (ní léarscáileanna agus graif amháin).
-<li>ERDDAP sonraí a chur ar ais i go leor
-<a href="#fileFormats">formáidí comhaid</a> chun sonraí a chumasú i go leor clár eile.
+<a href="#fileFormats">sonraí ar</a> fáil (ní hamháin léarscáileanna agus graif).
+<li>Is féidir le ERDDAP sonraí a chur ar ais i go leor
+<a href="#fileFormats">formáidí comhaid</a> le gur féidir sonraí a chur isteach i go leor clár eile.
 <li>Oibríonn NOAA le chéile:
-Úsáideann an anailís dhá chlár bogearraí saor in aisce ó NOAA, ERDDAP agus GNOME, agus sonraí a bhfreastalaíonn NODC / NCDDC NOAA orthu (arna n-éascú ag tionscadal UAF NOAA ).
+Úsáideann an anailís dhá chlár bogearraí saor in aisce ó NOAA, ERDDAP agus GNOME, agus sonraí a fhreastalaíonn NODC/NCDDC NOAA (arna éascú ag tionscadal UAF NOAA ).
 <li>ERDDAP
-<a href="#scientificData">sonraí eolaíochta</a> ar fáil níos éasca chun cabhrú le heolaithe (agus daoine eile) a gcuid oibre a dhéanamh ar bhealach níos éifeachtaí.
+<a href="#scientificData">sonraí eolaíocha</a> ar fáil níos éasca chun cabhrú le heolaithe (agus le daoine eile) a gcuid oibre a dhéanamh ar bhealach níos éifeachtaí.
 <li>Níl sé deacair ERDDAP a úsáid.
-(Sea, tá Rich Signell an-chliste, ach is féidir le duine ar bith ERDDAP a úsáid.)
+(Tá, tá Rich Signell i ndáiríre cliste, ach is féidir le duine ar bith ERDDAP a úsáid .)
 </ul>
 Buíochas le Rich Signell.
-(Earráid bheag amháin san fhíseán:
-agus tú ag cuardach tacar sonraí, ná húsáid <kbd>AND</kbd> idir téarmaí cuardaigh.
+(Earráid bheag amháin san fhís:
+agus tú ag cuardach tacair shonraí, ná húsáid <kbd>AND</kbd> idir téarmaí cuardaigh.
 Tá sé intuigthe.)
 <br>&nbsp;
-<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó shonraí iargúlta (a bhfuil rochtain orthu tríd an ngréasán).</a></strong>
-<br>Féach
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">liosta na gcineálacha foinsí sonraí ar</a> féidir le ERDDAP rochtain a fháil orthu.
+<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó fhoinsí sonraí cianda (a bhfuil rochtain orthu tríd an ngréasán).</a></strong>
+<br>Féach ar an
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">liosta de na cineálacha foinsí sonraí ar</a> féidir le ERDDAP rochtain a fháil orthu.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíochta, ní amháin sonraí aigéaneolaíochta.</a></strong>
+<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíocha, ní hamháin sonraí aigéaneolaíochta.</a></strong>
 <br>Is freastalaí sonraí é ERDDAP a scríobhadh ag
-<a title="Riarachán Náisiúnta Aigéanach agus Atmaisféarach" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
-<a title="An tSeirbhís Náisiúnta Iascaigh Mara" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
+<a title="Riarachán Náisiúnta Aigéanach agus Atmaisféir" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
+<a title="An tSeirbhís Náisiúnta Iascaigh Mhara" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Ionad Eolaíochta Iascaigh an Iardheiscirt" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
-<a title="An Rannán Taighde Comhshaoil" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-Freastalaíonn freastalaí ERDDAP ag ERD ar shonraí aigéaneolaíochta, ach ERDDAP (an clár) rochtain a fháil ar aon sonraí gridded nó tábla.
+<a title="An Rannóg Taighde Comhshaoil" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
+Freastalaíonn an freastalaí ERDDAP ag ERD ar shonraí aigéaneolaíochta, ach ERDDAP (an clár) rochtain a fháil ar aon sonraí greille nó táblaí agus iad a sheirbheáil.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">Cuireann ERDDAP bealaí éagsúla ar fáil chun tacar sonraí suimiúla a chuardach.</a></strong>
+<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">Cuireann ERDDAP roinnt bealaí ar fáil chun tacair sonraí suimiúla a chuardach.</a></strong>
 <br>Mar shampla,
 <a href="&erddapUrl;/search/index.html">cuardach téacs iomlán</a>,
 <a href="&erddapUrl;/categorize/index.html">cuardach de réir catagóire</a> (ar a dtugtar cuardach gné freisin), agus
 <a href="&erddapUrl;/search/advanced.html">Cuardach Casta</a> .
-Comhcheanglaíonn Advanced Search na teicnící cuardaigh go léir agus cuireann sé cuardaigh le haghaidh tacar sonraí a bhfuil sonraí acu laistigh de dhomhanfhad, domhanleithead agus raonta ama, ionas gur féidir leat tacar sonraí a chuardach bunaithe ar go leor critéar éagsúil ag an am céanna.
+Comhcheanglaíonn Cuardach Casta na teicníochtaí cuardaigh go léir agus cuireann sé cuardaigh le tacair shonraí a bhfuil sonraí laistigh de dhomhanfhad, domhanleithead, agus raonta ama acu, ionas gur féidir leat tacair shonraí a chuardach bunaithe ar go leor critéir éagsúla ag an am céanna.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">Ligeann ERDDAP duit sonraí a iarraidh ar bhealach caighdeánaithe,</a></strong>
 <br>beag beann ar phrótacal iarratais na foinse sonraí.
 <ul>
-<li>ERDDAP sonraí gridded ar fáil trí ERDDAP (cur i bhfeidhm
-<a rel="help" href="&erddapUrl;/griddap/index.html">ERDDAP ar phrótacal hyperslab OPeNDAP</a>) agus
+<li>ERDDAP sonraí greille ar fáil trí griddap (feidhmiú ERDDAP ar
+<a rel="help" href="&erddapUrl;/griddap/index.html">phrótacal hipearleacan OPeNDAP</a>) agus
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP sonraí táblacha ar fáil trí tabledap (cur i bhfeidhm ERDDAP ar
-<a rel="help" href="&erddapUrl;/tabledap/index.html">phrótacal srianta OPeNDAP</a>).
+<li>ERDDAP sonraí tábla ar fáil trí bhíthin tabledap (cur i bhfeidhm
+<a rel="help" href="&erddapUrl;/tabledap/index.html">prótacal sriantachta OPeNDAP</a> ag ERDDAP ).
 <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -5214,144 +5217,139 @@ Comhcheanglaíonn Advanced Search na teicnící cuardaigh go léir agus cuireann
     title="This link to an external website does not constitute an endorsement."></a>.
 -->
 </ul>
-Soláthraíonn ERDDAP Foirmeacha Rochtana Sonraí (leathanaigh ghréasáin) a chuidíonn le daoine na hiarrataí OPeNDAP a chruthú.
-<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+Soláthraíonn ERDDAP Foirmeacha Rochtana Sonraí (leathanaigh ghréasáin) freisin a chuidíonn le daoine iarratais OPeNDAP a chruthú.
+<a rel="bookmark" href="https://www.opendap.org">OPeNDAP &#39;s <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>
 <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Prótacal Rochtana Sonraí (DAP ) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> Tá sé ar cheann de
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> ar cheann de
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
-    >Mholtaí Teicniúla Rochtana Sonraí NOAA <img 
+    >Mholtaí Teicniúla um Rochtain Sonraí NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> agus
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> agus
 <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
-    >caighdeán de Chóras Sonraí agus Faisnéise Eolaíochta Cruinne (ESDIS) NASA <img 
+    >caighdeán Córas Sonraí agus Faisnéise Domhaneolaíochta NASA (ESDIS).
+<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> .
-(Tá OPeNDAP iontach!) ERDDAP d’iarratas ó fhormáid OPeNDAP, WMS, nó SOS go formáid iarratais na foinse sonraí agus athraíonn sé an freagra go ceann de struchtúir sonraí inmheánacha ERDDAP .
-Ansin ERDDAP na sonraí a athfhoirmliú i bhformáid comhaid choitianta de do rogha féin (mar shampla, mar thábla .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) agus seolann sé an comhad chugat.
-Féach liosta na
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">gcineálacha comhaid griddap</a> agus liosta na
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">gcineálacha comhaid tabledap</a> .
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> .
+(Tá OPeNDAP ar fheabhas!) ERDDAP d’iarratas ó fhormáid OPeNDAP, WMS, nó SOS go formáid iarratais na foinse sonraí agus tiontaíonn sé an freagra go ceann de struchtúir sonraí inmheánacha ERDDAP .
+Ansin ERDDAP na sonraí a athfhormáidiú i do rogha formáid comhaid (mar shampla, mar thábla .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) agus cuireann sé an comhad chugat.
+Féach ar an liosta de na
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">cineálacha comhaid griddap</a> agus an liosta de na
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">cineálacha comhaid tabledap</a> .
 Prótacail eile chun na sonraí a iarraidh (mar shampla,
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>) a chur leis sa todhchaí.
-Tá ERDDAP struchtúrtha do na breiseanna seo agus ní cosúil go bhfuil aon bhacainní ann.
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>) a chur leis amach anseo.
+Tá ERDDAP struchtúrtha do na breiseanna seo agus ní cosúil go bhfuil aon bhac ann.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Is féidir iarratais ar shonraí gridded a dhéanamh in aonaid úsáideora.</a></strong>
-<br>Cé gur féidir iarratais ar shonraí gridded in ERDDAP a dhéanamh le hinnéacsanna eagar (de réir shonraíocht OPeNDAP ), is féidir iarratais a bheith in aonaid úsáideora (mar shampla, céimeanna soir), ag baint úsáide as
+<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Is féidir iarratais ar shonraí greille a dhéanamh in aonaid úsáideoirí.</a></strong>
+<br>Cé gur féidir iarratais ar shonraí greille in ERDDAP a dhéanamh le hinnéacsanna eagair (de réir na sonraíochta OPeNDAP ), is féidir iarratais a dhéanamh freisin in aonaid úsáideoirí (mar shampla, céimeanna soir), ag baint úsáide as
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">nodaireacht lúibíní</a>, ós rud é go gceapann úsáideoirí sna haonaid sin, ní innéacsanna.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">Seolann ERDDAP torthaí i bhformáidí comhaid sonraí coitianta.</a></strong>
-<br>Is féidir na torthaí a chur ar ais in aon cheann de roinnt formáidí comhaid sonraí coitianta &requestFormatExamplesHtml;, in ionad díreach an bhunfhormáid nó díreach formáid aistrithe OPeNDAP (nach bhfuil aon léiriú caighdeánach comhaid ann).
+<li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">Seolann ERDDAP torthaí i bhformáidí coiteanna comhaid sonraí.</a></strong>
+<br>Is féidir na torthaí a chur ar ais in aon cheann de roinnt formáidí coitianta comhaid sonraí &requestFormatExamplesHtml;, in ionad an fhormáid bhunaidh nó díreach an fhormáid aistrithe OPeNDAP (nach bhfuil aon léiriú caighdeánach comhaid ann).
 Cruthaítear na comhaid seo ar an eitilt.
-Ó tharla nach bhfuil mórán struchtúr inmheánach sonraí ann, is furasta tiománaithe breise de chineál comhaid a chur leis.
-Féach liosta iomlán na
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">gcineálacha comhaid eangaí</a> agus na gcineálacha
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">comhaid tábla</a> .
+Ós rud é nach bhfuil mórán struchtúir sonraí inmheánacha ann, tá sé éasca tiománaithe breise de chineál comhaid a chur leis.
+Féach ar an liosta iomlán de
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">chineálacha comhad greille agus cineálacha</a>
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tábla comhaid</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP na hainmneacha agus na haonaid athraitheacha a chaighdeánú maidir le domhanfhad, domhanleithead, airde, doimhneacht agus am sna torthaí.</a></strong>
-<br>Chun comparáidí sonraí ó thacair sonraí éagsúla a éascú, úsáideann na hiarrataí agus na torthaí in ERDDAP chaighdeánaithe spáis / ais ama:
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP na hainmneacha agus na haonaid athróg a chaighdeánú maidir le domhanfhad, domhanleithead, airde, doimhneacht agus am sna torthaí.</a></strong>
+<br>Chun comparáidí sonraí ó thacair shonraí éagsúla a éascú, úsáideann na hiarrataí agus na torthaí in ERDDAP chaighdeánaithe aise spáis/ama:
 <ul>
-<li>tá domhanfhad i gcónaí i degrees_east .
-<li>tá domhanleithead i gcónaí i degrees_north .
-<li>tá an airde i méadair i gcónaí le dearfach = suas.
-<li>bíonn an doimhneacht i méadair i gcónaí le dearfach = síos.
-<li>bíonn an t-am, nuair a bhíonn sé formáidithe mar uimhir, i gcónaí i &quot;seconds since 1970-01-01T00:00:00Z&quot; (ar a dtugtar
+<li>Tá domhanfhad i degrees_east i gcónaí .
+<li>Tá domhanleithead i céimeanna_ ó thuaidh i degrees_north .
+<li>airde i gcónaí i méadair le dearfach = suas.
+<li>tá doimhneacht i méadair i gcónaí le dearfach = síos.
+<li>bíonn an t-am, agus é formáidithe mar uimhir, i &quot;seconds since 1970-01-01T00:00:00Z&quot; i gcónaí (ar a dtugtar
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">am Unix <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> nó an dara tréimhse, is é sin<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> nó soicind aga, atá<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> -chomhoiriúnach) agus, nuair a dhéantar í a fhormáidiú mar shreang, déantar í a fhormáidiú de réir fhormáid
-<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">&quot;extended&quot; ISO 8601:
-2004 <img 
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> -compatible) agus, nuair atá sé formáidithe mar theaghrán, formáidítear é de réir na
+<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">formáide &quot;extended&quot; ISO 8601:2004 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> caighdeánach <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> mar shampla, <span class="N">&quot;1985-01-02T00:
-00:
-00Z&quot;).</span> (Is féidir leat uaireanta uimhriúla a thiontú go / ó amanna teaghrán ISO le
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">tiontaire ama</a> ERDDAP .) Chomh maith leis sin, chun mearbhall ama maidir le ham sábhála agus solas an lae a sheachaint, athraítear luachanna ama go crios ama Zulu (UTC, GMT).
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> caighdeánach <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> mar shampla, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Is féidir leat amanna uimhriúla a thiontú go/ó amanna teaghrán ISO le
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">tiontaire ama</a> ERDDAP .) Chomh maith leis sin, chun mearbhall ama a shábháil ó chrios ama agus solas an lae a sheachaint, déantar luachanna ama a thiontú go crios ama Zulu (UTC, GMT) i gcónaí.
 </ul>
-Fágann sé sin go bhfuil sé furasta srianta in iarratais a shonrú gan a bheith buartha faoin bhformáid sonraí airde (an bhfuil luachanna dearfacha suas nó síos?
-I méadair nó i gcineálacha?) Nó i bhformáid na sonraí ama (réimse sainmharcach formáidí féideartha, mar shampla, &quot;Ean.
-2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;, nó laethanta ó 1 Eanáir, 1980).
-Fágann sé sin gur furasta comparáid a dhéanamh idir na torthaí ó fhoinsí éagsúla sonraí.
-<p>Tá fóntais ag ERDDAP
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">Am Uimhriúil a Thiontú go / ó Am Teaghrán</a> .
+Fágann sé sin go bhfuil sé éasca srianta a shonrú in iarratais gan a bheith buartha faoi fhormáid na sonraí airde (an bhfuil luachanna dearfacha suas nó síos?
+i méadair nó fathom?) nó formáid sonraí ama (réimse trom de bhformáidí féideartha, mar shampla, &quot;Eanáir 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, nó laethanta ó 1 Eanáir, 1980).
+Fágann sé sin go bhfuil sé éasca na torthaí ó fhoinsí sonraí éagsúla a chur i gcomparáid.
+<p>Tá áirgiúlacht ag ERDDAP chun
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">Am Uimhriúil a Thiontú go/ó Am Teaghrán</a> .
 <br>Le haghaidh tuilleadh sonraí, féach
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Conas ERDDAP le ham</a> .
-<p>Toisc go n-aithnítear go sonrach domhanfhad, domhanleithead, airde agus athróga ama, tá ERDDAP ar an eolas faoi ghnéithe geo / ama gach tacar sonraí.
-Tá sé seo úsáideach agus íomhánna á ndéanamh le léarscáileanna nó le sraitheanna ama, agus nuair a bhíonn sonraí á sábháil i gcineálacha comhaid geo-thagartha (m.sh., .esriAscii, .geoJson, agus .kml ).
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">ar Mar ERDDAP leis an Am</a> .
+<p>Toisc go n-aithnítear go sonrach na hathróga domhanfhad, domhanleithead, airde agus ama, tá ERDDAP ar an eolas faoi ghnéithe geo/ama gach tacar sonraí.
+Tá sé seo úsáideach agus íomhánna á ndéanamh le léarscáileanna nó sraith ama, agus nuair a bhíonn sonraí á sábháil i gcineálacha comhaid geo-thagartha (eg, .esriAscii, .geoJson, agus .kml ).
 <p>Is iad dhá chomhchaighdeán maidir le haonaid tomhais a scríobh:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png &quot;alt =&quot; (nasc seachtrach) &quot;title =&quot; Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach.
-&quot;&gt; - ó
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (nasc seachtrach)&quot;title=&quot;Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach.&quot;&gt; - ó
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, a úsáidtear i
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, a úsáidtear i
 <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>,
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF.
-<img 
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>,
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, agus
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, agus
 <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> comhaid sonraí.
-Mar shampla, tá go leor roghanna ag UDUNITS do chéimeanna Celsius, lena n-áirítear <kbd>degree_C</kbd> agus <kbd>degC</kbd> .
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> comhaid sonraí.
+Mar shampla, tá go leor roghanna ag UDUNITS le haghaidh céimeanna Celsius, lena n-áirítear <kbd>degree_C</kbd> agus <kbd>degC</kbd> .
 <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> - an Cód Aontaithe um Aonaid Tomhais.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> - an Cód Aontaithe d&#39;Aonaid Bheart.
 <a rel="bookmark" href="https://www.ogc.org/">OGC <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> seirbhísí mar
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> seirbhísí cosúil le
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>,
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>,
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, agus
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, agus
 <a rel="help" href="https://www.ogc.org/standards/wms">WMS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> is minic tagairt do UCUM mar UOM (Aonaid Tomhais).
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> is minic a thagraíonn do UCUM mar UOM (Aonaid Beart).
 Mar shampla, níl ach rogha cás-íogair amháin ag UCUM do chéimeanna Celsius:
 &quot;Cel&quot;.
 <br>&nbsp;
 </ul>
-Cé nach n-éilíonn ERDDAP caighdeán ceachtar aonad a úsáid, tá mórchuid na suiteálacha ERDDAP bhfabhar ceann amháin nó an ceann eile.
+Cé nach n-éilíonn ERDDAP go n-úsáidfí ceachtar den dá aonad caighdeánach, bíonn formhór na suiteálacha ERDDAP bhfabhar ceann amháin nó an ceann eile.
 (Riarthóirí ERDDAP :
-is féidir leat é seo a shonrú leis an gclib <kbd>&lt;units_standard&gt;</kbd> i setup.xml.) Is féidir leat UDUNITS a thiontú go / ó aonaid UCUM le
-<a rel="bookmark" href="&erddapUrl;/convert/units.html">tiontaire aonaid</a> ERDDAP .
+is féidir leat é seo a shonrú leis an gclib <kbd>&lt;units_standard&gt;</kbd> i setup.xml.) Is féidir leat UDUNITS a thiontú go/ó aonaid ERDDAP le
+<a rel="bookmark" href="&erddapUrl;/convert/units.html">tiontaire aonad</a> ERDDAP .
 Nuair a iarrann tú sonraí nó graf ó
-<a href="&erddapUrl;/tabledap/index.html">tacar sonraí tabledap</a>, is féidir leat <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> nó <kbd>&amp;units(&quot;UCUM&quot;)</kbd> a chur i gceangal le deireadh an URL chun aonaid UDUNITS nó UDUNITS a iarraidh.
+<a href="&erddapUrl;/tabledap/index.html">tabledap sonraí tábla</a> -ap, is féidir leat <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> nó <kbd>&amp;units(&quot;UCUM&quot;)</kbd> a chur i gceangal le deireadh an URL chun UDUNITS nó aonaid UCUM a iarraidh.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">Tuilleadh eolais</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">Is féidir le ERDDAP a chur leis nó a mhodhnú.</a></strong>
-<br>Níl mórán
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">meiteashonraí</a> ag mórán foinsí sonraí
+<br>Níl mórán meiteashonraí nó
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">meiteashonraí</a> ar bith ag go leor foinsí sonraí
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> (<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">meiteashonraí CF</a> mar shampla
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html"><img 
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> (mar shampla,
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">meiteashonraí CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>) ag cur síos ar na sonraí.
-Ligeann ERDDAP (agus spreagann sé) don riarthóir cur síos a dhéanamh ar mheiteashonraí a chuirfear le tacar sonraí agus a n-athróg ar an eitilt.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>) ag cur síos ar na sonraí.
+Ligeann ERDDAP don riarthóir (agus spreagann sé) cur síos a dhéanamh ar mheiteashonraí a chuirfear le tacair shonraí agus a n-athróga ar an eitilt.
 Féach an
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">chuid addAttributes</a> de na
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">rannán addAttributes</a> de na
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">treoracha do riarthóirí</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >Ligeann ERDDAP duit comhaid íomhá .png agus .pdf a iarraidh le graif agus léarscáileanna</a></strong>
-<br>de na sonraí i dteannta na sonraí iarbhír.
-Agus ligeann Make A Graph de ERDDAP duit na híomhánna a shaincheapadh.
-Seo a leanas roinnt úsáidí speisialta a bhaineann leis na híomhánna seo:
+<br>de na sonraí sa bhreis ar na sonraí iarbhír.
+Agus ligeann Make A Graph ERDDAP duit na híomhánna a shaincheapadh.
+Is iad seo a leanas roinnt úsáidí speisialta as na híomhánna seo:
 <ul>
 <li>Is féidir le húdair leathanach gréasáin
-<a rel="help" href="&erddapUrl;/images/embed.html">graf a leabú leis na sonraí is déanaí ar leathanach gréasáin</a> trí chlib HTML &lt;img&gt; a úsáid.
+<a rel="help" href="&erddapUrl;/images/embed.html">graf a leabú leis na sonraí is déanaí ar leathanach gréasáin</a> ag baint úsáide as clib HTML &lt;img&gt;.
 &ssUse; <!--li>Anyone can use or make
      
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">Google Gadgets</a>
@@ -5359,428 +5357,460 @@ Seo a leanas roinnt úsáidí speisialta a bhaineann leis na híomhánna seo:
 -->
 <br>&nbsp;
 </ul>
-<li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Comhaid Chomhbhrúite a Iarraidh</a></strong>
-<br>Ní thairgeann ERDDAP torthaí atá stóráilte i gcomhaid chomhbhrúite (m.sh., .zip nó .gzip ) mura bhfuil an comhad foinse comhbhrúite cheana féin.
-Ina áit sin, féachann ERDDAP ar
+<li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Comhaid Chomhbhrúite á Iarraidh</a></strong>
+<br>Ní ERDDAP torthaí atá stóráilte i gcomhaid chomhbhrúite (m.sh., .zip nó .gzip ) mura bhfuil an comhad foinse comhbhrúite cheana féin.
+Ina áit sin, ERDDAP
 <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
     >ionchódú</a> glactha
 <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
     ><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> sa cheanntásc iarratais HTTP GET a sheol an cliant.
-Má aimsítear cineál comhbhrúite tacaithe (gzip, x-gzip, nó deflate ) ar an liosta glacadh-ionchódaithe, cuimsíonn ERDDAP <kbd>content-encoding</kbd> sa cheanntásc freagartha HTTP agus déanann sé na sonraí a chomhbhrú agus iad á dtarchur.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> sa cheanntásc iarratais HTTP GET a sheol an cliant.
+Má aimsítear cineál comhbhrú tacaithe (gzip, x-gzip deflate nó díbhoilsciú ) sa liosta um ionchódú glactha, cuimsíonn ERDDAP <kbd>content-encoding</kbd> sa cheanntásc freagartha HTTP agus comhbhrú na sonraí de réir mar a tharchuireann sé iad.
 Is faoin gclár cliant atá sé <kbd>content-encoding</kbd> a lorg agus na sonraí a dhí-chomhbhrú.
-Is minic go mbíonn freagraí comhbhrúite 3-10 n-uaire níos tapa, cé nach bhfuil aon bhuntáiste ann comhaid chomhbhrúite .png a iarraidh ós rud é go bhfuil ábhar na gcomhad comhbhrúite cheana féin.
+Is minic a bhíonn freagraí comhbhrúite 3-10 huaire níos tapúla, cé nach bhfuil aon tairbhe ag baint le comhaid .png comhbhrúite a iarraidh ós rud é go bhfuil a bhfuil sna comhaid comhbhrúite cheana féin.
 Déanann brabhsálaithe agus cliaint OPeNDAP é seo de réir réamhshocraithe.
-Iarrann siad sonraí comhbhrúite agus déanann siad na sonraí a chuirtear ar ais a dhí-chomhbhrú go huathoibríoch.
-Caithfidh cliaint eile (m.sh.
-cláir Java ) é seo a dhéanamh go sainráite.
-Le curl, cuir - <kbd>--compressed</kbd> leis an líne ordaithe chun a rá le curl freagra comhbhrúite a iarraidh agus é a dhí-chomhbhrú go huathoibríoch.
+Iarrann siad sonraí comhbhrúite agus dí-chomhbhrúíonn siad na sonraí a sheoltar ar ais go huathoibríoch.
+Ní mór do chliaint eile (m.sh., cláir Java ) é seo a dhéanamh go sainráite.
+Le curl, cuir -- <kbd>--compressed</kbd> leis an líne ordaithe chun curl a insint chun freagra comhbhrúite a iarraidh agus dí-chomhbhrú go huathoibríoch é.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">Déanann ERDDAP cineálacha éagsúla freastalaithe sonraí (OPeNDAP, OBIS, SOS, WMS, ...) idir-inoibritheach.</a></strong>
-<br>Úsáidtear cineálacha éagsúla freastalaithe sonraí i bpobail eolaíochta éagsúla.
-Sa todhchaí intuartha, ní dócha go dtiocfaidh aon chineál amháin chun tosaigh agus go dtiocfaidh sé in áit na cinn eile.
-Mar sin feidhmíonn ERDDAP mar dhroichead idir cineálacha éagsúla clár cliant (brabhsálaithe gréasáin, IDV, Matlab, cláir netCDF, ODV, cliaint WMS, srl.) Agus na cineálacha éagsúla freastalaithe sonraí.
+<br>Úsáidtear cineálacha éagsúla freastalaithe sonraí i bpobail eolaíocha éagsúla.
+Sa todhchaí intuartha, ní dócha go mbeidh ceannasach ag aon chineál amháin agus go n-athrófar na cinn eile.
+Mar sin feidhmíonn ERDDAP mar dhroichead idir cineálacha éagsúla clár cliant (brabhsálaithe gréasáin, IDV, Matlab, cláir netCDF, ODV, cliaint WMS, etc.) agus na cineálacha éagsúla freastalaithe sonraí.
 <ol>
-<li>Glacann ERDDAP le hiarrataí cliant ar shonraí i bhformáidí éagsúla (m.sh., OPeNDAP, WMS ).
-<li>Tiontaíonn ERDDAP iarraidh ar leith go formáid na hiarrata a úsáideann an freastalaí sonraí foinse (m.sh., OPeNDAP, SOS, OBIS, ...) agus seolann sé é chuig an bhfreastalaí sonraí foinse.
-<li>Tiontaíonn ERDDAP na sonraí freagartha ón bhfreastalaí sonraí foinse go formáid inmheánach, lena n-áirítear na sonraí ama go léir a thiontú go formáid choiteann:
+<li>Glacann ERDDAP le hiarratais ó chliaint ar shonraí i bhformáidí éagsúla (m.sh., OPeNDAP, WMS ).
+<li>Tiontaíonn ERDDAP iarratas tugtha isteach san fhormáid iarratais a úsáideann an freastalaí foinse sonraí (m.sh., OPeNDAP, SOS, OBIS, ...) agus seolann sé chuig an bhfreastalaí foinse sonraí.
+<li>Tiontaíonn ERDDAP na sonraí freagartha ón bhfreastalaí sonraí foinseach go formáid inmheánach, lena n-áirítear na sonraí ama go léir a thiontú go formáid choiteann:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
-<li>Tiontaíonn ERDDAP na sonraí ón bhformáid inmheánach go formáid an chomhaid a iarrann an cliant (m.sh., .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
+<li>Tiontaíonn ERDDAP na sonraí ón bhformáid inmheánach isteach san fhormáid comhaid a iarrann an cliant (m.sh., .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
 </ol>
-Ní gá do chliaint a bheith buartha faoi chineál an fhreastalaí sonraí foinse, nó eolas a bheith acu air.
-Ní bhfaigheann siad ach na sonraí a theastaíonn uathu, san fhormáid comhaid atá uathu.
+Ní gá do chliaint a bheith buartha faoi, nó a bheith ar an eolas faoi, an cineál freastalaí foinse sonraí.
+Ní fhaigheann siad ach na sonraí atá uathu, san fhormáid comhaid is mian leo.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">Ní úsáideann ERDDAP ach dhá struchtúr sonraí bunúsacha chun sonraí a choinneáil.</a></strong>
+<li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">Ní úsáideann ERDDAP ach dhá struchtúr sonraí bhunúsacha chun sonraí a choinneáil.</a></strong>
 <ul>
-<li>Ó tharla go bhfuil sé deacair do chliaint daonna agus do chliaint ríomhaire déileáil le tacar casta de struchtúir tacar sonraí féideartha, ní úsáideann ERDDAP ach dhá struchtúr sonraí bunúsacha:
+<li>Ós rud é go bhfuil sé deacair do chliaint dhaonna agus do chliaint ríomhaire déileáil le sraith casta de struchtúir tacar sonraí féideartha, ní úsáideann ERDDAP ach dhá struchtúr sonraí bunúsacha:
 <ul>
-<li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">struchtúr sonraí gridded</a> (mar shampla, le haghaidh sonraí satailíte agus sonraí samhail) agus
-<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">struchtúr sonraí táblach</a> (mar shampla, maidir le sonraí baoi, stáisiúin agus ruthag in-situ).
+<li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">struchtúr sonraí greille</a> (mar shampla, le haghaidh sonraí satailíte agus sonraí samhla) agus
+<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">struchtúr sonraí táblach</a> (mar shampla, do bhaoi in-situ, sonraí stáisiúin agus sonraí conaire).
 </ul>
-<li>Cinnte, ní féidir na sonraí go léir a chur in iúl sna struchtúir seo, ach is féidir cuid mhaith díobh a chur in iúl.
-Is struchtúir sonraí an-solúbtha iad na táblaí, go háirithe (féach ar rath iontach an
+<li>Cinnte, ní féidir na sonraí go léir a chur in iúl sna struchtúir seo, ach is féidir go leor de.
+Is struchtúir sonraí an-solúbtha iad táblaí, go háirithe (féach ar an rath iontach atá ar
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">bhunachar sonraí coibhneasta <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> cláir).
-<li>Fágann sé sin go bhfuil sé níos éasca ceisteanna sonraí a thógáil.
-<li>Fágann sé sin go bhfuil struchtúr simplí ag freagraí sonraí, rud a fhágann go bhfuil sé níos éasca na sonraí a sheirbheáil i réimse níos leithne de ghnáthchineálacha comhaid (nach dtacaíonn ach le struchtúir shimplí sonraí go minic).
-Is é seo an phríomhchúis gur bhunaíomar ERDDAP ar an mbealach seo.
-<li>Fágann sé sin go bhfuil sé an-éasca dúinn (nó aon duine) bogearraí cliant a scríobh a oibríonn le gach tacar sonraí ERDDAP .
-<li>Fágann sé sin go bhfuil sé níos éasca sonraí ó fhoinsí éagsúla a chur i gcomparáid, mar shampla le haghaidh Anailíse Comhtháite Éiceachórais (IEA).
-<li>Tuigimid go maith má tá tú cleachtaithe le bheith ag obair le sonraí i struchtúir sonraí eile b’fhéidir go gceapfá ar dtús go bhfuil an cur chuige seo simplíoch nó neamhleor.
-Ach tá trádmharcanna ag gach struchtúr sonraí.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> cláir).
+<li>Déanann sé seo fiosruithe sonraí níos éasca a thógáil.
+<li>Fágann sin go bhfuil struchtúr simplí ag freagairtí sonraí, rud a fhágann gur fusa na sonraí a riar ar raon níos leithne de chineálacha caighdeánacha comhaid (a thacaíonn go minic le struchtúir sonraí simplí).
+Is é seo an phríomhchúis gur bhunaigh muid ERDDAP ar an mbealach seo.
+<li>Fágann sé sin go bhfuil sé an-éasca dúinn (nó d’aon duine) bogearraí cliant a scríobh a oibríonn le tacair shonraí uile ERDDAP .
+<li>Fágann sin gur fusa sonraí a chur i gcomparáid le foinsí éagsúla, mar shampla le haghaidh Anailís Chomhtháite Éiceachórais (IEA).
+<li>Is eol dúinn go maith má tá tú cleachta le bheith ag obair le sonraí i struchtúir sonraí eile go mb’fhéidir go gceapfá ar dtús go bhfuil an cur chuige seo simplí nó nach leor.
+Ach tá malairtí ag baint le gach struchtúr sonraí.
 Níl aon cheann foirfe.
-Tá míbhuntáistí ag fiú na struchtúir do-it-all:
-tá obair leo casta agus ní féidir na comhaid a scríobh nó a léamh ach le leabharlanna bogearraí speisialta.
-Má ghlacann tú le cur chuige ERDDAP go leor chun iarracht a dhéanamh oibriú leis, b’fhéidir go bhfaighidh tú amach go bhfuil buntáistí leis (go háirithe an tacaíocht do chineálacha comhaid iomadúla atá in ann na freagraí sonraí a choinneáil).
+Tá a míbhuntáistí ag baint le fiú na struchtúir déan-é-uile:
+tá sé casta oibriú leo agus ní féidir na comhaid a scríobh nó a léamh ach amháin le leabharlanna bogearraí speisialta.
+Má ghlacann tú go leor le cur chuige ERDDAP chun iarracht a dhéanamh oibriú leis, b’fhéidir go bhfaighidh tú go bhfuil na buntáistí aige (go háirithe an tacaíocht d’ilchineálacha comhaid ar féidir leis na freagraí sonraí a choinneáil).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Labhraíonn seó sleamhnán bunaidh ERDDAP</a> (go háirithe
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">sleamhnán na struchtúr sonraí</a>) faoi na saincheisteanna seo.
-<li>Agus fiú má bhraitheann an cur chuige seo corr ort, ní thabharfaidh an chuid is mó de chliaint ERDDAP faoi deara riamh - ní fheicfidh siad ach go bhfuil struchtúr deas simplí ag gach ceann de na tacair sonraí agus beidh siad buíoch gur féidir leo sonraí a fháil ó réimse leathan foinsí a chuirtear ar ais isteach réimse leathan formáidí comhaid.
+<li>Agus fiú má tá an cur chuige seo aisteach duit, ní thabharfaidh formhór na gcliant ERDDAP faoi deara -- feicfidh siad go simplí go bhfuil struchtúr deas simplí ag gach tacar sonraí agus beidh siad buíoch as gur féidir leo sonraí a fháil ó raon leathan foinsí a sheoltar ar ais i raon leathan formáidí comhaid.
 <br>&nbsp;
 </ul>
 <li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">Cuireann ERDDAP</a>
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">ríomhphost / URL</a> agus
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">ríomhphost/URL</a> agus
 <a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS</a> ar fáil
 <a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> seirbhísí síntiúis,</strong> ionas gur féidir fógra a thabhairt duit aon uair a athraíonn tacar sonraí.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> seirbhísí síntiúis,</strong> ionas gur féidir tú a chur ar an eolas aon uair a athraíonn tacar sonraí.
 <ul>
-<li>Tá ERDDAP an-mhaith ar athruithe ar thacair sonraí gridded a bhrath toisc go bhféadann sé a bhrath nuair a athraíonn luachanna na haise (m.sh., na luachanna ama).
-<li>ERDDAP an-mhaith maidir le hathruithe ar thacair sonraí táblacha a bhrath mar is gnách nach mbíonn aon athruithe ar na meiteashonraí nuair a chuirtear sonraí nua leis.
-<li>ERDDAP mura mbeidh tacar sonraí ar fáil (ach b’fhéidir nach láithreach).
-<li>ERDDAP nuair a bheidh an tacar sonraí sin ar fáil arís.
-<li>ERDDAP aon gheallúint maidir le hoiriúnacht nó cruinneas na seirbhísí seo (féach
+<li>Tá ERDDAP an-mhaith ag brath athruithe ar thacair shonraí ghreille mar is féidir leis a bhrath nuair a athraíonn na luachanna aise (m.sh., na luachanna ama).
+<li>ERDDAP an-mhaith ag brath athruithe ar thacair sonraí táblaí mar is gnách nach mbíonn aon athruithe ar na meiteashonraí nuair a chuirtear sonraí nua leis.
+<li>ERDDAP mura mbíonn tacar sonraí ar fáil (ach b’fhéidir nach mbeidh sé ar fáil láithreach).
+<li>ERDDAP a bheidh an tacar sonraí sin ar fáil arís.
+<li>ERDDAP aon gheallúint faoi oiriúnacht nó cruinneas na seirbhísí seo (féach
 <a rel="license" href="&erddapUrl;/legal.html">SÉANADH ERDDAP</a>).
 </ul>
 <p><strong>Síntiúis
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">Ríomhphoist / URL</a></strong> (níl siad ar fáil ag roinnt suiteálacha ERDDAP ) Aon uair a athraíonn tacar sonraí, seolfaidh an córas síntiúis ríomhphoist / URL r-phost chugat <strong>láithreach</strong> nó rachaidh sé i dteagmháil le URL a shonraíonn tú.
-Níl síntiúis ríomhphoist / URL ar fáil ag roinnt suiteálacha ERDDAP .
-Chun síntiús ríomhphoist / URL a bhunú, cliceáil ar cheann de na deilbhíní clúdaigh <img alt="Subscribe" style="vertical-align:top" title="Deilbhín an chlúdaigh." src="&erddapUrl;/images/envelope.gif" > atá le feiceáil ar thaobh na láimhe deise ar leathanaigh ghréasáin ERDDAP le liostaí tacar sonraí (<a rel="contents" href="&erddapUrl;/info/index.html">mar shampla</a>) agus ar na Foirmeacha Rochtana Sonraí agus leathanaigh ghréasáin Make A Graph do thacair sonraí aonair (<a href="&erddapUrl;/griddap/etopo180.html">mar shampla</a>) má thacaíonn an tsuiteáil ERDDAP seo le síntiúis ríomhphoist / URL.
-(Ríomhchláraitheoirí:
-má scríobhann tú seirbhísí gréasáin, is féidir leat an córas URL a úsáid chun ERDDAP a chur ar an eolas láithreach do sheirbhís gréasáin aon uair a athraíonn tacar sonraí.)
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">Ríomhphoist/URL</a></strong> (níl ar fáil ag roinnt suiteálacha ERDDAP ) Aon uair a athraíonn tacar sonraí, seolfaidh an córas síntiús ríomhphoist/URL ríomhphost chugat <strong>láithreach</strong> nó déanfaidh sé teagmháil le URL a shonróidh tú.
+Níl síntiúis ríomhphoist/URL ar fáil ag roinnt suiteálacha ERDDAP .
+Chun síntiús ríomhphoist/URL a shocrú, cliceáil ar cheann de dheilbhíní an chlúdaigh <img alt="Subscribe" style="vertical-align:top" title="Deilbhín an chlúdaigh." src="&erddapUrl;/images/envelope.gif" > atá le feiceáil ag barr ar dheis ar leathanaigh ghréasáin ERDDAP le liostaí de thacair sonraí (<a rel="contents" href="&erddapUrl;/info/index.html">mar shampla</a>) agus ar na leathanaigh ghréasáin Foirmeacha Rochtana Sonraí agus Déan Graf do thacair sonraí aonair (<a href="&erddapUrl;/griddap/etopo180.html">mar shampla</a>) má thacaíonn an suiteáil ERDDAP seo le síntiúis ríomhphoist/URL.
+(Ríomhchláraitheoirí ríomhaireachta:
+má scríobhann tú seirbhísí gréasáin, is féidir leat an córas URL a úsáid chun ERDDAP a chur ar an eolas do do sheirbhís gréasáin láithreach aon uair a athraíonn tacar sonraí.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> Síntiúis</strong> Is córas caighdeánach é RSS chun úsáideoirí a chur ar an eolas nuair a bhíonn an t-ábhar ar shuíomh Gréasáin athraithe.
-Tá cliant RSS ionsuite ag brabhsálaithe gréasáin nua-aimseartha nó is féidir leat
-<a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">Léitheoir RSS</a> ar leithligh a úsáid
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> Síntiúis</strong> Is córas caighdeánach é RSS chun úsáideoirí a chur ar an eolas nuair a athraítear ábhar an tsuímh Ghréasáin.
+Tá cliant RSS ionsuite i mbrabhsálaithe gréasáin nua-aimseartha nó is féidir leat
+<a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">Léitheoir RSS</a> ar leith a úsáid
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> .
-Cuireann ERDDAP RSS 2.01 ar leithligh ar fáil do gach tacar sonraí ionas gur féidir leat a fháil amach cathain a d’athraigh tacar sonraí suimiúla.
-Chun liostáil le RSS tacar sonraí, cliceáil ar cheann de na deilbhíní RSS <img alt="RSS" style="vertical-align:top" title="An deilbhín RSS." src="&erddapUrl;/images/rss.gif" > atá le feiceáil ar thaobh na láimhe deise ar leathanaigh ghréasáin ERDDAP le liostaí tacar sonraí (<a rel="contents" href="&erddapUrl;/info/index.html">mar shampla</a>) nó ar na Foirmeacha Rochtana Sonraí agus leathanaigh ghréasáin Make A Graph do thacair sonraí aonair (<a href="&erddapUrl;/griddap/etopo180.html">mar shampla</a>).
-<p><strong>Comparáid</strong> D’fhéadfadh gurb í an tseirbhís RSS an rud atá á lorg agat.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> .
+Cuireann ERDDAP RSS 2.01 ar leith ar fáil do gach tacar sonraí ionas gur féidir leat a fháil amach cén uair a d’athraigh tacair sonraí suimiúla.
+Chun síntiús a íoc le RSS an tacair shonraí, cliceáil ar cheann de na deilbhíní RSS <img alt="RSS" style="vertical-align:top" title="An deilbhín RSS." src="&erddapUrl;/images/rss.gif" > atá le feiceáil ag barr ar dheis ar leathanaigh ghréasáin ERDDAP le liostaí de thacair sonraí (<a rel="contents" href="&erddapUrl;/info/index.html">mar shampla</a>) nó ar na leathanaigh ghréasáin Foirmeacha Rochtana Sonraí agus Make A Graph do thacair sonraí aonair (<a href="&erddapUrl;/griddap/etopo180.html">mar shampla</a>).
+<p><strong>Comparáid</strong> Seans gurb é an tseirbhís RSS díreach atá uait.
 Is caighdeán deas é.
-Ach más gá duit fios a bheith agat a luaithe is féidir nuair a athraíonn tacar sonraí, bain úsáid as an gcóras ríomhphoist / URL, ní RSS .
-Iarrann cliaint RSS go tréimhsiúil (gach uair an chloig?) Agus léigh siad an doiciméad RSS XML chun athruithe a lorg.
-Mar sin de ghnáth, ní bhraithfidh cliant RSS athrú ar tacar sonraí go tapa (30 nóiméad ar an meán?).
-I gcodarsnacht leis sin, gníomhaíonn an córas síntiúis ríomhphoist / URL láithreach nuair a bhraitheann ERDDAP athrú ar tacar sonraí.
-Tá cur chuige níos réamhghníomhaí an chórais ríomhphoist / URL i bhfad níos éifeachtaí freisin:
-B’fhéidir go mbeidh tú in ann do chliant RSS a shocrú chun athruithe a sheiceáil gach nóiméad (ná déan é!), Ach ní bheadh go leor iarratas gan ghá mar thoradh air sin.
-chuig freastalaí ERDDAP agus ní bhrathfeadh sé athruithe láithreach.
+Ach más gá duit fios a bheith agat chomh luath agus is féidir nuair a athraíonn tacar sonraí, úsáid an córas ríomhphoist/URL, ní RSS .
+Iarrann agus léann cliaint RSS an doiciméad RSS XML go tréimhsiúil (gach uair?) chun athruithe a lorg.
+Mar sin de ghnáth, ní bhraithfidh cliant RSS athrú ar thacar sonraí go tapa (30 nóiméad ar an meán?).
+I gcodarsnacht leis sin, gníomhaíonn an córas síntiús ríomhphoist/URL láithreach aon uair a bhraitheann ERDDAP athrú ar thacar sonraí.
+Tá cur chuige níos réamhghníomhaí an chórais ríomhphoist/URL i bhfad níos éifeachtaí freisin:
+Seans go mbeidh tú in ann do chliant RSS a shocrú le seiceáil le haghaidh athruithe gach nóiméad (ná déan é!), ach bheadh go leor iarratas gan ghá mar thoradh air sin.
+chuig an bhfreastalaí ERDDAP agus fós ní bhraithfeadh sé athruithe láithreach.
 <br>&nbsp;
 <li><strong>Is
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">feidhmchlár gréasáin</a>
 <a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">é ERDDAP</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> (leathanaigh ghréasáin le foirmeacha do dhaoine a úsáideann brabhsálaithe)
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> (leathanaigh ghréasáin le foirmeacha do dhaoine ag baint úsáide as brabhsálaithe)
 <br>agus
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_service">seirbhís gréasáin <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> (le
-<a rel="help" href="&erddapUrl;/rest.html">seirbhísí do chláir ríomhaire</a>).</strong>
-<br>Déanta na fírinne, gineann na foirmeacha ar leathanaigh ghréasáin ERDDAP URLanna a cruthaíodh go speisialta agus a chuirtear faoi bhráid sheirbhísí gréasáin ERDDAP ansin.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> (le
+<a rel="help" href="&erddapUrl;/rest.html">seirbhísí do ríomhchláir</a>).</strong>
+<br>Déanta na fírinne, gineann na foirmeacha ar leathanaigh ghréasáin ERDDAP ach URLanna sainfhoirmithe a chuirtear isteach ansin chuig seirbhísí gréasáin ERDDAP .
 <br>&nbsp;
 <li><strong>Tá
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>
 <a class="selfLink" id="rest" href="#rest" rel="bookmark">ag ERDDAP</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> - agus
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> - agus
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> - naisc stíl chun a sheirbhísí a chur ar fáil do chláir ríomhaire.</strong>
-<br>Is féidir na gnéithe seo a úsáid chun seirbhís gréasáin eile a thógáil ar bharr ERDDAP (ag déanamh ar ERDDAP an obair go léir a dhéanamh!).
-Níl sé i gceist go mbeadh ERDDAP ina sheirbhís ardleibhéil taiscéalaíochta / grafála sonraí.
-Ina áit sin, tá sé i gceist ag ERDDAP seirbhísí a sholáthar do shuíomhanna Gréasáin agus do chláir den sórt sin.
-Mar sin má tá smaoineamh agat maidir le comhéadan níos fearr leis na sonraí a bhfreastalaíonn an ERDDAP, molaimid duit d’iarratas gréasáin nó seirbhís gréasáin féin a thógáil, agus ERDDAP a úsáid mar bhunús.
-Léigh tuilleadh faoi ERDDAP
-<a rel="help" href="&erddapUrl;/rest.html">do Chláir Ríomhaireachta</a> .
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> -stíl naisc chun a chuid seirbhísí a chur ar fáil do chláir ríomhaire.</strong>
+<br>Is féidir na gnéithe seo a úsáid chun seirbhís gréasáin eile a thógáil ar bharr ERDDAP (rud a fhágann go ndéanfaidh ERDDAP an obair ar fad!).
+Níl sé i gceist ERDDAP a bheith ina sheirbhís ardleibhéil um thaiscéaladh sonraí/ghrafaíocht.
+Ina áit sin, tá sé beartaithe ag ERDDAP seirbhísí a sholáthar do shuímh Ghréasáin agus do chláir dá leithéid.
+Mar sin má tá smaoineamh agat maidir le comhéadan níos fearr leis na sonraí a bhfreastalaíonn an ERDDAP, molaimid duit d’fheidhmchlár gréasáin nó do sheirbhís gréasáin féin a chruthú, agus ERDDAP a úsáid mar bhunús leis.
+Léigh tuilleadh faoi
+<a rel="help" href="&erddapUrl;/rest.html">Sheirbhísí do Ríomhchláir</a> ERDDAP .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Slándáil</a></strong> - De réir réamhshocraithe, ritheann ERDDAP mar fhreastalaí go hiomlán poiblí gan aon chóras logála isteach agus gan aon srianta ar rochtain ar shonraí.
-Mar sin féin, is féidir le riarthóir ERDDAP ERDDAP chumrú chun rochtain ar roinnt tacar sonraí nó gach tacar sonraí a shrianadh d’úsáideoirí a logálann isteach agus ar sannadh róil áirithe dóibh.
-Tá modhanna ionsuite ag ERDDAP maidir le fíordheimhniú (logáil isteach).
-Má tá fíordheimhniú casta ar shuiteáil ERDDAP, beidh nasc&quot;logáil isteach&quot;ag barr gach leathanaigh ghréasáin.
-Ní gá d’úsáideoirí logáil isteach riamh chun rochtain a fháil ar na tacair sonraí atá ar fáil go poiblí.
-Is féidir le húsáideoirí a logáil isteach teacht ar thacair sonraí poiblí agus ar na tacair sonraí príobháideacha a gceadaítear rochtain dóibh orthu.
-Ní mór d’úsáideoirí https a úsáid:
-(Sraith Soicéid Slán) chun logáil isteach agus chun teacht ar thacair sonraí príobháideacha.
-Is féidir tacar sonraí a chumrú chun go mbeidh graif agus léarscáileanna inrochtana go poiblí, ach nach mbeidh rochtain ag úsáideoirí ach ar úsáideoirí údaraithe.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">tuilleadh faisnéise</a>)
+<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Slándáil</a></strong> - De réir réamhshocraithe, ritheann ERDDAP mar fhreastalaí poiblí go hiomlán gan aon chóras logáil isteach agus gan srianta ar rochtain sonraí.
+Mar sin féin, is féidir le riarthóir ERDDAP ERDDAP chumrú chun rochtain ar roinnt tacar sonraí nó ar gach tacar sonraí a shrianadh d&#39;úsáideoirí a logáil isteach agus ar sannadh róil áirithe dóibh.
+Tá modhanna fíordheimhnithe ionsuite ag ERDDAP (logáil isteach).
+Má tá fíordheimhniú curtha ar siúl ag suiteáil ERDDAP, beidh nasc&quot;logáil isteach&quot;ag barr gach leathanaigh ghréasáin.
+Ní gá d’úsáideoirí logáil isteach riamh chun rochtain a fháil ar na tacair shonraí atá ar fáil go poiblí.
+Is féidir le húsáideoirí atá logáilte isteach rochtain a fháil ar thacair sonraí poiblí agus ar na tacair shonraí príobháideacha a bhfuil cead acu rochtain a fháil orthu.
+Ní mór d’úsáideoirí https:
+(Secure Sockets Layer) a úsáid chun logáil isteach agus chun rochtain a fháil ar thacair sonraí príobháideacha.
+Is féidir tacair sonraí a chumrú chun graif agus léarscáileanna a bheith inrochtana don phobal, ach níl rochtain ag úsáideoirí údaraithe ar shonraí ach amháin.
+(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">tuilleadh eolais</a>)
 <br>&nbsp;
-<li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">Próiseálann ERDDAP sonraí i smutáin.</a></strong>
-<br>Chun cuimhne a shábháil (ceist mhór) agus freagairtí a thosú níos luaithe, ERDDAP iarratais ar shonraí a phróiseáil i smutáin - ag fáil smután sonraí ón bhfoinse arís agus arís eile, á nglanadh (mar shampla,
+<li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">Próiseálann ERDDAP sonraí ina smután.</a></strong>
+<br>Chun cuimhne a shábháil (saincheist mhór) agus tús a chur le freagraí níos luaithe, ERDDAP iarratais ar shonraí a phróiseáil ina smután - ag fáil smután sonraí arís agus arís eile ón bhfoinse, é a ghlanadh (mar shampla,
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">meiteashonraí</a> a chur leis
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>), agus é sin a sheoladh chuig an gcliant.
-I gcás go leor foinsí sonraí, ciallaíonn sé seo go bhfaigheann an chéad smután sonraí (mar shampla, ón gcéad braiteoir) chuig an gcliant i soicindí in ionad nóiméid (mar shampla, tar éis sonraí ón mbraiteoir deireanach a aisghabháil), ag dearbhú don chliant go tá na sonraí ag teacht.
-Ó thaobh na cuimhne de, ceadaíonn sé seo go leor iarratas mór (gach ceann níos mó ná an chuimhne atá ar fáil) a láimhseáil go comhuaineach.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>), agus é sin a sheoladh chuig an gcliant.
+I gcás go leor foinsí sonraí, ciallaíonn sé seo go bhfaigheann an chéad smután sonraí (mar shampla, ón gcéad braiteoir) chuig an gcliant i soicindí in ionad nóiméad (mar shampla, tar éis sonraí ón braiteoir deiridh a aisghabháil), a chur ar a suaimhneas don chliant go tá na sonraí ag teacht.
+Ó thaobh na cuimhne de, is féidir iarratais mhóra iomadúla (gach ceann acu atá níos mó ná an chuimhne atá ar fáil) a láimhseáil go comhuaineach.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">Tá struchtúr modúlach ag ERDDAP .</a></strong>
-<br>Tá ERDDAP struchtúrtha ionas go mbeidh sé éasca comhpháirteanna éagsúla a chur leis (mar shampla, aicme chun sonraí a iarraidh ar fhreastalaí SOS agus iad a stóráil mar thábla).
-Ansin gnóthaíonn an chomhpháirt nua gnéithe agus cumais uile an tuismitheora (mar shampla, tacaíocht d’iarrataí OPeNDAP agus an cumas na sonraí a shábháil i roinnt formáidí comhaid coitianta).
+<br>Tá ERDDAP struchtúrtha ionas go mbeidh sé éasca comhpháirteanna éagsúla a chur leis (mar shampla, rang chun sonraí a iarraidh ó fhreastalaí SOS agus é a stóráil mar tábla).
+Faigheann an chomhpháirt nua ansin gnéithe agus cumais uile an tuismitheora (mar shampla, tacaíocht d&#39;iarratais OPeNDAP agus an cumas na sonraí a shábháil i roinnt formáidí coitianta comhaid).
 <br>&nbsp;
-<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Líonraí Scaipeadh Sonraí / Dáileacháin Sonraí:
+<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Líonraí Scaipthe Sonraí / Dáilte Sonraí:
 Teicneolaíocht Push agus Pull</a></strong>
 <br>De ghnáth, gníomhaíonn ERDDAP mar idirghabhálaí:
-glacann sé iarratas ó úsáideoir; faigheann sé sonraí ó fhoinse iargúlta sonraí; déanann sé na sonraí a athfhoirmliú; agus cuireann sé chuig an úsáideoir é.
+glacann sé iarratas ó úsáideoir; faigheann sé sonraí ó fhoinse sonraí cianda; athfhormáidíonn na sonraí; agus cuireann sé chuig an úsáideoir é.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Teicneolaíocht Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> :
-Ach tá sé de chumas ag ERDDAP na sonraí go léir atá ar fáil a fháil go gníomhach ó fhoinse iargúlta sonraí agus
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
+Ach tá an cumas ag ERDDAP freisin na sonraí go léir atá ar fáil a fháil go gníomhach ó chianfhoinse sonraí agus
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">cóip áitiúil de na sonraí a stóráil</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teicneolaíocht Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> :
-Trí
-<a href="#subscriptions">sheirbhísí síntiúis</a> ERDDAP a úsáid, is féidir freastalaithe sonraí eile a chur ar an eolas a luaithe a bheidh sonraí nua ar fáil ionas gur féidir leo na sonraí a iarraidh (trí na sonraí a tharraingt).
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
+Trí úsáid a bhaint as
+<a href="#subscriptions">seirbhísí síntiúis</a> ERDDAP, is féidir freastalaithe sonraí eile a chur ar an eolas a luaithe a bhíonn sonraí nua ar fáil ionas gur féidir leo na sonraí a iarraidh (trí na sonraí a tharraingt).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> agus
+<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid ERDDAP</a> agus
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> seirbhísí síntiúis agus
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">córas brataí</a> ERDDAP ionas go gcuirfear in iúl dóibh láithreach nuair a bheidh sonraí nua ar fáil.
-Is féidir leat iad seo a chur le chéile go héifeachtúil:
-má fillteann tú Cóip EDDGrid timpeall tacar sonraí EDDGrid FromErddap (nó timfhilleadh EDDTableCopy timpeall tacar sonraí EDDTableFromErddap), cruthóidh agus coimeádfaidh ERDDAP cóip áitiúil de tacar sonraí ERDDAP eile go huathoibríoch.
-Toisc go n-oibríonn na seirbhísí síntiúis a luaithe a bhíonn sonraí nua ar fáil, déanann an teicneolaíocht bhrú sonraí a scaipeadh go han-tapa (laistigh de soicind).
-<p>Cuireann an ailtireacht seo gach riarthóir ERDDAP i gceannas ar a chinneadh cá as a dtagann na sonraí dá ERDDAP .
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">córas bratach</a> ERDDAP ionas go gcuirfear ar an eolas iad láithreach nuair a bheidh sonraí nua ar fáil.
+Is féidir leat iad seo a chomhcheangal go héifeachtach:
+má fhillteann tú Cóip EDDGrid thart ar thacar sonraí EDDGrid FromErddap (nó má fhillteann tú Cóip EDDTable timpeall ar thacar sonraí EDDTableFromErddap), cruthóidh agus coimeádfaidh ERDDAP cóip áitiúil de thacar sonraí ERDDAP eile go huathoibríoch agus má choimeádann tú é.
+Toisc go n-oibríonn na seirbhísí síntiúis chomh luath agus a bhíonn sonraí nua ar fáil, scaipeann teicneolaíocht bhrú na sonraí go han-tapa (laistigh de soicind).
+<p>Cuireann an ailtireacht seo gach riarthóir ERDDAP i bhfeighil ar chinneadh cé as a dtagann na sonraí dá ERDDAP .
 Is féidir le riarthóirí ERDDAP eile an rud céanna a dhéanamh.
-Níl aon ghá le comhordú idir riarthóirí.
-Má nascann go leor riarthóirí ERDDAP le ERDDAP a chéile, cruthaítear líonra dáilte sonraí.
-Scaipfear sonraí go tapa, go héifeachtúil, agus scaipfear iad go huathoibríoch ó fhoinsí sonraí (ERDDAP agus freastalaithe eile) chuig láithreáin athdháilte sonraí (ERDDAP ) áit ar bith sa líonra.
-Is féidir le ERDDAP tugtha a bheith ina fhoinse sonraí do roinnt tacar sonraí agus mar shuíomh athdháilte do thacair sonraí eile.
-Tá an líonra mar thoradh air seo cosúil le líonraí dáilte sonraí a bunaíodh le cláir mar
-<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD / IDM Unidata <img 
+Níl gá le comhordú idir riarthóirí.
+Má nascann go leor riarthóirí ERDDAP le ERDDAP a chéile, cruthaítear líonra dáileacháin sonraí.
+Scaipfear sonraí go tapa, go héifeachtach agus go huathoibríoch ó fhoinsí sonraí (ERDDAP agus freastalaithe eile) chuig suíomhanna athdháilte sonraí (ERDDAP ) áit ar bith sa líonra.
+Is féidir le ERDDAP ar leith a bheith ina fhoinse sonraí do roinnt tacar sonraí agus ina shuíomh athdháilte do thacair sonraí eile.
+Tá an líonra a bhíonn mar thoradh air a bheag nó a mhór cosúil le líonraí dáileacháin sonraí a bunaíodh le cláir mar
+<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD/IDM Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, ach gan struchtúr chomh docht.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, ach nach bhfuil chomh docht struchtúrtha.
 <br>&nbsp;
 </ul>
 <p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ?
 OPeNDAP ?
 DODS ?
 ERDDAP ?
-Cad é an difríocht?</a></strong> Is é mo thuiscint (Bob):
+Cad é an difríocht?</a></strong> Is é an tuiscint atá agam (Bob) ná:
 <p>DODS (Córas Sonraí Aigéaneolaíochta Dáilte) sna 1990idí, sula raibh http:
-(!) Ann.
-Chruthaigh agus d’úsáid an córas DODS an prótacal dods:
-ar an Idirlíon.
-Nuair a tháinig HTTP i láthair agus d’éirigh chomh maith sin leis, d’aistrigh siad ó dods:
-go http :.
-<p>Ag pointe éigin, thuig siad go raibh an córas úsáideach le haghaidh níos mó ná sonraí aigéaneolaíochta amháin.
-Mar sin mhaolaigh siad gur bhunaigh an t-ainm DODS (cé go bhfuil sé beo i gcód éigin) eagraíocht bheag darb ainm
+(!).
+Chruthaigh agus d’úsáid an córas DODS na dods:
+prótacal ar an Idirlíon.
+Nuair a tháinig HTTP chomh maith agus a d’éirigh chomh maith sin leis, d’athraigh siad ó dods:
+go http:.
+<p>Ag am éigin, thuig siad go raibh an córas úsáideach le haghaidh níos mó ná sonraí aigéaneolaíochta.
+Mar sin dhírigh siad an t-ainm DODS sin (cé go maireann sé i gcód éigin), bhunaigh siad eagraíocht bheag ar a dtugtar
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> agus scríobh an
-<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">tsonraíocht DAP (Prótacal Rochtana Sonraí) <img 
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> agus scríobh an
+<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">tsonraíocht DAP (Prótacal Rochtana Sonraí).
+<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, a dhéanann caighdeánú ar fhormáid na n-iarratas ar mheiteashonraí agus / nó sonraí, agus na freagraí leis na meiteashonraí agus / nó na sonraí.
-OPeNDAP (an eagraíocht) fós ag cíoradh DAP (an tsonraíocht) agus is é údar Hyrax (an freastalaí sonraí dá ngairtear OPeNDAP dhearmad go minic).
-<p>Is freastalaithe sonraí (bogearraí) iad Hyrax, THREDDS, GRADS, ERDDAP agus daoine eile a chuireann DAP i bhfeidhm.
-Cuireann gach ceann acu fo-thacar de DAP i bhfeidhm ach déanann siad rudaí eile ar bhealach difriúil.
-<p>Úsáideann ERDDAP cód (san eolaire&quot;dods&quot;) (scríofa i ndáiríre ag Jake Hamby ag NASA JPL) le haghaidh roinnt gnéithe de léamh sonraí ó fhreastalaithe DAP seachtracha.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, a chaighdeánaíonn formáid na n-iarratas ar mheiteashonraí agus/nó sonraí, agus na freagraí leis na meiteashonraí agus/nó na sonraí.
+OPeNDAP (an eagraíocht) fós ina aoire ar DAP (an tsonraíocht) agus is údar Hyrax (an freastalaí sonraí ar a dtugtar OPeNDAP go minic de dhearmad).
+<p>Is freastalaithe sonraí (bogearraí) iad Hyrax, THREDDS, GRADS, ERDDAP agus eile a chuireann DAP .
+Cuireann gach duine acu fo-thacar de DAP i bhfeidhm ach déanann siad rudaí eile an-difriúil.
+<p>Úsáideann ERDDAP cód (san eolaire&quot;dods&quot;) (iarbhír scríofa ag Jake Hamby ag NASA JPL) le haghaidh roinnt gnéithe de shonraí léitheoireachta ó fhreastalaithe seachtracha DAP .
 Úsáideann ERDDAP a chód féin chun freagraí DAP a scríobh amach.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">An réiteach é ERDDAP ar fhadhbanna dáileadh sonraí / rochtana sonraí gach duine?</a></strong>
-<br>Déanann Uimh.
-ERDDAP iarracht láthair milis a fháil ar réiteach an-mhaith é ar fhormhór na bhfadhbanna dáilte sonraí a bhí rompu.
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">An réiteach é ERDDAP ar fhadhbanna dáilte sonraí / rochtana sonraí gach duine?</a></strong>
+<br>Déanann ERDDAP iarracht teacht ar láthair milis atá ina réiteach fíormhaith ar fhormhór na bhfadhbanna um dháileadh sonraí ar thugamar aghaidh orthu.
 Glacann ERDDAP cur chuige meánearraí:
-Féadann sé sonraí a fháil ó go leor cineálacha éagsúla freastalaithe iargúlta sonraí agus féadann sé na sonraí sin a thabhairt do chliaint i go leor formáidí comhaid éagsúla.
-Tá sé deartha le bheith ina réiteach agnostach a fhéachann le freastalaithe sonraí eile (OPeNDAP, SOS, OBIS, WMS, ...) a dhéanamh idir-inoibritheach.
+Is féidir leis sonraí a fháil ó go leor cineálacha éagsúla cianfhreastalaithe sonraí agus is féidir leis na sonraí sin a thabhairt do chliaint i go leor formáidí comhaid éagsúla.
+Tá sé deartha le bheith ina réiteach agnostic a fhéachann le freastalaithe sonraí eile (OPeNDAP, SOS, OBIS, WMS, ...) a bheith comh-inoibritheach.
 An bhfuil freastalaí sonraí foirfe amháin ann a fhreastalaíonn go foirfe ar riachtanais gach duine?
-Ní dóigh linn.
-Agus fiú má cheapann tú go bhfuil nó go mbeidh, beidh tamall fada ann sula n-aistreoidh gach duine chuige, má bhí riamh.
-Go dtí sin, tá ERDDAP ar fáil anois chun freastalaithe sonraí eile a dhéanamh comh-inoibritheach agus chun sonraí a sheirbheáil anois.
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">Is féidir le ERDDAP go leor / an chuid is mó de na tacair sonraí a láimhseáil mar atá, ach níl gach ceann acu.</a> Ní hé nach bhfuil na tacair sonraí atá fágtha (m.sh., sonraí samhail ag baint úsáide as teilgean sféar ciúbach) tábhachtach.
-Níl ann ach go gcuireann sprioc ERDDAP sonraí a thabhairt ar ais i bhformáidí comhaid choitianta (cuid acu simplí go leor), cosc ar struchtúr inmheánach sonraí níos casta.
-Is minic go mbíonn freastalaithe speisialaithe sonraí agus bogearraí speisialaithe cliant ag grúpaí taighdeoirí atá ag obair le struchtúir sonraí níos casta atá saincheaptha do riachtanais a bpobal.
-ERDDAP, mar fhreastalaí sonraí ilchuspóra, iarracht dul san iomaíocht leis na sainfhreastalaithe sonraí seo.
-Tá siad saincheaptha de réir riachtanais a bpobal agus déanann siad sár-jab.
-Mar sin féin, is minic nach dtuigeann na bogearraí speisialaithe sa phobal sin ach na tacair sonraí sin.
-<p>A Work-Around for ERDDAP Coimpléasc - tá bealach ag ERDDAP chun tacar sonraí casta nach féidir leis a láimhseáil go díreach a láimhseáil.
+Ní dóigh linn go bhfuil.
+Agus fiú má cheapann tú go bhfuil nó go mbeidh, beidh sé i bhfad sula n-aistríonn gach duine chuige, más rud é riamh.
+Go dtí sin, tá ERDDAP ar fáil faoi láthair chun freastalaithe sonraí eile a dhéanamh idir-inoibritheach agus chun sonraí a sheirbheáil faoi láthair.
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">Is féidir le ERDDAP go leor/formhór na dtacar sonraí a láimhseáil mar atá, ach ní gach ceann acu.</a> Ní hé nach bhfuil na tacair sonraí atá fágtha (m.sh.
+sonraí samhalta ag baint úsáide as teilgean sféar ciúbach) tábhachtach.
+Níl ann ach go gcoisceann sprioc ERDDAP sonraí a chur ar ais i bhformáidí coitianta comhaid (cuid acu atá simplí go leor), struchtúr sonraí inmheánacha níos casta.
+Is minic go mbíonn sainfhreastalaithe sonraí agus sainbhogearraí cliant cheana féin ag grúpaí taighdeoirí a oibríonn le struchtúir sonraí níos casta atá saincheaptha do riachtanais a bpobal.
+ERDDAP, mar fhreastalaí sonraí sainchuspóra, iarracht dul san iomaíocht leis na freastalaithe sonraí speisialaithe seo.
+Déantar iad a shaincheapadh do riachtanais a bpobal agus déanann siad sár-jab.
+Mar sin féin, is minic nach mbíonn na tacair sonraí sin&quot;tuigthe&quot;ach ag na bogearraí speisialaithe sa phobal sin.
+<p>A Oibre Timpeall do Thacair Sonraí Coimpléascacha - tá bealach ag ERDDAP chun tacair shonraí casta a láimhseáil nach féidir leis a láimhseáil go díreach.
 Díreach mar
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >bhunachar sonraí coibhneasta <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> in ann tacar sonraí casta a stóráil trí struchtúr sonraí simplí amháin (tábla) a úsáid, is féidir le ERDDAP na sonraí a sheirbheáil ó thacair sonraí níos casta tríd an tacar sonraí foinse a bhriseadh síos i gcúpla tacar sonraí ERDDAP, gach ceann acu le struchtúir sonraí shimplí chomhchosúla.
-Mar shampla, is féidir roinnt tacar sonraí samhail comhshaoil gridded a stóráil in ERDDAP trí na hathróga dromchla farraige ([am] [domhanleithead] [domhanfhad]) a chur i tacar sonraí amháin ERDDAP, agus trí na hathróga a chur in airde ([am] [airde] [ domhanleithead] [domhanfhad]) i tacar sonraí eile ERDDAP .
-Tá a fhios againn nach bhfuil sé seo oiriúnach, ach is gá ligean do ERDDAP sonraí a chur ar ais i bhformáidí comhaid choitianta (tá cuid acu simplí go leor).
-<p>Cur chuige eile chun déileáil le tacar sonraí casta (m.sh., maidir le sonraí samhail a úsáideann teilgean sféar ciúbach) is ea leagan athphróiseáilte den tacar sonraí ([am] [airde] [domhanleithead] [domhanfhad]) a thairiscint ar féidir le ERDDAP oibriú leis go héasca.
-Níl sé i gceist go gcuirfeadh na struchtúir sonraí níos simplí seo in ionad na mbunstruchtúr sonraí, ach is féidir leo a bheith ina mbealach úsáideach chun na sonraí a dháileadh ar lucht féachana níos leithne.
+      title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> in ann tacar sonraí casta a stóráil trí úsáid a bhaint as struchtúr sonraí simplí amháin (tábla), is féidir le ERDDAP na sonraí ó thacair sonraí níos casta a riaradh tríd an mbunachar sonraí a bhriseadh isteach i gcúpla tacar sonraí ERDDAP, gach ceann acu le struchtúir sonraí comhchosúla simplí.
+Mar shampla, is féidir roinnt tacar sonraí samhlacha comhshaoil greille a stóráil in ERDDAP trí na hathróga dromchla na farraige ([am][domhanleithead][domhanfhad]) a chur i tacar sonraí ERDDAP amháin, agus trí na hathróga a chur le hairde ([am][airde][ domhanleithead][domhanfhad]) i tacar sonraí ERDDAP eile.
+Tá a fhios againn nach bhfuil sé seo oiriúnach, ach is gá ligean do ERDDAP sonraí a chur ar ais i bhformáidí coitianta comhaid (cuid acu simplí go leor).
+<p>Cur chuige eile chun déileáil le tacair shonraí casta (m.sh., le haghaidh sonraí samhaltaithe ag baint úsáide as teilgean sféar ciúbach) is ea leagan aththeilgthe den tacar sonraí ([am][airde][domhanleithead][domhanfhad]) a thairiscint freisin ar féidir le ERDDAP oibriú leis go héasca.
+Níl sé i gceist na struchtúir sonraí níos simplí seo a chur in ionad na mbunstruchtúir sonraí, ach is féidir leo a bheith ina mbealach úsáideach chun na sonraí a dháileadh ar lucht éisteachta níos leithne.
 <br>&nbsp;
-<p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Cé chomh inbhuanaithe agus atá tionscadal ERDDAP ?</strong></a>
+<p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Cé chomh inbhuanaithe atá an tionscadal ERDDAP ?</strong></a>
 <br>Tá ERDDAP an-inbhuanaithe.
-<br>Cuireann sé ionadh agus díomá ar dhaoine áirithe a chloisteáil go bhfuil ERDDAP á fhorbairt den chuid is mó ag duine amháin (mise, Bob Simons).
-[Dála an scéil, is iad mo thuairimí pearsanta na tuairimí ar an leathanach gréasáin seo agus ní gá go léiríonn siad seasamh ar bith ag an Rialtas ná ag an National Oceanic and Atmospheric Administration .] Is eagal leo má tharlaíonn rud éigin domsa, is é sin deireadh ERDDAP .
-Níl sé sin fíor.
-ERDDAP maidir le hinbhuanaitheacht fhadtéarmach ar fheabhas, agus gar don chuid is fearr a d’fhéadfadh a bheith ann.
+<br>Tá iontas agus díomá ar roinnt daoine a chloisteáil go bhfuil ERDDAP forbartha ag duine amháin den chuid is mó (mise, Bob Simons).
+[Dála an scéil, is iad na tuairimí ar an leathanach gréasáin seo mo thuairimí pearsanta agus ní gá go léiríonn siad aon seasamh de chuid an Rialtais nó an National Oceanic and Atmospheric Administration .] Tá eagla orthu, má tharlaíonn rud éigin domsa, gurb é sin deireadh ERDDAP .
+Níl sé sin fíor go simplí.
+ERDDAP maidir le hinbhuanaitheacht fhadtéarmach ar fheabhas, agus gar don fheabhas a d’fhéadfadh a bheith ann.
 <p>Sea, is mise príomhfhorbróir ERDDAP .
-Is fostaí cónaidhme lán-mhaoinithe mé.
-Ní airgead“bog” mo mhaoiniú, mar sin ní fhaighim deontais ná nílim ag brath orthu.
+Is fostaí feidearálach lánmhaoinithe mé.
+Ní airgead“bog” é mo mhaoiniú, mar sin ní fhaighim deontais ná ní bhraithim ar dheontais.
 Caithim níos mó ná leath mo chuid ama ag forbairt ERDDAP .
-Caitear an chuid eile de mo chuid ama ag bainistiú tacar sonraí.
-Tá an obair sin úsáideach do ERDDAP mar is gá dom oibriú le tacar sonraí fíor d’fhonn a bheith ar an eolas go mion cad is gá do ERDDAP a dhéanamh.
-Tacaíonn mo bosses go hiomlán le mo chuid oibre ar ERDDAP toisc go ndéanann sé an rud a fostaíodh mé a dhéanamh:
-é a dhéanamh níos éasca d’eolaithe iascaigh (go príomha, ach gach duine i ndáiríre) sonraí eolaíochta a fháil ó fhoinsí éagsúla.
+Caitear an chuid eile de mo chuid ama ag bainistiú tacair sonraí.
+Tá an obair sin úsáideach do ERDDAP mar ní mór dom oibriú le tacair shonraí réadacha chun go mbeidh a fhios agam go mion cad is gá do ERDDAP a dhéanamh.
+Tacaíonn mo cheannasaithe go hiomlán le mo chuid oibre ar ERDDAP mar go ndéanann sé an méid a fostaíodh dom a dhéanamh:
+é a dhéanamh níos éasca d’eolaithe iascaigh (go príomha, ach gach duine i ndáiríre) sonraí eolaíocha a fháil ó fhoinsí éagsúla.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Is é an rud míorúilteach faoi bhogearraí ná nach gcosnaíonn sé aon rud a mhacasamhlú.</a> Mar sin chun mo phost a dhéanamh, scríobhaim ERDDAP le húsáid ag ERD .
-Sílim gurb é sin an bealach is fearr is féidir liom mo phost a dhéanamh.
-Is é an chúis sin amháin a thugann údar leis an gcostas a bhaineann le ERDDAP a fhorbairt.
+Sílim gurb é sin an bealach is fearr is féidir dom mo phost a dhéanamh.
+Tugann an chúis sin amháin údar leis an gcostas a bhaineann le ERDDAP a fhorbairt.
 (Sílim go bhféadfaí a thaispeáint gur shábháil ERDDAP níos mó ama eolaí NOAA ná mar a chaith mé ag forbairt ERDDAP .
-Am = Airgead.) Ach is é an sochar taobh gur féidir le haon eagraíocht eile
+Am = Airgead.) Ach is é an buntáiste taobh leis gur féidir le haon eagraíocht eile
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid a dháileadh sonraí eolaíocha.
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid sonraí eolaíocha.
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
->Úsáideann níos mó ná 90 eagraíocht i 14 tír ar a laghad ERDDAP</a> .
-B’fhéidir go bhfuil a leithéid de rud ann agus lón saor in aisce.
+>Úsáideann breis agus 90 eagraíocht i 14 thír ar a laghad ERDDAP</a> .
+B’fhéidir go bhfuil a leithéid de rud ann agus lón saor.
 <p>Is clár Java é ERDDAP .
 Tá an cód foinse do gach leagan ar
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, an córas is coitianta a úsáidtear le haghaidh tionscadal bogearraí comhoibritheach.
-Go dtí seo, chuir ceithre ghrúpa eile cód le ERDDAP :
-<ul>
-<li>Scríobh agus chuidigh Jonathan Lafite agus Philippe Makowski ó R.Tech Engineering (ceadúnas:
-foinse oscailte faoi chóipcheart)
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, an córas is coitianta a úsáidtear le haghaidh tionscadal bogearraí comhoibríoch.
+Go dtí seo, chuir na grúpaí/daoine seo cód le ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">CumaiscIR</a>
+<br>Scríobh Jonathan Lafite agus Philippe Makowski ó R.Tech Engineering
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid</a> FromMergeIRFiles.java.
-Go raibh maith agat, Jonathan agus Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >Scríobh .dataTable (TableWriterDataTable.java)</a> agus chuir Roland Schweitzer ó NOAA leis (ceadúnas:
+  >EDDGrid</a> FromMergeIRFiles.java agus chuir sé leis <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (ceadúnas:
 foinse oscailte faoi chóipcheart).
-Go raibh maith agat, Roland!
-<li>Scríobhadh agus chuir Adam Leadbetter agus Rob Fuller an leagan tosaigh den
-<a href="#jsonld" rel="bookmark">Semantic Markup of Datasets le gné json-ld (JSON Linked Data)</a> (agus mar sin an obair chrua ar fad i ndearadh an ábhair) (ceadúnas:
-foinse oscailte faoi chóipcheart) Institiúid na Mara in Éirinn.
+Go raibh maith agat, Jonathan agus Philippe!
+<br>&nbsp;
+<li>TableWriterDataTable
+<br>Scríobh Roland Schweitzer ó NOAA
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a> agus chuir sé leis (ceadúnas:
+foinse oscailte faoi chóipcheart).
+Go raibh maith agat, a Roland!
+<br>&nbsp;
+<li>json-ld
+<br>Scríobh Adam Leadbetter agus Rob Fuller ó Adam Leadbetter an leagan tosaigh den
+<a href="#jsonld" rel="bookmark">Marcáil Séimeantach de Thacair Sonraí le gné json-ld (Sonraí Nasctha JSON)</a> (agus mar sin an obair chrua ar fad i ndearadh an ábhair) agus chuir sé leis (ceadúnas:
+foinse oscailte faoi chóipcheart).
+Foras na Mara in Éirinn.
 Go raibh maith agat, Adam agus Rob!
-<li>Scríobh Rob Fuller agus Adam Leadbetter ó Institiúid na Mara an cód don
+<br>&nbsp;
+<li>orderBy
+<br>Scríobh Rob Fuller agus Adam Leadbetter ó Fhoras na Mara an cód don
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean</a> orderByMean i tabledap agus na hathruithe fairsinge ar an gcód chun tacú leis an athrógName
+  >orderByMean</a> tabledap ar an tábla agus na hathruithe fairsinge ar an gcód chun tacú leis an athrógName
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>/ divisor:
-nodaireacht fhritháireamh</i></a> do gach scagaire orderBy (ceadúnas:
-foinse oscailte faoi chóipcheart) Éireann.
+  ><i>/rannoir:
+nodaireacht fhritháireamh</i></a> do gach scagairí orderBy (ceadúnas:
+foinse oscailte faoi chóipcheart).
+Éireann.
 Go raibh maith agat, Rob agus Adam!
-<li>Chuir Marco Alba ó Fhisic ETT / EMODnet an cód le haghaidh trí chineál marcóra nua (Cearnóg Líonta gan Teorainn, Ciorcal Líonta gan Teorainn, Triantán Líonta Gan Teorainn).
-Go raibh maith agat Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Cineálacha Marcóirí Gan Teorainn
+<br>Chuir Marco Alba ó ETT / EMODnet Physics an cód le haghaidh trí chineál marcóirí nua (Cearnóg Líonta Gan Teorainn, Ciorcal Líonta Gan Teorainn, Triantán Líonta Gan Teorainn) leis.
+Go raibh maith agat, Marco Alba!
+<br>&nbsp;
+<li>Aistriúcháin teachtaireachtaí.xml
+<br>Is é Qi Zeng, a bhí ag obair mar intéirneach le Google Summer of Code, a scríobh an chéad leagan den chód in TranslateMessages.java a úsáideann seirbhís aistriúcháin Google chun teachtaireachtaí.xml a aistriú go teangacha éagsúla.
+Go raibh maith agat, Qi!
+<br>&nbsp;
+<li>orderBy Suim
+<br>Scríobh Marco Alba ó ETT Solutions an cód don
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >scagaire orderBy Sum</a> tabledap an tábla (bunaithe ar ordú Rob Fuller agus Adam orderByMean ) agus na cnaipí Seiceáil Uile agus Díthiceáil Gach ar an bhFoirm Rochtana Sonraí EDDGrid (ceadúnas:
+foinse oscailte faoi chóipcheart).
+agus EMODnet.
+Go raibh maith agat, Marco!
+<br>&nbsp;
+<li>Iarratais lasmuigh den raon .transparentPng
+<br>Glacann ERDDAP anois le hiarratais ar .transparentPnganna nuair atá na luachanna domhanleithead agus/nó domhanfhad i bpáirt nó go hiomlán lasmuigh den raon.
+(Ba é seo ERDDAP GitHub Issues #19, arna phostáil ag Rob Fuller - go raibh maith agat as é sin a phostáil, Rob.) Chris John a scríobh an cód chun é seo a shocrú.
+Go raibh maith agat, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-Tá súil agam go gcuirfidh daoine eile cód amach anseo.
-Má tharlaíonn rud éigin domsa, fostóidh mo bosses athsholáthar leis an gcuspóir sonrach go leanfaidh sé / sí le forbairt ERDDAP .
+Tá súil agam go dtabharfaidh daoine eile cód sa todhchaí.
+Má tharlaíonn rud éigin domsa, fostóidh mo cheannasaithe duine eile a mbeidh an sprioc shonrach aige/aici go leanann sé/sí le forbairt ERDDAP .
 Thairis sin, déanaim iarracht cód an-ghlan a scríobh.
-Scríobhaim tráchtanna Java Doc.
-Scríobhaim tráchtanna sa chód.
-Roghnaigh mé ainmneacha inathraithe go cúramach.
-Leanaim treoirlínte formáidithe Java .
-Iarracht ar fad é seo chun an cód a dhéanamh níos inléite, do ríomhchláraitheoirí eile atá ag iarraidh é a thuiscint agus / nó a athrú, agus domsa, mar gheall go mbeidh dearmad déanta agam i gceann bliana nó dhó ar na sonraí faoi conas agus cén fáth an cód Scríobhadh mar a bhí.
-Déanann cód glan le tuairimí maithe mo chuid oibre leanúnach ar ERDDAP éascú, mar sin tá dreasacht mhór agam cód glan a scríobh le tuairimí maithe.
-<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ach níl mo chuid freagraí go léir go dtí seo an-tábhachtach.</a> Rud amháin atá thar a bheith tábhachtach.
+Scríobhaim tuairimí Java Doc.
+Scríobhaim tuairimí sa chód.
+Roghnaigh mé ainmneacha athraitheacha go cúramach.
+Leanaim na treoirlínte formáidithe Java .
+Is iarracht é seo ar fad an cód a dhéanamh níos inléite, do ríomhchláraitheoirí eile atá ag iarraidh é a thuiscint agus/nó a athrú, agus domsa, mar, i gceann bliana nó dhó, beidh dearmad déanta agam ar na sonraí maidir le conas agus cén fáth a bhfuil an cód.
+a scríobhadh mar a bhí.
+Déanann cód glan le tuairimí maithe mo chuid oibre leanúnach ar ERDDAP níos éasca, agus mar sin tá spreagadh iontach agam cód glan a scríobh le tuairimí maith.
+<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ach níl na freagraí go léir a bhí agam go dtí seo an-tábhachtach.</a> Ach rud amháin atá fíorthábhachtach.
 Ní ráthaíonn ach rud amháin inbhuanaitheacht do ERDDAP nó d’aon tionscadal bogearraí:
-go bhfuil ERDDAP
-<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">Bogearraí Foinse In Aisce agus Oscailte (FOSS) <img 
+gur Bogearraí Foinse Oscailte saor in aisce é ERDDAP
+<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">(FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> .
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> .
 Go sonrach, úsáideann ERDDAP
-<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">ceadúnais bhogearraí atá comhoiriúnach le Apache <img 
+<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">ceadúnais bogearraí atá comhoiriúnach le Apache <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, ionas gur féidir le duine ar bith aon rud is mian leo a dhéanamh leis an gcód.
-<p>Cén fáth go bhfuil sé sin tábhachtach?
-D’fhéadfadh duine a cheapadh go mbeidh bogearraí ar fáil go hiontaofa sa todhchaí toisc go bhfuil cuideachta mhór taobh thiar de.
-Ach chuir Google, mar shampla, deireadh le go leor tionscadal (<a rel="bookmark"
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, ionas gur féidir le duine ar bith aon rud is mian leo a dhéanamh leis an gcód.
+<p>Cén fáth a bhfuil sé sin tábhachtach?
+D&#39;fhéadfadh duine a cheapann go mbeidh bogearraí ar fáil go hiontaofa sa todhchaí toisc go bhfuil cuideachta mhór taobh thiar de.
+Ach tá Google, mar shampla, tar éis deireadh a chur le go leor tionscadal (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >seo liosta <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>).
-Níl mé ag iarraidh pioc a dhéanamh ar Google mar is maith liom Google agus maoiníonn siad líon mór tionscadal foinse oscailte iontach.
-Tá Microsoft tar éis deireadh a chur le tionscadail.
-Tá Apple tar éis deireadh a chur le tionscadail.
+    title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>).
+Níl mé ag iarraidh piocadh ar Google mar is maith liom Google go mór agus maoiníonn siad líon mór tionscadal foinse oscailte iontach.
+Chuir Microsoft deireadh le tionscadail.
+Tá tionscadail scortha ag Apple.
 ...
-Is é an pointe nach bhfuil ann ach dearbhú go leanfaidh an tionscadal ar aghaidh le tacaíocht ó chuideachta mhór.
-Tá an t-ádh ar úsáideoirí na mbogearraí sin, <strong>mura</strong> raibh (agus dá bhrí sin i gcónaí) Bogearraí Foinse Oscailte (FOSS).
-Ansin, aon uair a bheidh spéis ag forbróir amháin fiú amháin, is féidir agus leanfaidh an tionscadal ag éabhlóidiú.
-Is beartas árachais é FOSS.
-Déanta na fírinne, is é FOSS an t-aon bheartas árachais, an t-aon dearbhú, atá tábhachtach.
-Áitíonn FOSS go bhfuil bealach chun tosaigh ann i gcónaí do na bogearraí.
-Is ceart é sin nach féidir le duine ar bith a thógáil ar shiúl, riamh.
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">D’fhéadfadh duine smaoineamh freisin go mbeidh bogearraí a bhfuil foireann mhór forbróirí</a> acu níos inbhuanaithe ná bogearraí le príomhfhorbróir amháin.
-Ach de ghnáth bíonn go leor maoinithe de dhíth ar go leor forbróirí.
-Tá aithne agam ar thionscadal cáiliúil, réasúnta mór le 10 bhforbróir (ní chuirfidh mé náire orthu iad a ainmniú) atá i mbaol tromchúiseach i gcónaí an tionscadal a stopadh toisc nach bhfuil go leor maoinithe acu.
-Tá siad ag brath ar dheontais.
-Bíonn easnamh orthu i gcónaí.
-Chuir a bpátrún iad ar fóirithint i gcónaí ag an nóiméad deireanach, ach tá sé ag éirí an-tuirseach as iad a chur amach.
-Mar sin mura féidir leo milliún dollar a ardú in aghaidh na bliana in airgead deontais (nó má bhíonn an pátrún ró-thuirseach as iad a bhannaí amach), stadfaidh siad.
-Agus ní féidir leis an ngrúpa a shamhlú go bhfuil níos lú ná 10 bhforbróir acu.
-Tá ról le himirt ag gach forbróir ina ghrúpa.
-Ina fhianaise sin, feictear dom gur comhartha iontach é gur féidir, agus go bhfuil, ERDDAP á fhorbairt go gníomhach ag príomhfhorbróir amháin (atá maoinithe go hiomlán) le cúnamh neamhoifigiúil ó roinnt eile.
-Más fíor, drochchomhartha a bheadh ann dá mbeadh ERDDAP ag teastáil ó ERDDAP.
-Níl ach príomhfhorbróir amháin ag ERDDAP, ní tasc ollmhór é a éilíonn maoiniú leanúnach ollmhór; is tasc réasúnta beag é a éilíonn an iarracht agus an maoiniú is lú.
-Tá sé sin níos inbhuanaithe, ní níos lú.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">D’fhéadfadh duine smaoineamh gur smaoineamh maith é cuideachta conarthach a fhostú chun bogearraí a scríobh.</a> Ar tháille, cuirfidh siad forbróirí ar fáil agus geallfaidh siad leanúnachas (rud atá go maith mura / go dtí go n-imeoidh siad as gnó).
-Ach tá siad agat freisin thar bairille:
-ní mór duit an méid a iarrann siad a íoc leo nó mura bhfuil tuilleadh forbartha ann, <strong>mura</strong> FOSS na bogearraí agus mura bhfuil tú á n-íoc ach as obair ar an gcód.
+Is é an pointe nach bhfuil ach tacaíocht cuideachta mhór a bheith cinnte go leanfaidh an tionscadal.
+Níl an t-ádh ar úsáideoirí na mbogearraí sin, <strong>ach amháin má</strong> bhí na bogearraí (agus mar sin, i gcónaí) Saor in Aisce agus Bogearraí Foinse Oscailte (FOSS).
+Ansin, aon uair a bhíonn suim ag fiú forbróir amháin, féadann agus leanfaidh an tionscadal ag éabhlóidiú.
+Is polasaí árachais é FOSS.
+Déanta na fírinne, is é FOSS an t-aon pholasaí árachais, an t-aon dearbhú amháin, atá tábhachtach.
+Áiríonn FOSS go bhfuil bealach chun cinn i gcónaí ann do na bogearraí.
+Is ceart é sin nach féidir le duine ar bith a thabhairt uaidh, go deo.
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">D&#39;fhéadfadh duine smaoineamh freisin go mbeidh bogearraí a bhfuil foireann mhór forbróirí</a> acu níos inbhuanaithe ná bogearraí le príomhfhorbróir amháin.
+Ach is iondúil go mbíonn go leor maoinithe de dhíth ar fhorbróirí go leor.
+Tá aithne agam ar thionscadal cáiliúil, réasúnta mór ina bhfuil 10 bhforbróir (ní bheidh náire orm iad a ainmniú) atá i mbaol mór i gcónaí stop a chur leis an tionscadal toisc nach bhfuil dóthain maoinithe acu.
+Bíonn siad ag brath ar dheontais.
+Ritheann siad easnamh i gcónaí.
+Tá a bpátrún tar éis iad a scaoileadh ar fóirithint i gcónaí ag an nóiméad deireanach, ach tá sé ag éirí an-tuirseach as iad a chur ar ais.
+Mar sin mura bhfuil siad in ann milliún dollar a bhailiú in airgead deontais in aghaidh na bliana (nó má éiríonn an pátrún ró-thuirseach as iad a chur ar ais), stopfaidh siad.
+Agus ní féidir leis an ngrúpa smaoineamh go bhfuil níos lú ná 10 bhforbróir acu.
+Tá ról le himirt ag gach forbróir ina ngrúpa.
+Ina fhianaise sin, feictear dom gur comhartha iontach é gur féidir le ERDDAP a bheith, agus go bhfuil sé, forbartha go gníomhach ag ach príomhfhorbróir amháin (atá maoinithe go hiomlán) le cúnamh neamhoifigiúil ó roinnt eile.
+Más fíor, ba dhrochchomhartha é dá mbeadh ERDDAP ag teastáil ó ERDDAP.
+Ciallaíonn nach bhfuil ach príomhfhorbróir amháin ag ERDDAP nach tasc ollmhór é a dteastaíonn maoiniú leanúnach ollmhór uaidh; is tasc measartha beag é a éilíonn beagán iarrachta agus maoinithe.
+Tá sé sin níos inbhuanaithe, ní lú.
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">B’fhéidir gur smaoineamh maith é cuideachta chonarthach a fhostú chun bogearraí a scríobh.</a> Ar tháille, soláthróidh siad d&#39;fhorbróirí agus geallfaidh siad leanúnachas (rud atá go maith mura / go dtí go dtéann siad as gnó).
+Ach tá siad freisin tú thar bairille:
+ní mór duit a íoc leo cad a iarrann siad nó nach bhfuil aon fhorbairt níos mó, <strong>ach amháin má</strong> tá na bogearraí FOSS agus go bhfuil tú ag íoc ach iad a bheith ag obair ar an gcód.
 Le FOSS, bíonn roghanna agat i gcónaí maidir le conas dul ar aghaidh.
-Toisc gur FOSS é ERDDAP, is rogha maith i gcónaí conraitheoirí duit féin nó d’aon duine maidir le ERDDAP :
-má tharlaíonn aon rud domsa (an príomhfhorbróir amháin), nó mura bhfuil am agam athrú éigin a theastaíonn uait a dhéanamh, nó mise dul ar scor agus ní maith leat obair mo athsholáthair, is féidir leat cuideachta conarthach a fhostú i gcónaí chun na hathruithe atá uait a dhéanamh (nó iad féin a dhéanamh).
+Toisc gur FOSS é ERDDAP, is rogha mhaith iad conraitheoirí i gcónaí duitse nó d’aon duine maidir le ERDDAP :
+má tharlaíonn aon rud domsa (an príomhfhorbróir amháin), nó mura mbíonn an t-am agam athrú éigin a theastaíonn uait a dhéanamh, nó mé.
+dul ar scor agus ní thaitníonn obair m’ionadaí leat, is féidir leat cuideachta chonarthachta a fhostú i gcónaí chun na hathruithe is mian leat a dhéanamh (nó iad féin a dhéanamh).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Go hachomair, tá an dá ghné inbhuanaitheachta is tábhachtaí ag ERDDAP :</a>
 <ol>
-<li>Is tionscadal beag é ERDDAP (beag go leor le láimhseáil ag príomhfhorbróir amháin le cúnamh neamhoifigiúil cúpla ceann eile), mar sin níl acmhainní ollmhóra ag teastáil uaidh.
-<li>Bogearraí Foinse In Aisce agus Foinse Oscailte é ERDDAP, mar sin ní féidir le duine ar bith tú féin nó aon duine eile a chosc ó bheith ag obair ar ERDDAP .
+<li>Is tionscadal beag é ERDDAP (beag go leor le láimhseáil ag príomhfhorbróir amháin le cúnamh neamhoifigiúil ó roinnt eile), agus mar sin níl acmhainní ollmhóra ag teastáil uaidh.
+<li>Is Bogearraí Foinse Oscailte saor in aisce é ERDDAP, mar sin ní féidir le duine ar bith tú féin ná aon duine eile a stopadh ó bheith ag obair ar ERDDAP .
 </ol>
 Ní féidir liom smaoineamh ar chás níos fearr.
-Tá súil agam go maolaíonn sé aon eagla a bhí ort (nó ag aon duine eile) faoi inbhuanaitheacht ERDDAP .
-Má chloiseann tú daoine ag ceistiú nó ag díspreagadh úsáid ERDDAP toisc nach bhfuil ann ach príomhfhorbróir amháin, socraigh go díreach iad trí iad a dhíriú ar an bplé thuas ag an URL seo:
+Tá súil agam go laghdaítear aon imní a bhí ort (nó ar aon duine eile) faoi inbhuanaitheacht ERDDAP .
+Má chloiseann tú daoine ag ceistiú nó ag díspreagadh úsáid ERDDAP toisc nach bhfuil ann ach príomhfhorbróir amháin, socraigh díreach iad le do thoil agus iad ag díriú ar an bplé thuas ag an URL seo:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html # inbhuanaithe</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
 for ERDDAP development, please contact me.
 I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
-<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Conas tacar sonraí a lua i bpáipéar</a></strong>
-<br>Tá sé tábhachtach a chur in iúl do léitheoirí conas a fuair tú na sonraí a d’úsáid tú i do pháipéar.
-Maidir le gach tacar sonraí a d’úsáid tú, féach le do thoil ar mheiteashonraí an tacar sonraí sa rannán ar Struchtúr Tréithe Sonraí ag bun an leathanaigh .html don tacar sonraí, m.sh.
+<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Conas Tacar Sonraí a Luadh i bPáipéar</a></strong>
+<br>Tá sé tábhachtach a chur in iúl do léitheoirí conas a fuair tú na sonraí a d&#39;úsáid tú i do pháipéar.
+Maidir le gach tacar sonraí a d’úsáid tú, féach le do thoil ar mheiteashonraí an tacair sonraí sa rannán Struchtúr Tréithe Tacar Sonraí ag bun an leathanaigh .html don tacar sonraí, m.sh.
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
-Uaireanta cuimsíonn na meiteashonraí formáid lua riachtanach nó molta don tacar sonraí.
-Uaireanta liostaíonn na meiteashonraí&quot;ceadúnas&quot;srianta ar úsáid na sonraí.
+Uaireanta folaíonn na meiteashonraí formáid lua atá riachtanach nó molta don tacar sonraí.
+Uaireanta liostaíonn na meiteashonraí&quot;ceadúnais&quot;srianta ar úsáid na sonraí.
 <p>Chun lua a ghiniúint le haghaidh tacar sonraí:
-<br>Má smaoiníonn tú ar an tacar sonraí mar alt eolaíoch, is féidir leat lua a ghiniúint bunaithe ar an údar (féach na meiteashonraí&quot;cruthaitheoir_ainm&quot;nó&quot;institution&quot;), an dáta ar íoslódáil tú na sonraí, an teideal (féach na meiteashonraí&quot;title&quot;), agus an foilsitheoir (féach na meiteashonraí&quot;publisher_name&quot;).
-Más féidir, cuir san áireamh na URLanna / na URLanna ar leith a úsáidtear chun na sonraí a íoslódáil.
-Má tá
+<br>Má cheapann tú an tacar sonraí mar alt eolaíoch, is féidir leat lua a ghiniúint bunaithe ar an údar (féach na meiteashonraí&quot;creator_name&quot;nó&quot;institution&quot;), an dáta a d&#39;íoslódáil tú na sonraí, an teideal (féach na meiteashonraí&quot;title&quot;), agus an foilsitheoir (féach na meiteashonraí&quot;publisher_name&quot;).
+Más féidir, cuir isteach an URL/na URLanna sonracha a úsáideadh chun na sonraí a íoslódáil.
+Má chuimsíonn meiteashonraí an
 <a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
-  >Aitheantóir Réada Digiteach (DOI )</a> san áireamh i meiteashonraí an tacar sonraí
-<a rel="help" 
-  href="https://en.wikipedia.org/wiki/Digital_object_identifier"
-  ><img 
+  >tshonraí Aitheantóir Oibiachta Digiteach (DOI ) <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, cuir é sin san áireamh sa lua a chruthaíonn tú.
+  title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, cuir é sin san áireamh sa lua a chruthaíonn tú.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Conas ERDDAP a lua i bPáipéar</a></strong>
-<br>Más mian leat ERDDAP féin a lua i bpáipéar eolaíochta, bain úsáid as rud éigin mar
-<br><kbd>Simons, RA 2020.
+<br>Más mian leat ERDDAP é féin a lua i bpáipéar eolaíoch, bain úsáid as rud éigin cosúil le do thoil
+<br><kbd>Simons, RA, 2020.
 ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
+https://coastwatch.pfeg.noaa.gov/erddap .
 Monterey, CA:
 NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Cad dó a seasann an t-acrainm&quot; ERDDAP &quot;?</a></strong>
-<br>Ba acrainm é&quot; ERDDAP &quot;, ach sháraigh sé an tuairisc bhunaidh sin.
-Anois, le do thoil ach smaoineamh air mar ainm, ní acrainm.
+<br>Bhíodh&quot; ERDDAP &quot;ina acrainm, ach d&#39;éirigh sé as an mbunchuntas sin.
+Anois, le do thoil, smaoinigh air mar ainm, ní mar acrainm.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Treoirlínte do Chórais Dáileacháin Sonraí</a></strong>
-<br>Is féidir tuairimí Bob faoi dhearadh agus luacháil na gcóras dáileacháin sonraí a fháil
+<p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Treoirlínte do Chórais Dáilte Sonraí</a></strong>
+<br>Tá tuairimí Bob faoi dhearadh agus faoi mheastóireacht na gcóras dáileacháin sonraí le fáil
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">anseo</a> .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Féadfaidh tú</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>Do Fhreastalaí ERDDAP Féin a Bhunú</strong></a> agus do chuid sonraí féin a sheirbheáil.
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Is féidir leat</a></strong>
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>do fhreastalaí ERDDAP Féin a Shocrú</strong></a> agus do shonraí féin a sheirbheáil.
 <ul>
-<li>Is iomaí sochar a bhaineann leis an iarracht bheag ERDDAP a chur ar bun.
-<li>Má tá seirbhís gréasáin agat cheana féin chun do chuid sonraí a dháileadh, féadfaidh tú ERDDAP a bhunú chun rochtain a fháil ar do chuid sonraí tríd an tseirbhís atá ann cheana nó trí na comhaid foinse nó an bunachar sonraí.
-Ansin, beidh bealach eile ag daoine rochtain a fháil ar do chuid sonraí agus beidh siad in ann na sonraí a íoslódáil i bhformáidí comhaid breise nó mar ghraif nó léarscáileanna.
-<li>Má tá tacar sonraí agat a bhfuil éileamh mór orthu, is féidir leat
+<li>Tá go leor buntáistí ag baint leis an iarracht bheag ERDDAP a bhunú.
+<li>Má tá seirbhís gréasáin agat cheana féin chun do shonraí a dháileadh, is féidir leat ERDDAP a chur ar bun chun rochtain a fháil ar do shonraí tríd an tseirbhís atá ann cheana féin nó trí na comhaid foinse nó an bhunachar sonraí.
+Ansin, beidh bealach eile ag daoine rochtain a fháil ar do shonraí agus beidh siad in ann na sonraí a íoslódáil i bhformáidí breise comhaid nó mar ghraif nó léarscáileanna.
+<li>Má tá tacair shonraí agat a bhfuil éileamh mór orthu, is féidir leat
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
-  >iliomad ERDDAP a shuiteáil a oibríonn le chéile</a> chun riachtanais lárionaid dáilte sonraí mór a mhéadú agus a chomhlíonadh.
+  >ERDDAP iolracha a shuiteáil a oibríonn le chéile</a> chun scála suas agus chun freastal ar riachtanais lárionad mór dáilte sonraí.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Glaoigh orainn</a></h2>
-Má tá ceisteanna, moltaí, nó tráchtanna agat faoi ERDDAP i gcoitinne (ní an tsuiteáil shonrach ERDDAP seo), seol r-phost chuig <kbd>bob dot simons at noaa dot gov</kbd> agus cuir URL ERDDAP a bhaineann go díreach le do cheist nó trácht.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nó, is féidir leat a bheith páirteach i nGrúpa Google / Liosta Ríomhphoist ERDDAP</a> trí chuairt a thabhairt ar
+Má tá ceisteanna, moltaí nó tuairimí agat faoi ERDDAP go ginearálta (ní an tsuiteáil shonrach ERDDAP seo), seol ríomhphost chuig <kbd>bob dot simons at noaa dot gov</kbd> agus cuir isteach an URL ERDDAP a bhaineann go díreach le do cheist nó do thuairim.
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nó, is féidir leat páirt a ghlacadh sa Ghrúpa Google / Liosta Ríomhphoist ERDDAP</a> trí chuairt a thabhairt ar
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> agus cliceáil ar&quot;Déan iarratas ar bhallraíocht&quot;.
-Nuair atá tú i do bhall, féadfaidh tú do cheist a phostáil ansin nó cuardach a dhéanamh féachaint an bhfuil an cheist curtha agus freagartha cheana féin.
+  title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> agus cliceáil ar&quot;Cuir iarratas isteach ar bhallraíocht&quot;.
+Nuair a bheidh tú i do bhall, is féidir leat do cheist a phostáil ansin nó cuardach a dhéanamh féachaint an bhfuil an cheist curtha agus freagraithe cheana féin.
 <p>SÉANADH:
-Is iad na tuairimí ar an leathanach gréasáin seo tuairimí pearsanta Bob Simons agus ní gá go léiríonn siad aon seasamh atá ag an Rialtas ná ag an National Oceanic and Atmospheric Administration .
+Is tuairimí pearsanta Bob Simons iad na tuairimí ar an leathanach gréasáin seo agus ní gá go léiríonn siad aon seasamh de chuid an Rialtais nó an National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
 <Then>Ansin</Then>
 <twoClickMapDefaultTooltip>Sonraigh dronuilleog trí chliceáil ar dhá choirnéal trasnánach. Déan é arís más gá.</twoClickMapDefaultTooltip>
@@ -7342,9 +7372,7 @@ Is féidir teacht ar go leor tacar sonraí trí Sheirbhís Léarscáileanna Gré
 <yourEmailAddress>Do sheoladh ríomhphoist</yourEmailAddress>
 <zoomIn>Zúmáil isteach</zoomIn>
 <zoomOut>Zúmáil Amach</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Cóipeáil téacs chuig an ngearrthaisce</copytexttoclipboard>
+<copytoclipboardnotavailable>Níl cóip chuig an ngearrthaisce ar fáil</copytoclipboardnotavailable>
+<copyimagetoclipboard>Cóipeáil an íomhá chuig an ngearrthaisce</copyimagetoclipboard>
 </erddapMessages>

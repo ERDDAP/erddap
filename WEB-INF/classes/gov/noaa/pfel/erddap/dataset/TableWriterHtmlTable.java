@@ -398,10 +398,11 @@ public class TableWriterHtmlTable extends TableWriter {
                                     } else if (iconAlt.equals("MOV")) { 
                                         viewer = HtmlWidgets.cssTooltipVideo(
                                             questionMarkImageUrl, "?", "", url);
+
                                     } else if (iconAlt.equals("UNK") && url.startsWith("data:image/png;base64,")) { 
                                         viewer = HtmlWidgets.cssTooltipImageBase64(
                                             questionMarkImageUrl, "?", "",
-                                            url, "img" + (totalRows + row),language); 
+                                            url, "img" + (totalRows + row), language); 
                                         s="";
                                     }
                                     if (viewer.length() > 0)
