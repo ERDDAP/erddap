@@ -2149,12 +2149,19 @@ public class Calendar2 {
 
         "[01]?[0-9]/[0123]?[0-9]/[0-9]{4}",                         "M/d/yyyy",      //assume US ordering
         "[01]?[0-9]-[0123]?[0-9]-[0-9]{4}",                         "M-d-yyyy",      //assume US ordering
+        "[0123][0-9] [a-zA-Z]{3} [0-9]{4}",                         "dd MMM yyyy",   //02 Jan 85  //catch zero-padded first
         "[0123]?[0-9] [a-zA-Z]{3} [0-9]{4}",                        "d MMM yyyy",    //2 Jan 85
-        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4}",                        "d-MMM-yyyy",    //02-JAN-1985
-        "[0-9]{4}[a-zA-Z]{3}[0123]?[0-9]",                          "yyyyMMMd",      //1985JAN02  DOD uses this
-        "[0123]?[0-9] [a-zA-Z]{3,} [0-9]{4}",                       "d MMMM yyyy",    //2 January 85
-        "[0123]?[0-9]-[a-zA-Z]{3,}-[0-9]{4}",                       "d-MMMM-yyyy",    //02-JANUARY-1985
-        "[0-9]{4}[a-zA-Z]{3,}[0123]?[0-9]",                         "yyyyMMMMd",      //1985JANUARY02 
+        "[0123][0-9]-[a-zA-Z]{3}-[0-9]{4}",                         "dd-MMM-yyyy",   //02-JAN-1985 //catch zero-padded first
+        "[0123]?[0-9]-[a-zA-Z]{3}-[0-9]{4}",                        "d-MMM-yyyy",    //2-JAN-1985
+        "[0123][0-9][a-zA-Z]{3}[0-9]{4}",                           "ddMMMyyyy",     //02JAN1985 //catch zero-padded first
+        "[0123]?[0-9][a-zA-Z]{3}[0-9]{4}",                          "dMMMyyyy",      //2JAN1985
+        "[0-9]{4}[a-zA-Z]{3}[0123][0-9]",                           "yyyyMMMdd",     //1985JAN02  DOD uses this  //catch zero-padded first
+        "[0-9]{4}[a-zA-Z]{3}[0123]?[0-9]",                          "yyyyMMMd",      //1985JAN02 
+        "[0123][0-9] [a-zA-Z]{3,} [0-9]{4}",                        "dd MMMM yyyy",  //02 January 85 //catch zero-padded first
+        "[0123]?[0-9] [a-zA-Z]{3,} [0-9]{4}",                       "d MMMM yyyy",   //2 January 85
+        "[0123][0-9]-[a-zA-Z]{3,}-[0-9]{4}",                        "dd-MMMM-yyyy",  //02-JANUARY-1985  //catch zero-padded first
+        "[0123]?[0-9]-[a-zA-Z]{3,}-[0-9]{4}",                       "d-MMMM-yyyy",   //2-JANUARY-1985  
+        "[0-9]{4}[a-zA-Z]{3,}[0123]?[0-9]",                         "yyyyMMMMd",     //1985JANUARY02 
 
         "[0123][0-9]Z[0123]?[0-9][a-zA-Z]{3}[0-9]{4}",              "H'Z'dMMMyyyy",    //00Z29dec2013
         "[0123][0-9]Z[0123]?[0-9][a-zA-Z]{3,}[0-9]{4}",             "H'Z'dMMMMyyyy",   //00Z29december2013

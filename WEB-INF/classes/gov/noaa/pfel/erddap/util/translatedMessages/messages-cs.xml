@@ -1281,7 +1281,7 @@ Těch několik jednotek s jinými znaky se nepřevádí</td>
 <td>Většina jednotek UCUM je převedena.</td>
 </tr>
 <tr>
-<td>citlivý na velká písmena</td>
+<td>rozeznává velká a malá písmena</td>
 <td>Ano.
 Pokud jsou povolena různá velká písmena, jsou varianty explicitně definovány.</td>
 <td>Ano.
@@ -1301,7 +1301,7 @@ Nerozpoznané názvy UCUM zůstanou nezměněny.</td>
 <tr>
 <td>metrické předpony
 <br>(např.
-&quot;kilo&quot; a „k“ znamenají &quot;times 1000&quot; ; &quot;µ&quot; a &#39;u&#39; znamená „krát 10^-6“)</td>
+&quot;kilo&quot; a „k“ znamenají &quot;times 1000&quot; ; &quot;µ&quot; a &#39;u&#39; znamenají „krát 10^-6“)</td>
 <td>Podporováno (viz UDUNITS udunits2-prefixes.xml)</td>
 <td>Podporováno (viz sloupec c/s
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">tabulky symbolů prefixů <img 
@@ -1693,6 +1693,9 @@ Povolit&quot;
 Pokud odesíláte požadavky ERDDAP z počítačového programu (jiného než prohlížeče), je obtížné s cookies pracovat.
 Promiňte.
 ]]></cookiesHelp>
+<copyImageToClipboard>Zkopírujte obrázek do schránky</copyImageToClipboard>
+<copyTextToClipboard>Zkopírujte text do schránky</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopírovat do schránky není k dispozici</copyToClipboardNotAvailable>
 <daf>Formulář pro přístup k datům</daf>
 <dafGridBypassTooltip><![CDATA[
 Tato webová stránka pouze zjednodušuje vytváření adres URL griddap.
@@ -5088,7 +5091,7 @@ To může odkazovat na &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#compression">Požadavek na komprimované soubory</a>
 <li><a rel="bookmark" href="#interoperable">ERDDAP zajišťuje interoperabilitu různých typů datových serverů (OPeNDAP, OBIS, SOS, WMS, ...).</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP používá k uchovávání dat pouze dvě základní datové struktury.</a>
-<li><a rel="bookmark" href="#subscriptions">ERDDAP nabízí e-mailové/URL a předplatné RSS .</a>
+<li><a rel="bookmark" href="#subscriptions">ERDDAP nabízí předplatné e-mailů/URL a RSS .</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP je webová aplikace a webová služba.</a>
 <li><a rel="bookmark" href="#rest">ERDDAP má odkazy ve stylu REST a ROA, aby zpřístupnil své služby počítačovým programům.</a>
 <li><a rel="bookmark" href="#security">Bezpečnostní</a>
@@ -5229,7 +5232,7 @@ ERDDAP je strukturován pro tyto doplňky a nezdá se, že by existovaly nějak�
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Požadavky na mřížková data lze provádět v uživatelských jednotkách.</a></strong>
 <br>Ačkoli požadavky na mřížková data v ERDDAP lze provádět pomocí indexů pole (podle specifikace OPeNDAP ), požadavky mohou být také v uživatelských jednotkách (například ve stupních východně) pomocí
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zápisu v závorkách</a>, protože uživatelé uvažují v těchto jednotkách, nikoli v indexech.
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zápisu v závorkách</a>, protože uživatelé přemýšlejí v těchto jednotkách, nikoli v indexech.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP odesílá výsledky v běžných formátech datových souborů.</a></strong>
 <br>Výsledky lze vrátit v libovolném z několika běžných formátů datových souborů &requestFormatExamplesHtml;, namísto pouze původního formátu nebo pouze přenosového formátu OPeNDAP (který nemá standardní souborový projev).
@@ -5239,7 +5242,7 @@ Podívejte se na úplný seznam
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">typů souborů mřížky a typů</a>
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">souborů tabulek</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP ve výsledcích standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku, hloubku a čas.</a></strong>
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku, hloubku a čas ve výsledcích.</a></strong>
 <br>Pro usnadnění porovnávání dat z různých datových sad používají požadavky a výsledky v ERDDAP standardizované jednotky prostorové/časové osy:
 <ul>
 <li>zeměpisná délka je vždy ve degrees_east .
@@ -5247,7 +5250,7 @@ Podívejte se na úplný seznam
 <li>výška je vždy v metrech s kladným = nahoru.
 <li>hloubka je vždy v metrech s kladným = dolů.
 <li>čas, je-li formátován jako číslo, je vždy v&quot;seconds since 1970-01-01T00:00:00Z&quot;(známý jako
-<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">čas Unixu <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unixový čas <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> nebo epochové sekundy, což je<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
@@ -5264,7 +5267,7 @@ ledna 1980).
 Díky tomu lze výsledky z různých zdrojů dat snadno porovnávat.
 <p>ERDDAP má nástroj pro
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">převod číselného času na/z času řetězce</a> .
-<br>Další podrobnosti naleznete v části
+<br>Další podrobnosti najdete v tématu
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jak ERDDAP s časem</a> .
 <p>Protože zeměpisná délka, zeměpisná šířka, nadmořská výška a časové proměnné jsou specificky rozpoznávány, ERDDAP si je vědom geo/časových vlastností každé datové sady.
 To je užitečné při vytváření obrázků s mapami nebo časovými řadami a při ukládání dat do georeferencovaných typů souborů (např.
@@ -5439,7 +5442,7 @@ Klienti RSS pravidelně (každou hodinu?) žádají a čtou dokument RSS XML, ab
 Klient RSS tedy obvykle nezjistí změnu datové sady rychle (průměrně 30 minut?).
 Naproti tomu systém předplatného e-mailu/URL funguje okamžitě, kdykoli ERDDAP zjistí změnu datové sady.
 Proaktivnější přístup e-mailového/URL systému je také mnohem efektivnější:
-Možná budete moci nastavit svého RSS klienta tak, aby každou minutu kontroloval změny (nedělejte to!), ale to by vedlo ke spoustě zbytečných požadavků.
+Možná budete moci nastavit svého RSS klienta tak, aby kontroloval změny každou minutu (nedělejte to!), ale to by vedlo ke spoustě zbytečných požadavků.
 na server ERDDAP a přesto by změny okamžitě nezjistil.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP je</a>
@@ -5605,34 +5608,64 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">stáhnout, na
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >ERDDAP používá více než 90 organizací v nejméně 14 zemích</a> .
 Možná existuje něco jako oběd zdarma.
-<p>ERDDAP je Java program.
+<p>ERDDAP je program v Java .
 Zdrojový kód každé verze je na
 <a rel="bookmark" href="https://github.com/BobSimons">GitHubu <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, nejběžněji používaný systém pro kolaborativní softwarové projekty.
-Dosud kódem do ERDDAP přispěly čtyři další skupiny:
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> napsali a přispěli Jonathan Lafite a Philippe Makowski z R.Tech Engineering (licence:
+Doposud tyto skupiny/lidé přispěli kódem do ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> napsali a přispěli Jonathan Lafite a Philippe Makowski z R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licence:
 open source chráněný autorským právem).
 Děkuji, Jonathane a Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> napsal a přispěl Roland Schweitzer z NOAA (licence:
 open source chráněný autorským právem).
 Děkuji, Rolande!
-<li>Počáteční verzi
+<br>&nbsp;
+<li>json-ld
+<br>Počáteční verzi
 <a href="#jsonld" rel="bookmark">sémantického značení datových sad s funkcí json-ld (JSON Linked Data)</a> (a tedy veškerou tvrdou práci při navrhování obsahu) napsali a přispěli (licence:
 open source chráněný autorským právem) Adam Leadbetter a Rob Fuller z Marine Institute v Irsku.
 Děkuji, Adame a Robe!
-<li>Kód pro
+<br>&nbsp;
+<li>orderBy
+<br>Kód pro
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean</a> orderByMean v tabledap a rozsáhlé změny kódu pro podporu
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >zápisu <i>variableName/divisor:offset</i></a> pro všechny filtry orderBy napsali a přispěli (licence:
 open source chráněný autorským právem) Rob Fuller a Adam Leadbetter z Marine Institute v roce Irsko.
 Děkuji, Robe a Adame!
-<li>Kód pro tři nové typy značek (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) přispěl Marco Alba z ETT / EMODnet Physics.
-Děkuji Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Bezokrajové typy značek
+<br>Kód pro tři nové typy značek (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) přispěl Marco Alba z ETT / EMODnet Physics.
+Děkuji, Marco Alba!
+<br>&nbsp;
+<li>Překlady zpráv.xml
+<br>Počáteční verzi kódu v TranslateMessages.java, která používá překladatelskou službu Google k překladu messages.xml do různých jazyků, napsal Qi Zeng, který pracoval jako stážista Google Summer of Code.
+Děkuji, Qi!
+<br>&nbsp;
+<li>orderBy součtu
+<br>Kód pro
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >filtr orderBy Sum</a> v tabledap (založený na orderByMean Roba Fullera a Adama Leadbettera) a tlačítka Check All a Uncheck All na formuláři EDDGrid Data Access Form napsal a přispěl (licence:
+open source chráněný autorským právem) Marco Alba z ETT Solutions.
+a EMODnet.
+Děkuji, Marco!
+<br>&nbsp;
+<li>Požadavky .transparentPng mimo dosah
+<br>ERDDAP nyní přijímá požadavky na .transparentPng, když jsou hodnoty zeměpisné šířky a/nebo délky částečně nebo zcela mimo rozsah.
+(Toto bylo ERDDAP GitHub Issues #19, zveřejněné Robem Fullerem -- děkujeme za zveřejnění, Robe.) Kód, který to opraví, napsal Chris John.
+Děkuji, Chrisi!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Doufám, že ostatní přispějí kódem v budoucnu.
@@ -5677,7 +5710,7 @@ Ale spousta vývojářů obvykle potřebuje hodně financí.
 Znám slavný, přiměřeně velký projekt s 10 vývojáři (neudělám jim ostudu jejich vyjmenováním), kterému neustále vážně hrozí zastavení projektu, protože nemají dostatek financí.
 Spoléhají na dotace.
 Vždy mají deficit.
-Jejich patron je vždy zachránil na poslední chvíli, ale už je opravdu unavený je zachraňovat.
+Jejich patron je vždy zachránil na poslední chvíli, ale už ho to zachraňování opravdu unavuje.
 Takže pokud se jim nepodaří získat milion dolarů ročně z grantových peněz (nebo je patron příliš unavený jejich zachraňováním), přestanou.
 A skupina si nemůže představit, že by měla méně než 10 vývojářů.
 Každý vývojář má ve své skupině určitou roli.
@@ -5705,7 +5738,7 @@ html#sustainable</a> .
 for ERDDAP development, please contact me.
 I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
-<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Jak citovat datovou sadu v článku</a></strong>
+<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Jak citovat datovou sadu v dokumentu</a></strong>
 <br>Je důležité, abyste čtenáři věděli, jak jste získali data, která jste ve svém článku použili.
 Pro každou datovou sadu, kterou jste použili, se prosím podívejte na metadata datové sady v sekci Struktura atributů datové sady ve spodní části stránky .html pro datovou sadu, např.
 <br><a rel="help" 
@@ -7299,9 +7332,7 @@ K mnoha datovým sadám lze také přistupovat prostřednictvím webové mapové
 <yourEmailAddress>Vaše emailová adresa</yourEmailAddress>
 <zoomIn>Přiblížit</zoomIn>
 <zoomOut>Oddálit</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Zkopírujte text do schránky</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopírovat do schránky není k dispozici</copytoclipboardnotavailable>
+<copyimagetoclipboard>Zkopírujte obrázek do schránky</copyimagetoclipboard>
 </erddapMessages>

@@ -184,10 +184,11 @@ public class String2 {
 
     //splitting canonicalMap and canonicalStringHolderMap into 6 maps allows each 
     //to be bigger and makes synchronized contention less common.
-    private static Map canonicalMap[] = new Map[6];
-    private static Map canonicalStringHolderMap[] = new Map[6];
+    private final static int nCanonicalMaps = 6;
+    private static Map canonicalMap[] = new Map[nCanonicalMaps];
+    private static Map canonicalStringHolderMap[] = new Map[nCanonicalMaps];
     static {
-        for (int i = 0; i < canonicalMap.length; i++) {
+        for (int i = 0; i < nCanonicalMaps; i++) {
             canonicalMap[i]             = new WeakHashMap();
             canonicalStringHolderMap[i] = new WeakHashMap();
         }
@@ -6039,11 +6040,7 @@ and zoom and pan with controls in
         if (s.length() == 0)
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
-        char ch0 = s.charAt(0);
-        Map tCanonicalMap = canonicalMap[
-            ch0 < 'A'? 0 : ch0 < 'N'? 1 : //divide uppercase into 2 parts
-            ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
-            ch0 < 'r'? 4 : 5];
+        Map tCanonicalMap = canonicalMap[s.charAt(s.length() / 2) % nCanonicalMaps];
        
         //faster and logically better to use synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
@@ -6086,12 +6083,7 @@ and zoom and pan with controls in
             return STRING_HOLDER_NULL;
         if (car.length == 0)
             return STRING_HOLDER_ZERO;
-        char b = car[0];
-        int which = //b == -128? 7 : Math.abs(b)/16; //0..7
-            b < 'A'? 0 : b < 'N'? 1 : //divide uppercase into 2 parts
-            b < 'a'? 2 : b < 'j'? 3 : //divide lowercase into 3 parts
-            b < 'r'? 4 : 5;
-        Map tCanonicalStringHolderMap = canonicalStringHolderMap[which];
+        Map tCanonicalStringHolderMap = canonicalStringHolderMap[car[car.length / 2] % nCanonicalMaps];
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)

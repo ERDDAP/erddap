@@ -12,6 +12,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -1473,15 +1474,15 @@ expected =
         results = File2.directReadFrom88591File(dir + tName);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 158];\n" + //changes
+"  Float64 time[time = 160];\n" + //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 158][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = 160][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
 "    MAPS:\n" +
-"      Float64 time[time = 158];\n" +  //changes
+"      Float64 time[time = 160];\n" +  //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +
@@ -1742,9 +1743,14 @@ expected =
 
         //test image
         userDapQuery = "sst[(2008-04-16T00:00:00Z)][][][]&.land=under";
+        String baseName = eddGrid.className() + "_test120to320";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_120to320", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         String2.log("\n*** EDDGridLonPM180.test120to320 finished.");
         debugMode = oDebugMode;
