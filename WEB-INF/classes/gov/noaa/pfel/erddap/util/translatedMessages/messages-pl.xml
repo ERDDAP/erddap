@@ -1240,7 +1240,7 @@ Tak więc ERDDAP interpretuje &quot;years since&quot; i &quot;months since&quot;
 <h2><a class="selfLink" id="syntaxComparison" href="#syntaxComparison" rel="help">Porównanie składni UDUNITS i UCUM</a></h2>
 <table class="erd commonBGColor T">
 <tr>
-<th style="width:8%;">Wydanie</th>
+<th style="width:8%;">Sprawa</th>
 <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a></th>
@@ -1261,9 +1261,9 @@ Kilka jednostek z innymi znakami nie jest konwertowanych</td>
 </tr>
 <tr>
 <td>wielkość liter ma znaczenie</td>
-<td>Tak.
+<td>TAk.
 Gdy dozwolone są różne wielkie litery, warianty są wyraźnie zdefiniowane.</td>
-<td>Tak.
+<td>TAk.
 Konwertery działają z rozróżnianą wielkością liter (&quot;c/s&quot; ) formą jednostek UCUM.</td>
 <td>(Nie są potrzebne żadne zmiany)</td>
 <td>(Nie są potrzebne żadne zmiany)</td>
@@ -1415,7 +1415,7 @@ Niektóre standardy (np.
 Wszystkie są reprezentowane przez &quot;deg&quot; .</td>
 <td>Aby odróżnić różne jednostki stopnia kierunku, konwerter dodaje komentarz do jednostek stopnia kierunku (np.
 &quot;degree_north&quot; staje się &quot;deg{north}&quot; ).</td>
-<td>Jeśli dodasz komentarz ({east}, {north}, {west} lub {true} ), konwerter dokona konwersji na jednostkę kierunku (np.
+<td>Jeśli dodasz komentarz ({east}, {north}, {west} lub {true} ), konwerter przekonwertuje na jednostkę kierunku (np.
 &quot;deg{north}&quot; staje się &quot;degree_north&quot; ); w przeciwnym razie konwerter nie ma możliwości wygenerowania jednostek kierunku w stopniach, więc &quot;deg&quot; jest konwertowane na &quot;degree&quot; .</td>
 </tr>
 <tr>
@@ -1670,6 +1670,9 @@ Zezwalaj”
 Jeśli wysyłasz żądania ERDDAP z programu komputerowego (innego niż przeglądarka), trudno jest pracować z plikami cookie.
 Przepraszam.
 ]]></cookiesHelp>
+<copyImageToClipboard>Skopiuj obraz do schowka</copyImageToClipboard>
+<copyTextToClipboard>Skopiuj tekst do schowka</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopiowanie do schowka niedostępne</copyToClipboardNotAvailable>
 <daf>Formularz dostępu do danych</daf>
 <dafGridBypassTooltip><![CDATA[
 Ta strona internetowa po prostu upraszcza tworzenie adresów URL griddap.
@@ -5204,7 +5207,7 @@ Zobacz pełną listę
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">plików tabel</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standaryzuje nazwy zmiennych i jednostki dla długości, szerokości geograficznej, wysokości, głębokości i czasu w wynikach.</a></strong>
-<br>Aby ułatwić porównywanie danych z różnych zbiorów danych, żądania i wyniki w ERDDAP wykorzystują znormalizowane jednostki osi czasu/przestrzeni:
+<br>Aby ułatwić porównywanie danych z różnych zbiorów danych, żądania i wyniki w ERDDAP wykorzystują ustandaryzowane jednostki osi czasu/przestrzeni:
 <ul>
 <li>długość geograficzna jest zawsze wyrażona w degrees_east .
 <li>szerokość geograficzna jest zawsze w degrees_north .
@@ -5331,7 +5334,7 @@ Tak więc ERDDAP działa jako pomost między różnymi typami programów klienck
 OPeNDAP, WMS ).
 <li>ERDDAP konwertuje dane żądanie do formatu żądania używanego przez źródłowy serwer danych (np.
 OPeNDAP, SOS, OBIS, ...) i wysyła je do źródłowego serwera danych.
-<li>ERDDAP konwertuje dane odpowiedzi ze źródłowego serwera danych na format wewnętrzny, w tym konwertuje wszystkie dane czasowe do wspólnego formatu:
+<li>ERDDAP konwertuje dane odpowiedzi z serwera danych źródłowych do formatu wewnętrznego, w tym konwertuje wszystkie dane czasowe do wspólnego formatu:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
 <li>ERDDAP konwertuje dane z formatu wewnętrznego do formatu pliku wymaganego przez klienta (np.
 .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
@@ -5357,7 +5360,7 @@ W szczególności tabele są bardzo elastycznymi strukturami danych (spójrz na 
 To jest główny powód, dla którego stworzyliśmy ERDDAP w ten sposób.
 <li>To z kolei bardzo ułatwia nam (lub każdemu) pisanie oprogramowania klienckiego, które działa ze wszystkimi zestawami danych ERDDAP .
 <li>Ułatwia to porównywanie danych z różnych źródeł, na przykład dla zintegrowanej analizy ekosystemów (IEA).
-<li>Jesteśmy bardzo świadomi, że jeśli jesteś przyzwyczajony do pracy z danymi w innych strukturach danych, możesz początkowo pomyśleć, że takie podejście jest uproszczone lub niewystarczające.
+<li>Jesteśmy bardzo świadomi, że jeśli jesteś przyzwyczajony do pracy z danymi w innych strukturach danych, możesz początkowo pomyśleć, że to podejście jest uproszczone lub niewystarczające.
 Ale wszystkie struktury danych mają kompromisy.
 Żaden nie jest doskonały.
 Nawet struktury typu „zrób to wszystko” mają swoje wady:
@@ -5398,7 +5401,7 @@ Nowoczesne przeglądarki internetowe mają wbudowanego klienta RSS lub możesz u
 ERDDAP oferuje oddzielny kanał RSS 2.01 dla każdego zestawu danych, dzięki czemu można dowiedzieć się, kiedy zmieniły się interesujące zestawy danych.
 Aby zasubskrybować kanał RSS zestawu danych, kliknij jedną z ikon RSS<img alt="RSS" style="vertical-align:top" title="Ikona RSS." src="&erddapUrl;/images/rss.gif" > które pojawiają się po prawej stronie na stronach internetowych ERDDAP z listami zestawów danych (<a rel="contents" href="&erddapUrl;/info/index.html">przykład</a>) lub na stronach internetowych Formularze dostępu do danych i Stwórz wykres dla poszczególnych zestawów danych (<a href="&erddapUrl;/griddap/etopo180.html">przykład</a>).
 <p><strong>Porównanie</strong> Usługa RSS może być właśnie tym, czego szukasz.
-To fajny standard.
+To niezły standard.
 Jeśli jednak chcesz jak najszybciej dowiedzieć się o zmianach w zbiorze danych, użyj systemu poczty e-mail/adresów URL, a nie RSS .
 Klienci RSS okresowo (co godzinę?) żądają i czytają dokument RSS XML w celu wyszukania zmian.
 Tak więc zazwyczaj klient RSS nie wykrywa szybko zmiany w zestawie danych (średnio 30 minut?).
@@ -5471,9 +5474,9 @@ Korzystając z
 ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> i
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap firmy ERDDAP</a> korzystają z usług subskrypcji i
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">systemu flag</a> ERDDAP, dzięki czemu zostaną powiadomieni natychmiast, gdy pojawią się nowe dane.
-Można je połączyć z doskonałym efektem:
-jeśli EDDGrid kopię EDDGrid wokół zestawu danych EDDGrid FromErddap (lub owiniesz kopię EDDTableCopy wokół zestawu danych EDDTableFromErddap), ERDDAP automatycznie utworzy i utrzyma lokalną kopię zestawu danych innego ERDDAP .
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">systemu flag</a> ERDDAP, dzięki czemu zostaną natychmiast powiadomieni, gdy pojawią się nowe dane.
+Możesz połączyć je ze świetnym efektem:
+jeśli EDDGrid kopię EDDGrid wokół zestawu danych EDDGrid FromErddap (lub owiniesz EDDTableCopy wokół zestawu danych EDDTableFromErddap), ERDDAP automatycznie utworzy i utrzyma lokalną kopię zestawu danych innego ERDDAP .
 Ponieważ usługi subskrypcyjne działają, gdy tylko dostępne są nowe dane, technologia push rozsyła dane bardzo szybko (w ciągu kilku sekund).
 <p>Architektura ta stawia każdemu administratorowi ERDDAP odpowiedzialność za określenie, skąd pochodzą dane dla jego ERDDAP .
 Inni administratorzy ERDDAP mogą zrobić to samo.
@@ -5529,7 +5532,7 @@ ERDDAP, jako serwer danych ogólnego przeznaczenia, nie próbuje konkurować z t
 Są dostosowane do potrzeb swojej społeczności i wykonują świetną robotę.
 Jednak te zbiory danych są często „rozumiane” tylko przez wyspecjalizowane oprogramowanie w tej społeczności.
 <p>Obejście dla złożonych zestawów danych — ERDDAP ma sposób na obsługę złożonych zestawów danych, których nie może obsłużyć bezpośrednio.
-Podobnie jak
+Tak jak
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relacyjna baza danych <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5570,32 +5573,61 @@ Kod źródłowy każdej wersji znajduje się na
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a>, najczęściej używany system do współpracy przy projektach oprogramowania.
-Jak dotąd cztery inne grupy dostarczyły kod do ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> został napisany i wniesiony przez Jonathana Lafite i Philippe Makowskiego z R.Tech Engineering (licencja:
+Jak dotąd te grupy/osoby wniosły kod do ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">PołączIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> został napisany i wniesiony przez Jonathana Lafite i Philippe Makowskiego z R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licencja:
 chronione prawem autorskim open source).
 Dziękuję, Jonathan i Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTabela
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> został napisany i udostępniony przez Rolanda Schweitzera z NOAA (licencja:
 open source).
 Dziękuję, Rolandzie!
-<li>Pierwsza wersja
+<br>&nbsp;
+<li>json-ld
+<br>Pierwsza wersja
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets z funkcją json-ld (JSON Linked Data)</a> (a tym samym cała ciężka praca przy projektowaniu treści) została napisana i wniesiona (licencja:
 chronione prawem autorskim open source) przez Adama Leadbettera i Roba Fullera z Instytut Morski w Irlandii.
 Dziękuję Adamie i Rob!
-<li>Kod dla
+<br>&nbsp;
+<li>orderBy
+<br>Kod dla
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >filtra orderByMean</a> w tabledap oraz obszerne zmiany w kodzie wspierające
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >notację <i>variableName/divisor:offset</i></a> dla wszystkich filtrów orderBy zostały napisane i wniesione (licencja:
 copyrighted open source) przez Roba Fullera i Adama Leadbettera z Instytutu Morskiego w Irlandia.
 Dziękuję Rob i Adam!
-<li>Kod dla trzech nowych typów znaczników (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) został dostarczony przez Marco Alba z ETT / EMODnet Physics.
-Dziękuję Marco Albie.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Typy znaczników bez obramowania
+<br>Kod dla trzech nowych typów znaczników (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) został dostarczony przez Marco Alba z ETT / EMODnet Physics.
+Dziękuję, Marco Albie!
+<br>&nbsp;
+<li>Tłumaczenia wiadomości.xml
+<br>Początkową wersję kodu w TranslateMessages.java, który wykorzystuje usługę tłumaczeniową Google do tłumaczenia wiadomości.xml na różne języki, napisał Qi Zeng, który pracował jako stażysta Google Summer of Code.
+Dziękuję, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>Kod dla
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >filtra orderBy Sum</a> w tabledap (w oparciu o orderByMean Roba Fullera i Adama Leadbettera) oraz przyciski Check All i Uncheck All w formularzu dostępu do danych EDDGrid zostały napisane i udostępnione (licencja:
+chronione prawem autorskim open source) przez Marco Alba z ETT Solutions i EMODnet.
+Dziękuję, Marco!
+<br>&nbsp;
+<li>Żądania spoza zakresu .transparentPng
+<br>ERDDAP akceptuje teraz żądania dla .transparentPng, gdy wartości szerokości i/lub długości geograficznej są częściowo lub całkowicie poza zakresem.
+(To było ERDDAP GitHub Issues #19, opublikowane przez Roba Fullera -- dzięki za opublikowanie tego, Rob.) Kod, który to naprawił, został napisany przez Chrisa Johna.
+Dziękuję Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-Mam nadzieję, że inni będą wnosić swój kod w przyszłości.
+Mam nadzieję, że inni dołożą kod w przyszłości.
 Jeśli coś mi się stanie, moi szefowie zatrudnią zastępcę z konkretnym celem, aby kontynuował rozwój ERDDAP .
 Ponadto staram się pisać bardzo czysty kod.
 Piszę komentarze Java Doc.
@@ -5699,7 +5731,7 @@ A teraz pomyśl o tym jako o nazwie, a nie akronimie.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">tutaj</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Możesz</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>skonfigurować swój własny serwer ERDDAP</strong></a> i obsługiwać własne dane.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>skonfigurować własny serwer ERDDAP</strong></a> i obsługiwać własne dane.
 <ul>
 <li>Niewielki wysiłek związany z założeniem ERDDAP przynosi wiele korzyści.
 <li>Jeśli masz już usługę sieciową do dystrybucji danych, możesz skonfigurować ERDDAP, aby uzyskać dostęp do danych za pośrednictwem istniejącej usługi lub plików źródłowych lub bazy danych.
@@ -7259,9 +7291,7 @@ Do wielu zbiorów danych można również uzyskać dostęp za pośrednictwem Web
 <yourEmailAddress>Twój adres email</yourEmailAddress>
 <zoomIn>Zbliżenie</zoomIn>
 <zoomOut>Pomniejsz</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Skopiuj tekst do schowka</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopiowanie do schowka niedostępne</copytoclipboardnotavailable>
+<copyimagetoclipboard>Skopiuj obraz do schowka</copyimagetoclipboard>
 </erddapMessages>
