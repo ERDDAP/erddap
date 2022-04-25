@@ -4185,15 +4185,15 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("11/22/1985"),      "M/d/yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("11/31/1985"),      "M/d/yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2 Jan 1985"),      "d MMM yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02 Jan 1985"),     "d MMM yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("22 Jan 1985"),     "d MMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02 Jan 1985"),     "dd MMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("22 Jan 1985"),     "dd MMM yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2-JAN-1985"),      "d-MMM-yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02-JAN-1985"),     "d-MMM-yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02-JAN-1985"),     "dd-MMM-yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2 January 1985"),      "d MMMM yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02 January 1985"),     "d MMMM yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("22 January 1985"),     "d MMMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02 January 1985"),     "dd MMMM yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("22 January 1985"),     "dd MMMM yyyy", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2-JANuary-1985"),      "d-MMMM-yyyy", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02-JANuary-1985"),     "d-MMMM-yyyy", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("02-JANuary-1985"),     "dd-MMMM-yyyy", ""); 
 
         Test.ensureEqual(Calendar2.tryToIsoString("1/2/1985"),        "1985-01-02", ""); 
         Test.ensureEqual(Calendar2.tryToIsoString("01/2/1985"),       "1985-01-02", ""); 

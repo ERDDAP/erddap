@@ -1298,7 +1298,7 @@ Tanınmayan UDUNITS adları yorumlara dönüştürülür.</td>
 Tanınmayan UCUM adları değişmeden bırakılır.</td>
 </tr>
 <tr>
-<td>metrik önekleri
+<td>metrik önekler
 <br>(örneğin, &quot;kilo&quot; ve &quot;k&quot;, &quot;&quot;times 1000&quot;anlamına gelir;&quot;µ&quot;ve &#39;u&#39;,&quot;10^-6 kez&quot;anlamına gelir)</td>
 <td>Desteklenir (bkz.
 UDUNITS udunits2-prefixes.xml)</td>
@@ -1307,7 +1307,7 @@ UDUNITS udunits2-prefixes.xml)</td>
     src="../images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>)</td>
 <td>Ön ek, kısaltmasına dönüştürülür (örneğin, &#39;u&#39; )</td>
-<td>Önek, kısaltması olarak bırakılır (örneğin, &#39;u&#39; )</td>
+<td>Ön ek, kısaltması olarak bırakılır (örneğin, &#39;u&#39; )</td>
 </tr>
 <tr>
 <td>çarpma operatörleri</td>
@@ -1349,7 +1349,7 @@ Daha sonra çarpma ve bölme soldan sağa değerlendirilir.</td>
 <tr>
 <td>_ (vurgulamak)</td>
 <td>Bireysel birim adları içinde kullanılır.</td>
-<td>Bir birim adı içinde bir alt simge açıklamasını belirtmek için kullanılır (örneğin, bir Gregoryen ayı için &quot;mo_g&quot; )</td>
+<td>Bir birim adı içindeki bir alt simge açıklamasını belirtmek için kullanılır (örneğin, bir Gregoryen ayı için &quot;mo_g&quot; )</td>
 <td>(Değişiklik gerekmez)</td>
 <td>(Değişiklik gerekmez)</td>
 </tr>
@@ -1370,7 +1370,7 @@ Daha sonra çarpma ve bölme soldan sağa değerlendirilir.</td>
 <tr>
 <td>[ ]</td>
 <td>Kullanılmamış.</td>
-<td>Grup olarak ele alınması gereken sembol gruplarını içine almak için kullanılır (örneğin, uluslararası bir inç için &quot;[in_i]&quot; )</td>
+<td>Grup olarak ele alınması gereken sembol gruplarını dahil etmek için kullanılır (örneğin, uluslararası bir inç için &quot;[in_i]&quot; )</td>
 <td>(Değişiklik gerekmez)</td>
 <td>(Değişiklik gerekmez)</td>
 </tr>
@@ -1386,7 +1386,7 @@ Terim tanımlı değilse, { } ( ) biçimine dönüştürülür.</td>
 <hr>
 <h2><a class="selfLink" id="unitsComparison" href="#unitsComparison" rel="help"
 >UDUNITS ve UCUM Birimlerinin Karşılaştırılması</a></h2>
-Çoğu birim için UDUNITS ve UCUM&#39;daki birimler arasında bire bir yazışma vardır.
+Çoğu birim için, UDUNITS ve UCUM&#39;daki birimler arasında bire bir yazışma vardır.
 Ancak birkaç zorluk ve özel durum var:
 <br>&nbsp;
 <table class="erd commonBGColor T">
@@ -1420,8 +1420,8 @@ Bazı standartlar (örn.
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>), bir veri dosyasındaki enlem ve boylam değişkenlerini belirlemek için derece_doğu ve derece_kuzey kullanın.</td>
 <td>UCUM, ayrı sıcaklık derece birimlerini (örneğin, [degF], Cel, K) tanır, ancak ayrı yön derece birimlerini tanımaz.
 Hepsi &quot;deg&quot; ile temsil edilir.</td>
-<td>Çeşitli yön derece birimleri arasında ayrım yapmak için dönüştürücü, yön derece birimlerine bir yorum ekler (örneğin, &quot;degree_north&quot;, &quot;deg{north}&quot; olur).</td>
-<td>Bir yorum eklerseniz ({east}, {north}, {west} veya {true} ), dönüştürücü bir yön birimine dönüşür (örneğin, &quot;deg{north}&quot;, &quot;degree_north&quot; olur); aksi takdirde, dönüştürücünün yön derece birimleri oluşturmasının bir yolu yoktur, bu nedenle &quot;deg&quot;, &quot;degree&quot; ye dönüştürülür.</td>
+<td>Çeşitli yön derece birimleri arasında ayrım yapmak için, dönüştürücü yön derece birimlerine bir yorum ekler (örneğin, &quot;degree_north&quot;, &quot;deg{north}&quot; olur).</td>
+<td>Bir yorum eklerseniz ({east}, {north}, {west} veya {true} ), dönüştürücü bir yön birimine dönüşür (örneğin, &quot;deg{north}&quot;, &quot;degree_north&quot; olur); aksi takdirde, dönüştürücünün yön derecesi birimleri oluşturmasının bir yolu yoktur, bu nedenle &quot;deg&quot;, &quot;degree&quot; ye dönüştürülür.</td>
 </tr>
 <tr>
 <td>belirli zamanlar</td>
@@ -1438,7 +1438,7 @@ Hepsi &quot;deg&quot; ile temsil edilir.</td>
 </tr>
 <tr>
 <td>&C;</td>
-<td>&quot;&amp;C;&quot;Coulomb anlamına gelir, ancak genellikle yanlışlıkla <kbd>degree_C</kbd> anlamında kullanılır.
+<td>&quot;&amp;C;&quot;Coulomb anlamına gelir, ancak genellikle yanlışlıkla <kbd>degree_C</kbd> anlamına gelir.
 <td>&quot;&amp;C;&quot;Coulomb anlamına gelir.
 Derece Celsius, <kbd>Cel</kbd> ile tanımlanır.</td>
 <td>&quot;&amp;C;&quot;&amp; <kbd>Cel</kbd> &C; yanlış kullanıldı.</td>
@@ -1473,7 +1473,7 @@ Derece Celsius, <kbd>Cel</kbd> ile tanımlanır.</td>
 <td>&PSU; Tanımlanmadı.</td>
 <td>&PSU; Tanımlanmadı.</td>
 <td>&PSU; ve &PSU; { &PSU; } boyutsuz (keyfi) birimlerin adını not etmek için UCUM yöntemini izleyerek.</td>
-<td>{ &PSU; } &PSU;, çünkü CF tarafından önerilen 1e-3 yararlı veya doğru bir tanım değildir.</td>
+<td>{ &PSU; } &PSU;, çünkü CF tarafından önerilen 1e-3 yararlı veya doğru bir açıklama değildir.</td>
 </tr>
 <tr>
 <td>Yorumlar ve Standart Olmayan Terimler</td>
@@ -1680,6 +1680,9 @@ Güvenlik :
 Bir bilgisayar programından (bir tarayıcı dışında) ERDDAP istekleri yapıyorsanız, çerezlerle çalışmak zordur.
 Üzgünüm.
 ]]></cookiesHelp>
+<copyImageToClipboard>Resmi panoya kopyala</copyImageToClipboard>
+<copyTextToClipboard>Metni panoya kopyala</copyTextToClipboard>
+<copyToClipboardNotAvailable>Panoya kopyala kullanılamıyor</copyToClipboardNotAvailable>
 <daf>Veri Erişim Formu</daf>
 <dafGridBypassTooltip><![CDATA[
 Bu web sayfası, griddap URL&#39;lerinin oluşturulmasını basitleştirir.
@@ -5084,7 +5087,7 @@ Bu &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#fileFormats">ERDDAP, sonuçları ortak veri dosyası formatlarında gönderir.</a>
 <li><a rel="bookmark" href="#LLAT">ERDDAP, sonuçlarda boylam, enlem, yükseklik ve zaman için değişken adlarını ve birimlerini standart hale getirir.</a>
 <li><a rel="bookmark" href="#metadata">ERDDAP meta veri ekleyebilir veya değiştirebilir.</a>
-<li><a rel="bookmark" href="#images">ERDDAP, grafikler ve haritalar içeren .png ve .pdf görüntü dosyalarını istemenizi sağlar.</a>
+<li><a rel="bookmark" href="#images">ERDDAP, grafikler ve haritalar içeren .png ve .pdf resim dosyalarını istemenizi sağlar.</a>
 <li><a rel="bookmark" href="#compression">Sıkıştırılmış Dosya İsteme</a>
 <li><a rel="bookmark" href="#interoperable">ERDDAP, farklı tipteki veri sunucularını (OPeNDAP, OBIS, SOS, WMS, ...) birlikte çalışabilir hale getirir.</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP, verileri tutmak için yalnızca iki temel veri yapısı kullanır.</a>
@@ -5097,9 +5100,9 @@ Bu &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#pushPull">Veri Yayma / Veri Dağıtım Ağları:
 Push ve Pull Teknolojisi</a>
 </ul>
-<li><a rel="bookmark" href="#WhatsTheDifference">DAP mı?
+<li><a rel="bookmark" href="#WhatsTheDifference">DAP ?
 OPeNDAP ?
-DODS mı?
+DODS ?
 ERDDAP ?
 Fark ne?</a>
 <li><a rel="bookmark" href="#sweetSpot">ERDDAP herkesin veri dağıtım/veri erişim sorunlarına çözüm mü?</a>
@@ -5109,18 +5112,18 @@ Fark ne?</a>
 <li><a rel="bookmark" href="#acronym">&quot;ERDDAP&quot; kısaltması ne anlama geliyor?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Veri Dağıtım Sistemleri için Yönergeler</a>
 <li><a rel="bookmark" href="#setup">Kendi ERDDAP sunucunuzu kurabilirsiniz.</a>
-<li><a rel="bookmark" href="#contact">Bizimle iletişime geçin</a>
+<li><a rel="bookmark" href="#contact">Bize Ulaşın</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">ERDDAP Çalıştığı Sorunlar</a></h2>
 ERDDAP olmadan, bir kişi (veya bir bilgisayar programı) İnternet&#39;te belirli bir bilimsel veri türü (örneğin, uydu deniz yüzeyi sıcaklık verileri) aradığında, sorunlar vardır ...
 <ul>
-<li>Birçok farklı web sitesinde oldukları için ilginç veri kümelerini bulmak zordur.
+<li>Pek çok farklı web sitesinde oldukları için ilginç veri kümelerini bulmak zordur.
 <br>&nbsp;
 <li>Her site, verileri istemek için farklı bir protokol gerektirir:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
 <li>Her site, verileri farklı bir biçimde döndürür (örneğin, XML, SOAP+XML, OPeNDAP ikili veri akışı, ASCII metni, HDF 4, HDF 5, NetCDF, ...) ve bu, kullandığınız yaygın dosya biçimi değildir.
-istek.
+istemek.
 <br>&nbsp;
 <li>Tarihler+saatler farklı biçimlerde ifade edildiğinden, farklı sitelerden alınan verileri karşılaştırmak zordur, örneğin, &quot;2 Ocak 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot; veya 1 Ocak 1980&#39;den bu yana geçen gün sayısı veya ...).
 </ul>
@@ -5130,7 +5133,7 @@ istek.
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">ilk yarısını izleyin<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> .</strong> (5 dakika)
-<br>İçinde bir bilim adamı,
+<br>İçinde, bir bilim adamı,
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA GNOME yazılımını</a> kullanarak okyanustaki zehirli bir sızıntıyı modellemek için ERDDAP okyanus akıntıları tahmin verilerini indiriyor.
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5151,10 +5154,10 @@ Bir URL, bir isteğin tamamını belirtir.
 <a href="#images">harita ve grafik</a> yapabilir.
 <li>ERDDAP
 <a href="#fileFormats">veriler</a> sunar (sadece haritalar ve grafikler değil).
-<li>ERDDAP, verileri birçok başka programa almayı sağlamak için verileri birçok
+<li>ERDDAP, verilerin birçok başka programa alınmasını sağlamak için verileri birçok
 <a href="#fileFormats">dosya biçiminde</a> döndürebilir.
 <li>NOAA birlikte çalışır:
-Analiz, NOAA, ERDDAP ve GNOME iki ücretsiz yazılım programını ve NOAA NODC/NCDDC&#39;si (NOAA UAF projesi tarafından kolaylaştırılan) tarafından sunulan verileri kullanır.
+Analiz, ERDDAP ve GNOME iki ücretsiz yazılım programını ve NOAA NODC/ NOAA NOAA projesi tarafından kolaylaştırılan) tarafından sunulan verileri kullanır.
 <li>ERDDAP, bilim adamlarının (ve diğerlerinin) işlerini daha verimli yapmalarına yardımcı olmak için
 <a href="#scientificData">bilimsel verileri</a> daha kolay erişilebilir hale getirir.
 <li>ERDDAP kullanmak zor değil.
@@ -5187,8 +5190,8 @@ Gelişmiş Arama, tüm arama tekniklerini birleştirir ve aynı anda birçok far
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP, verileri standart bir şekilde talep etmenizi sağlar,</a></strong>
 <br>veri kaynağının istek protokolünden bağımsız olarak.
 <ul>
-<li>ERDDAP griddap (ERDDAP
-<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab protokolünü</a> uygulaması) ve
+<li>ERDDAP, griddap (ERDDAP
+<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hiperslab protokolünü</a> uygulaması) ve
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> aracılığıyla gridlenmiş verileri kullanılabilir hale getirir.
 <li>ERDDAP, tablo verilerini tabledap (ERDDAP
 <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP kısıtlama protokolünün</a> uygulaması) aracılığıyla kullanılabilir hale getirir.
@@ -5217,7 +5220,7 @@ ERDDAP ayrıca insanların OPeNDAP isteklerini oluşturmasına yardımcı olan V
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> .
 (OPeNDAP harika!) ERDDAP, isteğinizi OPeNDAP, WMS veya SOS formatından veri kaynağının istek formatına çevirir ve yanıtı ERDDAP dahili veri yapılarından birine dönüştürür.
-Ardından ERDDAP, verileri seçtiğiniz ortak dosya biçiminde yeniden biçimlendirir (örneğin, bir .html tablosu, ESRI .asc, Google Earth .kml, .mat, .nc, ODV ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) ve dosyayı size gönderir.
+Ardından ERDDAP, verileri seçtiğiniz ortak dosya biçiminde (örneğin, bir .html tablosu, ESRI .asc, Google Earth .kml, .mat, .nc, ODV ODV .txt, .csv, .tsv, .json olarak) yeniden biçimlendirir., .xhtml, .png, .pdf) ve dosyayı size gönderir.
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">Gridap dosya türleri</a> listesine ve tablo dosyası
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap</a> listesine bakın.
 Verileri istemek için diğer protokoller (örneğin,
@@ -5238,13 +5241,13 @@ Birkaç dahili veri yapısı olduğundan, ek dosya tipi sürücüler eklemek kol
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tablo dosya türlerinin</a> tam listesine bakın.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP, sonuçlarda boylam, enlem, yükseklik, derinlik ve zaman için değişken adlarını ve birimlerini standart hale getirir.</a></strong>
-<br>Farklı veri kümelerinden gelen verilerin karşılaştırmasını kolaylaştırmak için, ERDDAP istekler ve sonuçlar standartlaştırılmış uzay/zaman ekseni birimlerini kullanır:
+<br>Farklı veri kümelerinden verilerin karşılaştırmasını kolaylaştırmak için, ERDDAP istekler ve sonuçlar standartlaştırılmış uzay/zaman ekseni birimlerini kullanır:
 <ul>
 <li>boylam her zaman degrees_east cinsindendir.
 <li>enlem her zaman degrees_north .
 <li>rakım her zaman pozitif=yukarı ile metre cinsindendir.
 <li>derinlik her zaman pozitif=aşağı ile metre cinsindendir.
-<li>zaman, bir sayı olarak biçimlendirildiğinde her zaman &quot;seconds since 1970-01-01T00:00:00Z&quot; (<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix zamanı</a> olarak bilinir)
+<li>zaman, bir sayı olarak biçimlendirildiğinde, her zaman &quot;seconds since 1970-01-01T00:00:00Z&quot; (<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix zamanı</a> olarak bilinir)
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> veya<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
@@ -5259,17 +5262,17 @@ Birkaç dahili veri yapısı olduğundan, ek dosya tipi sürücüler eklemek kol
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> standart <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> örneğin, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (ERDDAP
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">zaman dönüştürücüsü ile sayısal zamanları ISO dize zamanlarına/zamanlarından dönüştürebilirsiniz</a> .) Ayrıca, saat dilimi ve yaz saati karışıklığını önlemek için zaman değerleri her zaman Zulu (UTC, GMT) saat dilimine dönüştürülür.
 </ul>
-Bu, irtifa veri formatı (pozitif değerler yukarı mı yoksa aşağı mı?
-metre veya kulaç olarak mı?) veya zaman verisi formatı (olası formatların kabus gibi bir alanı, örneğin, &quot;Ocak&quot; gibi) hakkında endişelenmenize gerek kalmadan isteklerdeki kısıtlamaları belirtmeyi kolaylaştırır.
+Bu, rakım veri formatı (pozitif değerler yukarı mı yoksa aşağı mı?
+metre veya kulaç cinsinden mi?) veya zaman verisi formatı (olası formatların kabus gibi bir alanı, örneğin, &quot;Ocak&quot; gibi) hakkında endişelenmenize gerek kalmadan isteklerdeki kısıtlamaları belirtmeyi kolaylaştırır.
 2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;veya 1 Ocak 1980&#39;den bu yana geçen günler).
 Bu, farklı veri kaynaklarından elde edilen sonuçların karşılaştırılmasını kolaylaştırır.
 <p>ERDDAP,
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">Sayısal Zamanı String Time&#39;a/Dize Zamanından Dönüştürmek için</a> bir yardımcı programa sahiptir.
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">Sayısal Zamanı bir String Time&#39;a/Dize Zamanından Dönüştürmek için</a> bir yardımcı programa sahiptir.
 <br>Daha fazla ayrıntı için bkz.
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">ERDDAP Nasıl Başa Çıkıyor</a> ?
 <p>Boylam, enlem, yükseklik ve zaman değişkenleri özel olarak tanındığından, ERDDAP her veri kümesinin coğrafi/zamansal özelliklerinin farkındadır.
 Bu, haritalar veya zaman serileri ile görüntüler oluştururken ve coğrafi referanslı dosya türlerinde (örneğin, .esriAscii, .geoJson ve .kml ) verileri kaydederken kullanışlıdır.
-<p>Ölçü birimleri yazmak için iki yaygın standart şunlardır:
+<p>Ölçü birimlerini yazmak için iki yaygın standart şunlardır:
 <ul>
 <li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(harici bağlantı)&quot; title=&quot;Harici bir web sitesine verilen bu bağlantı bir onay teşkil etmez.&quot;&gt; -
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
@@ -5281,7 +5284,7 @@ Bu, haritalar veya zaman serileri ile görüntüler oluştururken ve coğrafi re
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>,
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>, ve
+      title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> ve
 <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> veri dosyaları.
@@ -5312,7 +5315,7 @@ ERDDAP her iki birimin de standart olarak kullanılmasını gerektirmese de, ço
 bunu <kbd>&lt;units_standard&gt;</kbd> etiketi ile belirtebilirsiniz.) ERDDAP&#39;ın birim dönüştürücüsü ile ERDDAP UDUNITS birimlerine/UCUM
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">birimlerinden dönüştürebilirsiniz</a> .
 Bir
-<a href="&erddapUrl;/tabledap/index.html">tabledap veri kümesinden</a> veri veya grafik talep ettiğinizde, UDUNITS veya UCUM birimleri istemek için URL&#39;nin sonuna <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> veya <kbd>&amp;units(&quot;UCUM&quot;)</kbd> ekleyebilirsiniz.
+<a href="&erddapUrl;/tabledap/index.html">tabledap veri kümesinden</a> veri veya grafik talep ettiğinizde, UDUNITS veya UCUM birimleri istemek için URL&#39;nin sonuna <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> veya <kbd>&amp;units(&quot;UCUM&quot;)</kbd> ekleyebilirsin.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">daha fazla bilgi</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP meta veri ekleyebilir veya değiştirebilir.</a></strong>
@@ -5352,8 +5355,8 @@ Bunun yerine, ERDDAP
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> istemci tarafından gönderilen HTTP GET istek başlığında.
 Kabul kodlama listesinde desteklenen bir sıkıştırma türü (gzip, x-gzip veya deflate ) bulunursa, ERDDAP HTTP yanıt başlığında <kbd>content-encoding</kbd> içerir ve iletirken verileri sıkıştırır.
-<kbd>content-encoding</kbd> aramak ve verileri açmak istemci programına bağlıdır.
-Sıkıştırılmış yanıtlar genellikle 3-10 kat daha hızlıdır, ancak dosyaların içeriği zaten sıkıştırılmış olduğundan sıkıştırılmış .png dosyaları istemenin bir faydası yoktur.
+<kbd>content-encoding</kbd> aramak ve verileri sıkıştırmak istemci programına bağlıdır.
+Sıkıştırılmış yanıtlar genellikle 3-10 kat daha hızlıdır, ancak dosyaların içeriği zaten sıkıştırılmış olduğundan sıkıştırılmış .png dosyalarını istemenin bir faydası yoktur.
 Tarayıcılar ve OPeNDAP istemcileri bunu varsayılan olarak yapar.
 Sıkıştırılmış verileri talep ederler ve döndürülen verileri otomatik olarak açarlar.
 Diğer istemciler (örn.
@@ -5363,12 +5366,12 @@ curl ile, curl sıkıştırılmış bir yanıt istemesini ve otomatik olarak sı
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP, farklı tipteki veri sunucularını (OPeNDAP, OBIS, SOS, WMS, ...) birlikte çalışabilir hale getirir.</a></strong>
 <br>Farklı bilimsel topluluklarda farklı türde veri sunucuları kullanılmaktadır.
 Öngörülebilir gelecekte, herhangi bir türün baskın hale gelmesi ve diğerlerinin yerini alması olası değildir.
-Bu nedenle ERDDAP, farklı istemci programları (web tarayıcıları, IDV, Matlab, netCDF programları, ODV, WMS istemcileri vb.) ile farklı veri sunucuları arasında bir köprü görevi görür.
+Bu nedenle ERDDAP, farklı türde istemci programları (web tarayıcıları, IDV, Matlab, netCDF programları, ODV, WMS istemcileri vb.) ile farklı veri sunucuları türleri arasında bir köprü görevi görür.
 <ol>
 <li>ERDDAP, istemcilerin farklı formatlardaki (örn.
 OPeNDAP, WMS ) veri isteklerini kabul eder.
-<li>ERDDAP, verilen bir talebi kaynak veri sunucusu tarafından kullanılan istek formatına dönüştürür (örn.
-OPeNDAP, SOS, OBIS, ...) ve bunu kaynak veri sunucusuna gönderir.
+<li>ERDDAP, verilen bir talebi kaynak veri sunucusu tarafından kullanılan istek formatına (örn.
+OPeNDAP, SOS, OBIS, ...) dönüştürür ve bunu kaynak veri sunucusuna gönderir.
 <li>ERDDAP, kaynak veri sunucusundan gelen yanıt verilerini, tüm zaman verilerini ortak bir biçime dönüştürmek de dahil olmak üzere dahili bir biçime dönüştürür:
 &quot;seconds since 1970-01-01T00:00:00Z&quot; .
 <li>ERDDAP, verileri dahili biçimden istemci tarafından istenen dosya biçimine dönüştürür (örneğin, .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV ODV .txt, .png).
@@ -5381,7 +5384,8 @@ Sadece istedikleri veriyi istedikleri dosya formatında alırlar.
 <li>İnsan istemciler ve bilgisayar istemcileri için karmaşık bir dizi olası veri kümesi yapısıyla başa çıkmak zor olduğundan, ERDDAP yalnızca iki temel veri yapısı kullanır:
 <ul>
 <li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">ızgaralı bir veri yapısı</a> (örneğin, uydu verileri ve model verileri için) ve
-<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tablo şeklinde bir veri yapısı</a> (örneğin, yerinde şamandıra, istasyon ve yörünge verileri için).
+<li>bir
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tablo veri yapısı</a> (örneğin, yerinde şamandıra, istasyon ve yörünge verileri için).
 </ul>
 <li>Elbette, tüm veriler bu yapılarda ifade edilemez, ancak çoğu olabilir.
 Özellikle tablolar çok esnek veri yapılarıdır (<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">ilişkisel veritabanının</a> olağanüstü başarısına bakın)
@@ -5390,7 +5394,7 @@ Sadece istedikleri veriyi istedikleri dosya formatında alırlar.
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> programlar).
 <li>Bu, veri sorgularının oluşturulmasını kolaylaştırır.
 <li>Bu, veri yanıtlarının basit bir yapıya sahip olmasını sağlar, bu da verilerin daha çeşitli standart dosya türlerinde (genellikle yalnızca basit veri yapılarını destekler) sunulmasını kolaylaştırır.
-ERDDAP bu şekilde kurmamızın temel nedeni budur.
+ERDDAP bu şekilde kurmamızın asıl sebebi budur.
 <li>Bu da bizim (veya herhangi birinin) tüm ERDDAP veri kümeleriyle çalışan istemci yazılımı yazmamızı çok kolaylaştırıyor.
 <li>Bu, örneğin Entegre Ekosistem Analizi (IEA) için farklı kaynaklardan gelen verileri karşılaştırmayı kolaylaştırır.
 <li>Diğer veri yapılarındaki verilerle çalışmaya alışkınsanız, başlangıçta bu yaklaşımın basit veya yetersiz olduğunu düşünebilirsiniz.
@@ -5398,10 +5402,10 @@ Ancak tüm veri yapılarının ödünleşimleri vardır.
 Hiçbiri mükemmel değil.
 Her şeyi yapan yapıların bile dezavantajları vardır:
 onlarla çalışmak karmaşıktır ve dosyalar yalnızca özel yazılım kitaplıklarıyla yazılabilir veya okunabilir.
-ERDDAP yaklaşımını onunla çalışmayı denemeye yetecek kadar kabul ederseniz, avantajları olduğunu görebilirsiniz (özellikle veri yanıtlarını tutabilen çoklu dosya türleri için destek).
+ERDDAP yaklaşımını onunla çalışmayı denemeye yetecek kadar kabul ederseniz, avantajları olduğunu görebilirsiniz (özellikle veri yanıtlarını tutabilen çoklu dosya türleri desteği).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Orijinal ERDDAP slayt gösterisi</a> (özellikle
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">veri yapıları slaytı</a>) bu konulardan bahseder.
-<li>Ve bu yaklaşım size tuhaf gelse bile, çoğu ERDDAP istemcisi bunu asla fark etmeyecektir - tüm veri kümelerinin güzel ve basit bir yapıya sahip olduğunu görecekler ve çok çeşitli kaynaklardan veri alabildikleri için minnettar olacaklardır.
+<li>Ve bu yaklaşım size garip gelse bile, çoğu ERDDAP istemcisi bunu asla fark etmeyecektir - tüm veri kümelerinin güzel ve basit bir yapıya sahip olduğunu görecekler ve çok çeşitli kaynaklardan veri alabildikleri için minnettar olacaklar.
 çok çeşitli dosya biçimleri.
 <br>&nbsp;
 </ul>
@@ -5413,15 +5417,15 @@ ERDDAP yaklaşımını onunla çalışmayı denemeye yetecek kadar kabul edersen
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> abonelik hizmetleri,</strong> böylece bir veri kümesi değiştiğinde bilgilendirilebilirsiniz.
 <ul>
 <li>ERDDAP, eksen değerlerinin (örneğin, zaman değerlerinin) ne zaman değiştiğini algılayabildiğinden, gridlenmiş veri kümelerindeki değişiklikleri algılamada çok iyidir.
-<li>ERDDAP, yeni veriler eklendiğinde meta verilerde genellikle herhangi bir değişiklik olmadığından, tablo veri kümelerindeki değişiklikleri algılamada çok iyi değildir.
+<li>ERDDAP, yeni veriler eklendiğinde meta verilerde genellikle herhangi bir değişiklik olmadığı için tablo halindeki veri kümelerindeki değişiklikleri algılamada çok iyi değildir.
 <li>ERDDAP, bir veri kümesinin kullanılamaz hale gelip gelmediğini (ama belki hemen değil) algılayacaktır.
 <li>ERDDAP, bu veri kümesinin tekrar kullanılabilir hale geldiğini algılayacaktır.
-<li>ERDDAP, bu hizmetlerin uygunluğu veya doğruluğu konusunda herhangi bir taahhütte bulunmaz (bkz.
+<li>ERDDAP, bu hizmetlerin uygunluğu veya doğruluğu konusunda hiçbir taahhütte bulunmaz (bkz.
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAP SORUMLULUK REDDİ</a>).
 </ul>
 <p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">E-posta/URL</a> Abonelikleri</strong> (bazı ERDDAP kurulumlarında bulunmaz) Bir veri kümesi değiştiğinde, e-posta/URL abonelik sistemi size <strong>hemen</strong> bir e-posta gönderir veya belirttiğiniz bir URL ile iletişim kurar.
 E-posta/URL abonelikleri bazı ERDDAP kurulumlarında mevcut değildir.
-Bir e-posta/URL aboneliği oluşturmak için zarf simgelerinden birine tıklayın <img alt="Subscribe" style="vertical-align:top" title="Zarf simgesi." src="&erddapUrl;/images/envelope.gif" > Bu ERDDAP kurulumu e-posta/URL aboneliklerini destekliyorsa, ERDDAP web sayfalarında veri kümeleri listeleriyle birlikte (<a rel="contents" href="&erddapUrl;/info/index.html">örnek</a>) ve Veri Erişim Formları ve Bireysel veri kümeleri için Grafik Oluştur web sayfalarında (<a href="&erddapUrl;/griddap/etopo180.html">örnek</a>) en sağda görünen.
+Bir e-posta/URL aboneliği ayarlamak için zarf simgelerinden birine tıklayın <img alt="Subscribe" style="vertical-align:top" title="Zarf simgesi." src="&erddapUrl;/images/envelope.gif" > Bu ERDDAP kurulumu e-posta/URL aboneliklerini destekliyorsa, ERDDAP web sayfalarında veri kümeleri listeleri (<a rel="contents" href="&erddapUrl;/info/index.html">örnek</a>) ve bireysel veri kümeleri için Veri Erişim Formları ve Grafik Yap web sayfalarında (<a href="&erddapUrl;/griddap/etopo180.html">örnek</a>) en sağda görünen.
 (Bilgisayar programcıları:
 Web servisleri yazarsanız, bir veri seti değiştiğinde ERDDAP web servisinize hemen haber vermesini sağlamak için URL sistemini kullanabilirsiniz.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
@@ -5433,7 +5437,7 @@ Modern web tarayıcılarında yerleşik bir RSS istemcisi bulunur veya ayrı bir
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> .
 ERDDAP, ilginç veri kümelerinin ne zaman değiştiğini öğrenebilmeniz için her veri kümesi için ayrı bir RSS 2.01 beslemesi sunar.
-Bir veri kümesinin RSS beslemesine abone olmak için RSS simgelerinden birine tıklayın.<img alt="RSS" style="vertical-align:top" title="RSS simgesi." src="&erddapUrl;/images/rss.gif" > ERDDAP web sayfalarında en sağda veri kümeleri listeleriyle birlikte (<a rel="contents" href="&erddapUrl;/info/index.html">örnek</a>) veya bireysel veri kümeleri için Veri Erişim Formları ve Grafik Oluştur web sayfalarında (<a href="&erddapUrl;/griddap/etopo180.html">örnek</a>) görünenler.
+Bir veri kümesinin RSS beslemesine abone olmak için RSS simgelerinden birine tıklayın.<img alt="RSS" style="vertical-align:top" title="RSS simgesi." src="&erddapUrl;/images/rss.gif" > ERDDAP web sayfalarında veri kümeleri listeleriyle birlikte (<a rel="contents" href="&erddapUrl;/info/index.html">örnek</a>) veya bireysel veri kümeleri için Veri Erişim Formları ve Grafik Oluştur web sayfalarında en sağda görünen (<a href="&erddapUrl;/griddap/etopo180.html">örnek</a>).
 <p><strong>Karşılaştırma</strong> RSS hizmeti tam da aradığınız şey olabilir.
 Güzel bir standarttır.
 Ancak bir veri kümesi değiştiğinde mümkün olan en kısa sürede bilmeniz gerekiyorsa, RSS değil e-posta/URL sistemini kullanın.
@@ -5441,8 +5445,8 @@ RSS istemcileri, değişiklikleri aramak için periyodik olarak (her saat?) RSS 
 Bu nedenle, tipik olarak, bir RSS istemcisi bir veri kümesindeki bir değişikliği hızlı bir şekilde algılamaz (ortalama 30 dakika?).
 Buna karşılık, e-posta/URL abonelik sistemi, ERDDAP bir veri kümesinde bir değişiklik algıladığında hemen harekete geçer.
 E-posta/URL sisteminin daha proaktif yaklaşımı da çok daha verimlidir:
-RSS istemcinizi her dakika değişiklikleri kontrol edecek şekilde ayarlayabilirsiniz (bunu yapmayın!), ancak bu sadece birçok gereksiz isteğe yol açacaktır.
-ERDDAP sunucusuna ve yine de değişiklikleri hemen algılamayacaktı.
+RSS istemcinizi değişiklikleri her dakika kontrol edecek şekilde ayarlayabilirsiniz (bunu yapmayın!), ancak bu sadece birçok gereksiz isteğe yol açar.
+ERDDAP sunucusuna gönderir ve yine de değişiklikleri hemen algılamaz.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP bir</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">web uygulamasıdır <img 
@@ -5464,7 +5468,7 @@ ERDDAP sunucusuna ve yine de değişiklikleri hemen algılamayacaktı.
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> Hizmetlerini bilgisayar programlarına sunmak için -stili bağlantılar.</strong>
 <br>Bu özellikler, ERDDAP üzerine başka bir web servisi oluşturmak için kullanılabilir (tüm işi ERDDAP yapmak!).
 ERDDAP, üst düzey bir veri araştırma/grafikleme hizmeti olarak tasarlanmamıştır.
-Bunun yerine ERDDAP, bu tür web siteleri ve programlar için hizmet sağlamayı amaçlamaktadır.
+Bunun yerine ERDDAP, bu tür web sitelerine ve programlara hizmet vermeyi amaçlamaktadır.
 Dolayısıyla, ERDDAP verilere daha iyi bir arayüz için bir fikriniz varsa, kendi web uygulamanızı veya web hizmetinizi oluşturmanızı ve ERDDAP temel olarak kullanmanızı öneririz.
 ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">Bilgisayar Programları Hizmetleri</a> hakkında daha fazlasını okuyun.
@@ -5477,21 +5481,21 @@ Kullanıcıların halka açık veri kümelerine erişmek için hiçbir zaman otu
 Oturum açan kullanıcılar, genel veri kümelerine ve erişimlerine izin verilen özel veri kümelerine erişebilir.
 Kullanıcılar, oturum açmak ve özel veri kümelerine erişmek için https:
 (Güvenli Yuva Katmanı) kullanmalıdır.
-Veri kümeleri, grafiklere ve haritalara herkesin erişebileceği şekilde yapılandırılabilir, ancak verilere yalnızca yetkili kullanıcılar erişebilir.
+Veri kümeleri, genel olarak erişilebilir grafiklere ve haritalara sahip olacak şekilde yapılandırılabilir, ancak verilere yalnızca yetkili kullanıcılar erişebilir.
 (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">daha fazla bilgi</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP verileri parçalar halinde işler.</a></strong>
-<br>Bellekten tasarruf etmek (büyük bir sorun) ve yanıtların daha erken başlamasını sağlamak için ERDDAP, veri isteklerini parçalar halinde işler - tekrar tekrar kaynaktan bir veri yığını alır, onu temizler (örneğin,
+<br>Bellekten tasarruf etmek (büyük bir sorun) ve yanıtların daha erken başlamasını sağlamak için ERDDAP, veri isteklerini parçalar halinde işler - art arda kaynaktan bir veri yığını alır, onu temizler (örneğin,
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">meta veriler</a> ekler).
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>) ve bunu müşteriye gönderme.
-Birçok veri kaynağı için bu, ilk veri yığınının (örneğin, ilk sensörden gelen) müşteriye dakikalar yerine saniyeler içinde ulaştığı anlamına gelir (örneğin, son sensörden gelen veriler alındıktan sonra), müşteriye güven verir.
+Birçok veri kaynağı için bu, ilk veri yığınının (örneğin, ilk sensörden gelen) müşteriye dakikalar yerine saniyeler içinde ulaştığı anlamına gelir (örneğin, son sensörden gelen veriler alındıktan sonra), bu da müşteriye güven verir.
 veriler geliyor.
 Bellek açısından bu, çok sayıda büyük isteğin (her biri kullanılabilir bellekten daha büyük) aynı anda işlenmesine izin verir.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP modüler bir yapıya sahiptir.</a></strong>
-<br>ERDDAP, farklı bileşenlerin eklenmesi kolay olacak şekilde yapılandırılmıştır (örneğin, bir SOS sunucusundan veri talep etmek ve bir tablo olarak saklamak için bir sınıf).
+<br>ERDDAP, farklı bileşenlerin eklenmesi kolay olacak şekilde yapılandırılmıştır (örneğin, bir SOS sunucusundan veri istemek ve bir tablo olarak saklamak için bir sınıf).
 Yeni bileşen daha sonra üst öğenin tüm özelliklerini ve yeteneklerini kazanır (örneğin, OPeNDAP istekleri için destek ve verileri birkaç yaygın dosya biçiminde kaydetme yeteneği).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Veri Yayma / Veri Dağıtım Ağları:
@@ -5507,13 +5511,13 @@ Ancak ERDDAP ayrıca uzak bir veri kaynağından mevcut tüm verileri aktif olar
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> :
 ERDDAP
-<a href="#subscriptions">abonelik servisleri</a> kullanılarak diğer veri sunucuları yeni veri geldiği anda haberdar edilerek (veri çekerek) veri talep edebilirler.
+<a href="#subscriptions">abonelik servislerini</a> kullanarak, diğer veri sunucuları yeni veri geldiği anda haberdar edilerek veri talep edebilirler (veri çekerek).
 ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ve
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap&#39;ı</a> ERDDAP abonelik hizmetlerini ve
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">bayrak sistemini</a> kullanır, böylece yeni veriler mevcut olduğunda anında haberdar olurlar.
 Bunları harika bir etki için birleştirebilirsiniz:
-bir EDDGrid EDDGrid sararsanız (veya bir EDDTableCopy&#39;yi bir EDDTableFromErddap veri kümesinin etrafına sararsanız), ERDDAP otomatik olarak başka bir ERDDAP veri kümesinin yerel bir kopyasını oluşturur ve korur.
+EDDGrid EDDGrid sararsanız (veya bir EDDTableFromErddap veri kümesinin etrafına bir EDDTableCopy sararsanız), ERDDAP otomatik olarak başka bir ERDDAP veri kümesinin yerel bir kopyasını oluşturur ve korur.
 Abonelik hizmetleri yeni veriler bulunur bulunmaz çalıştığından, push teknolojisi verileri çok hızlı bir şekilde (saniyeler içinde) yayar.
 <p>Bu mimari, her ERDDAP yöneticisine kendi ERDDAP verilerinin nereden geldiğini belirleme görevini verir.
 Diğer ERDDAP yöneticileri de aynısını yapabilir.
@@ -5528,17 +5532,17 @@ Ortaya çıkan ağ kabaca
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>, ancak daha az katı bir şekilde yapılandırılmıştır.
 <br>&nbsp;
 </ul>
-<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP mı?
+<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ?
 OPeNDAP ?
-DODS mı?
+DODS ?
 ERDDAP ?
 Fark ne?</a></strong> Benim (Bob&#39;un) anlayışım şudur:
-<p>DODS (Dağıtılmış Oşinografik Veri Sistemi) 1990&#39;larda, http:(!) olmadan önce oluşturuldu.
+<p>DODS (Dağıtılmış Oşinografik Veri Sistemi) 1990&#39;larda http:(!)&#39;den önce oluşturuldu.
 DODS sistemi, internette dods:
 protokolünü oluşturdu ve kullandı.
-HTTP geldiğinde ve çok başarılı olduğunda, dods:&#39;den http:&#39;ye geçtiler.
+HTTP ortaya çıktığında ve çok başarılı olduğunda, dods:&#39;den http:&#39;ye geçtiler.
 <p>Bir noktada, sistemin oşinografik verilerden daha fazlası için yararlı olduğunu fark ettiler.
-Böylece bu DODS adını terk ettiler (bazı kodlarda yaşıyor olsa da),
+Böylece, bu DODS adını bıraktılar (bazı kodlarda yaşıyor olsa da),
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP</a> adında küçük bir organizasyon kurdular.
 <a rel="bookmark" href="https://www.opendap.org/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5547,7 +5551,7 @@ Böylece bu DODS adını terk ettiler (bazı kodlarda yaşıyor olsa da),
 <a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> meta veri ve/veya veri taleplerinin biçimini ve meta veri ve/veya verilerle verilen yanıtları standartlaştıran .
-OPeNDAP (kuruluş) hala DAP (şartname) yönetir ve Hyrax (genellikle yanlışlıkla OPeNDAP olarak adlandırılan veri sunucusu) yazarıdır.
+OPeNDAP (kuruluş) hala DAP (belirtimi) yönetir ve Hyrax (genellikle yanlışlıkla OPeNDAP olarak adlandırılan veri sunucusu) yazarıdır.
 <p>Hyrax, THREDDS, GRADS, ERDDAP ve diğerleri DAP uygulayan veri sunucularıdır (yazılım).
 Her biri bir DAP alt kümesini uygular, ancak diğer şeyleri çok farklı şekilde yaparlar.
 <p>ERDDAP, harici DAP sunucularından veri okumanın bazı özellikleri için kod (&quot;dods&quot; dizininde) (aslında NASA JPL&#39;de Jake Hamby tarafından yazılmıştır) kullanır.
@@ -5563,13 +5567,13 @@ Herkesin ihtiyaçlarını mükemmel bir şekilde karşılayan mükemmel bir veri
 Biz öyle düşünmüyoruz.
 Ve var olduğunu veya olacağını düşünseniz bile, herkesin ona geçmesi uzun zaman alacaktır.
 O zamana kadar, diğer veri sunucularını birlikte çalışabilir hale getirmek ve şu anda veri sunmak için ERDDAP şu anda mevcuttur.
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP, çoğu/çoğu veri kümesini olduğu gibi işleyebilir, ancak hepsini değil.</a> Kalan veri kümelerinin (örneğin, bir küp küre projeksiyonu kullanan model verileri) önemli olmadığı anlamına gelmez.
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP, birçok/çoğu veri kümesini olduğu gibi işleyebilir, ancak hepsini değil.</a> Bu, kalan veri kümelerinin (örneğin, bir küp küre projeksiyonu kullanan model verileri) önemli olmadığı anlamına gelmez.
 Sadece ERDDAP ortak dosya formatlarında (bazıları oldukça basit olan) verileri döndürme hedefi, daha karmaşık bir dahili veri yapısını engeller.
-Daha karmaşık veri yapılarıyla çalışan araştırmacı grupları, genellikle, topluluklarının ihtiyaçlarına göre özelleştirilmiş özel veri sunucularına ve özel istemci yazılımlarına sahiptir.
-ERDDAP, genel amaçlı bir veri sunucusu olarak bu özelleşmiş veri sunucuları ile rekabet etmeye çalışmaz.
+Daha karmaşık veri yapılarıyla çalışan araştırmacı grupları, genellikle, topluluklarının ihtiyaçlarına göre özelleştirilmiş özel veri sunucularına ve özelleştirilmiş istemci yazılımlarına sahiptir.
+ERDDAP, genel amaçlı bir veri sunucusu olarak, bu özelleşmiş veri sunucuları ile rekabet etmeye çalışmaz.
 Topluluklarının ihtiyaçlarına göre özelleştirilirler ve harika bir iş çıkarırlar.
 Ancak, bu veri kümeleri genellikle yalnızca o topluluktaki özel yazılımlar tarafından &quot;anlanır&quot;.
-<p>Karmaşık Veri Kümeleri için Bir Çözüm - ERDDAP, doğrudan işleyemeyeceği karmaşık veri kümelerini işlemenin bir yolunu sunar.
+<p>Karmaşık Veri Kümeleri için Bir Geçici Çözüm - ERDDAP, doğrudan işleyemeyeceği karmaşık veri kümelerini işlemenin bir yoluna sahiptir.
 Sadece
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >ilişkisel bir veritabanı</a> olarak
@@ -5580,7 +5584,7 @@ Sadece
 Örneğin, bazı gridlenmiş çevresel model veri kümeleri, deniz yüzeyi değişkenlerini ([zaman][enlem][boylam]) bir ERDDAP veri kümesine koyarak ve değişkenleri rakım ([zaman][yükseklik][) ile koyarak ERDDAP saklanabilir.
 enlem][boylam]) başka bir ERDDAP veri kümesinde.
 Bunun ideal olmadığını biliyoruz, ancak ERDDAP ortak dosya biçimlerinde (bazıları oldukça basit) verileri döndürmesine izin vermek gerekiyor.
-<p>Karmaşık veri kümeleriyle (örneğin, bir küp küre projeksiyonu kullanan model veriler için) başa çıkmak için başka bir yaklaşım da, ERDDAP kolayca çalışabileceği veri kümesinin ([zaman][yükseklik][enlem][boylam]) yeniden yansıtılmış bir sürümünü sunmaktır.
+<p>Karmaşık veri kümeleriyle (örneğin, bir küp küre projeksiyonu kullanan model veriler için) uğraşmaya yönelik başka bir yaklaşım da, ERDDAP kolayca çalışabileceği veri kümesinin ([zaman][yükseklik][enlem][boylam]) yeniden yansıtılmış bir sürümünü sunmaktır.
 Bu daha basit veri yapılarının orijinal veri yapılarının yerini alması amaçlanmamıştır, ancak verileri daha geniş bir kitleye dağıtmanın yararlı bir yolu olabilirler.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAP projesi ne kadar sürdürülebilir?</strong></a>
@@ -5600,8 +5604,8 @@ balıkçılık bilim adamlarının (öncelikle, ama aslında herkesin) çeşitli
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Yazılımla ilgili mucizevi şey, kopyalamanın hiçbir maliyeti olmamasıdır.</a> Bu yüzden işimi yapmak için ERDDAP kullanılmak üzere ERD yazıyorum.
 Sanırım işimi yapmam için mümkün olan en iyi yol bu.
 Bu sebep tek başına ERDDAP geliştirme masrafını haklı çıkarır.
-(Sanırım ERDDAP benim ERDDAP geliştirmek için harcadığımdan daha fazla NOAA bilim adamının zamanından tasarruf ettiği gösterilebilir.
-Zaman=Para.) Ancak bunun yan yararı, başka herhangi bir kuruluşun
+(Sanırım ERDDAP benim ERDDAP geliştirmek için harcadığımdan daha fazla NOAA bilim insanının zamanından tasarruf ettiği gösterilebilir.
+Zaman=Para.) Ancak bunun yan yararı, diğer herhangi bir kuruluşun
 <a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP</a> <strong>ücretsiz</strong> olarak indirebilmesi, kurabilmesi ve dağıtabilmesidir.
 bilimsel veriler.
@@ -5614,34 +5618,64 @@ Her sürüm için kaynak kodu
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub&#39;da <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>, ortak yazılım projeleri için en yaygın kullanılan sistem.
-Şimdiye kadar, dört diğer grup ERDDAP kod katkıda bulundu:
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a>, R.Tech Engineering&#39;den Jonathan Lafite ve Philippe Makowski tarafından yazılmış ve katkıda bulunmuştur (lisans:
+Şimdiye kadar, bu gruplar/kişiler ERDDAP kod katkıda bulundu:
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a>, R.Tech Engineering&#39;den Jonathan Lafite ve Philippe Makowski tarafından yazılmış ve katkıda bulunmuştur.
+<!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (lisans:
 telif hakkıyla korunan açık kaynak).
-Jonathan ve Philippe&#39;e teşekkürler!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java) NOAA&#39;dan</a> NOAA Schweitzer tarafından yazıldı ve katkıda bulunuldu (lisans:
+Teşekkürler, Jonathan ve Philippe!
+<br>&nbsp;
+<li>TabloYazarıVeri Tablosu
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a>, NOAA Roland Schweitzer tarafından yazıldı ve katkıda bulunuldu (lisans:
 telif hakkıyla korunan açık kaynak).
 Teşekkürler Roland!
-<li><a href="#jsonld" rel="bookmark">Json-ld (JSON Bağlantılı Veri) özelliğine sahip Veri Kümelerinin Semantik İşaretlemesinin</a> ilk sürümü (ve dolayısıyla içeriğin tasarlanmasındaki tüm zor iş) Adam Leadbetter ve Rob Fuller tarafından yazılmış ve katkıda bulunulmuştur (lisans:
+<br>&nbsp;
+<li>json-ld
+<br><a href="#jsonld" rel="bookmark">Json-ld (JSON Bağlantılı Veri) özelliğine sahip Veri Kümelerinin Semantik İşaretlemesinin</a> ilk sürümü (ve dolayısıyla içeriğin tasarlanmasındaki tüm sıkı çalışma), Adam Leadbetter ve Rob Fuller tarafından yazılmış ve katkıda bulunmuştur (lisans:
 telif hakkıyla korunan açık kaynak).
 İrlanda&#39;daki Deniz Enstitüsü.
 Teşekkürler, Adam ve Rob!
-<li>Tabledap&#39;teki tabledap
+<br>&nbsp;
+<li>orderBy
+<br>Tabledap&#39;teki tabledap
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean</a> kodu ve tüm orderBy filtreleri için
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>değişkenAdı/divisor:offset</i> notasyonunu</a> desteklemek için kodda yapılan kapsamlı değişiklikler, Denizcilik Enstitüsü&#39;nden Rob Fuller ve Adam Leadbetter tarafından yazılmış ve katkıda bulunmuştur (lisans:
+  ><i>değişkenAdı/divisor:offset</i> gösterimini</a> desteklemek için kodda yapılan kapsamlı değişiklikler, Denizcilik Enstitüsü&#39;nden Rob Fuller ve Adam Leadbetter tarafından yazılmış ve katkıda bulunmuştur (lisans:
 telif hakkıyla korunan açık kaynak).
 İrlanda.
 Teşekkürler, Rob ve Adam!
-<li>Üç yeni işaretleyici türünün (Sınırsız Dolgulu Kare, Kenarlıksız Dolgulu Daire, Kenarlıksız Dolgulu Üçgen) kodu ETT / EMODnet Physics&#39;ten Marco Alba tarafından sağlanmıştır.
-Marco Alba&#39;ya teşekkürler.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Kenarlıksız İşaretleme Tipleri
+<br>Üç yeni işaretleyici türünün (Sınırsız Dolgulu Kare, Kenarlıksız Dolgulu Daire, Kenarlıksız Dolgulu Üçgen) kodu ETT / EMODnet Physics&#39;ten Marco Alba tarafından sağlanmıştır.
+Teşekkürler Marco Alba!
+<br>&nbsp;
+<li>message.xml&#39;in çevirisi
+<br>Mesajlar.xml&#39;yi çeşitli dillere çevirmek için Google&#39;ın çeviri hizmetini kullanan TranslateMessages.java&#39;daki kodun ilk sürümü, Google Summer of Code stajyeri olarak çalışan Qi Zeng tarafından yazılmıştır.
+Teşekkürler, Qi!
+<br>&nbsp;
+<li>orderBy
+<br>Tabledap&#39;te tabledap
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy filtresinin</a> kodu (Rob Fuller ve Adam Leadbetter&#39;in orderByMean ) ve EDDGrid Veri Erişim Formu&#39;ndaki Tümünü Kontrol Et ve Tümünün İşaretini Kaldır düğmeleri, ETT Solutions&#39;dan Marco Alba tarafından yazılmış ve katkıda bulunmuştur (lisans:
+telif hakkıyla korunan açık kaynak) ve EMODnet.
+Teşekkürler Marco!
+<br>&nbsp;
+<li>Kapsam dışı .transparentPng İstekleri
+<br>ERDDAP artık enlem ve/veya boylam değerleri kısmen veya tamamen aralık dışında olduğunda .transparentPng isteklerini kabul ediyor.
+(Bu, Rob Fuller tarafından yayınlanan ERDDAP GitHub Sorunları #19&#39;du - bunu gönderdiğiniz için teşekkürler Rob.) Bunu düzeltecek kod Chris John tarafından yazılmıştır.
+Teşekkürler, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Umarım başkaları da gelecekte koda katkıda bulunur.
-Bana bir şey olursa, patronlarım ERDDAP gelişimini sürdürmesi için belirli bir hedefi olan bir yer değiştirecek.
+Bana bir şey olursa, patronlarım ERDDAP gelişimini sürdürmesi için belirli bir hedefle yer değiştirecek birini işe alacaklar.
 Ayrıca, çok temiz kod yazmaya çalışıyorum.
 Java Doc yorumları yazıyorum.
 Yorumları koda yazıyorum.
@@ -5664,14 +5698,14 @@ ERDDAP
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>, böylece herkes kodla istediğini yapabilir.
 <p>Bu neden önemli?
 Arkasında büyük bir şirket olduğu için yazılımın gelecekte güvenilir bir şekilde kullanılabilir olacağı düşünülebilir.
-Ancak örneğin Google, sayısız projeyi durdurdu (<a rel="bookmark"
+Ancak örneğin Google çok sayıda projeyi durdurdu (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >işte bir liste <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>).
 Google&#39;ı seçmek istemiyorum çünkü Google&#39;ı gerçekten seviyorum ve çok sayıda harika, açık kaynaklı projeye fon sağlıyorlar.
-Microsoft, projeleri durdurdu.
-Apple projelerini durdurdu.
+Microsoft projeleri durdurdu.
+Apple projeleri durdurdu.
 ...
 Mesele şu ki, sadece büyük bir şirketin desteğine sahip olmak projenin devam edeceğinin garantisi değil.
 Yazılım Özgür ve Açık Kaynaklı Yazılım (FOSS) <strong>olmadığı sürece</strong> (ve dolayısıyla her zaman öyledir) bu yazılımın kullanıcılarının şansı yok.
@@ -5680,9 +5714,9 @@ FOSS bir sigorta poliçesidir.
 Aslında FOSS önemli olan tek sigorta poliçesi, tek güvencedir.
 FOSS, yazılım için her zaman bir ilerleme yolu olduğunu garanti eder.
 Bu, kimsenin asla elinden alamayacağı bir haktır.
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Büyük bir geliştirici ekibine sahip yazılımın, tek bir ana geliştiriciye sahip yazılımdan daha sürdürülebilir olacağı da düşünülebilir</a> .
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Ayrıca geniş bir geliştirici ekibine sahip bir yazılımın, tek bir ana geliştiriciye sahip yazılımdan daha sürdürülebilir olacağı da düşünülebilir</a> .
 Ancak birçok geliştirici genellikle çok fazla finansmana ihtiyaç duyar.
-10 geliştiriciden oluşan (isimlerini vererek onları utandırmayacağım) ünlü, oldukça büyük bir proje biliyorum ve bu, yeterli finansmana sahip olmadıkları için sürekli ciddi bir şekilde projeyi durdurma tehlikesiyle karşı karşıya.
+10 geliştiriciyle (isimlerini vererek onları utandırmayacağım) ünlü, oldukça büyük bir proje biliyorum; bu proje, yeterli fonları olmadığı için sürekli ciddi bir şekilde projeyi durdurma tehlikesiyle karşı karşıyadır.
 Hibelere güveniyorlar.
 Hep bir açık veriyorlar.
 Patronları onları her zaman son dakikada kurtardı, ama onları kurtarmaktan gerçekten bıktı.
@@ -5691,22 +5725,22 @@ Ve grup, 10&#39;dan az geliştiriciye sahip olmayı tasavvur edemez.
 Her geliştiricinin kendi grubunda oynayacağı bir rolü vardır.
 Bunun ışığında, bana öyle geliyor ki, ERDDAP sadece bir ana geliştirici tarafından (tamamen finanse edilen) birkaç diğerinin gayri resmi yardımı ile aktif olarak geliştirilebileceği ve aktif olarak geliştirilebileceği harika bir işaret.
 Aslında, ERDDAP birden fazla geliştirici gerektirmesi kötüye işaret olur.
-ERDDAP yalnızca bir ana geliştiriciye sahip olması, bunun sürekli devam eden büyük finansman gerektiren çok büyük bir görev olmadığı anlamına gelir; minimum çaba ve finansman gerektiren nispeten küçük bir iştir.
+ERDDAP yalnızca bir ana geliştiriciye sahip olması, bunun sürekli devam eden büyük finansman gerektiren büyük bir görev olmadığı anlamına gelir; minimum çaba ve finansman gerektiren nispeten küçük bir iştir.
 Bu daha sürdürülebilir, daha az değil.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Yazılım yazmak için bir müteahhitlik şirketi tutmanın iyi bir fikir olduğu düşünülebilir.</a> Bir ücret karşılığında, geliştiriciler sağlayacaklar ve süreklilik vaat edecekler (ki bu, işten çıkmadıkça / bitene kadar iyidir).
-Ama aynı zamanda size bir varilden fazla sahipler:
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Yazılım yazmak için bir müteahhitlik şirketi tutmanın iyi bir fikir olduğu düşünülebilir.</a> Bir ücret karşılığında, geliştiriciler sağlayacaklar ve süreklilik vaat edecekler (ki bu, işten çıkmadıkları sürece / bitene kadar iyidir).
+Ama aynı zamanda sizi bir varilden fazla tutuyorlar:
 onlara istediklerini ödemelisiniz ya da yazılım FOSS <strong>olmadıkça</strong> ve onlara kod üzerinde çalışmaları için ödeme yapmadıkça daha fazla geliştirme olmaz.
 FOSS ile nasıl ilerleyeceğiniz konusunda her zaman seçenekleriniz vardır.
-ERDDAP FOSS olduğundan, yükleniciler sizin veya ERDDAP ile ilgili herhangi biri için her zaman iyi bir seçenektir:
-bana bir şey olursa (bir ana geliştirici) veya istediğiniz bir değişikliği yapmak için zamanım yoksa veya ben emekli oldunuz ve benim yerimdeki işi beğenmiyorsanız, istediğiniz değişiklikleri yapmak için (veya kendiniz yapmak için) her zaman bir müteahhitlik şirketi kiralayabilirsiniz.
+ERDDAP FOSS olduğundan, müteahhitler sizin veya ERDDAP ile ilgili herhangi biri için her zaman iyi bir seçenektir:
+bana bir şey olursa (tek ana geliştirici) veya istediğiniz bir değişikliği yapmak için zamanım yoksa veya ben emekli oldunuz ve benim yerime geçecek kişinin işini beğenmiyorsanız, istediğiniz değişiklikleri yapmak için (veya kendiniz yapmak için) her zaman bir müteahhitlik şirketi kiralayabilirsiniz.
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Özetle, ERDDAP en önemli iki sürdürülebilirlik özelliğine sahiptir:</a>
 <ol>
-<li>ERDDAP küçük bir projedir (bir ana geliştirici tarafından birkaç diğerinin resmi olmayan yardımı ile ele alınacak kadar küçüktür), bu nedenle büyük kaynaklar gerektirmez.
+<li>ERDDAP küçük bir projedir (bir ana geliştirici tarafından birkaç diğerinin gayri resmi yardımıyla yürütülebilecek kadar küçüktür), bu nedenle büyük kaynaklar gerektirmez.
 <li>ERDDAP Ücretsiz ve Açık Kaynaklı Yazılımdır, bu nedenle hiç kimse sizin veya başka birinin ERDDAP üzerinde çalışmasını engelleyemez.
 </ol>
 Daha iyi bir durum düşünemiyorum.
 Umarım bu, sizin (veya bir başkasının) ERDDAP sürdürülebilirliği konusundaki korkularınızı giderir.
-Yalnızca bir ana geliştirici olduğu için ERDDAP kullanımını sorgulayan veya bu konuda cesaretini kıran insanları duyarsanız, lütfen onları şu URL&#39;deki yukarıdaki tartışmaya yönlendirerek doğrudan belirtin:
+Yalnızca bir ana geliştirici olduğu için ERDDAP kullanımını sorgulayan veya bu konuda cesaretini kıran kişileri duyarsanız, lütfen onları şu URL&#39;deki yukarıdaki tartışmaya yönlendirerek doğrudan belirtin:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#sürdürülebilir</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5744,7 +5778,7 @@ Monterey, CA:
 NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">&quot;ERDDAP&quot; kısaltması ne anlama geliyor?</a></strong>
 <br>&quot;ERDDAP&quot; eskiden bir kısaltmaydı, ancak bu orijinal tanımın ötesine geçti.
-Şimdi, lütfen bunu bir isim olarak düşünün, kısaltma olarak değil.
+Şimdi, lütfen sadece bir isim olarak düşünün, kısaltma olarak değil.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Veri Dağıtım Sistemleri için Yönergeler</a></strong>
 <br>Bob&#39;un veri dağıtım sistemlerinin tasarımı ve değerlendirilmesi hakkındaki görüşleri
@@ -5754,15 +5788,15 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>ERDDAP Sunucunuzu Kurabilir</strong></a> ve kendi verilerinizi sunabilirsiniz.
 <ul>
 <li>ERDDAP kurmak için küçük bir çaba, birçok fayda sağlar.
-<li>Verilerinizi dağıtmak için halihazırda bir web servisiniz varsa, verilerinize mevcut servis veya kaynak dosyalar veya veritabanı üzerinden erişmek için ERDDAP .
+<li>Verilerinizi dağıtmak için halihazırda bir web hizmetiniz varsa, verilerinize mevcut hizmet üzerinden veya kaynak dosyalar veya veritabanı üzerinden erişmek için ERDDAP .
 Ardından, kişilerin verilerinize erişmenin başka bir yolu olacak ve verileri ek dosya formatlarında veya grafikler veya haritalar olarak indirebilecekler.
 <li>Yüksek talep gören veri kümeleriniz varsa, ölçeği büyütmek ve büyük bir veri dağıtım merkezinin ihtiyaçlarını karşılamak için
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
-  >birlikte çalışan birden fazla ERDDAP</a> kurabilirsiniz.
+  >birlikte çalışan birden çok ERDDAP</a> kurabilirsiniz.
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Bizimle iletişime geçin</a></h2>
-Genel olarak ERDDAP hakkında sorularınız, önerileriniz veya yorumlarınız varsa (bu özel ERDDAP kurulumu değil), lütfen <kbd>bob dot simons at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Bize Ulaşın</a></h2>
+Genel olarak ERDDAP hakkında sorularınız, önerileriniz veya yorumlarınız varsa (bu belirli ERDDAP kurulumu değil), lütfen <kbd>bob dot simons at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
 <br>Veya
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap adresini</a> ziyaret ederek
@@ -7308,9 +7342,7 @@ ERDDAP Web Harita Hizmeti (WMS ) üzerinden de birçok veri setine erişilebilir
 <yourEmailAddress>e</yourEmailAddress>
 <zoomIn>Yakınlaştır</zoomIn>
 <zoomOut>Uzaklaştırmak</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Metni panoya kopyala</copytexttoclipboard>
+<copytoclipboardnotavailable>Panoya kopyala kullanılamıyor</copytoclipboardnotavailable>
+<copyimagetoclipboard>Resmi panoya kopyala</copyimagetoclipboard>
 </erddapMessages>
