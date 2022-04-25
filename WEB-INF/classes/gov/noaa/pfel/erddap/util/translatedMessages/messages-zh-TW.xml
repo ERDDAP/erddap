@@ -978,7 +978,7 @@ UDUNITS將月份定義為 year/12。不幸的是，我們看到的大多數/所�
 
 <p>&nbsp;
 <hr>
-<h2><a class="selfLink" id="syntaxComparison" href="#syntaxComparison" rel="help">UDUNITS和 UCUM 語法的比較</a></h2>
+<h2><a class="selfLink" id="syntaxComparison" href="#syntaxComparison" rel="help">UDUNITS和 UCUM 語法比較</a></h2>
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">問題</th>
@@ -995,14 +995,14 @@ UDUNITS將月份定義為 year/12。不幸的是，我們看到的大多數/所�
 <td>字符集</td>
 <td>UDUNITS -1 使用純 ASCII。
 UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編碼。</td>
-<td>純 ASCII</td>
-<td>轉換所有僅包含 ASCII 和 ISO 8859-1 字符的UDUNITS單位。與其他字符的少數單位不轉換</td>
+<td>純ASCII</td>
+<td>所有隻有 ASCII 和 ISO 8859-1 字符的UDUNITS單位都被轉換。其他字符的少數單位不轉換</td>
 <td>大多數 UCUM 單位都會被轉換。</td>
 </tr>
 <tr>
 <td>區分大小寫</td>
-<td>是的。當允許不同的大小寫時，會明確定義變體。</td>
-<td>是的。轉換器使用區分大小寫 (&quot;c/s&quot; ) 形式的 UCUM 單位。</td>
+<td>是的。當允許不同的大小寫時，變體被明確定義。</td>
+<td>是的。轉換器使用區分大小寫（ &quot;c/s&quot; ）形式的 UCUM 單元。</td>
 <td>（無需更改）</td>
 <td>（無需更改）</td>
 </tr>
@@ -1010,37 +1010,37 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <td>複數和別名</td>
 <td>支持同一單位的複數和別名。</td>
 <td>每個單位僅使用一個縮寫/首字母縮略詞。</td>
-<td>各種複數和別名轉換為相應的 UCUM 單位。無法識別的UDUNITS名稱將轉換為註釋。</td>
-<td>此方法嘗試返回常見的、簡短的、單個（非複數） UDUNITS別名。無法識別的 UCUM 名稱保持不變。</td>
+<td>各種複數和別名被轉換為相應的 UCUM 單位。無法識別的UDUNITS名稱將轉換為註釋。</td>
+<td>此方法嘗試返回常見的、短的、單一的（不是複數的） UDUNITS別名。無法識別的 UCUM 名稱保持不變。</td>
 </tr>
 <tr>
-<td>度量前綴
-<br>（例如， &quot;kilo&quot;和“k”表示&quot;times 1000&quot; ； &quot;µ&quot;和&#39;u&#39;表示“10^-6次”）</td>
+<td>公制前綴
+<br>（例如， &quot;kilo&quot;和“k”表示&quot;times 1000&quot; ； &quot;µ&quot;和&#39;u&#39;表示“乘以 10^-6”）</td>
 <td>支持（參見UDUNITS udunits2-prefixes.xml）</td>
-<td>支持（見<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">前綴符號表</a>的c/s欄<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes"><img 
+<td>支持（參見<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">前綴符號表</a>的 c/s 列<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes"><img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a>)</td>
-<td>前綴轉換為其首字母縮略詞（例如， &#39;u&#39; ）</td>
-<td>前綴保留為其首字母縮略詞（例如， &#39;u&#39; ）</td>
+<td>前綴被轉換為其首字母縮寫詞（例如&#39;u&#39; ）</td>
+<td>前綴保留為其首字母縮寫詞（例如&#39;u&#39; ）</td>
 </tr>
 <tr>
 <td>乘法運算符</td>
-<td>空格（最常見）、“-”（規範中的拼寫錯誤？？？）、“.”、 &#39;*&#39; 、“·”</td>
-<td>&#39;.&#39;</td>
+<td>空格（最常見）、&#39;-&#39;（規範中的拼寫錯誤？？？）、&#39;.&#39;、 &#39;*&#39; 、&#39;·&#39;</td>
+<td>&#39;。&#39;</td>
 <td>空格、 &#39;*&#39;和 &#39;·&#39; 被轉換為 &#39;.&#39;</td>
 <td>總是轉換為空格（為了一致性）</td>
 </tr>
 <tr>
-<td>除法運算符</td>
+<td>部門運營商</td>
 <td>&#39;/&#39;, &quot;per&quot;, &quot;PER&quot;</td>
 <td>&#39;/&#39;</td>
-<td>&quot;per&quot;和&quot;PER&quot;被轉換為負指數。</td>
+<td>&quot;per&quot;和&quot;PER&quot;轉換為負指數。</td>
 <td>（無需更改）</td>
 </tr>
 <tr>
 <td>指數運算符</td>
-<td>&quot;**&quot;, &#39;^&#39;, 什麼都沒有 (例如, m-2 = m^-2)</td>
-<td>&#39;*&#39; （真的！）， &#39;^&#39; （僅限數字），沒有（例如，m-2）</td>
+<td>&quot;**&quot;, &#39;^&#39;, 什麼都沒有（例如，m-2 = m^-2）</td>
+<td>&#39;*&#39; （真的！）， &#39;^&#39; （僅在數字中），什麼都沒有（例如，m-2）</td>
 <td>&quot;**&quot;轉換為空（或數字中&#39;^&#39; ，例如 10^-6）。</td>
 <td>總是轉換為&#39;^&#39; （為了一致性）。</td>
 </tr>
@@ -1055,20 +1055,20 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <td>數字</td>
 <td>整數和浮點數（例如，1.23456E-5）</td>
 <td>僅整數</td>
-<td>浮點數轉換為有理數（例如，12.34 變為 1234.10^-2（記住 &#39;.&#39; 的意思是&quot;times&quot; ）</td>
+<td>浮點數轉換為有理數（例如，12.34 變為 1234.10^-2（請記住 &#39;.&#39; 表示&quot;times&quot; ）</td>
 <td>數字被轉換為整數或浮點數（例如，1.23456E-5）。</td>
 </tr>
 <tr>
 <td>_（下劃線）</td>
-<td>在單個單元名稱中使用。</td>
-<td>用於指示單位名稱中的下標註釋（例如，公曆月份的&quot;mo_g&quot; ）</td>
+<td>在單個單位名稱中使用。</td>
+<td>用於指示單位名稱中的下標註釋（例如， &quot;mo_g&quot;表示公曆月份）</td>
 <td>（無需更改）</td>
 <td>（無需更改）</td>
 </tr>
 <tr>
 <td>&#39;（撇號）</td>
 <td>未使用。</td>
-<td>用於分隔多詞名稱中的詞（例如， Todd單位的&quot;[todd&#39;U]&quot; ）</td>
+<td>用於分隔多單詞名稱中的單詞（例如， &quot;[todd&#39;U]&quot;表示Todd單元）</td>
 <td>（無需更改）</td>
 <td>（無需更改）</td>
 </tr>
@@ -1082,7 +1082,7 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <tr>
 <td>[ ]</td>
 <td>未使用。</td>
-<td>用於包含應該被視為一個組的符號組（例如， &quot;[in_i]&quot;表示國際英寸）</td>
+<td>用於包含應被視為一個組的符號組（例如， &quot;[in_i]&quot;表示國際英寸）</td>
 <td>（無需更改）</td>
 <td>（無需更改）</td>
 </tr>
@@ -1091,12 +1091,12 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <td>未使用。</td>
 <td>用於註釋（例如， &quot;%{vol}&quot;表示體積百分比）。</td>
 <td>（無需更改）</td>
-<td>如果註釋在 UCUM 標準中定義，它將被轉換。如果未定義該術語，則{ }將轉換為( ) 。</td>
+<td>如果註釋是在 UCUM 標準中定義的，它將被轉換。如果未定義術語， { }將轉換為( ) 。</td>
 </tr></table>
 <p>&nbsp;
 <hr>
 <h2><a class="selfLink" id="unitsComparison" href="#unitsComparison" rel="help"
->UDUNITS和 UCUM 單元的比較</a></h2>對於大多數單元， UDUNITS和 UCUM 中的單元是一一對應的。但是有一些困難和特殊情況：
+>UDUNITS和 UCUM 單元的比較</a></h2>對於大多數單元， UDUNITS和 UCUM 中的單元之間存在一一對應的關係。但也有一些困難和特殊情況：
 <br>&nbsp;
 <table class="erd commonBGColor T">
 <tr>
@@ -1113,7 +1113,7 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <tr>
 <td>數數</td>
 <td>&quot;count&quot;是一個基本單位。</td>
-<td>沒有確切的等價物，因為它是一個無量綱的非單位。</td>
+<td>沒有精確的等價物，因為它是一個無量綱的非單位。</td>
 <td>&quot;count&quot;轉換為&quot;{count}&quot; （無量綱註釋）。</td>
 <td>&quot;{count}&quot;轉換為&quot;count&quot; 。</td>
 </tr>
@@ -1123,17 +1123,17 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a>和<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
     src="../images/external.png" alt=" (external link)" 
-    title="此指向外部網站的鏈接不構成認可。"></a>)，使用 degree_east 和 degree_north 來標識數據文件中的經度和緯度變量。</td>
-<td>UCUM 識別單獨的溫度單位（例如，[degF]、Cel、K），但不識別單獨的方向度單位。它們都用&quot;deg&quot;表示。</td>
+    title="此指向外部網站的鏈接不構成認可。"></a>)，使用 degree_east 和 degree_north 來識別數據文件中的經度和緯度變量。</td>
+<td>UCUM 識別單獨的溫度度數單位（例如，[degF]、Cel、K），但不識別單獨的方向度數單位。它們都用&quot;deg&quot;表示。</td>
 <td>為了區分各種方向度單位，轉換器向方向度單位添加註釋（例如， &quot;degree_north&quot;變為&quot;deg{north}&quot; ）。</td>
 <td>如果您附加註釋（ {east} 、 {north} 、 {west}或{true} ），轉換器將轉換為方向單位（例如， &quot;deg{north}&quot;變為&quot;degree_north&quot; ）；否則，轉換器無法生成方向度單位，因此&quot;deg&quot;轉換為&quot;degree&quot; 。</td>
 </tr>
 <tr>
 <td>具體時間</td>
-<td>UDUNITS有一個系統來指定特定時間為
-<br>&quot;<i>單位</i>自<i>ISO8601Time</i>&quot;,
+<td>UDUNITS有一個系統來指定具體時間
+<br>“ <i>ISO8601時間</i>以來的<i>單位</i>”，
 <br>例如， &quot;seconds since 1970-01-01T00:00:00Z&quot; 。
-<td>UCUM 似乎沒有系統來指定特定時間。
+<td>UCUM 似乎沒有指定具體時間的系統。
 <td>轉換器轉換，例如，
 <br>&quot;seconds since 1970-01-01T00:00:00Z&quot;
 <br>到&quot;s{since 1970-01-01T00:00:00Z}&quot; 。
@@ -1145,23 +1145,23 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <td>&C;</td>
 <td>&quot;&amp;C;&quot;表示庫侖，但經常被錯誤地用於表示<kbd>degree_C</kbd> 。
 <td>&quot;&amp;C;&quot;表示庫侖。攝氏度通過<kbd>Cel</kbd>標識。</td>
-<td>&quot;&amp;C;&quot;根據&C;的理論，轉換為<kbd>Cel</kbd> 。被錯誤地使用。</td>
+<td>&quot;&amp;C;&quot;根據&C;的理論，轉換為<kbd>Cel</kbd> ；被錯誤地使用。</td>
 <td>&quot;&amp;C;&quot;保留為&quot;&amp;C;&quot; .</td>
 </tr>
 <tr>
 <td>&g;</td>
-<td>在UDUNITS -1 中， &g;意味著自由落體（儘管它經常被錯誤地用來表示&quot;gram&quot; ）。
+<td>在UDUNITS -1 中， &g;表示自由落體（儘管它經常被錯誤地用來表示&quot;gram&quot; ）。
 <br>在UDUNITS -2 中， &g;表示克。</td>
 <td>&g;表示克。
 [ &g; ] 表示自由落體。</td>
 <td>什麼都沒做。
-&g;在UDUNITS中被假定為表示克。</td>
+&g;假定在UDUNITS中表示克。</td>
 <td>&g;轉換為&quot;gram&quot; 。</td>
 </tr>
 <tr>
 <td>&F;</td>
 <td>&F;指華氏度。</td>
-<td>&F;指法拉。</td>
+<td>&F;法拉的意思。</td>
 <td>&F;轉換為 [degF]。</td>
 <td>&F;轉換為&quot;farad&quot; 。</td>
 </tr>
@@ -1169,22 +1169,22 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <td>&NTU; (Nephelometric Turbidity Unit)</td>
 <td>&NTU;沒有定義。</td>
 <td>&NTU;沒有定義。</td>
-<td>&NTU;轉換為 { &NTU;遵循 UCUM 方法記錄無量綱（任意）單位的名稱。</td>
+<td>&NTU;轉換為 { &NTU; } 遵循 UCUM 方法來記錄無量綱（任意）單位的名稱。</td>
 <td>{ &NTU; } 轉換為&NTU; .</td>
 </tr>
 <tr>
 <td>&PSU; (Practical Salinity Units)</td>
 <td>&PSU;沒有定義。</td>
 <td>&PSU;沒有定義。</td>
-<td>&PSU;和&PSU;被轉換為 { &PSU;遵循 UCUM 方法記錄無量綱（任意）單位的名稱。</td>
+<td>&PSU; &PSU;轉換為 { &PSU; } 遵循 UCUM 方法來記錄無量綱（任意）單位的名稱。</td>
 <td>{ &PSU; } 轉換為&PSU; ，因為 CF 推薦的 1e-3 不是有用或正確的描述。</td>
 </tr>
 <tr>
-<td>評論和非標準術語</td>
-<td>UDUNITS不允許註釋或非標準術語，因此許多單位字符串無效。</td>
-<td>UDUNITS不允許使用非標準術語，但允許在{ }中進行註釋。</td>
-<td>非標準術語轉換為註釋。</td>
-<td>註釋被取消註釋，因此不會丟失任何信息；但是，結果可能是無效的UDUNITS字符串。
+<td>評論和非標準條款</td>
+<td>UDUNITS不允許註釋或非標準術語，因此許多單位字符串是無效的。</td>
+<td>UDUNITS不允許非標準術語，但允許{ }中的註釋。</td>
+<td>非標準術語將轉換為註釋。</td>
+<td>註釋未註釋，因此不會丟失任何信息；但是，結果可能是無效的UDUNITS字符串。
 </tr></table>
 ]]></convertUnitsComparison>
 <convertUnitsFilter><![CDATA[
@@ -1328,6 +1328,9 @@ Allow”
 </ul>
 如果您從計算機程序（瀏覽器除外）發出ERDDAP請求，則 cookie 很難使用。對不起。
 ]]></cookiesHelp>
+<copyImageToClipboard>將圖像複製到剪貼板</copyImageToClipboard>
+<copyTextToClipboard>將文本複製到剪貼板</copyTextToClipboard>
+<copyToClipboardNotAvailable>複製到剪貼板不可用</copyToClipboardNotAvailable>
 <daf>數據存取表格</daf>
 <dafGridBypassTooltip><![CDATA[
 這個網頁只是簡化了 griddap URL 的創建。
@@ -4193,25 +4196,25 @@ title="此指向外部網站的鏈接不構成認可。" /></a> .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP是一個數據服務器，它為您提供一種簡單、一致的方式來下載常見文件格式的科學數據集子集並製作圖形和地圖。
+<html>ERDDAP是一個數據服務器，它為您提供了一種簡單、一致的方式來下載常見文件格式的科學數據集子集並製作圖形和地圖。
 <h2>目錄</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">ERDDAP試圖解決的問題</a>
 <li><a rel="bookmark" href="#solutions">ERDDAP的解決方案</a>
 <ul>
-<li><a rel="bookmark" href="#video">有關ERDDAP的快速介紹，請觀看本文的前半部分<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >視頻</a>。
+<li><a rel="bookmark" href="#video">有關ERDDAP的快速介紹，請觀看前半部分<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >視頻</a>。
 （5分鐘）
 <li><a rel="bookmark" href="#localAndRemote">ERDDAP可以從本地（在服務器的硬盤上）和遠程（通過 Web 訪問）數據源獲取數據。</a>
-<li><a rel="bookmark" href="#scientificData">ERDDAP可以提供多種類型的科學數據，而不僅僅是海洋數據。</a>
-<li><a rel="bookmark" href="#search">ERDDAP提供了多種搜索有趣數據集的方法。</a>
-<li><a rel="bookmark" href="#standardizedRequests">ERDDAP允許您以標準化方式請求數據。</a>
-<li><a rel="bookmark" href="#userUnits">網格數據的請求可以以用戶為單位進行。</a>
+<li><a rel="bookmark" href="#scientificData">ERDDAP可以提供多種類型的科學數據，而不僅僅是海洋學數據。</a>
+<li><a rel="bookmark" href="#search">ERDDAP提供了幾種搜索有趣數據集的方法。</a>
+<li><a rel="bookmark" href="#standardizedRequests">ERDDAP允許您以標準化的方式請求數據。</a>
+<li><a rel="bookmark" href="#userUnits">可以在用戶單位中提出對網格數據的請求。</a>
 <li><a rel="bookmark" href="#fileFormats">ERDDAP以通用數據文件格式發送結果。</a>
-<li><a rel="bookmark" href="#LLAT">ERDDAP將結果中的經度、緯度、海拔和時間的變量名稱和單位標準化。</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP將結果中的經度、緯度、高度和時間的變量名稱和單位標準化。</a>
 <li><a rel="bookmark" href="#metadata">ERDDAP可以添加或修改元數據。</a>
 <li><a rel="bookmark" href="#images">ERDDAP允許您請求帶有圖形和地圖的 .png 和 .pdf 圖像文件。</a>
 <li><a rel="bookmark" href="#compression">請求壓縮文件</a>
-<li><a rel="bookmark" href="#interoperable">ERDDAP使不同類型的數據服務器（ OPeNDAP 、OBIS、 SOS 、 WMS等）可以互操作。</a>
+<li><a rel="bookmark" href="#interoperable">ERDDAP使不同類型的數據服務器（ OPeNDAP 、OBIS、 SOS 、 WMS等）具有互操作性。</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP僅使用兩種基本數據結構來保存數據。</a>
 <li><a rel="bookmark" href="#subscriptions">ERDDAP提供電子郵件/URL 和RSS訂閱服務。</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP是一個 Web 應用程序和一個 Web 服務。</a>
@@ -4221,30 +4224,30 @@ title="此指向外部網站的鏈接不構成認可。" /></a> .
 <li><a rel="bookmark" href="#modular">ERDDAP具有模塊化結構。</a>
 <li><a rel="bookmark" href="#pushPull">數據傳播/數據分發網絡： Push Pull</a>
 </ul>
-<li><a rel="bookmark" href="#WhatsTheDifference">DAP ？ OPeNDAP ？ DODS ？ ERDDAP ？有什麼不同？</a>
-<li><a rel="bookmark" href="#sweetSpot">ERDDAP是不是解決了大家的數據分發/數據訪問問題？</a>
+<li><a rel="bookmark" href="#WhatsTheDifference">DAP ？ OPeNDAP ？ DODS ？ ERDDAP ?有什麼不同？</a>
+<li><a rel="bookmark" href="#sweetSpot">ERDDAP是解決每個人的數據分佈/數據訪問問題的解決方案嗎？</a>
 <li><a rel="bookmark" href="#sustainable">ERDDAP項目的可持續性如何？</a>
 <li><a rel="bookmark" href="#citeDataset">如何在論文中引用數據集</a>
 <li><a rel="bookmark" href="#cite">如何在論文中引用ERDDAP</a>
-<li><a rel="bookmark" href="#acronym">縮寫“ ERDDAP ”代表什麼？</a>
+<li><a rel="bookmark" href="#acronym">首字母縮略詞“ ERDDAP ”代表什麼？</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">數據分發系統指南</a>
 <li><a rel="bookmark" href="#setup">您可以設置自己的ERDDAP服務器。</a>
 <li><a rel="bookmark" href="#contact">聯繫我們</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">ERDDAP試圖解決的問題</a></h2>如果沒有ERDDAP ，當一個人（或計算機程序）在 Internet 上查找特定類型的科學數據（例如，衛星海面溫度數據）時，就會出現問題......
 <ul>
-<li>很難找到有趣的數據集，因為它們位於許多不同的網站上。
+<li>有趣的數據集很難找到，因為它們位於許多不同的網站上。
 <br>&nbsp;
 <li>每個站點都需要不同的協議來請求數據：
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>每個站點都以不同的格式返回數據（例如，XML、 SOAP+XML 、 OPeNDAP二進制數據流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF等），並且它不是您使用的常見文件格式想。
+<li>每個站點以不同的格式返回數據（例如，XML、 SOAP+XML 、 OPeNDAP二進制數據流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF等），這不是您常用的文件格式想。
 <br>&nbsp;
-<li>來自不同站點的數據很難比較，因為日期+時間以不同的格式表示，例如，“Jan 2, 1985”、“02-JAN-1985”、“1/2/85”、“2/1/85” &quot;、&quot;1985-01-02&quot;或自 1980 年 1 月 1 日以來的天數，或 ...）。
+<li>來自不同站點的數據很難比較，因為日期+時間以不同的格式表示，例如，“1985 年 1 月 2 日”、“02-JAN-1985”、“85 年 1 月 2 日”、“85 年 2 月 1 日” &quot;、&quot;1985-01-02&quot;或自 1980 年 1 月 1 日以來的天數，或 ...)。
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAP的解決方案</a></h2>
 <ul>
-<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">有關ERDDAP的快速介紹，請</a><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">觀看本文的前半部分<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >視頻<img 
+<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">有關ERDDAP的快速介紹，請</a><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">觀看前半部分<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >視頻<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> .</strong> （5分鐘）
 <br>在其中，一位科學家從ERDDAP下載洋流預測數據，以使用<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA的GNOME軟件</a>模擬海洋中的有毒洩漏<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html"><img 
@@ -4257,11 +4260,11 @@ title="此指向外部網站的鏈接不構成認可。" /></a> .
 URL 指定整個請求。
 <li>ERDDAP可以製作<a href="#images">地圖和圖表</a>。
 <li>ERDDAP提供<a href="#fileFormats">數據</a>（不僅僅是地圖和圖表）。
-<li>ERDDAP可以以多種<a href="#fileFormats">文件格式</a>返回數據，以便將數據導入到許多其他程序中。
-<li>NOAA協同工作：該分析使用來自NOAA 、 ERDDAP和GNOME的兩個免費軟件程序，以及由NOAA的 NODC/NCDDC（由NOAA的 UAF 項目推動）提供的數據。
+<li>ERDDAP可以返回多種<a href="#fileFormats">文件格式</a>的數據，以便將數據導入到許多其他程序中。
+<li>NOAA協同工作：分析使用來自NOAA的ERDDAP和GNOME的兩個免費軟件程序，以及由NOAA的 NODC/NCDDC 提供的數據（由NOAA的 UAF 項目促進）。
 <li>ERDDAP使<a href="#scientificData">科學數據</a>更容易獲得，以幫助科學家（和其他人）更有效地開展工作。
 <li>使用ERDDAP並不難。
-（是的，Rich Signell 非常聰明，但任何人都可以使用ERDDAP 。）
+（是的，Rich Signell 真的很聰明，但是任何人都可以使用ERDDAP 。）
 </ul>
 感謝 Rich Signell。
 （視頻中的一個小錯誤：搜索數據集時，不要在搜索詞之間使用<kbd>AND</kbd> 。這是隱含的。）
@@ -4269,21 +4272,21 @@ URL 指定整個請求。
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP可以從本地（在服務器的硬盤上）和遠程（通過 Web 訪問）數據源獲取數據。</a></strong>
 <br>查看ERDDAP可以訪問<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">的數據源類型列表</a>。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP可以提供多種類型的科學數據，而不僅僅是海洋數據。</a></strong>
-<br>ERDDAP是在<a title="國家海洋和大氣管理局" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
+<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP可以提供多種類型的科學數據，而不僅僅是海洋學數據。</a></strong>
+<br>ERDDAP是在<a title="美國國家海洋和大氣管理局" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="國家海洋漁業局" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
-<a title="西南水產科學中心" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
-<a title="環境研究部" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>編寫的數據服務器。
+<a title="西南漁業科學中心" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
+<a title="環境研究部" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a>上編寫的數據服務器。
 ERD的ERDDAP服務器提供海洋數據，但ERDDAP （程序）可以訪問和提供任何網格或表格數據。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP提供了多種搜索有趣數據集的方法。</a></strong>
-<br>例如，<a href="&erddapUrl;/search/index.html">全文搜索</a>、<a href="&erddapUrl;/categorize/index.html">按類別搜索</a>（也稱為分面搜索）和<a href="&erddapUrl;/search/advanced.html">高級搜索</a>。高級搜索結合了所有搜索技術，並添加了對數據在經度、緯度和時間範圍內的數據集的搜索，因此您可以同時根據許多不同的條件搜索數據集。
+<li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP提供了幾種搜索有趣數據集的方法。</a></strong>
+<br>例如，<a href="&erddapUrl;/search/index.html">全文搜索</a>、<a href="&erddapUrl;/categorize/index.html">按類別搜索</a>（也稱為分面搜索）和<a href="&erddapUrl;/search/advanced.html">高級搜索</a>。高級搜索結合了所有搜索技術，並添加了對具有經度、緯度和時間範圍內的數據的數據集的搜索，因此您可以同時根據許多不同的條件搜索數據集。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP允許您以標準化方式請求數據，</a></strong>
+<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP讓您以標準化的方式請求數據，</a></strong>
 <br>無論數據源的請求協議如何。
 <ul>
-<li>ERDDAP通過 griddap（ ERDDAP對<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab 協議</a>的實現）和<a rel="help" href="&erddapUrl;/wms/index.html">WMS</a>提供網格數據。
-<li>ERDDAP通過tabledap （ ERDDAP對<a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP約束協議</a>的實現）使表格數據可用。
+<li>ERDDAP通過 griddap（ ERDDAP對<a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab 協議</a>的實現）和<a rel="help" href="&erddapUrl;/wms/index.html">WMS</a>提供網格化數據。
+<li>ERDDAP通過tabledap提供表格數據（ ERDDAP的<a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP約束協議</a>的實現）。
 <!--and
      
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS<img 
@@ -4310,44 +4313,44 @@ ERDDAP還提供數據訪問表單（網頁），幫助人們創建OPeNDAP請求�
     title="此指向外部網站的鏈接不構成認可。"></a>) 將來可能會添加。
 ERDDAP是為這些添加而構建的，似乎沒有任何障礙。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">網格數據的請求可以以用戶為單位進行。</a></strong>
-<br>儘管可以使用數組索引（遵循OPeNDAP規範）請求ERDDAP中的網格數據，但請求也可以使用<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">括號表示法</a>以用戶單位（例如，東向度數）表示，因為用戶以這些單位而不是索引進行思考。
+<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">可以在用戶單位中提出對網格數據的請求。</a></strong>
+<br>儘管可以使用數組索引（遵循OPeNDAP規範）請求ERDDAP中的網格數據，但請求也可以使用<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">括號表示法</a>以用戶單位（例如，東度）為單位，因為用戶以這些單位而不是索引進行思考。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP以通用數據文件格式發送結果。</a></strong>
-<br>結果可以以幾種常見數據文件格式中的任何一種返回&requestFormatExamplesHtml;, 而不僅僅是原始格式或OPeNDAP傳輸格式（沒有標準的文件表現形式）。這些文件是即時創建的。由於內部數據結構很少，因此很容易添加額外的文件類型驅動程序。請參閱<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">網格文件類型</a>和<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">表格文件類型</a>的完整列表。
+<br>結果可以以幾種常見數據文件格式中的任何一種&requestFormatExamplesHtml; ，而不僅僅是原始格式或只是OPeNDAP傳輸格式（沒有標准文件表現形式）。這些文件是即時創建的。由於內部數據結構很少，因此很容易添加額外的文件類型驅動程序。請參閱<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">網格文件類型</a>和<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">表格文件類型</a>的完整列表。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP將結果中的經度、緯度、海拔、深度和時間的變量名稱和單位標準化。</a></strong>
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP將結果中的經度、緯度、高度、深度和時間的變量名稱和單位標準化。</a></strong>
 <br>為了便於比較來自不同數據集的數據， ERDDAP中的請求和結果使用標準化的空間/時間軸單位：
 <ul>
-<li>經度總是在degrees_east 。
-<li>緯度總是在degrees_north 。
+<li>經度總是以degrees_east為單位。
+<li>緯度總是以degrees_north為單位。
 <li>高度總是以米為單位，正=向上。
-<li>深度總是以米為單位，正=向下。
-<li>時間，當格式化為數字時，總是&quot;seconds since 1970-01-01T00:00:00Z&quot;（稱為<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix 時間<img 
+<li>深度始終以米為單位，正=向下。
+<li>時間，當格式化為數字時，始終以&quot;seconds since 1970-01-01T00:00:00Z&quot;為單位（稱為<a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">Unix 時間<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a>或紀元秒，即<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> -compatible) 並且，當格式化為字符串時，根據<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004&quot;extended&quot;格式</a>進行格式化<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部網站的鏈接不構成認可。"></a>標準<span class="N">（ yyyy-MM-ddTHH:mm:ssZ ，</span>例如<span class="N">“1985-01-02T00:00:00Z”）。</span> （您可以使用ERDDAP的<a rel="bookmark" href="&erddapUrl;/convert/time.html">時間轉換器將數字時間與 ISO 字符串時間相互轉換</a>。）此外，為了避免時區和夏令時混淆，時間值始終轉換為Zulu （UTC、GMT）時區。
+    title="此指向外部網站的鏈接不構成認可。"></a>標準<span class="N">（ yyyy-MM-ddTHH:mm:ssZ ，</span>例如， <span class="N">“1985-01-02T00:00:00Z”）。</span> （您可以使用ERDDAP的<a rel="bookmark" href="&erddapUrl;/convert/time.html">時間轉換器將數字時間與 ISO 字符串時間相互轉換</a>。）此外，為避免時區和夏令時混淆，時間值始終轉換為Zulu (UTC, GMT) 時區。
 </ul>
-這使得在請求中指定約束變得容易，而不必擔心高度數據格式（正值是向上還是向下？以米還是英尋？）或時間數據格式（可能格式的噩夢領域，例如，“Jan 2, 1985&quot;、&quot;02-JAN-1985&quot;、&quot;1/2/85&quot;、&quot;2/1/85&quot;、&quot;1985-01-02&quot;，或自 1980 年 1 月 1 日以來的天數）。這使得來自不同數據源的結果易於比較。
-<p>ERDDAP有一個<a rel="bookmark" href="&erddapUrl;/convert/time.html">將數字時間轉換為/從字符串時間轉換</a>的實用程序。
+這使得在請求中指定約束變得容易，而不必擔心海拔數據格式（正值是向上還是向下？以米還是英尋為單位？）或時間數據格式（可能格式的噩夢領域，例如，“Jan 2, 1985”、“02-JAN-1985”、“1/2/85”、“2/1/85”、“1985-01-02”或自 1980 年 1 月 1 日以來的天數）。這使得來自不同數據源的結果易於比較。
+<p>ERDDAP具有<a rel="bookmark" href="&erddapUrl;/convert/time.html">將數字時間轉換為字符串時間/從字符串時間轉換</a>的實用程序。
 <br>有關更多詳細信息，請參閱<a rel="help" href="&erddapUrl;/convert/time.html#erddap">ERDDAP如何處理時間</a>。
-<p>因為經度、緯度、海拔和時間變量是專門識別的， ERDDAP知道每個數據集的地理/時間特徵。這在使用地圖或時間序列製作圖像以及以地理參考文件類型（例如 .esriAscii、.geoJson 和.kml ）保存數據時非常有用。
-<p>書寫度量單位的兩個常見標準是：
+<p>因為經度、緯度、高度和時間變量是專門識別的， ERDDAP知道每個數據集的地理/時間特徵。這在使用地圖或時間序列製作圖像以及將數據保存為地理參考文件類型（例如，.esriAscii、.geoJson 和.kml ）時很有用。
+<p>編寫度量單位的兩個常見標準是：
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (external link)&quot;title=&quot;指向外部網站的鏈接不構成背書。&quot;&gt; - 來自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(external link)&quot; title=&quot;此指向外部網站的鏈接不構成背書。&quot;&gt; - 來自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>, 用於<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
+      title="此指向外部網站的鏈接不構成認可。"></a> ，用於<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>,
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>, 和<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>數據文件。例如， UDUNITS有很多關於攝氏度的選項，包括<kbd>degree_C</kbd>和<kbd>degC</kbd> 。
+      title="此指向外部網站的鏈接不構成認可。"></a>數據文件。例如， UDUNITS有許多攝氏度選項，包括<kbd>degree_C</kbd>和<kbd>degC</kbd> 。
 <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4362,14 +4365,14 @@ ERDDAP是為這些添加而構建的，似乎沒有任何障礙。
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>, 和<a rel="help" href="https://www.ogc.org/standards/wms">WMS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>通常將 UCUM 稱為 UOM（度量單位）。例如，UCUM 只有一個區分大小寫的攝氏度選項：&quot;Cel&quot;。
+      title="此指向外部網站的鏈接不構成認可。"></a>通常將 UCUM 稱為 UOM（計量單位）。例如，UCUM 對於攝氏度只有一個區分大小寫的選項： &quot;Cel&quot; 。
 <br>&nbsp;
 </ul>
-儘管ERDDAP不要求使用任一單位標準，但大多數ERDDAP安裝偏愛其中一個。
-（ ERDDAP管理員：您可以使用 setup.xml 中的<kbd>&lt;units_standard&gt;</kbd>標記指定它。）您可以使用ERDDAP的<a rel="bookmark" href="&erddapUrl;/convert/units.html">單位轉換器</a>將UDUNITS與 UCUM 單位相互轉換。當您從<a href="&erddapUrl;/tabledap/index.html">tabledap dataset</a>請求數據或圖形時，您可以將<kbd>&amp;units(&quot;UDUNITS&quot;)</kbd>或<kbd>&amp;units(&quot;UCUM&quot;)</kbd>附加到 URL 的末尾以請求UDUNITS或 UCUM 單位。<a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">更多信息</a>
+儘管ERDDAP不需要使用任何一種單位標準，但大多數ERDDAP安裝都偏愛其中一種。
+（ ERDDAP管理員：您可以使用 setup.xml 中的<kbd>&lt;units_standard&gt;</kbd>標記指定此項。）您可以使用ERDDAP的<a rel="bookmark" href="&erddapUrl;/convert/units.html">單位轉換器</a>將UDUNITS轉換為/從 UCUM 單位。當您從<a href="&erddapUrl;/tabledap/index.html">tabledap dataset</a>請求數據或圖形時，您可以將<kbd>&amp;units(&quot;UDUNITS&quot;)</kbd>或<kbd>&amp;units(&quot;UCUM&quot;)</kbd>附加到 URL 的末尾以請求UDUNITS或 UCUM 單位。<a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">更多信息</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP可以添加或修改元數據。</a></strong>
-<br>許多數據源很少或沒有<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元數據<img 
+<br>許多數據源幾乎沒有元數據或沒有<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元數據<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> （例如，
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF 元數據<img 
@@ -4394,35 +4397,35 @@ ERDDAP的 Make A Graph 可讓您自定義圖像。這些圖像的一些特殊用
 <br>ERDDAP不提供存儲在壓縮（例如.zip或.gzip ）文件中的結果，除非源文件已經壓縮。相反， ERDDAP尋找<a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
     >接受編碼<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>在客戶端發送的HTTP GET請求頭中。如果在接受編碼列表中找到受支持的壓縮類型（ gzip 、 x-gzip或deflate ），則ERDDAP在 HTTP 響應標頭中包含<kbd>content-encoding</kbd>並在傳輸數據時對其進行壓縮。由客戶端程序來查找<kbd>content-encoding</kbd>和解壓縮數據。壓縮響應通常快 3-10 倍，儘管請求壓縮的 .png 文件沒有任何好處，因為文件的內容已經被壓縮。默認情況下，瀏覽器和OPeNDAP客戶端會執行此操作。它們請求壓縮數據並自動解壓縮返回的數據。其他客戶端（例如， Java程序）必須顯式執行此操作。使用curl ，在命令行中添加<kbd>--compressed</kbd>以告訴curl請求壓縮響應並自動解壓縮它。
+      title="此指向外部網站的鏈接不構成認可。"></a>在客戶端發送的HTTP GET請求頭中。如果在接受編碼列表中找到支持的壓縮類型（ gzip 、 x-gzip或deflate ），則ERDDAP在 HTTP 響應標頭中包含<kbd>content-encoding</kbd> ，並在傳輸數據時壓縮數據。由客戶端程序查找<kbd>content-encoding</kbd>和解壓縮數據。壓縮響應通常快 3-10 倍，儘管請求壓縮的 .png 文件沒有任何好處，因為文件的內容已經被壓縮。默認情況下，瀏覽器和OPeNDAP客戶端會執行此操作。他們請求壓縮數據並自動解壓縮返回的數據。其他客戶端（例如， Java程序）必須明確地執行此操作。使用curl ，將<kbd>--compressed</kbd>添加到命令行以告訴curl請求壓縮響應並自動解壓縮。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP使不同類型的數據服務器（ OPeNDAP 、OBIS、 SOS 、 WMS等）可以互操作。</a></strong>
-<br>不同類型的數據服務器用於不同的科學界。在可預見的未來，任何一種類型都不太可能佔據主導地位並取代其他類型。因此， ERDDAP充當了不同類型的客戶端程序（Web 瀏覽器、IDV、 Matlab 、netCDF 程序、ODV、 WMS客戶端等）和不同類型的數據服務器之間的橋樑。
+<li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP使不同類型的數據服務器（ OPeNDAP 、OBIS、 SOS 、 WMS等）具有互操作性。</a></strong>
+<br>不同類型的數據服務器用於不同的科學界。在可預見的未來，任何一種類型都不太可能成為主導並取代其他類型。因此， ERDDAP充當了不同類型的客戶端程序（Web 瀏覽器、IDV、 Matlab 、netCDF 程序、ODV、 WMS客戶端等）和不同類型的數據服務器之間的橋樑。
 <ol>
-<li>ERDDAP接受客戶端對不同格式（例如， OPeNDAP 、 WMS ）數據的請求。
-<li>ERDDAP將給定的請求轉換為源數據服務器使用的請求格式（例如， OPeNDAP 、 SOS 、OBIS 等）並將其發送到源數據服務器。
-<li>ERDDAP將來自源數據服務器的響應數據轉換為內部格式，包括將所有時間數據轉換為通用格式：&quot;seconds since 1970-01-01T00:00:00Z&quot;。
+<li>ERDDAP接受客戶端對不同格式數據的請求（例如， OPeNDAP 、 WMS ）。
+<li>ERDDAP將給定的請求轉換為源數據服務器使用的請求格式（例如， OPeNDAP 、 SOS 、OBIS，...）並將其發送到源數據服務器。
+<li>ERDDAP將來自源數據服務器的響應數據轉換為內部格式，包括將所有時間數據轉換為通用格式： &quot;seconds since 1970-01-01T00:00:00Z&quot; 。
 <li>ERDDAP將數據從內部格式轉換為客戶端請求的文件格式（例如，.csv、 Google Earth .kml 、 .htmlTable 、.dods、 .mat 、 .nc 、 ODV .txt 、.png）。
 </ol>
-客戶端不必擔心或知道源數據服務器的類型。他們只是以他們想要的文件格式獲取他們想要的數據。
+客戶端不必擔心或知道源數據服務器的類型。他們只是以他們想要的文件格式獲得他們想要的數據。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP僅使用兩種基本數據結構來保存數據。</a></strong>
 <ul>
-<li>由於人類客戶端和計算機客戶端很難處理一組複雜的可能的數據集結構， ERDDAP僅使用兩種基本數據結構：
+<li>由於人類客戶端和計算機客戶端很難處理一組可能的複雜數據集結構， ERDDAP僅使用兩種基本數據結構：
 <ul>
 <li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">網格數據結構</a>（例如，用於衛星數據和模型數據）和
-<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">表格數據結構</a>（例如，用於原位浮標、站點和軌跡數據）。
+<li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">表格數據結構</a>（例如，用於現場浮標、站點和軌跡數據）。
 </ul>
-<li>當然，並非所有數據都可以用這些結構表示，但其中大部分可以。尤其是表是非常靈活的數據結構（看看<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">關係數據庫</a>的驚人成功<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"><img 
+<li>當然，並非所有數據都可以用這些結構表示，但大部分數據都可以。特別是表是非常靈活的數據結構（看看<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">關係數據庫</a>的驚人成功<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>程式）。
 <li>這使得數據查詢更容易構建。
 <li>這使得數據響應具有簡單的結構，從而更容易以更廣泛的標准文件類型（通常只支持簡單的數據結構）提供數據。這是我們以這種方式設置ERDDAP的主要原因。
-<li>反過來，這使我們（或任何人）可以非常輕鬆地編寫適用於所有ERDDAP數據集的客戶端軟件。
-<li>這樣可以更輕鬆地比較來自不同來源的數據，例如綜合生態系統分析 (IEA)。
-<li>我們非常清楚，如果您習慣於使用其他數據結構中的數據，您最初可能會認為這種方法過於簡單或不夠充分。但是所有的數據結構都有權衡。沒有一個是完美的。即使是萬能的結構也有其缺點：使用它們很複雜，並且只能使用特殊的軟件庫來寫入或讀取文件。如果您接受ERDDAP的方法足以嘗試使用它，您可能會發現它有其優點（特別是對可以保存數據響應的多種文件類型的支持）。
+<li>這反過來又讓我們（或任何人）很容易編寫適用於所有ERDDAP數據集的客戶端軟件。
+<li>這使得比較來自不同來源的數據變得更加容易，例如綜合生態系統分析 (IEA)。
+<li>我們非常清楚，如果您習慣於使用其他數據結構中的數據，您最初可能會認為這種方法過於簡單或不夠充分。但是所有數據結構都有權衡。沒有一個是完美的。即使是全能結構也有其缺點：使用它們很複雜，並且只能使用特殊的軟件庫來寫入或讀取文件。如果您接受ERDDAP的方法足以嘗試使用它，您可能會發現它有其優勢（特別是對可以保存數據響應的多種文件類型的支持）。
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">最初的ERDDAP幻燈片</a>（尤其是<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">數據結構幻燈片</a>）討論了這些問題。
-<li>即使這種方法對你來說聽起來很奇怪，大多數ERDDAP客戶永遠不會注意到——他們只會看到所有的數據集都有一個很好的簡單結構，他們會很感激他們可以從返回的各種來源中獲取數據多種文件格式。
+<li>即使這種方法對您來說聽起來很奇怪，大多數ERDDAP客戶也不會注意到——他們只會看到所有數據集都有一個很好的簡單結構，並且他們會感謝他們可以從各種來源中獲取數據返回多種文件格式。
 <br>&nbsp;
 </ul>
 <li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP提供</a><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子郵件/URL</a>和<a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
@@ -4430,145 +4433,169 @@ ERDDAP的 Make A Graph 可讓您自定義圖像。這些圖像的一些特殊用
       title="此指向外部網站的鏈接不構成認可。"></a>訂閱服務，</strong>因此您可以在數據集更改時收到通知。
 <ul>
 <li>ERDDAP非常擅長檢測網格數據集的變化，因為它可以檢測軸值（例如，時間值）何時發生變化。
-<li>ERDDAP不太擅長檢測表格數據集的變化，因為添加新數據時元數據通常沒有變化。
-<li>ERDDAP將檢測數據集是否變得不可用（但可能不會立即）。
+<li>ERDDAP不太擅長檢測表格數據集的更改，因為添加新數據時元數據通常沒有更改。
+<li>ERDDAP將檢測數據集是否不可用（但可能不會立即）。
 <li>ERDDAP將檢測該數據集何時再次可用。
-<li>ERDDAP對這些服務的適用性或準確性不作任何承諾（請參閱<a rel="license" href="&erddapUrl;/legal.html">ERDDAP的免責聲明</a>）。
+<li>ERDDAP不對這些服務的適用性或準確性做出任何承諾（請參閱<a rel="license" href="&erddapUrl;/legal.html">ERDDAP的免責聲明</a>）。
 </ul>
-<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子郵件/URL</a>訂閱</strong>（在某些ERDDAP安裝中不可用） 每當數據集更改時，電子郵件/URL 訂閱系統將<strong>立即</strong>向您發送電子郵件或聯繫您指定的 URL。電子郵件/URL 訂閱在某些ERDDAP安裝中不可用。要設置電子郵件/URL 訂閱，請單擊信封圖標之一<img alt="Subscribe" style="vertical-align:top" title="信封圖標。" src="&erddapUrl;/images/envelope.gif" >如果此ERDDAP安裝支持電子郵件/URL 訂閱，則出現在帶有數據集列表的ERDDAP網頁（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）以及單個數據集的數據訪問表單和製作圖表網頁（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）的最右側。
-（計算機程序員：如果您編寫 Web 服務，則可以使用 URL 系統讓ERDDAP在數據集更改時立即通知您的 Web 服務。）
+<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子郵件/URL</a>訂閱</strong>（在某些ERDDAP安裝中不可用） 每當數據集更改時，電子郵件/URL 訂閱系統將<strong>立即</strong>向您發送電子郵件或聯繫您指定的 URL。某些ERDDAP安裝不提供電子郵件/URL 訂閱。要設置電子郵件/URL 訂閱，請單擊其中一個信封圖標<img alt="Subscribe" style="vertical-align:top" title="信封圖標。" src="&erddapUrl;/images/envelope.gif" >如果此ERDDAP安裝支持電子郵件/URL 訂閱，則顯示在帶有數據集列表的ERDDAP網頁的最右側（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）以及數據訪問表單和製作單個數據集的圖表網頁（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）。
+（計算機程序員：如果您編寫 Web 服務，您可以使用 URL 系統讓ERDDAP在數據集更改時立即通知您的 Web 服務。）
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>訂閱</strong>RSS是標準系統，用於在網站內容髮生更改時通知用戶。現代網絡瀏覽器內置了RSS客戶端，或者您可以使用單獨的<a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS閱讀器<img 
+      title="此指向外部網站的鏈接不構成認可。"></a>訂閱</strong>RSS是用於在網站內容髮生更改時通知用戶的標準系統。現代網絡瀏覽器內置了RSS客戶端，或者您可以使用單獨的<a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS閱讀器<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> .
-ERDDAP為每個數據集提供單獨的RSS 2.01 提要，以便您可以了解感興趣的數據集何時發生變化。要訂閱數據集的RSS提要，請單擊RSS圖標之一<img alt="RSS" style="vertical-align:top" title="RSS 圖標。" src="&erddapUrl;/images/rss.gif" > 出現在帶有數據集列表的ERDDAP網頁（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）或單個數據集的數據訪問表單和製作圖表網頁（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）的最右側。
-<p><strong>比較</strong>RSS服務可能正是您正在尋找的。這是一個很好的標準。但是，如果您需要盡快知道數據集何時發生變化，請使用電子郵件/URL 系統，而不是RSS 。
-RSS客戶端定期（每小時？）請求並讀取RSS XML 文檔以查找更改。通常， RSS客戶端不會快速檢測到數據集的更改（平均 30 分鐘？）。相比之下，每當ERDDAP檢測到數據集發生變化時，電子郵件/URL 訂閱系統就會立即採取行動。電子郵件/URL 系統的更主動方法也更有效：您可以將RSS客戶端設置為每分鐘檢查一次更改（不要這樣做！），但這只會導致大量不必要的請求到ERDDAP服務器，它仍然不會立即檢測到更改。
+ERDDAP為每個數據集提供單獨的RSS 2.01 提要，以便您可以了解感興趣的數據集何時發生變化。要訂閱數據集的RSS提要，請單擊其中一個RSS圖標<img alt="RSS" style="vertical-align:top" title="RSS 圖標。" src="&erddapUrl;/images/rss.gif" > 顯示在帶有數據集列表的ERDDAP網頁的最右側（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）或數據訪問表單和為單個數據集製作圖表的網頁（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）。
+<p><strong>比較</strong>RSS服務可能正是您想要的。這是一個很好的標準。但是，如果您需要盡快知道數據集何時更改，請使用電子郵件/URL 系統，而不是RSS 。
+RSS客戶端定期（每小時？）請求並讀取RSS XML 文檔以查找更改。因此， RSS客戶端通常不會快速檢測到數據集的更改（平均 30 分鐘？）。相反，只要ERDDAP檢測到數據集發生更改，電子郵件/URL 訂閱系統就會立即採取行動。電子郵件/URL 系統更主動的方法也更有效：您可以將RSS客戶端設置為每分鐘檢查一次更改（不要這樣做！），但這只會導致大量不必要的請求到ERDDAP服務器，它仍然不會立即檢測到更改。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP是一個</a><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">網絡應用程序<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> （帶有供人類使用瀏覽器的表單的網頁）
 <br>和一個<a rel="help" href="https://en.wikipedia.org/wiki/Web_service">網絡服務<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a> （<a rel="help" href="&erddapUrl;/rest.html">提供計算機程序服務</a>）。</strong>
+      title="此指向外部網站的鏈接不構成認可。"></a> （與<a rel="help" href="&erddapUrl;/rest.html">計算機程序服務</a>）。</strong>
 <br>事實上， ERDDAP網頁上的表單只是生成特殊格式的 URL，然後將這些 URL 提交給ERDDAP的 Web 服務。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP有</a><a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> - 和<a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>式鏈接，使其服務可用於計算機程序。</strong>
+      title="此指向外部網站的鏈接不構成認可。"></a>風格的鏈接，使其服務可用於計算機程序。</strong>
 <br>這些功能可用於在ERDDAP之上構建另一個 Web 服務（讓ERDDAP完成所有工作！）。
-ERDDAP並非旨在成為高級數據探索/繪圖服務。相反， ERDDAP旨在為此類網站和程序提供服務。因此，如果您有更好的ERDDAP數據接口的想法，我們鼓勵您構建自己的 Web 應用程序或 Web 服務，並使用ERDDAP作為基礎。閱讀有關ERDDAP的<a rel="help" href="&erddapUrl;/rest.html">計算機程序服務的</a>更多信息。
+ERDDAP並非旨在成為高級數據探索/繪圖服務。相反， ERDDAP旨在為此類網站和程序提供服務。因此，如果您對ERDDAP服務的數據有更好的接口的想法，我們鼓勵您構建自己的 Web 應用程序或 Web 服務，並使用ERDDAP作為基礎。閱讀更多關於ERDDAP的<a rel="help" href="&erddapUrl;/rest.html">計算機程序服務</a>。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全</a></strong>性 - 默認情況下， ERDDAP作為一個完全公共的服務器運行，沒有登錄系統，也沒有對數據訪問的限制。但是， ERDDAP管理員可以將ERDDAP配置為將某些或所有數據集的訪問權限限制為登錄並分配了某些角色的用戶。
-ERDDAP具有用於身份驗證（登錄）的內置方法。如果ERDDAP安裝啟用了身份驗證，則每個網頁頂部都會有一個“登錄”鏈接。用戶無需登錄即可訪問公開可用的數據集。已登錄的用戶可以訪問公共數據集和允許他們訪問的私有數據集。用戶必須使用 https:（安全套接字層）登錄和訪問私有數據集。數據集可以配置為具有可公開訪問的圖形和地圖，但只有授權用戶才能訪問數據。
+<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全</a></strong>性 - 默認情況下， ERDDAP作為一個完全公共的服務器運行，沒有登錄系統，也沒有數據訪問限制。但是， ERDDAP管理員可以配置ERDDAP以限制登錄並已分配特定角色的用戶訪問部分或全部數據集。
+ERDDAP具有用於身份驗證（登錄）的內置方法。如果ERDDAP安裝啟用了身份驗證，則每個網頁的頂部都會有一個“登錄”鏈接。用戶無需登錄即可訪問公開可用的數據集。已登錄的用戶可以訪問公共數據集和允許他們訪問的私有數據集。用戶必須使用 https:（安全套接字層）登錄和訪問私有數據集。數據集可以配置為具有可公開訪問的圖形和地圖，但只有授權用戶才能訪問數據。
 （<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">更多信息</a>）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP以塊的形式處理數據。</a></strong>
-<br>為了節省內存（一個大問題）並使響應更快開始， ERDDAP以塊的形式處理數據請求——反復從源中獲取一塊數據，對其進行清理（例如，添加<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元數據</a>）
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
+<br>為了節省內存（一個大問題）並讓響應更快開始， ERDDAP以塊的形式處理數據請求——重複從源獲取一塊數據，清理它（例如，添加<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元數據<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a>)，並將其發送給客戶端。對於許多數據源，這意味著第一個數據塊（例如，來自第一個傳感器）在幾秒鐘內而不是幾分鐘（例如，在檢索到最後一個傳感器的數據之後）到達客戶端，讓客戶端放心數據來了。從內存的角度來看，這允許同時處理大量大型請求（每個請求都大於可用內存）。
+      title="此指向外部網站的鏈接不構成認可。"></a>)，並將其發送給客戶端。對於許多數據源，這意味著第一塊數據（例如，來自第一個傳感器）在幾秒鐘而不是幾分鐘（例如，在檢索到來自最後一個傳感器的數據之後）到達客戶端，讓客戶端放心數據來了。從內存的角度來看，這允許同時處理大量大型請求（每個都大於可用內存）。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP具有模塊化結構。</a></strong>
-<br>ERDDAP的結構使得可以輕鬆添加不同的組件（例如，從SOS服務器請求數據並將其存儲為表的類）。然後，新組件獲得父組件的所有特性和功能（例如，支持OPeNDAP請求以及將數據保存為幾種常見文件格式的能力）。
+<br>ERDDAP的結構使其易於添加不同的組件（例如，從SOS服務器請求數據並將其存儲為表的類）。然後，新組件將獲得父組件的所有特性和功能（例如，支持OPeNDAP請求以及以幾種常見文件格式保存數據的能力）。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">數據傳播/數據分發網絡： Push Pull</a></strong>
 <br>通常， ERDDAP充當中介：它接受來自用戶的請求；從遠程數據源獲取數據；重新格式化數據；並將其發送給用戶。
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pull技術<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a> ：但ERDDAP還具有從遠程數據源主動獲取所有可用數據並<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">存儲數據的本地副本的能力</a>。
+      title="此指向外部網站的鏈接不構成認可。"></a> :
+但是ERDDAP也有能力從遠程數據源主動獲取所有可用數據並<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">存儲數據的本地副本</a>。
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push技術<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a> ：通過使用ERDDAP的<a href="#subscriptions">訂閱服務</a>，可以在有新數據可用時立即通知其他數據服務器，以便它們可以請求數據（通過拉取數據）。
-ERDDAP的<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>使用ERDDAP的訂閱服務和<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">標誌系統</a>，以便在新數據可用時立即通知他們。您可以將這些結合起來產生很大的效果：如果您將EDDGrid Copy 包裹在EDDGrid FromErddap 數據集周圍（或將 EDDTableCopy 包裹在 EDDTableFromErddap 數據集周圍）， ERDDAP將自動創建並維護另一個ERDDAP數據集的本地副本。由於訂閱服務會在新數據可用時立即運行，因此推送技術可以非常快速地（在幾秒鐘內）傳播數據。
-<p>這種架構讓每個ERDDAP管理員負責確定他/她的ERDDAP數據的來源。其他ERDDAP管理員也可以這樣做。管理員之間無需協調。如果許多ERDDAP管理員鏈接到彼此的ERDDAP ，則形成數據分發網絡。數據將從數據源（ ERDDAP和其他服務器）快速、高效、自動地傳播到網絡中任何位置的數據再分發站點（ ERDDAP ）。給定的ERDDAP既可以是某些數據集的數據源，也可以是其他數據集的重新分發站點。生成的網絡大致類似於使用<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata的 IDD/IDM</a>等程序設置的數據分發網絡<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
+      title="此指向外部網站的鏈接不構成認可。"></a> ：通過使用ERDDAP的<a href="#subscriptions">訂閱服務</a>，可以在有新數據可用時立即通知其他數據服務器，以便他們可以請求數據（通過拉取數據）。
+ERDDAP的<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>使用ERDDAP的訂閱服務和<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">標記系統</a>，以便在有新數據可用時立即通知它們。您可以將這些組合起來產生很好的效果：如果您將EDDGrid Copy 包裹在EDDGrid FromErddap 數據集周圍（或將 EDDTableCopy 包裹在 EDDTableFromErddap 數據集周圍）， ERDDAP將自動創建並維護另一個ERDDAP數據集的本地副本。由於訂閱服務會在新數據可用時立即運行，因此推送技術可以非常快速地（在幾秒鐘內）傳播數據。
+<p>這種架構讓每個ERDDAP管理員負責確定他/她的ERDDAP的數據來自哪裡。其他ERDDAP管理員也可以這樣做。管理員之間無需協調。如果多個ERDDAP管理員鏈接到彼此的ERDDAP ，就形成了一個數據分發網絡。數據將快速、高效、自動地從數據源（ ERDDAP和其他服務器）傳播到網絡中任何地方的數據再分發站點（ ERDDAP ）。給定的ERDDAP既可以是某些數據集的數據源，也可以是其他數據集的再分發站點。生成的網絡大致類似於使用<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata的 IDD/IDM</a>等程序建立的數據分發網絡<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> ，但結構不那麼嚴格。
 <br>&nbsp;
 </ul>
-<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ？ OPeNDAP ？ DODS ？ ERDDAP ？有什麼不同？</a></strong>我（鮑勃）的理解是：
-<p>DODS （分佈式海洋數據系統）創建於 1990 年代，當時還沒有 http:
+<p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ？ OPeNDAP ？ DODS ？ ERDDAP ?有什麼不同？</a></strong>我（鮑勃）的理解是：
+<p>DODS （分佈式海洋學數據系統）創建於 1990 年代，當時還沒有 http:
 (!)。
-DODS系統創建並使用了互聯網上的 dods:
+DODS系統在 Internet 上創建並使用了 dods:
 協議。當 HTTP 出現並如此成功時，他們從 dods:
 切換到 http:。
-<p>在某個時候，他們意識到該系統不僅僅對海洋數據有用。所以他們放棄了DODS的名字（儘管它存在於某些代碼中），成立了一個名為<a rel="bookmark" href="https://www.opendap.org/">OPeNDAP</a>的小型組織<a rel="bookmark" href="https://www.opendap.org/"><img 
+<p>在某個時候，他們意識到該系統不僅僅對海洋學數據有用。所以他們放棄了DODS的名稱（儘管它存在於某些代碼中），成立了一個名為<a rel="bookmark" href="https://www.opendap.org/">OPeNDAP</a>的小型組織<a rel="bookmark" href="https://www.opendap.org/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>並編寫了<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP （數據訪問協議）規範<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a> ，它標準化了對元數據和/或數據的請求的格式，以及對元數據和/或數據的響應。
-OPeNDAP （組織）仍然牧養DAP （規範）並且是Hyrax （經常被錯誤地稱為OPeNDAP的數據服務器）的作者。
-<p>Hyrax 、THREDDS、GRADS、 ERDDAP等是實現DAP的數據服務器（軟件）。他們每個人都實現了DAP的一個子集，但在其他方面卻截然不同。
-<p>ERDDAP使用代碼（在“dods”目錄中）（實際上由 NASA JPL 的 Jake Hamby 編寫）用於從外部DAP服務器讀取數據的一些功能。
+      title="此指向外部網站的鏈接不構成認可。"></a> ，它標準化了元數據和/或數據請求的格式，以及元數據和/或數據的響應。
+OPeNDAP （組織）仍然是DAP （規範）的先驅，並且是Hyrax （通常被錯誤地稱為OPeNDAP的數據服務器）的作者。
+<p>Hyrax 、THREDDS、GRADS、 ERDDAP等是實現DAP的數據服務器（軟件）。他們每個人都實現了DAP的一個子集，但做其他事情卻非常不同。
+<p>ERDDAP使用代碼（在“dods”目錄中）（實際上由 NASA JPL 的 Jake Hamby 編寫）用於從外部DAP服務器讀取數據的某些功能。
 ERDDAP使用自己的代碼寫出DAP響應。
 <br>&nbsp;
-<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP是不是解決了大家的數據分發/數據訪問問題？</a></strong>
-<br>ERDDAP試圖找到一個很好的解決方案，它可以很好地解決我們遇到的大多數數據分佈問題。
-ERDDAP採用中間件方法：它可以從許多不同類型的遠程數據服務器獲取數據，並且可以將這些數據以多種不同的文件格式提供給客戶端。它旨在成為一種不可知的解決方案，旨在使其他數據服務器（ OPeNDAP 、 SOS 、OBIS、 WMS等）可互操作。有沒有一台完美的數據服務器可以完美地滿足每個人的需求？我們不這麼認為。即使你認為有或將會有，但如果有的話，每個人都需要很長時間才能轉向它。在此之前， ERDDAP現在可以使其他數據服務器可互操作並立即提供數據。
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原樣處理許多/大多數數據集，但不是全部。</a>並不是說剩餘的數據集（例如，使用立方球體投影的模型數據）不重要。只是ERDDAP以常見文件格式（其中一些非常簡單）返回數據的目標排除了更複雜的內部數據結構。處理更複雜數據結構的研究人員小組通常已經擁有專門的數據服務器和專門的客戶端軟件，這些軟件是根據社區需求定制的。
-ERDDAP作為通用數據服務器，不會試圖與這些專用數據服務器競爭。他們根據社區的需求進行定制，並且做得很好。但是，這些數據集通常只能被該社區中的專業軟件“理解”。
-<p>複雜數據集的解決方法 - ERDDAP有一種方法可以處理它無法直接處理的複雜數據集。就像<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
-  >關係數據庫</a>一樣<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
-  ><img 
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP是解決每個人的數據分佈/數據訪問問題的解決方案嗎？</a></strong>
+<br>不ERDDAP試圖找到一個最佳解決方案，它可以很好地解決我們遇到的大多數數據分佈問題。
+ERDDAP採用中間件方法：它可以從許多不同類型的遠程數據服務器獲取數據，並且可以將這些數據以多種不同的文件格式提供給客戶端。它被設計成一個不可知的解決方案，旨在使其他數據服務器（ OPeNDAP 、 SOS 、OBIS、 WMS ，...）可互操作。有沒有一款完美的數據服務器可以完美滿足大家的需求？我們不這麼認為。即使你認為有或將會有，如果有的話，每個人都轉向它也需要很長時間。在此之前， ERDDAP現在可以讓其他數據服務器互操作並立即提供數據。
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原樣處理許多/大多數數據集，但不是全部。</a>這並不是說剩餘的數據集（例如，使用立方球體投影的模型數據）不重要。只是ERDDAP以常見文件格式（其中一些非常簡單）返回數據的目標排除了更複雜的內部數據結構。處理更複雜數據結構的研究人員小組通常已經擁有專門的數據服務器和專門的客戶端軟件，這些軟件是根據社區的需求定制的。
+ERDDAP作為通用數據服務器，不會試圖與這些專用數據服務器競爭。他們根據社區的需求進行了定制，並且做得很好。然而，這些數據集通常只能被該社區的專業軟件“理解”。
+<p>複雜數據集的解決方法 - ERDDAP有一種方法可以處理它無法直接處理的複雜數據集。就像一個<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
+  >關係數據庫<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="此指向外部網站的鏈接不構成認可。"></a> ERDDAP 可以僅使用一個簡單的數據結構（表）來存儲複雜的數據集， ERDDAP可以通過將源數據集分解為幾個ERDDAP數據集，每個數據集都具有相似的簡單數據結構，從而為來自更複雜數據集的數據提供服務。例如，一些網格化的環境模型數據集可以通過將海面變量（[時間][緯度][經度]） ERDDAP ERDDAP集中，並通過將變量與海拔高度（[時間][海拔][緯度][經度]）在另一個ERDDAP數據集中。我們知道這並不理想，但有必要允許ERDDAP以常見文件格式（其中一些非常簡單）返回數據。
-<p>處理複雜數據集（例如，使用立方球體投影的模型數據）的另一種方法是還提供數據集的重新投影版本（[時間][高度][緯度][經度]）， ERDDAP可以輕鬆使用該版本。這些更簡單的數據結構並不意味著要取代原始數據結構，但它們可以作為將數據分發給更廣泛的受眾的有用方式。
+      title="此指向外部網站的鏈接不構成認可。"></a> ERDDAP 可以僅使用一個簡單的數據結構（表）來存儲複雜的數據集， ERDDAP可以通過將源數據集分解為幾個ERDDAP數據集來提供來自更複雜數據集的數據，每個數據集都具有相似的簡單數據結構。例如，一些網格化環境模型數據集可以通過將海面變量（[時間][緯度][經度]）放在一個ERDDAP數據集中， ERDDAP具有高度的變量（[時間][海拔][緯度][經度]）在另一個ERDDAP數據集中。我們知道這並不理想，但有必要允許ERDDAP以常見文件格式返回數據（其中一些非常簡單）。
+<p>處理複雜數據集的另一種方法（例如，對於使用立方球體投影的模型數據）還提供數據集的重新投影版本（[時間][高度][緯度][經度]）， ERDDAP可以輕鬆使用。這些更簡單的數據結構並不是要取代原始數據結構，但它們可以成為將數據分發給更廣泛受眾的有用方式。
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAP項目的可持續性如何？</strong></a>
-<br>ERDDAP是非常可持續的。
-<br>聽到ERDDAP主要由一個人（我，Bob Simons）開發，有些人感到驚訝和失望。
-[順便說一下，這個網頁上的意見是我個人的意見，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。] 他們擔心如果我發生什麼事，那將結束ERDDAP 。那明顯是錯的。
-ERDDAP對長期可持續性的定位非常出色，並且接近可能達到的最佳狀態。
-<p>是的，我是ERDDAP的主要開發者。我是一名全額資助的聯邦僱員。我的資金不是“軟”資金，所以我不接受或依賴贈款。我花了一半以上的時間來開發ERDDAP 。我其餘的時間都花在管理數據集上。這項工作對ERDDAP很有用，因為我需要使用真實數據集才能詳細了解ERDDAP需要做什麼。我的老闆完全支持我在ERDDAP方面的工作，因為它完成了我受僱要做的事情：讓漁業科學家（主要是，但實際上是每個人）更容易從不同來源獲取科學數據。
-<p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">軟件的神奇之處在於復制它不需要任何成本。</a>所以為了完成我的工作，我編寫ERDDAP用於ERD 。我認為這是我完成工作的最佳方式。僅這個原因就證明了開發ERDDAP的費用是合理的。
-（我認為可以證明ERDDAP節省了NOAA科學家的時間，而不是我花在開發ERDDAP上的時間。時間=金錢。）但附帶的好處是任何其他組織都可以<a rel="bookmark" 
+<br>ERDDAP非常可持續。
+<br>聽說ERDDAP主要由一個人（我，Bob Simons）開發，有些人感到驚訝和失望。
+[順便說一下，這個網頁上的觀點是我的個人觀點，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。]他們擔心如果我發生什麼事， ERDDAP就會結束。那明顯是錯的。
+ERDDAP對長期可持續性的定位非常好，並且接近於它可能達到的最佳狀態。
+<p>是的，我是ERDDAP的主要開發者。我是一名資金充足的聯邦僱員。我的資金不是“軟”錢，所以我不接受或依賴贈款。我花了一半以上的時間來開發ERDDAP 。我剩下的時間都花在管理數據集上。這項工作對ERDDAP很有用，因為我需要使用真實的數據集才能詳細了解ERDDAP需要做什麼。我的老闆完全支持我在ERDDAP上的工作，因為它完成了我受聘要做的事情：讓漁業科學家（主要是，但實際上是每個人）更容易從不同來源獲取科學數據。
+<p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">軟件的神奇之處在於復制不需要任何成本。</a>因此，為了完成我的工作，我編寫ERDDAP供ERD使用。我認為這是我完成工作的最佳方式。僅這個原因就證明了開發ERDDAP的費用是合理的。
+（我認為可以證明ERDDAP為NOAA科學家節省的時間比我開發ERDDAP所花費的時間要多。時間=金錢。）但附帶的好處是任何其他組織都可以<a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">免費下載、安裝和使用ERDDAP</a><strong>來</strong>分發他們的科學數據。
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
->至少有 14 個國家/地區的 90 多個組織使用ERDDAP</a> 。也許有免費午餐這樣的東西。
+>至少 14 個國家/地區的 90 多個組織使用ERDDAP</a> 。也許有免費午餐之類的東西。
 <p>ERDDAP是一個Java程序。每個版本的源代碼都在<a rel="bookmark" href="https://github.com/BobSimons">GitHub 上<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部網站的鏈接不構成認可。"></a> ，最常用於協作軟件項目的系統。到目前為止，其他四個小組已經為ERDDAP貢獻了代碼：
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a>由 R.Tech Engineering 的 Jonathan Lafite 和 Philippe Makowski 編寫和貢獻（許可證：受版權保護的開源）。謝謝喬納森和菲利普！
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a>由NOAA的 Roland Schweitzer 編寫和貢獻（許可：受版權保護的開源）。謝謝你，羅蘭！
-<li><a href="#jsonld" rel="bookmark">具有 json-ld（JSON 關聯數據）功能的數據集語義標記</a>的初始版本（以及設計內容的所有艱苦工作）由 Adam Leadbetter 和 Rob Fuller 編寫和貢獻（許可：受版權保護的開源）愛爾蘭海洋研究所。謝謝你，亞當和羅布！
-<li>tabledap 中tabledap
+    title="此指向外部網站的鏈接不構成認可。"></a> ，協作軟件項目最常用的系統。到目前為止，這些團體/人已經為ERDDAP貢獻了代碼：
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">合併IR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a>由 R.Tech Engineering 的 Jonathan Lafite 和 Philippe Makowski 編寫和貢獻<!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> （許可證：受版權保護的開源）。謝謝喬納森和菲利普！
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a>由NOAA的 Roland Schweitzer 編寫和貢獻（許可證：受版權保護的開源）。謝謝你，羅蘭！
+<br>&nbsp;
+<li>json-ld
+<br><a href="#jsonld" rel="bookmark">具有 json-ld（JSON 鏈接數據）功能的數據集語義標記</a>的初始版本（以及因此設計內容的所有辛勤工作）由 Adam Leadbetter 和 Rob Fuller 編寫和貢獻（許可：受版權保護的開源）愛爾蘭海洋研究所。謝謝你，亞當和羅伯！
+<br>&nbsp;
+<li>orderBy
+<br>tabledap 中tabledap
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean器</a>的代碼以及為支持所有orderBy過濾器的<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>variableName/divisor:offset</i>表示法</a>而對代碼進行的大量更改是由海洋研究所的 Rob Fuller 和 Adam Leadbetter 編寫和貢獻的（許可證：受版權保護的開源）愛爾蘭。謝謝你，羅伯和亞當！
-<li>三種新標記類型（無邊界填充正方形、無邊界填充圓形、無邊界填充三角形）的代碼由 ETT / EMODnet Physics 的 Marco Alba 提供。謝謝馬可·阿爾巴。<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+  >orderByMean器</a>的代碼以及對代碼的廣泛更改以支持所有orderBy過濾器的<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
+  ><i>variableName/divisor:offset</i>表示法</a>，由海洋研究所的 Rob Fuller 和 Adam Leadbetter 編寫和貢獻（許可證：受版權保護的開源）愛爾蘭。謝謝你，羅伯和亞當！
+<br>&nbsp;
+<li>無邊界標記類型
+<br>三種新標記類型（無邊框填充正方形、無邊框填充圓形、無邊框填充三角形）的代碼由 ETT / EMODnet Physics 的 Marco Alba 提供。謝謝你，馬可阿爾巴！
+<br>&nbsp;
+<li>messages.xml 的翻譯
+<br>TranslateMessages.java 中的代碼的初始版本使用谷歌的翻譯服務將messages.xml 翻譯成各種語言，由曾擔任谷歌代碼之夏實習生的Qi Zeng 編寫。謝謝你，齊！
+<br>&nbsp;
+<li>orderBy
+<br>tabledap中<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum 過濾器</a>的代碼（基於 Rob Fuller 和 Adam Leadbetter 的orderByMean ）以及EDDGrid數據訪問表單上的 Check All 和 Uncheck All 按鈕由 ETT Solutions 的 Marco Alba 編寫和貢獻（許可證：受版權保護的開源）和 EMODnet。謝謝你，馬可！
+<br>&nbsp;
+<li>超出範圍的 .transparentPng 請求
+<br>當緯度和/或經度值部分或完全超出範圍時， ERDDAP現在接受對 .transparentPng 的請求。
+（這是ERDDAP GitHub 問題 #19，由 Rob Fuller 發布——感謝 Rob 發布。）修復此問題的代碼由 Chris John 編寫。謝謝你，克里斯！
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-我希望其他人將來會貢獻代碼。如果我發生什麼事，我的老闆會僱傭一個替代者，他/她的具體目標是繼續開發ERDDAP 。此外，我嘗試編寫非常乾淨的代碼。我寫Java Doc 註釋。我在代碼中寫註釋。我仔細選擇了變量名。我遵循Java格式指南。所有這一切都是為了使代碼更具可讀性，對於其他想要理解和/或更改它的程序員，對於我來說，因為在一兩年後，我將忘記代碼如何以及為什麼的細節是這樣寫的。帶有良好註釋的干淨代碼使我正在進行的ERDDAP工作變得更容易，所以我有很大的動力來編寫帶有良好註釋的干淨代碼。
-<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">但是到目前為止我所有的答案都不是很重要。</a>只有一件事是真正重要的。只有一件事可以保證ERDDAP或任何軟件項目的可持續性： ERDDAP是<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">免費和開源軟件 (FOSS) <img 
+我希望其他人將來會貢獻代碼。如果我發生了什麼事，我的老闆會僱傭一個替代者，其具體目標是繼續開發ERDDAP 。此外，我嘗試編寫非常乾淨的代碼。我寫Java Doc 註釋。我在代碼中寫註釋。我仔細選擇了變量名。我遵循Java格式指南。所有這一切都是為了使代碼更具可讀性，對於其他想要理解和/或更改它的程序員來說，對我來說，因為在一兩年內，我會忘記代碼的方式和原因的細節是這樣寫的。帶有良好註釋的干淨代碼使我在ERDDAP上的工作更容易，因此我有很大的動力來編寫帶有良好註釋的干淨代碼。
+<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">但到目前為止，我所有的答案都不是很重要。</a>只有一件事真的很重要。只有一件事可以保證ERDDAP或任何軟件項目的可持續性： ERDDAP是<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">免費和開源軟件 (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> .具體來說， ERDDAP使用<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">Apache 兼容的軟件許可證<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> ，所以任何人都可以用代碼做任何他們想做的事情。
-<p>為什麼這很重要？人們可能認為軟件在未來會可靠可用，因為它背後有一家大公司。但是，例如，谷歌已經停止了許多項目（
+<p>為什麼這很重要？有人可能會認為軟件在未來會可靠可用，因為有一家大公司支持它。但是，例如，谷歌已經停止了許多項目（
 <a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >這裡有一個列表<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部網站的鏈接不構成認可。"></a> ）。我不想選擇谷歌，因為我真的很喜歡谷歌，他們資助了大量優秀的開源項目。微軟已經停止了項目。蘋果已經停止了項目。
-……重點是，僅僅有大公司的支持並不能保證該項目會繼續下去。該軟件的用戶運氣不佳，<strong>除非</strong>該軟件是（因此始終是）免費和開源軟件 (FOSS)。然後，只要有一個開發人員感興趣，該項目就可以並將繼續發展。
+    title="此指向外部網站的鏈接不構成認可。"></a> ）。我不想選擇谷歌，因為我真的很喜歡谷歌，他們資助了大量偉大的開源項目。微軟已經停止了項目。蘋果已經停止了項目。
+...
+關鍵是，僅僅得到一家大公司的支持並不能保證該項目將繼續進行。該軟件的用戶不走運，<strong>除非</strong>該軟件是（因此始終是）免費和開源軟件 (FOSS)。然後，只要有一個開發人員感興趣，該項目就可以並且將繼續發展。
 FOSS 是一種保險單。事實上，FOSS 是唯一重要的保險單，唯一的保證。
-FOSS 確保軟件始終有前進的道路。這是一項任何人都無法剝奪的權利，永遠。
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">人們可能還會認為擁有大量開發人員團隊的</a>軟件比只有一個主要開發人員的軟件更具可持續性。但是很多開發商通常需要大量資金。我知道一個著名的、相當大的項目，有 10 個開發人員（我不會通過命名他們讓他們難堪），因為他們沒有足夠的資金，所以經常面臨停止項目的嚴重危險。他們依靠贈款。他們總是虧本。他們的讚助人總是在最後一刻救他們出來，但真的厭倦了把他們救出來。因此，如果他們不能每年籌集一百萬美元的贈款（或者贊助人已經厭倦了救助他們），他們就會停止。並且該團隊無法想像擁有少於 10 名的開發人員。每個開發人員在他們的團隊中都有自己的角色。有鑑於此，在我看來，這是一個很好的跡象，即ERDDAP可以並且正在由一個主要開發人員（資金充足）在其他一些人的非官方協助下積極開發。事實上，如果ERDDAP需要多個開發人員，那將是一個壞兆頭。
-ERDDAP只有一個主要開發人員，這意味著它不是一項需要大量持續資金的艱鉅任務；這是一項相對較小的任務，需要最少的努力和資金。這是更可持續的，而不是更少。
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">有人可能認為聘請承包公司編寫軟件是個好主意。</a>收費，他們將提供開發人員並承諾連續性（除非/直到他們倒閉，否則這很好）。但他們也讓你大吃一驚：你必須按照他們的要求付錢給他們，否則就沒有更多的開發，<strong>除非</strong>軟件是 FOSS 而你只是付錢給他們來處理代碼。使用 FOSS，您始終可以選擇如何前進。因為ERDDAP是 FOSS，所以承包商對於您或任何人來說都是ERDDAP的好選擇：如果我（一位主要開發人員）發生任何事情，或者如果我沒有時間進行您想要的一些更改，或者我退休了，如果你不喜歡我的替代者的工作，你可以隨時聘請承包公司來做出你想要的改變（或自己做）。
+FOSS 確保軟件始終有前進的方向。這是一項任何人都無法剝奪的權利。
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">人們也可能認為擁有大量開發人員團隊的</a>軟件將比擁有一個主要開發人員的軟件更具可持續性。但很多開發商通常需要大量資金。我知道一個有 10 名開發人員的著名的、相當大的項目（我不會通過命名他們來讓他們難堪），因為他們沒有足夠的資金，該項目一直處於停止該項目的嚴重危險中。他們依靠贈款。他們總是出現赤字。他們的讚助人總是在最後一刻救助他們，但真的厭倦了救助他們。因此，如果他們不能每年籌集一百萬美元的贈款（或者贊助人厭倦了救助他們），他們就會停止。而且該團隊無法想像擁有少於 10 名開發人員的情況。每個開發人員在他們的團隊中都可以發揮作用。鑑於此，在我看來，這是一個很好的跡象，即ERDDAP可以並且正在由一個主要開發人員（資金充足）在其他一些人的非官方協助下積極開發。事實上，如果ERDDAP需要多個開發人員，那將是一個不好的跡象。
+ERDDAP只有一個主要開發人員，這意味著這不是一項需要大量持續資金的艱鉅任務；這是一項相對較小的任務，需要最少的努力和資金。這是更可持續的，而不是更少。
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">有人可能認為聘請承包公司編寫軟件是個好主意。</a>收費，他們將提供開發人員並承諾連續性（這很好，除非/直到他們倒閉）。但是他們也讓你吃不消：你必須按照他們的要求支付他們的費用，否則就沒有更多的開發，<strong>除非</strong>軟件是自由和開放源碼軟件，而你只是付錢給他們處理代碼。使用 FOSS，您始終可以選擇如何前進。因為ERDDAP是 FOSS，對於您或任何與ERDDAP的人來說，承包商始終是一個不錯的選擇：如果我（一個主要開發人員）發生任何事情，或者如果我沒有時間進行您想要的一些更改，或者我退休並且您不喜歡我的替代工作，您可以隨時聘請承包公司進行您想要的更改（或自己進行更改）。
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">總之， ERDDAP具有兩個最重要的可持續性特徵：</a>
 <ol>
-<li>ERDDAP是一個小項目（小到可以由一個主要開發人員在其他幾個非官方協助下處理），因此它不需要大量資源。
-<li>ERDDAP是免費的開源軟件，因此沒有人可以阻止您或其他任何人在ERDDAP上工作。
+<li>ERDDAP是一個小項目（小到可以由一個主要開發人員在其他幾個人的非官方協助下處理），因此它不需要大量資源。
+<li>ERDDAP是免費的開源軟件，因此沒有人可以阻止您或其他任何人使用ERDDAP 。
 </ol>
-我想不出更好的情況。我希望這能消除您（或其他任何人）對ERDDAP可持續性的任何擔憂。如果您聽到有人質疑或不鼓勵使用ERDDAP ，因為只有一個主要開發人員，請直接將他們指向此 URL 上的上述討論：
+我想不出更好的情況。我希望這能減輕您（或其他任何人）對ERDDAP可持續性的擔憂。如果您聽到人們因為只有一個主要開發人員而質疑或不鼓勵使用ERDDAP ，請通過將他們指向以下 URL 上的上述討論來直接解決他們：
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information。
 html#可持續</a>。
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -4579,9 +4606,9 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>讓讀者知道您是如何獲得論文中使用的數據的，這一點很重要。對於您使用的每個數據集，請查看數據集 .html 頁面底部的數據集屬性結構部分中的數據集元數據，例如，
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
-  >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> 。元數據有時包括數據集所需或建議的引文格式。“許可”元數據有時會列出對數據使用的限制。
+  >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> 。元數據有時包括數據集所需或建議的引用格式。“許可”元數據有時會列出對數據使用的限制。
 <p>要為數據集生成引文：
-<br>如果您將數據集視為科學文章，則可以根據作者（參見“creator_name”或&quot;institution&quot;元數據）、下載數據的日期、標題（參見&quot;title&quot;元數據）生成引文) 和發布者（請參閱“publisher_name”元數據）。如果可能，請提供用於下載數據的特定 URL。如果數據集的元數據包含<a rel="help" 
+<br>如果您將數據集視為科學文章，您可以根據作者（請參閱“creator_name”或&quot;institution&quot;元數據）、下載數據的日期、標題（請參閱&quot;title&quot;元數據）生成引文) 和發布者（請參閱“publisher_name”元數據）。如果可能，請提供用於下載數據的特定 URL。如果數據集的元數據包含<a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
   >數字對象標識符 (DOI ) <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4591,27 +4618,27 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>如果您想在科學論文中引用ERDDAP本身，請使用類似
 <br><kbd>西蒙斯，RA ERDDAP 。
 https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亞州蒙特雷： NOAA / NMFS / SWFSC / ERD 。</kbd>
-<p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">縮寫“ ERDDAP ”代表什麼？</a></strong>
-<br>“ ERDDAP ”曾經是一個首字母縮寫詞，但它超出了最初的描述。現在，請把它想像成一個名字，而不是一個首字母縮略詞。
+<p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">首字母縮略詞“ ERDDAP ”代表什麼？</a></strong>
+<br>“ ERDDAP ”曾經是一個首字母縮寫詞，但它超出了最初的描述。現在，請把它當作一個名字，而不是一個首字母縮略詞。
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">數據分發系統指南</a></strong>
 <br>Bob 關於數據分發系統的設計和評估的意見可以在<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">這裡</a>找到。
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>設置您自己的ERDDAP服務器</strong></a>並提供您自己的數據。
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>設置自己的ERDDAP服務器</strong></a>並提供自己的數據。
 <ul>
-<li>設置ERDDAP的小努力帶來了許多好處。
-<li>如果您已有用於分發數據的 Web 服務，則可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式來訪問您的數據，並且能夠以其他文件格式或圖表或地圖的形式下載數據。
+<li>建立ERDDAP的小努力帶來了很多好處。
+<li>如果您已經有一個用於分發數據的 Web 服務，您可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式訪問您的數據，並能夠以其他文件格式或圖形或地圖的形式下載數據。
 <li>如果您的數據集需求量很大，您可以安裝<a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
-  >多個協同工作的ERDDAP</a>來擴展並滿足大型數據分發中心的需求。
+  >多個協同工作的ERDDAP</a>以擴大規模並滿足大型數據分發中心的需求。
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">聯繫我們</a></h2>如果您對ERDDAP有一般的問題、建議或意見（不是這個特定ERDDAP安裝），請發送電子郵件給<kbd>bob dot simons at noaa dot gov</kbd>並提供與您的問題或評論直接相關的ERDDAP URL。
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">聯繫我們</a></h2>如果您對ERDDAP有一般問題、建議或意見（不是這個特定ERDDAP安裝），請發送電子郵件至<kbd>bob dot simons at noaa dot gov</kbd>並附上與您的問題或意見直接相關的ERDDAP URL。
 <br>或者，您可以通過訪問<a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">加入ERDDAP Google 群組/郵件列表</a><a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap"><img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="此指向外部網站的鏈接不構成認可。"></a>然後點擊“申請會員”。成為會員後，您可以在那裡發布您的問題或搜索該問題是否已被提出和回答。
-<p>免責聲明：本網頁上的意見是鮑勃西蒙斯的個人意見，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。
+  title="此指向外部網站的鏈接不構成認可。"></a>並點擊“申請會員”。成為會員後，您可以在此處發布您的問題或搜索以查看該問題是否已被提出和回答。
+<p>免責聲明：本網頁上的觀點是 Bob Simons 的個人觀點，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。
 ]]></theLongDescriptionHtml>
 <Then>然後</Then>
 <twoClickMapDefaultTooltip>通過單擊兩個對角指定一個矩形。如果需要，再做一次。</twoClickMapDefaultTooltip>
@@ -6052,9 +6079,7 @@ You can access it at
 <yourEmailAddress>您的電子郵件地址</yourEmailAddress>
 <zoomIn>放大</zoomIn>
 <zoomOut>縮小</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>將文本複製到剪貼板</copytexttoclipboard>
+<copytoclipboardnotavailable>複製到剪貼板不可用</copytoclipboardnotavailable>
+<copyimagetoclipboard>將圖像複製到剪貼板</copyimagetoclipboard>
 </erddapMessages>

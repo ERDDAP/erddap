@@ -121,10 +121,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/glos/MI-D10_monthly.nc"; 
-//      String2.log(NcHelper.ncdump(tFileName, "-v Time"));  
+//      String tFileName = "/data/raju/O2_07MAR2022_009_011_LAP_L2B_CL_S.hdf"; 
+//      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"glisa_CFSR_Precip_S3", "-verbose"});
+//      DasDds.main(new String[]{"raju", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -307,10 +307,10 @@ public class TestAll  {
 //        String2.log(EDD.testDasDds(ds)); 
 //    }
 
-//    s = EDDGridFromNcFiles.generateDatasetsXml("/data/sean/", "SDScompound.h5", "", "", "", -1, "", null);
+//    s = EDDGridFromNcFiles.generateDatasetsXml("/data/raju/", "O2_.*.hdf", "", "", "Scans,Pixels", -1, "", null);
 //    String2.setClipboardString(s);    
 //    String2.log(s);
-//    DasDds.main(new String[]{"ncdcOisst21Agg", "-verbose"});
+//    DasDds.main(new String[]{"raju", "-verbose"});
 
 /*  //testFiles
     EDDGridFromNcFiles.testFiles();         //requires nceiPH53sstn1day in localhost ERDDAP
@@ -365,6 +365,7 @@ public class TestAll  {
 //        "", "", "", "", "",  //regex
 //        "", // tSortFilesBySourceNames, 
 //        "", "", "", "", Integer.MAX_VALUE, "", null));  //info, institution, summary, title, standardizeWhat=0, cacheFromUrl, atts
+
 
 //    Sync with various remote directories
 //    FileVisitorDNLS.reallyVerbose = true; FileVisitorDNLS.debugMode = true; 
@@ -568,7 +569,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021,  5, 2022,  2, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022,  1, 2022,  3, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -601,7 +602,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021,  5, 2022,  2); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022,  1, 2022,  3); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -1091,6 +1092,7 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
+//EDDTableFromAsciiFiles.testNThreads();
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

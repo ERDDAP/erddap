@@ -1422,7 +1422,7 @@ Noen standarder (f.eks.
 De er alle representert med &quot;deg&quot; .</td>
 <td>For å skille mellom de ulike retningsgradenhetene, legger omformeren til en kommentar til retningsgradenheter (f.eks.
 &quot;degree_north&quot; blir &quot;deg{north}&quot; ).</td>
-<td>Hvis du legger til en kommentar ({east}, {north}, {west} eller {true} ), vil konverteren konvertere til en retningsenhet (f.eks.
+<td>Hvis du legger til en kommentar({east}, {north}, {west} eller {true} ), vil konverteren konvertere til en retningsenhet (f.eks.
 &quot;deg{north}&quot; blir &quot;degree_north&quot; ); ellers er det ingen måte for omformeren å generere retningsgradenheter, så &quot;deg&quot; konverteres til &quot;degree&quot; .</td>
 </tr>
 <tr>
@@ -1482,7 +1482,7 @@ Grader Celsius identifiseres via <kbd>Cel</kbd> .</td>
 <td>Kommentarer og ikke-standard vilkår</td>
 <td>UDUNITS tillater ikke kommentarer eller ikke-standardiserte termer, og derfor er mange enhetsstrenger ugyldige.</td>
 <td>UDUNITS tillater ikke ikke-standardiserte vilkår, men tillater kommentarer i { } .</td>
-<td>Ikke-standardiserte vilkår konverteres til kommentarer.</td>
+<td>Ikke-standard vilkår konverteres til kommentarer.</td>
 <td>Kommentarer er ukommentert slik at ingen informasjon går tapt; resultatet kan imidlertid være en ugyldig UDUNITS streng.
 </tr></table>
 ]]></convertUnitsComparison>
@@ -1679,6 +1679,9 @@ Tillat&quot;
 Hvis du ERDDAP forespørsler fra et dataprogram (annet enn en nettleser), er informasjonskapsler vanskelig å jobbe med.
 Beklager.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopier bildet til utklippstavlen</copyImageToClipboard>
+<copyTextToClipboard>Kopier tekst til utklippstavlen</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopier til utklippstavlen er ikke tilgjengelig</copyToClipboardNotAvailable>
 <daf>Skjema for datatilgang</daf>
 <dafGridBypassTooltip><![CDATA[
 Denne nettsiden forenkler bare opprettelsen av griddap-URLer.
@@ -5290,7 +5293,7 @@ Når du ber om data eller en graf fra et
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF-metadata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a>) som beskriver dataene.
-ERDDAP lar (og oppfordrer) administratoren til å beskrive metadata som vil bli lagt til datasett og deres variabler på farten.
+ERDDAP lar (og oppfordrer) administratoren til å beskrive metadata som vil bli lagt til datasett og deres variabler underveis.
 Se delen
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes i</a>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">instruksjonene for administratorer</a> .
@@ -5389,7 +5392,7 @@ tidsverdiene) endres.
 <li>ERDDAP gir ingen løfter om egnetheten eller nøyaktigheten til disse tjenestene (se
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAP ANSVARSFRASKRIVELSER</a>).
 </ul>
-<p>E- <strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">post/URL</a> -abonnement</strong> (ikke tilgjengelig på enkelte ERDDAP installasjoner) Når et datasett endres, vil e-post/URL-abonnementssystemet <strong>umiddelbart</strong> sende deg en e-post eller kontakte en URL som du spesifiserer.
+<p>E- <strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">post/URL</a> -abonnementer</strong> (ikke tilgjengelig på enkelte ERDDAP installasjoner) Når et datasett endres, vil e-post/URL-abonnementssystemet <strong>umiddelbart</strong> sende deg en e-post eller kontakte en URL som du spesifiserer.
 E-post/URL-abonnement er ikke tilgjengelig på enkelte ERDDAP installasjoner.
 For å sette opp et e-post-/URL-abonnement, klikk på et av konvoluttikonene <img alt="Subscribe" style="vertical-align:top" title="Konvoluttikonet." src="&erddapUrl;/images/envelope.gif" > som vises helt til høyre på ERDDAP -nettsider med lister over datasett (<a rel="contents" href="&erddapUrl;/info/index.html">eksempel</a>) og på Data Access Forms and Make A Graph-nettsidene for individuelle datasett (<a href="&erddapUrl;/griddap/etopo180.html">eksempel</a>) hvis denne ERDDAP installasjonen støtter e-post/URL-abonnement.
 (Datamaskinprogrammerere:
@@ -5429,7 +5432,7 @@ Du kan kanskje sette RSS -klienten din til å se etter endringer hvert minutt (i
       title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> - og
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> -stillenker for å gjøre tjenestene tilgjengelige for dataprogrammer.</strong>
+      title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> -stilkoblinger for å gjøre tjenestene tilgjengelige for dataprogrammer.</strong>
 <br>Disse funksjonene kan brukes til å bygge en annen webtjeneste på toppen av ERDDAP (får ERDDAP gjøre alt arbeidet!).
 ERDDAP er ikke ment å være en tjeneste for datautforskning/graftegning på høyt nivå.
 I stedet er ERDDAP ment å tilby tjenester for slike nettsteder og programmer.
@@ -5531,7 +5534,7 @@ Inntil da er ERDDAP tilgjengelig akkurat nå for å gjøre andre dataservere int
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP kan håndtere mange/de fleste datasett som de er, men ikke alle.</a> Det er ikke det at de gjenværende datasettene (f.eks.
 modelldata som bruker en kubert sfæreprojeksjon) ikke er viktige.
 Det er bare det at ERDDAP mål om å returnere data i vanlige filformater (hvorav noen er ganske enkle), utelukker en mer kompleks intern datastruktur.
-Grupper av forskere som jobber med mer komplekse datastrukturer har ofte allerede spesialiserte dataservere og spesialisert klientprogramvare som er tilpasset deres fellesskaps behov.
+Grupper av forskere som arbeider med mer komplekse datastrukturer har ofte allerede spesialiserte dataservere og spesialisert klientprogramvare som er tilpasset deres fellesskaps behov.
 ERDDAP, som en generell dataserver, prøver ikke å konkurrere med disse spesialiserte dataserverne.
 De er tilpasset behovene til samfunnet deres og gjør en god jobb.
 Imidlertid blir disse datasettene ofte bare &quot;forstått&quot; av den spesialiserte programvaren i det fellesskapet.
@@ -5577,29 +5580,58 @@ Kildekoden for hver versjon er på
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a>, det mest brukte systemet for samarbeidende programvareprosjekter.
-Så langt har fire andre grupper bidratt med kode til ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> ble skrevet og bidratt av Jonathan Lafite og Philippe Makowski fra R.Tech Engineering (lisens:
+Så langt har disse gruppene/personene bidratt med kode til ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> ble skrevet og bidratt av Jonathan Lafite og Philippe Makowski fra R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (lisens:
 opphavsrettsbeskyttet åpen kildekode).
 Takk, Jonathan og Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> ble skrevet og bidratt av Roland Schweitzer fra NOAA (lisens:
 opphavsrettsbeskyttet åpen kildekode).
 Takk, Roland!
-<li>Den første versjonen av
+<br>&nbsp;
+<li>json-ld
+<br>Den første versjonen av
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a> -funksjonen (og dermed alt det harde arbeidet med å designe innholdet) ble skrevet og bidratt (lisens:
 opphavsrettsbeskyttet åpen kildekode) av Adam Leadbetter og Rob Fuller fra Marine Institute i Irland.
 Takk, Adam og Rob!
-<li>Koden for
+<br>&nbsp;
+<li>orderBy
+<br>Koden for
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filteret</a> i tabledap og de omfattende endringene i koden for å støtte
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   ><i>variabelName/divisor:offset</i> -notasjonen</a> for alle orderBy filtre ble skrevet og bidratt (lisens:
 opphavsrettsbeskyttet åpen kildekode) av Rob Fuller og Adam Leadbetter fra Marine Institute i Irland.
 Takk, Rob og Adam!
-<li>Koden for tre nye markørtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) ble bidratt av Marco Alba fra ETT / EMODnet Physics.
-Takk Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Kantløse markørtyper
+<br>Koden for tre nye markørtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) ble bidratt av Marco Alba fra ETT / EMODnet Physics.
+Takk, Marco Alba!
+<br>&nbsp;
+<li>Oversettelser av messages.xml
+<br>Den første versjonen av koden i TranslateMessages.java som bruker Googles oversettelsestjeneste til å oversette messages.xml til forskjellige språk ble skrevet av Qi Zeng, som jobbet som Google Summer of Code-praktikant.
+Takk, Qi!
+<br>&nbsp;
+<li>orderBy sum
+<br>Koden for
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum-filteret</a> i tabledap (basert på Rob Fuller og Adam Leadbetters orderByMean ) og knappene Check All og Uncheck All på EDDGrid Data Access Form ble skrevet og bidratt (lisens:
+opphavsrettsbeskyttet åpen kildekode) av Marco Alba fra ETT Solutions og EMODnet.
+Takk, Marco!
+<br>&nbsp;
+<li>.transparentPng-forespørsler utenfor området
+<br>ERDDAP godtar nå forespørsler om .transparentPng-er når bredde- og/eller lengdegradsverdiene er helt eller delvis utenfor området.
+(Dette var ERDDAP GitHub Issues #19, postet av Rob Fuller -- takk for at du postet det, Rob.) Koden for å fikse dette ble skrevet av Chris John.
+Takk, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Jeg håper andre vil bidra med kode i fremtiden.
@@ -5611,7 +5643,7 @@ Jeg valgte variabelnavn nøye.
 Jeg følger retningslinjene for Java -formatering.
 Alt dette er et forsøk på å gjøre koden mer lesbar, for andre programmerere som ønsker å forstå og/eller endre den, og for meg, fordi om et år eller to vil jeg ha glemt detaljene om hvordan og hvorfor koden ble skrevet slik det var.
 Ren kode med gode kommentarer gjør mitt pågående arbeid med ERDDAP enklere, så jeg har et stort insentiv til å skrive ren kode med gode kommentarer.
-<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Men alle svarene mine så langt er ikke veldig viktige.</a> Bare én ting som er virkelig viktig.
+<p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Men alle svarene mine så langt er ikke veldig viktige.</a> Bare én ting som er veldig viktig.
 Bare én ting garanterer bærekraft for ERDDAP eller et hvilket som helst programvareprosjekt:
 at ERDDAP er
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">gratis og åpen kildekode-programvare (FOSS) <img 
@@ -5717,7 +5749,7 @@ Deretter vil folk ha en annen måte å få tilgang til dataene dine og vil kunne
   >flere ERDDAP er som jobber sammen</a> for å skalere opp og møte behovene til et stort datadistribusjonssenter.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakt oss</a></h2>
-Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), vennligst send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
+Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), kan du sende en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkludere ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Eller du kan bli med i ERDDAP Google Group / Mailing List</a> ved å gå til
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -7265,9 +7297,7 @@ Mange datasett kan også nås via ERDDAP Web Map Service (WMS ).
 <yourEmailAddress>Din epostadresse</yourEmailAddress>
 <zoomIn>Zoom inn</zoomIn>
 <zoomOut>Zoome ut</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Kopier tekst til utklippstavlen</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopier til utklippstavlen er ikke tilgjengelig</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopier bildet til utklippstavlen</copyimagetoclipboard>
 </erddapMessages>

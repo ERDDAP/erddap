@@ -1232,7 +1232,7 @@ Deci, ERDDAP interpretează &quot;years since&quot; și &quot;months since&quot;
 <h2><a class="selfLink" id="syntaxComparison" href="#syntaxComparison" rel="help">Comparația dintre UDUNITS și Sintaxa UCUM</a></h2>
 <table class="erd commonBGColor T">
 <tr>
-<th style="width:8%;">Emisiune</th>
+<th style="width:8%;">Problema</th>
 <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a></th>
@@ -1245,7 +1245,7 @@ Deci, ERDDAP interpretează &quot;years since&quot; și &quot;months since&quot;
 <tr>
 <td>Set de caractere</td>
 <td>UDUNITS -1 folosește ASCII simplu.
-UDUNITS folosește ASCII, ISO 8859-1 (Latin-1) și codificarea UTF-8 din ISO 10646 (Unicode).</td>
+UDUNITS utilizează ASCII, ISO 8859-1 (Latin-1) și codificarea UTF-8 din ISO 10646 (Unicode).</td>
 <td>ASCII simplu</td>
 <td>Toate unitățile UDUNITS cu doar caractere ASCII și ISO 8859-1 sunt convertite.
 Cele câteva unități cu alte caractere nu sunt convertite</td>
@@ -1392,12 +1392,12 @@ Unele standarde (de exemplu,
 <td>UCUM recunoaște unități separate de grade de temperatură (de exemplu, [degF], Cel, K), dar nu unități separate de grade de direcție.
 Toate sunt reprezentate prin &quot;deg&quot; .</td>
 <td>Pentru a distinge între diferitele unități de grade de direcție, convertorul adaugă un comentariu la unitățile de grade de direcție (de exemplu, &quot;degree_north&quot; devine &quot;deg{north}&quot; ).</td>
-<td>Dacă adăugați un comentariu({east}, {north}, {west}, sau {true} ), convertorul se va converti într-o unitate de direcție (de exemplu, &quot;deg{north}&quot; devine &quot;degree_north&quot; ); în caz contrar, nu există nicio modalitate ca convertorul să genereze unități de grade de direcție, așa că &quot;deg&quot; este convertit în &quot;degree&quot; .</td>
+<td>Dacă adăugați un comentariu ({east}, {north}, {west} sau {true} ), convertorul se va converti într-o unitate de direcție (de exemplu, „grad &quot;deg{north}&quot; devine &quot;degree_north&quot; ); în caz contrar, nu există nicio modalitate ca convertorul să genereze unități de grade de direcție, așa că &quot;deg&quot; este convertit în &quot;degree&quot; .</td>
 </tr>
 <tr>
 <td>momente specifice</td>
 <td>UDUNITS are un sistem de specificare a orelor specifice ca
-<br>&quot;<i>unități</i> de la <i>ISO8601Time</i>&quot;,
+<br>„<i>unități</i> de la <i>ISO8601Time</i> ”,
 <br>de exemplu, &quot;seconds since 1970-01-01T00:00:00Z&quot; .
 <td>UCUM nu pare să aibă un sistem care să specifice orele specifice.
 <td>Convertorul convertește, de exemplu,
@@ -1650,6 +1650,9 @@ Permite”
 Dacă faceți solicitări ERDDAP dintr-un program de calculator (altul decât un browser), cookie-urile sunt greu de lucrat.
 Îmi pare rău.
 ]]></cookiesHelp>
+<copyImageToClipboard>Copiați imaginea în clipboard</copyImageToClipboard>
+<copyTextToClipboard>Copiați textul în clipboard</copyTextToClipboard>
+<copyToClipboardNotAvailable>Copierea în clipboard nu este disponibilă</copyToClipboardNotAvailable>
 <daf>Formular de acces la date</daf>
 <dafGridBypassTooltip><![CDATA[
 Această pagină web simplifică doar crearea de adrese URL griddap.
@@ -5046,7 +5049,7 @@ Aceasta se poate referi la &erddapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP este un server de date care vă oferă o modalitate simplă și consistentă de a descărca subseturi de seturi de date științifice în formate comune de fișiere și de a realiza grafice și hărți.
+<html>ERDDAP este un server de date care vă oferă o modalitate simplă și consistentă de a descărca subseturi de seturi de date științifice în formate de fișiere comune și de a realiza grafice și hărți.
 <h2>Cuprins</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">Problemele pe care ERDDAP încearcă să le rezolve</a>
@@ -5206,7 +5209,7 @@ ERDDAP este structurat pentru aceste completări și nu pare să existe impedime
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Solicitările de date în grilă pot fi făcute în unități utilizator.</a></strong>
 <br>Deși cererile de date grid în ERDDAP pot fi făcute cu indici de matrice (urmând specificația OPeNDAP ), cererile pot fi și în unități utilizator (de exemplu, grade est), folosind
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">o notație cu paranteze</a>, deoarece utilizatorii gândesc în acele unități, nu în indici.
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">o notație în paranteze</a>, deoarece utilizatorii gândesc în acele unități, nu în indici.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP trimite rezultatele în formate comune de fișiere de date.</a></strong>
 <br>Rezultatele pot fi returnate în oricare dintre mai multe formate comune de fișiere de date &requestFormatExamplesHtml;, în loc de doar formatul original sau doar formatul de transfer OPeNDAP (care nu are o manifestare standard de fișier).
@@ -5216,8 +5219,8 @@ Consultați lista completă a tipurilor de
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">fișiere grilă și a tipurilor</a>
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">de fișiere tabel</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizează numele variabilelor și unitățile pentru longitudine, latitudine, altitudine, adâncime și timp în rezultate.</a></strong>
-<br>Pentru a facilita compararea datelor din diferite seturi de date, cererile și rezultatele din ERDDAP folosesc unități standardizate de axe spațiu/timp:
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizează numele și unitățile variabilelor pentru longitudine, latitudine, altitudine, adâncime și timp în rezultate.</a></strong>
+<br>Pentru a facilita compararea datelor din diferite seturi de date, cererile și rezultatele din ERDDAP utilizează unități standardizate de axe spațiu/timp:
 <ul>
 <li>longitudinea este întotdeauna în degrees_east .
 <li>latitudinea este întotdeauna în degrees_north .
@@ -5240,7 +5243,7 @@ Acest lucru face ușoară specificarea constrângerilor în cereri fără a fi n
 2, 1985”, „02-JAN-1985”, „1/2/85”, „2/1/85”, „1985-01-02”, sau zile de la 1 ianuarie 1980).
 Acest lucru face ca rezultatele din diferite surse de date să fie ușor de comparat.
 <p>ERDDAP are un utilitar pentru a
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">converti un timp numeric la/din la un șir de timp</a> .
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">converti un timp numeric într-un timp șir</a> .
 <br>Pentru mai multe detalii, consultați
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">Cum se ERDDAP cu timpul</a> .
 <p>Deoarece variabilele de longitudine, latitudine, altitudine și timp sunt recunoscute în mod specific, ERDDAP este conștient de caracteristicile geo/temporale ale fiecărui set de date.
@@ -5283,7 +5286,7 @@ De exemplu, UCUM are o singură opțiune sensibilă la majuscule și minuscule p
 </ul>
 Deși ERDDAP nu necesită utilizarea standardului niciunui unități, majoritatea instalațiilor ERDDAP o favorizează pe una sau pe alta.
 (Administratorii ERDDAP :
-puteți specifica acest lucru cu eticheta <kbd>&lt;units_standard&gt;</kbd> din setup.xml.) Puteți converti UDUNITS în/din unități ERDDAP cu convertorul de
+puteți specifica acest lucru cu eticheta <kbd>&lt;units_standard&gt;</kbd> în setup.xml.) Puteți converti UDUNITS în/din unități ERDDAP cu convertorul de
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">unități</a> ERDDAP .
 Când solicitați date sau un grafic dintr-un set de
 <a href="&erddapUrl;/tabledap/index.html">date tabledap</a>, puteți adăuga <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> sau <kbd>&amp;units(&quot;UCUM&quot;)</kbd> la sfârșitul adresei URL pentru a solicita unități UDUNITS sau UCUM.
@@ -5336,7 +5339,7 @@ Cu curl, adăugați <kbd>--compressed</kbd> la linia de comandă pentru a-i spun
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP face interoperabile diferite tipuri de servere de date (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
 <br>Diferite tipuri de servere de date sunt utilizate în diferite comunități științifice.
 În viitorul previzibil, este puțin probabil ca vreun tip să devină dominant și să le înlocuiască pe celelalte.
-Deci ERDDAP acționează ca o punte între diferitele tipuri de programe client (browser-uri web, IDV, Matlab, programe netCDF, clienți ODV, WMS etc.) și diferitele tipuri de servere de date.
+Deci ERDDAP acționează ca o punte între diferitele tipuri de programe client (browsere web, IDV, Matlab, programe netCDF, clienți ODV, WMS etc.) și diferitele tipuri de servere de date.
 <ol>
 <li>ERDDAP acceptă cererile clienților pentru date în diferite formate (de exemplu, OPeNDAP, WMS ).
 <li>ERDDAP convertește o anumită cerere în formatul de solicitare utilizat de serverul de date sursă (de exemplu, OPeNDAP, SOS, OBIS, ...) și o trimite către serverul de date sursă.
@@ -5435,7 +5438,7 @@ la serverul ERDDAP și tot nu va detecta modificări imediat.
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> -stil link-uri pentru a face serviciile sale disponibile programelor de calculator.</strong>
-<br>Aceste caracteristici pot fi folosite pentru a construi un alt serviciu web pe lângă ERDDAP (făcând ERDDAP să facă toată treaba!).
+<br>Aceste caracteristici pot fi folosite pentru a construi un alt serviciu web pe deasupra ERDDAP (făcându-l pe ERDDAP să facă toată treaba!).
 ERDDAP nu este destinat a fi un serviciu de explorare/graficare a datelor de nivel înalt.
 În schimb, ERDDAP este destinat să furnizeze servicii pentru astfel de site-uri web și programe.
 Deci, dacă aveți o idee pentru o interfață mai bună cu datele pe care le servește ERDDAP, vă încurajăm să vă creați propria aplicație web sau serviciu web și să utilizați ERDDAP ca bază.
@@ -5564,7 +5567,7 @@ Finanțarea mea nu este bani „moale”, așa că nu primesc și nu mă bazez p
 Restul timpului meu îl petrec gestionând seturi de date.
 Această lucrare este utilă pentru ERDDAP, deoarece trebuie să lucrez cu seturi de date reale pentru a ști în detaliu ce trebuie să facă ERDDAP .
 Sefii mei susțin pe deplin munca mea pe ERDDAP, deoarece face ceea ce am fost angajat:
-să le faciliteze oamenilor de știință din domeniul pescuitului (în primul rând, dar cu adevărat tuturor) să obțină date științifice din diverse surse.
+să faciliteze pentru oamenii de știință din domeniul pescuitului (în primul rând, dar cu adevărat tuturor) să obțină date științifice din diverse surse.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Lucrul miraculos cu software-ul este că nu costă nimic de duplicat.</a> Deci, pentru a-mi face treaba, scriu ERDDAP pentru a fi folosit la ERD .
 Cred că acesta este cel mai bun mod posibil de a-mi face treaba.
 Numai acest motiv justifică cheltuielile pentru dezvoltarea ERDDAP .
@@ -5581,29 +5584,58 @@ Codul sursă pentru fiecare versiune este pe
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a>, cel mai des folosit sistem pentru proiecte software colaborative.
-Până acum, alte patru grupuri au contribuit cu cod la ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> a fost scris și contribuit de Jonathan Lafite și Philippe Makowski de la R.Tech Engineering (licență:
+Până acum, aceste grupuri/persoane au contribuit cu cod la ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> a fost scris și contribuit de Jonathan Lafite și Philippe Makowski de la R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licență:
 open source cu drepturi de autor).
 Mulțumesc, Jonathan și Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> a fost scris și contribuit de Roland Schweitzer de la NOAA (licență:
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a> a fost scris și contribuit de către Roland Schweitzer de la NOAA (licență:
 open source cu drepturi de autor).
 Mulțumesc, Roland!
-<li>Versiunea inițială a caracteristicii
+<br>&nbsp;
+<li>json-ld
+<br>Versiunea inițială a caracteristicii
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets cu json-ld (JSON Linked Data)</a> (și, prin urmare, toată munca grea în proiectarea conținutului) a fost scrisă și contribuită (licență:
 sursă deschisă cu drepturi de autor) de Adam Leadbetter și Rob Fuller de la Institutul Marin din Irlanda.
 Mulțumesc, Adam și Rob!
-<li>Codul pentru
+<br>&nbsp;
+<li>orderBy
+<br>Codul pentru
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean</a> orderByMean din tabledap și modificările extinse aduse codului pentru a suporta
+  >orderByMean</a> orderByMean din tabledap și modificările ample aduse codului pentru a suporta
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  >notația <i>VariabilaNume/divizor:offset</i></a> pentru toate filtrele orderBy a fost scris și contribuit (licență:
-sursă deschisă protejată prin drepturi de autor) de Rob Fuller și Adam Leadbetter de la Institutul Marin în Irlanda.
+  >notația <i>variabilăNume/divizor:offset</i></a> pentru toate filtrele orderBy a fost scris și contribuit (licență:
+sursă deschisă protejată de drepturi de autor) de Rob Fuller și Adam Leadbetter de la Institutul Marin în Irlanda.
 Mulțumesc, Rob și Adam!
-<li>Codul pentru trei tipuri noi de markere (Pătrat umplut fără margini, Cerc umplut fără margini, Triunghi umplut fără margini) a fost contribuit de Marco Alba de la ETT / EMODnet Physics.
-Multumesc Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Tipuri de markere fără margini
+<br>Codul pentru trei tipuri noi de markere (Pătrat umplut fără margini, Cerc umplut fără margini, Triunghi umplut fără margini) a fost contribuit de Marco Alba de la ETT / EMODnet Physics.
+Mulțumesc, Marco Alba!
+<br>&nbsp;
+<li>Traduceri mesaje.xml
+<br>Versiunea inițială a codului din TranslateMessages.java, care folosește serviciul de traducere Google pentru a traduce messages.xml în diferite limbi, a fost scrisă de Qi Zeng, care lucra ca stagiar Google Summer of Code.
+Mulțumesc, Qi!
+<br>&nbsp;
+<li>orderBy Sumă
+<br>Codul pentru
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >filtrul orderBy Sum</a> din tabledap (bazat pe Rob Fuller și Adam Leadbetter orderByMean ) și butoanele Check All și Uncheck All de pe formularul de acces la date EDDGrid au fost scrise și contribuite (licență:
+open source cu drepturi de autor) de Marco Alba de la ETT Solutions și EMODnet.
+Mulțumesc, Marco!
+<br>&nbsp;
+<li>Solicitări .transparentPng în afara intervalului
+<br>ERDDAP acceptă acum cereri pentru .transparentPng atunci când valorile de latitudine și/sau longitudine sunt parțial sau complet în afara intervalului.
+(Acesta a fost ERDDAP GitHub Issues #19, postat de Rob Fuller -- mulțumesc pentru postare, Rob.) Codul pentru a remedia acest lucru a fost scris de Chris John.
+Mulțumesc, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Sper că alții vor contribui cu codul în viitor.
@@ -5719,16 +5751,17 @@ Apoi, oamenii vor avea o altă modalitate de a vă accesa datele și vor putea d
 <li>Dacă aveți seturi de date care sunt la mare căutare, puteți instala
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
-  >mai multe ERDDAP uri care lucrează împreună</a> pentru a extinde și pentru a răspunde nevoilor unui centru mare de distribuție de date.
+  >mai multe ERDDAP uri care funcționează împreună</a> pentru a se extinde și a satisface nevoile unui centru mare de distribuție de date.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contactează-ne</a></h2>
-Dacă aveți întrebări, sugestii sau comentarii despre ERDDAP în general (nu această instalare specifică ERDDAP ), vă rugăm să trimiteți un e-mail către <kbd>bob dot simons at noaa dot gov</kbd> și să includeți adresa URL ERDDAP direct legată de întrebarea sau comentariul dvs.
+Dacă aveți întrebări, sugestii sau comentarii despre ERDDAP în general (nu această instalare specifică ERDDAP ), vă rugăm să trimiteți un e-mail la <kbd>bob dot simons at noaa dot gov</kbd> și să includeți adresa URL ERDDAP direct legată de întrebarea sau comentariul dvs.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Sau, vă puteți alătura grupului Google/listei de corespondență ERDDAP</a> vizitând
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Acest link către un site extern nu constituie o aprobare."></a> și făcând clic pe „Solicitați calitatea de membru”.
-Odată ce sunteți membru, vă puteți posta întrebarea acolo sau puteți căuta pentru a vedea dacă întrebarea a fost deja pusă și a răspuns.
+Odată ce sunteți membru, puteți posta întrebarea dvs.
+acolo sau puteți căuta pentru a vedea dacă întrebarea a fost deja pusă și a răspuns.
 <p>DECLINAREA RESPONSABILITĂȚII:
 Opiniile de pe această pagină web sunt opiniile personale ale lui Bob Simons și nu reflectă neapărat nicio poziție a Guvernului sau a National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
@@ -7269,9 +7302,7 @@ Multe seturi de date pot fi accesate și prin serviciul de hărți web (WMS ) al
 <yourEmailAddress>adresa ta de email</yourEmailAddress>
 <zoomIn>Mareste</zoomIn>
 <zoomOut>A micsora</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Copiați textul în clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Copierea în clipboard nu este disponibilă</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copiați imaginea în clipboard</copyimagetoclipboard>
 </erddapMessages>
