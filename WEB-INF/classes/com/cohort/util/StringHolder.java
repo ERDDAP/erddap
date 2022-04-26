@@ -16,7 +16,6 @@ import java.util.Arrays;
 public class StringHolder {
 
     private char[] car; //may be null
-    private final int hashCode;
 
 
     /**
@@ -25,7 +24,6 @@ public class StringHolder {
      */
     public StringHolder(String string) {
         car = string == null? null : string.toCharArray();
-        hashCode = Arrays.hashCode(car); //it allows null and returns 0
     }
 
     /**
@@ -34,7 +32,6 @@ public class StringHolder {
      */
     public StringHolder(char tcar[]) {
         car = tcar;
-        hashCode = Arrays.hashCode(car); //it allows null and returns 0
     }
 
     /**
@@ -63,7 +60,7 @@ public class StringHolder {
      * @return the hashcode for this StringHolder (dependent only on values).
      */
     public int hashCode() {
-        return hashCode;
+        return Arrays.hashCode(car); //it allows null and returns 0
     }
 
     /**
