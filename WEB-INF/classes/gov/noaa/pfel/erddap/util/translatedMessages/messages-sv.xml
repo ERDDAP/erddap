@@ -1668,6 +1668,9 @@ Tillåt&quot;
 Om du gör ERDDAP förfrågningar från ett datorprogram (annat än en webbläsare) är cookies svåra att arbeta med.
 Förlåt.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopiera bilden till urklipp</copyImageToClipboard>
+<copyTextToClipboard>Kopiera text till urklipp</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopiera till urklipp är inte tillgänglig</copyToClipboardNotAvailable>
 <daf>Dataåtkomstformulär</daf>
 <dafGridBypassTooltip><![CDATA[
 Den här webbsidan förenklar bara skapandet av griddap-URL:er.
@@ -5113,7 +5116,7 @@ En URL anger en hel begäran.
 <li>NOAA arbetar tillsammans:
 Analysen använder två gratisprogram från NOAA, ERDDAP och GNOME, och data som betjänas av NOAA NODC/NCDDC (underlättad av NOAA UAF-projekt).
 <li>ERDDAP gör
-<a href="#scientificData">vetenskapliga data</a> lättare tillgängliga för att hjälpa forskare (och andra) att göra sitt arbete mer effektivt.
+<a href="#scientificData">vetenskaplig data</a> mer lättillgänglig för att hjälpa forskare (och andra) att göra sitt arbete mer effektivt.
 <li>Att använda ERDDAP är inte svårt.
 (Ja, Rich Signell är riktigt smart, men alla kan använda ERDDAP .)
 </ul>
@@ -5142,7 +5145,7 @@ ERDDAP -servern på ERD betjänar oceanografisk data, men ERDDAP (programmet) ka
 Avancerad sökning kombinerar alla söktekniker och lägger till sökningar efter datauppsättningar som har data inom longitud, latitud och tidsintervall, så att du kan söka efter datauppsättningar baserat på många olika kriterier samtidigt.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP låter dig begära data på ett standardiserat sätt,</a></strong>
-<br>oavsett datakällans förfrågningsprotokoll.
+<br>oavsett datakällans begärandeprotokoll.
 <ul>
 <li>ERDDAP gör gridded data tillgänglig via griddap (ERDDAP :s implementering av
 <a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab-protokollet</a>) och
@@ -5321,7 +5324,7 @@ Så ERDDAP fungerar som en brygga mellan olika typer av klientprogram (webbläsa
 <ol>
 <li>ERDDAP accepterar klientförfrågningar om data i olika format (t.ex.
 OPeNDAP, WMS ).
-<li>ERDDAP konverterar en given begäran till begäranformatet som används av källdataservern (t.ex.
+<li>ERDDAP konverterar en given begäran till det begäranformat som används av källdataservern (t.ex.
 OPeNDAP, SOS, OBIS, ...) och skickar det till källdataservern.
 <li>ERDDAP konverterar svarsdata från källdataservern till ett internt format, inklusive konvertering av all tidsdata till ett vanligt format:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
@@ -5355,7 +5358,7 @@ Men alla datastrukturer har kompromisser.
 Ingen är perfekt.
 Även gör-det-allt-strukturerna har sina nackdelar:
 att arbeta med dem är komplext och filerna kan bara skrivas eller läsas med speciella programbibliotek.
-Om du accepterar ERDDAP :s tillvägagångssätt tillräckligt för att försöka arbeta med det, kanske du upptäcker att det har sina fördelar (särskilt stödet för flera filtyper som kan hålla datasvaren).
+Om du accepterar ERDDAP :s tillvägagångssätt tillräckligt för att försöka arbeta med det, kan du upptäcka att det har sina fördelar (särskilt stödet för flera filtyper som kan hålla datasvaren).
 Det
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">ursprungliga ERDDAP bildspelet</a> (särskilt
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">datastrukturbilden</a>) talar om dessa frågor.
@@ -5526,7 +5529,7 @@ Precis som en
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relationsdatabas <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> kan lagra en komplex datauppsättning genom att använda bara en enkel datastruktur (en tabell), kan ERDDAP betjäna data från mer komplexa datauppsättningar genom att dela upp källdatauppsättningen i några ERDDAP, var och en med liknande, enkla datastrukturer.
+      title="Denna länk till en extern webbplats utgör inte ett stöd."></a> kan lagra en komplex datauppsättning genom att bara använda en enkel datastruktur (en tabell), kan ERDDAP betjäna data från mer komplexa datauppsättningar genom att dela upp källdatauppsättningen i några ERDDAP, var och en med liknande, enkla datastrukturer.
 Till exempel kan vissa rutnätsbaserade miljömodelldatauppsättningar lagras i ERDDAP genom att sätta havsytans variabler ([tid][latitud][longitud]) i en ERDDAP och genom att sätta variablerna med höjd ([tid][höjd][] latitud][longitud]) i en annan ERDDAP .
 Vi vet att detta inte är idealiskt, men det är nödvändigt att tillåta ERDDAP att returnera data i vanliga filformat (av vilka några är ganska enkla).
 <p>Ett annat tillvägagångssätt för att hantera komplexa datamängder (t.ex.
@@ -5563,29 +5566,58 @@ Källkoden för varje version finns på
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, det mest använda systemet för samarbetande programvaruprojekt.
-Hittills har fyra andra grupper bidragit med kod till ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> skrevs och bidrog med Jonathan Lafite och Philippe Makowski från R.Tech Engineering (licens:
+Hittills har dessa grupper/personer bidragit med kod till ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> skrevs och bidrog med Jonathan Lafite och Philippe Makowski från R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licens:
 upphovsrättsskyddad öppen källkod).
 Tack, Jonathan och Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> skrevs och bidrog med Roland Schweitzer från NOAA (licens:
 upphovsrättsskyddad öppen källkod).
 Tack, Roland!
-<li>Den första versionen av
+<br>&nbsp;
+<li>json-ld
+<br>Den första versionen av
 <a href="#jsonld" rel="bookmark">Semantic Markup of Dataset with json-ld (JSON Linked Data)</a> -funktionen (och därmed allt det hårda arbetet med att utforma innehållet) skrevs och bidrog (licens:
 upphovsrättsskyddad öppen källkod) av Adam Leadbetter och Rob Fuller från Marine Institute i Irland.
 Tack, Adam och Rob!
-<li>Koden för
+<br>&nbsp;
+<li>orderBy
+<br>Koden för
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filtret</a> i tabledap och de omfattande ändringarna av koden för att stödja
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >notationen <i>variabelName/divisor:offset</i></a> för alla orderBy filter skrevs och bidrog med (licens:
 upphovsrättsskyddad öppen källkod) av Rob Fuller och Adam Leadbetter från Marine Institute i Irland.
 Tack, Rob och Adam!
-<li>Koden för tre nya markörtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) bidrog med Marco Alba från ETT / EMODnet Physics.
-Tack Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Kantlösa markörtyper
+<br>Koden för tre nya markörtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) bidrog med Marco Alba från ETT / EMODnet Physics.
+Tack, Marco Alba!
+<br>&nbsp;
+<li>Översättningar av messages.xml
+<br>Den första versionen av koden i TranslateMessages.java som använder Googles översättningstjänst för att översätta messages.xml till olika språk skrevs av Qi Zeng, som arbetade som Google Summer of Code-praktikant.
+Tack, Qi!
+<br>&nbsp;
+<li>orderBy Summa
+<br>Koden för
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum-filtret</a> i tabledap (baserat på Rob Fuller och Adam Leadbetters orderByMean ) och knapparna Check All and Uncheck All på EDDGrid Data Access Form skrevs och bidrog med (licens:
+upphovsrättsskyddad öppen källkod) av Marco Alba från ETT Solutions och EMODnet.
+Tack, Marco!
+<br>&nbsp;
+<li>.transparentPng-förfrågningar utanför intervallet
+<br>ERDDAP accepterar nu förfrågningar om .transparentPng:er när latitud- och/eller longitudvärdena ligger helt eller delvis utanför intervallet.
+(Detta var ERDDAP GitHub Issues #19, postat av Rob Fuller -- tack för att du postade det, Rob.) Koden för att fixa detta skrevs av Chris John.
+Tack, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Jag hoppas att andra kommer att bidra med kod i framtiden.
@@ -5631,7 +5663,7 @@ Jag känner till ett känt, lagom stort projekt med 10 utvecklare (jag kommer in
 De är beroende av bidrag.
 De går alltid med underskott.
 Deras beskyddare har alltid räddat dem i sista minuten, men börjar bli riktigt trött på att rädda dem.
-Så om de inte kan samla in en miljon dollar per år i bidragspengar (eller beskyddaren blir för trött på att rädda dem), slutar de.
+Så om de inte kan samla in en miljon dollar per år i bidragspengar (eller beskyddaren blir för trött på att rädda dem), kommer de att sluta.
 Och gruppen kan inte tänka sig att ha färre än 10 utvecklare.
 Varje utvecklare har en roll att spela i sin grupp.
 I ljuset av det förefaller det mig som att det är ett bra tecken på att ERDDAP kan utvecklas och aktivt utvecklas av bara en huvudutvecklare (som är fullt finansierad) med inofficiell hjälp av några andra.
@@ -5696,7 +5728,7 @@ Tänk bara på det som ett namn, inte en akronym.
 <ul>
 <li>Den lilla ansträngningen att sätta upp ERDDAP ger många fördelar.
 <li>Om du redan har en webbtjänst för att distribuera dina data kan du ställa in ERDDAP för att komma åt dina data via den befintliga tjänsten eller via källfilerna eller databasen.
-Sedan kommer människor att ha ett annat sätt att komma åt din data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
+Då kommer människor att ha ett annat sätt att komma åt dina data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
 <li>Om du har datauppsättningar som är mycket efterfrågade kan du installera
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
@@ -7251,9 +7283,7 @@ Många datamängder kan också nås via ERDDAP :s Web Map Service (WMS ).
 <yourEmailAddress>din e-postadress</yourEmailAddress>
 <zoomIn>Zooma in</zoomIn>
 <zoomOut>Zooma ut</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Kopiera text till urklipp</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopiera till urklipp är inte tillgänglig</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopiera bilden till urklipp</copyimagetoclipboard>
 </erddapMessages>

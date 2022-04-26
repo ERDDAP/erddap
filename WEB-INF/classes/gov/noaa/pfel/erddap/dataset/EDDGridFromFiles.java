@@ -552,6 +552,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                         //timeFormat or element class
                         if (nParts > 1 && String2.isSomething(parts.get(1))) {
                             String tp = parts.get(1);
+String2.log(">>> tp=" + tp);
                             if (tp.startsWith("timeFormat=")) {
                                 axis0TimeFormat = tp.substring(11);
                                 axis0TimeZoneString = "Zulu";

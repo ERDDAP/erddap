@@ -928,7 +928,11 @@ public static boolean developmentMode = false;
         convertURLsIntroAr,
         convertURLsNotesAr,
         convertURLsServiceAr,
-        cookiesHelpAr,
+        cookiesHelpAr,       
+        copyImageToClipboardAr,
+        copyTextToClipboardAr,
+        copyToClipboardNotAvailableAr,
+
         dafAr,
         dafGridBypassTooltipAr,
         dafGridTooltipAr,
@@ -1676,11 +1680,7 @@ public static boolean developmentMode = false;
 
         yourEmailAddressAr,
         zoomInAr,
-        zoomOutAr,
-        
-        copytexttoclipboardAr,
-        copyimagetoclipboardAr,
-        copytoclipboardnotavailableAr;
+        zoomOutAr;
 
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
     private static String[] theLongDescriptionHtmlAr; //see the xxx() methods
@@ -2443,6 +2443,10 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         convertURLsNotesAr           = getNotNothingString(messagesAr, "convertURLsNotes",           errorInMethod);
         convertURLsServiceAr         = getNotNothingString(messagesAr, "convertURLsService",         errorInMethod);
         cookiesHelpAr                = getNotNothingString(messagesAr, "cookiesHelp",                errorInMethod);
+        copyImageToClipboardAr       = getNotNothingString(messagesAr, "copyImageToClipboard",       errorInMethod); 
+        copyTextToClipboardAr        = getNotNothingString(messagesAr, "copyTextToClipboard",        errorInMethod); 
+        copyToClipboardNotAvailableAr= getNotNothingString(messagesAr, "copyToClipboardNotAvailable",errorInMethod); 
+
         dafAr                        = getNotNothingString(messagesAr, "daf",                        errorInMethod);
         dafGridBypassTooltipAr       = getNotNothingString(messagesAr, "dafGridBypassTooltip",       errorInMethod);
         dafGridTooltipAr             = getNotNothingString(messagesAr, "dafGridTooltip",             errorInMethod);
@@ -3420,10 +3424,6 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         yourEmailAddressAr           = getNotNothingString(messagesAr, "yourEmailAddress",           errorInMethod); 
         zoomInAr                     = getNotNothingString(messagesAr, "zoomIn",                     errorInMethod); 
         zoomOutAr                    = getNotNothingString(messagesAr, "zoomOut",                    errorInMethod); 
-
-        copytexttoclipboardAr        = getNotNothingString(messagesAr, "copytexttoclipboard",        errorInMethod); 
-        copyimagetoclipboardAr       = getNotNothingString(messagesAr, "copyimagetoclipboard",       errorInMethod); 
-        copytoclipboardnotavailableAr= getNotNothingString(messagesAr, "copytoclipboardnotavailable",       errorInMethod); 
 
         for (int tl = 0; tl < nLanguages; tl++) {
             blacklistMsgAr[tl] = MessageFormat.format(blacklistMsgAr[tl], adminEmail);
