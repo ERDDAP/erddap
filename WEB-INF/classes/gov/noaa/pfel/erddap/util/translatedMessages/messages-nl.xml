@@ -1287,7 +1287,7 @@ Niet-herkende UCUM-namen blijven ongewijzigd.</td>
 <tr>
 <td>metrische voorvoegsels
 <br>(bijv.
-&quot;kilo&quot; en &#39;k&#39; betekenen &quot;times 1000&quot; ; &quot;µ&quot; en &#39;u&#39; betekent &quot;maal 10^-6&quot;)</td>
+&quot;kilo&quot; en &#39;k&#39; betekenen &quot;times 1000&quot; ; &quot;µ&quot; en &#39;u&#39; betekenen &quot;maal 10^-6&quot;)</td>
 <td>Ondersteund (zie UDUNITS udunits2-prefixes.xml)</td>
 <td>Ondersteund (zie de kolom c/s van de
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">tabel met prefix-symbolen</a>)
@@ -1683,6 +1683,9 @@ Toestaan&quot;
 Als u ERDDAP verzoeken doet vanaf een computerprogramma (anders dan een browser), zijn cookies moeilijk om mee te werken.
 Sorry.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopieer afbeelding naar klembord</copyImageToClipboard>
+<copyTextToClipboard>Tekst kopiëren naar klembord</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopiëren naar klembord niet beschikbaar</copyToClipboardNotAvailable>
 <daf>Formulier voor gegevenstoegang</daf>
 <dafGridBypassTooltip><![CDATA[
 Deze webpagina vereenvoudigt gewoon het maken van griddap-URL&#39;s.
@@ -5078,7 +5081,7 @@ Dit kan verwijzen naar &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#subscriptions">ERDDAP biedt e-mail/URL- en RSS -abonnementsdiensten.</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP is een webapplicatie en een webservice.</a>
 <li><a rel="bookmark" href="#rest">ERDDAP heeft links in REST en ROA -stijl om zijn diensten beschikbaar te maken voor computerprogramma&#39;s.</a>
-<li><a rel="bookmark" href="#security">Veiligheid</a>
+<li><a rel="bookmark" href="#security">Beveiliging</a>
 <li><a rel="bookmark" href="#chunks">ERDDAP verwerkt data in chunks.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP is modulair opgebouwd.</a>
 <li><a rel="bookmark" href="#pushPull">Gegevensverspreiding / gegevensdistributienetwerken:
@@ -5106,7 +5109,7 @@ Zonder ERDDAP, wanneer een persoon (of een computerprogramma) op internet zoekt 
 <li>Elke site heeft een ander protocol nodig om de gegevens op te vragen:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Elke site retourneert de gegevens in een ander formaat (bijvoorbeeld XML, SOAP+XML, OPeNDAP binaire datastroom, ASCII-tekst, HDF 4, HDF 5, NetCDF, ...) en het is niet het algemene bestandsformaat dat u wil.
+<li>Elke site retourneert de gegevens in een ander formaat (bijvoorbeeld XML, SOAP+XML, OPeNDAP binaire datastroom, ASCII-tekst, HDF 4, HDF 5, NetCDF, ...) en het is niet het algemene bestandsformaat dat u willen.
 <br>&nbsp;
 <li>Gegevens van verschillende sites zijn moeilijk te vergelijken omdat de datums en tijden in verschillende formaten worden uitgedrukt, bijvoorbeeld &quot;2 jan.
 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985/01/02&quot;, of dagen sinds 1 jan.
@@ -5194,7 +5197,7 @@ ERDDAP biedt ook formulieren voor gegevenstoegang (webpagina&#39;s) waarmee mens
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> is een van
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
-    >de technische aanbevelingen voor gegevenstoegang van NOAA <img 
+    >NOAA &#39;s technische aanbevelingen voor gegevenstoegang <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> en een
 <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
@@ -5224,7 +5227,7 @@ Bekijk de volledige lijst met
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">rasterbestandstypen</a> en
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabelbestandstypen</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standaardiseert de variabelenamen en eenheden voor lengtegraad, breedtegraad, hoogte, diepte en tijd in de resultaten.</a></strong>
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standaardiseert de namen van variabelen en eenheden voor lengtegraad, breedtegraad, hoogte, diepte en tijd in de resultaten.</a></strong>
 <br>Om vergelijkingen van gegevens uit verschillende datasets te vergemakkelijken, gebruiken de verzoeken en resultaten in ERDDAP gestandaardiseerde ruimte/tijd-aseenheden:
 <ul>
 <li>lengtegraad is altijd in degrees_east .
@@ -5250,12 +5253,12 @@ in meters of vadems?) of het tijdgegevensformaat (een nachtmerrieachtig rijk van
 Hierdoor zijn de resultaten uit verschillende databronnen goed te vergelijken.
 <p>ERDDAP heeft een hulpprogramma om
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">een numerieke tijd naar/van een tekenreekstijd te converteren</a> .
-<br>Voor meer details, zie
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Hoe ERDDAP met tijd</a> .
+<br>Zie
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Hoe ERDDAP met tijd</a> voor meer informatie.
 <p>Omdat de lengte-, breedte-, hoogte- en tijdvariabelen specifiek worden herkend, is ERDDAP op de hoogte van de geo-/temporele kenmerken van elke dataset.
 Dit is handig bij het maken van afbeeldingen met kaarten of tijdreeksen en bij het opslaan van gegevens in bestandstypen met geografische referenties (bijv.
 .esriAscii, .geoJson en .kml ).
-<p>Twee veelgebruikte standaarden voor het schrijven van maateenheden zijn:
+<p>Twee veel voorkomende normen voor het schrijven van maateenheden zijn:
 <ul>
 <li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (externe link)&quot;title=&quot;Deze link naar een externe website vormt geen goedkeuring.&quot;&gt; - van
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
@@ -5291,7 +5294,7 @@ UCUM heeft bijvoorbeeld maar één hoofdlettergevoelige optie voor graden Celsiu
 &quot;Cel&quot;.
 <br>&nbsp;
 </ul>
-Hoewel ERDDAP het gebruik van geen van beide standaardeenheden vereist, geven de meeste ERDDAP installaties de voorkeur aan het een of het ander.
+Hoewel ERDDAP het gebruik van beide eenheden niet standaard vereist, geven de meeste ERDDAP installaties de voorkeur aan het een of het ander.
 (ERDDAP beheerders:
 u kunt dit specificeren met de <kbd>&lt;units_standard&gt;</kbd> tag in setup.xml.) U kunt UDUNITS naar/van ERDDAP -eenheden
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">converteren</a> met de eenhedenconverter van ERDDAP.
@@ -5379,7 +5382,7 @@ Vooral tabellen zijn zeer flexibele datastructuren (kijk naar het fenomenale suc
 <li>Dit maakt het opstellen van gegevensquery&#39;s eenvoudiger.
 <li>Dit zorgt ervoor dat gegevensantwoorden een eenvoudige structuur hebben, wat het gemakkelijker maakt om de gegevens in een grotere verscheidenheid aan standaardbestandstypen weer te geven (die vaak alleen eenvoudige gegevensstructuren ondersteunen).
 Dit is de belangrijkste reden dat we ERDDAP op deze manier hebben opgezet.
-<li>Dit maakt het voor ons (of wie dan ook) heel gemakkelijk om clientsoftware te schrijven die werkt met alle ERDDAP datasets.
+<li>Dit maakt het op zijn beurt voor ons (of voor wie dan ook) heel gemakkelijk om clientsoftware te schrijven die werkt met alle ERDDAP datasets.
 <li>Dit maakt het makkelijker om data uit verschillende bronnen te vergelijken, bijvoorbeeld voor een Integrated Ecosystem Analysis (IEA).
 <li>We zijn ons er terdege van bewust dat als je gewend bent om met data in andere datastructuren te werken, je in eerste instantie misschien denkt dat deze aanpak simplistisch of onvoldoende is.
 Maar alle datastructuren hebben compromissen.
@@ -5468,8 +5471,8 @@ Gegevenssets kunnen worden geconfigureerd om grafieken en kaarten openbaar toega
 (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">meer informatie</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP verwerkt data in chunks.</a></strong>
-<br>Om geheugen te besparen (een groot probleem) en ervoor te zorgen dat reacties eerder beginnen, verwerkt ERDDAP gegevensverzoeken in stukjes - herhaaldelijk een stuk gegevens uit de bron halen, het opschonen (bijvoorbeeld door
-<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadata</a> toe te voegen)
+<br>Om geheugen te besparen (een groot probleem) en om reacties eerder te laten beginnen, verwerkt ERDDAP gegevensverzoeken in brokken — herhaaldelijk een stuk gegevens uit de bron halen, het opschonen (bijvoorbeeld door
+<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metagegevens</a> toe te voegen)
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Deze link naar een externe website houdt geen goedkeuring in."></a>), en dat naar de klant te sturen.
@@ -5595,29 +5598,58 @@ De broncode voor elke versie staat op
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a>, het meest gebruikte systeem voor samenwerkingssoftwareprojecten.
-Tot dusver hebben vier andere groepen code bijgedragen aan ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> is geschreven en bijgedragen door Jonathan Lafite en Philippe Makowski van R.Tech Engineering (licentie:
+Tot dusver hebben deze groepen/mensen code bijgedragen aan ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">SamenvoegenIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> is geschreven en bijgedragen door Jonathan Lafite en Philippe Makowski van R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licentie:
 auteursrechtelijk beschermde open source).
 Bedankt, Jonathan en Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TabelSchrijverDataTabel
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> is geschreven en bijgedragen door Roland Schweitzer van NOAA (licentie:
 auteursrechtelijk beschermde open source).
 Dank je, Roeland!
-<li>De eerste versie van de
+<br>&nbsp;
+<li>json-ld
+<br>De eerste versie van de
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a> -functie (en dus al het harde werk bij het ontwerpen van de inhoud) is geschreven en bijgedragen (licentie:
 auteursrechtelijk beschermde open source) door Adam Leadbetter en Rob Fuller van het Marine Instituut in Ierland.
 Bedankt, Adam en Rob!
-<li>De code voor het
+<br>&nbsp;
+<li>orderBy
+<br>De code voor het
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filter</a> in tabledap en de uitgebreide wijzigingen in de code om de
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   ><i>variabeleName/deler:offset</i> -notatie</a> voor alle orderBy filters te ondersteunen, is geschreven en bijgedragen (licentie:
 auteursrechtelijk beschermde open source) door Rob Fuller en Adam Leadbetter van het Marine Institute in Ierland.
 Bedankt, Rob en Adam!
-<li>De code voor drie nieuwe markertypes (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) is bijgedragen door Marco Alba van ETT / EMODnet Physics.
-Bedankt Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Typen randloze markeringen
+<br>De code voor drie nieuwe markertypes (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) is bijgedragen door Marco Alba van ETT / EMODnet Physics.
+Bedankt, Marco Alba!
+<br>&nbsp;
+<li>Vertalingen van messages.xml
+<br>De eerste versie van de code in TranslateMessages.java, die de vertaalservice van Google gebruikt om messages.xml in verschillende talen te vertalen, is geschreven door Qi Zeng, die werkte als stagiair bij Google Summer of Code.
+Dankjewel, Qi!
+<br>&nbsp;
+<li>orderBy som
+<br>De code voor het
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum-filter</a> in tabledap (gebaseerd op de orderByMean van Rob Fuller en Adam Leadbetter) en de knoppen Check All en Uncheck All op het EDDGrid Data Access Form zijn geschreven en bijgedragen (licentie:
+auteursrechtelijk beschermde open source) door Marco Alba van ETT Solutions en EMODnet.
+Bedankt, Marco!
+<br>&nbsp;
+<li>Out-of-range .transparentPng-verzoeken
+<br>ERDDAP accepteert nu verzoeken voor .transparentPng&#39;s wanneer de breedte- en/of lengtegraadwaarden gedeeltelijk of volledig buiten bereik zijn.
+(Dit was ERDDAP GitHub Issues #19, gepost door Rob Fuller -- bedankt voor het plaatsen ervan, Rob.) De code om dit op te lossen is geschreven door Chris John.
+Dank je, Kris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Ik hoop dat anderen in de toekomst code zullen bijdragen.
@@ -5647,7 +5679,7 @@ href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_product
 >hier is een lijst <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a>).
-Ik wil niet kiezen voor Google, want ik hou echt van Google en ze financieren een groot aantal geweldige, open-sourceprojecten.
+Ik wil niet kiezen voor Google, want ik hou echt van Google en ze financieren een groot aantal geweldige open-sourceprojecten.
 Microsoft heeft projecten stopgezet.
 Apple heeft projecten stopgezet.
 ...
@@ -5664,7 +5696,7 @@ Ik ken een beroemd, redelijk groot project met 10 ontwikkelaars (ik zal ze niet 
 Ze zijn afhankelijk van subsidies.
 Ze hebben altijd een tekort.
 Hun beschermheer heeft hen altijd op het laatste moment gered, maar wordt het beu om hen te redden.
-Dus als ze geen miljoen dollar per jaar aan subsidiegeld kunnen inzamelen (of de beschermheer wordt het te moe om ze te redden), stoppen ze.
+Dus als ze geen miljoen dollar per jaar aan beursgeld kunnen inzamelen (of de beschermheer wordt het te moe om ze te redden), stoppen ze.
 En de groep kan zich niet voorstellen dat er minder dan 10 ontwikkelaars zijn.
 Elke ontwikkelaar heeft een rol te spelen in hun groep.
 In het licht daarvan lijkt het mij een geweldig teken dat ERDDAP kan en wordt ontwikkeld door slechts één hoofdontwikkelaar (die volledig wordt gefinancierd) met de onofficiële hulp van een paar anderen.
@@ -5691,7 +5723,7 @@ html#duurzaam</a> .
 for ERDDAP development, please contact me.
 I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
-<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Hoe een dataset in een paper te citeren?</a></strong>
+<p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Een dataset citeren in een paper</a></strong>
 <br>Het is belangrijk om de lezers te laten weten hoe u aan de gegevens bent gekomen die u in uw paper hebt gebruikt.
 Kijk voor elke dataset die je hebt gebruikt naar de metadata van de dataset in het gedeelte Dataset Attribute Structure onder aan de .html-pagina voor de dataset, bijv.
 <br><a rel="help" 
@@ -7292,9 +7324,7 @@ Veel datasets zijn ook toegankelijk via ERDDAP &#39;s Web Map Service (WMS ).
 <yourEmailAddress>jouw e-mailadres</yourEmailAddress>
 <zoomIn>In zoomen</zoomIn>
 <zoomOut>Uitzoomen</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Tekst kopiëren naar klembord</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopiëren naar klembord niet beschikbaar</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopieer afbeelding naar klembord</copyimagetoclipboard>
 </erddapMessages>

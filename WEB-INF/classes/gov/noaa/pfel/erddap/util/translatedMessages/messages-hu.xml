@@ -1309,7 +1309,7 @@ Tehát az ERDDAP az &quot;years since&quot; és a &quot;months since&quot; napt�
 <tr>
 <td>Karakterkészlet</td>
 <td>UDUNITS -1 sima ASCII-t használ.
-UDUNITS ASCII-t, ISO 8859-1-et (latin-1) és az ISO 10646 (Unicode) UTF-8 kódolását használja.</td>
+UDUNITS az ASCII-t, az ISO 8859-1-et (latin-1) és az ISO 10646 (Unicode) UTF-8 kódolást használja.</td>
 <td>Sima ASCII</td>
 <td>Minden UDUNITS egységet csak ASCII és ISO 8859-1 karakterekkel konvertál.
 A néhány más karakterű egységet nem konvertálja át</td>
@@ -1397,7 +1397,7 @@ Ezután a szorzás és az osztás kiértékelése balról jobbra történik.</td
 <td>_ (aláhúzás)</td>
 <td>Egyedi egységnevekben használatos.</td>
 <td>Az egységnevén belüli alsó index megjegyzés jelzésére szolgál (pl.
-&quot;mo_g&quot; egy gregorián hónapnál)</td>
+&quot;mo_g&quot; egy gregorián hónaphoz)</td>
 <td>(Nincs szükség változtatásra)</td>
 <td>(Nincs szükség változtatásra)</td>
 </tr>
@@ -1475,7 +1475,7 @@ Mindegyiket &quot;deg&quot; jelöli.</td>
 <td>A különböző irányok mértékegységeinek megkülönböztetésére a konverter megjegyzést ad az irány mértékegységeihez (pl.
 a &quot;degree_north&quot; &quot;deg{north}&quot; lesz).</td>
 <td>Ha megjegyzést fűz hozzá ({east}, {north}, {west} vagy {true} ), a konverter irányegységre konvertálja (pl.
-a &quot;deg{north}&quot; &quot;degree_north&quot; lesz); ellenkező esetben a konverter nem tudja előállítani az irány mértékegységeit, így a &quot;deg&quot; &quot;degree&quot; .</td>
+a &quot;deg{north}&quot; &quot;degree_north&quot; lesz); egyébként a konverternek nincs módja az irány mértékegységeinek generálására, ezért a &quot;deg&quot; &quot;degree&quot; .</td>
 </tr>
 <tr>
 <td>meghatározott időpontokban</td>
@@ -1738,6 +1738,9 @@ Engedélyezés&quot; lehetőséget.
 Ha ERDDAP kéréseket küld számítógépes programból (nem böngészőből), akkor a cookie-kkal nehéz dolgozni.
 Sajnálom.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kép másolása a vágólapra</copyImageToClipboard>
+<copyTextToClipboard>Szöveg másolása a vágólapra</copyTextToClipboard>
+<copyToClipboardNotAvailable>A vágólapra másolás nem érhető el</copyToClipboardNotAvailable>
 <daf>Adathozzáférési űrlap</daf>
 <dafGridBypassTooltip><![CDATA[
 Ez a weboldal egyszerűen leegyszerűsíti a griddap URL-ek létrehozását.
@@ -5253,7 +5256,7 @@ Ez implicit.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP sokféle tudományos adatot tud szolgálni, nem csak oceanográfiai adatokat.</a></strong>
 <br>ERDDAP egy adatszerver, amelyet a
-<a title="Nemzeti Óceán- és Légkörkutató Hivatal" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
+<a title="Nemzeti Óceán- és Légköri Hivatal" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="Országos Tengerészeti Halászati Szolgálat" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Southwest Fisheries Science Center" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Környezetkutatási Osztály" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> -n írtak.
@@ -5308,7 +5311,7 @@ Egyéb protokollok az adatok lekéréséhez (például
 ERDDAP ezekhez a kiegészítésekhez készült, és úgy tűnik, hogy nincs akadálya.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">A rácsozott adatokra felhasználói egységekben lehet kérni.</a></strong>
-<br>Bár az ERDDAP -ban a rácsozott adatokra vonatkozó kérések tömbindexekkel is kérhetők (az OPeNDAP specifikációt követve), a kérések felhasználói egységekben (például keleti fok) is lehetnek,
+<br>Bár az ERDDAP -ban a rácsozott adatokra vonatkozó kérések tömbindexekkel is kérhetők (az OPeNDAP specifikációját követve), a kérések felhasználói egységekben (például keleti fokban) is lehetnek,
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zárójeles jelöléssel</a>, mivel a felhasználók ezekben az egységekben gondolkodnak, nem indexekben.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP az eredményeket általános adatfájl-formátumokban küldi el.</a></strong>
@@ -5346,7 +5349,7 @@ január 1.
 óta eltelt napok.
 Ez megkönnyíti a különböző adatforrásokból származó eredmények összehasonlítását.
 <p>ERDDAP -nak van egy segédprogramja
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">a numerikus idő karakterláncidővé/karakterláncból való konvertálására</a> .
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">a numerikus idő karakterláncidővé/karakterláncból történő konvertálására</a> .
 <br>További részletekért lásd:
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">Hogyan bánik az ERDDAP az idővel</a> ?
 <p>Mivel a hosszúsági, szélességi, magassági és időbeli változókat kifejezetten felismeri, az ERDDAP tisztában van az egyes adatkészletek földrajzi/időbeli jellemzőivel.
@@ -5390,12 +5393,12 @@ Például az UCUM-nak csak egy kis- és nagybetűérzékeny beállítása van a 
 &quot;Cel&quot; .
 <br>&nbsp;
 </ul>
-Bár az ERDDAP nem igényli egyik szabványos egység használatát sem, a legtöbb ERDDAP telepítés előnyben részesíti az egyiket vagy a másikat.
+Bár az ERDDAP nem igényli egyik szabványos egység használatát sem, a legtöbb ERDDAP telepítés az egyiket vagy a másikat részesíti előnyben.
 (ERDDAP adminisztrátorok:
 ezt a <kbd>&lt;units_standard&gt;</kbd> címkéjével adhatja meg.) Az UDUNITS -okat UCUM egységekre/ ERDDAP egységekre
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">konvertálhatja</a> az ERDDAP egységkonvertálójával.
 Amikor adatokat vagy grafikont kér egy
-<a href="&erddapUrl;/tabledap/index.html">tabledap adatkészletből</a>, az URL végéhez fűzheti az <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> vagy az <kbd>&amp;units(&quot;UCUM&quot;)</kbd>, hogy UDUNITS vagy UCUM egységet kérjen.
+<a href="&erddapUrl;/tabledap/index.html">tabledap adatkészletből</a>, az URL végéhez hozzáfűzheti az <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> vagy az <kbd>&amp;units(&quot;UCUM&quot;)</kbd>, hogy UDUNITS vagy UCUM egységet kérjen.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">több információ</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP képes hozzáadni vagy módosítani a metaadatokat.</a></strong>
@@ -5470,7 +5473,7 @@ Csak a kívánt adatokat kapják meg, a kívánt fájlformátumban.
 <li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">táblázatos adatstruktúra</a> (például in-situ bója, állomás és pályaadatokhoz).
 </ul>
 <li>Természetesen nem minden adat fejezhető ki ezekben a struktúrákban, de nagy része igen.
-A táblák különösen nagyon rugalmas adatstruktúrák (nézd meg a
+A táblák különösen rugalmas adatstruktúrák (nézd meg a
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">relációs adatbázisok</a> fenomenális sikerét
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5522,12 +5525,12 @@ A modern webböngészők beépített RSS -klienssel rendelkeznek, vagy használh
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> .
 ERDDAP minden adatkészlethez külön RSS 2.01 hírcsatornát kínál, hogy megtudja, mikor változtak az érdekes adatkészletek.
-Egy adatkészlet RSS -hírcsatornájára való feliratkozáshoz kattintson az egyik RSS -ikonra<img alt="RSS" style="vertical-align:top" title="Az RSS ikon." src="&erddapUrl;/images/rss.gif" > amelyek a jobb szélen megjelennek az ERDDAP weboldalakon az adatkészletek listáival (<a rel="contents" href="&erddapUrl;/info/index.html">példa</a>), vagy az egyes adatkészletekhez tartozó Data Access Forms és Make A Graph weboldalakon (<a href="&erddapUrl;/griddap/etopo180.html">példa</a>).
+Egy adatkészlet RSS -hírcsatornájára való feliratkozáshoz kattintson az egyik RSS -ikonra<img alt="RSS" style="vertical-align:top" title="Az RSS ikon." src="&erddapUrl;/images/rss.gif" > amelyek a jobb szélen jelennek meg az ERDDAP weboldalakon az adatkészletek listáival (<a rel="contents" href="&erddapUrl;/info/index.html">példa</a>), vagy az egyes adatkészletekhez tartozó Data Access Forms és Make A Graph weboldalakon (<a href="&erddapUrl;/griddap/etopo180.html">példa</a>).
 <p><strong>Összehasonlítás</strong> Lehetséges, hogy az RSS szolgáltatás pontosan az, amit keres.
 Ez egy szép szabvány.
 Ha azonban a lehető leghamarabb tudnia kell egy adatkészlet változásáról, használja az e-mail/URL rendszert, ne az RSS -t.
-Az RSS kliensek időszakonként (óránként?) kérik és elolvassák az RSS XML dokumentumot, hogy megkeressék a változtatásokat.
-Tehát az RSS -kliensek általában nem észlelik gyorsan (átlagosan 30 percen belül?) az adatkészlet változását.
+Az RSS kliensek időszakonként (óránként?) kérik és elolvassák az RSS XML dokumentumot, hogy megkeressék a változásokat.
+Tehát az RSS -kliensek általában nem észlelik gyorsan (átlagosan 30 perc alatt?) az adatkészlet változását.
 Ezzel szemben az e-mail/URL előfizetési rendszer azonnal intézkedik, amikor az ERDDAP változást észlel egy adatkészletben.
 Az e-mail/URL rendszer proaktívabb megközelítése is sokkal hatékonyabb:
 beállíthatja RSS kliensét, hogy percenként ellenőrizze a változásokat (ne tedd!), de ez csak sok felesleges kéréshez vezetne.
@@ -5600,7 +5603,7 @@ ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> és
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap programjai</a> az ERDDAP előfizetéses szolgáltatásait és
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">jelzőrendszerét</a> használják, így azonnal értesítést kapnak, ha új adatok állnak rendelkezésre.
-Ezeket nagyszerű hatás elérése érdekében kombinálhatja:
+Kombinálhatja ezeket a nagyszerű hatás érdekében:
 ha egy EDDGrid másolatot egy EDDGrid FromErddap-adatkészlet köré csomagol (vagy egy EDDTableCopy-t egy EDDTableFromErddap-adatkészlet köré), az ERDDAP automatikusan létrehozza és karbantartja egy másik ERDDAP adatkészletének helyi másolatát.
 Mivel az előfizetési szolgáltatások azonnal működnek, amint új adatok állnak rendelkezésre, a push technológia nagyon gyorsan (másodperceken belül) terjeszti az adatokat.
 <p>Ez az architektúra minden ERDDAP -adminisztrátort bíz meg annak meghatározásával, hogy honnan származnak az ERDDAP -jához tartozó adatok.
@@ -5654,7 +5657,7 @@ Addig is az ERDDAP már elérhető, hogy más adatszervereket interoperábiliss�
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP sok/a legtöbb adatkészletet képes kezelni úgy, ahogy van, de nem mindegyiket.</a> Nem arról van szó, hogy a fennmaradó adatkészletek (pl.
 modelladatok kockás gömbvetülettel) ne lennének fontosak.
 Csupán arról van szó, hogy az ERDDAP célja, hogy általános fájlformátumokban adja vissza az adatokat (amelyek közül néhány meglehetősen egyszerű), kizárja a bonyolultabb belső adatstruktúrát.
-A bonyolultabb adatstruktúrákkal dolgozó kutatócsoportok gyakran már rendelkeznek speciális adatszerverekkel és speciális kliensszoftverekkel, amelyeket a közösségük igényeire szabtak.
+A bonyolultabb adatstruktúrákkal dolgozó kutatói csoportok gyakran már rendelkeznek speciális adatszerverekkel és speciális kliensszoftverekkel, amelyeket a közösségük igényeire szabtak.
 ERDDAP általános célú adatszerverként nem próbálja felvenni a versenyt ezekkel a speciális adatszerverekkel.
 A közösség igényeihez szabják őket, és nagyszerű munkát végeznek.
 Ezeket az adatkészleteket azonban gyakran csak az adott közösség speciális szoftverei &quot;értik&quot;.
@@ -5702,22 +5705,33 @@ Minden verzió forráskódja megtalálható a
 <a rel="bookmark" href="https://github.com/BobSimons">GitHubon <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>, a kollaboratív szoftverprojektek leggyakrabban használt rendszere.
-Eddig négy másik csoport nyújtott be kódot az ERDDAP -hoz:
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> -t Jonathan Lafite és Philippe Makowski, az R.Tech Engineering (licenc:
-nyílt forráskódú jogvédett) írta és segítette.
+Eddig ezek a csoportok/emberek adtak hozzá kódot az ERDDAP -hoz:
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java fájlt</a> Jonathan Lafite és Philippe Makowski, az R.Tech Engineering munkatársa írta és segítette.
+<!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licenc:
+szerzői jog által védett nyílt forráskódú).
 Köszönöm, Jonathan és Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >A .dataTable (TableWriterDataTable.java) fájlt</a> Roland Schweitzer, a NOAA (licenc:
 nyílt forráskódú, szerzői jogvédelem alatt álló) írta és készítette.
 Köszönöm, Roland!
-<li>A
+<br>&nbsp;
+<li>json-ld
+<br>A
 <a href="#jsonld" rel="bookmark">json-ld (JSON Linked Data) funkcióval rendelkező adatkészletek szemantikus jelölésének</a> kezdeti verzióját (és így a tartalom tervezésének kemény munkáját) Adam Leadbetter és Rob Fuller írta és segítette (licenc:
 nyílt forráskódú jogvédett).
 az írországi Marine Institute.
 Köszönöm Ádám és Rob!
-<li>Az
+<br>&nbsp;
+<li>orderBy
+<br>Az
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean szűrő</a> kódját a tabledap -ban és a kódban a változóName
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
@@ -5725,11 +5739,32 @@ Köszönöm Ádám és Rob!
 nyílt forráskódú szerzői jogvédelem).
 Írország.
 Köszönöm, Rob és Ádám!
-<li>A három új markertípus (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) kódját Marco Alba, az ETT / EMODnet Physics munkatársa készítette.
-Köszönöm Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Szegély nélküli jelölőtípusok
+<br>A három új markertípus (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) kódját Marco Alba, az ETT / EMODnet Physics munkatársa készítette.
+Köszönöm Marco Alba!
+<br>&nbsp;
+<li>Az üzenetek fordítása.xml
+<br>A TranslateMessages.java kód eredeti verzióját, amely a Google fordítószolgáltatását használja a messages.xml fájl különböző nyelvekre történő lefordításához, Qi Zeng írta, aki a Google Summer of Code gyakornokaként dolgozott.
+Köszönöm, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>A
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum szűrőjének</a> tabledap (Rob Fuller és Adam Leadbetter orderByMean ), valamint az EDDGrid adatelérési űrlapon található Check All és Uncheck All gombokat Marco Alba, az ETT Solutions írta és adta hozzá (licenc:
+nyílt forráskódú szerzői jog).
+és EMODnet.
+Köszönöm Marco!
+<br>&nbsp;
+<li>Tartományon kívüli .transparentPng kérések
+<br>ERDDAP mostantól elfogadja a .transparentPng-re vonatkozó kéréseket, ha a szélességi és/vagy hosszúsági értékek részben vagy teljesen kívül esnek a tartományon.
+(Ez az ERDDAP GitHub Issues #19 volt, közzétette:
+Rob Fuller – köszönjük, hogy közzétetted, Rob.) A hiba javítására szolgáló kódot Chris John írta.
+Köszönöm, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-Remélem, a jövőben mások is hozzájárulnak a kóddal.
+Remélem, mások is hozzájárulnak a kóddal a jövőben.
 Ha valami történik velem, a főnökeim felvesznek egy helyettesítőt azzal a konkrét céllal, hogy ő folytassa az ERDDAP fejlesztését.
 Továbbá igyekszem nagyon tiszta kódot írni.
 Java Doc megjegyzéseket írok.
@@ -5774,19 +5809,19 @@ Ismerek egy híres, meglehetősen nagy projektet 10 fejlesztővel (nem hozom ők
 Támogatásokra támaszkodnak.
 Mindig hiányt szenvednek.
 A patrónusuk mindig az utolsó pillanatban mentette ki őket, de már nagyon belefáradt a kimentésükbe.
-Tehát ha nem tudnak évente egymillió dollárt összegyűjteni támogatásból (vagy a mecénás túlságosan belefárad a kimentésükbe), abbahagyják.
+Tehát ha nem tudnak évente egymillió dollárt összegyűjteni pályázati pénzből (vagy a mecénás túlságosan belefárad a kimentésükbe), abbahagyják.
 És a csoport el sem tudja képzelni, hogy 10-nél kevesebb fejlesztője legyen.
 Minden fejlesztőnek megvan a maga szerepe a csoportjában.
 Ennek fényében számomra nagyszerű jelnek tűnik, hogy az ERDDAP -t csak egy fő fejlesztő (aki teljes mértékben finanszírozott) fejlesztheti és fejleszti aktívan néhány másik nem hivatalos közreműködésével.
 Ha tény, rossz jel lenne, ha az ERDDAP több fejlesztőre lenne szüksége.
 Az, hogy az ERDDAP -nak csak egy fő fejlesztője van, azt jelenti, hogy ez nem egy hatalmas feladat, amely hatalmas, folyamatos finanszírozást igényel; ez egy viszonylag kis feladat, amely minimális erőfeszítést és finanszírozást igényel.
 Ez fenntarthatóbb, nem kevésbé.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Azt gondolhatnánk, hogy jó ötlet egy szerződő céget felvenni szoftverek készítésére.</a> Térítés ellenében biztosítják a fejlesztőket, és ígérik a folytonosságot (ami jó, hacsak/amíg nem szűnnek meg).
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Azt gondolhatnánk, hogy jó ötlet egy szerződő céget felvenni szoftverek készítésére.</a> Térítés ellenében biztosítják a fejlesztőket és ígérik a folytonosságot (ami jó, hacsak/amíg ki nem szűnnek).
 De náluk is van egy hordó:
 fizetned kell nekik, amit kérnek, különben nincs több fejlesztés, <strong>hacsak</strong> nem FOSS a szoftver, és csak azért fizetsz, hogy dolgozzanak a kódon.
 A FOSS segítségével mindig megvan a választása a továbblépéssel kapcsolatban.
 Mivel az ERDDAP a FOSS, a vállalkozók mindig jó választást jelentenek Önnek vagy bárkinek az ERDDAP tekintetében:
-ha bármi történik velem (az egyik fő fejlesztővel), vagy ha nincs időm az Ön által kívánt változtatásra, vagy én menj nyugdíjba, és nem tetszik a helyettesítőm munkája, mindig megbízhatsz egy szerződő céget a kívánt változtatások elvégzésére (vagy saját magad).
+ha bármi történik velem (az egyik fő fejlesztővel), vagy ha nincs időm az Ön által kívánt változtatásra, vagy én menj nyugdíjba és nem tetszik a helyettesítőm munkája, mindig megbízhatsz egy szerződő céget a kívánt változtatások elvégzésére (vagy saját magad).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Összefoglalva, az ERDDAP két fenntarthatósági jellemzővel rendelkezik, amelyek a legfontosabbak:</a>
 <ol>
 <li>ERDDAP egy kis projekt (elég kicsi ahhoz, hogy egy fő fejlesztő kezelje néhány másik nem hivatalos közreműködésével), így nem igényel hatalmas erőforrásokat.
@@ -7403,9 +7438,7 @@ Számos adatkészlet az ERDDAP szolgáltatásán (WMS ) keresztül is elérhető
 <yourEmailAddress>az email címed</yourEmailAddress>
 <zoomIn>Nagyítás</zoomIn>
 <zoomOut>Kicsinyítés</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Szöveg másolása a vágólapra</copytexttoclipboard>
+<copytoclipboardnotavailable>A vágólapra másolás nem érhető el</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kép másolása a vágólapra</copyimagetoclipboard>
 </erddapMessages>

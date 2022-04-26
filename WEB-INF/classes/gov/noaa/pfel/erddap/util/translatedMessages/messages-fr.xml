@@ -1223,20 +1223,20 @@ Ainsi, ERDDAP interprète &quot;years since&quot; et &quot;months since&quot; co
 <h2><a class="selfLink" id="syntaxComparison" href="#syntaxComparison" rel="help">Comparaison des UDUNITS et UCUM</a></h2>
 <table class="erd commonBGColor T">
 <tr>
-<th style="width:8%;">Problème</th>
+<th style="width:8%;">Publier</th>
 <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a></th>
-<th style="width:23%;">Convertisseur UDUNITS → UCUM</th>
+<th style="width:23%;">UDUNITS → Convertisseur UCUM</th>
 <th style="width:23%;">Convertisseur UCUM → UDUNITS</th>
 </tr>
 <tr>
 <td>Jeu de caractères</td>
-<td>UDUNITS -1 utilise l&#39;ASCII simple.
-UDUNITS utilise ASCII, ISO 8859-1 (Latin-1) et l&#39;encodage UTF-8 d&#39;ISO 10646 (Unicode).</td>
+<td>UDUNITS -1 utilise l&#39;ASCII brut.
+UDUNITS utilise ASCII, ISO 8859-1 (Latin-1) et le codage UTF-8 de ISO 10646 (Unicode).</td>
 <td>ASCII simple</td>
 <td>Toutes les unités UDUNITS contenant uniquement des caractères ASCII et ISO 8859-1 sont converties.
 Les quelques unités avec d&#39;autres caractères ne sont pas converties</td>
@@ -1245,27 +1245,27 @@ Les quelques unités avec d&#39;autres caractères ne sont pas converties</td>
 <tr>
 <td>sensible aux majuscules et minuscules</td>
 <td>Oui.
-Lorsque différentes majuscules sont autorisées, les variantes sont explicitement définies.</td>
+Lorsque différentes capitalisations sont autorisées, les variantes sont explicitement définies.</td>
 <td>Oui.
 Les convertisseurs fonctionnent avec la forme sensible à la casse (&quot;c/s&quot; ) des unités UCUM.</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
-<td>Pluriels et alias</td>
+<td>Pluriels et pseudonymes</td>
 <td>Prend en charge les pluriels et les alias pour la même unité.</td>
 <td>Utilise une seule abréviation/acronyme pour chaque unité.</td>
-<td>Les divers pluriels et alias sont convertis dans l&#39;unité UCUM correspondante.
+<td>Les différents pluriels et alias sont convertis dans l&#39;unité UCUM correspondante.
 Les noms UDUNITS non reconnus sont convertis en commentaires.</td>
-<td>Cette méthode essaie de retourner des alias UDUNITS communs, courts, uniques (pas au pluriel).
+<td>Cette méthode essaie de renvoyer des alias UDUNITS communs, courts et uniques (pas au pluriel).
 Les noms UCUM non reconnus restent inchangés.</td>
 </tr>
 <tr>
 <td>préfixes métriques
-<br>(par exemple, &quot;kilo&quot; et &#39;k&#39; signifient &quot;times 1000&quot; ; &quot;µ&quot; et &#39;u&#39; signifient &quot;fois 10^-6&quot;)</td>
+<br>(par exemple, &quot;kilo&quot; et &#39;k&#39; signifient &quot;times 1000&quot; ; &quot;µ&quot; et &#39;u&#39; signifient &quot;fois 10^-6&quot;)</td>
 <td>Pris en charge (voir UDUNITS udunits2-prefixes.xml)</td>
-<td>Pris en charge (voir la colonne c/s de la
-<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">table des symboles de préfixe <img 
+<td>Pris en charge (voir la colonne c/s du
+<a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">tableau des symboles de préfixe <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>)</td>
 <td>Le préfixe est converti en son acronyme (par exemple, &#39;u&#39; )</td>
@@ -1273,22 +1273,22 @@ Les noms UCUM non reconnus restent inchangés.</td>
 </tr>
 <tr>
 <td>opérateurs de multiplication</td>
-<td>espace (le plus courant), &#39;-&#39; (une faute de frappe dans la spécification ???), &#39;.&#39;, &#39;*&#39;, &#39;·&#39;</td>
+<td>espace (le plus courant), &#39;-&#39; (une faute de frappe dans la spécification ???), &#39;.&#39;, &#39;*&#39;, &#39;·&#39;</td>
 <td>&#39;.&#39;</td>
-<td>espace, &#39;*&#39; et &#39;·&#39;, sont convertis en &#39;.&#39;</td>
-<td>toujours converti en un espace (pour la cohérence)</td>
+<td>espace, &#39;*&#39; et &#39;·&#39; sont convertis en &#39;.&#39;</td>
+<td>toujours converti en espace (pour la cohérence)</td>
 </tr>
 <tr>
 <td>opérateurs de division</td>
 <td>&#39;/&#39;, &quot;per&quot;, &quot;PER&quot;</td>
 <td>&#39;/&#39;</td>
 <td>&quot;per&quot; et &quot;PER&quot; sont convertis en exposants négatifs.</td>
-<td>(Aucun changement nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
-<td>opérateurs exposants</td>
+<td>opérateurs d&#39;exposant</td>
 <td>&quot;**&quot;, &#39;^&#39;, rien (par exemple, m-2 = m^-2)</td>
-<td>&#39;*&#39; (vraiment !), &#39;^&#39; (seulement en nombre), rien (par exemple, m-2)</td>
+<td>&#39;*&#39; (vraiment !), &#39;^&#39; (uniquement en chiffres), rien (par exemple, m-2)</td>
 <td>&quot;**&quot; est converti en rien (ou &#39;^&#39; dans les nombres, par exemple, 10^-6).</td>
 <td>toujours converti en &#39;^&#39; (pour la cohérence).</td>
 </tr>
@@ -1298,12 +1298,12 @@ Les noms UCUM non reconnus restent inchangés.</td>
 Ensuite, la multiplication et la division sont évaluées de gauche à droite.</td>
 <td>Les exposants sont les plus élevés.
 Ensuite, la multiplication et la division sont évaluées de gauche à droite.</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
 <td>Nombres</td>
-<td>entier et virgule flottante (par exemple, 1.23456E-5)</td>
+<td>nombre entier et virgule flottante (par exemple, 1.23456E-5)</td>
 <td>entier seulement</td>
 <td>Les nombres à virgule flottante sont convertis en nombres rationnels (par exemple, 12.34 devient 1234.10^-2 (rappelez-vous que &#39;.&#39; signifie &quot;times&quot; )</td>
 <td>Les nombres sont convertis en nombres entiers ou en nombres à virgule flottante (par exemple, 1.23456E-5).</td>
@@ -1312,43 +1312,43 @@ Ensuite, la multiplication et la division sont évaluées de gauche à droite.</
 <td>_ (souligner)</td>
 <td>Utilisé dans les noms d&#39;unités individuelles.</td>
 <td>Utilisé pour indiquer une annotation en indice dans un nom d&#39;unité (par exemple, &quot;mo_g&quot; pour un mois grégorien)</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
 <td>&#39; (apostrophe)</td>
 <td>Non utilisé.</td>
-<td>Utilisé pour séparer les mots dans un nom à plusieurs mots (par exemple, &quot;[todd&#39;U]&quot; pour une unité Todd )</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>Utilisé pour séparer les mots dans un nom composé de plusieurs mots (par exemple, &quot;[todd&#39;U]&quot; pour une unité Todd )</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
 <td>( )</td>
-<td>Utilisé pour regrouper des éléments.</td>
-<td>Utilisé pour regrouper des éléments.</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>Utilisé pour regrouper les éléments.</td>
+<td>Utilisé pour regrouper les éléments.</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
 <td>[ ]</td>
 <td>Non utilisé.</td>
 <td>Utilisé pour entourer des groupes de symboles qui doivent être traités comme un groupe (par exemple, &quot;[in_i]&quot; pour un pouce international)</td>
-<td>(Aucun changement nécessaire)</td>
-<td>(Aucun changement nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
+<td>(Aucune modification nécessaire)</td>
 </tr>
 <tr>
 <td>{ }</td>
 <td>Non utilisé.</td>
-<td>Utilisé pour les annotations (par exemple, &quot;%{vol}&quot; pour le pourcentage par volume).</td>
-<td>(Aucun changement nécessaire)</td>
-<td>Si le commentaire est défini dans le standard UCUM, il sera converti.
-Si le terme n&#39;est pas défini, { } sera converti en ( ).</td>
+<td>Utilisé pour les annotations (par exemple, &quot;%{vol}&quot; pour le pourcentage en volume).</td>
+<td>(Aucune modification nécessaire)</td>
+<td>Si le commentaire est défini dans la norme UCUM, il sera converti.
+Si le terme n&#39;est pas défini, { } sera converti en ( ) .</td>
 </tr></table>
 <p>&nbsp;
 <hr>
 <h2><a class="selfLink" id="unitsComparison" href="#unitsComparison" rel="help"
 >Comparaison des unités UDUNITS et UCUM</a></h2>
-Pour la plupart des unités, il existe une correspondance un à un entre les unités dans UDUNITS et UCUM.
+Pour la plupart des unités, il existe une correspondance biunivoque entre les unités dans UDUNITS et UCUM.
 Mais il y a quelques difficultés et cas particuliers :
 <br>&nbsp;
 <table class="erd commonBGColor T">
@@ -1360,7 +1360,7 @@ Mais il y a quelques difficultés et cas particuliers :
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a></th>
-<th style="width:23%;">Convertisseur UDUNITS → UCUM</th>
+<th style="width:23%;">UDUNITS → Convertisseur UCUM</th>
 <th style="width:23%;">Convertisseur UCUM → UDUNITS</th>
 </tr>
 <tr>
@@ -1377,20 +1377,20 @@ Certaines normes (par exemple,
 <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">FC <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>), utilisez degree_east et degree_north pour identifier les variables de longitude et de latitude dans un fichier de données.</td>
-<td>UCUM reconnaît des unités de degrés de température séparées (par exemple, [degF], Cel, K), mais pas des unités de degrés de direction séparées.
+<td>UCUM reconnaît des unités de degrés de température distinctes (par exemple, [degF], Cel, K), mais pas des unités de degrés de direction distinctes.
 Ils sont tous représentés par &quot;deg&quot; .</td>
 <td>Pour distinguer les différentes unités de degré de direction, le convertisseur ajoute un commentaire aux unités de degré de direction (par exemple, &quot;degree_north&quot; devient &quot;deg{north}&quot; ).</td>
-<td>Si vous ajoutez un commentaire({east}, {north}, {west} ou {true}), le convertisseur sera converti en une unité de direction (par exemple, &quot;deg{north}&quot; devient &quot;degree_north&quot; ); sinon, il n&#39;y a aucun moyen pour le convertisseur de générer des unités de degré de direction, donc &quot;deg&quot; est converti en &quot;degree&quot; .</td>
+<td>Si vous ajoutez un commentaire ({east}, {north}, {west} ou {true} ), le convertisseur convertira en une unité de direction (par exemple, &quot;deg{north}&quot; devient &quot;degree_north&quot; ) ; sinon, il n&#39;y a aucun moyen pour le convertisseur de générer des unités de degré de direction, donc &quot;deg&quot; est converti en &quot;degree&quot; .</td>
 </tr>
 <tr>
-<td>moments précis</td>
-<td>UDUNITS dispose d&#39;un système pour spécifier des heures spécifiques comme
+<td>heures précises</td>
+<td>UDUNITS a un système pour spécifier des heures spécifiques comme
 <br>&quot;<i>unités</i> depuis <i>ISO8601Time</i>&quot;,
 <br>par exemple, &quot;seconds since 1970-01-01T00:00:00Z&quot; .
-<td>UCUM ne semble pas avoir de système pour spécifier des heures spécifiques.
+<td>UCUM ne semble pas avoir de système pour spécifier des heures précises.
 <td>Le convertisseur convertit, par exemple,
 <br>&quot;seconds since 1970-01-01T00:00:00Z&quot;
 <br>à &quot;s{since 1970-01-01T00:00:00Z}&quot; .
@@ -1400,11 +1400,11 @@ Ils sont tous représentés par &quot;deg&quot; .</td>
 </tr>
 <tr>
 <td>&C;</td>
-<td>&quot;&C;&quot; signifie Coulomb, mais est souvent utilisé à tort pour signifier <kbd>degree_C</kbd> .
-<td>&quot;&C;&quot; signifie Coulomb.
+<td>&quot;&amp;C;&quot; signifie Coulomb, mais est souvent utilisé à tort pour signifier <kbd>degree_C</kbd> .
+<td>&quot;&amp;C;&quot; signifie Coulomb.
 Les degrés Celsius sont identifiés via <kbd>Cel</kbd> .</td>
-<td>&C; est converti en <kbd>Cel</kbd>, sur la théorie que &C; a été mal utilisé.</td>
-<td>&C; est laissé comme &C; .</td>
+<td>&quot;&amp;C;&quot; est converti en <kbd>Cel</kbd>, sur la théorie que &C; a été utilisé de manière incorrecte.</td>
+<td>&quot;&amp;C;&quot; est laissé comme &quot;&amp;C;&quot; .</td>
 </tr>
 <tr>
 <td>&g;</td>
@@ -1419,7 +1419,7 @@ Les degrés Celsius sont identifiés via <kbd>Cel</kbd> .</td>
 <tr>
 <td>&F;</td>
 <td>&F; signifie Fahrenheit.</td>
-<td>&F; signifie farad.</td>
+<td>&F; signifie Farad.</td>
 <td>&F; est converti en [degF].</td>
 <td>&F; est converti en &quot;farad&quot; .</td>
 </tr>
@@ -1439,7 +1439,7 @@ Les degrés Celsius sont identifiés via <kbd>Cel</kbd> .</td>
 </tr>
 <tr>
 <td>Commentaires et termes non standard</td>
-<td>UDUNITS n&#39;autorise pas les commentaires ou les termes non standard, donc de nombreuses chaînes d&#39;unités sont invalides.</td>
+<td>UDUNITS n&#39;autorise pas les commentaires ou les termes non standard, ainsi de nombreuses chaînes d&#39;unités ne sont pas valides.</td>
 <td>UDUNITS n&#39;autorise pas les termes non standard, mais autorise les commentaires dans { } .</td>
 <td>Les termes non standard sont convertis en commentaires.</td>
 <td>Les commentaires ne sont pas commentés afin qu&#39;aucune information ne soit perdue ; cependant, le résultat peut être une chaîne UDUNITS non valide.
@@ -1637,6 +1637,9 @@ Autoriser&quot;
 Si vous effectuez des demandes ERDDAP à partir d&#39;un programme informatique (autre qu&#39;un navigateur), les cookies sont difficiles à utiliser.
 Désolé.
 ]]></cookiesHelp>
+<copyImageToClipboard>Copier l&#39;image dans le presse-papiers</copyImageToClipboard>
+<copyTextToClipboard>Copier le texte dans le presse-papiers</copyTextToClipboard>
+<copyToClipboardNotAvailable>Copier dans le presse-papiers non disponible</copyToClipboardNotAvailable>
 <daf>Formulaire d&#39;accès aux données</daf>
 <dafGridBypassTooltip><![CDATA[
 Cette page Web simplifie simplement la création d&#39;URL griddap.
@@ -4991,8 +4994,8 @@ Cela peut faire référence à &erddapUrl;, &ssUse; .
 <html>ERDDAP est un serveur de données qui vous offre un moyen simple et cohérent de télécharger des sous-ensembles d&#39;ensembles de données scientifiques dans des formats de fichiers courants et de créer des graphiques et des cartes.
 <h2>Table des matières</h2>
 <ul>
-<li><a rel="bookmark" href="#problems">Les problèmes que ERDDAP essaie de résoudre</a>
-<li><a rel="bookmark" href="#solutions">Solutions ERDDAP</a>
+<li><a rel="bookmark" href="#problems">Les problèmes que ERDDAP tente de résoudre</a>
+<li><a rel="bookmark" href="#solutions">Les solutions de l&#39; ERDDAP</a>
 <ul>
 <li><a rel="bookmark" href="#video">Pour une introduction rapide à ERDDAP, regardez la première moitié de ce<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vidéo</a> .
 (5 minutes)
@@ -5000,39 +5003,39 @@ Cela peut faire référence à &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#scientificData">ERDDAP peut servir de nombreux types de données scientifiques, pas seulement des données océanographiques.</a>
 <li><a rel="bookmark" href="#search">ERDDAP propose plusieurs façons de rechercher des ensembles de données intéressants.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP vous permet de demander des données de manière standardisée.</a>
-<li><a rel="bookmark" href="#userUnits">Les demandes de données maillées peuvent être effectuées en unités utilisateur.</a>
+<li><a rel="bookmark" href="#userUnits">Les demandes de données maillées peuvent être faites en unités utilisateur.</a>
 <li><a rel="bookmark" href="#fileFormats">ERDDAP envoie les résultats dans des formats de fichiers de données courants.</a>
-<li><a rel="bookmark" href="#LLAT">ERDDAP normalise les noms des variables et les unités de longitude, latitude, altitude et temps dans les résultats.</a>
+<li><a rel="bookmark" href="#LLAT">ERDDAP normalise les noms des variables et les unités de longitude, de latitude, d&#39;altitude et de temps dans les résultats.</a>
 <li><a rel="bookmark" href="#metadata">ERDDAP peut ajouter ou modifier des métadonnées.</a>
-<li><a rel="bookmark" href="#images">ERDDAP vous permet de demander des fichiers image .png et .pdf avec des graphiques et des cartes.</a>
-<li><a rel="bookmark" href="#compression">Demande de fichiers compressés</a>
-<li><a rel="bookmark" href="#interoperable">ERDDAP rend interopérables différents types de serveurs de données (OPeNDAP, OBIS, SOS, WMS, ...).</a>
-<li><a rel="bookmark" href="#dataStructures">ERDDAP n&#39;utilise que deux structures de données de base pour conserver les données.</a>
-<li><a rel="bookmark" href="#subscriptions">ERDDAP propose des services d&#39;abonnement e-mail/URL et RSS .</a>
-<li><a rel="bookmark" href="#diverseSources">ERDDAP est une application web et un service web.</a>
-<li><a rel="bookmark" href="#rest">ERDDAP a des liens de style REST - et ROA - pour rendre ses services accessibles aux programmes informatiques.</a>
+<li><a rel="bookmark" href="#images">ERDDAP vous permet de demander des fichiers images .png et .pdf avec des graphiques et des cartes.</a>
+<li><a rel="bookmark" href="#compression">Demander des fichiers compressés</a>
+<li><a rel="bookmark" href="#interoperable">ERDDAP rend différents types de serveurs de données (OPeNDAP, OBIS, SOS, WMS, ...) interopérables.</a>
+<li><a rel="bookmark" href="#dataStructures">ERDDAP utilise seulement deux structures de données de base pour stocker les données.</a>
+<li><a rel="bookmark" href="#subscriptions">ERDDAP propose des services d&#39;abonnement par e-mail/URL et RSS .</a>
+<li><a rel="bookmark" href="#diverseSources">ERDDAP est une application web et un web service.</a>
+<li><a rel="bookmark" href="#rest">ERDDAP dispose de liens de type REST - et ROA - pour mettre ses services à la disposition des programmes informatiques.</a>
 <li><a rel="bookmark" href="#security">Sécurité</a>
-<li><a rel="bookmark" href="#chunks">ERDDAP traite les données par morceaux.</a>
+<li><a rel="bookmark" href="#chunks">ERDDAP traite les données par tranches.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP a une structure modulaire.</a>
-<li><a rel="bookmark" href="#pushPull">Réseaux de diffusion de données / de distribution de données :
-Push and Pull</a>
+<li><a rel="bookmark" href="#pushPull">Diffusion de données / Réseaux de distribution de données :
+Push et Pull</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP ?
 OPeNDAP ?
 DODS ?
 ERDDAP ?
 Quelle est la différence?</a>
-<li><a rel="bookmark" href="#sweetSpot">L&#39; ERDDAP est-il une solution aux problèmes de distribution/accès aux données de chacun ?</a>
+<li><a rel="bookmark" href="#sweetSpot">L&#39; ERDDAP est-il une solution aux problèmes de diffusion des données / d&#39;accès aux données de chacun ?</a>
 <li><a rel="bookmark" href="#sustainable">Quelle est la pérennité du projet ERDDAP ?</a>
 <li><a rel="bookmark" href="#citeDataset">Comment citer un ensemble de données dans un article</a>
 <li><a rel="bookmark" href="#cite">Comment citer ERDDAP dans un article</a>
 <li><a rel="bookmark" href="#acronym">Que signifie l&#39;acronyme « ERDDAP » ?</a>
-<li><a rel="bookmark" href="#dataDistributionSystems">Directives pour les systèmes de distribution de données</a>
+<li><a rel="bookmark" href="#dataDistributionSystems">Lignes directrices pour les systèmes de distribution de données</a>
 <li><a rel="bookmark" href="#setup">Vous pouvez configurer votre propre serveur ERDDAP .</a>
 <li><a rel="bookmark" href="#contact">Nous contacter</a>
 </ul>
-<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Les problèmes que ERDDAP essaie de résoudre</a></h2>
-Sans ERDDAP, lorsqu&#39;une personne (ou un programme informatique) recherche sur Internet un type spécifique de données scientifiques (par exemple, des données satellitaires sur la température de la surface de la mer), il y a des problèmes ...
+<h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Les problèmes que ERDDAP tente de résoudre</a></h2>
+Sans ERDDAP, lorsqu&#39;une personne (ou un programme informatique) recherche sur Internet un type précis de données scientifiques (par exemple, des données satellitaires de température de surface de la mer), il y a des problèmes...
 <ul>
 <li>Les ensembles de données intéressants sont difficiles à trouver car ils se trouvent sur de nombreux sites Web différents.
 <br>&nbsp;
@@ -5041,15 +5044,16 @@ Sans ERDDAP, lorsqu&#39;une personne (ou un programme informatique) recherche su
 <br>&nbsp;
 <li>Chaque site renvoie les données dans un format différent (par exemple, XML, SOAP+XML, flux de données binaires OPeNDAP, texte ASCII, HDF 4, HDF 5, NetCDF, ...) et ce n&#39;est pas le format de fichier courant que vous vouloir.
 <br>&nbsp;
-<li>Les données de différents sites sont difficiles à comparer car les dates+heures sont exprimées dans différents formats, par exemple, &quot;2 janvier 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, ou jours depuis le 1er janvier 1980, ou ...).
+<li>Les données de différents sites sont difficiles à comparer car les dates + heures sont exprimées dans différents formats, par exemple, &quot;2 janvier 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;.
+&quot;,&quot;1985-01-02&quot;, ou jours depuis le 1er janvier 1980, ou ...).
 </ul>
-<h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Solutions ERDDAP</a></h2>
+<h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Les solutions de l&#39; ERDDAP</a></h2>
 <ul>
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Pour une introduction rapide à ERDDAP,</a>
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">regardez la première moitié de ce<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vidéo <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .</strong> (5 minutes)
-<br>Dans ce document, un scientifique télécharge les données de prévision des courants océaniques d&#39; ERDDAP pour modéliser un déversement toxique dans l&#39;océan à l&#39;aide
+<br>Dans ce document, un scientifique télécharge les données de prévision des courants océaniques de l&#39; ERDDAP pour modéliser un déversement toxique dans l&#39;océan à l&#39;aide
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">du logiciel GNOME de la NOAA .
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5071,45 +5075,45 @@ Une URL spécifie une requête entière.
 <li>ERDDAP propose des
 <a href="#fileFormats">données</a> (pas seulement des cartes et des graphiques).
 <li>ERDDAP peut renvoyer des données dans de nombreux
-<a href="#fileFormats">formats de fichiers</a> pour permettre l&#39;obtention de données dans de nombreux autres programmes.
-<li>La NOAA travaille ensemble :
-L&#39;analyse utilise deux logiciels libres de la NOAA, ERDDAP et GNOME, et les données fournies par NOAA &#39;s NODC/NCDDC (facilité par le projet UAF de la NOAA ).
+<a href="#fileFormats">formats de fichiers</a> pour permettre d&#39;obtenir des données dans de nombreux autres programmes.
+<li>La NOAA travaille ensemble :
+l&#39;analyse utilise deux logiciels libres de la NOAA, ERDDAP et GNOME, et des données fournies par le NODC/NCDDC de la NOAA (facilité par le projet UAF de la NOAA ).
 <li>ERDDAP rend
-<a href="#scientificData">les données scientifiques</a> plus facilement accessibles pour aider les scientifiques (et autres) à faire leur travail plus efficacement.
+<a href="#scientificData">les données scientifiques</a> plus facilement accessibles pour aider les scientifiques (et d&#39;autres) à faire leur travail plus efficacement.
 <li>Utiliser ERDDAP n&#39;est pas difficile.
-(Oui, Rich Signell est vraiment intelligent, mais tout le monde peut utiliser ERDDAP .)
+(Oui, Rich Signell est vraiment intelligent, mais n&#39;importe qui peut utiliser ERDDAP .)
 </ul>
 Merci à Rich Signell.
-(Une petite erreur dans la vidéo :
+(Une petite erreur dans la vidéo :
 lors de la recherche d&#39;ensembles de données, n&#39;utilisez pas <kbd>AND</kbd> entre les termes de recherche.
 C&#39;est implicite.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP peut obtenir des données à partir de sources de données locales (sur le disque dur du serveur) et distantes (accessibles via le Web).</a></strong>
-<br>Consultez la
+<br>Voir la
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">liste des types de sources de données</a> auxquelles ERDDAP peut accéder.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP peut servir de nombreux types de données scientifiques, pas seulement des données océanographiques.</a></strong>
-<br>ERDDAP est un serveur de données qui a été écrit au
+<br>ERDDAP est un serveur de données qui a été écrit à
 <a title="L&#39;administration nationale des océans et de l&#39;atmosphère" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="Service national des pêches maritimes" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
-<a title="Centre des sciences halieutiques du Sud-Ouest" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
+<a title="Centre des sciences halieutiques du sud-ouest" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Division de la recherche environnementale" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-Le serveur ERDDAP de l&#39; ERD sert des données océanographiques, mais ERDDAP (le programme) peut accéder et servir toutes les données maillées ou tabulaires.
+Le serveur ERDDAP de l&#39; ERD sert les données océanographiques, mais l&#39; ERDDAP (le programme) peut accéder et servir toutes les données maillées ou tabulaires.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP propose plusieurs façons de rechercher des ensembles de données intéressants.</a></strong>
 <br>Par exemple, la recherche en
 <a href="&erddapUrl;/search/index.html">texte intégral</a>,
 <a href="&erddapUrl;/categorize/index.html">la recherche par catégorie</a> (également appelée recherche à facettes) et la
 <a href="&erddapUrl;/search/advanced.html">recherche avancée</a> .
-La recherche avancée combine toutes les techniques de recherche et ajoute des recherches d&#39;ensembles de données qui contiennent des données dans des plages de longitude, latitude et temps, afin que vous puissiez rechercher des ensembles de données en fonction de nombreux critères différents simultanément.
+La recherche avancée combine toutes les techniques de recherche et ajoute des recherches d&#39;ensembles de données contenant des données dans des plages de longitude, de latitude et de temps, de sorte que vous pouvez rechercher des ensembles de données en fonction de nombreux critères différents simultanément.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP vous permet de demander des données de manière standardisée,</a></strong>
-<br>quel que soit le protocole de requête de la source de données.
+<br>quel que soit le protocole de demande de la source de données.
 <ul>
-<li>ERDDAP met à disposition les données maillées via griddap (implémentation ERDDAP
-<a rel="help" href="&erddapUrl;/griddap/index.html">du protocole OPeNDAP hyperslab</a>) et
+<li>ERDDAP met à disposition des données maillées via griddap (implémentation ERDDAP
+<a rel="help" href="&erddapUrl;/griddap/index.html">du protocole OPeNDAP OPeNDAP</a>) et
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP met à disposition des données tabulaires via tabledap (ERDDAP par l&#39;
+<li>ERDDAP rend les données tabulaires disponibles via tabledap (ERDDAP implémentation par l&#39;
 <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP du protocole de contrainte OPeNDAP</a>).
 <!--and
      
@@ -5119,7 +5123,7 @@ La recherche avancée combine toutes les techniques de recherche et ajoute des r
 -->
 </ul>
 ERDDAP fournit également des formulaires d&#39;accès aux données (pages Web) qui aident les humains à créer les demandes OPeNDAP .
-<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+<a rel="bookmark" href="https://www.opendap.org">d&#39; OPeNDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>
 <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Protocole d&#39;accès aux données (DAP ) <img 
@@ -5128,25 +5132,25 @@ ERDDAP fournit également des formulaires d&#39;accès aux données (pages Web) 
 <a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     >recommandations techniques d&#39;accès aux données de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et une norme de la
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et une
 <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
-    >NASA Earth Science Data and Information System (ESDIS) <img 
+    >norme NASA Earth Science Data and Information System (ESDIS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
 (OPeNDAP est génial !) ERDDAP traduit votre demande du OPeNDAP, WMS ou SOS au format de demande de la source de données et convertit la réponse en l&#39;une des structures de données internes d&#39; ERDDAP .
 Ensuite, ERDDAP reformate les données dans le format de fichier commun de votre choix (par exemple, sous forme de tableau .html, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf) et vous envoie le fichier.
-Voir la liste des types de
+Consultez la liste des types de
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">fichiers griddap</a> et la liste des types de
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">fichiers tabledap</a> .
-D&#39;autres protocoles pour demander les données (par exemple,
+D&#39;autres protocoles de demande de données (par exemple,
 <a rel="help" href="https://www.ogc.org/standards/wcs">WCS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>) pourrait être ajouté à l&#39;avenir.
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>) peut être ajouté à l&#39;avenir.
 ERDDAP est structuré pour ces ajouts et il ne semble pas y avoir d&#39;obstacles.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Les demandes de données maillées peuvent être effectuées en unités utilisateur.</a></strong>
-<br>Bien que les demandes de données maillées dans ERDDAP puissent être effectuées avec des indices de tableau (suivant la spécification OPeNDAP ), les demandes peuvent également être exprimées en unités utilisateur (par exemple, degrés est), en utilisant
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">une notation entre parenthèses</a>, car les utilisateurs pensent dans ces unités, pas dans les indices.
+<li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Les demandes de données maillées peuvent être faites en unités utilisateur.</a></strong>
+<br>Bien que les demandes de données maillées dans ERDDAP puissent être effectuées avec des indices de tableau (conformément à la spécification OPeNDAP ), les demandes peuvent également être exprimées en unités utilisateur (par exemple, degrés est), en utilisant
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">une notation entre parenthèses</a>, car les utilisateurs pensent dans ces unités, pas des indices.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP envoie les résultats dans des formats de fichiers de données courants.</a></strong>
 <br>Les résultats peuvent être renvoyés dans l&#39;un des nombreux formats de fichiers de données courants &requestFormatExamplesHtml;, au lieu du format d&#39;origine ou du format de transfert OPeNDAP (qui n&#39;a pas de manifestation de fichier standard).
@@ -5156,44 +5160,44 @@ Consultez la liste complète des types de
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">fichiers de grille</a> et
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">des types de fichiers de table</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP normalise les noms de variables et les unités de longitude, latitude, altitude, profondeur et temps dans les résultats.</a></strong>
-<br>Pour faciliter les comparaisons de données provenant de différents jeux de données, les requêtes et les résultats dans ERDDAP utilisent des unités d&#39;axe espace/temps normalisées :
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP normalise les noms et les unités des variables pour la longitude, la latitude, l&#39;altitude, la profondeur et le temps dans les résultats.</a></strong>
+<br>Pour faciliter les comparaisons de données provenant de différents ensembles de données, les requêtes et les résultats dans ERDDAP utilisent des unités d&#39;axe espace/temps normalisées :
 <ul>
-<li>la longitude est toujours exprimée en degrees_east .
-<li>la latitude est toujours exprimée en degrees_north .
+<li>la longitude est toujours en degrees_east .
+<li>latitude est toujours en degrees_north .
 <li>l&#39;altitude est toujours en mètres avec positive=up.
-<li>la profondeur est toujours en mètres avec positif=bas.
-<li>l&#39;heure, lorsqu&#39;elle est formatée sous forme de nombre, est toujours en &quot;seconds since 1970-01-01T00:00:00Z&quot; (appelée
+<li>la profondeur est toujours en mètres avec positive=down.
+<li>l&#39;heure, lorsqu&#39;elle est formatée comme un nombre, est toujours en&quot;seconds since 1970-01-01T00:00:00Z&quot;(appelée
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">heure Unix <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> ou secondes d&#39;époque, qui est<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> ou epoch secondes, qui est<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> -compatible) et, lorsqu&#39;il est formaté en tant que chaîne, est formaté selon le
-<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">format &quot;extended&quot; ISO 8601:2004 <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">format&quot;extended&quot;ISO 8601:2004 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> par exemple, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Vous pouvez convertir des heures numériques vers/depuis des chaînes ISO avec le convertisseur d&#39;
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">heure</a> d&#39; ERDDAP .) De plus, pour éviter toute confusion entre le fuseau horaire et l&#39;heure d&#39;été, les valeurs horaires sont toujours converties dans le fuseau horaire Zulu (UTC, GMT).
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> par exemple, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Vous pouvez convertir des heures numériques vers/depuis des heures de chaîne ISO avec le convertisseur d&#39;
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">heure</a> d&#39; ERDDAP .) De plus, pour éviter la confusion entre le fuseau horaire et l&#39;heure d&#39;été, les valeurs d&#39;heure sont toujours converties en fuseau horaire Zulu (UTC, GMT).
 </ul>
-Cela permet de spécifier facilement des contraintes dans les requêtes sans avoir à se soucier du format des données d&#39;altitude (les valeurs positives sont-elles vers le haut ou vers le bas ?
-en mètres ou en brasses ?) 2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;, ou jours depuis le 1er janvier 1980).
-Cela rend les résultats de différentes sources de données faciles à comparer.
+Cela facilite la spécification des contraintes dans les requêtes sans avoir à se soucier du format des données d&#39;altitude (les valeurs positives sont-elles en haut ou en bas ?
+en mètres ou en brasses ?) ou du format des données temporelles (un royaume cauchemardesque de formats possibles, par exemple,&quot;Jan 2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;, ou jours depuis le 1er janvier 1980).
+Cela facilite la comparaison des résultats de différentes sources de données.
 <p>ERDDAP a un utilitaire pour
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">convertir un temps numérique vers/depuis un temps de chaîne</a> .
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">convertir une heure numérique en/à partir d&#39;une chaîne de temps</a> .
 <br>Pour plus de détails, voir
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Comment ERDDAP traite le temps</a> .
-<p>Étant donné que les variables de longitude, latitude, altitude et temps sont spécifiquement reconnues, ERDDAP est conscient des caractéristiques géo/temporelles de chaque ensemble de données.
-Ceci est utile lors de la création d&#39;images avec des cartes ou des séries chronologiques, et lors de l&#39;enregistrement de données dans des types de fichiers géoréférencés (par exemple, .esriAscii, .geoJson et .kml ).
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">Comment ERDDAP le temps</a> .
+<p>Étant donné que les variables de longitude, latitude, altitude et heure sont spécifiquement reconnues, ERDDAP est conscient des caractéristiques géo/temporelles de chaque ensemble de données.
+Ceci est utile lors de la création d&#39;images avec des cartes ou des séries chronologiques, et lors de l&#39;enregistrement de données dans des types de fichiers géo-référencés (par exemple, .esriAscii, .geoJson et .kml ).
 <p>Deux normes communes pour l&#39;écriture des unités de mesure sont :
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>es ne constitue pas une approbation.&quot;&gt; - de
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(lien externe)&quot; title=&quot;Ce lien vers un site Web externe ne constitue pas une approbation.&quot;&gt; - d&#39;
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, qui est utilisé dans
 <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>,
-<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF <img 
+<a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">FC <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, et
 <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
@@ -5203,10 +5207,10 @@ Par exemple, UDUNITS propose de nombreuses options pour les degrés Celsius, not
 <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> - le Code Unifié des Unités de Mesure.
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> - le Code unifié des unités de mesure.
 <a rel="bookmark" href="https://www.ogc.org/">OGC <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> des services tels que
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> services tels que
 <a rel="help" href="https://www.ogc.org/standards/sos">SOS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>,
@@ -5216,11 +5220,11 @@ Par exemple, UDUNITS propose de nombreuses options pour les degrés Celsius, not
 <a rel="help" href="https://www.ogc.org/standards/wms">WMS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> se réfèrent souvent à UCUM comme UOM (unités de mesure).
-Par exemple, UCUM n&#39;a qu&#39;une seule option sensible à la casse pour les degrés Celsius :
+Par exemple, UCUM n&#39;a qu&#39;une seule option sensible à la casse pour les degrés Celsius :
 &quot;Cel&quot; .
 <br>&nbsp;
 </ul>
-Bien ERDDAP n&#39;exige l&#39;utilisation d&#39;aucune des unités standard, la plupart des installations ERDDAP privilégient l&#39;une ou l&#39;autre.
+Bien que ERDDAP n&#39;exige pas l&#39;utilisation de l&#39;une ou l&#39;autre des unités standard, la plupart des installations ERDDAP privilégient l&#39;une ou l&#39;autre.
 (Administrateurs ERDDAP :
 vous pouvez le spécifier avec la <kbd>&lt;units_standard&gt;</kbd> dans setup.xml.) Vous pouvez convertir UDUNITS vers/depuis les unités UCUM avec le convertisseur d&#39;
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">unités</a> ERDDAP .
@@ -5236,7 +5240,7 @@ Lorsque vous demandez des données ou un graphique à partir d&#39;un ensemble d
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">les métadonnées CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>) décrivant les données.
-ERDDAP laisse (et encourage) l&#39;administrateur à décrire les métadonnées qui seront ajoutées aux jeux de données et leurs variables à la volée.
+ERDDAP permet (et encourage) l&#39;administrateur de décrire les métadonnées qui seront ajoutées aux ensembles de données et à leurs variables à la volée.
 Voir la
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">section addAttributes</a> des
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">instructions pour les administrateurs</a> .
@@ -5244,8 +5248,8 @@ Voir la
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP vous permet de demander des fichiers image .png et .pdf avec des graphiques et des cartes</a></strong>
 <br>des données en plus des données réelles.
-Et Make A Graph d&#39; ERDDAP vous permet de personnaliser les images.
-Certaines utilisations spéciales de ces images sont :
+Et Make A Graph de l&#39; ERDDAP vous permet de personnaliser les images.
+Certaines utilisations spéciales de ces images sont :
 <ul>
 <li>Les auteurs de pages Web peuvent
 <a rel="help" href="&erddapUrl;/images/embed.html">intégrer un graphique avec les dernières données dans une page Web</a> à l&#39;aide d&#39;une balise HTML &lt;img&gt;.
@@ -5256,22 +5260,22 @@ Certaines utilisations spéciales de ces images sont :
 -->
 <br>&nbsp;
 </ul>
-<li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Demande de fichiers compressés</a></strong>
+<li><strong><a class="selfLink" id="compression" href="#compression" rel="bookmark">Demander des fichiers compressés</a></strong>
 <br>ERDDAP n&#39;offre pas de résultats stockés dans des fichiers compressés (par exemple, .zip ou .gzip ) à moins que le fichier source ne soit déjà compressé.
-Au lieu de cela, ERDDAP recherche l&#39;
+Au lieu de cela, ERDDAP recherche
 <a rel="help" href="https://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
-    >encodage d&#39;acceptation <img 
+    >accept-encoding <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> dans l&#39;en-tête de requête HTTP GET envoyé par le client.
-Si un type de compression pris en charge (gzip, x-gzip ou deflate ) est trouvé dans la liste de codage d&#39;acceptation, ERDDAP inclut <kbd>content-encoding</kbd> dans l&#39;en-tête de réponse HTTP et compresse les données au fur et à mesure qu&#39;il les transmet.
-Il appartient au programme client de rechercher <kbd>content-encoding</kbd> et de décompresser les données.
+Si un type de compression pris en charge (gzip, x-gzip ou deflate ) est trouvé dans la liste d&#39;acceptation d&#39;encodage, ERDDAP inclut <kbd>content-encoding</kbd> dans l&#39;en-tête de réponse HTTP et compresse les données lors de leur transmission.
+C&#39;est au programme client de rechercher <kbd>content-encoding</kbd> et de décompresser les données.
 Les réponses compressées sont souvent 3 à 10 fois plus rapides, bien qu&#39;il n&#39;y ait aucun avantage à demander des fichiers .png compressés puisque le contenu des fichiers est déjà compressé.
 Les navigateurs et les clients OPeNDAP le font par défaut.
 Ils demandent des données compressées et décompressent automatiquement les données renvoyées.
-D&#39;autres clients (par exemple, les programmes Java) doivent le faire explicitement.
-Avec curl, ajoutez <kbd>--compressed</kbd> à la ligne de commande pour dire à curl de demander une réponse compressée et la décompresser automatiquement.
+D&#39;autres clients (par exemple, les programmes Java ) doivent le faire explicitement.
+Avec curl, ajoutez <kbd>--compressed</kbd> à la ligne de commande pour indiquer à curl de demander une réponse compressée et de la décompresser automatiquement.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP rend interopérables différents types de serveurs de données (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
+<li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP rend différents types de serveurs de données (OPeNDAP, OBIS, SOS, WMS, ...) interopérables.</a></strong>
 <br>Différents types de serveurs de données sont utilisés dans différentes communautés scientifiques.
 Dans un avenir prévisible, il est peu probable qu&#39;un type devienne dominant et remplace les autres.
 Ainsi ERDDAP agit comme un pont entre différents types de programmes clients (navigateurs web, IDV, Matlab, programmes netCDF, ODV, clients WMS, etc.) et les différents types de serveurs de données.
@@ -5280,60 +5284,60 @@ Ainsi ERDDAP agit comme un pont entre différents types de programmes clients (n
 <li>ERDDAP convertit une requête donnée dans le format de requête utilisé par le serveur de données source (par exemple, OPeNDAP, SOS, OBIS, ...) et l&#39;envoie au serveur de données source.
 <li>ERDDAP convertit les données de réponse du serveur de données source dans un format interne, y compris la conversion de toutes les données temporelles dans un format commun :
 &quot;seconds since 1970-01-01T00:00:00Z&quot; .
-<li>ERDDAP convertit les données du format interne dans le format de fichier demandé par le client (par exemple, .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
+<li>ERDDAP convertit les données du format interne au format de fichier demandé par le client (par exemple, .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
 </ol>
-Les clients n&#39;ont pas à s&#39;inquiéter ou à connaître le type de serveur de données source.
+Les clients n&#39;ont pas à s&#39;inquiéter ni à connaître le type de serveur de données source.
 Ils obtiennent simplement les données qu&#39;ils veulent, dans le format de fichier qu&#39;ils veulent.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP n&#39;utilise que deux structures de données de base pour conserver les données.</a></strong>
+<li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP utilise seulement deux structures de données de base pour stocker les données.</a></strong>
 <ul>
-<li>Comme il est difficile pour les clients humains et les clients informatiques de gérer un ensemble complexe de structures de jeux de données possibles, ERDDAP n&#39;utilise que deux structures de données de base :
+<li>Étant donné qu&#39;il est difficile pour les clients humains et les clients informatiques de gérer un ensemble complexe de structures d&#39;ensembles de données possibles, ERDDAP n&#39;utilise que deux structures de données de base :
 <ul>
 <li>une
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">structure de données maillée</a> (par exemple, pour les données satellitaires et les données de modèle) et
 <li>une
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">structure de données tabulaire</a> (par exemple, pour les données de bouée, de station et de trajectoire in-situ).
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">structure de données tabulaire</a> (par exemple, pour les données de bouée, de station et de trajectoire in situ).
 </ul>
 <li>Certes, toutes les données ne peuvent pas être exprimées dans ces structures, mais une grande partie le peut.
-Les tableaux, en particulier, sont des structures de données très flexibles (regardez le succès phénoménal des bases de
+Les tables, en particulier, sont des structures de données très flexibles (regardez le succès phénoménal des bases de
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">données relationnelles <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> programmes).
-<li>Cela rend les requêtes de données plus faciles à construire.
-<li>Cela permet aux réponses de données d&#39;avoir une structure simple, ce qui facilite la diffusion des données dans une plus grande variété de types de fichiers standard (qui ne prennent souvent en charge que des structures de données simples).
-C&#39;est la raison principale pour laquelle nous avons créé l&#39; ERDDAP de cette façon.
-<li>Ceci, à son tour, rend très facile pour nous (ou pour quiconque) d&#39;écrire un logiciel client qui fonctionne avec tous les ensembles de données ERDDAP .
-<li>Cela facilite la comparaison des données provenant de différentes sources, par exemple pour une analyse intégrée des écosystèmes (AIE).
+<li>Cela facilite la construction des requêtes de données.
+<li>Cela permet aux réponses de données d&#39;avoir une structure simple, ce qui facilite le traitement des données dans une plus grande variété de types de fichiers standard (qui ne prennent souvent en charge que des structures de données simples).
+C&#39;est la principale raison pour laquelle nous avons mis en place l&#39; ERDDAP de cette manière.
+<li>Ceci, à son tour, nous permet (ou à n&#39;importe qui) d&#39;écrire très facilement un logiciel client qui fonctionne avec tous les ensembles de données ERDDAP .
+<li>Cela facilite la comparaison des données provenant de différentes sources, par exemple pour une analyse intégrée de l&#39;écosystème (IEA).
 <li>Nous sommes très conscients que si vous avez l&#39;habitude de travailler avec des données dans d&#39;autres structures de données, vous pouvez d&#39;abord penser que cette approche est simpliste ou insuffisante.
 Mais toutes les structures de données ont des compromis.
 Aucun n&#39;est parfait.
 Même les structures à tout faire ont leurs inconvénients :
-leur utilisation est complexe et les fichiers ne peuvent être écrits ou lus qu&#39;avec des bibliothèques logicielles spéciales.
+travailler avec elles est complexe et les fichiers ne peuvent être écrits ou lus qu&#39;avec des bibliothèques logicielles spéciales.
 Si vous acceptez suffisamment l&#39;approche d&#39; ERDDAP pour essayer de l&#39;utiliser, vous constaterez peut-être qu&#39;elle a ses avantages (notamment la prise en charge de plusieurs types de fichiers pouvant contenir les réponses de données).
 Le
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">diaporama original de l&#39; ERDDAP</a> (en particulier le
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">diaporama sur les structures de données</a>) aborde ces questions.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">diaporama sur les structures de données</a>) traite de ces questions.
 <li>Et même si cette approche vous semble étrange, la plupart des clients ERDDAP ne le remarqueront jamais - ils verront simplement que tous les ensembles de données ont une belle structure simple et ils seront reconnaissants de pouvoir obtenir des données provenant d&#39;une grande variété de sources renvoyées dans une grande variété de formats de fichiers.
 <br>&nbsp;
 </ul>
-<li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP propose des</a>
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">e-mails/URL</a> et
+<li><strong><a class="selfLink" id="subscriptions" href="#subscriptions" rel="bookmark">ERDDAP propose</a>
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">email/URL</a> et
 <a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> services d&#39;abonnement,</strong> afin que vous puissiez être averti chaque fois qu&#39;un ensemble de données change.
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> services d&#39;abonnement,</strong> afin que vous puissiez être averti chaque fois qu&#39;un jeu de données change.
 <ul>
-<li>ERDDAP est très efficace pour détecter les modifications apportées aux ensembles de données maillées, car il peut détecter le changement des valeurs des axes (par exemple, les valeurs temporelles).
-<li>ERDDAP n&#39;est pas très efficace pour détecter les modifications apportées aux ensembles de données tabulaires, car il n&#39;y a généralement pas de modification des métadonnées lorsque de nouvelles données sont ajoutées.
+<li>ERDDAP est très efficace pour détecter les modifications apportées aux ensembles de données maillées, car il peut détecter le changement des valeurs d&#39;axe (par exemple, les valeurs temporelles).
+<li>ERDDAP n&#39;est pas très efficace pour détecter les modifications apportées aux ensembles de données tabulaires, car il n&#39;y a généralement aucune modification des métadonnées lorsque de nouvelles données sont ajoutées.
 <li>ERDDAP détectera si un ensemble de données devient indisponible (mais peut-être pas immédiatement).
-<li>ERDDAP détectera quand cet ensemble de données sera à nouveau disponible.
+<li>ERDDAP détectera quand cet ensemble de données redeviendra disponible.
 <li>ERDDAP ne fait aucune promesse quant à la pertinence ou à l&#39;exactitude de ces services (voir
-<a rel="license" href="&erddapUrl;/legal.html">les CLAUSES DE NON-RESPONSABILITÉ d&#39; ERDDAP</a>).
+<a rel="license" href="&erddapUrl;/legal.html">les AVIS DE NON-RESPONSABILITÉ de l&#39; ERDDAP</a>).
 </ul>
 <p><strong>Abonnements
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">par e-mail/URL</a></strong> (non disponible sur certaines installations ERDDAP ) Chaque fois qu&#39;un ensemble de données change, le système d&#39;abonnement par e-mail/URL vous enverra <strong>immédiatement</strong> un e-mail ou contactera une URL que vous spécifiez.
-Les abonnements par e-mail/URL ne sont pas disponibles sur certaines installations ERDDAP .
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">par e-mail/URL</a></strong> (non disponibles sur certaines installations ERDDAP ) Chaque fois qu&#39;un ensemble de données change, le système d&#39;abonnement par e-mail/URL vous enverra <strong>immédiatement</strong> un e-mail ou contactera une URL que vous spécifiez.
+Les abonnements par e-mail/URL ne sont pas disponibles dans certaines installations ERDDAP .
 Pour configurer un abonnement par e-mail/URL, cliquez sur l&#39;une des icônes d&#39;enveloppe <img alt="Subscribe" style="vertical-align:top" title="L&#39;icône de l&#39;enveloppe." src="&erddapUrl;/images/envelope.gif" > qui apparaissent à l&#39;extrême droite sur les pages Web ERDDAP avec des listes d&#39;ensembles de données (<a rel="contents" href="&erddapUrl;/info/index.html">exemple</a>) et sur les pages Web Data Access Forms et Make A Graph pour les ensembles de données individuels (<a href="&erddapUrl;/griddap/etopo180.html">exemple</a>) si cette installation ERDDAP prend en charge les abonnements par e-mail/URL.
-(Programmateurs informatiques :
+(Programmeurs informatiques :
 si vous écrivez des services Web, vous pouvez utiliser le système d&#39;URL pour que ERDDAP informe immédiatement votre service Web chaque fois qu&#39;un ensemble de données change.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5343,16 +5347,16 @@ Les navigateurs Web modernes ont un client RSS intégré ou vous pouvez utiliser
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
-ERDDAP propose un RSS 2.01 distinct pour chaque ensemble de données afin que vous puissiez savoir quand des ensembles de données intéressants ont changé.
-Pour vous abonner au RSS d&#39;un jeu de données, cliquez sur l&#39;une des icônes RSS <img alt="RSS" style="vertical-align:top" title="L&#39;icône RSS." src="&erddapUrl;/images/rss.gif" > qui apparaissent à l&#39;extrême droite des pages Web ERDDAP avec des listes d&#39;ensembles de données (<a rel="contents" href="&erddapUrl;/info/index.html">exemple</a>) ou sur les pages Web Data Access Forms et Make A Graph pour des ensembles de données individuels (<a href="&erddapUrl;/griddap/etopo180.html">exemple</a>).
+ERDDAP propose un RSS 2.01 séparé pour chaque ensemble de données afin que vous puissiez savoir quand des ensembles de données intéressants ont changé.
+Pour vous abonner au RSS d&#39;un jeu de données, cliquez sur l&#39;une des icônes RSS <img alt="RSS" style="vertical-align:top" title="L&#39;icône RSS." src="&erddapUrl;/images/rss.gif" > qui apparaissent à l&#39;extrême droite sur les pages Web ERDDAP avec des listes d&#39;ensembles de données (<a rel="contents" href="&erddapUrl;/info/index.html">exemple</a>) ou sur les pages Web Data Access Forms et Make A Graph pour des ensembles de données individuels (<a href="&erddapUrl;/griddap/etopo180.html">exemple</a>).
 <p><strong>Comparaison</strong> Le service RSS peut être exactement ce que vous recherchez.
 C&#39;est une belle norme.
-Mais si vous avez besoin de savoir dès que possible lorsqu&#39;un ensemble de données change, utilisez le système de courrier électronique/URL, et non RSS .
-Les clients RSS périodiquement (toutes les heures ?) demandent et lisent le document RSS XML pour rechercher les modifications.
-Ainsi, généralement, un client RSS ne détectera pas rapidement une modification d&#39;un ensemble de données (en moyenne 30 minutes ?).
-En revanche, le système d&#39;abonnement par e-mail/URL agit immédiatement chaque fois ERDDAP détecte une modification d&#39;un ensemble de données.
+Mais si vous avez besoin de savoir dès que possible quand un jeu de données change, utilisez le système email/URL, pas RSS .
+Les clients RSS demandent et lisent périodiquement (toutes les heures ?) le document RSS XML pour rechercher les modifications.
+Ainsi, généralement, un client RSS ne détectera pas rapidement une modification apportée à un ensemble de données (30 minutes en moyenne ?).
+En revanche, le système d&#39;abonnement par e-mail/URL agit immédiatement chaque fois que l&#39; ERDDAP détecte une modification d&#39;un ensemble de données.
 L&#39;approche plus proactive du système e-mail/URL est également beaucoup plus efficace :
-vous pouvez configurer votre client RSS pour qu&#39;il vérifie les modifications toutes les minutes (ne le faites pas !), mais cela conduirait simplement à de nombreuses demandes inutiles.
+vous pouvez peut-être configurer votre client RSS pour qu&#39;il vérifie les changements toutes les minutes (ne le faites pas !), mais cela entraînerait simplement de nombreuses demandes inutiles.
 au serveur ERDDAP et il ne détecterait toujours pas les changements immédiatement.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP est une</a>
@@ -5360,11 +5364,11 @@ au serveur ERDDAP et il ne détecterait toujours pas les changements immédiatem
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> (pages Web avec des formulaires pour les humains utilisant des navigateurs)
 <br>et un
-<a rel="help" href="https://en.wikipedia.org/wiki/Web_service">webservice <img 
+<a rel="help" href="https://en.wikipedia.org/wiki/Web_service">service Web <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> (avec
-<a rel="help" href="&erddapUrl;/rest.html">services pour programmes informatiques</a>).</strong>
-<br>En fait, les formulaires des pages Web de l&#39; ERDDAP ne font que générer des URL spécialement formées qui sont ensuite soumises aux services Web de l&#39; ERDDAP .
+<a rel="help" href="&erddapUrl;/rest.html">prestations de programmes informatiques</a>).</strong>
+<br>En fait, les formulaires sur les pages Web de l&#39; ERDDAP génèrent simplement des URL spécialement formées qui sont ensuite soumises aux services Web de l&#39; ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="rest" href="#rest" rel="bookmark">ERDDAP a</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Representational_State_Transfer">REST <img 
@@ -5372,41 +5376,41 @@ au serveur ERDDAP et il ne détecterait toujours pas les changements immédiatem
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> - et
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> -des liens de style pour rendre ses services accessibles aux programmes informatiques.</strong>
-<br>Ces fonctionnalités peuvent être utilisées pour créer un autre service Web au-dessus d&#39; ERDDAP (en faisant faire tout le travail à ERDDAP !).
-ERDDAP n&#39;est pas destiné à être un service d&#39;exploration/graphique de données de haut niveau.
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> -liens de style pour rendre ses services disponibles pour les programmes informatiques.</strong>
+<br>Ces fonctionnalités peuvent être utilisées pour créer un autre service Web au-dessus d&#39; ERDDAP (ce qui fait que ERDDAP fait tout le travail !).
+ERDDAP n&#39;est pas destiné à être un service d&#39;exploration/de représentation graphique de données de haut niveau.
 Au lieu de cela, ERDDAP est destiné à fournir des services pour ces sites Web et programmes.
-Donc, si vous avez une idée pour une meilleure interface avec les données servies par l&#39; ERDDAP, nous vous encourageons à créer votre propre application Web ou service Web et à utiliser ERDDAP comme base.
-En savoir plus sur les services d&#39; ERDDAP
+Donc, si vous avez une idée pour une meilleure interface avec les données ERDDAP, nous vous encourageons à créer votre propre application Web ou service Web et à utiliser ERDDAP comme base.
+En savoir plus sur les services de l&#39; ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">pour les programmes informatiques</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Sécurité</a></strong> - Par défaut, ERDDAP fonctionne comme un serveur entièrement public sans système de connexion et sans restriction d&#39;accès aux données.
 Cependant, un administrateur ERDDAP peut configurer ERDDAP pour restreindre l&#39;accès à certains ou à tous les ensembles de données aux utilisateurs qui se connectent et auxquels certains rôles ont été attribués.
 ERDDAP a des méthodes intégrées pour l&#39;authentification (connexion).
-Si l&#39;authentification d&#39;une installation ERDDAP est activée, il y aura un lien « connexion » en haut de chaque page Web.
+Si une installation ERDDAP a l&#39;authentification activée, il y aura un lien &quot;Connexion&quot; en haut de chaque page Web.
 Les utilisateurs n&#39;ont jamais à se connecter pour accéder aux ensembles de données accessibles au public.
 Les utilisateurs qui se sont connectés peuvent accéder aux ensembles de données publics et aux ensembles de données privés auxquels ils sont autorisés à accéder.
-Les utilisateurs doivent utiliser https :
+Les utilisateurs doivent utiliser https:
 (Secure Sockets Layer) pour se connecter et accéder aux ensembles de données privés.
 Les ensembles de données peuvent être configurés pour avoir des graphiques et des cartes accessibles au public, mais les données ne sont accessibles qu&#39;aux utilisateurs autorisés.
 (<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">plus d&#39;informations</a>)
 <br>&nbsp;
-<li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP traite les données par morceaux.</a></strong>
-<br>Pour économiser de la mémoire (un gros problème) et faire en sorte que les réponses commencent plus tôt, ERDDAP traite les demandes de données par morceaux - récupérant à plusieurs reprises un morceau de données de la source, le nettoyant (par exemple, en ajoutant
+<li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP traite les données par tranches.</a></strong>
+<br>Pour économiser de la mémoire (un gros problème) et faire en sorte que les réponses commencent plus tôt, ERDDAP traite les demandes de données par blocs - récupérant à plusieurs reprises un bloc de données de la source, le nettoyant (par exemple, en ajoutant
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">des métadonnées <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>), et l&#39;envoyer au client.
-Pour de nombreuses sources de données, cela signifie que le premier bloc de données (par exemple, du premier capteur) parvient au client en quelques secondes au lieu de minutes (par exemple, après que les données du dernier capteur ont été récupérées), rassurant le client que les données arrivent.
-Du point de vue de la mémoire, cela permet de traiter simultanément de nombreuses requêtes volumineuses (chacune supérieure à la mémoire disponible).
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>) et de l&#39;envoyer au client.
+Pour de nombreuses sources de données, cela signifie que le premier bloc de données (par exemple, du premier capteur) parvient au client en quelques secondes au lieu de quelques minutes (par exemple, après que les données du dernier capteur ont été récupérées), rassurant le client que les données arrivent.
+Du point de vue de la mémoire, cela permet de traiter simultanément de nombreuses requêtes volumineuses (chacune plus grande que la mémoire disponible).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP a une structure modulaire.</a></strong>
-<br>ERDDAP est structuré de sorte qu&#39;il est facile d&#39;ajouter différents composants (par exemple, une classe pour demander des données à un serveur SOS et les stocker sous forme de table).
-Le nouveau composant bénéficie alors de toutes les fonctionnalités et capacités du parent (par exemple, la prise en charge des requêtes OPeNDAP et la possibilité d&#39;enregistrer les données dans plusieurs formats de fichiers courants).
+<br>ERDDAP est structuré de manière à ce qu&#39;il soit facile d&#39;ajouter différents composants (par exemple, une classe pour demander des données à un serveur SOS et les stocker sous forme de table).
+Le nouveau composant acquiert alors toutes les fonctionnalités et capacités du parent (par exemple, la prise en charge des requêtes OPeNDAP et la possibilité d&#39;enregistrer les données dans plusieurs formats de fichiers courants).
 <br>&nbsp;
-<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Réseaux de diffusion de données / de distribution de données :
-Push and Pull</a></strong>
-<br>Normalement, ERDDAP joue le rôle d&#39;intermédiaire :
-il reçoit une demande d&#39;un utilisateur ; obtient des données à partir d&#39;une source de données distante ; reformate les données ; et l&#39;envoie à l&#39;utilisateur.
+<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Diffusion de données / Réseaux de distribution de données :
+Push et Pull</a></strong>
+<br>Normalement, ERDDAP agit comme intermédiaire :
+il prend une demande d&#39;un utilisateur ; obtient des données d&#39;une source de données distante ; reformate les données ; et l&#39;envoie à l&#39;utilisateur.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Technologie de Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> :
@@ -5415,23 +5419,24 @@ Mais ERDDAP a également la capacité d&#39;obtenir activement toutes les donné
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Technologie de Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> :
-En utilisant les services d&#39;
-<a href="#subscriptions">abonnement</a> d&#39; ERDDAP, d&#39;autres serveurs de données peuvent être avertis dès que de nouvelles données sont disponibles afin qu&#39;ils puissent demander les données (en tirant les données).
+En utilisant les
+<a href="#subscriptions">services d&#39;abonnement</a> de l&#39; ERDDAP, d&#39;autres serveurs de données peuvent être avertis dès que de nouvelles données sont disponibles afin qu&#39;ils puissent demander les données (en extrayant les données).
 ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> et EDDTableFromErddap d&#39;
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> utilisent les services d&#39;abonnement et
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">le système</a> de signalisation d&#39; ERDDAP afin qu&#39;ils soient avertis immédiatement lorsque de nouvelles données sont disponibles.
-Vous pouvez les combiner à bon escient :
-si vous encapsulez une copie EDDGrid autour d&#39;un ensemble de données EDDGrid FromErddap (ou encapsulez une EDDTableCopy autour d&#39;un ensemble de données EDDTableFromErddap), ERDDAP créera et conservera automatiquement une copie locale d&#39;un autre ensemble de données ERDDAP .
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">le système</a> de signalement d&#39; ERDDAP afin d&#39;être informés immédiatement lorsque de nouvelles données sont disponibles.
+Vous pouvez les combiner avec grand effet :
+si vous enroulez une copie EDDGrid autour d&#39;un ensemble de données EDDGrid FromErddap (ou enroulez une EDDTableCopy autour d&#39;un ensemble de données EDDTableFromErddap), ERDDAP créera et maintiendra automatiquement une copie locale de l&#39;ensemble de données d&#39;un autre ERDDAP .
 Parce que les services d&#39;abonnement fonctionnent dès que de nouvelles données sont disponibles, la technologie push diffuse les données très rapidement (en quelques secondes).
-<p>Cette architecture charge chaque administrateur ERDDAP de déterminer d&#39;où proviennent les données de son ERDDAP .
+<p>Cette architecture confie à chaque administrateur ERDDAP la responsabilité de déterminer d&#39;où proviennent les données de son ERDDAP .
 D&#39;autres administrateurs ERDDAP peuvent faire de même.
 Il n&#39;y a pas besoin de coordination entre les administrateurs.
-Si de nombreux administrateurs d&#39; ERDDAP se connectent aux ERDDAP des autres, un réseau de distribution de données est formé.
-Les données seront diffusées rapidement, efficacement et automatiquement à partir des sources de données (ERDDAP et autres serveurs) vers les sites de redistribution des données (ERDDAP ) n&#39;importe où dans le réseau.
+Si de nombreux administrateurs ERDDAP sont liés aux ERDDAP les uns des autres, un réseau de distribution de données est formé.
+Les données seront rapidement, efficacement et automatiquement diffusées à partir des sources de données (ERDDAP et autres serveurs) vers les sites de redistribution des données (ERDDAP ) n&#39;importe où dans le réseau.
 Un ERDDAP donné peut être à la fois une source de données pour certains jeux de données et un site de redistribution pour d&#39;autres jeux de données.
-Le réseau résultant est à peu près similaire aux réseaux de distribution de données mis en place avec des programmes comme
-<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD/IDM d&#39; Unidata <img 
+Le réseau résultant est à peu près similaire aux réseaux de distribution de données mis en place avec des programmes tels
+<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">que IDD/IDM d&#39; Unidata .
+<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, mais moins rigidement structuré.
 <br>&nbsp;
@@ -5443,68 +5448,68 @@ ERDDAP ?
 Quelle est la différence?</a></strong> Ma compréhension (de Bob) est :
 <p>DODS (Distributed Oceanographic Data System) a été créé dans les années 1990, avant qu&#39;il n&#39;y ait http:
 (!).
-Le système DODS a créé et utilisé le protocole dods:
-sur Internet.
+Le système DODS a créé et utilisé le dods :
+protocole sur Internet.
 Lorsque HTTP est arrivé et a connu un tel succès, ils sont passés de dods:
 à http:.
 <p>À un moment donné, ils ont réalisé que le système était utile pour plus que de simples données océanographiques.
-Alors ils ont abandonné ce nom DODS (bien qu&#39;il vive dans un certain code), ont formé une petite organisation appelée
+Ils ont donc abandonné ce nom DODS (bien qu&#39;il existe dans certains codes), ont formé une petite organisation appelée
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et écrit la
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et a écrit la
 <a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">spécification DAP (Data Access Protocol) <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, qui standardise le format des demandes de métadonnées et/ou de données, et les réponses avec les métadonnées et/ou les données.
-OPeNDAP (l&#39;organisation) dirige toujours DAP (la spécification) et est l&#39;auteur de Hyrax (le serveur de données qui est souvent appelé à tort OPeNDAP ).
+      title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, qui normalise le format des demandes de métadonnées et/ou de données, et les réponses avec les métadonnées et/ou les données.
+OPeNDAP (l&#39;organisation) gère toujours DAP (la spécification) et est l&#39;auteur de Hyrax (le serveur de données souvent appelé à tort OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP et autres sont des serveurs de données (logiciels) qui implémentent DAP .
 Ils implémentent chacun un sous-ensemble de DAP mais font d&#39;autres choses très différemment.
-<p>ERDDAP utilise du code (dans le répertoire &quot;dods&quot;) (écrit en fait par Jake Hamby au NASA JPL) pour certaines fonctionnalités de lecture de données à partir de serveurs DAP externes.
+<p>ERDDAP utilise du code (dans le répertoire &quot;dods&quot;) (en fait écrit par Jake Hamby au NASA JPL) pour certaines fonctionnalités de lecture de données à partir de serveurs DAP externes.
 ERDDAP utilise son propre code pour écrire les réponses DAP .
 <br>&nbsp;
-<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">L&#39; ERDDAP est-il une solution aux problèmes de distribution/accès aux données de chacun ?</a></strong>
+<p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">L&#39; ERDDAP est-il une solution aux problèmes de diffusion des données / d&#39;accès aux données de chacun ?</a></strong>
 <br>Non.
-ERDDAP essaie de trouver une solution idéale à la plupart des problèmes de distribution de données auxquels nous avons été confrontés.
+ERDDAP essaie de trouver un point idéal qui soit une très bonne solution à la plupart des problèmes de distribution de données auxquels nous avons été confrontés.
 ERDDAP adopte une approche middleware :
-il peut obtenir des données à partir de nombreux types différents de serveurs de données distants et il peut fournir ces données aux clients dans de nombreux formats de fichiers différents.
-Il est conçu comme une solution agnostique qui cherche à rendre interopérables d&#39;autres serveurs de données (OPeNDAP, SOS, OBIS, WMS, ...).
-Existe-t-il un serveur de données parfait qui répond parfaitement aux besoins de chacun ?
+il peut obtenir des données de nombreux types de serveurs de données distants et il peut fournir ces données aux clients dans de nombreux formats de fichiers différents.
+Il est conçu comme une solution agnostique qui cherche à rendre interopérables d&#39;autres serveurs de données (OPeNDAP, SOS, OBIS, WMS, ...) .
+Existe-t-il un serveur de données parfait qui répond parfaitement aux besoins de chacun ?
 Nous ne le pensons pas.
-Et même si vous pensez qu&#39;il y en a ou qu&#39;il y en aura, il faudra beaucoup de temps avant que tout le monde n&#39;y passe, voire jamais.
-D&#39;ici là, ERDDAP est disponible dès maintenant pour rendre d&#39;autres serveurs de données interopérables et pour servir des données dès maintenant.
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP peut gérer la plupart/la plupart des ensembles de données tels quels, mais pas tous.</a> Ce n&#39;est pas que les ensembles de données restants (par exemple, les données de modèle utilisant une projection de sphère cubique) ne sont pas importants.
-C&#39;est juste que l&#39;objectif d&#39; ERDDAP de renvoyer les données dans des formats de fichiers courants (dont certains sont assez simples) exclut une structure de données interne plus complexe.
-Les groupes de chercheurs travaillant avec des structures de données plus complexes ont souvent déjà des serveurs de données spécialisés et des logiciels clients spécialisés qui sont adaptés aux besoins de leur communauté.
-ERDDAP, en tant que serveur de données à usage général, ne cherche pas à concurrencer ces serveurs de données spécialisés.
+Et même si vous pensez qu&#39;il y en a ou qu&#39;il y en aura, il faudra beaucoup de temps avant que tout le monde n&#39;y change, voire jamais.
+D&#39;ici là, ERDDAP est disponible dès maintenant pour rendre interopérables d&#39;autres serveurs de données et servir des données dès maintenant.
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP peut gérer de nombreux/la plupart des ensembles de données tels quels, mais pas tous.</a> Ce n&#39;est pas que les ensembles de données restants (par exemple, les données de modèle utilisant une projection de sphère cubique) ne sont pas importants.
+C&#39;est juste que l&#39;objectif d&#39; ERDDAP de renvoyer des données dans des formats de fichiers courants (dont certains sont assez simples), exclut une structure de données interne plus complexe.
+Les groupes de chercheurs travaillant avec des structures de données plus complexes disposent souvent déjà de serveurs de données spécialisés et de logiciels clients spécialisés adaptés aux besoins de leur communauté.
+ERDDAP, en tant que serveur de données généraliste, ne cherche pas à concurrencer ces serveurs de données spécialisés.
 Ils sont adaptés aux besoins de leur communauté et font un excellent travail.
-Cependant, ces ensembles de données ne sont souvent « compris » que par les logiciels spécialisés de cette communauté.
+Cependant, ces ensembles de données ne sont souvent &quot;compris&quot; que par le logiciel spécialisé de cette communauté.
 <p>Une solution de contournement pour les ensembles de données complexes - ERDDAP a un moyen de gérer des ensembles de données complexes qu&#39;il ne peut pas gérer directement.
 Tout comme une base de
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >données relationnelle <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> peut stocker un ensemble de données complexe en utilisant une seule structure de données simple (une table), ERDDAP peut servir les données d&#39;ensembles de données plus complexes en divisant l&#39;ensemble de données source en quelques ensembles de données ERDDAP, chacun avec des structures de données simples et similaires.
-Par exemple, certains ensembles de données de modèles environnementaux quadrillés peuvent être stockés dans ERDDAP en mettant les variables de surface de la mer ([time][latitude][longitude]) dans un ensemble de données ERDDAP, et en mettant les variables avec l&#39;altitude ([time][altitude][ latitude][longitude]) dans un autre jeu de données ERDDAP .
-Nous savons que ce n&#39;est pas idéal, mais il est nécessaire de permettre à ERDDAP de renvoyer les données dans des formats de fichiers courants (dont certains sont assez simples).
-<p>Une autre approche pour traiter des ensembles de données complexes (par exemple, pour les données de modèle utilisant une projection de sphère cubique) est d&#39;offrir également une version reprojetée de l&#39;ensemble de données ([heure][altitude][latitude][longitude]) avec laquelle ERDDAP peut travailler facilement.
+Par exemple, certains ensembles de données de modèles environnementaux maillés peuvent être stockés dans ERDDAP en mettant les variables de surface de la mer ([heure][latitude][longitude]) dans un ensemble de données ERDDAP, et en mettant les variables avec l&#39;altitude ([heure][altitude][ latitude][longitude]) dans un autre jeu de données ERDDAP .
+Nous savons que ce n&#39;est pas idéal, mais il est nécessaire de permettre à ERDDAP de renvoyer des données dans des formats de fichiers courants (dont certains sont assez simples).
+<p>Une autre approche pour traiter des ensembles de données complexes (par exemple, pour les données de modèle utilisant une projection de sphère cubique) consiste également à proposer une version reprojetée de l&#39;ensemble de données ([heure][altitude][latitude][longitude]) avec laquelle ERDDAP peut travailler facilement.
 Ces structures de données plus simples ne sont pas destinées à remplacer les structures de données d&#39;origine, mais elles peuvent être un moyen utile de distribuer les données à un public plus large.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Quelle est la pérennité du projet ERDDAP ?</strong></a>
 <br>ERDDAP est très durable.
 <br>Certaines personnes sont surprises et déçues d&#39;apprendre que ERDDAP est principalement développé par une seule personne (moi, Bob Simons).
-[Soit dit en passant, les opinions sur cette page Web sont mes opinions personnelles et ne reflètent pas nécessairement une position du gouvernement ou de l&#39; National Oceanic and Atmospheric Administration .] Ils craignent que s&#39;il m&#39;arrive quelque chose, ce sera la fin de ERDDAP .
+[Au fait, les opinions sur cette page Web sont mes opinions personnelles et ne reflètent pas nécessairement la position du gouvernement ou de la National Oceanic and Atmospheric Administration .] Ils craignent que si quelque chose m&#39;arrive, ce sera la fin de ERDDAP .
 Ce n&#39;est tout simplement pas vrai.
-Le positionnement de l&#39; ERDDAP pour la durabilité à long terme est excellent, et proche du meilleur qu&#39;il puisse être.
-<p>Oui, je suis le développeur principal d&#39; ERDDAP .
+Le positionnement de l&#39; ERDDAP pour la durabilité à long terme est excellent, et proche du meilleur possible.
+<p>Oui, je suis le principal développeur d&#39; ERDDAP .
 Je suis un employé fédéral entièrement financé.
-Mon financement n&#39;est pas de l&#39;argent « doux », donc je ne reçois pas ou ne compte pas sur des subventions.
+Mon financement n&#39;est pas de l&#39;argent &quot;soft&quot;, donc je ne reçois ni ne dépends de subventions.
 Je passe plus de la moitié de mon temps à développer ERDDAP .
-Le reste de mon temps est consacré à la gestion des ensembles de données.
-Ce travail est utile pour ERDDAP car j&#39;ai besoin de travailler avec de vrais jeux de données afin de savoir en détail ce que ERDDAP doit faire.
-Mes patrons soutiennent pleinement mon travail sur ERDDAP car il fait ce pour quoi j&#39;ai été embauché :
-permettre aux scientifiques halieutiques (principalement, mais vraiment tout le monde) d&#39;obtenir des données scientifiques de diverses sources.
-<p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Ce qui est miraculeux avec un logiciel, c&#39;est qu&#39;il ne coûte rien à dupliquer.</a> Donc pour faire mon travail, j&#39;écris ERDDAP pour une utilisation à l&#39; ERD .
-Je pense que c&#39;est la meilleure façon pour moi de faire mon travail.
-Cette seule raison justifie les dépenses de développement de ERDDAP .
+Le reste de mon temps est consacré à la gestion des jeux de données.
+Ce travail est utile pour ERDDAP car j&#39;ai besoin de travailler avec de vrais ensembles de données afin de savoir en détail ce que ERDDAP doit faire.
+Mes patrons soutiennent pleinement mon travail sur ERDDAP car il fait ce pour quoi j&#39;ai été embauché :
+faciliter l&#39;obtention de données scientifiques provenant de diverses sources pour les scientifiques de la pêche (principalement, mais vraiment tout le monde).
+<p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Ce qui est miraculeux avec les logiciels, c&#39;est qu&#39;il ne coûte rien à dupliquer.</a> Alors pour faire mon travail, j&#39;écris ERDDAP à utiliser à l&#39; ERD .
+Je pense que c&#39;est la meilleure façon possible pour moi de faire mon travail.
+Cette raison justifie à elle seule les dépenses de développement du ERDDAP .
 (Je pense qu&#39;il pourrait être démontré ERDDAP a fait gagner plus de temps aux scientifiques de la NOAA que ce que j&#39;ai passé à développer ERDDAP .
 Time=Money.) Mais l&#39;avantage secondaire est que toute autre organisation peut
 <a rel="bookmark" 
@@ -5513,99 +5518,129 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">télécharger
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >Plus de 90 organisations dans au moins 14 pays utilisent ERDDAP</a> .
 Peut-être qu&#39;il existe une chose telle qu&#39;un déjeuner gratuit.
-<p>ERDDAP est un programme Java.
+<p>ERDDAP est un programme Java .
 Le code source de chaque version est sur
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, le système le plus couramment utilisé pour les projets de logiciels collaboratifs.
-Jusqu&#39;à présent, quatre autres groupes ont contribué au code de l&#39; ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> a été écrit et contribué par Jonathan Lafite et Philippe Makowski de R.Tech Engineering (licence :
-open source protégé par copyright).
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, le système le plus couramment utilisé pour les projets logiciels collaboratifs.
+Jusqu&#39;à présent, ces groupes/personnes ont contribué au code d&#39; ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">FusionnerIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> a été écrit et contribué par Jonathan Lafite et Philippe Makowski de R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licence :
+open source sous copyright).
 Merci Jonathan et Philippe !
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
-  >.dataTable (TableWriterDataTable.java)</a> a été écrit et contribué par Roland Schweitzer de NOAA (licence :
-open source protégé par copyright).
-Merci Roland !
-<li>La version initiale de la fonctionnalité de
-<a href="#jsonld" rel="bookmark">balisage sémantique des ensembles de données avec json-ld (données liées JSON)</a> (et donc tout le travail acharné de conception du contenu) a été écrite et contribuée (licence :
-open source protégé par copyright) par Adam Leadbetter et Rob Fuller de le Marine Institute en Irlande.
-Merci Adam et Rob !
-<li>Le code du
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+  >.dataTable (TableWriterDataTable.java)</a> a été écrit et contribué par Roland Schweitzer de la NOAA (licence :
+open source sous copyright).
+Merci Roland!
+<br>&nbsp;
+<li>json-ld
+<br>La version initiale de la fonctionnalité
+<a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a> (et donc tout le travail acharné de conception du contenu) a été écrite et contribuée (licence :
+copyright open source) par Adam Leadbetter et Rob Fuller de le Marine Institute en Irlande.
+Merci, Adam et Rob !
+<br>&nbsp;
+<li>orderBy
+<br>Le code du
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >filtre orderByMean</a> dans tabledap et les modifications importantes apportées au code pour prendre en charge la
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >notation <i>variableName/divisor:offset</i></a> pour tous les filtres orderBy été écrits et contribués (licence :
-open source sous copyright) par Rob Fuller et Adam Leadbetter du Marine Institute en Irlande.
-Merci Rob et Adam !
-<li>Le code pour trois nouveaux types de marqueurs (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) a été fourni par Marco Alba de ETT / EMODnet Physics.
-Merci Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+copyright open source) par Rob Fuller et Adam Leadbetter du Marine Institute de Irlande.
+Merci, Rob et Adam !
+<br>&nbsp;
+<li>Types de marqueurs sans bordure
+<br>Le code pour trois nouveaux types de marqueurs (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Triangle) a été fourni par Marco Alba de ETT / EMODnet Physics.
+Merci Marco Alba!
+<br>&nbsp;
+<li>Traductions de messages.xml
+<br>La version initiale du code dans TranslateMessages.java qui utilise le service de traduction de Google pour traduire messages.xml dans différentes langues a été écrite par Qi Zeng, qui travaillait comme stagiaire Google Summer of Code.
+Merci Qi!
+<br>&nbsp;
+<li>orderBy Somme
+<br>Le code du
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >filtre orderBy Sum</a> dans tabledap (basé sur orderByMean de Rob Fuller et Adam Leadbetter) et les boutons Check All et Uncheck All sur le formulaire d&#39;accès aux données EDDGrid ont été écrits et contribués (licence :
+open source sous copyright) par Marco Alba de ETT Solutions et EMODnet.
+Merci Marco!
+<br>&nbsp;
+<li>Requêtes .transparentPng hors plage
+<br>ERDDAP accepte désormais les demandes de .transparentPng lorsque les valeurs de latitude et/ou de longitude sont partiellement ou totalement hors plage.
+(Il s&#39;agissait du numéro 19 du problème ERDDAP GitHub, publié par Rob Fuller -- merci de l&#39;avoir publié, Rob.) Le code pour résoudre ce problème a été écrit par Chris John.
+Merci Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 J&#39;espère que d&#39;autres contribueront au code à l&#39;avenir.
-S&#39;il m&#39;arrive quelque chose, mes patrons embaucheront un remplaçant avec pour objectif précis qu&#39;il continue le développement de l&#39; ERDDAP .
-De plus, j&#39;essaie d&#39;écrire un code très propre.
+S&#39;il m&#39;arrive quelque chose, mes patrons engageront un remplaçant dans le but précis qu&#39;il poursuive le développement de l&#39; ERDDAP .
+De plus, j&#39;essaie d&#39;écrire du code très propre.
 J&#39;écris des commentaires Java Doc.
 J&#39;écris des commentaires dans le code.
 J&#39;ai choisi les noms de variables avec soin.
-Je suis les directives de formatage Java.
-Tout cela est un effort pour rendre le code plus lisible, pour d&#39;autres programmeurs qui veulent le comprendre et/ou le changer, et pour moi, car, dans un an ou deux, j&#39;aurai oublié les détails du comment et du pourquoi le code a été écrit tel qu&#39;il était.
-Un code propre avec de bons commentaires facilite mon travail en cours sur ERDDAP, donc j&#39;ai une grande incitation à écrire un code propre avec de bons commentaires.
+Je suis les directives de formatage Java .
+Tout cela est un effort pour rendre le code plus lisible, pour les autres programmeurs qui veulent le comprendre et/ou le modifier, et pour moi, car, dans un an ou deux, j&#39;aurai oublié les détails du comment et du pourquoi du code était écrit comme ça.
+Un code propre avec de bons commentaires facilite mon travail continu sur ERDDAP, donc j&#39;ai une grande incitation à écrire du code propre avec de bons commentaires.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Mais toutes mes réponses jusqu&#39;à présent ne sont pas très importantes.</a> Une seule chose qui est vraiment importante.
 Une seule chose garantit la pérennité de l&#39; ERDDAP ou de tout projet logiciel :
-ERDDAP est un logiciel
-<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">libre et ouvert (FOSS) <img 
+ERDDAP soit un logiciel
+<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">libre et open source (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
 Concrètement, ERDDAP utilise
-<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">des licences logicielles compatibles Apache <img 
+<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">des licences logicielles compatibles avec Apache <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, donc n&#39;importe qui peut faire ce qu&#39;il veut avec le code.
+    title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, afin que n&#39;importe qui puisse faire ce qu&#39;il veut avec le code.
 <p>Pourquoi est-ce important ?
-On pourrait penser que les logiciels seront disponibles de manière fiable à l&#39;avenir parce qu&#39;une grande entreprise est derrière.
+On pourrait penser que le logiciel sera disponible de manière fiable à l&#39;avenir parce qu&#39;une grande entreprise est derrière.
 Mais Google, par exemple, a abandonné de nombreux projets (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >voici une liste <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>).
-Je ne veux pas m&#39;en prendre à Google parce que j&#39;aime beaucoup Google et qu&#39;ils financent un grand nombre de grands projets open source.
-Microsoft a abandonné des projets.
-Apple a interrompu ses projets.
-… Le fait est que le simple soutien d&#39;une grande entreprise ne garantit pas la poursuite du projet.
-Les utilisateurs de ce logiciel n&#39;ont pas de chance, <strong>à moins que</strong> le logiciel ne soit (et soit toujours) un logiciel libre et ouvert (FOSS).
-Ensuite, chaque fois qu&#39;un seul développeur s&#39;y intéresse, le projet peut et continuera d&#39;évoluer.
+Je ne veux pas m&#39;en prendre à Google parce que j&#39;aime vraiment Google et qu&#39;ils financent un grand nombre de grands projets open source.
+Microsoft a interrompu des projets.
+Apple a abandonné des projets.
+...
+Le fait est que le simple fait d&#39;avoir le soutien d&#39;une grande entreprise ne garantit pas que le projet se poursuivra.
+Les utilisateurs de ce logiciel n&#39;ont pas de chance, <strong>à moins que</strong> le logiciel ne soit (et ne soit donc toujours) un logiciel libre et open source (FOSS).
+Ensuite, chaque fois qu&#39;il y a de l&#39;intérêt même pour un seul développeur, le projet peut et continuera d&#39;évoluer.
 FOSS est une police d&#39;assurance.
 En fait, FOSS est la seule police d&#39;assurance, la seule assurance qui compte.
 FOSS garantit qu&#39;il y a toujours une voie à suivre pour le logiciel.
 C&#39;est un droit que personne ne peut retirer, jamais.
 <p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">On pourrait également penser qu&#39;un logiciel qui a une grande équipe de développeurs</a> sera plus durable qu&#39;un logiciel avec un développeur principal.
-Mais beaucoup de développeurs ont généralement besoin de beaucoup de financement.
-Je connais un projet célèbre et assez important avec 10 développeurs (je ne vais pas les embarrasser en les nommant) qui est constamment en danger sérieux d&#39;arrêter le projet parce qu&#39;ils n&#39;ont pas assez de financement.
-Ils dépendent des subventions.
-Ils sont toujours en déficit.
-Leur patron les a toujours renfloués à la dernière minute, mais il en a vraiment marre de les renflouer.
-Donc, s&#39;ils ne peuvent pas collecter un million de dollars par an en subventions (ou si le mécène est trop fatigué de les renflouer), ils s&#39;arrêteront.
-Et le groupe ne peut pas imaginer avoir moins de 10 développeurs.
+Mais de nombreux développeurs ont généralement besoin de beaucoup de financement.
+Je connais un projet célèbre et raisonnablement important avec 10 développeurs (je ne les embarrasserai pas en les nommant) qui est constamment en grave danger d&#39;arrêter le projet parce qu&#39;ils n&#39;ont pas assez de financement.
+Ils comptent sur les subventions.
+Ils ont toujours un déficit.
+Leur patron les a toujours renfloués à la dernière minute, mais en a vraiment marre de les renflouer.
+Donc, s&#39;ils ne peuvent pas collecter un million de dollars par an en subventions (ou si le mécène en a trop marre de les renflouer), ils s&#39;arrêteront.
+Et le groupe ne peut concevoir d&#39;avoir moins de 10 développeurs.
 Chaque développeur a un rôle à jouer dans son groupe.
-À la lumière de cela, il me semble que c&#39;est un grand signe que ERDDAP peut être, et est, activement développé par un seul développeur principal (qui est entièrement financé) avec l&#39;aide non officielle de quelques autres.
+À la lumière de cela, il me semble que c&#39;est un bon signe ERDDAP peut être, et est, activement développé par un seul développeur principal (qui est entièrement financé) avec l&#39;aide non officielle de quelques autres.
 En fait, ce serait un mauvais signe si ERDDAP nécessitait plusieurs développeurs.
-Le fait ERDDAP n&#39;ait qu&#39;un seul développeur principal signifie que ce n&#39;est pas une tâche énorme qui nécessite un financement continu massif ; il s&#39;agit d&#39;une tâche relativement petite qui nécessite un minimum d&#39;efforts et de financement.
+Le fait que l&#39; ERDDAP n&#39;ait qu&#39;un seul développeur principal signifie qu&#39;il ne s&#39;agit pas d&#39;une tâche énorme qui nécessite un financement continu massif ; il s&#39;agit d&#39;une tâche relativement petite qui nécessite un minimum d&#39;efforts et de financement.
 C&#39;est plus durable, pas moins.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">On pourrait penser que l&#39;embauche d&#39;une entreprise contractante pour écrire des logiciels est une bonne idée.</a> Moyennant des frais, ils fourniront aux développeurs et promettent la continuité (ce qui est bien à moins/jusqu&#39;à ce qu&#39;ils fassent faillite).
-Mais ils vous ont aussi sur un baril :
-vous devez les payer ce qu&#39;ils demandent ou il n&#39;y a plus de développement, <strong>à moins que</strong> le logiciel ne soit FOSS et que vous ne les payiez que pour travailler sur le code.
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">On pourrait penser que l&#39;embauche d&#39;une entreprise contractante pour écrire un logiciel est une bonne idée.</a> Moyennant des frais, ils fourniront des développeurs et promettront la continuité (ce qui est bien à moins / jusqu&#39;à ce qu&#39;ils fassent faillite).
+Mais ils vous tiennent aussi au-dessus d&#39;un baril :
+vous devez leur payer ce qu&#39;ils demandent ou il n&#39;y a plus de développement, <strong>à moins que</strong> le logiciel ne soit FOSS et que vous ne les payiez que pour travailler sur le code.
 Avec FOSS, vous avez toujours le choix sur la façon d&#39;aller de l&#39;avant.
-Parce ERDDAP est FOSS, les sous-traitants sont toujours une bonne option pour vous ou n&#39;importe qui en ce qui concerne ERDDAP :
-s&#39;il m&#39;arrive quelque chose (le développeur principal), ou si je n&#39;ai pas le temps de faire un changement que vous voulez, ou je prendre votre retraite et que vous n&#39;aimez pas le travail de mon remplaçant, vous pouvez toujours engager une entreprise sous-traitante pour faire les changements que vous voulez (ou les faire vous-même).
-<p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">En résumé, ERDDAP possède les deux caractéristiques de durabilité qui comptent le plus :</a>
+Parce que ERDDAP est FOSS, les sous-traitants sont toujours une bonne option pour vous ou n&#39;importe qui en ce qui concerne ERDDAP :
+si quelque chose m&#39;arrive (le seul développeur principal), ou si je n&#39;ai pas le temps d&#39;apporter les modifications que vous souhaitez, ou si je prendre ma retraite et que tu n&#39;aimes pas le travail de mon remplaçant, tu peux toujours faire appel à une entreprise contractante pour faire les changements que tu souhaites (ou les faire toi-même).
+<p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">En résumé, l&#39; ERDDAP présente les deux caractéristiques de durabilité les plus importantes :</a>
 <ol>
-<li>ERDDAP est un petit projet (assez petit pour être géré par un développeur principal avec l&#39;aide non officielle de quelques autres), il ne nécessite donc pas de ressources massives.
-<li>ERDDAP est un logiciel libre et à code source ouvert, donc personne ne pourra jamais vous empêcher, vous ou quelqu&#39;un d&#39;autre, de travailler sur ERDDAP .
+<li>ERDDAP est un petit projet (suffisamment petit pour être géré par un développeur principal avec l&#39;aide non officielle de quelques autres), il ne nécessite donc pas de ressources massives.
+<li>ERDDAP est un logiciel gratuit et open source, donc personne ne peut vous empêcher, vous ou quiconque, de travailler sur ERDDAP .
 </ol>
 Je ne peux pas penser à une meilleure situation.
-J&#39;espère que cela apaise toutes les craintes que vous (ou quelqu&#39;un d&#39;autre) aviez au sujet de la durabilité de l&#39; ERDDAP .
-Si vous entendez des personnes remettre en question ou décourager l&#39;utilisation d&#39; ERDDAP parce qu&#39;il n&#39;y a qu&#39;un seul développeur principal, veuillez les mettre au clair en les dirigeant vers la discussion ci-dessus à cette URL :
+J&#39;espère que cela apaise les craintes que vous (ou quelqu&#39;un d&#39;autre) aviez sur la pérennité de l&#39; ERDDAP .
+Si vous entendez des gens remettre en question ou décourager l&#39;utilisation d&#39; ERDDAP parce qu&#39;il n&#39;y a qu&#39;un seul développeur principal, veuillez les mettre au clair en les dirigeant vers la discussion ci-dessus à cette URL :
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#durable</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5619,10 +5654,10 @@ Pour chaque ensemble de données que vous avez utilisé, veuillez consulter les 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
 Les métadonnées incluent parfois un format de citation obligatoire ou suggéré pour l&#39;ensemble de données.
-Les métadonnées &quot;licence&quot; répertorient parfois des restrictions sur l&#39;utilisation des données.
+Les métadonnées &quot;licence&quot; énumèrent parfois des restrictions sur l&#39;utilisation des données.
 <p>Pour générer une citation pour un ensemble de données :
-<br>Si vous considérez l&#39;ensemble de données comme un article scientifique, vous pouvez générer une citation basée sur l&#39;auteur (voir les métadonnées &quot;creator_name&quot; ou &quot;institution&quot; ), la date à laquelle vous avez téléchargé les données, le titre (voir les métadonnées &quot;title&quot; ), et l&#39;éditeur (voir les métadonnées &quot;publisher_name&quot;).
-Si possible, veuillez inclure les URL spécifiques utilisées pour télécharger les données.
+<br>Si vous considérez le jeu de données comme un article scientifique, vous pouvez générer une citation basée sur l&#39;auteur (voir les métadonnées &quot;creator_name&quot; ou &quot;institution&quot; ), la date à laquelle vous avez téléchargé les données, le titre (voir les métadonnées &quot;title&quot; ), et l&#39;éditeur (voir les métadonnées &quot;publisher_name&quot;).
+Si possible, veuillez inclure la ou les URL spécifiques utilisées pour télécharger les données.
 Si les métadonnées de l&#39;ensemble de données incluent un
 <a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
@@ -5634,38 +5669,38 @@ Si les métadonnées de l&#39;ensemble de données incluent un
 <br>Si vous souhaitez citer ERDDAP lui-même dans un article scientifique, veuillez utiliser quelque chose comme
 <br><kbd>Simons, RA 2020.
 ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, Californie :
+https://coastwatch.pfeg.noaa.gov/erddap .
+Monterey, Californie :
 NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Que signifie l&#39;acronyme « ERDDAP » ?</a></strong>
-<br>&quot;ERDDAP&quot; était un acronyme, mais il est devenu trop grand pour cette description originale.
-Maintenant, s&#39;il vous plaît, considérez-le simplement comme un nom, pas un acronyme.
+<br>&quot;ERDDAP&quot; était un acronyme, mais il a dépassé cette description originale.
+Maintenant, s&#39;il vous plaît, pensez-y simplement comme un nom, pas comme un acronyme.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Directives pour les systèmes de distribution de données</a></strong>
+<p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Lignes directrices pour les systèmes de distribution de données</a></strong>
 <br>Les opinions de Bob sur la conception et l&#39;évaluation des systèmes de distribution de données peuvent être consultées
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">ici</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Vous pouvez</a></strong>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>configurer votre propre serveur ERDDAP</strong></a> et servir vos propres données.
 <ul>
-<li>Le petit effort pour mettre en place ERDDAP apporte de nombreux avantages.
-<li>Si vous disposez déjà d&#39;un service web pour diffuser vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou une base de données.
-Du coup, les utilisateurs auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
+<li>Le petit effort de mise en place de l&#39; ERDDAP apporte de nombreux avantages.
+<li>Si vous disposez déjà d&#39;un web service de diffusion de vos données, vous pouvez paramétrer ERDDAP pour accéder à vos données via le service existant ou via les fichiers sources ou la base de données.
+Ensuite, les gens auront un autre moyen d&#39;accéder à vos données et pourront télécharger les données dans des formats de fichiers supplémentaires ou sous forme de graphiques ou de cartes.
 <li>Si vous avez des ensembles de données très demandés, vous pouvez installer
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >plusieurs ERDDAP qui fonctionnent ensemble</a> pour évoluer et répondre aux besoins d&#39;un grand centre de distribution de données.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Nous contacter</a></h2>
-Si vous avez des questions, des suggestions ou des commentaires sur ERDDAP en général (pas cette installation spécifique d&#39; ERDDAP ), veuillez envoyer un e-mail à <kbd>bob dot simons at noaa dot gov</kbd> et inclure l&#39;URL ERDDAP directement liée à votre question ou commentaire.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou, vous pouvez rejoindre le groupe Google ERDDAP / liste</a> de diffusion en visitant
+Si vous avez des questions, des suggestions ou des commentaires sur ERDDAP en général (et non sur cette installation ERDDAP spécifique), veuillez envoyer un e-mail à <kbd>bob dot simons at noaa dot gov</kbd> et inclure l&#39;URL ERDDAP directement liée à votre question ou commentaire.
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou, vous pouvez rejoindre le groupe Google / la liste de diffusion ERDDAP</a> en visitant
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et en cliquant sur &quot;Demander l&#39;adhésion&quot;.
 Une fois que vous êtes membre, vous pouvez y poster votre question ou effectuer une recherche pour voir si la question a déjà été posée et répondue.
 <p>AVIS DE NON-RESPONSABILITÉ :
-Les opinions sur cette page Web sont des opinions personnelles de Bob Simons et ne reflètent pas nécessairement une position du gouvernement ou de la National Oceanic and Atmospheric Administration .
+Les opinions sur cette page Web sont les opinions personnelles de Bob Simons et ne reflètent pas nécessairement la position du gouvernement ou de la National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
 <Then>Puis</Then>
 <twoClickMapDefaultTooltip>Spécifiez un rectangle en cliquant sur deux coins diagonaux. A refaire si besoin.</twoClickMapDefaultTooltip>
@@ -7203,9 +7238,7 @@ De nombreux ensembles de données sont également accessibles via le Web Map Ser
 <yourEmailAddress>Votre adresse email</yourEmailAddress>
 <zoomIn>Agrandir</zoomIn>
 <zoomOut>Dézoomer</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Copier le texte dans le presse-papiers</copytexttoclipboard>
+<copytoclipboardnotavailable>Copier dans le presse-papiers non disponible</copytoclipboardnotavailable>
+<copyimagetoclipboard>Copier l&#39;image dans le presse-papiers</copyimagetoclipboard>
 </erddapMessages>

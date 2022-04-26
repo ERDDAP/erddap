@@ -1237,7 +1237,7 @@ Kaya, binibigyang-kahulugan ERDDAP &quot;years since&quot; at &quot;months since
 </tr>
 <tr>
 <td>Set ng Character</td>
-<td>UDUNITS -1 ng plain ASCII.
+<td>UDUNITS -1 ng payak na ASCII.
 Gumagamit UDUNITS ng ASCII, ISO 8859-1 (Latin-1), at ang UTF-8 encoding ng ISO 10646 (Unicode).</td>
 <td>Plain ASCII</td>
 <td>Ang lahat UDUNITS unit na may lamang ASCII at ISO 8859-1 na mga character ay na-convert.
@@ -1247,7 +1247,7 @@ Ang ilang mga yunit na may iba pang mga character ay hindi na-convert</td>
 <tr>
 <td>case-sensitive</td>
 <td>Oo.
-Kapag pinahihintulutan ang iba&#39;t ibang capitalization, tahasang tinutukoy ang mga variant.</td>
+Kapag pinahihintulutan ang iba&#39;t ibang mga capitalization, tahasang tinutukoy ang mga variant.</td>
 <td>Oo.
 Gumagana ang mga nagko-convert gamit ang case-sensitive (&quot;c/s&quot; ) na anyo ng mga unit ng UCUM.</td>
 <td>(Walang kinakailangang pagbabago)</td>
@@ -1259,19 +1259,19 @@ Gumagana ang mga nagko-convert gamit ang case-sensitive (&quot;c/s&quot; ) na an
 <td>Gumagamit lamang ng isang abbreviation/acronym para sa bawat unit.</td>
 <td>Ang iba&#39;t ibang pangmaramihan at alyas ay kino-convert sa katumbas na yunit ng UCUM.
 Ang mga hindi nakikilalang pangalan UDUNITS ay kino-convert sa mga komento.</td>
-<td>Sinusubukan ng paraang ito na ibalik ang mga pangkaraniwan, maikli, iisa (hindi maramihan) na mga alias UDUNITS .
+<td>Sinusubukan ng paraang ito na ibalik ang mga pangkaraniwan, maikli, iisa (hindi maramihan) UDUNITS alias.
 Ang mga hindi nakikilalang pangalan ng UCUM ay hindi nababago.</td>
 </tr>
 <tr>
 <td>panukat na prefix
 <br>(hal., &quot;kilo&quot; at &#39;k&#39; ay nangangahulugang &quot;times 1000&quot; ; &quot;µ&quot; at &#39;u&#39; ay nangangahulugang &quot;beses 10^-6&quot;)</td>
 <td>Sinusuportahan (tingnan UDUNITS udunits2-prefixes.xml)</td>
-<td>Sinusuportahan (tingnan ang column ng c/s ng
+<td>Sinusuportahan (tingnan ang c/s column ng
 <a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#prefixes">talahanayan ng simbolo ng prefix <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>)</td>
 <td>Ang prefix ay na-convert sa acronym nito (hal, &#39;u&#39; )</td>
-<td>Ang prefix ay naiwan bilang acronym nito (hal., &#39;u&#39; )</td>
+<td>Ang prefix ay naiwan bilang acronym nito (hal, &#39;u&#39; )</td>
 </tr>
 <tr>
 <td>mga operator ng pagpaparami</td>
@@ -1290,7 +1290,7 @@ Ang mga hindi nakikilalang pangalan ng UCUM ay hindi nababago.</td>
 <tr>
 <td>mga exponent operator</td>
 <td>&quot;**&quot;, &#39;^&#39;, wala (hal., m-2 = m^-2)</td>
-<td>&#39;*&#39; (talaga!), &#39;^&#39; (sa mga numero lamang), wala (hal, m-2)</td>
+<td>&#39;*&#39; (talaga!), &#39;^&#39; (sa mga numero lamang), wala (hal., m-2)</td>
 <td>Ang &quot;**&quot; ay na-convert sa wala (o &#39;^&#39; loob ng mga numero, hal, 10^-6).</td>
 <td>palaging kino-convert sa &#39;^&#39; (para sa pagkakapare-pareho).</td>
 </tr>
@@ -1308,7 +1308,7 @@ Pagkatapos ay sinusuri ang multiplikasyon at paghahati mula kaliwa hanggang kana
 <td>integer at floating point (hal., 1.23456E-5)</td>
 <td>integer lang</td>
 <td>Ang mga numero ng floating point ay kino-convert sa mga rational na numero (hal., ang 12.34 ay nagiging 1234.10^-2 (tandaan na ang &#39;.&#39; ay nangangahulugang &quot;times&quot; )</td>
-<td>Ang mga numero ay kino-convert sa mga integer o mga numero ng floating point (hal., 1.23456E-5).</td>
+<td>Ang mga numero ay kino-convert sa mga integer o floating point na mga numero (hal, 1.23456E-5).</td>
 </tr>
 <tr>
 <td>_ (underscore)</td>
@@ -1341,7 +1341,7 @@ Pagkatapos ay sinusuri ang multiplikasyon at paghahati mula kaliwa hanggang kana
 <tr>
 <td>{ }</td>
 <td>Hindi ginagamit.</td>
-<td>Ginagamit para sa mga anotasyon (hal., &quot;%{vol}&quot; para sa porsyento ayon sa dami).</td>
+<td>Ginagamit para sa mga anotasyon (hal., &quot;%{vol}&quot; para sa porsyento ayon sa volume).</td>
 <td>(Walang kinakailangang pagbabago)</td>
 <td>Kung ang komento ay tinukoy sa pamantayan ng UCUM, ito ay mako-convert.
 Kung hindi tinukoy ang termino, ang { } ay mako-convert sa ( ) .</td>
@@ -1388,7 +1388,7 @@ Lahat sila ay kinakatawan ng &quot;deg&quot; .</td>
 <td>Kung magdaragdag ka ng komento ({east}, {north}, {west}, o {true} ), ang converter ay magko-convert sa unit ng direksyon (hal., &quot;deg{north}&quot; nagiging &quot;degree_north&quot; ); kung hindi, walang paraan para sa converter na makabuo ng mga unit ng degree ng direksyon, kaya ang &quot;deg&quot; ay na-convert sa &quot;degree&quot; .</td>
 </tr>
 <tr>
-<td>tiyak na mga oras</td>
+<td>mga tiyak na oras</td>
 <td>UDUNITS ay may sistema upang tukuyin ang mga partikular na oras bilang
 <br>&quot;mga <i>unit</i> mula noong <i>ISO8601Time</i>&quot;,
 <br>hal, &quot;seconds since 1970-01-01T00:00:00Z&quot; .
@@ -1402,7 +1402,7 @@ Lahat sila ay kinakatawan ng &quot;deg&quot; .</td>
 </tr>
 <tr>
 <td>&C;</td>
-<td>&quot;&amp;C;&quot; ay nangangahulugang Coulomb, ngunit kadalasang maling ginagamit upang mangahulugan <kbd>degree_C</kbd> .
+<td>&quot;&amp;C;&quot; ay nangangahulugang Coulomb, ngunit madalas na maling ginagamit sa ibig sabihin <kbd>degree_C</kbd> .
 <td>&quot;&amp;C;&quot; ibig sabihin ay Coulomb.
 Ang Degrees Celsius ay nakikilala sa pamamagitan <kbd>Cel</kbd> .</td>
 <td>&quot;&amp;C;&quot; ay na-convert sa <kbd>Cel</kbd>, sa teorya na &C; ay ginamit nang hindi tama.</td>
@@ -1639,6 +1639,9 @@ Allow&quot;
 Kung gumagawa ka ng mga kahilingan sa ERDDAP mula sa isang computer program (maliban sa isang browser), mahirap gamitin ang cookies.
 Paumanhin.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopyahin ang larawan sa clipboard</copyImageToClipboard>
+<copyTextToClipboard>Kopyahin ang teksto sa clipboard</copyTextToClipboard>
+<copyToClipboardNotAvailable>Hindi available ang kopya sa clipboard</copyToClipboardNotAvailable>
 <daf>Form ng Pag-access ng Data</daf>
 <dafGridBypassTooltip><![CDATA[
 Pinapasimple lang ng web page na ito ang paglikha ng mga URL ng griddap.
@@ -4996,7 +4999,7 @@ Ito ay maaaring sumangguni sa &erddapUrl;, &ssUse; .
  -->
 <theLongDescriptionHtml><![CDATA[
 
-<html>ERDDAP ay isang data server na nagbibigay sa iyo ng simple, pare-parehong paraan upang mag-download ng mga subset ng mga siyentipikong dataset sa mga karaniwang format ng file at gumawa ng mga graph at mapa.
+<html>ERDDAP ay isang server ng data na nagbibigay sa iyo ng simple, pare-parehong paraan upang mag-download ng mga subset ng mga siyentipikong dataset sa mga karaniwang format ng file at gumawa ng mga graph at mapa.
 <h2>Talaan ng nilalaman</h2>
 <ul>
 <li><a rel="bookmark" href="#problems">Ang Mga Problema na Sinusubukang Lutasin ng ERDDAP</a>
@@ -5011,7 +5014,7 @@ Ito ay maaaring sumangguni sa &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#userUnits">Ang mga kahilingan para sa gridded na data ay maaaring gawin sa mga unit ng user.</a>
 <li><a rel="bookmark" href="#fileFormats">Nagpapadala ERDDAP resulta sa karaniwang mga format ng data file.</a>
 <li><a rel="bookmark" href="#LLAT">ERDDAP -standardize ng mga variable na pangalan at unit para sa longitude, latitude, altitude, at oras sa mga resulta.</a>
-<li><a rel="bookmark" href="#metadata">Maaaring magdagdag o magbago ng metadata ang ERDDAP .</a>
+<li><a rel="bookmark" href="#metadata">ERDDAP ay maaaring magdagdag o magbago ng metadata.</a>
 <li><a rel="bookmark" href="#images">Hinahayaan ka ERDDAP humiling ng .png at .pdf na mga file ng imahe na may mga graph at mapa.</a>
 <li><a rel="bookmark" href="#compression">Humihiling ng Mga Naka-compress na File</a>
 <li><a rel="bookmark" href="#interoperable">Ginagawang interoperable ng ERDDAP iba&#39;t ibang uri ng mga server ng data (OPeNDAP, OBIS, SOS, WMS, ...).</a>
@@ -5049,7 +5052,7 @@ Kung walang ERDDAP, kapag ang isang tao (o isang computer program) ay tumitingin
 <br>&nbsp;
 <li>Ibinabalik ng bawat site ang data sa ibang format (halimbawa, XML, SOAP+XML, OPeNDAP binary data stream, ASCII text, HDF 4, HDF 5, NetCDF, ...) at hindi ito ang karaniwang format ng file na iyong gusto.
 <br>&nbsp;
-<li>Ang data mula sa iba&#39;t ibang site ay mahirap ihambing dahil ang mga petsa+oras ay ipinahayag sa iba&#39;t ibang mga format halimbawa, &quot;Ene 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, o mga araw mula noong Enero 1, 1980, o ...).
+<li>Ang data mula sa iba&#39;t ibang site ay mahirap ihambing dahil ang mga petsa+oras ay ipinahayag sa iba&#39;t ibang format halimbawa, &quot;Ene 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, o mga araw mula noong Enero 1, 1980, o ...).
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAP</a></h2>
 <ul>
@@ -5057,8 +5060,9 @@ Kung walang ERDDAP, kapag ang isang tao (o isang computer program) ay tumitingin
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">panoorin ang unang kalahati nito<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> .</strong> (5 minuto)
-<br>Dito, nagda-download ang isang scientist ng data ng forecast ng mga alon ng karagatan mula sa ERDDAP upang magmodelo ng isang nakakalason na spill sa karagatan gamit ang
-<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">GNOME software ng NOAA <img 
+<br>Dito, nagda-download ang isang scientist ng data ng forecast ng mga alon ng karagatan mula sa ERDDAP para magmodelo ng nakakalason na spill sa karagatan gamit ang
+<a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">GNOME software ng NOAA .
+<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> (sa loob ng 5 minuto!).
 Ipinapakita ng video na ito:
@@ -5067,11 +5071,11 @@ Ipinapakita ng video na ito:
 <a href="#search">ng mga dataset</a>, makapag-
 <a href="#images">visualize ng data</a>, at makakapag-
 <a href="#fileFormats">download ng data</a> .
-<li>Maaaring makakuha ng data ang ERDDAP mula sa mga
-<a href="#localAndRemote">lokal at malalayong pinagmumulan ng data</a> sa pamamagitan ng mga
+<li>ERDDAP ay maaaring makakuha ng data mula sa mga
+<a href="#localAndRemote">lokal at malayong pinagmumulan ng data</a> sa pamamagitan ng mga
 <a href="#standardizedRequests">standardized na kahilingan</a> .
-<li>ERDDAP -aalok ng mga
-<a href="#rest">RESTful</a> RESPETO.
+<li>ERDDAP aalok ng mga
+<a href="#rest">RESTful</a> MAPANAHIWANG .
 Ang isang URL ay tumutukoy sa isang buong kahilingan.
 <li>ERDDAP ay maaaring gumawa ng mga
 <a href="#images">mapa at graph</a> .
@@ -5080,8 +5084,8 @@ Ang isang URL ay tumutukoy sa isang buong kahilingan.
 <li>Maaaring ibalik ng ERDDAP ang data sa maraming mga
 <a href="#fileFormats">format ng file</a> upang paganahin ang pagkuha ng data sa maraming iba pang mga program.
 <li>Ang NOAA ay gumagana nang magkasama:
-Ang pagsusuri ay gumagamit ng dalawang libreng software program mula sa NOAA, ERDDAP at GNOME, at data na inihahatid ng NOAA &#39;s NODC/NCDDC (pinadali ng NOAA &#39;s UAF project).
-<li>Ginagawang mas madaling makuha ERDDAP
+Gumagamit ang pagsusuri ng dalawang libreng software program mula sa NOAA, ERDDAP at GNOME, at data na inihahatid ng NOAA &#39;s NODC/NCDDC (pinadali ng proyekto ng UAF ng NOAA ).
+<li>Ginagawang mas madaling magagamit ERDDAP
 <a href="#scientificData">siyentipikong data</a> upang matulungan ang mga siyentipiko (at iba pa) na gawin ang kanilang trabaho nang mas mahusay.
 <li>Ang paggamit ERDDAP ay hindi mahirap.
 (Oo, si Rich Signell ay talagang matalino, ngunit kahit sino ay maaaring gumamit ERDDAP .)
@@ -5110,13 +5114,13 @@ Ang ERDDAP server sa ERD ay naghahatid ng data sa karagatan, ngunit ang ERDDAP (
 <a href="&erddapUrl;/search/advanced.html">Advanced na Paghahanap</a> .
 Pinagsasama ng Advanced na Paghahanap ang lahat ng mga diskarte sa paghahanap at nagdaragdag ng mga paghahanap para sa mga dataset na mayroong data sa loob ng longitude, latitude, at mga hanay ng oras, upang maaari kang maghanap ng mga dataset batay sa maraming magkakaibang pamantayan nang sabay-sabay.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">Hinahayaan ka ng ERDDAP humiling ng data sa isang standardized na paraan,</a></strong>
+<li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">Hinahayaan ka ng ERDDAP humiling ng data sa isang pamantayang paraan,</a></strong>
 <br>anuman ang protocol ng kahilingan ng data source.
 <ul>
-<li>Ginagawa ng ERDDAP magagamit ang gridded data sa pamamagitan ng ERDDAP (pagpapatupad ng ERDDAP ng
+<li>Ginagawang available ng ERDDAP ang gridded data sa pamamagitan ng ERDDAP (pagpapatupad ng ERDDAP ng
 <a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab protocol</a>) at
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>Ginagawa ng ERDDAP magagamit ang tabular data sa pamamagitan tabledap (pagpapatupad ng ERDDAP ng
+<li>Ginagawa ng ERDDAP magagamit ang tabular na data sa pamamagitan tabledap (pagpapatupad ng ERDDAP ng
 <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP constraint protocol</a>).
 <!--and
      
@@ -5126,7 +5130,7 @@ Pinagsasama ng Advanced na Paghahanap ang lahat ng mga diskarte sa paghahanap at
 -->
 </ul>
 Nagbibigay din ang ERDDAP Data Access Forms (mga web page) na tumutulong sa mga tao na gumawa ng mga kahilingan sa OPeNDAP .
-<a rel="bookmark" href="https://www.opendap.org">OPeNDAP <img 
+<a rel="bookmark" href="https://www.opendap.org">OPeNDAP &#39;s <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>
 <a rel="help" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP ) <img 
@@ -5162,10 +5166,10 @@ Ang mga file na ito ay nilikha on-the-fly.
 Dahil kakaunti ang mga panloob na istruktura ng data, madaling magdagdag ng mga karagdagang driver ng uri ng file.
 Tingnan ang kumpletong listahan ng mga uri ng
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">grid file at mga uri</a> ng
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">table file</a> .
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">file ng talahanayan</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP -standardize ng mga variable na pangalan at unit para sa longitude, latitude, altitude, depth, at oras sa mga resulta.</a></strong>
-<br>Upang mapadali ang mga paghahambing ng data mula sa iba&#39;t ibang dataset, ang mga kahilingan at resulta sa ERDDAP gumagamit ng mga standardized na space/time axis units:
+<br>Upang mapadali ang mga paghahambing ng data mula sa iba&#39;t ibang mga dataset, ang mga kahilingan at resulta sa ERDDAP gumagamit ng standardized space/time axis units:
 <ul>
 <li>ang longitude ay palaging nasa degrees_east .
 <li>ang latitude ay palaging nasa degrees_north .
@@ -5177,14 +5181,15 @@ Tingnan ang kumpletong listahan ng mga uri ng
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> o epoch seconds, which is<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> -compatible) at, kapag na-format bilang isang string, ay na-format ayon sa
+    title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> -compatible) at, kapag na-format bilang isang string, ay naka-format ayon sa
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 &quot;extended&quot; na format <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> halimbawa, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Maaari mong i-convert ang mga numeric na oras sa/mula sa ISO string times gamit ang
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">time converter</a> ERDDAP .) Gayundin, upang maiwasan ang time zone at daylight saving time confusion, palaging kino-convert ang mga time value sa Zulu (UTC, GMT) na time zone.
 </ul>
-Pinapadali nitong tukuyin ang mga hadlang sa mga kahilingan nang hindi kailangang mag-alala tungkol sa format ng data ng altitude (mga positibo bang value pataas o pababa?
-sa metro o fathoms?) o ang format ng data ng oras (isang bangungot na kaharian ng mga posibleng format, halimbawa, &quot;Ene 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, o mga araw mula noong Enero 1, 1980).
+Pinapadali nitong tukuyin ang mga hadlang sa mga kahilingan nang hindi kinakailangang mag-alala tungkol sa format ng data ng altitude (ang mga positibong halaga ba ay pataas o pababa?
+sa metro o fathoms?) o ang format ng data ng oras (isang bangungot na kaharian ng mga posibleng format, halimbawa, &quot;Ene.
+2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, o mga araw mula noong Enero 1, 1980).
 Ginagawa nitong madaling ihambing ang mga resulta mula sa iba&#39;t ibang pinagmumulan ng data.
 <p>ERDDAP ay may utility upang I-
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">convert ang Numeric Time sa/mula sa String Time</a> .
@@ -5236,7 +5241,7 @@ Kapag humiling ka ng data o isang graph mula sa isang
 <a href="&erddapUrl;/tabledap/index.html">tabledap dataset</a>, maaari mong idagdag ang <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> o <kbd>&amp;units(&quot;UCUM&quot;)</kbd> sa dulo ng URL para humiling UDUNITS o UCUM units.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">karagdagang informasiyon</a>
 <br>&nbsp;
-<li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">Maaaring magdagdag o magbago ng metadata ang ERDDAP .</a></strong>
+<li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP ay maaaring magdagdag o magbago ng metadata.</a></strong>
 <br>Maraming data source ang may kaunti o walang
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata">metadata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5271,12 +5276,12 @@ Sa halip, ERDDAP ng
     >accept-encoding <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> sa HTTP GET request header na ipinadala ng kliyente.
-Kung ang isang sinusuportahang uri ng compression (gzip, x-gzip, o deflate ) ay makikita sa accept-encoding list, kasama sa ERDDAP <kbd>content-encoding</kbd> sa HTTP response header at pini-compress ang data habang ipinapadala nito ito.
-Nasa client program na maghanap ng <kbd>content-encoding</kbd> at mag-decompress ng data.
+Kung ang isang sinusuportahang uri ng compression (gzip, x-gzip, o deflate ) ay makikita sa accept-encoding list, kasama sa ERDDAP <kbd>content-encoding</kbd> sa HTTP response header at i-compress ang data habang ipinapadala nito ito.
+Nasa client program ang paghahanap ng <kbd>content-encoding</kbd> at decompress ang data.
 Ang mga naka-compress na tugon ay kadalasang 3-10 beses na mas mabilis, bagama&#39;t walang pakinabang sa paghiling ng mga naka-compress na .png file dahil naka-compress na ang mga nilalaman ng mga file.
 Ginagawa ito ng mga browser at OPeNDAP client bilang default.
 Humihiling sila ng naka-compress na data at awtomatikong i-decompress ang ibinalik na data.
-Kailangang gawin ito ng ibang mga kliyente (hal., Java programs).
+Ang ibang mga kliyente (hal., mga Java program) ay kailangang tahasang gawin ito.
 Sa curl, idagdag ang <kbd>--compressed</kbd> sa command line para sabihin kay curl na humiling ng naka-compress na tugon at awtomatikong i-decompress ito.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">Ginagawang interoperable ng ERDDAP iba&#39;t ibang uri ng mga server ng data (OPeNDAP, OBIS, SOS, WMS, ...).</a></strong>
@@ -5288,7 +5293,7 @@ Kaya nagsisilbing tulay ang ERDDAP sa pagitan ng iba&#39;t ibang uri ng mga prog
 <li>Kino-convert ng ERDDAP ang isang ibinigay na kahilingan sa format ng kahilingan na ginagamit ng server ng source data (hal., OPeNDAP, SOS, OBIS, ...) at ipinapadala iyon sa server ng source data.
 <li>Kino-convert ng ERDDAP ang data ng tugon mula sa server ng source data sa isang panloob na format, kabilang ang pag-convert ng lahat ng oras ng data sa isang karaniwang format:
 &quot;seconds since 1970-01-01T00:00:00Z&quot;.
-<li>Kino-convert ng ERDDAP ang data mula sa panloob na format sa format ng file na hiniling ng kliyente (hal., .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
+<li>Kino-convert ng ERDDAP ang data mula sa panloob na format patungo sa format ng file na hiniling ng kliyente (hal., .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
 </ol>
 Ang mga kliyente ay hindi kailangang mag-alala tungkol sa, o malaman ang tungkol sa, ang uri ng source data server.
 Kukuha lang sila ng data na gusto nila, sa file format na gusto nila.
@@ -5300,7 +5305,7 @@ Kukuha lang sila ng data na gusto nila, sa file format na gusto nila.
 <li>isang
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">gridded na istraktura ng data</a> (halimbawa, para sa satellite data at data ng modelo) at
 <li>isang
-<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabular na istraktura ng data</a> (halimbawa, para sa in-situ buoy, istasyon, at trajectory data).
+<a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabular na istraktura ng data</a> (halimbawa, para sa in-situ na buoy, istasyon, at data ng trajectory).
 </ul>
 <li>Tiyak, hindi lahat ng data ay maaaring ipahayag sa mga istrukturang ito, ngunit marami sa mga ito ay maaari.
 Ang mga talahanayan, sa partikular, ay napaka-flexible na mga istruktura ng data (tingnan ang kahanga-hangang tagumpay ng
@@ -5308,16 +5313,16 @@ Ang mga talahanayan, sa partikular, ay napaka-flexible na mga istruktura ng data
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> mga programa).
 <li>Ginagawa nitong mas madaling gawin ang mga query sa data.
-<li>Ginagawa nitong ang mga tugon sa data ay may simpleng istraktura, na ginagawang mas madaling ihatid ang data sa mas malawak na iba&#39;t ibang uri ng karaniwang mga uri ng file (na kadalasan ay sumusuporta lamang sa mga simpleng istruktura ng data).
+<li>Ginagawa nitong ang mga tugon sa data ay may isang simpleng istraktura, na ginagawang mas madaling ihatid ang data sa isang mas malawak na iba&#39;t ibang mga karaniwang uri ng file (na kadalasan ay sumusuporta lamang sa mga simpleng istruktura ng data).
 Ito ang pangunahing dahilan kung bakit kami nag-set up ng ERDDAP sa ganitong paraan.
 <li>Dahil dito, napakadali para sa amin (o sinuman) na magsulat ng software ng kliyente na gumagana sa lahat ng mga dataset ERDDAP .
-<li>Ginagawa nitong mas madali ang paghahambing ng data mula sa iba&#39;t ibang pinagmulan, halimbawa para sa isang Integrated Ecosystem Analysis (IEA).
-<li>Alam namin na kung nakasanayan mong magtrabaho kasama ang data sa ibang mga istruktura ng data, maaari mong isipin sa una na ang diskarteng ito ay simple o hindi sapat.
+<li>Ginagawa nitong mas madali ang paghambing ng data mula sa iba&#39;t ibang pinagmulan, halimbawa para sa isang Integrated Ecosystem Analysis (IEA).
+<li>Alam namin na kung nakasanayan mong magtrabaho kasama ang data sa iba pang mga istruktura ng data, maaari mong isipin sa una na ang diskarteng ito ay simple o hindi sapat.
 Ngunit ang lahat ng istruktura ng data ay may mga tradeoff.
 Walang perpekto.
-Kahit na ang mga do-it-all na istruktura ay may kanilang mga downside:
+Kahit na ang mga do-it-all na istruktura ay may kanilang mga kawalan:
 ang pagtatrabaho sa kanila ay kumplikado at ang mga file ay maaari lamang isulat o basahin gamit ang mga espesyal na library ng software.
-Kung tinatanggap mo ang diskarte ERDDAP na sapat upang subukang gamitin ito, maaari mong makita na mayroon itong mga pakinabang nito (kapansin-pansin ang suporta para sa maraming uri ng file na maaaring magkaroon ng mga tugon ng data).
+Kung tinatanggap mo ang diskarte ERDDAP na sapat upang subukang magtrabaho kasama nito, maaari mong makita na mayroon itong mga pakinabang nito (kapansin-pansin ang suporta para sa maraming uri ng file na maaaring humawak ng mga tugon ng data).
 Ang
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">orihinal ERDDAP slide show</a> (lalo na ang
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">data structures slide</a>) ay nagsasalita tungkol sa mga isyung ito.
@@ -5328,38 +5333,38 @@ Ang
 <a rel="help" href="&erddapUrl;/subscriptions/index.html">email/URL</a> at
 <a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> mga serbisyo ng subscription,</strong> para maabisuhan ka sa tuwing nagbabago ang isang dataset.
+      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> mga serbisyo ng subscription,</strong> upang maabisuhan ka sa tuwing nagbabago ang isang dataset.
 <ul>
-<li>ERDDAP sa pag-detect ng mga pagbabago sa mga gridded na dataset dahil nade-detect nito kapag nagbabago ang mga halaga ng axis (hal., ang mga halaga ng oras).
-<li>Hindi masyadong mahusay ang ERDDAP sa pagtukoy ng mga pagbabago sa mga tabular na dataset dahil karaniwang walang pagbabago sa metadata kapag nagdagdag ng bagong data.
+<li>ERDDAP sa pag-detect ng mga pagbabago sa mga gridded na dataset dahil nade-detect nito kapag nagbago ang mga value ng axis (hal., ang mga time value).
+<li>ERDDAP ay hindi masyadong mahusay sa pag-detect ng mga pagbabago sa mga tabular na dataset dahil karaniwang walang mga pagbabago sa metadata kapag nagdagdag ng bagong data.
 <li>Matutukoy ng ERDDAP kung ang isang dataset ay hindi magagamit (ngunit marahil ay hindi kaagad).
 <li>ERDDAP kapag naging available muli ang dataset na iyon.
 <li>ERDDAP hindi nangangako tungkol sa pagiging angkop o katumpakan ng mga serbisyong ito (tingnan
 <a rel="license" href="&erddapUrl;/legal.html">ang mga DISCLAIMER ng ERDDAP</a>).
 </ul>
-<p><strong>Mga
-<a rel="help" href="&erddapUrl;/subscriptions/index.html">Email/URL</a> Subscription</strong> (hindi available sa ilang ERDDAP installation) Sa tuwing nagbabago ang isang dataset, ang email/URL subscription system ay <strong>agad</strong> na magpapadala sa iyo ng email o makipag-ugnayan sa isang URL na iyong tinukoy.
-Hindi available ang mga subscription sa email/URL sa ilang mga pag-install ERDDAP .
-Upang mag-set up ng email/URL na subscription, mag-click sa isa sa mga icon ng sobre <img alt="Subscribe" style="vertical-align:top" title="Ang icon ng sobre." src="&erddapUrl;/images/envelope.gif" > na lumilitaw sa dulong kanan sa mga web page ng ERDDAP may mga listahan ng mga dataset (<a rel="contents" href="&erddapUrl;/info/index.html">halimbawa</a>) at sa mga web page ng Data Access Forms at Make A Graph para sa mga indibidwal na dataset (<a href="&erddapUrl;/griddap/etopo180.html">halimbawa</a>) kung ang pag-install ng ERDDAP ito ay sumusuporta sa mga email/URL na subscription.
-(Mga programmer ng computer:
+<p><strong>Mga Subscription sa
+<a rel="help" href="&erddapUrl;/subscriptions/index.html">Email/URL</a></strong> (hindi available sa ilang pag-install ng ERDDAP ) Sa tuwing nagbabago ang isang dataset, padadalhan ka <strong>kaagad</strong> ng email/URL subscription system ng email o makipag-ugnayan sa isang URL na iyong tinukoy.
+Ang mga subscription sa email/URL ay hindi available sa ilang ERDDAP installation.
+Upang mag-set up ng email/URL na subscription, mag-click sa isa sa mga icon ng sobre <img alt="Subscribe" style="vertical-align:top" title="Ang icon ng sobre." src="&erddapUrl;/images/envelope.gif" > na lumilitaw sa dulong kanan sa mga web page ng ERDDAP may mga listahan ng mga dataset (<a rel="contents" href="&erddapUrl;/info/index.html">halimbawa</a>) at sa mga web page ng Mga Form sa Pag-access ng Data at Gumawa ng Graph para sa mga indibidwal na dataset (<a href="&erddapUrl;/griddap/etopo180.html">halimbawa</a>) kung ang pag-install ng ERDDAP ito ay sumusuporta sa mga subscription sa email/URL.
+(Mga computer programmer:
 kung sumulat ka ng mga serbisyo sa web, maaari mong gamitin ang URL system upang ipaalam kaagad sa ERDDAP iyong serbisyo sa web sa tuwing nagbabago ang isang dataset.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a></strong> Ang RSS ng <strong>Mga Subscription</strong> ay karaniwang sistema para sa pag-abiso sa mga user kapag nagbago ang nilalaman sa isang website.
+      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a></strong> Ang RSS <strong>Subscription</strong> ay karaniwang sistema para sa pag-abiso sa mga user kapag nagbago ang nilalaman sa isang website.
 Ang mga modernong web browser ay may built in na RSS client o maaari kang gumamit ng hiwalay na
 <a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS Reader <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> .
-Nag-aalok ang ERDDAP ng hiwalay na RSS 2.01 na feed para sa bawat dataset para malaman mo kapag nagbago ang mga interesanteng dataset.
-Upang mag-subscribe sa RSS feed ng isang dataset, mag-click sa isa sa mga icon ng RSS <img alt="RSS" style="vertical-align:top" title="Ang icon ng RSS." src="&erddapUrl;/images/rss.gif" > na lumilitaw sa dulong kanan sa mga web page ng ERDDAP may mga listahan ng mga dataset (<a rel="contents" href="&erddapUrl;/info/index.html">halimbawa</a>) o sa Mga Form sa Pag-access ng Data at Gumawa ng Graph na mga web page para sa mga indibidwal na dataset (<a href="&erddapUrl;/griddap/etopo180.html">halimbawa</a>).
-<p><strong>Paghahambing</strong> Ang serbisyong RSS ay maaaring kung ano ang iyong hinahanap.
+Nag-aalok ang ERDDAP ng hiwalay na RSS 2.01 feed para sa bawat dataset para malaman mo kung nagbago ang mga interesanteng dataset.
+Upang mag-subscribe sa RSS feed ng isang dataset, mag-click sa isa sa mga icon ng RSS <img alt="RSS" style="vertical-align:top" title="Ang icon ng RSS." src="&erddapUrl;/images/rss.gif" > na lumilitaw sa dulong kanan sa mga web page ng ERDDAP may mga listahan ng mga dataset (<a rel="contents" href="&erddapUrl;/info/index.html">halimbawa</a>) o sa mga web page ng Data Access Forms at Make A Graph para sa mga indibidwal na dataset (<a href="&erddapUrl;/griddap/etopo180.html">halimbawa</a>).
+<p><strong>Paghahambing</strong> Ang serbisyong RSS ay maaaring kung ano lang ang iyong hinahanap.
 Ito ay isang magandang pamantayan.
 Ngunit kung kailangan mong malaman sa lalong madaling panahon kapag nagbago ang isang dataset, gamitin ang email/URL system, hindi ang RSS .
 Ang mga RSS client ay pana-panahon (bawat oras?) humihiling at nagbabasa ng RSS XML na dokumento upang maghanap ng mga pagbabago.
 Kaya kadalasan, hindi matutukoy ng isang RSS client ang isang pagbabago sa isang dataset nang mabilis (average na 30 minuto?).
 Sa kabaligtaran, ang sistema ng subscription sa email/URL ay kumikilos kaagad sa tuwing may nakitang pagbabago sa isang dataset ang ERDDAP .
 Ang mas proactive na diskarte ng email/URL system ay mas mahusay din:
-Maaari mong itakda ang iyong RSS client upang suriin ang mga pagbabago bawat minuto (huwag gawin ito!), ngunit hahantong lang iyon sa maraming hindi kinakailangang mga kahilingan sa ERDDAP server at hindi pa rin nito matukoy kaagad ang mga pagbabago.
+Maaari mong itakda ang iyong RSS client upang suriin ang mga pagbabago bawat minuto (huwag gawin ito!), ngunit iyon ay hahantong lamang sa maraming hindi kinakailangang mga kahilingan sa ERDDAP server at hindi pa rin nito matukoy kaagad ang mga pagbabago.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAP ay isang</a>
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">web application <img 
@@ -5380,9 +5385,9 @@ Maaari mong itakda ang iyong RSS client upang suriin ang mga pagbabago bawat min
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> -style na mga link upang gawing available ang mga serbisyo nito sa mga program sa computer.</strong>
 <br>Ang mga tampok na ito ay maaaring gamitin upang bumuo ng isa pang serbisyo sa web sa itaas ng ERDDAP (ginagawa ang ERDDAP gawin ang lahat ng gawain!).
-ERDDAP ay hindi nilayon na maging isang mataas na antas ng data exploration/graphing service.
+ERDDAP ay hindi inilaan upang maging isang mataas na antas ng data exploration/graphing service.
 Sa halip, nilayon ang ERDDAP na magbigay ng mga serbisyo para sa mga naturang website at programa.
-Kaya kung mayroon kang ideya para sa isang mas mahusay na interface sa data na inihahain ng ERDDAP, hinihikayat ka naming bumuo ng sarili mong web application o serbisyo sa web, at gamitin ang ERDDAP bilang pundasyon.
+Kaya kung mayroon kang ideya para sa isang mas mahusay na interface sa data na inihahatid ng ERDDAP, hinihikayat ka naming bumuo ng iyong sariling web application o serbisyo sa web, at gamitin ang ERDDAP bilang pundasyon.
 Magbasa nang higit pa tungkol sa Mga Serbisyo ng ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">para sa Mga Programa sa Kompyuter</a> .
 <br>&nbsp;
@@ -5407,12 +5412,12 @@ Mula sa pananaw ng memorya, pinapayagan nito ang maraming malalaking kahilingan 
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP ay may modular na istraktura.</a></strong>
 <br>ERDDAP ay nakabalangkas upang madaling magdagdag ng iba&#39;t ibang bahagi (halimbawa, isang klase upang humiling ng data mula sa isang SOS server at iimbak ito bilang isang talahanayan).
-Nakuha ng bagong component ang lahat ng feature at kakayahan ng magulang (halimbawa, suporta para sa mga kahilingan sa OPeNDAP at ang kakayahang i-save ang data sa ilang karaniwang mga format ng file).
+Nakuha ng bagong component ang lahat ng feature at kakayahan ng magulang (halimbawa, suporta para sa mga kahilingan sa OPeNDAP at ang kakayahang i-save ang data sa ilang karaniwang format ng file).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Data Dissemination / Data Distribution Networks:
 Push and Pull Technology</a></strong>
 <br>Karaniwan, gumaganap ang ERDDAP bilang isang tagapamagitan:
-nangangailangan ito ng kahilingan mula sa isang user; nakakakuha ng data mula sa isang remote na data source; nire-reformat ang data; at ipinapadala ito sa gumagamit.
+nangangailangan ito ng kahilingan mula sa isang user; nakakakuha ng data mula sa isang malayuang pinagmumulan ng data; nire-reformat ang data; at ipinapadala ito sa gumagamit.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Teknolohiya Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> :
@@ -5433,8 +5438,8 @@ Dahil gumagana ang mga serbisyo ng subscription sa sandaling magagamit ang bagon
 <p>Inilalagay ng arkitektura na ito ang bawat administrator ng ERDDAP sa pagtukoy kung saan nagmumula ang data para sa kanyang ERDDAP .
 Ang ibang mga tagapangasiwa ng ERDDAP ay maaaring gawin ang parehong.
 Hindi na kailangan ng koordinasyon sa pagitan ng mga administrador.
-Kung maraming administrator ng ERDDAP ang nagli-link sa mga ERDDAP ng isa&#39;t isa, mabubuo ang isang network ng pamamahagi ng data.
-Mabilis, mahusay, at awtomatikong ipapamahagi ang data mula sa mga pinagmumulan ng data (ERDDAP at iba pang mga server) patungo sa mga site ng muling pamamahagi ng data (mga ERDDAP ) saanman sa network.
+Kung maraming administrator ng ERDDAP ang nagli-link sa mga ERDDAP ng isa&#39;t isa, bubuo ang isang network ng pamamahagi ng data.
+Mabilis, mahusay, at awtomatikong ipapalaganap ang data mula sa mga pinagmumulan ng data (ERDDAP at iba pang mga server) patungo sa mga site ng muling pamamahagi ng data (mga ERDDAP ) saanman sa network.
 Ang isang ibinigay ERDDAP ay maaaring parehong pinagmumulan ng data para sa ilang mga dataset at isang site ng muling pamamahagi para sa iba pang mga dataset.
 Ang resultang network ay halos katulad ng mga network ng pamamahagi ng data na naka-set up sa mga programa tulad ng
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">IDD/IDM ng Unidata <img 
@@ -5451,9 +5456,9 @@ Ano ang pinagkaiba?</a></strong> Ang pagkakaintindi ko (Bob) ay:
 (!).
 Ginawa at ginamit ng DODS system ang dod:
 protocol sa Internet.
-Nang dumating ang HTTP at naging matagumpay, lumipat sila mula sa dod:
+Nang dumating ang HTTP at naging matagumpay, lumipat sila mula dod:
 sa http:.
-<p>Sa ilang mga punto, napagtanto nila na ang sistema ay kapaki-pakinabang para sa higit pa sa data ng karagatan.
+<p>Sa isang punto, napagtanto nila na ang sistema ay kapaki-pakinabang para sa higit pa sa data ng karagatan.
 Kaya tinanggal nila ang pangalan DODS na iyon (bagaman nabubuhay ito sa ilang code), bumuo ng isang maliit na organisasyon na tinatawag na
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5464,33 +5469,33 @@ Kaya tinanggal nila ang pangalan DODS na iyon (bagaman nabubuhay ito sa ilang co
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, na nagsa-standardize sa format ng mga kahilingan para sa metadata at/o data, at ang mga tugon sa metadata at/o data.
 OPeNDAP (ang organisasyon) ay nagpapastol pa rin ng DAP (ang detalye) at siya ang may-akda ng Hyrax (ang data server na madalas na maling tinutukoy bilang OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP at iba pa ay mga data server (software) na nagpapatupad ng DAP .
-Ang bawat isa sa kanila ay nagpapatupad ng isang subset ng DAP ngunit gumagawa ng iba pang mga bagay na ibang-iba.
+Nagpapatupad sila ng isang subset ng DAP ngunit iba ang ginagawa nila.
 <p>Gumagamit ang ERDDAP ng code (sa direktoryo ng&quot;dods&quot;) (aktwal na isinulat ni Jake Hamby sa NASA JPL) para sa ilang feature ng pagbabasa ng data mula sa mga external na server ng DAP .
 Gumagamit ang ERDDAP ng sarili nitong code upang isulat ang mga tugon ng DAP .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP ay isang solusyon sa pamamahagi ng data / mga problema sa pag-access ng data ng lahat?</a></strong>
 <br>Hindi.
 Sinusubukan ng ERDDAP na humanap ng sweet spot na talagang magandang solusyon sa karamihan ng mga problema sa pamamahagi ng data na aming naharap.
-Gumagamit ang ERDDAP ng middleware na diskarte:
-Maaari itong makakuha ng data mula sa maraming iba&#39;t ibang uri ng remote data server at maibibigay nito ang data na iyon sa mga kliyente sa maraming iba&#39;t ibang format ng file.
+ERDDAP ay gumagamit ng middleware na diskarte:
+Maaari itong makakuha ng data mula sa maraming iba&#39;t ibang uri ng remote data server at maaari nitong ibigay ang data na iyon sa mga kliyente sa maraming iba&#39;t ibang format ng file.
 Ito ay idinisenyo upang maging isang agnostic na solusyon na naglalayong gawing interoperable ang iba pang mga server ng data (OPeNDAP, SOS, OBIS, WMS, ...).
 Mayroon bang isang perpektong server ng data na ganap na nakakatugon sa mga pangangailangan ng lahat?
 Sa tingin namin ay hindi.
 At kahit na sa tingin mo ay mayroon o magkakaroon, ito ay matagal bago lumipat ang lahat dito, kung sakaling.
 Hanggang noon, available ang ERDDAP ngayon para gawing interoperable ang iba pang data server at maghatid ng data sa ngayon.
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">Maaaring pangasiwaan ERDDAP ang marami/karamihan ng mga dataset, ngunit hindi lahat.</a> Hindi naman mahalaga ang mga natitirang dataset (hal., data ng modelo gamit ang isang cubed sphere projection).
-Ang layunin lang ng ERDDAP na ibalik ang data sa karaniwang mga format ng file (ang ilan sa mga ito ay medyo simple), ay humahadlang sa isang mas kumplikadong panloob na istraktura ng data.
-Ang mga pangkat ng mga mananaliksik na nagtatrabaho sa mas kumplikadong mga istruktura ng data ay kadalasang mayroon nang mga dalubhasang server ng data at espesyal na software ng kliyente na naka-customize sa mga pangangailangan ng kanilang komunidad.
-ERDDAP, bilang isang server ng data ng pangkalahatang layunin, ay hindi sumusubok na makipagkumpitensya sa mga dalubhasang server ng data na ito.
-Ang mga ito ay na-customize sa mga pangangailangan ng kanilang komunidad at gumagawa ng isang mahusay na trabaho.
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">Maaaring pangasiwaan ERDDAP ang marami/karamihan ng mga dataset, ngunit hindi lahat.</a> Hindi naman mahalaga ang natitirang mga dataset (hal., data ng modelo gamit ang isang cubed sphere projection).
+Kaya lang, ang layunin ng ERDDAP na ibalik ang data sa mga karaniwang format ng file (ang ilan sa mga ito ay medyo simple), ay humahadlang sa isang mas kumplikadong panloob na istraktura ng data.
+Ang mga pangkat ng mga mananaliksik na nagtatrabaho sa mas kumplikadong mga istruktura ng data ay kadalasang mayroon nang dalubhasang mga server ng data at espesyal na software ng kliyente na naka-customize sa mga pangangailangan ng kanilang komunidad.
+ERDDAP, bilang isang server ng data ng pangkalahatang layunin, ay hindi sumusubok na makipagkumpitensya sa mga dalubhasang data server na ito.
+Na-customize ang mga ito sa mga pangangailangan ng kanilang komunidad at gumagawa ng mahusay na trabaho.
 Gayunpaman, ang mga dataset na iyon ay kadalasang&quot;naiintindihan&quot;lamang ng espesyal na software sa komunidad na iyon.
 <p>Isang Work-Around para sa Mga Kumplikadong Dataset - May paraan ang ERDDAP para pangasiwaan ang mga kumplikadong dataset na hindi nito direktang mahawakan.
 Bilang isang
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relational database <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> ay maaaring mag-imbak ng isang kumplikadong dataset sa pamamagitan ng paggamit lamang ng isang simpleng istraktura ng data (isang talahanayan), maaaring ihatid ng ERDDAP ang data mula sa mas kumplikadong mga dataset sa pamamagitan ng paghahati-hati sa pinagmulang dataset sa ilang mga dataset ng ERDDAP, bawat isa ay may magkatulad at simpleng istruktura ng data.
-Halimbawa, maaaring iimbak ang ilang gridded na dataset ng environmental model sa ERDDAP sa pamamagitan ng paglalagay ng mga variable sa ibabaw ng dagat ([time][latitude][longitude]) sa isang dataset ng ERDDAP, at sa pamamagitan ng paglalagay ng mga variable na may altitude ([time][altitude][altitude][ latitude][longitude]) sa isa pang dataset ERDDAP .
+      title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> maaaring mag-imbak ng isang kumplikadong dataset sa pamamagitan ng paggamit lamang ng isang simpleng istraktura ng data (isang talahanayan), maaaring ihatid ng ERDDAP ang data mula sa mas kumplikadong mga dataset sa pamamagitan ng paghahati-hati sa pinagmulang dataset sa ilang mga dataset ng ERDDAP, bawat isa ay may magkatulad at simpleng istruktura ng data.
+Halimbawa, ang ilang gridded na mga dataset ng modelong pangkapaligiran ay maaaring maimbak sa ERDDAP sa pamamagitan ng paglalagay ng mga variable sa ibabaw ng dagat ([oras][latitude][longitude]) sa isang dataset ng ERDDAP, at sa pamamagitan ng paglalagay ng mga variable na may altitude ([oras][altitude][altitude][ latitude][longitude]) sa isa pang dataset ERDDAP .
 Alam naming hindi ito perpekto, ngunit kinakailangan na payagan ERDDAP na magbalik ng data sa mga karaniwang format ng file (ang ilan sa mga ito ay medyo simple).
 <p>Ang isa pang diskarte sa pagharap sa mga kumplikadong dataset (hal., para sa data ng modelo gamit ang isang cubed sphere projection) ay ang pag-aalok din ng reprojected na bersyon ng dataset ([time][altitude][latitude][longitude]) na madaling gamitin ERDDAP .
 Ang mga mas simpleng istruktura ng data na ito ay hindi nilalayong palitan ang mga orihinal na istruktura ng data, ngunit maaari silang maging isang kapaki-pakinabang na paraan upang ipamahagi ang data sa mas malawak na madla.
@@ -5502,17 +5507,17 @@ Ang mga mas simpleng istruktura ng data na ito ay hindi nilalayong palitan ang m
 Iyan ay hindi totoo.
 Ang pagpoposisyon ng ERDDAP para sa pangmatagalang pagpapanatili ay mahusay, at malapit sa pinakamahusay na posibleng mangyari.
 <p>Oo, ako ang pangunahing developer ng ERDDAP .
-Ako ay isang ganap na pinondohan na pederal na empleyado.
+Ako ay isang empleyadong pederal na ganap na pinondohan.
 Ang pondo ko ay hindi&quot;malambot&quot;na pera, kaya hindi ako tumatanggap o umaasa sa mga gawad.
 Gumugugol ako ng higit sa kalahati ng aking oras sa pagbuo ERDDAP .
 Ang natitirang oras ko ay ginugugol sa pamamahala ng mga dataset.
 Ang gawaing iyon ay kapaki-pakinabang para sa ERDDAP dahil kailangan kong magtrabaho kasama ang mga totoong dataset upang malaman nang detalyado kung ano ang kailangang gawin ERDDAP .
-Ganap na sinusuportahan ng aking mga amo ang aking trabaho sa ERDDAP dahil ginagawa nito ang ipinagagawa sa akin:
-gawing mas madali para sa mga siyentipiko sa pangisdaan (pangunahin, ngunit talagang lahat) na makakuha ng siyentipikong data mula sa magkakaibang mga mapagkukunan.
+Ganap na sinusuportahan ng aking mga amo ang aking trabaho sa ERDDAP dahil ginagawa nito ang ipinapagawa sa akin:
+gawing mas madali para sa mga siyentipiko ng pangisdaan (pangunahin, ngunit talagang lahat) na makakuha ng siyentipikong data mula sa magkakaibang mga mapagkukunan.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Ang mahimalang bagay tungkol sa software ay walang gastos sa pagdoble.</a> Kaya para magawa ko ang aking trabaho, sumulat ako ng ERDDAP para magamit sa ERD .
 Sa tingin ko iyon ang pinakamabuting posibleng paraan para magawa ko ang aking trabaho.
 Ang dahilan lamang na iyon ay nagbibigay-katwiran sa gastos ng pagbuo ng ERDDAP .
-(Sa tingin ko ay maipapakita na ang ERDDAP ay nakatipid ng mas maraming oras ng NOAA scientist kaysa sa ginugol ko sa pagbuo ERDDAP .
+(Sa palagay ko ay maipapakita na ang ERDDAP ay nakatipid ng mas maraming oras ng NOAA scientist kaysa sa ginugol ko sa pagbuo ERDDAP .
 Time=Money.) Ngunit ang side benefit ay ang anumang iba pang organisasyon ay maaaring mag-
 <a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">download, mag-install, at gumamit ng ERDDAP</a> <strong>libre</strong> upang ipamahagi ang kanilang siyentipikong datos.
@@ -5525,29 +5530,58 @@ Ang source code para sa bawat bersyon ay nasa
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, ang pinakakaraniwang ginagamit na sistema para sa mga collaborative na proyekto ng software.
-Sa ngayon, apat pang grupo ang nag-ambag ng code sa ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java ay</a> isinulat at iniambag nina Jonathan Lafite at Philippe Makowski ng R.Tech Engineering (lisensya:
+Sa ngayon, ang mga grupo/tao na ito ay nag-ambag ng code sa ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">PagsamahinIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java ay</a> isinulat at iniambag nina Jonathan Lafite at Philippe Makowski ng R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (lisensya:
 naka-copyright na open source).
 Salamat, Jonathan at Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >Ang .dataTable (TableWriterDataTable.java) ay</a> isinulat at iniambag ni Roland Schweitzer ng NOAA (lisensya:
 naka-copyright na open source).
 Salamat, Roland!
-<li>Ang unang bersyon ng
-<a href="#jsonld" rel="bookmark">Semantic Markup of Datasets na may json-ld (JSON Linked Data)</a> feature (at sa gayon ang lahat ng pagsusumikap sa pagdidisenyo ng content) ay isinulat at iniambag (lisensya:
+<br>&nbsp;
+<li>json-ld
+<br>Ang unang bersyon ng
+<a href="#jsonld" rel="bookmark">Semantic Markup of Datasets na may json-ld (JSON Linked Data) na</a> tampok (at sa gayon ang lahat ng pagsusumikap sa pagdidisenyo ng nilalaman) ay isinulat at iniambag (lisensya:
 naka-copyright na open source) ni Adam Leadbetter at Rob Fuller ng ang Marine Institute sa Ireland.
 Salamat, Adam at Rob!
-<li>Ang code para sa
+<br>&nbsp;
+<li>orderBy
+<br>Ang code para sa
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filter</a> sa tabledap at ang malawak na pagbabago sa code upang suportahan ang
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   ><i>variableName/divisor:offset</i> notation</a> para sa lahat ng orderBy filter ay isinulat at iniambag (lisensya:
 naka-copyright na open source) ni Rob Fuller at Adam Leadbetter ng Marine Institute sa Ireland.
 Salamat, Rob at Adam!
-<li>Ang code para sa tatlong bagong uri ng marker (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) ay iniambag ni Marco Alba ng ETT / EMODnet Physics.
-Salamat Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Mga Uri ng Marker na Walang Hangganan
+<br>Ang code para sa tatlong bagong uri ng marker (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) ay iniambag ni Marco Alba ng ETT / EMODnet Physics.
+Salamat, Marco Alba!
+<br>&nbsp;
+<li>Mga pagsasalin ng messages.xml
+<br>Ang unang bersyon ng code sa TranslateMessages.java na gumagamit ng serbisyo ng pagsasalin ng Google upang isalin ang mga mensahe.xml sa iba&#39;t ibang wika ay isinulat ni Qi Zeng, na nagtatrabaho bilang isang Google Summer of Code intern.
+Salamat, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>Ang code para sa
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum filter</a> sa tabledap (batay sa orderByMean ni Rob Fuller at Adam Leadbetter ) at ang Check All at Uncheck All button sa EDDGrid Data Access Form ay isinulat at iniambag (lisensya:
+naka-copyright na open source) ni Marco Alba ng ETT Solutions at EMODnet.
+Salamat, Marco!
+<br>&nbsp;
+<li>Out-of-range .transparentPng Kahilingan
+<br>Tumatanggap na ngayon ang ERDDAP ng mga kahilingan para sa .transparentPng kapag ang mga halaga ng latitude at/o longitude ay bahagyang o ganap na wala sa saklaw.
+(Ito ang ERDDAP GitHub Issues #19, na-post ni Rob Fuller -- salamat sa pag-post niyan, Rob.) Ang code para ayusin ito ay isinulat ni Chris John.
+Salamat, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Umaasa ako na ang iba ay mag-aambag ng code sa hinaharap.
@@ -5557,8 +5591,8 @@ Sumulat ako ng mga komento ng Java Doc.
 Nagsusulat ako ng mga komento sa code.
 Maingat kong pinili ang mga variable na pangalan.
 Sinusunod ko ang mga alituntunin sa pag-format ng Java .
-Ang lahat ng ito ay isang pagsisikap na gawing mas nababasa ang code, para sa iba pang mga programmer na gustong maunawaan at/o baguhin ito, at para sa akin, dahil, sa isang taon o dalawa, malilimutan ko ang mga detalye kung paano at bakit ang code ay nakasulat sa paraang ito ay.
-Ang malinis na code na may magagandang komento ay nagpapadali sa aking patuloy na trabaho sa ERDDAP, kaya mayroon akong magandang insentibo na magsulat ng malinis na code na may magagandang komento.
+Ang lahat ng ito ay isang pagsisikap na gawing mas nababasa ang code, para sa ibang mga programmer na gustong maunawaan at/o baguhin ito, at para sa akin, dahil, sa isang taon o dalawa, makakalimutan ko ang mga detalye kung paano at bakit ang code ay nakasulat sa paraang ito ay.
+Ang malinis na code na may magagandang komento ay nagpapadali sa aking patuloy na gawain sa ERDDAP, kaya mayroon akong magandang insentibo na magsulat ng malinis na code na may magagandang komento.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ngunit lahat ng aking mga sagot sa ngayon ay hindi masyadong mahalaga.</a> Isang bagay lang talaga ang mahalaga.
 Isang bagay lamang ang naggagarantiya ng pagpapanatili para sa ERDDAP o anumang proyekto ng software:
 na ang ERDDAP ay
@@ -5569,8 +5603,8 @@ Sa partikular, ERDDAP gumagamit ng mga
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">lisensya ng software na katugma sa Apache <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, para magawa ng sinuman ang anumang gusto nila gamit ang code.
-<p>Bakit mahalaga iyon?
-Maaaring isipin ng isang tao na ang software ay magiging maaasahang magagamit sa hinaharap dahil isang malaking kumpanya ang nasa likod nito.
+<p>Bakit ito mahalaga?
+Maaaring isipin ng isa na ang software ay magiging mapagkakatiwalaang magagamit sa hinaharap dahil isang malaking kumpanya ang nasa likod nito.
 Ngunit ang Google, halimbawa, ay itinigil ang maraming proyekto (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >narito ang isang listahan <img 
@@ -5585,11 +5619,11 @@ Ang mga gumagamit ng software na iyon ay walang swerte, <strong>maliban kung</st
 Pagkatapos, sa tuwing may interes ng kahit isang developer, ang proyekto ay maaari at patuloy na mag-evolve.
 Ang FOSS ay isang patakaran sa seguro.
 Sa katunayan, ang FOSS ay ang tanging patakaran sa seguro, ang tanging katiyakan, na mahalaga.
-Sinisiguro ng FOSS na palaging may daan para sa software.
+Sinisiguro ng FOSS na palaging may paraan para sa software.
 Iyan ay isang karapatan na walang sinuman ang maaaring alisin, kailanman.
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Maaaring isipin din ng isa na ang software na may malaking pangkat ng mga developer</a> ay magiging mas sustainable kaysa sa software na may isang pangunahing developer.
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Maaaring isipin din ng isang tao na ang software na may malaking pangkat ng mga developer</a> ay magiging mas sustainable kaysa sa software na may isang pangunahing developer.
 Ngunit maraming developer ang karaniwang nangangailangan ng maraming pondo.
-May kilala akong sikat, makatuwirang malaking proyekto na may 10 developer (hindi ko sila ipapahiya sa pamamagitan ng pagbibigay ng pangalan sa kanila) na palaging nasa malubhang panganib na ihinto ang proyekto dahil wala silang sapat na pondo.
+Alam ko ang isang sikat, makatuwirang malaking proyekto na may 10 developer (hindi ko sila ipapahiya sa pamamagitan ng pagbibigay ng pangalan sa kanila) na palaging nasa malubhang panganib na ihinto ang proyekto dahil wala silang sapat na pondo.
 Umaasa sila sa mga gawad.
 Palagi silang may depisit.
 Ang kanilang patron ay palaging nagpiyansa sa kanila sa huling minuto, ngunit talagang napapagod sa pagpiyansa sa kanila.
@@ -5598,14 +5632,14 @@ At hindi maisip ng grupo ang pagkakaroon ng mas kaunti sa 10 developer.
 Ang bawat developer ay may tungkuling dapat gampanan sa kanilang grupo.
 Dahil dito, sa tingin ko ay isang magandang senyales na ang ERDDAP ay maaaring, at aktibong binuo ng isang pangunahing developer (na ganap na pinondohan) sa hindi opisyal na tulong ng ilang iba pa.
 Kung totoo, ito ay isang masamang senyales kung ERDDAP nangangailangan ng maraming developer.
-Na ang ERDDAP ay mayroon lamang isang pangunahing developer ay nangangahulugan na ito ay hindi isang malaking gawain na nangangailangan ng napakalaking patuloy na pagpopondo; ito ay medyo maliit na gawain na nangangailangan ng kaunting pagsisikap at pagpopondo.
+Ang ERDDAP lamang isang pangunahing developer ay nangangahulugan na ito ay hindi isang malaking gawain na nangangailangan ng napakalaking patuloy na pagpopondo; ito ay medyo maliit na gawain na nangangailangan ng kaunting pagsisikap at pagpopondo.
 Iyon ay mas napapanatiling, hindi mas mababa.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Maaaring isipin ng isa na ang pagkuha ng isang kumpanyang nagkontrata upang magsulat ng software ay isang magandang ideya.</a> Para sa isang bayad, magbibigay sila ng mga developer at nangangako ng pagpapatuloy (na mabuti maliban kung/hanggang sa mawala sila sa negosyo).
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Maaaring isipin ng isa na ang pagkuha ng isang kumpanyang nagkontrata upang magsulat ng software ay isang magandang ideya.</a> Para sa isang bayad, magbibigay sila ng mga developer at nangangako ng pagpapatuloy (na mabuti maliban kung/hanggang mawala sila sa negosyo).
 Ngunit mayroon din silang isang bariles:
 dapat mong bayaran sila kung ano ang kanilang hinihiling o wala nang pag-unlad, <strong>maliban kung</strong> ang software ay FOSS at binabayaran mo lang sila para magtrabaho sa code.
 Sa FOSS, palagi kang may mga pagpipilian kung paano sumulong.
-Dahil ang ERDDAP ay FOSS, ang mga kontratista ay palaging isang magandang opsyon para sa iyo o sinuman na may kinalaman sa ERDDAP :
-kung may mangyari sa akin (ang pangunahing developer), o kung wala akong oras para gumawa ng pagbabago na gusto mo, o ako magretiro at hindi mo gusto ang trabaho ng aking kapalit, maaari kang palaging kumuha ng isang contracting company para gawin ang mga pagbabagong gusto mo (o ikaw mismo ang gumawa nito).
+Dahil ang ERDDAP ay FOSS, ang mga kontratista ay palaging isang magandang opsyon para sa iyo o sa sinumang may kinalaman sa ERDDAP :
+kung may mangyari sa akin (ang pangunahing developer), o kung wala akong oras para gumawa ng pagbabago na gusto mo, o ako magretiro at hindi mo gusto ang trabaho ng aking kapalit, maaari kang palaging umarkila ng isang contracting company para gawin ang mga pagbabago na gusto mo (o ikaw mismo ang gumawa nito).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Sa buod, ang ERDDAP ay may dalawang tampok sa pagpapanatili na pinakamahalaga:</a>
 <ol>
 <li>ERDDAP ay isang maliit na proyekto (sapat na maliit upang mahawakan ng isang pangunahing developer na may hindi opisyal na tulong ng ilang iba pa), kaya hindi ito nangangailangan ng napakalaking mapagkukunan.
@@ -5613,7 +5647,7 @@ kung may mangyari sa akin (ang pangunahing developer), o kung wala akong oras pa
 </ol>
 Wala akong maisip na mas magandang sitwasyon.
 Umaasa ako na mapawi nito ang anumang takot mo (o sinuman) tungkol ERDDAP .
-Kung maririnig mo ang mga tao na nagtatanong o nawalan ng loob sa paggamit ng ERDDAP dahil isa lang ang pangunahing developer, mangyaring ituwid sila sa pamamagitan ng pagturo sa kanila sa talakayan sa itaas sa URL na ito:
+Kung maririnig mo ang mga tao na nagtatanong o nawalan ng loob sa paggamit ng ERDDAP dahil mayroon lamang isang pangunahing developer, mangyaring ituwid sila sa pamamagitan ng pagturo sa kanila sa talakayan sa itaas sa URL na ito:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#sustainable</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5622,7 +5656,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Paano Sumipi ng Dataset sa isang Papel</a></strong>
 <br>Mahalagang ipaalam sa mga mambabasa kung paano mo nakuha ang data na ginamit mo sa iyong papel.
-Para sa bawat dataset na iyong ginamit, pakitingnan ang metadata ng dataset sa seksyong Structure ng Attribute ng Dataset sa ibaba ng pahina ng .html para sa dataset, hal,
+Para sa bawat dataset na iyong ginamit, pakitingnan ang metadata ng dataset sa seksyong Structure ng Attribute ng Dataset sa ibaba ng page na .html para sa dataset, hal,
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
@@ -5639,7 +5673,7 @@ Kung ang metadata ng dataset ay may kasamang
   title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, mangyaring isama iyon sa pagsipi na iyong ginawa.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Paano Sipiin ERDDAP sa isang Papel</a></strong>
-<br>Kung gusto mong banggitin ang mismong ERDDAP sa isang siyentipikong papel, mangyaring gumamit ng katulad nito
+<br>Kung gusto mong banggitin ERDDAP mismo sa isang siyentipikong papel, mangyaring gumamit ng katulad
 <br><kbd>Simons, RA 2020.
 ERDDAP .
 https://coastwatch.pfeg.noaa.gov/erddap .
@@ -5657,15 +5691,15 @@ Ngayon, mangyaring isipin lamang ito bilang isang pangalan, hindi isang acronym.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>set Up ang Iyong Sariling ERDDAP Server</strong></a> at ihatid ang sarili mong data.
 <ul>
 <li>Ang maliit na pagsisikap na i-set up ang ERDDAP nagdudulot ng maraming benepisyo.
-<li>Kung mayroon ka nang serbisyo sa web para sa pamamahagi ng iyong data, maaari mong i-set up ang ERDDAP upang ma-access ang iyong data sa pamamagitan ng umiiral na serbisyo o sa pamamagitan ng mga source file o database.
-Pagkatapos, ang mga tao ay magkakaroon ng isa pang paraan upang ma-access ang iyong data at magagawa nilang i-download ang data sa mga karagdagang format ng file o bilang mga graph o mapa.
+<li>Kung mayroon ka nang serbisyo sa web para sa pamamahagi ng iyong data, maaari mong i-set up ang ERDDAP upang ma-access ang iyong data sa pamamagitan ng umiiral nang serbisyo o sa pamamagitan ng mga source file o database.
+Pagkatapos, ang mga tao ay magkakaroon ng isa pang paraan upang ma-access ang iyong data at magagawa nilang i-download ang data sa karagdagang mga format ng file o bilang mga graph o mapa.
 <li>Kung mayroon kang mga dataset na mataas ang demand, maaari kang mag-install
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >ng maraming ERDDAP na nagtutulungan</a> upang palakihin at matugunan ang mga pangangailangan ng isang malaking sentro ng pamamahagi ng data.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Makipag-ugnayan sa amin</a></h2>
-Kung mayroon kang mga tanong, mungkahi, o komento tungkol sa ERDDAP sa pangkalahatan (hindi itong partikular na pag-install ng ERDDAP ), mangyaring magpadala ng email sa <kbd>bob dot simons at noaa dot gov</kbd> at isama ang ERDDAP URL na direktang nauugnay sa iyong tanong o komento.
+Kung mayroon kang mga tanong, mungkahi, o komento tungkol sa ERDDAP sa pangkalahatan (hindi itong partikular na pag-install ng ERDDAP ), mangyaring magpadala ng email sa <kbd>bob dot simons at noaa dot gov</kbd> at isama ang URL ng ERDDAP na direktang nauugnay sa iyong tanong o komento.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">O, maaari kang sumali sa ERDDAP Google Group / Mailing List</a> sa pamamagitan ng pagbisita sa
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -7210,9 +7244,7 @@ Maraming mga dataset ang maaari ding ma-access sa pamamagitan ng Web Map Service
 <yourEmailAddress>ang iyong email address</yourEmailAddress>
 <zoomIn>Palakihin</zoomIn>
 <zoomOut>Mag-zoom Out</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Kopyahin ang teksto sa clipboard</copytexttoclipboard>
+<copytoclipboardnotavailable>Hindi available ang kopya sa clipboard</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopyahin ang larawan sa clipboard</copyimagetoclipboard>
 </erddapMessages>

@@ -1230,7 +1230,7 @@ Jadi, ERDDAP mengartikan &quot;years since&quot; dan &quot;months since&quot; se
     src="../images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a></th>
 <th style="width:23%;">UDUNITS → Konverter UCUM</th>
-<th style="width:23%;">UCUM → Konverter UDUNITS</th>
+<th style="width:23%;">UCUM → UDUNITS Converter</th>
 </tr>
 <tr>
 <td>Set karakter</td>
@@ -1244,11 +1244,11 @@ Beberapa unit dengan karakter lain tidak dikonversi</td>
 <tr>
 <td>hal - hal sensitif</td>
 <td>Ya.
-Jika penggunaan huruf besar yang berbeda diizinkan, varian akan ditentukan secara eksplisit.</td>
+Jika penggunaan huruf besar yang berbeda diperbolehkan, varian akan ditentukan secara eksplisit.</td>
 <td>Ya.
 Konverter bekerja dengan bentuk unit UCUM yang peka huruf besar-kecil (&quot;c/s&quot; ).</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>Jamak dan Alias</td>
@@ -1282,7 +1282,7 @@ Nama UCUM yang tidak dikenal dibiarkan tidak berubah.</td>
 <td>&#39;/&#39;, &quot;per&quot;, &quot;PER&quot;</td>
 <td>&#39;/&#39;</td>
 <td>&quot;per&quot; dan &quot;PER&quot; dikonversi ke eksponen negatif.</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>operator eksponen</td>
@@ -1297,8 +1297,8 @@ Nama UCUM yang tidak dikenal dibiarkan tidak berubah.</td>
 Kemudian perkalian dan pembagian dievaluasi dari kiri ke kanan.</td>
 <td>Eksponen adalah yang tertinggi.
 Kemudian perkalian dan pembagian dievaluasi dari kiri ke kanan.</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>angka</td>
@@ -1311,36 +1311,36 @@ Kemudian perkalian dan pembagian dievaluasi dari kiri ke kanan.</td>
 <td>_ (garis bawah)</td>
 <td>Digunakan dalam nama unit individu.</td>
 <td>Digunakan untuk menunjukkan anotasi subskrip dalam nama unit (misalnya, &quot;mo_g&quot; untuk bulan Gregorian)</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>&#39; (tanda kutip)</td>
 <td>Tidak digunakan.</td>
 <td>Digunakan untuk memisahkan kata dalam nama multi-kata (misalnya, &quot;[todd&#39;U]&quot; untuk unit Todd )</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>( )</td>
 <td>Digunakan untuk mengelompokkan item.</td>
 <td>Digunakan untuk mengelompokkan item.</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>[ ]</td>
 <td>Tidak digunakan.</td>
-<td>Digunakan untuk melampirkan kelompok simbol yang harus diperlakukan sebagai kelompok (misalnya, &quot;[in_i]&quot; untuk inci internasional)</td>
-<td>(Tidak perlu perubahan)</td>
-<td>(Tidak perlu perubahan)</td>
+<td>Digunakan untuk menyertakan kelompok simbol yang harus diperlakukan sebagai kelompok (misalnya, &quot;[in_i]&quot; untuk inci internasional)</td>
+<td>(Tidak diperlukan perubahan)</td>
+<td>(Tidak diperlukan perubahan)</td>
 </tr>
 <tr>
 <td>{ }</td>
 <td>Tidak digunakan.</td>
 <td>Digunakan untuk anotasi (misalnya, &quot;%{vol}&quot; untuk persen berdasarkan volume).</td>
-<td>(Tidak perlu perubahan)</td>
-<td>Jika komentar didefinisikan dalam standar UCUM, itu akan dikonversi.
+<td>(Tidak diperlukan perubahan)</td>
+<td>Jika komentar didefinisikan dalam standar UCUM, komentar tersebut akan dikonversi.
 Jika istilah tidak didefinisikan, { } akan dikonversi ke ( ) .</td>
 </tr></table>
 <p>&nbsp;
@@ -1360,13 +1360,13 @@ Tetapi ada beberapa kesulitan dan kasus khusus:
     src="../images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a></th>
 <th style="width:23%;">UDUNITS → Konverter UCUM</th>
-<th style="width:23%;">UCUM → Konverter UDUNITS</th>
+<th style="width:23%;">UCUM → UDUNITS Converter</th>
 </tr>
 <tr>
 <td>menghitung</td>
 <td>&quot;count&quot; adalah unit dasar.</td>
 <td>Tidak ada padanan yang tepat, karena merupakan non-unit tak berdimensi.</td>
-<td>&quot;count&quot; dikonversi menjadi &quot;{count}&quot; (anotasi tanpa dimensi).</td>
+<td>&quot;count&quot; diubah menjadi &quot;{count}&quot; (anotasi tanpa dimensi).</td>
 <td>&quot;{count}&quot; diubah menjadi &quot;count&quot; .</td>
 </tr>
 <tr>
@@ -1402,7 +1402,7 @@ Mereka semua diwakili oleh &quot;deg&quot; .</td>
 <td>&quot;&amp;C;&quot; berarti Coulomb, tetapi sering keliru digunakan untuk mengartikan <kbd>degree_C</kbd> .
 <td>&quot;&amp;C;&quot; berarti Coulomb.
 Derajat Celcius diidentifikasi melalui <kbd>Cel</kbd> .</td>
-<td>&quot;&amp;C;&quot; dikonversi ke <kbd>Cel</kbd>, pada teori bahwa &C; digunakan secara tidak benar.</td>
+<td>&quot;&amp;C;&quot; dikonversi ke <kbd>Cel</kbd>, berdasarkan teori bahwa &C; digunakan secara tidak benar.</td>
 <td>&quot;&amp;C;&quot; dibiarkan sebagai &quot;&amp;C;&quot; .</td>
 </tr>
 <tr>
@@ -1636,6 +1636,9 @@ Izinkan&quot;
 Jika Anda membuat permintaan ERDDAP dari program komputer (selain browser), cookie sulit digunakan.
 Maaf.
 ]]></cookiesHelp>
+<copyImageToClipboard>Salin gambar ke papan klip</copyImageToClipboard>
+<copyTextToClipboard>Salin teks ke papan klip</copyTextToClipboard>
+<copyToClipboardNotAvailable>Salin ke papan klip tidak tersedia</copyToClipboardNotAvailable>
 <daf>Formulir Akses Data</daf>
 <dafGridBypassTooltip><![CDATA[
 Halaman web ini hanya menyederhanakan pembuatan URL griddap.
@@ -4993,7 +4996,7 @@ Ini dapat merujuk ke &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#video">Untuk pengenalan singkat tentang ERDDAP, tonton paruh pertama ini<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 menit)
 <li><a rel="bookmark" href="#localAndRemote">ERDDAP dapat memperoleh data dari sumber data lokal (pada hard drive server) dan jarak jauh (diakses melalui web).</a>
-<li><a rel="bookmark" href="#scientificData">ERDDAP dapat melayani banyak jenis data ilmiah, bukan hanya data oseanografi.</a>
+<li><a rel="bookmark" href="#scientificData">ERDDAP dapat melayani banyak jenis data ilmiah, tidak hanya data oseanografi.</a>
 <li><a rel="bookmark" href="#search">ERDDAP menawarkan beberapa cara untuk mencari kumpulan data yang menarik.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP memungkinkan Anda meminta data dengan cara standar.</a>
 <li><a rel="bookmark" href="#userUnits">Permintaan untuk data grid dapat dibuat di unit pengguna.</a>
@@ -5068,7 +5071,7 @@ URL menentukan seluruh permintaan.
 <li>ERDDAP dapat mengembalikan data dalam banyak
 <a href="#fileFormats">format file</a> untuk memungkinkan mendapatkan data ke banyak program lain.
 <li>NOAA bekerja sama:
-Analisis menggunakan dua program perangkat lunak bebas dari NOAA, ERDDAP dan GNOME, dan data yang disajikan oleh NOAA &#39;s NODC/NCDDC (difasilitasi oleh proyek UAF NOAA ).
+Analisis menggunakan dua program perangkat lunak bebas dari NOAA, ERDDAP dan GNOME, dan data disajikan oleh NOAA &#39;s NODC/NCDDC (difasilitasi oleh proyek UAF NOAA ).
 <li>ERDDAP membuat
 <a href="#scientificData">data ilmiah</a> lebih mudah tersedia untuk membantu para ilmuwan (dan lainnya) melakukan pekerjaan mereka dengan lebih efisien.
 <li>Menggunakan ERDDAP tidak sulit.
@@ -5083,7 +5086,7 @@ Ini tersirat.)
 <br>Lihat
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">daftar jenis sumber data</a> yang dapat diakses ERDDAP .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP dapat melayani banyak jenis data ilmiah, bukan hanya data oseanografi.</a></strong>
+<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP dapat melayani banyak jenis data ilmiah, tidak hanya data oseanografi.</a></strong>
 <br>ERDDAP adalah server data yang ditulis di
 <a title="Administrasi Kelautan dan Atmosfer Nasional" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="Dinas Perikanan Laut Nasional" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
@@ -5170,7 +5173,7 @@ Lihat daftar lengkap
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> standar <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> misalnya, <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Anda dapat mengonversi waktu numerik ke/dari waktu string ISO dengan
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">konverter waktu</a> ERDDAP .) Selain itu, untuk menghindari kebingungan zona waktu dan waktu musim panas, nilai waktu selalu dikonversi ke zona waktu Zulu (UTC, GMT).
 </ul>
-Hal ini memudahkan untuk menentukan batasan dalam permintaan tanpa harus khawatir tentang format data ketinggian (apakah nilai positif naik atau turun?
+Ini memudahkan untuk menentukan batasan dalam permintaan tanpa harus khawatir tentang format data ketinggian (apakah nilai positif naik atau turun?
 dalam meter atau depa?) atau format data waktu (alam mimpi buruk dari kemungkinan format, misalnya, &quot;Jan 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, atau hari sejak 1 Januari 1980).
 Hal ini membuat hasil dari sumber data yang berbeda mudah untuk dibandingkan.
 <p>ERDDAP memiliki utilitas untuk
@@ -5231,14 +5234,14 @@ Saat Anda meminta data atau grafik dari
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">metadata CF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>) menggambarkan data.
-ERDDAP memungkinkan (dan mendorong) administrator untuk mendeskripsikan metadata yang akan ditambahkan ke kumpulan data dan variabelnya saat itu juga.
+ERDDAP memungkinkan (dan mendorong) administrator untuk mendeskripsikan metadata yang akan ditambahkan ke kumpulan data dan variabelnya secara langsung.
 Lihat bagian
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes</a> pada
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">petunjuk untuk administrator</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP memungkinkan Anda meminta file gambar .png dan .pdf dengan grafik dan peta</a></strong>
-<br>data di samping data sebenarnya.
+<br>data selain data yang sebenarnya.
 Dan ERDDAP &#39;s Make A Graph memungkinkan Anda menyesuaikan gambar.
 Beberapa kegunaan khusus dari gambar-gambar ini adalah:
 <ul>
@@ -5258,7 +5261,7 @@ Sebagai gantinya, ERDDAP mencari
     >pengkodean-terima <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> di header permintaan HTTP GET yang dikirim oleh klien.
-Jika jenis kompresi yang didukung (gzip, x-gzip, atau deflate ) ditemukan dalam daftar accept-encoding, ERDDAP menyertakan <kbd>content-encoding</kbd> di header respons HTTP dan mengompresi data saat mentransmisikannya.
+Jika jenis kompresi yang didukung (gzip, x-gzip, atau deflate ) ditemukan dalam daftar pengkodean-terima, ERDDAP menyertakan <kbd>content-encoding</kbd> di header respons HTTP dan mengompresi data saat mentransmisikannya.
 Terserah program klien untuk mencari <kbd>content-encoding</kbd> dan dekompresi data.
 Respons terkompresi seringkali 3-10 kali lebih cepat, meskipun tidak ada gunanya meminta file .png terkompresi karena konten file sudah dikompresi.
 Browser dan klien OPeNDAP melakukan ini secara default.
@@ -5282,7 +5285,7 @@ Mereka hanya mendapatkan data yang mereka inginkan, dalam format file yang merek
 <br>&nbsp;
 <li><strong><a class="selfLink" id="dataStructures" href="#dataStructures" rel="bookmark">ERDDAP hanya menggunakan dua struktur data dasar untuk menyimpan data.</a></strong>
 <ul>
-<li>Karena sulit bagi klien manusia dan klien komputer untuk menangani sekumpulan kemungkinan struktur kumpulan data yang kompleks, ERDDAP hanya menggunakan dua struktur data dasar:
+<li>Karena sulit bagi klien manusia dan klien komputer untuk menangani sekumpulan kemungkinan struktur dataset yang kompleks, ERDDAP hanya menggunakan dua struktur data dasar:
 <ul>
 <li><a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">struktur data grid</a> (misalnya, untuk data satelit dan data model) dan
 <li><a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">struktur data tabular</a> (misalnya, untuk data pelampung, stasiun, dan lintasan in-situ).
@@ -5295,7 +5298,7 @@ Tabel, khususnya, adalah struktur data yang sangat fleksibel (lihat kesuksesan f
 <li>Ini membuat kueri data lebih mudah dibuat.
 <li>Hal ini membuat respons data memiliki struktur sederhana, yang mempermudah penyajian data dalam berbagai jenis file standar yang lebih luas (yang seringkali hanya mendukung struktur data sederhana).
 Inilah alasan utama kami menyiapkan ERDDAP dengan cara ini.
-<li>Ini, pada gilirannya, memudahkan kami (atau siapa pun) untuk menulis perangkat lunak klien yang bekerja dengan semua kumpulan data ERDDAP .
+<li>Hal ini, pada gilirannya, memudahkan kami (atau siapa pun) untuk menulis perangkat lunak klien yang bekerja dengan semua kumpulan data ERDDAP .
 <li>Hal ini memudahkan untuk membandingkan data dari sumber yang berbeda, misalnya untuk Analisis Ekosistem Terpadu (IEA).
 <li>Kami sangat menyadari bahwa jika Anda terbiasa bekerja dengan data dalam struktur data lain, Anda mungkin awalnya berpikir bahwa pendekatan ini sederhana atau tidak cukup.
 Tetapi semua struktur data memiliki pengorbanan.
@@ -5339,7 +5342,7 @@ ERDDAP menawarkan umpan RSS 2.01 terpisah untuk setiap kumpulan data sehingga An
 Untuk berlangganan umpan RSS kumpulan data, klik salah satu ikon RSS<img alt="RSS" style="vertical-align:top" title="Ikon RSS." src="&erddapUrl;/images/rss.gif" > yang muncul di paling kanan pada halaman web ERDDAP dengan daftar kumpulan data (<a rel="contents" href="&erddapUrl;/info/index.html">contoh</a>) atau pada halaman web Formulir Akses Data dan Buat Grafik untuk kumpulan data individual (<a href="&erddapUrl;/griddap/etopo180.html">contoh</a>).
 <p><strong>Perbandingan</strong> Layanan RSS mungkin yang Anda cari.
 Ini adalah standar yang bagus.
-Tetapi jika Anda perlu mengetahui sesegera mungkin ketika kumpulan data berubah, gunakan sistem email/URL, bukan RSS .
+Tetapi jika Anda perlu mengetahui sesegera mungkin saat kumpulan data berubah, gunakan sistem email/URL, bukan RSS .
 Klien RSS secara berkala (setiap jam?) meminta dan membaca dokumen XML RSS untuk mencari perubahan.
 Jadi biasanya, klien RSS tidak akan mendeteksi perubahan pada kumpulan data dengan cepat (rata-rata 30 menit?).
 Sebaliknya, sistem langganan email/URL langsung bertindak setiap kali ERDDAP mendeteksi perubahan pada kumpulan data.
@@ -5363,7 +5366,7 @@ Anda mungkin dapat mengatur klien RSS Anda untuk memeriksa perubahan setiap meni
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> - dan
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> -gaya tautan untuk membuat layanannya tersedia untuk program komputer.</strong>
+      title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> -style link untuk membuat layanannya tersedia untuk program komputer.</strong>
 <br>Fitur-fitur ini dapat digunakan untuk membangun layanan web lain di atas ERDDAP (membuat ERDDAP melakukan semua pekerjaan!).
 ERDDAP tidak dimaksudkan sebagai layanan eksplorasi/grafik data tingkat tinggi.
 Sebaliknya, ERDDAP dimaksudkan untuk menyediakan layanan untuk situs web dan program tersebut.
@@ -5373,10 +5376,10 @@ Baca lebih lanjut tentang Layanan ERDDAP
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Keamanan</a></strong> - Secara default, ERDDAP berjalan sebagai server publik sepenuhnya tanpa sistem login dan tanpa batasan akses data.
 Namun, administrator ERDDAP dapat mengonfigurasi ERDDAP untuk membatasi akses ke beberapa atau semua kumpulan data untuk pengguna yang masuk dan telah diberi peran tertentu.
-ERDDAP memiliki metode built-in untuk otentikasi (log in).
+ERDDAP memiliki metode built-in untuk otentikasi (login).
 Jika instalasi ERDDAP mengaktifkan otentikasi, akan ada tautan&quot;login&quot;di bagian atas setiap halaman web.
 Pengguna tidak perlu masuk untuk mengakses kumpulan data yang tersedia untuk umum.
-Pengguna yang telah masuk dapat mengakses kumpulan data publik dan kumpulan data pribadi yang diizinkan aksesnya.
+Pengguna yang telah masuk dapat mengakses kumpulan data publik dan kumpulan data pribadi yang boleh mereka akses.
 Pengguna harus menggunakan https:
 (Lapisan Soket Aman) untuk masuk dan mengakses kumpulan data pribadi.
 Kumpulan data dapat dikonfigurasi agar grafik dan peta dapat diakses secara publik, tetapi memiliki data yang hanya dapat diakses oleh pengguna yang berwenang.
@@ -5413,7 +5416,7 @@ ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap dari ERDDAP</a> menggunakan layanan berlangganan dan
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">sistem bendera</a> ERDDAP sehingga mereka akan segera diberitahu ketika data baru tersedia.
 Anda dapat menggabungkan ini untuk efek yang luar biasa:
-jika Anda membungkus Salinan EDDGrid di sekitar kumpulan data EDDGrid FromErddap (atau membungkus EDDTableCopy di sekitar kumpulan data EDDTableFromErddap), ERDDAP akan secara otomatis membuat dan memelihara salinan lokal dari kumpulan data ERDDAP lain.
+jika Anda membungkus Salinan EDDGrid di sekitar set data EDDGrid FromErddap (atau membungkus EDDTableCopy di sekitar set data EDDTableFromErddap), ERDDAP akan secara otomatis membuat dan memelihara salinan lokal dari set data ERDDAP lain.
 Karena layanan berlangganan bekerja segera setelah data baru tersedia, teknologi push menyebarkan data dengan sangat cepat (dalam hitungan detik).
 <p>Arsitektur ini menempatkan setiap administrator ERDDAP bertanggung jawab untuk menentukan dari mana data untuk ERDDAP -nya berasal.
 Administrator ERDDAP lainnya dapat melakukan hal yang sama.
@@ -5436,16 +5439,16 @@ Apa bedanya?</a></strong> Pemahaman saya (Bob) adalah:
 (!).
 Sistem DODS membuat dan menggunakan protokol dods:
 di Internet.
-Ketika HTTP muncul dan sangat sukses, mereka beralih dari dods:
+Ketika HTTP datang dan sangat sukses, mereka beralih dari dods:
 ke http:.
-<p>Pada titik tertentu, mereka menyadari sistem itu berguna untuk lebih dari sekadar data oseanografi.
+<p>Pada titik tertentu, mereka menyadari bahwa sistem itu berguna untuk lebih dari sekadar data oseanografi.
 Jadi mereka membuang nama DODS itu (walaupun tetap dalam beberapa kode), membentuk organisasi kecil bernama
 <a rel="bookmark" href="https://www.opendap.org/">OPeNDAP <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> dan menulis
 <a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">spesifikasi DAP (Data Access Protocol) <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>, yang menstandarkan format permintaan untuk metadata dan/atau data, dan tanggapan dengan metadata dan/atau data.
+      title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>, yang menstandardisasi format permintaan metadata dan/atau data, dan respons dengan metadata dan/atau data.
 OPeNDAP (organisasi) masih menggembalakan DAP (spesifikasi) dan merupakan penulis Hyrax (server data yang sering keliru disebut sebagai OPeNDAP ).
 <p>Hyrax, THREDDS, GRADS, ERDDAP dan lain-lain adalah server data (software) yang mengimplementasikan DAP .
 Mereka masing-masing menerapkan subset DAP tetapi melakukan hal-hal lain dengan sangat berbeda.
@@ -5455,9 +5458,9 @@ ERDDAP menggunakan kodenya sendiri untuk menulis tanggapan DAP .
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Apakah ERDDAP solusi untuk distribusi data / masalah akses data semua orang?</a></strong>
 <br>Tidak.
 ERDDAP mencoba menemukan sweet spot yang merupakan solusi yang sangat baik untuk sebagian besar masalah distribusi data yang kami hadapi.
-ERDDAP menggunakan pendekatan middleware:
+ERDDAP mengambil pendekatan middleware:
 ERDDAP dapat memperoleh data dari banyak jenis server data jarak jauh yang berbeda dan dapat memberikan data tersebut kepada klien dalam banyak format file yang berbeda.
-Ini dirancang untuk menjadi solusi agnostik yang berusaha membuat server data lain (OPeNDAP, SOS, OBIS, WMS, ...) dapat dioperasikan.
+Ini dirancang untuk menjadi solusi agnostik yang berupaya membuat server data lain (OPeNDAP, SOS, OBIS, WMS, ...) dapat dioperasikan.
 Apakah ada satu server data sempurna yang memenuhi kebutuhan semua orang dengan sempurna?
 Kami tidak berpikir begitu.
 Dan bahkan jika Anda berpikir ada atau akan ada, itu akan menjadi waktu yang lama sebelum semua orang beralih ke sana, jika pernah.
@@ -5474,10 +5477,10 @@ Sama seperti
   >database relasional <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> dapat menyimpan kumpulan data yang kompleks hanya dengan menggunakan satu struktur data sederhana (tabel), ERDDAP dapat menyajikan data dari kumpulan data yang lebih kompleks dengan memecah kumpulan data sumber menjadi beberapa kumpulan data ERDDAP, masing-masing dengan struktur data sederhana yang serupa.
-Sebagai contoh, beberapa set data model lingkungan grid dapat disimpan di ERDDAP dengan menempatkan variabel permukaan laut ([waktu][lintang][garis bujur]) dalam satu set data ERDDAP, dan dengan menempatkan variabel dengan ketinggian ([waktu][ketinggian][ lintang][bujur]) di kumpulan data ERDDAP lain.
+Misalnya, beberapa set data model lingkungan grid dapat disimpan di ERDDAP dengan menempatkan variabel permukaan laut ([waktu][lintang][bujur]) dalam satu set data ERDDAP, dan dengan menempatkan variabel dengan ketinggian ([waktu][ketinggian][ lintang][bujur]) di kumpulan data ERDDAP lain.
 Kami tahu ini tidak ideal, tetapi perlu untuk mengizinkan ERDDAP mengembalikan data dalam format file umum (beberapa di antaranya cukup sederhana).
 <p>Pendekatan lain untuk menangani kumpulan data yang kompleks (misalnya, untuk model data yang menggunakan proyeksi bola kubus) juga menawarkan versi kumpulan data yang diproyeksikan ulang ([waktu][ketinggian][lintang][garis bujur]) yang dapat digunakan dengan mudah oleh ERDDAP .
-Struktur data yang lebih sederhana ini tidak dimaksudkan untuk menggantikan struktur data asli, tetapi dapat menjadi cara yang berguna untuk mendistribusikan data ke khalayak yang lebih luas.
+Struktur data yang lebih sederhana ini tidak dimaksudkan untuk menggantikan struktur data asli, tetapi dapat menjadi cara yang berguna untuk mendistribusikan data ke audiens yang lebih luas.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Seberapa berkelanjutan proyek ERDDAP ?</strong></a>
 <br>ERDDAP sangat berkelanjutan.
@@ -5486,12 +5489,12 @@ Struktur data yang lebih sederhana ini tidak dimaksudkan untuk menggantikan stru
 Itu tidak benar.
 ERDDAP untuk keberlanjutan jangka panjang sangat baik, dan mendekati yang terbaik.
 <p>Ya, saya adalah pengembang utama ERDDAP .
-Saya adalah pegawai federal yang didanai penuh.
+Saya seorang pegawai federal yang didanai penuh.
 Pendanaan saya bukan uang&quot;lunak&quot;, jadi saya tidak menerima atau mengandalkan hibah.
 Saya menghabiskan lebih dari separuh waktu saya untuk mengembangkan ERDDAP .
 Sisa waktu saya dihabiskan untuk mengelola kumpulan data.
 Pekerjaan itu berguna untuk ERDDAP karena saya perlu bekerja dengan kumpulan data nyata untuk mengetahui secara detail apa yang perlu dilakukan ERDDAP .
-Atasan saya mendukung sepenuhnya pekerjaan saya di ERDDAP karena ERDDAP melakukan apa yang harus saya lakukan:
+Atasan saya sepenuhnya mendukung pekerjaan saya di ERDDAP karena ERDDAP melakukan apa yang harus saya lakukan:
 memudahkan ilmuwan perikanan (terutama, tetapi sebenarnya semua orang) untuk mendapatkan data ilmiah dari berbagai sumber.
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">Hal yang menakjubkan tentang perangkat lunak adalah tidak ada biaya untuk menduplikasi.</a> Jadi untuk melakukan pekerjaan saya, saya menulis ERDDAP untuk digunakan di ERD .
 Saya pikir itu adalah cara terbaik bagi saya untuk melakukan pekerjaan saya.
@@ -5509,34 +5512,63 @@ Kode sumber untuk setiap versi ada di
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>, sistem yang paling umum digunakan untuk proyek perangkat lunak kolaboratif.
-Sejauh ini, empat grup lain telah menyumbangkan kode ke ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> ditulis dan disumbangkan oleh Jonathan Lafite dan Philippe Makowski dari R.Tech Engineering (lisensi:
-open source yang dilindungi hak cipta).
+Sejauh ini, grup/orang ini telah menyumbangkan kode ke ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">Gabungkan</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> ditulis dan disumbangkan oleh Jonathan Lafite dan Philippe Makowski dari R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (lisensi:
+sumber terbuka yang dilindungi hak cipta).
 Terima kasih, Jonathan dan Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TabelPenulisDataTabel
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> ditulis dan disumbangkan oleh Roland Schweitzer dari NOAA (lisensi:
-open source berhak cipta).
+open source yang dilindungi hak cipta).
 Terima kasih, Roland!
-<li>Versi awal
+<br>&nbsp;
+<li>json-ld
+<br>Versi awal
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets dengan fitur json-ld (JSON Linked Data)</a> (dan dengan demikian semua kerja keras dalam mendesain konten) ditulis dan disumbangkan (lisensi:
 open source berhak cipta) oleh Adam Leadbetter dan Rob Fuller dari Institut Kelautan di Irlandia.
 Terima kasih, Adam dan Rob!
-<li>Kode untuk
+<br>&nbsp;
+<li>orderBy
+<br>Kode untuk
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean</a> orderByMean di tabledap dan perubahan ekstensif pada kode untuk mendukung
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >notasi <i>variabelName/divisor:offset</i></a> untuk semua filter orderBy ditulis dan disumbangkan (lisensi:
-open source berhak cipta) oleh Rob Fuller dan Adam Leadbetter dari Marine Institute di Irlandia.
+open source yang dilindungi hak cipta) oleh Rob Fuller dan Adam Leadbetter dari Marine Institute di Irlandia.
 Terima kasih, Rob dan Adam!
-<li>Kode untuk tiga jenis penanda baru (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) disumbangkan oleh Marco Alba dari ETT / EMODnet Physics.
-Terima kasih Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Jenis Penanda Tanpa Batas
+<br>Kode untuk tiga jenis penanda baru (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) disumbangkan oleh Marco Alba dari ETT / EMODnet Physics.
+Terima kasih, Marco Alba!
+<br>&nbsp;
+<li>Terjemahan pesan.xml
+<br>Versi awal dari kode di TranslateMessages.java yang menggunakan layanan terjemahan Google untuk menerjemahkan pesan.xml ke berbagai bahasa ditulis oleh Qi Zeng, yang bekerja sebagai magang Google Summer of Code.
+Terima kasih, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>Kode untuk
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >filter orderBy Sum</a> di tabledap (berdasarkan orderByMean Rob Fuller dan Adam Leadbetter) dan tombol Centang Semua dan Hapus Centang Semua pada Formulir Akses Data EDDGrid ditulis dan disumbangkan (lisensi:
+sumber terbuka berhak cipta) oleh Marco Alba dari ETT Solutions dan EMODnet.
+Terima kasih, Marco!
+<br>&nbsp;
+<li>Permintaan .transparentPng di luar jangkauan
+<br>ERDDAP sekarang menerima permintaan untuk .transparentPng ketika nilai garis lintang dan/atau garis bujur sebagian atau seluruhnya berada di luar jangkauan.
+(Ini adalah ERDDAP GitHub Issues #19, diposting oleh Rob Fuller -- terima kasih telah mempostingnya, Rob.) Kode untuk memperbaikinya ditulis oleh Chris John.
+Terima kasih, Kris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Saya berharap orang lain akan berkontribusi kode di masa depan.
-Jika sesuatu terjadi pada saya, atasan saya akan mempekerjakan pengganti dengan tujuan khusus untuk melanjutkan pengembangan ERDDAP .
-Selanjutnya, saya mencoba menulis kode yang sangat bersih.
+Jika sesuatu terjadi pada saya, atasan saya akan mempekerjakan seorang pengganti dengan tujuan khusus untuk melanjutkan pengembangan ERDDAP .
+Selanjutnya, saya mencoba untuk menulis kode yang sangat bersih.
 Saya menulis komentar Java Doc.
 Saya menulis komentar dalam kode.
 Saya memilih nama variabel dengan hati-hati.
@@ -5545,7 +5577,7 @@ Semua ini adalah upaya untuk membuat kode lebih mudah dibaca, untuk programmer l
 ditulis seperti itu.
 Kode bersih dengan komentar bagus membuat pekerjaan saya yang sedang berlangsung di ERDDAP lebih mudah, jadi saya memiliki insentif besar untuk menulis kode bersih dengan komentar bagus.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Tetapi semua jawaban saya sejauh ini tidak terlalu penting.</a> Hanya satu hal yang benar-benar penting.
-Hanya satu hal yang menjamin keberlanjutan untuk ERDDAP atau proyek perangkat lunak apa pun:
+Hanya satu hal yang menjamin keberlanjutan ERDDAP atau proyek perangkat lunak apa pun:
 bahwa ERDDAP adalah
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">Perangkat Lunak Bebas dan Sumber Terbuka (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5555,10 +5587,10 @@ Secara khusus, ERDDAP menggunakan
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>, sehingga siapa pun dapat melakukan apa pun yang mereka inginkan dengan kode tersebut.
 <p>Mengapa itu penting?
-Orang mungkin berpikir bahwa perangkat lunak akan tersedia dengan andal di masa depan karena perusahaan besar berada di belakangnya.
+Orang mungkin berpikir bahwa perangkat lunak akan tersedia dengan andal di masa depan karena ada perusahaan besar di belakangnya.
 Tetapi Google, misalnya, telah menghentikan banyak proyek (<a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
->ini daftarnya <img 
+>inilah daftarnya <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>).
 Saya tidak ingin memilih di Google karena saya sangat menyukai Google dan mereka mendanai sejumlah besar proyek sumber terbuka yang hebat.
@@ -5567,28 +5599,28 @@ Apple telah menghentikan proyek.
 ...
 Intinya adalah bahwa hanya mendapat dukungan dari perusahaan besar bukanlah jaminan bahwa proyek akan berlanjut.
 Pengguna perangkat lunak itu kurang beruntung, <strong>kecuali</strong> perangkat lunak itu (dan karena itu, selalu) Perangkat Lunak Bebas dan Sumber Terbuka (FOSS).
-Kemudian, setiap kali ada minat dari satu pengembang saja, proyek tersebut dapat dan akan terus berkembang.
+Kemudian, setiap kali ada minat bahkan oleh satu pengembang, proyek tersebut dapat dan akan terus berkembang.
 FOSS adalah polis asuransi.
 Faktanya, FOSS adalah satu-satunya polis asuransi, satu-satunya jaminan, yang penting.
 FOSS memastikan bahwa selalu ada jalan ke depan untuk perangkat lunak.
 Itu adalah hak yang tidak dapat dirampas oleh siapa pun, selamanya.
 <p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">Orang mungkin juga berpikir bahwa perangkat lunak yang memiliki tim pengembang besar</a> akan lebih berkelanjutan daripada perangkat lunak dengan satu pengembang utama.
 Tetapi banyak pengembang biasanya membutuhkan banyak dana.
-Saya tahu proyek yang terkenal dan cukup besar dengan 10 pengembang (saya tidak akan mempermalukan mereka dengan menyebutkan nama mereka) yang selalu berada dalam bahaya serius untuk menghentikan proyek karena mereka tidak memiliki cukup dana.
+Saya tahu proyek yang terkenal dan cukup besar dengan 10 pengembang (saya tidak akan mempermalukan mereka dengan menyebutkan nama mereka) yang berada dalam bahaya serius untuk menghentikan proyek karena mereka tidak memiliki cukup dana.
 Mereka mengandalkan hibah.
 Mereka selalu mengalami defisit.
 Pelindung mereka selalu menyelamatkan mereka pada menit terakhir, tetapi sangat lelah untuk menyelamatkan mereka.
-Jadi, jika mereka tidak dapat mengumpulkan satu juta dolar setahun dalam bentuk uang hibah (atau pelindung terlalu lelah untuk menyelamatkan mereka), mereka akan berhenti.
+Jadi, jika mereka tidak dapat mengumpulkan satu juta dolar setahun dalam bentuk hibah (atau pelindung terlalu lelah untuk menyelamatkan mereka), mereka akan berhenti.
 Dan grup tidak dapat membayangkan memiliki kurang dari 10 pengembang.
 Setiap pengembang memiliki peran untuk dimainkan dalam kelompoknya.
-Berdasarkan hal itu, menurut saya ini adalah pertanda bagus bahwa ERDDAP dapat, dan sedang, dikembangkan secara aktif oleh hanya satu pengembang utama (yang didanai penuh) dengan bantuan tidak resmi dari beberapa pengembang lainnya.
+Mengingat hal itu, bagi saya tampaknya ini adalah pertanda bagus bahwa ERDDAP dapat, dan sedang, dikembangkan secara aktif oleh hanya satu pengembang utama (yang didanai penuh) dengan bantuan tidak resmi dari beberapa pengembang lainnya.
 Jika faktanya, itu akan menjadi pertanda buruk jika ERDDAP membutuhkan banyak pengembang.
 Bahwa ERDDAP hanya memiliki satu pengembang utama berarti ini bukanlah tugas besar yang membutuhkan dana besar yang berkelanjutan; itu adalah tugas yang relatif kecil yang membutuhkan sedikit usaha dan dana.
-Itu lebih berkelanjutan, tidak kurang.
+Itu lebih berkelanjutan, bukan kurang.
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Orang mungkin berpikir bahwa menyewa perusahaan kontraktor untuk menulis perangkat lunak adalah ide yang bagus.</a> Dengan biaya tertentu, mereka akan menyediakan pengembang dan menjanjikan kesinambungan (yang bagus kecuali/sampai mereka gulung tikar).
 Tetapi mereka juga memiliki Anda lebih dari satu barel:
 Anda harus membayar mereka apa yang mereka minta atau tidak ada pengembangan lagi, <strong>kecuali</strong> perangkat lunaknya FOSS dan Anda hanya membayar mereka untuk mengerjakan kodenya.
-Dengan FOSS, Anda selalu memiliki pilihan tentang bagaimana untuk bergerak maju.
+Dengan FOSS, Anda selalu memiliki pilihan tentang bagaimana bergerak maju.
 Karena ERDDAP adalah FOSS, kontraktor selalu menjadi pilihan yang baik untuk Anda atau siapa pun sehubungan dengan ERDDAP :
 jika terjadi sesuatu pada saya (pengembang utama), atau jika saya tidak punya waktu untuk membuat beberapa perubahan yang Anda inginkan, atau saya pensiun dan Anda tidak menyukai pekerjaan pengganti saya, Anda selalu dapat menyewa perusahaan kontraktor untuk membuat perubahan yang Anda inginkan (atau membuatnya sendiri).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Singkatnya, ERDDAP memiliki dua fitur keberlanjutan yang paling penting:</a>
@@ -5598,7 +5630,7 @@ jika terjadi sesuatu pada saya (pengembang utama), atau jika saya tidak punya wa
 </ol>
 Saya tidak bisa memikirkan situasi yang lebih baik.
 Saya harap hal itu menghilangkan ketakutan Anda (atau siapa pun) tentang ERDDAP .
-Jika Anda mendengar orang mempertanyakan atau mengecilkan penggunaan ERDDAP karena hanya ada satu pengembang utama, harap luruskan dengan mengarahkan mereka ke diskusi di atas di URL ini:
+Jika Anda mendengar orang mempertanyakan atau mengecilkan penggunaan ERDDAP karena hanya ada satu pengembang utama, luruskan dengan mengarahkan mereka ke diskusi di atas di URL ini:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#berkelanjutan</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -5607,7 +5639,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="citeDataset" href="#citeDataset" rel="bookmark">Bagaimana Mengutip Dataset dalam Makalah</a></strong>
 <br>Penting untuk memberi tahu pembaca bagaimana Anda mendapatkan data yang Anda gunakan dalam makalah Anda.
-Untuk setiap set data yang Anda gunakan, silakan lihat metadata set data di bagian Struktur Atribut Dataset di bagian bawah halaman .html untuk dataset, mis.
+Untuk setiap kumpulan data yang Anda gunakan, silakan lihat metadata kumpulan data di bagian Struktur Atribut Dataset di bagian bawah halaman .html untuk kumpulan data tersebut, mis.
 <br><a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST41.html"
   >https://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMU RSS T41.html</a> .
@@ -5631,7 +5663,7 @@ https://coastwatch.pfeg.noaa.gov/erddap .
 Monterey, CA:
 NOAA / NMFS / SWFSC / ERD .</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Apa singkatan dari&quot; ERDDAP &quot;?</a></strong>
-<br>&quot; ERDDAP &quot;dulunya merupakan akronim, tetapi itu melampaui deskripsi aslinya.
+<br>&quot; ERDDAP &quot;dulunya adalah sebuah akronim, tetapi itu melampaui deskripsi aslinya.
 Sekarang, tolong anggap itu sebagai nama, bukan akronim.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Pedoman Sistem Distribusi Data</a></strong>
@@ -5651,7 +5683,7 @@ Kemudian, orang akan memiliki cara lain untuk mengakses data Anda dan dapat meng
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Hubungi kami</a></h2>
 Jika Anda memiliki pertanyaan, saran, atau komentar tentang ERDDAP secara umum (bukan instalasi ERDDAP khusus ini), silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Group / Mailing List</a> dengan mengunjungi
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Grup / Milis</a> dengan mengunjungi
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -7195,9 +7227,7 @@ Banyak dataset juga dapat diakses melalui Web Map Service (WMS ) ERDDAP .
 <yourEmailAddress>Alamat email anda</yourEmailAddress>
 <zoomIn>Perbesar</zoomIn>
 <zoomOut>Perkecil</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Salin teks ke papan klip</copytexttoclipboard>
+<copytoclipboardnotavailable>Salin ke papan klip tidak tersedia</copytoclipboardnotavailable>
+<copyimagetoclipboard>Salin gambar ke papan klip</copyimagetoclipboard>
 </erddapMessages>

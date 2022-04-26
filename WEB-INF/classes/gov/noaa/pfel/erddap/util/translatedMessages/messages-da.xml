@@ -1412,7 +1412,7 @@ Men der er et par vanskeligheder og særlige tilfælde:
 <td>&quot;{count}&quot; konverteres til &quot;count&quot; .</td>
 </tr>
 <tr>
-<td>forskellige typer grader</td>
+<td>forskellige typer af grader</td>
 <td>UDUNITS behandler degF, degC, degK, degree_north, degree_east, degree_west, degree_true og deres aliaser som separate enheder.
 Nogle standarder (f.eks.
 <a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
@@ -1682,6 +1682,9 @@ Tillad&quot;
 Hvis du laver ERDDAP anmodninger fra et computerprogram (andre end en browser), er cookies svære at arbejde med.
 Undskyld.
 ]]></cookiesHelp>
+<copyImageToClipboard>Kopier billedet til udklipsholderen</copyImageToClipboard>
+<copyTextToClipboard>Kopier tekst til udklipsholder</copyTextToClipboard>
+<copyToClipboardNotAvailable>Kopi til udklipsholder ikke tilgængelig</copyToClipboardNotAvailable>
 <daf>Dataadgangsformular</daf>
 <dafGridBypassTooltip><![CDATA[
 Denne webside forenkler blot oprettelsen af griddap-URL&#39;er.
@@ -5377,7 +5380,7 @@ Browsere og OPeNDAP klienter gør dette som standard.
 De anmoder om komprimerede data og dekomprimerer de returnerede data automatisk.
 Andre klienter (f.eks.
 Java programmer) skal gøre dette eksplicit.
-Med curl skal du tilføje <kbd>--compressed</kbd> til kommandolinjen for at fortælle curl at anmode om et komprimeret svar og automatisk dekomprimere det.
+Med curl skal du tilføje <kbd>--compressed</kbd> til kommandolinjen for at bede curl om at anmode om et komprimeret svar og automatisk dekomprimere det.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAP gør forskellige typer dataservere (OPeNDAP, OBIS, SOS, WMS, ...) interoperable.</a></strong>
 <br>Forskellige typer dataservere bruges i forskellige videnskabelige samfund.
@@ -5442,7 +5445,7 @@ tidsværdierne) ændres.
 <li>ERDDAP giver ingen løfter om egnetheden eller nøjagtigheden af disse tjenester (se
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAP ANSVARSFRASKRIVELSER</a>).
 </ul>
-<p>E- <strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">mail/URL</a> -abonnementer</strong> (ikke tilgængelig på nogle ERDDAP installationer) Når et datasæt ændres, vil e-mail/URL-abonnementssystemet <strong>straks</strong> sende dig en e-mail eller kontakte en URL, som du angiver.
+<p>E- <strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">mail/URL</a> -abonnementer</strong> (ikke tilgængelig på nogle ERDDAP installationer) Når et datasæt ændres, sender e-mail/URL-abonnementssystemet dig <strong>straks</strong> en e-mail eller kontakter en URL, som du angiver.
 E-mail/URL-abonnementer er ikke tilgængelige på nogle ERDDAP installationer.
 For at oprette et e-mail-/URL-abonnement skal du klikke på et af konvolutikonerne <img alt="Subscribe" style="vertical-align:top" title="Konvolutikonet." src="&erddapUrl;/images/envelope.gif" > der vises yderst til højre på ERDDAP -websider med lister over datasæt (<a rel="contents" href="&erddapUrl;/info/index.html">eksempel</a>) og på websiderne Data Access Forms and Make A Graph for individuelle datasæt (<a href="&erddapUrl;/griddap/etopo180.html">eksempel</a>), hvis denne ERDDAP installation understøtter e-mail/URL-abonnementer.
 (Computerprogrammører:
@@ -5482,7 +5485,7 @@ Du kan muligvis indstille din RSS -klient til at tjekke for ændringer hvert min
       title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> - og
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> -stil links for at gøre dets tjenester tilgængelige for computerprogrammer.</strong>
+      title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> -stil links til at gøre dets tjenester tilgængelige for computerprogrammer.</strong>
 <br>Disse funktioner kan bruges til at bygge endnu en webservice oven på ERDDAP (få ERDDAP at gøre alt arbejdet!).
 ERDDAP er ikke beregnet til at være en dataudforskning/graftegning på højt niveau.
 I stedet er ERDDAP beregnet til at levere tjenester til sådanne websteder og programmer.
@@ -5596,7 +5599,7 @@ Bare som en
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >relationel database <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> kan gemme et komplekst datasæt ved at bruge kun én simpel datastruktur (en tabel), kan ERDDAP betjene dataene fra mere komplekse datasæt ved at opdele kildedatasættet i nogle få ERDDAP datasæt, hver med lignende simple datastrukturer.
+      title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> kan gemme et komplekst datasæt ved at bruge kun én simpel datastruktur (en tabel), kan ERDDAP servere dataene fra mere komplekse datasæt ved at opdele kildedatasættet i nogle få ERDDAP datasæt, hver med lignende simple datastrukturer.
 For eksempel kan nogle gridded miljømodeldatasæt lagres i ERDDAP ved at sætte havoverfladevariablerne ([time][latitude][longitude]) i ét ERDDAP datasæt og ved at sætte variablerne med højde ([time][altitude][ breddegrad][længdegrad]) i et andet ERDDAP datasæt.
 Vi ved, at dette ikke er ideelt, men det er nødvendigt at tillade ERDDAP at returnere data i almindelige filformater (hvoraf nogle er ret simple).
 <p>En anden tilgang til at håndtere komplekse datasæt (f.eks.
@@ -5606,7 +5609,7 @@ Disse enklere datastrukturer er ikke beregnet til at erstatte de originale datas
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Hvor bæredygtigt er ERDDAP projektet?</strong></a>
 <br>ERDDAP er meget bæredygtigt.
 <br>Nogle mennesker er overraskede og skuffede over at høre, at ERDDAP for det meste er udviklet af én person (mig, Bob Simons).
-[For øvrigt er meningerne på denne webside mine personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .] De frygter, at hvis der sker mig noget, vil det være slutningen på ERDDAP .
+[For øvrigt er udtalelserne på denne webside mine personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .] De frygter, at hvis der sker noget med mig, vil det være slutningen af ERDDAP .
 Det er simpelthen ikke sandt.
 ERDDAP &#39;s positionering for langsigtet bæredygtighed er fremragende, og tæt på det bedste, det overhovedet kunne være.
 <p>Ja, jeg er hovedudvikleren af ERDDAP .
@@ -5633,29 +5636,58 @@ Kildekoden for hver version er på
 <a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a>, det mest almindeligt anvendte system til samarbejdssoftwareprojekter.
-Indtil videre har fire andre grupper bidraget med kode til ERDDAP :
-<ul>
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
-  >EDDGrid FromMergeIRFiles.java</a> er skrevet og bidraget af Jonathan Lafite og Philippe Makowski fra R.Tech Engineering (licens:
+Indtil videre har disse grupper/personer bidraget med kode til ERDDAP :
+<ul><!-- start contributor's info -->
+<li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+  >EDDGrid FromMergeIRFiles.java</a> er skrevet og bidraget af Jonathan Lafite og Philippe Makowski fra R.Tech Engineering <!--
+<a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a> --> (licens:
 ophavsretligt beskyttet open source).
 Tak, Jonathan og Philippe!
-<li><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
+<br>&nbsp;
+<li>TableWriterDataTable
+<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType" rel="bookmark"
   >.dataTable (TableWriterDataTable.java)</a> er skrevet og bidraget af Roland Schweitzer fra NOAA (licens:
 ophavsretligt beskyttet open source).
 Tak, Roland!
-<li>Den første version af
+<br>&nbsp;
+<li>json-ld
+<br>Den første version af
 <a href="#jsonld" rel="bookmark">Semantic Markup of Datasets with json-ld (JSON Linked Data)</a> -funktionen (og dermed alt det hårde arbejde med at designe indholdet) blev skrevet og bidraget (licens:
 copyrightbeskyttet open source) af Adam Leadbetter og Rob Fuller fra Marine Institute i Irland.
 Tak, Adam og Rob!
-<li>Koden til
+<br>&nbsp;
+<li>orderBy
+<br>Koden til
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean filteret</a> i tabledap og de omfattende ændringer af koden for at understøtte
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
   >notationen for <i>variableName/divisor:offset</i></a> for alle orderBy filtre er skrevet og bidraget (licens:
 ophavsretligt beskyttet open source) af Rob Fuller og Adam Leadbetter fra Marine Institute i Irland.
 Tak, Rob og Adam!
-<li>Koden til tre nye markørtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) blev bidraget af Marco Alba fra ETT / EMODnet Physics.
-Tak Marco Alba.<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
+<br>&nbsp;
+<li>Borderless markørtyper
+<br>Koden til tre nye markørtyper (Borderless Filled Square, Borderless Filled Circle, Borderless Filled Up Triangle) blev bidraget af Marco Alba fra ETT / EMODnet Physics.
+Tak, Marco Alba!
+<br>&nbsp;
+<li>Oversættelser af messages.xml
+<br>Den første version af koden i TranslateMessages.java, som bruger Googles oversættelsestjeneste til at oversætte messages.xml til forskellige sprog, blev skrevet af Qi Zeng, som arbejdede som Google Summer of Code-praktikant.
+Tak, Qi!
+<br>&nbsp;
+<li>orderBy Sum
+<br>Koden til
+<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
+  >orderBy Sum-filteret</a> i tabledap (baseret på Rob Fuller og Adam Leadbetters orderByMean ) og knapperne Check All og Uncheck All på EDDGrid Data Access Form blev skrevet og bidraget (licens:
+copyrightbeskyttet open source) af Marco Alba fra ETT Solutions og EMODnet.
+Tak, Marco!
+<br>&nbsp;
+<li>.transparentPng-anmodninger uden for rækkevidde
+<br>ERDDAP accepterer nu anmodninger om .transparentPng&#39;er, når bredde- og/eller længdegradsværdierne er helt eller delvist uden for området.
+(Dette var ERDDAP GitHub Issues #19, indsendt af Rob Fuller -- tak for at poste det, Rob.) Koden til at rette dette blev skrevet af Chris John.
+Tak, Chris!
+<br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
 Jeg håber, at andre vil bidrage med kode i fremtiden.
@@ -5713,7 +5745,7 @@ Men de har dig også over en tønde:
 du skal betale dem, hvad de anmoder om, ellers er der ikke mere udvikling, <strong>medmindre</strong> softwaren er FOSS, og du bare betaler dem for at arbejde med koden.
 Med FOSS har du altid valgmuligheder om, hvordan du kommer videre.
 Fordi ERDDAP er FOSS, er entreprenører altid en god mulighed for dig eller nogen med hensyn til ERDDAP :
-hvis der sker noget med mig (den ene hovedudvikler), eller hvis jeg ikke har tid til at lave nogle ændringer, som du ønsker, eller jeg går på pension, og du ikke kan lide min afløsers arbejde, kan du altid hyre et entreprenørfirma til at foretage de ændringer, du ønsker (eller selv lave dem).
+hvis der sker noget med mig (den ene hovedudvikler), eller hvis jeg ikke har tid til at lave nogle ændringer, som du ønsker, eller jeg går på pension, og du ikke kan lide min afløsers arbejde, kan du altid hyre et entreprenørfirma til at lave de ændringer, du ønsker (eller selv lave dem).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Sammenfattende har ERDDAP de to bæredygtighedsfunktioner, der betyder mest:</a>
 <ol>
 <li>ERDDAP er et lille projekt (lille nok til at blive håndteret af én hovedudvikler med uofficiel bistand fra et par andre), så det kræver ikke store ressourcer.
@@ -5767,7 +5799,7 @@ Tænk nu bare på det som et navn, ikke et akronym.
 <li>Den lille indsats for at oprette ERDDAP giver mange fordele.
 <li>Hvis du allerede har en webservice til at distribuere dine data, kan du konfigurere ERDDAP til at få adgang til dine data via den eksisterende service eller via kildefilerne eller databasen.
 Så vil folk have en anden måde at få adgang til dine data og vil være i stand til at downloade dataene i yderligere filformater eller som grafer eller kort.
-<li>Hvis du har datasæt, der er i høj efterspørgsel, kan du installere
+<li>Hvis du har datasæt, der er meget efterspurgt, kan du installere
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >flere ERDDAP, der arbejder sammen</a> for at opskalere og opfylde behovene i et stort datadistributionscenter.
@@ -5779,7 +5811,7 @@ Hvis du har spørgsmål, forslag eller kommentarer om ERDDAP generelt (ikke denn
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> og klik på &quot;Ansøg om medlemskab&quot;.
-Når du er medlem, kan du stille dit spørgsmål der eller søge for at se, om spørgsmålet allerede er stillet og besvaret.
+Når du er medlem, kan du stille dit spørgsmål der eller søge for at se, om spørgsmålet allerede er blevet stillet og besvaret.
 <p>ANSVARSFRASKRIVELSE:
 Udtalelserne på denne webside er Bob Simons&#39; personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
@@ -7328,9 +7360,7 @@ Mange datasæt kan også tilgås via ERDDAP &#39;s Web Map Service (WMS ).
 <yourEmailAddress>Din email adresse</yourEmailAddress>
 <zoomIn>Zoom ind</zoomIn>
 <zoomOut>Zoome ud</zoomOut>
-
-<copytexttoclipboard>Copy text to clipboard</copytexttoclipboard>
-<copytoclipboardnotavailable>Copy to clipboard not available</copytoclipboardnotavailable>
-<copyimagetoclipboard>Copy image to clipboard</copyimagetoclipboard>
-
+<copytexttoclipboard>Kopier tekst til udklipsholder</copytexttoclipboard>
+<copytoclipboardnotavailable>Kopi til udklipsholder ikke tilgængelig</copytoclipboardnotavailable>
+<copyimagetoclipboard>Kopier billedet til udklipsholderen</copyimagetoclipboard>
 </erddapMessages>
