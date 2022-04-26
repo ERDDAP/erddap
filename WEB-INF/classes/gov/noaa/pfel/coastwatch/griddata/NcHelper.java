@@ -554,36 +554,8 @@ public class NcHelper  {
      * @return String[] (from ArrayChar.D1, split at \n), String[],
      *    or primitive[] (from numeric ArrayXxx.D1)
      */
-    private static Object getArray(Array nc2Array) {
+    public static Object getArray(Array nc2Array) {
         return getArray(nc2Array, true);
-    }
-    
-    /** 
-     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
-     * 
-     * @param nc2Array an nc2Array
-     * @return StringArray (from ArrayChar.D1, split at \n),
-     *    or ByteArray (from numeric ArrayXxx.D1)
-     */
-    public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
-      //String[] from ArrayChar.Dn
-        if (nc2Array instanceof ArrayChar) {
-            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
-            return new StringArray((Object[])ao.copyTo1DJavaArray());
-        }
-
-        //byte[] from ArrayBoolean.Dn
-        if (nc2Array instanceof ArrayBoolean) {
-            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
-            int n = boolAr.length;
-            byte    byteAr[] = new byte[n];
-            for (int i = 0; i < n; i++)
-                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
-            return PrimitiveArray.factory(byteAr);
-        }
-
-        //ArrayXxxnumeric
-        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray());
     }
 
     /** 
@@ -596,7 +568,7 @@ public class NcHelper  {
      * @return String[] (from ArrayChar.D1, split at \n), String[],
      *    or primitive[] (from numeric ArrayXxx.D1)
      */
-    private static Object getArray(Array nc2Array, boolean buildStringsFromChars) {
+    public static Object getArray(Array nc2Array, boolean buildStringsFromChars) {
 
         //String[] from ArrayChar.Dn
         if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
@@ -940,7 +912,7 @@ public class NcHelper  {
         Dimension mainDimension = null;
         ucar.nc2.Attribute gAtt = netcdfFile.findGlobalAttribute("observationDimension"); //there is also a dods.dap.Attribute
         if (gAtt != null) {
-            PrimitiveArray pa = getPrimitiveArray(gAtt.getValues());
+            PrimitiveArray pa = PrimitiveArray.factory(getArray(gAtt.getValues()));
             if (pa.size() > 0) {
                 String dimName = pa.getString(0);
                 if (reallyVerbose) 
@@ -1880,7 +1852,7 @@ public class NcHelper  {
             rowShape  = new int[]{lastT - firstT + 1, 1, 1, 1};
         }
         Array array = variable.read(rowOrigin, rowShape); 
-        PrimitiveArray pa = getPrimitiveArray(array); 
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
         Test.ensureEqual(pa.size(), lastT - firstT + 1, "NcHelper.getValues nFound!=nExpected.\n" +
             " name=" + variable.getFullName() +
             " xIndex=" + xIndex + 
@@ -1922,7 +1894,7 @@ public class NcHelper  {
             rowShape  = new int[]{nT, nZ, nY, nX};
         }
         Array array = variable.read(rowOrigin, rowShape); 
-        PrimitiveArray pa = getPrimitiveArray(array); 
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
         Test.ensureEqual(pa.size(), nX*nY*nZ*nT, "NcHelper.get4DValues nFound!=nExpected.\n" +
             " name=" + variable.getFullName() +
             " firstX=" + firstX + " nX=" + nX +
@@ -2073,7 +2045,7 @@ public class NcHelper  {
 
             //read the data
             cumReadTime -= System.currentTimeMillis();
-            PrimitiveArray pa = getPrimitiveArray(variable.read()); 
+            PrimitiveArray pa = PrimitiveArray.factory(getArray(variable.read())); 
             cumReadTime += System.currentTimeMillis();
 
             //test the data
