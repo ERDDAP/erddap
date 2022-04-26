@@ -3608,6 +3608,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obMean8bnc", ".nc"); 
         results = NcHelper.ncdump(dir + tName, "");
+        results = results.replaceAll("date_created = \"....-..-..\";", "date_created = \"dddd-dd-dd\";"); //changes every month
+        results = results.replaceAll("date_issued = \"....-..-..\";",  "date_issued = \"dddd-dd-dd\";");  //changes every month
         expected = 
 "netcdf EDDTableFromNcFiles_obMean8bnc.nc {\n" +
 "  dimensions:\n" +
@@ -3677,8 +3679,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-03-16\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-03-16\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"dddd-dd-dd\";\n" +
+"  :date_issued = \"dddd-dd-dd\";\n" + 
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -4003,6 +4005,8 @@ expected =
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_obSum8bnc", ".nc"); 
         results = NcHelper.ncdump(dir + tName, "");
+        results = results.replaceAll("date_created = \"....-..-..\";", "date_created = \"dddd-dd-dd\";"); //changes every month
+        results = results.replaceAll("date_issued = \"....-..-..\";",  "date_issued = \"dddd-dd-dd\";");  //changes every month
         expected = 
 "netcdf EDDTableFromNcFiles_obSum8bnc.nc {\n" +
 "  dimensions:\n" +
@@ -4072,8 +4076,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-03-16\";\n" + //changes every month  Don't regex. I want to see it.
-"  :date_issued = \"2022-03-16\";\n" +  //changes every month  Don't regex. I want to see it.
+"  :date_created = \"dddd-dd-dd\";\n" + 
+"  :date_issued = \"dddd-dd-dd\";\n" +  
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -5220,6 +5224,9 @@ expected =
             eddTable.className() + "_obClosest5nc", ".nc"); 
         Table table = new Table();
         results = NcHelper.ncdump(dir + tName, "");
+        results = results.replaceAll("date_created = \"....-..-..\";", "date_created = \"dddd-dd-dd\";"); //changes every month
+        results = results.replaceAll("date_issued = \"....-..-..\";",  "date_issued = \"dddd-dd-dd\";");  //changes every month
+
         expected = 
 "netcdf EDDTableFromNcFiles_obClosest5nc.nc {\n" +
 "  dimensions:\n" +
@@ -5289,8 +5296,8 @@ expected =
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
 "  :creator_url = \"https://www.pfeg.noaa.gov\";\n" +
-"  :date_created = \"2022-03-16\";\n" + //changes every month. Don't regex it -- I want to see it.
-"  :date_issued = \"2022-03-16\";\n" +  // ""
+"  :date_created = \"dddd-dd-dd\";\n" + 
+"  :date_issued = \"dddd-dd-dd\";\n" +  
 "  :featureType = \"TimeSeries\";\n" +
 "  :geospatial_lat_units = \"degrees_north\";\n" +
 "  :geospatial_lon_units = \"degrees_east\";\n" +
@@ -7138,7 +7145,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 45553271;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 45749784;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7183,7 +7190,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.64579496e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.64751888e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7245,7 +7252,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-03-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7273,9 +7280,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-03-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-04-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-03-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-04-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7293,7 +7300,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-03-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7318,7 +7325,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the February 2022 data) but is a subset of the " + //month changes
+    "up to and including the March 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7331,7 +7338,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2022-02-25T13:16:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-03-17T12:08:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -14399,6 +14406,7 @@ expected =
                                      "Float64 actual_range 2.476656e+8, [endTime];");
         results = results.replaceAll("String time_coverage_end \"2...-..-..T12:00:00Z\";",
                                      "String time_coverage_end \"[endIsoTime]\";");
+        results = results.replaceAll("....-..-.. Bob Simons", "dddd-dd-dd Bob Simons");
         //String2.log(results);
         expected =   //2013-01-04 several changes related to new array and wmo_platform_code
 "Attributes {\n" +
@@ -14544,8 +14552,7 @@ expected =
 "    String geospatial_vertical_units \"m\";\n" + 
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
-//The date below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
-"2022-03-03 Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
+"dddd-dd-dd Bob Simons at NOAA/NMFS/SWFSC/ERD (bob.simons@noaa.gov) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);

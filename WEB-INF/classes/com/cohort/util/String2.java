@@ -6050,11 +6050,7 @@ and zoom and pan with controls in
         if (s.length() == 0)
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
-        char ch0 = s.charAt(0);
-        Map<String, WeakReference<String>> tCanonicalMap = canonicalMap.get()[
-            ch0 < 'A'? 0 : ch0 < 'N'? 1 : //divide uppercase into 2 parts
-            ch0 < 'a'? 2 : ch0 < 'j'? 3 : //divide lowercase into 3 parts
-            ch0 < 'r'? 4 : 5];
+        Map<String, WeakReference<String>> tCanonicalMap = canonicalMap.get()[s.charAt(s.length() / 2) % CANONICAL_MAP_COUNT];
        
         //faster and logically better to use synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
@@ -6097,12 +6093,7 @@ and zoom and pan with controls in
             return STRING_HOLDER_NULL;
         if (car.length == 0)
             return STRING_HOLDER_ZERO;
-        char b = car[0];
-        int which = //b == -128? 7 : Math.abs(b)/16; //0..7
-            b < 'A'? 0 : b < 'N'? 1 : //divide uppercase into 2 parts
-            b < 'a'? 2 : b < 'j'? 3 : //divide lowercase into 3 parts
-            b < 'r'? 4 : 5;
-        Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap = canonicalStringHolderMap.get()[which];
+        Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap = canonicalStringHolderMap.get()[car[car.length / 2] % CANONICAL_MAP_COUNT];
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
