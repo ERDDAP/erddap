@@ -6818,6 +6818,20 @@ So far, these groups/people have contributed code to ERDDAP:
     Thank you, Chris!
   <br>&nbsp;
 
+<li>Display base64 image data in .htmlTable responses
+  <br>The code for displaying base64 image data in .htmlTable responses 
+    was contributed by Marco Alba of ETT / EMODnet Physics.
+    Thank you, Marco Alba!
+  <br>&nbsp;
+
+<li>nThreads Improvement
+  <br>The nThreads system for EDDTableFromFiles was significantly improved. 
+    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
+    for the most challenging requests (when a large number of files must be processed to gather the results).
+    These changes will also lead to a general speedup throughout ERDDAP.
+    The code for these changes was contributed by Chris John. Thank you, Chris!
+  <br>&nbsp;
+
 
 <!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
 </ul>
