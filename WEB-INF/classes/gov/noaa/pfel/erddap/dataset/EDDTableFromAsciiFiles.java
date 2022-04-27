@@ -6738,7 +6738,7 @@ String expected =
             "testNThreadsWarmup", ".csv"); 
 
         //test
-        for (int i = 5; i > -5; i--) {  
+        for (int i = 5; i >= -5; i--) {  
             if (i == 0)
                 continue;
             eddTable.nThreads = Math.abs(i);
@@ -6752,7 +6752,7 @@ String expected =
             String msg = "nThreads=" + eddTable.nThreads + " time=" + eTime + "ms\n";
             String2.log(msg);
             bigResults.append(msg);
-            if (eTime > 18000)
+            if (eTime > 30000)
                 String2.log("Too slow!\n" + bigResults);
                 //throw new RuntimeException("Too slow!\n" + bigResults);
 
@@ -6885,16 +6885,18 @@ String expected =
         }
         String2.log(bigResults.toString());
 /* times truncted to seconds
-     2020-06-16 new 
-nThreads=5 time=13  
-nThreads=4 time=13  
-nThreads=3 time=13  
-nThreads=2 time=14  
-nThreads=1 time=14  
-nThreads=1 time=14  
-nThreads=2 time=15  
-nThreads=3 time=13  
-nThreads=4 time=13  
+     2022-04-27 with Bob's changes to String2 and Chris John's changes to EDDTableFromFiles 
+nThreads=5 time=10528ms
+nThreads=4 time=10507ms
+nThreads=3 time=10652ms
+nThreads=2 time=12136ms
+nThreads=1 time=18100ms
+nThreads=1 time=17825ms
+nThreads=2 time=12499ms
+nThreads=3 time=10569ms
+nThreads=4 time=10454ms
+nThreads=5 time=10326ms
+on Bob's 2 core (pathetic) Lenovo computer, but much faster (esp with NThreads=3+) on Chris John's faster computer.
 */
 
         Table.verbose = true;
