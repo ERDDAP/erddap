@@ -537,8 +537,6 @@ public class NcHelper  {
      */
     public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
         //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
-        PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars), nc2Array.isUnsigned() || isUnsigned);
-        return pa;
         //String[] from ArrayChar.Dn
         if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
             ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
