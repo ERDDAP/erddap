@@ -539,6 +539,24 @@ public class NcHelper  {
         //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
         PrimitiveArray pa = PrimitiveArray.factory(getArray(nc2Array, buildStringsFromChars), nc2Array.isUnsigned() || isUnsigned);
         return pa;
+        //String[] from ArrayChar.Dn
+        if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
+            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
+            return new StringArray((Object[])ao.copyTo1DJavaArray());
+        }
+
+        //byte[] from ArrayBoolean.Dn
+        if (nc2Array instanceof ArrayBoolean) {
+            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
+            int n = boolAr.length;
+            byte    byteAr[] = new byte[n];
+            for (int i = 0; i < n; i++)
+                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
+            return PrimitiveArray.factory(byteAr, isUnsigned);
+        }
+
+        //ArrayXxxnumeric
+        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), isUnsigned);
     }
 
 //was
@@ -562,29 +580,18 @@ public class NcHelper  {
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
      * 
      * @param nc2Array an nc2Array
+     * @param buildStringsFromChars only applies to source DataType=char variables.
+     * @param isUnsigned if true and if the object type isIntegerType, 
+     *   the resulting PrimitiveArray will be an unsigned PAType.
+     *   If false and object type isIntegerType, the resulting PrimitiveArrray will 
+     *   match the signedness(?) of nc2Array.
      * @return StringArray (from ArrayChar.D1, split at \n),
      *    or ByteArray (from numeric ArrayXxx.D1)
      */
     public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
-      //String[] from ArrayChar.Dn
-        if (nc2Array instanceof ArrayChar) {
-            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
-            return new StringArray((Object[])ao.copyTo1DJavaArray());
-        }
-
-        //byte[] from ArrayBoolean.Dn
-        if (nc2Array instanceof ArrayBoolean) {
-            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
-            int n = boolAr.length;
-            byte    byteAr[] = new byte[n];
-            for (int i = 0; i < n; i++)
-                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
-            return PrimitiveArray.factory(byteAr);
-        }
-
-        //ArrayXxxnumeric
-        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray());
+       return getPrimitiveArray(nc2Array, true, false);
     }
+
 
     /** 
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a 1D array of primitives.
