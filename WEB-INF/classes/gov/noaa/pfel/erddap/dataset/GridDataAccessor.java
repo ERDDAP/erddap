@@ -26,14 +26,8 @@ import gov.noaa.pfel.erddap.variable.EDV;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
 
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
  
 
 /** 
@@ -101,11 +95,7 @@ public class GridDataAccessor {
     protected PrimitiveArray axisValues[]; //destinationValues for total request
     protected PrimitiveArray partialDataValues[]; //[dv in the query]
     protected long totalNBytes;
-    protected int nThreads; //constructor will set to be a valid number
     protected int chunk = 0; //the next chunk to be gotten by getChunk
-    protected int task = 0; //the number of the next task to be submitted to ExecutorService
-    protected ArrayList<FutureTask> futureTasks = new ArrayList();
-    protected ExecutorService executorService;
 
     protected Table tDirTable, tFileTable; //null, unless eddGrid is EDDGridFromFiles
 
@@ -129,14 +119,12 @@ public class GridDataAccessor {
         boolean tRowMajor, boolean tConvertToNaN) throws Throwable {
 
         language = tLanguage;
-        eddGrid = tEDDGrid;
-        nThreads = eddGrid.nThreads >= 1 && eddGrid.nThreads < Integer.MAX_VALUE? 
-            eddGrid.nThreads : EDStatic.nGridThreads; 
+        eddGrid = tEDDGrid; 
         userDapQuery = tUserDapQuery;
         rowMajor = tRowMajor;
         convertToNaN = tConvertToNaN;
         if (reallyVerbose) String2.log(
-            "\n    GridDataAccessor constructor nThreads=" + nThreads + 
+            "\n    GridDataAccessor constructor " + 
             " thread=" + Thread.currentThread().getName() + 
             "\n      EDDGrid=" + eddGrid.datasetID() +
             "\n      userDapQuery=" + userDapQuery +
@@ -352,17 +340,6 @@ public class GridDataAccessor {
         tDirTable  = eddGrid.getDirTable();   //throw exception if trouble
         tFileTable = eddGrid.getFileTable(); 
 
-        //if current memory usage plus this request is even slightly high, 
-        //  set nThreads for this request to 1
-        boolean reducedNThreads = false;
-        
-        // If the threads are going to use too much memory, reduce the threads to an appropriate number.
-        while (nThreads > 1 &&
-            (nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 8 ||   //this alone justifies nThreads=1
-            Math2.getMemoryInUse() + nThreads * nBytesPerPartialRequest > Math2.maxSafeMemory / 4)) {
-            nThreads--;
-            reducedNThreads = true;
-        }
 
         //finish up
         Math2.ensureMemoryAvailable(nBytesPerPartialRequest, "GridDataAccessor");
@@ -376,8 +353,7 @@ public class GridDataAccessor {
             "\n      driverShape=" + String2.toCSSVString(driverShape) +  
             //partialShape e.g., [1][1][43][45],  note 1's on left if row-major
                   "  partialShape=" + String2.toCSSVString(partialShape) +  
-            "\n      nBytesPerPartialRequest=" + nBytesPerPartialRequest + " totalNBytes=" + totalNBytes + 
-                  "  nThreads=" + nThreads + " reducedNThreads=" + reducedNThreads);
+            "\n      nBytesPerPartialRequest=" + nBytesPerPartialRequest + " totalNBytes=" + totalNBytes);
         
     }
 
@@ -577,39 +553,21 @@ public class GridDataAccessor {
     protected void getChunk() throws Throwable {
 
         long etime = System.currentTimeMillis();
-        PrimitiveArray tPartialDataValues[];
+        //PrimitiveArray tPartialDataValues[];
         //String2.pressEnterToContinue("chunk=" + chunk + " task=" + task + " at start of getChunk.");
-
-        try {
-            if (futureTasks.isEmpty()) {
-                //If first call to getChunk, actually start getting actual data.
-                //Don't do this in constructor because some users of GridDataAccessor
-                //  just want to check request sizes and that no errors in request.
-                if (executorService == null && nThreads > 1) {
-                    executorService = Executors.newFixedThreadPool(Math.max(1, nThreads));
-                }
-                enqueTasks();
-            }
-
-            //get chunk's results from futureTasks
-            if (chunk >= futureTasks.size())
-                throw new RuntimeException("GridDataAccessor.increment: driverIndex failed to increment" +
+        boolean incremented = rowMajor? driverIndex.increment() : driverIndex.incrementCM();
+        
+        if (!incremented) {
+            throw new RuntimeException("GridDataAccessor.increment: driverIndex failed to increment" +
                     "at chunk=" + chunk + " driverIndex.current=" + String2.toCSSVString(driverIndex.getCurrent()));
-            //Put null that position in futureTasks so it can be gc'd after this method
-            FutureTask futureTask = futureTasks.set(chunk, null);
-            if (executorService == null) {
-                futureTask.run();
-            }
-            tPartialDataValues = (PrimitiveArray[])(futureTask.get());   //blocks until done, throws ExecutionException
+        }
+        
+        try {
+            System.arraycopy(getChunk(this, driverIndex.getCurrent()), 0, partialDataValues, 0, partialDataValues.length);
 
         } catch (Throwable t) {
             //throwable while getting a chunk
             //shut everything down
-            if (executorService != null) {
-                try {executorService.shutdownNow();} catch (Exception e) {}
-                executorService = null;
-            }
-            futureTasks = null;
 
             while (t instanceof ExecutionException) //may be doubly wrapped
                 t = t.getCause();
@@ -633,85 +591,22 @@ public class GridDataAccessor {
                     "\n(" + EDStatic.errorFromDataSource + tToString + ")", t); 
         }
         
-        System.arraycopy(tPartialDataValues, 0, partialDataValues, 0, partialDataValues.length);
+        //System.arraycopy(tPartialDataValues, 0, partialDataValues, 0, partialDataValues.length);
         if (reallyVerbose) String2.log("getChunk #" + chunk + " time=" +
             (System.currentTimeMillis() - etime));
         //last
         chunk++;
         //String2.pressEnterToContinue("chunk=" + chunk + " task=" + task + " at end of getChunk.");
     }
-
-    /** 
-     * This enques tasks to the futureTasks list and increments the
-     * driver index (so done in calling thead). If thre's an
-     * executorService futureTasks are submitted, otherwise create the
-     * FutureTask and only adds it to the futureTask list.
-     * This creates FutureTasks until it reaches the end of the driveIndex
-     * and then if there is an executorService, it initiates a shutdown.
-     */ 
-    protected void enqueTasks() {
-        while (rowMajor? driverIndex.increment() : driverIndex.incrementCM()) {
-            FutureTask futureTask = new FutureTask(new GetChunkCallable(task, this));  
-            futureTasks.add(futureTask);
-            if (executorService != null) {
-                executorService.submit(futureTask);
-            }
-            task++;
-        }
-        if (executorService != null) {
-            // Shutdown will execute currently submitted tasks.
-            try {executorService.shutdown();} catch (Exception e) {} //it's done
-        }
-    }
-
-
-/**
- * An inner class to make a callable which gets a chunk of data from the source.
- */
-class GetChunkCallable implements Callable {
-
-    GridDataAccessor gda;
-    int cTask;
-    int driverCurrent[];
-
-    /** The constructor notes gda and the current state of the driverIndex.
-     * Call this after successfully incrementing the driverIndex.
-     */
-    GetChunkCallable(int tcTask, GridDataAccessor tgda) {
-        cTask = tcTask;
-        gda = tgda;
-
-        //ensure this is done by calling thread by doing it in constructor:
-        //  make a clone of driverCurrent[], so not affected by other threads
-        driverCurrent = gda.driverIndex.getCurrent().clone();  
-        if (debugMode) String2.log("\n>> thread=" + Thread.currentThread().getName() + 
-            " nThreads=" + gda.nThreads +
-            " cTask=" + cTask + ".0 Created GetChunkCallable for driverIndex=[" + 
-            String2.toCSSVString(driverCurrent) + "]");
-    }
-
-    /**
-     * This gets one chunk of data from one source.
-     *
-     * @return a PrimitiveArray[] with the requested data
-     * @throws Exception if trouble
-     */
-    public PrimitiveArray[] call() throws Exception {    
+    
+    private PrimitiveArray[] getChunk(GridDataAccessor gda, int[] driverCurrent) throws Exception  {
         try {
             long time = System.currentTimeMillis();
-            if (debugMode) {
-                String2.log(">> thread=" + Thread.currentThread().getName() + 
-                    " nThreads=" + gda.nThreads + " cTask=" + cTask + ".1 Alive");
-            }
-
-            //check often for interrupted
-            if (Thread.currentThread().interrupted()) //not isInterrupted -- consume it
-                throw new InterruptedException();
 
             //generate the partial constraint
             IntArray partialConstraints = new IntArray(gda.constraints);
             int pcPo = 0;
-            double avInDriverExpectedValues[] = new double[gda.nAxisVariables]; //source value
+            double[] avInDriverExpectedValues = new double[gda.nAxisVariables]; //source value
             for (int av = 0; av < gda.nAxisVariables; av++) {
                 if (gda.avInDriver[av]) {
                     //get 1 value: driverCurrent indicates 'which' in 0,1,2... form
@@ -727,7 +622,7 @@ class GetChunkCallable implements Callable {
             }
 
             //get the data
-            PrimitiveArray partialResults[] = null;
+            PrimitiveArray[] partialResults = null;
             partialResults = gda.eddGrid.getSourceData(language, gda.tDirTable, gda.tFileTable, 
                 gda.dataVariables, partialConstraints);
 
@@ -749,14 +644,8 @@ class GetChunkCallable implements Callable {
                 } //other encodings are left in place
             }
 
-            //check often for interrupted
-            if (Thread.currentThread().interrupted()) //not isInterrupted -- consume it
-                throw new InterruptedException();
-
             if (debugMode) 
-                String2.log(">> thread=" + Thread.currentThread().getName() + 
-                    " nThreads=" + gda.nThreads +
-                    " cTask=" + cTask + ".2 getSourceData done. nDV=" + gda.dataVariables.length +
+                String2.log(">> getSourceData done. nDV=" + gda.dataVariables.length +
                     " nElements/dv=" + partialResults[partialResults.length - 1].size() +
                     " timeInCallable=" + (System.currentTimeMillis() - time) + "ms");
             //for (int i = 0; i < partialResults.length; i++)
@@ -810,8 +699,7 @@ class GetChunkCallable implements Callable {
             }
 
             if (debugMode) 
-                String2.log(">> thread=" + Thread.currentThread().getName() + " nThreads=" + gda.nThreads +
-                    " cTask=" + cTask + ".9 completely done. timeInCallable=" + 
+                String2.log(">> completely done. timeIn getChunk=" + 
                     (System.currentTimeMillis() - time) + "ms");
 
             return partialDataValues;
@@ -823,8 +711,6 @@ class GetChunkCallable implements Callable {
             throw new ExecutionException(t); //not allowed in call(), so wrap it so it will be unwrapped later
         }
     }
-
-} //end of embedded class GetChunkCallable
 
     /** 
      * The partialDataValues array.
@@ -943,20 +829,6 @@ class GetChunkCallable implements Callable {
     public void releaseGetResources() {
         tDirTable = null;
         tFileTable = null;
-        try { 
-            if (futureTasks != null) { 
-                futureTasks.clear();
-                futureTasks = null;
-            }
-        } catch (Throwable t) {
-        }
-        try {
-            if (executorService != null) {
-                executorService.shutdownNow();
-                executorService = null;
-            }
-        } catch (Throwable t) {
-        }
     }
 
 
