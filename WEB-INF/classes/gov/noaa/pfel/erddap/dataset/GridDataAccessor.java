@@ -553,7 +553,6 @@ public class GridDataAccessor {
     protected void getChunk() throws Throwable {
 
         long etime = System.currentTimeMillis();
-        //PrimitiveArray tPartialDataValues[];
         //String2.pressEnterToContinue("chunk=" + chunk + " task=" + task + " at start of getChunk.");
         boolean incremented = rowMajor? driverIndex.increment() : driverIndex.incrementCM();
         
@@ -591,7 +590,6 @@ public class GridDataAccessor {
                     "\n(" + EDStatic.errorFromDataSource + tToString + ")", t); 
         }
         
-        //System.arraycopy(tPartialDataValues, 0, partialDataValues, 0, partialDataValues.length);
         if (reallyVerbose) String2.log("getChunk #" + chunk + " time=" +
             (System.currentTimeMillis() - etime));
         //last
