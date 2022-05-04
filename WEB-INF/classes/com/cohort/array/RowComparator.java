@@ -14,9 +14,9 @@ import java.util.List;
  * This is used by PrimitiveArray.rank to rank a table of data stored as 
  * a PrimitiveArray[].
  */
-public class RowComparator implements Comparator {
+public class RowComparator implements Comparator<Integer> {
 
-    protected List table;
+    protected List<PrimitiveArray> table;
     protected int[] keys;
     protected boolean[] ascending;
 
@@ -32,7 +32,7 @@ public class RowComparator implements Comparator {
      *    ascending or descending order.
      * @throws RuntimeException if trouble
      */
-    public RowComparator(List table, int keys[], boolean[] ascending) {
+    public RowComparator(List<PrimitiveArray> table, int keys[], boolean[] ascending) {
         String errorInMethod = String2.ERROR + " in RowComparator constructor:\n";
         Test.ensureNotEqual(keys.length, 0, errorInMethod + "keys.length must not be 0.");
         Test.ensureEqual(keys.length, ascending.length, errorInMethod + "keys.length must equal ascending.length.");
@@ -54,10 +54,9 @@ public class RowComparator implements Comparator {
      *   the value at index2.  
      *   Think "o1 - o2".
      */
-    public int compare(Object o1, Object o2) {
+    public int compare(Integer o1, Integer o2) {
         for (int k = 0; k < keys.length; k++) {
-            int result = ((PrimitiveArray)table.get(keys[k])).compare(
-                ((Integer)o1).intValue(), ((Integer)o2).intValue());
+            int result = table.get(keys[k]).compare(o1, o2);
             if (result != 0) 
                 return ascending[k]? result : -result;
         }
@@ -92,4 +91,3 @@ public class RowComparator implements Comparator {
     }
 
 }
-
