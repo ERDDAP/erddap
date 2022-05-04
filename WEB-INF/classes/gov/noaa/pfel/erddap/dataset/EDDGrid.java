@@ -5650,7 +5650,6 @@ Attributes {
             // validates there is data to return before continuing.
             if (transparentPng) {
                 // Get the X input values.
-                //String2.log(">> inputValues=" + inputValues.toString());
                 inputMinX = inputValues.get(lonIndex * 2);
                 inputMaxX = inputValues.get(lonIndex * 2 + 1);
                 if (inputMinX > inputMaxX) {
@@ -6704,7 +6703,6 @@ Attributes {
                     } else {
                         double repairedWidth = maxX - minX;
                         double inputWidth = inputMaxX - inputMinX;
-                        //String2.log(">> tp imageWidth=" + imageWidth + " imageHeight=" + imageHeight + " inputMaxX=" + inputMaxX + " inputMinX=" + inputMinX);
                         imageWidth = (int) (imageWidth * inputWidth
                                 / repairedWidth);
                         minX = inputMinX;
@@ -6815,7 +6813,7 @@ Attributes {
                         minX, maxX, xAscending, xIsTimeAxis, xIsLogAxis, 
                         minY, maxY, yAscending, yIsTimeAxis, yIsLogAxis, 
                         graphDataLayers,
-                        g2, 0, 0, imageWidth, imageHeight,  Double.NaN, //graph imageWidth/imageHeight
+                        g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
                         drawSurface?
                             (!bgColor.equals(EDStatic.graphBackgroundColor)? 
                                 bgColor : 
