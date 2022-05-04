@@ -180,25 +180,42 @@ public class NcHelper  {
         }
         return sb.toString();
     }
-
-
+    
     /**
-     * This is like fromJson, but specifically designed to 
+     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
+     *   
+     * For StringArray, this is like fromJson, but specifically designed to 
      * decode an attribute, starting with netcdf-java 4.0 
      * (which returns them in a backslash encoded form).
      * null is returned as null
      *
-     * @param o
-     * @return the decoded o
+     * @param nc2Array an nc2Array
+     * @return Decoded StringArray (from ArrayChar.D1, split at \n), 
+     *    or other PrimitiveArray (from numeric ArrayXxx.D1)
      */
-    public static Object decodeAttribute(Object o) {
-        if (o == null ||
-            !(o instanceof String[]))
-            return o;
-        String sar[] = (String[])o;
-        for (int i = 0; i < sar.length; i++)
-            sar[i] = String2.fromJson(sar[i]); //previously used precursor to decodeNcDump(sar[i]);
-        return sar;
+    private static PrimitiveArray decodeAttributeToPrimitive(Array nc2Array) {
+      //String[] from ArrayChar.Dn
+        if (nc2Array instanceof ArrayChar) {
+            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
+            Object[] oa = (Object[])ao.copyTo1DJavaArray();
+            StringArray sa = new StringArray(oa.length, false);
+            for (int i = 0; i < oa.length; i++) 
+                sa.add(oa[i] == null ? null : String2.fromJson(String2.trimEnd(oa[i].toString())));
+            return sa;
+        }
+
+        //byte[] from ArrayBoolean.Dn
+        if (nc2Array instanceof ArrayBoolean) {
+            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
+            int n = boolAr.length;
+            byte    byteAr[] = new byte[n];
+            for (int i = 0; i < n; i++)
+                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
+            return PrimitiveArray.factory(byteAr, nc2Array.isUnsigned());
+        }
+
+        //ArrayXxxnumeric
+        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), nc2Array.isUnsigned());
     }
 
     /**
@@ -540,7 +557,11 @@ public class NcHelper  {
         //String[] from ArrayChar.Dn
         if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
             ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
-            return new StringArray((Object[])ao.copyTo1DJavaArray());
+            Object[] oa = (Object[])ao.copyTo1DJavaArray();
+            StringArray sa = new StringArray(oa.length, false);
+            for (int i = 0; i < oa.length; i++) 
+                sa.add(oa[i] == null ? null : String2.trimEnd(oa[i].toString()));
+            return sa;
         }
 
         //byte[] from ArrayBoolean.Dn
@@ -550,29 +571,16 @@ public class NcHelper  {
             byte    byteAr[] = new byte[n];
             for (int i = 0; i < n; i++)
                 byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
-            return PrimitiveArray.factory(byteAr, isUnsigned);
+            return PrimitiveArray.factory(byteAr, isUnsigned || nc2Array.isUnsigned());
         }
 
         //ArrayXxxnumeric
-        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), isUnsigned);
+        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), isUnsigned || nc2Array.isUnsigned());
     }
 
 //was
 //   * This converts a ucar.nc2 numeric ArrayXxx.D1, numeric ArrayXxx.D4,
 //   *   ArrayChar.D2, or ArrayChar.D5 into an array of primitives.
-
-    /** 
-     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a 1D array of primitives.
-     * This version uses buildStringsFromChars=true, so ArrayChars are converted to String[].
-     * ArrayBooleans are converted to byte[].
-     * 
-     * @param nc2Array an nc2Array
-     * @return String[] (from ArrayChar.D1, split at \n), String[],
-     *    or primitive[] (from numeric ArrayXxx.D1)
-     */
-    private static Object getArray(Array nc2Array) {
-        return getArray(nc2Array, true);
-    }
     
     /** 
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
@@ -589,43 +597,6 @@ public class NcHelper  {
     public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
        return getPrimitiveArray(nc2Array, true, false);
     }
-
-
-    /** 
-     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a 1D array of primitives.
-     * ArrayChars are converted to String[].
-     * ArrayBooleans are converted to byte[].
-     * 
-     * @param nc2Array an nc2Array
-     * @param buildStringsFromChars
-     * @return String[] (from ArrayChar.D1, split at \n), String[],
-     *    or primitive[] (from numeric ArrayXxx.D1)
-     */
-    private static Object getArray(Array nc2Array, boolean buildStringsFromChars) {
-
-        //String[] from ArrayChar.Dn
-        if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
-            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
-            String sa[] = String2.toStringArray((Object[])ao.copyTo1DJavaArray());
-            for (int i = 0; i < sa.length; i++) 
-                sa[i] = String2.canonical(String2.trimEnd(sa[i]));
-            return sa;
-        }
-
-        //byte[] from ArrayBoolean.Dn
-        if (nc2Array instanceof ArrayBoolean) {
-            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
-            int n = boolAr.length;
-            byte    byteAr[] = new byte[n];
-            for (int i = 0; i < n; i++)
-                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
-            return byteAr;
-        }
-
-        //ArrayXxxnumeric
-        return nc2Array.copyTo1DJavaArray();
-    }
-
 
     /** 
      * This converts an netcdf DataType into a PrimitiveArray elementType 
@@ -1253,7 +1224,7 @@ public class NcHelper  {
                     String2.log("Warning: varName=" + varName + " attribute=" + att.getName() + " has values=null");   //the full name
                     return null;
                 }
-                return PrimitiveArray.factory(decodeAttribute(getArray(values))); 
+                return decodeAttributeToPrimitive(values); 
             } catch (Throwable t) {
                 String2.log("Warning: NcHelper caught an exception while reading varName='" + 
                     varName + "' attribute=" + att.getName() + "\n" +  //the full name
@@ -2640,12 +2611,12 @@ String2.log(pas13.toString());
         Array array = get1DArray(o, false);
         Test.ensureTrue(array instanceof ArrayChar.D2, "get1DArray a");
         Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
-        o = getArray(array);
-        Test.ensureTrue(o instanceof String[], "getArray a; o=" + o.toString());
-        String sar[] = (String[])o;
-        Test.ensureEqual(sar.length, 2, "");
-        Test.ensureEqual(sar[0], "5.5", "");
-        Test.ensureEqual(sar[1], "7.77", "");
+        o = getPrimitiveArray(array);
+        Test.ensureTrue(o instanceof StringArray, "getArray a; o=" + o.toString());
+        StringArray sar = (StringArray)o;
+        Test.ensureEqual(sar.size(), 2, "");
+        Test.ensureEqual(sar.get(0), "5.5", "");
+        Test.ensureEqual(sar.get(1), "7.77", "");
 
         /*
         ArrayChar.D3 ac3 = new ArrayChar.D3(2, 3, 5);
@@ -2672,15 +2643,23 @@ String2.log(pas13.toString());
         array = get1DArray(o, false);
         Test.ensureTrue(array instanceof ArrayByte.D1, "get1DArray b");
         Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
-        o = getArray(array);
-        Test.ensureTrue(o instanceof byte[], "getArray b");
+        o = getPrimitiveArray(array);
+        Test.ensureTrue(o instanceof ByteArray, "getArray b");
+        ByteArray bar = (ByteArray)o;
+        Test.ensureEqual(bar.size(), 2, "");
+        Test.ensureEqual(bar.get(0), 2, "");
+        Test.ensureEqual(bar.get(1), 9, "");
 
         o = new double[]{2.2, 9.9};
         array = get1DArray(o, false);
         Test.ensureTrue(array instanceof ArrayDouble.D1, "get1DArray c");
         Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
-        o = getArray(array);
-        Test.ensureTrue(o instanceof double[], "getArray c");
+        o = getPrimitiveArray(array);
+        Test.ensureTrue(o instanceof DoubleArray, "getArray c");
+        DoubleArray dar = (DoubleArray)o;
+        Test.ensureEqual(dar.size(), 2, "");
+        Test.ensureEqual(dar.get(0), 2.2, "");
+        Test.ensureEqual(dar.get(1), 9.9, "");
 
         //test readWritePAsInNc
         ByteArray ba = new ByteArray(new byte[]{1,2,4,7});
