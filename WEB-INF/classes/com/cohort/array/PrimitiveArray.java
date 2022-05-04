@@ -3295,9 +3295,11 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This returns a new (always) PrimitiveArray of type elementType
+     * This returns a PrimitiveArray of type elementType
      * which has unpacked values (scale then addOffset values applied).
      * Calculations are done as doubles then, if necessary, rounded and stored.
+     * The returned PrimitiveArray is new if the destination type does not
+     * match the source type.
      *
      * @param destElementPAType
      * @param sourceIsUnsigned if true, integer-type source values will be 
@@ -3308,7 +3310,11 @@ public abstract class PrimitiveArray {
      */
     public PrimitiveArray scaleAddOffset(boolean sourceIsUnsigned, 
         PAType destElementPAType, double scale, double addOffset) {
-        PrimitiveArray pa = factory(destElementPAType, size, true);
+        // Don't create a new PA if we don't need to.
+        PrimitiveArray pa = this;
+        if (this.elementType() != destElementPAType) {
+            pa = factory(destElementPAType, size, true);    
+        }
         if (sourceIsUnsigned) {
             for (int i = 0; i < size; i++)
                 pa.setDouble(i, getUnsignedDouble(i) * scale + addOffset); //NaNs remain NaNs
