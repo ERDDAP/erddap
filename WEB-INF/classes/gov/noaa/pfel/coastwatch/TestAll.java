@@ -1092,7 +1092,6 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-//EDDTableFromAsciiFiles.testNThreads();
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

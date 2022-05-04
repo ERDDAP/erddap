@@ -76,7 +76,11 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>NONE
+  <li>IMPROVED: Now, graphs (but not maps) will expand to fill the available space on the canvas.
+    Thus, you can get tall graphs, square graphs, or wide graphs by adding and manipulating the 
+    <kbd>&.size=<i>width</i>|<i>height</i></kbd> parameter (where width and height specify the 
+    size of the canvas, in pixels) on the request URL. 
+    Thanks to Bob Fleming.
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
@@ -84,7 +88,7 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
     Thanks to Marco Alba (who contributed the code) and Bob Simons (who modified it slightly).
     <br>&nbsp;
   <li>IMPROVED: The nThreads system for EDDTableFromFiles was significantly improved. 
-    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
+    These changes lead to a huge speed improvement (e.g., 2-3X speedup when nThreads is set to 2 or more)
     for the most challenging requests (when a large number of files must be processed to gather the results).
     These changes will also lead to a general speedup throughout ERDDAP.
     The code for these changes was contributed by Chris John. Thank you, Chris!
