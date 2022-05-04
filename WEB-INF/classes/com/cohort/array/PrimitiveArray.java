@@ -2837,7 +2837,7 @@ public abstract class PrimitiveArray {
      *   second item in the sorted list, ...).
      */
     public int[] rank(boolean ascending) {
-        ArrayList table = new ArrayList();
+        ArrayList<PrimitiveArray> table = new ArrayList<>();
         table.add(this);
         return rank(table, new int[]{0}, new boolean[]{ascending});
     }
@@ -2861,31 +2861,31 @@ public abstract class PrimitiveArray {
      *   in the sorted list, rank[1] is the row number of the
      *   second item in the sorted list, ...).
      */
-    public static int[] rank(List table, int keys[], boolean[] ascending) {
+    public static int[] rank(List<PrimitiveArray> table, int keys[], boolean[] ascending) {
         return lowRank(new RowComparator(table, keys, ascending), table);
     }
 
     /** This is like rank, but StringArrays are tested case insensitively.   */
-    public static int[] rankIgnoreCase(List table, int keys[], boolean[] ascending) {
+    public static int[] rankIgnoreCase(List<PrimitiveArray> table, int keys[], boolean[] ascending) {
         return lowRank(new RowComparatorIgnoreCase(table, keys, ascending), table);
     }
     
-    private static int[] lowRank(RowComparator comparator, List table) {
+    private static int[] lowRank(RowComparator comparator, List<PrimitiveArray> table) {
 
         //create the rowArray with pointer to specific rows
-        int n = ((PrimitiveArray)table.get(0)).size();
-        Integer rowArray[] = new Integer[n];
+        int n = table.get(0).size();
+        Integer[] rowArray = new Integer[n];
         for (int i = 0; i < n; i++)
-            rowArray[i] = new Integer(i);
+            rowArray[i] = i;
 
         //sort the rows
         Arrays.sort(rowArray, comparator);   //this is "stable"
         //String2.log("rank results: " + String2.toCSSVString(integerArray));
 
         //create the int[] 
-        int newArray[] = new int[n];
+        int[] newArray = new int[n];
         for (int i = 0; i < n; i++)
-            newArray[i] = rowArray[i].intValue();
+            newArray[i] = rowArray[i];
 
         return newArray;
     }
@@ -2906,26 +2906,26 @@ public abstract class PrimitiveArray {
      *    indicating if the arrays are to be sorted by a given key in 
      *    ascending or descending order.
      */
-    public static void sort(List table, int keys[], boolean[] ascending) {
+    public static void sort(List<PrimitiveArray> table, int[] keys, boolean[] ascending) {
 
         //rank the rows
-        int ranks[] = rank(table, keys, ascending);
+        int[] ranks = rank(table, keys, ascending);
 
         //reorder the columns
         for (int col = 0; col < table.size(); col++) {
-            ((PrimitiveArray)table.get(col)).reorder(ranks);
+            table.get(col).reorder(ranks);
         }
     }
 
     /** This is like sort, but StringArrays are tested case insensitively.   */
-    public static void sortIgnoreCase(List table, int keys[], boolean[] ascending) {
+    public static void sortIgnoreCase(List<PrimitiveArray> table, int[] keys, boolean[] ascending) {
 
         //rank the rows
-        int ranks[] = rankIgnoreCase(table, keys, ascending);
+        int[] ranks = rankIgnoreCase(table, keys, ascending);
 
         //reorder the columns
         for (int col = 0; col < table.size(); col++) {
-            ((PrimitiveArray)table.get(col)).reorder(ranks);
+            table.get(col).reorder(ranks);
         }
     }
 
@@ -2941,7 +2941,7 @@ public abstract class PrimitiveArray {
     public static void copyRow(List<PrimitiveArray> table, int from, int to) {
         int nColumns = table.size();
         for (int col = 0; col < nColumns; col++) 
-            ((PrimitiveArray)table.get(col)).copy(from, to);
+            table.get(col).copy(from, to);
     }
 
     /**
@@ -3015,9 +3015,9 @@ public abstract class PrimitiveArray {
      * @param table a List of PrimitiveArray
      * @return the number of duplicates removed
      */
-    public static int removeDuplicates(List table) {
+    public static int removeDuplicates(List<PrimitiveArray> table) {
 
-        int nRows = ((PrimitiveArray)table.get(0)).size();
+        int nRows = table.get(0).size();
         if (nRows <= 1) 
             return 0;
         int nColumns = table.size();
@@ -3026,7 +3026,7 @@ public abstract class PrimitiveArray {
             //does it equal row above?
             boolean equal = true;
             for (int col = 0; col < nColumns; col++) {
-                if (((PrimitiveArray)table.get(col)).compare(row - 1, row) != 0) {
+                if (table.get(col).compare(row - 1, row) != 0) {
                     equal = false;
                     break;
                 }
@@ -3035,14 +3035,14 @@ public abstract class PrimitiveArray {
                 //no? copy row 'row' to row 'nUnique'
                 if (row != nUnique) 
                     for (int col = 0; col < nColumns; col++) 
-                        ((PrimitiveArray)table.get(col)).copy(row, nUnique);
+                        table.get(col).copy(row, nUnique);
                 nUnique++;
             }
         }
 
         //remove the stuff at the end
         for (int col = 0; col < nColumns; col++) 
-            ((PrimitiveArray)table.get(col)).removeRange(nUnique, nRows);
+            table.get(col).removeRange(nUnique, nRows);
 
         return nRows - nUnique;
     }
