@@ -6737,7 +6737,7 @@ Dataset {
                 }
 
                 //get data
-                PrimitiveArray pa = NcHelper.getPrimitiveArray(variable.read()); 
+                PrimitiveArray pa = PrimitiveArray.factory(NcHelper.getArray(variable.read())); 
                 //unpack is done at end of method
                 //String2.log("Table.read4DNc v=" + v + ": " + pa);
 
@@ -6754,7 +6754,7 @@ Dataset {
             //load the stringVariable
             if (stringVariableName != null) {
                 Variable variable = ncFile.findVariable(stringVariableName);
-                PrimitiveArray pa = NcHelper.getPrimitiveArray(variable.read()); 
+                PrimitiveArray pa = PrimitiveArray.factory(NcHelper.getArray(variable.read())); 
                 //unpack is done at end of method
                 if (debugMode) String2.log("  stringVariableName values=" + pa);
                 Attributes atts = new Attributes();
@@ -7034,7 +7034,7 @@ Dataset {
                     tReadShape[nAxes] = variable.getDimension(nAxes).getLength();
                 }
                 Array array = variable.read(tReadOrigin, tReadShape); 
-                PrimitiveArray pa = NcHelper.getPrimitiveArray(array); 
+                PrimitiveArray pa = PrimitiveArray.factory(NcHelper.getArray(array)); 
                 Test.ensureEqual(pa.size(), nRows(),
                     errorInMethod + "Unexpected nRows for " + variable.getFullName() + ".");
 
