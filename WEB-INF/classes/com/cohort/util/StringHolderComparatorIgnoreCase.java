@@ -11,7 +11,7 @@ import java.util.Comparator;
  * This is used by StringArray to do a case-insensitive sort 
  * (better than String.CASE_INSENSITIVE_ORDER).
  */
-public class StringHolderComparatorIgnoreCase implements Comparator {
+public class StringHolderComparatorIgnoreCase implements Comparator<StringHolder> {
 
 
     /**
@@ -24,12 +24,12 @@ public class StringHolderComparatorIgnoreCase implements Comparator {
      *   the value at index2.  
      *   Think "o1 - o2".
      */
-    public int compare(Object o1, Object o2) {
+    public int compare(StringHolder o1, StringHolder o2) {
         if (o1 == null)
             return o2 == null? 0 : -1;
         if (o2 == null) 
             return 1;
-        return ((StringHolder)o1).compareToIgnoreCase((StringHolder)o2); //it is fancy
+        return o1.compareToIgnoreCase(o2); //it is fancy
     }
 
     /**
