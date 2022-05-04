@@ -551,7 +551,7 @@ public class SgtGraph  {
             }
 
             //adjust graph width or height
-            if (Double.isNaN(graphWidthOverHeight) || graphWidthOverHeight <= 0) {
+            if (Double.isNaN(graphWidthOverHeight) || graphWidthOverHeight < 0) {
                 //leave it (as big as possible)
             } else if (graphWidth / graphHeight < graphWidthOverHeight) {
                 //graph is too tall -- reduce the height

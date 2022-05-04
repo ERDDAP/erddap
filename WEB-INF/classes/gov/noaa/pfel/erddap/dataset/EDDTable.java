@@ -4758,7 +4758,7 @@ public abstract class EDDTable extends EDD {
                     xMin, xMax, xAscending, xVar instanceof EDVTimeStamp, xIsLogAxis, 
                     yMin, yMax, yAscending, yVar instanceof EDVTimeStamp, yIsLogAxis, 
                     graphDataLayers,
-                    g2, 0, 0, imageWidth, imageHeight,  Double.NaN, //graph imageWidth/imageHeight
+                    g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
                     bgColor, fontScale); 
 
                 writePngInfo(loggedInAs, userDapQuery, fileTypeName, mmal);
