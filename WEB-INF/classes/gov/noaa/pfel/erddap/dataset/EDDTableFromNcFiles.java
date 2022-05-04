@@ -578,8 +578,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2021-12-20</att>\n" +  //changes
-"        <att name=\"date_issued\">2021-12-20</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2022-04-18</att>\n" +  //changes
+"        <att name=\"date_issued\">2022-04-18</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -660,8 +660,8 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2021-12-20T17:40:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
-"        <att name=\"time_coverage_start\">2021-11-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"time_coverage_end\">2022-04-18T18:10:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_start\">2022-04-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -714,7 +714,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.6357248E9 1.6376028E9</att>\n" + //both change
+"            <att name=\"actual_range\" type=\"doubleList\">1.6487712E9 1.6503054E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -723,8 +723,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.638E9</att>\n" + //changes
-"            <att name=\"colorBarMinimum\" type=\"double\">1.6355E9</att>\n" + //changes
+"            <att name=\"colorBarMaximum\" type=\"double\">1.6505E9</att>\n" + //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.6485E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -19453,8 +19453,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
 "    code=404;\n" +
 "    message=\"Not Found: Your query produced no matching results. " +
 //error message is one of these two (changes periodically):
-//"(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=202";
-    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to 202";  //2022-01-18T21:00:00Z, and hasNaN=false.)\n"; //end date changes
+"(No data matches time>2050-01-01T00:00:00Z because the numeric variable's source min=1970-02-26T20:00:00Z, max=202";
+//    "(time>2050-01-01T00:00:00Z is outside of the variable's actual_range: 1970-02-26T20:00:00Z to 202";  //2022-01-18T21:00:00Z, and hasNaN=false.)\n"; //end date changes
         Test.ensureEqual(results.substring(0, expected.length()),  expected,
             "results=\n" + results + comment);
 

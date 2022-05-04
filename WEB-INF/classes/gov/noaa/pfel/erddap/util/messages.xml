@@ -6826,7 +6826,7 @@ So far, these groups/people have contributed code to ERDDAP:
 
 <li>nThreads Improvement
   <br>The nThreads system for EDDTableFromFiles was significantly improved. 
-    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
+    These changes lead to a huge speed improvement (e.g., 2-3X speedup when nThreads is set to 2 or more)
     for the most challenging requests (when a large number of files must be processed to gather the results).
     These changes will also lead to a general speedup throughout ERDDAP.
     The code for these changes was contributed by Chris John. Thank you, Chris!
