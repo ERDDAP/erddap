@@ -1131,11 +1131,12 @@ public class EDDGridSideBySide extends EDDGrid {
         Test.ensureEqual(results, expected, "results=\n" + results);      
     }
 
-    /** This test making transparentPngs.
+    /** This tests making transparentPngs.
      */
     public static void testTransparentPng() throws Throwable {
         String2.log("\n*** EDDGridSideBySide.testTransparentPng");
         testVerboseOn();
+        EDDGrid.reallyVerbose = true;
         int language = 0;
         String dir = EDStatic.fullTestCacheDirectory;
         String name, tName, userDapQuery, results, expected, error;
