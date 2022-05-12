@@ -935,9 +935,9 @@ Astronomical Year = 1 - BCEYear (নিজের জন্য দেখুন:
 <a rel="help" href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time"
 ><img 
     src="../images/external.png" alt=" (external link)" 
-    title="একটি বহিরাগত ওয়েবসাইটের এই লিঙ্ক একটি অনুমোদন গঠন করে না."></a> সময় ব্যবস্থা। UTC হল GMT সময় ব্যবস্থার আধুনিক সংস্করণ। ইন্টারন্যাশনাল এটমিক টাইম (TAI) এর কাছাকাছি থাকার জন্য UTC মাঝে মাঝে লিপ সেকেন্ড ব্যবহার করে। GPS ডিভাইসগুলি অভ্যন্তরীণভাবে GPS সময় (যা লিপ সেকেন্ড ব্যবহার করে না) ব্যবহার করে, কিন্তু ব্যবহারকারীদের কাছে UTC সময় প্রদর্শন করে। (<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time</a> দেখুন
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
+    title="একটি বহিরাগত ওয়েবসাইটের এই লিঙ্ক একটি অনুমোদন গঠন করে না."></a> সময় ব্যবস্থা। UTC হল GMT সময় ব্যবস্থার আধুনিক সংস্করণ। ইন্টারন্যাশনাল এটমিক টাইম (TAI) এর কাছাকাছি থাকার জন্য UTC মাঝে মাঝে লিপ সেকেন্ড ব্যবহার করে। GPS ডিভাইসগুলি অভ্যন্তরীণভাবে GPS সময় (যা লিপ সেকেন্ড ব্যবহার করে না) ব্যবহার করে, কিন্তু ব্যবহারকারীদের কাছে UTC সময় প্রদর্শন করে। (<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/</a> দেখুন
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
     ><img 
     src="../images/external.png" alt=" (external link)" 
     title="একটি বহিরাগত ওয়েবসাইটের এই লিঙ্ক একটি অনুমোদন গঠন করে না."></a> অথবা সিস্টেম অফ টাইমের অন্যান্য আলোচনা।) কঠোরভাবে বলতে গেলে, UTC কিছু পরিস্থিতিতে সুদূর ভবিষ্যতের জন্য ব্যবহার করা যাবে না (যেমন, মডেলগুলিতে), যেহেতু লিপ সেকেন্ডের ঘটনাটি ভবিষ্যদ্বাণী করা যায় না।
@@ -5458,7 +5458,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

@@ -18,6 +18,7 @@ import com.cohort.array.StringArray;
 import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -6813,7 +6814,7 @@ Attributes {
                         minX, maxX, xAscending, xIsTimeAxis, xIsLogAxis, 
                         minY, maxY, yAscending, yIsTimeAxis, yIsLogAxis, 
                         graphDataLayers,
-                        g2, 0, 0, imageWidth, imageHeight,  1, //graph imageWidth/imageHeight
+                        g2, 0, 0, imageWidth, imageHeight,  Double.NaN, //graph imageWidth/imageHeight
                         drawSurface?
                             (!bgColor.equals(EDStatic.graphBackgroundColor)? 
                                 bgColor : 
@@ -14761,69 +14762,135 @@ writer.write(
      */
     public static void testSaveAsImage() throws Throwable {
         String2.log("\n*** EDDGrid.testSaveAsImage()");
-        EDDGrid eddGrid = (EDDGrid) oneFromDatasetsXml(null, "_bd83_ab94_3c47");
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMHchla8day");
+        int language = 0;
         String dir = EDStatic.fullTestCacheDirectory;
-        String requestUrl = "/erddap/griddap/_bd83_ab94_3c47.transparentPng";
-        String fileTypeName = ".transparentPng";
+        //String requestUrl = "/erddap/griddap/erdMHchla8day.transparentPng";
         String userDapQueryTemplate = "MWchla%5B(2022-01-16T12:00:00Z):1:(2022-01-16T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
+        String baseName, tName;
 
         String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
 
         // Make fully valid image
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220), //#'s are minY, maxY, minX, maxX
-                fileTypeName,
-                "46bbbefee2b781a7eed98f8e3b855527ba45711cf806a04cf2704a141e0a6c6f" /* expected */);
+        baseName = "EDDGrid_testSaveAsImage_fullyValid";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         // Invalid min y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, -100, 40, 210, 220),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_invalidMinY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, -100, 40, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Invalid max y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_invalidMaxY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // All invalid.
-        testSaveAsImageVsExpected(
-                eddGrid, dir, requestUrl, MessageFormat
-                        .format(userDapQueryTemplate, -100, 100, -200, 370),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_allInvalid";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 370), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Out of range min x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 200, 210),
-                fileTypeName,
-                "1f5e14c90dd31ba4f42e6264c3b4d731ca39f47271d9857a06f972da4b3e607e");
+        baseName = "EDDGrid_testSaveAsImage_OORMinX";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 30, 40, 200, 210), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Out of range max x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 250, 260),
-                fileTypeName,
-                "282fdd986eeb3a5d4025873d930f6ee978ad8cc66fcc30ec36568b4bcf4072de");
+        baseName = "EDDGrid_testSaveAsImage_OORMaxX";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 30, 40, 250, 260), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Out of range min y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 20, 30, 210, 220),
-                fileTypeName,
-                "38ca7930368e8fe2942657650a4afa288facc131020bc9f1cfdaaf4f62f8d4e5");
+        baseName = "EDDGrid_testSaveAsImage_OORMinY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 20, 30, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Out of range max y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 50, 60, 210, 220),
-                fileTypeName,
-                "f421b8304d03f1e02fb47da6f6c9677d93f2fffb019226470d2fadb014418445");
+        baseName = "EDDGrid_testSaveAsImage_OORMaxY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 50, 60, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Fully out of range min x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 190, 200),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_FOORMinX";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate,  30, 40, 190, 200), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Fully out of range max x.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 30, 40, 260, 270),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_FOORMaxX";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 30, 40, 260, 270), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Fully out of range min y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 10, 20, 210, 220),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_FOORMinY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 10, 20, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         // Fully out of range max y.
-        testSaveAsImageVsExpected(eddGrid, dir, requestUrl,
-                MessageFormat.format(userDapQueryTemplate, 60, 70, 210, 220),
-                fileTypeName, expectedHashForInvalidInput);
+        baseName = "EDDGrid_testSaveAsImage_FOORMaxY";
+        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            MessageFormat.format(userDapQueryTemplate, 60, 70, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+        
     }
 
     /**
