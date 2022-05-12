@@ -17,6 +17,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -7145,7 +7146,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 45749784;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 46173615;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7190,7 +7191,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.64751888e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6510572e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7252,7 +7253,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7280,9 +7281,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-04-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-04-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-05-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7300,7 +7301,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7325,7 +7326,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the March 2022 data) but is a subset of the " + //month changes
+    "up to and including the April 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7338,7 +7339,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2022-03-17T12:08:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-04-27T11:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -7978,9 +7979,15 @@ expected =
         String dir = EDStatic.fullTestCacheDirectory;
         String dapQuery = 
         "time,landings&port=%22Santa%20Barbara%22&fish=%22Abalone%22&.draw=lines&.color=0x000000";
+        String baseName = eddTable.className() + "_manyYears";
         String tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_manyYears",  ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
     }
 
 
@@ -14297,7 +14304,7 @@ expected =
         String id = "cwwcNDBCMet";
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
         String dir = EDStatic.fullTestCacheDirectory;
-        String baseName = eddTable.className() + "_BigRequest";
+        String baseName = eddTable.className() + "_BigRequest_";
 
         String extensions[] = new String[] {  //.help not available at this level            
             //geoJson and .odvTxt require lon, lat (and time) data
@@ -14368,8 +14375,13 @@ expected =
             }
             
 
-            if (i >= kmli + 1)
-                Test.displayInBrowser("file://" + dir + tName);
+            if (i >= kmli + 1) {
+                //Test.displayInBrowser("file://" + dir + tName);
+                Image2.testImagesIdentical(
+                    dir + tName,
+                    String2.unitTestImagesDir()    + baseName + extensions[i].substring(1) + ".png",
+                    File2.getSystemTempDirectory() + baseName + extensions[i].substring(1) + "_diff.png");
+            }
             if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i] ||
                 time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
                 msg = "Unexpected length or time: " + msg;
@@ -18110,7 +18122,8 @@ nThreads=4 time=26
 "2020-10-01 with revised, denser dataset, hdd, -3,3: 539, 192, 303, 304, 321, 422 s\n" +
 "  clearly, a bigger issue is OS caching of the files\n" +
 "  So slow now, so I revised test to be a much smaller test (just 410.. stations)\n" +
-"2020-10-02 hdd -3,3, now: 75,8, 7, 8, 8, 5\n");
+"2020-10-02 hdd -3,3, now: 75,8, 7, 8, 8, 5\n" +
+"2022-05-10 after Chris' changes: 116,6,9,10,6,4\n");
     }
 
     /**
@@ -18902,7 +18915,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 45282398;\n" + //changes
+"    Int32 actual_range 1, 45749784;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18947,7 +18960,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6433712e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.64751888e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -19009,7 +19022,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2022-02-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +

@@ -1029,9 +1029,14 @@ expected =
 
         //test image
         userDapQuery = "chlorophyll[(2002-08-16T12:00:00Z)][][][]&.land=under";
+        String baseName = eddGrid.className() + "_GT180";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_GT180", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test of /files/ system for fromErddap in local host dataset
         String2.log("\n* Test getting /files/ from local host erddap...");
@@ -1211,9 +1216,14 @@ expected =
 
         //test image
         userDapQuery = "dhw[(2001-10-16T12:00:00Z)][][][]&.land=under";
+        String baseName = eddGrid.className() + "_1to359";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_1to359", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
 //THIS TEST NEEDS A NEW DATASET because source is now from tds, so no files available
         //test of /files/ system for fromErddap in local host dataset
@@ -1425,9 +1435,14 @@ expected =
 
         //test image
         userDapQuery = "sst[(2007-08-16T12:00:00Z)][][][]&.land=under";
+        String baseName = eddGrid.className() + "_0to360"; 
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-            dir, eddGrid.className() + "_0to360", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
 //!!!??? what's with that gap near lon=0? It's from the source.
 //The source has odd gaps at lon 358 to 360, see
@@ -1472,17 +1487,18 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_120to320_Entire", ".dds"); 
         results = File2.directReadFrom88591File(dir + tName);
+        results = results.replaceAll("time = \\d{3}", "time = ddd");
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 160];\n" + //changes
+"  Float64 time[time = ddd];\n" +
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4401];\n" +
 "  Float64 longitude[longitude = 14400];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst[time = 160][altitude = 1][latitude = 4401][longitude = 14400];\n" +  //changes
+"      Float32 sst[time = ddd][altitude = 1][latitude = 4401][longitude = 14400];\n" +  
 "    MAPS:\n" +
-"      Float64 time[time = 160];\n" +  //changes
+"      Float64 time[time = ddd];\n" +  
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4401];\n" +
 "      Float64 longitude[longitude = 14400];\n" +

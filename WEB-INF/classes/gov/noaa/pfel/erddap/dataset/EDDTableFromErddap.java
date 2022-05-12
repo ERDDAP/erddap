@@ -14,6 +14,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -1044,9 +1045,14 @@ expected =
             expected, "results=\n" + results);
 
             //test .png
-            tName = "EDDTableFromErddap_GraphM_" + tRedirect + ".png"; 
+            String baseName = "EDDTableFromErddap_GraphM_" + tRedirect;
+            tName = baseName + ".png"; 
             SSR.downloadFile(url + ".png?" + mapDapQuery, dir + tName, true);
-            Test.displayInBrowser("file://" + dir + tName);
+            //Test.displayInBrowser("file://" + dir + tName);
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
     } //end of testBasic
 

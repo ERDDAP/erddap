@@ -556,6 +556,7 @@ public class TestAll  {
 //      !!! Be sure do pre-delete older files, so you don't download as filename(1) .
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
+//      ??? THIS COULD BE AUTOMATED with FileVisitorDNLS!
 
 //    1b) Ensure Ramdisk r: exists.
 //      If not, run c:/Program Files/ImDisk/RamDiskUI.exe to create 100MB ram disk
@@ -569,7 +570,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022,  1, 2022,  3, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 12, 2022,  4, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -602,7 +603,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022,  1, 2022,  3); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 12, 2022,  4); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -1092,7 +1093,6 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
-//EDDTableFromAsciiFiles.testNThreads();
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
