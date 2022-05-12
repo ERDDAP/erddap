@@ -575,7 +575,7 @@ public class NcHelper  {
             ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
             String sa[] = String2.toStringArray((Object[])ao.copyTo1DJavaArray());
             for (int i = 0; i < sa.length; i++) 
-                sa[i] = String2.canonical(String2.trimEnd(sa[i]));
+                sa[i] = String2.trimEnd(sa[i]);
             return sa;
         }
 

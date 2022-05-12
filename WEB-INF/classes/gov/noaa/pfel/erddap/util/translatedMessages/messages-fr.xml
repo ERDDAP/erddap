@@ -1039,8 +1039,8 @@ UTC est la version moderne du système d&#39;heure GMT.
 UTC utilise des secondes intercalaires occasionnelles pour rester proche de l&#39;heure atomique internationale (TAI).
 Les appareils GPS utilisent l&#39;heure GPS (qui n&#39;utilise pas les secondes intercalaires) en interne, mais affichent l&#39;heure UTC aux utilisateurs.
 (Voir
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> ou d&#39;autres discussions sur les systèmes de temps.) À proprement parler, UTC ne peut pas être utilisé dans certaines situations pour des temps lointains (par exemple, dans des modèles), car l&#39;occurrence de secondes intercalaires ne peut pas être prédite.
 <br>&nbsp;
@@ -6052,7 +6052,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

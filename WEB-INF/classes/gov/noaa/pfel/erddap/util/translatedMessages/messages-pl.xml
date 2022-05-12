@@ -1050,8 +1050,8 @@ UTC to nowoczesna wersja systemu czasu GMT.
 UTC wykorzystuje od czasu do czasu sekundy przestępne, aby pozostać blisko międzynarodowego czasu atomowego (TAI).
 Urządzenia GPS wykorzystują czas GPS (który nie wykorzystuje sekund przestępnych) wewnętrznie, ale wyświetlają użytkownikom czas UTC.
 (Patrz
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> lub inne dyskusje na temat systemów czasu.) Ściśle mówiąc, UTC nie może być używany w niektórych sytuacjach w odległej przyszłości (np.
 w modelach), ponieważ nie można przewidzieć wystąpienia sekund przestępnych.
@@ -6103,7 +6103,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov
