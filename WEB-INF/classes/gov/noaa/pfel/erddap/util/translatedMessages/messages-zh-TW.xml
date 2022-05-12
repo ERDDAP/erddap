@@ -844,8 +844,8 @@ ERDDAP之外的數據集通常使用不同的單位字符串。
 UTC 是 GMT 時間系統的現代版本。
 UTC 偶爾使用閏秒來接近國際原子時 (TAI)。
 GPS 設備在內部使用 GPS 時間（不使用閏秒），但向用戶顯示 UTC 時間。
-（見<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+（見<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a>或其他關於時間系統的討論。）嚴格來說，UTC 不能用於遠未來的某些情況（例如，在模型中），因為無法預測閏秒的發生。
 <br>&nbsp;
@@ -4980,7 +4980,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

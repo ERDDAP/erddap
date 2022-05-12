@@ -1057,8 +1057,8 @@ UTC is de moderne versie van het GMT-tijdsysteem.
 UTC gebruikt af en toe schrikkelseconden om dicht bij de International Atomic Time (TAI) te blijven.
 GPS-apparaten gebruiken intern GPS-tijd (die geen schrikkelseconden gebruikt), maar geven UTC-tijd weer aan gebruikers.
 (Zie
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> of andere discussies over Systems of Time.) Strikt genomen kan UTC in sommige situaties niet worden gebruikt voor verre toekomstige tijden (bijvoorbeeld in modellen), omdat het optreden van schrikkelseconden niet kan worden voorspeld.
 <br>&nbsp;
@@ -6134,7 +6134,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

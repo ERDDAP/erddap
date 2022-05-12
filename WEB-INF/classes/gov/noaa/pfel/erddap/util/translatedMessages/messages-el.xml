@@ -1045,8 +1045,8 @@ AstronomicalYear = 1 - BCEYear (δείτε μόνοι σας:
 Το UTC χρησιμοποιεί περιστασιακά άλματα δευτερόλεπτα για να παραμείνει κοντά στη Διεθνή Ατομική Ώρα (TAI).
 Οι συσκευές GPS χρησιμοποιούν την ώρα GPS (η οποία δεν χρησιμοποιεί άλματα δευτερόλεπτα) εσωτερικά, αλλά εμφανίζει την ώρα UTC στους χρήστες.
 (Δείτε
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a> ή άλλες συζητήσεις για τα Συστήματα του Χρόνου.) Αυστηρά μιλώντας, το UTC δεν μπορεί να χρησιμοποιηθεί σε ορισμένες περιπτώσεις για μακρινούς μελλοντικούς χρόνους (π.χ.
 σε μοντέλα), καθώς η εμφάνιση των δίσεκτων δευτερολέπτων δεν μπορεί να προβλεφθεί.
@@ -6086,7 +6086,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov
