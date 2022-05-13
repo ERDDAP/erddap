@@ -1058,8 +1058,8 @@ UTC er den moderne versjonen av GMT-tidssystemet.
 UTC bruker sporadiske hoppsekunder for å holde seg nær den internasjonale atomtiden (TAI).
 GPS-enheter bruker GPS-tid (som ikke bruker skuddsekunder) internt, men viser UTC-tid til brukere.
 (Se
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> eller andre diskusjoner om Systems of Time.) Strengt tatt kan ikke UTC brukes i enkelte situasjoner for langt fremtidige tider (f.eks.
 i modeller), siden forekomsten av hoppsekunder ikke kan forutsies.
@@ -6110,7 +6110,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

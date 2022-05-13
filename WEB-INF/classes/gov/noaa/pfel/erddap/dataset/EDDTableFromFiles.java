@@ -36,6 +36,7 @@ import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.dataset.NoMoreDataPleaseException;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileNotFoundException;
@@ -47,9 +48,6 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.Enumeration;
@@ -3689,19 +3687,35 @@ public abstract class EDDTableFromFiles extends EDDTable{
         int nFiles = tFileTable.nRows();
         Table distinctTable = null;
         int task = 0;       //number for next task to be created
-        int nProcessed = 0; //number for next task to be processed
         long nNotRead = 0;  //either don't have matching data or do ('distinct' and 1 value matches)
-        int nReadHaveMatch = 0;
-        int nReadNoMatch = 0; 
+        ResultStatisticsAccumulator accumulator = new ResultStatisticsAccumulator();
         int tnThreads = nThreads >= 1 && nThreads < Integer.MAX_VALUE? nThreads : EDStatic.nTableThreads; 
-        ArrayList<FutureTask> futureTasks = new ArrayList();
-        ExecutorService executorService = null;
+
+
+        ThreadedWorkManager<Table> workManager = new ThreadedWorkManager<>(
+                tnThreads,
+                result -> {
+                    if (result == null) {
+                        accumulator.incrementNoMatch();
+                    } else {
+                        accumulator.incrementMatch();
+                        if (debugMode) {
+                            String2.log(">> task #" + (accumulator.getMatch() + accumulator.getNoMatch() -1) + " is writing to tableWriter.");
+                        }
+                        tableWriter.writeSome(result);
+                        //if exception, will be caught below
+                        if (tableWriter.noMoreDataPlease) {
+                            throw new NoMoreDataPleaseException();
+                        }
+                    }
+                });
+        
         try {
             FILE_LOOP:
             for (int f = 0; f < nFiles; f++) {
                 if (Thread.interrupted()) { 
-                    if (executorService != null)
-                        executorService.shutdownNow();
+                    if (workManager != null)
+                        workManager.forceShutdown();
                     throw new InterruptedException(); //consume the interrupted status
                 }
 
@@ -3906,58 +3920,24 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (reallyVerbose) String2.log("#" + f + " get data from " + tDir + tName);
 
                 //*** The new parallelized version of reading data files
-                FutureTask futureTask = new FutureTask(new EDDTableFromFilesCallable(language, 
-                    ">> " + className + " " + datasetID + " nThreads=" + tnThreads + 
-                    //parent thread's name (so in ERDDAP I can distinguish different user requests)
-                    " thread=" + Thread.currentThread().getName() + 
-                    " task=" + task,
-                    this, loggedInAs, requestUrl, userDapQuery, 
-                    tDirIndex, tDir, tName, ftLastMod.get(f),
-                    resultsVariables, resultsTypes, 
-                    ftSortedSpacing.get(f), minSorted, maxSorted, 
-                    sourceConVars, sourceConOps, sourceConValues)); 
-                futureTasks.add(futureTask);
-                //To isolate requests, I make a new executorService each time.
-                if (tnThreads > 1) {
-                    if (executorService == null)
-                        executorService = Executors.newFixedThreadPool(tnThreads);
-                    executorService.submit(futureTask);
-                } else {
-                    futureTask.run();
-                    // When running on 1 thread, clear out the just completed future task from the futureTasks list
-                    // to allow it to be garbage collected. This is important when running large jobs on a single thread.
-                    futureTasks.set(nProcessed++, null);                
-                    Table resultsTable = (Table)(futureTask.get());   //blocks until done, throws ExecutionException
-                    if (resultsTable == null) {
-                        nReadNoMatch++;
-                    } else {
-                        nReadHaveMatch++;
-                        if (debugMode) String2.log(">> task #" + (nProcessed-1) + " is writing to tableWriter.");
-                        tableWriter.writeSome(resultsTable);  //if exception, will be caught below
-                        if (tableWriter.noMoreDataPlease) 
-                            throw new NoMoreDataPleaseException();
-                    }
-                }
+                workManager.addTask(new EDDTableFromFilesCallable(language, 
+                        ">> " + className + " " + datasetID + " nThreads=" + tnThreads + 
+                        //parent thread's name (so in ERDDAP I can distinguish different user requests)
+                        " thread=" + Thread.currentThread().getName() + 
+                        " task=" + task,
+                        this, loggedInAs, requestUrl, userDapQuery, 
+                        tDirIndex, tDir, tName, ftLastMod.get(f),
+                        resultsVariables, resultsTypes, 
+                        ftSortedSpacing.get(f), minSorted, maxSorted, 
+                        sourceConVars, sourceConOps, sourceConValues));
                 task++;
             }  //end of FILE_LOOP
             if (debugMode) String2.log(">> File loop is done.");
 
-            //all is well. process all pending tasks
-            while (task > nProcessed) {
-                //get results table from a futureTask
-                //Put null in that position in futureTasks so it can be gc'd after this method
-                FutureTask futureTask = futureTasks.set(nProcessed++, null);                
-                Table resultsTable = (Table)(futureTask.get());   //blocks until done, throws ExecutionException
-                if (resultsTable == null) {
-                    nReadNoMatch++;
-                } else {
-                    nReadHaveMatch++;
-                    if (debugMode) String2.log(">> task #" + (nProcessed-1) + " is writing to tableWriter.");
-                    tableWriter.writeSome(resultsTable);  //if exception, will be caught below
-                    if (tableWriter.noMoreDataPlease) 
-                        throw new NoMoreDataPleaseException();
-                }
-            }
+            workManager.finishedEnqueing();
+            // all is well. process all pending tasks
+            workManager.processResults();
+
         } catch (Throwable t) {
 
             while (t instanceof ExecutionException) //may be doubly wrapped
@@ -3985,11 +3965,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         } finally {
             //shut everything down
-            if (executorService != null) {
-                try {executorService.shutdownNow();} catch (Exception e) {}
-                executorService = null;
+            if (workManager != null) {
+                try {workManager.forceShutdown();} catch (Exception e) {}
+                workManager = null;
             }
-            futureTasks = null;
         }
 
         //flush distinctTable
@@ -4003,6 +3982,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             distinctTable = null;
         }
         cumNNotRead       += nNotRead;
+        int nReadHaveMatch = accumulator.getMatch();
+        int nReadNoMatch = accumulator.getNoMatch();
         cumNReadHaveMatch += nReadHaveMatch;
         cumNReadNoMatch   += nReadNoMatch;
         if (reallyVerbose) { 
@@ -4021,6 +4002,24 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //done
         tableWriter.finish();
 
+    }
+    
+    private class ResultStatisticsAccumulator {
+        private int nReadHaveMatch = 0;
+        private int nReadNoMatch = 0;
+        
+        public void incrementMatch() {
+            nReadHaveMatch++;
+        }
+        public void incrementNoMatch() {
+            nReadNoMatch++;
+        }
+        public int getMatch() {
+            return nReadHaveMatch;
+        }
+        public int getNoMatch() {
+            return nReadNoMatch;
+        }
     }
 
     /**

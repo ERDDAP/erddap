@@ -6,6 +6,8 @@
 package com.cohort.array;
 
 import com.cohort.util.*;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -30,7 +32,7 @@ public class RowComparatorIgnoreCase extends RowComparator {
      *    ascending or descending order.
      * @throws RuntimeException if trouble
      */
-    public RowComparatorIgnoreCase(List table, int keys[], boolean[] ascending) {
+    public RowComparatorIgnoreCase(List<PrimitiveArray> table, int keys[], boolean[] ascending) {
         super(table, keys, ascending);
     }
 
@@ -44,10 +46,9 @@ public class RowComparatorIgnoreCase extends RowComparator {
      *   the value at index2.  
      *   Think "o1 - o2".
      */
-    public int compare(Object o1, Object o2) {
+    public int compare(Integer o1, Integer o2) {
         for (int k = 0; k < keys.length; k++) {
-            int result = ((PrimitiveArray)table.get(keys[k])).compareIgnoreCase(
-                ((Integer)o1).intValue(), ((Integer)o2).intValue());
+            int result = table.get(keys[k]).compareIgnoreCase(o1, o2);
             if (result != 0) 
                 return ascending[k]? result : -result;
         }
@@ -82,4 +83,3 @@ public class RowComparatorIgnoreCase extends RowComparator {
     }
 
 }
-

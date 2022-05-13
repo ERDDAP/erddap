@@ -575,14 +575,14 @@ public class NcHelper  {
         }
 
         //ArrayXxxnumeric
-        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), isUnsigned || nc2Array.isUnsigned());
+        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), nc2Array.isUnsigned() || isUnsigned);
     }
 
 //was
 //   * This converts a ucar.nc2 numeric ArrayXxx.D1, numeric ArrayXxx.D4,
 //   *   ArrayChar.D2, or ArrayChar.D5 into an array of primitives.
-    
-    /** 
+
+  /** 
      * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
      * 
      * @param nc2Array an nc2Array
