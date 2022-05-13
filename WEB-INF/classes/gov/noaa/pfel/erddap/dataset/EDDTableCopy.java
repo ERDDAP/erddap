@@ -12,6 +12,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -645,6 +646,7 @@ public class EDDTableCopy extends EDDTable{
         int language = 0;
 
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
+        String tDir = EDStatic.fullTestCacheDirectory;
         String error = "";
         int epo, tPo;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10);
@@ -657,8 +659,8 @@ public class EDDTableCopy extends EDDTable{
             //*** test getting das for entire dataset
             String2.log("\n****************** EDDTableCopy.test das dds for entire dataset\n");
             tName = edd.makeNewFileForDapQuery(language, null, null, "", 
-                EDStatic.fullTestCacheDirectory, edd.className() + "_Entire", ".das"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+                tDir, edd.className() + "_Entire", ".das"); 
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
@@ -999,9 +1001,9 @@ public class EDDTableCopy extends EDDTable{
 
             
             //*** test getting dds for entire dataset
-            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 edd.className() + "_Entire", ".dds"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = 
 "Dataset {\n" +
@@ -1037,23 +1039,23 @@ public class EDDTableCopy extends EDDTable{
 
 
             //*** test DAP data access form
-            tName = edd.makeNewFileForDapQuery(language, null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, "", tDir, 
                 edd.className() + "_Entire", ".html"); 
-            results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFromUtf8File(tDir + tName);
             expected = "<option>.png - View a standard, medium-sized .png image file with a graph or map.";
             expected2 = "    String _CoordinateAxisType &quot;Lon&quot;;";
             Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
             Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + tDir + tName);
 
 
             //*** test make data files
             String2.log("\n****************** EDDTableCopy.test make DATA FILES\n");       
 
             //.asc
-            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
                 edd.className() + "_Data", ".asc"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1075,9 +1077,9 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.csv
-            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
                 edd.className() + "_Data", ".csv"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = 
 "longitude,NO3,time,ship\n" +
@@ -1093,9 +1095,9 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.dds 
-            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
                 edd.className() + "_Data", ".dds"); 
-            results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
+            results = File2.directReadFrom88591File(tDir + tName);
             //String2.log(results);
             expected = 
     "Dataset {\n" +
@@ -1110,9 +1112,9 @@ public class EDDTableCopy extends EDDTable{
 
 
             //.dods
-            //tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            //tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, tDir, 
             //    edd.className() + "_Data", ".dods"); 
-            //Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //Test.displayInBrowser("file://" + tDir + tName);
             String2.log("\ndo .dods test");
             String tUrl = EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + edd.datasetID();
@@ -1137,9 +1139,15 @@ public class EDDTableCopy extends EDDTable{
             String2.log("  .dods test succeeded");
 
             //test .png
-            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
-                edd.className() + "_GraphM", ".png"); 
-            Test.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            String baseName = edd.className() + "_GraphM";
+            tName = edd.makeNewFileForDapQuery(language, null, null, userDapQuery, 
+                tDir, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + tDir + tName);
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
+
 
         } catch (Throwable t) {
             throw new RuntimeException("*** This EDDTableCopy test requires testTableCopy", t); 

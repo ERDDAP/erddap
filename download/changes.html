@@ -80,14 +80,17 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>TO DO: Recommended: If your server's CPU has 4+ cores, consider changing to these settings in your datasets.xml file:<kbd>
+      <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
+      <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
+    <br>The nThreads systems for EDDGridFromFiles and EDDTableFromFiles were significantly improved. 
+    These changes led to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
+    for the most challenging requests (when a large number of files must be processed to gather the results).
+    Some related changes will also lead to a general speedup throughout ERDDAP.
+    The code for these changes was contributed by Chris John. Thank you, Chris!
   <li>NEW: Now, if the data in a cell is a standard base64 encoded png (which starts with "data:image/png;base64,") 
     Thanks to Marco Alba (who contributed the code) and Bob Simons (who modified it slightly).
     <br>&nbsp;
-  <li>IMPROVED: The nThreads system for EDDTableFromFiles was significantly improved. 
-    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
-    for the most challenging requests (when a large number of files must be processed to gather the results).
-    These changes will also lead to a general speedup throughout ERDDAP.
-    The code for these changes was contributed by Chris John. Thank you, Chris!
   </ul>
 </ul>
 
