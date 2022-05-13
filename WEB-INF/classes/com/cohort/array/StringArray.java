@@ -1800,8 +1800,9 @@ public class StringArray extends PrimitiveArray {
     public int maxStringLength() {
         int max = 0;
         for (int i = 0; i < size; i++) {
-            String s = get(i);
-            max = Math.max(max, s == null? 0 : s.length());
+            StringHolder sh = getStringHolder(i);
+            int length = (sh == null || sh.charArray() == null) ? 0 : sh.charArray().length;
+            max = Math.max(max, length);
         }
         return max;
     }
