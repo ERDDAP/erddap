@@ -14375,12 +14375,16 @@ expected =
             }
             
 
-            if (i >= kmli + 1) {
-                //Test.displayInBrowser("file://" + dir + tName);
-                Image2.testImagesIdentical(
-                    dir + tName,
-                    String2.unitTestImagesDir()    + baseName + extensions[i].substring(1) + ".png",
-                    File2.getSystemTempDirectory() + baseName + extensions[i].substring(1) + "_diff.png");
+            if (i >= kmli) {
+                if (extensions[i].toLowerCase().endsWith("png")) {
+                    //Test.displayInBrowser("file://" + dir + tName);
+                    Image2.testImagesIdentical(
+                        dir + tName,
+                        String2.unitTestImagesDir()    + baseName + extensions[i].substring(1) + ".png",
+                        File2.getSystemTempDirectory() + baseName + extensions[i].substring(1) + "_diff.png");
+                } else { //kml pdf
+                    Test.displayInBrowser("file://" + dir + tName);
+                }
             }
             if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i] ||
                 time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
