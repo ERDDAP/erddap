@@ -930,8 +930,8 @@ Astronomical Year = 1 - BCEYear (ਆਪਣੇ ਲਈ ਦੇਖੋ:
     src="../images/external.png" alt=" (external link)" 
     title="ਕਿਸੇ ਬਾਹਰੀ ਵੈੱਬਸਾਈਟ ਲਈ ਇਹ ਲਿੰਕ ਕਿਸੇ ਸਮਰਥਨ ਦਾ ਗਠਨ ਨਹੀਂ ਕਰਦਾ ਹੈ।"></a> ਸਮਾਂ ਪ੍ਰਣਾਲੀ.
 UTC GMT ਸਮਾਂ ਪ੍ਰਣਾਲੀ ਦਾ ਆਧੁਨਿਕ ਸੰਸਕਰਣ ਹੈ। UTC ਅੰਤਰਰਾਸ਼ਟਰੀ ਪਰਮਾਣੂ ਸਮਾਂ (TAI) ਦੇ ਨੇੜੇ ਰਹਿਣ ਲਈ ਕਦੇ-ਕਦਾਈਂ ਲੀਪ ਸਕਿੰਟਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦਾ ਹੈ। GPS ਡਿਵਾਈਸ ਅੰਦਰੂਨੀ ਤੌਰ &#39;ਤੇ GPS ਸਮਾਂ (ਜੋ ਲੀਪ ਸਕਿੰਟਾਂ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰਦਾ) ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹਨ, ਪਰ ਉਪਭੋਗਤਾਵਾਂ ਨੂੰ UTC ਸਮਾਂ ਪ੍ਰਦਰਸ਼ਿਤ ਕਰਦੇ ਹਨ। (ਵੇਖੋ
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="ਕਿਸੇ ਬਾਹਰੀ ਵੈੱਬਸਾਈਟ ਲਈ ਇਹ ਲਿੰਕ ਕਿਸੇ ਸਮਰਥਨ ਦਾ ਗਠਨ ਨਹੀਂ ਕਰਦਾ ਹੈ।"></a> ਜਾਂ ਸਮੇਂ ਦੇ ਸਿਸਟਮਾਂ ਦੀਆਂ ਹੋਰ ਚਰਚਾਵਾਂ।) ਸਖਤੀ ਨਾਲ ਕਹੀਏ ਤਾਂ, UTC ਨੂੰ ਭਵਿੱਖ ਦੇ ਸਮੇਂ (ਉਦਾਹਰਨ ਲਈ, ਮਾਡਲਾਂ ਵਿੱਚ) ਲਈ ਕੁਝ ਸਥਿਤੀਆਂ ਵਿੱਚ ਨਹੀਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ, ਕਿਉਂਕਿ ਲੀਪ ਸਕਿੰਟਾਂ ਦੀ ਮੌਜੂਦਗੀ ਦੀ ਭਵਿੱਖਬਾਣੀ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ।
 <br>&nbsp;
@@ -5456,7 +5456,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

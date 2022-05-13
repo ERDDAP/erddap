@@ -4,7 +4,6 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
-import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2018-07-26
  */
-public class EDDTableFromFilesCallable implements Callable { 
+public class EDDTableFromFilesCallable implements Callable<Table> { 
 
     /**
      * Set this to true (by calling debugMode=true in your program, 

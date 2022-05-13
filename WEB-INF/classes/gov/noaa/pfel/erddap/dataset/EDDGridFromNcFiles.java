@@ -6306,11 +6306,18 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test time on x and y axis
+        String baseName = "EDDGridFromNcFiles_testSimpleTestNc";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             "hours[(1970-01-02):(1970-01-05)]&.draw=linesAndMarkers" +
             "&.vars=days|hours|&.marker=5|5&.color=0x000000&.colorBar=|||||",
-            tDir, fName,  ".png"); 
-        Test.displayInBrowser("file://" + tDir + tName); //Known problem, so don't switch to testImagesIdentical
+            tDir, baseName,  ".png"); 
+        //Test.displayInBrowser("file://" + tDir + tName); //Known problem, so don't switch to testImagesIdentical
+        //        String tDir = EDStatic.fullTestCacheDirectory;
+        Image2.testImagesIdentical(
+            tDir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
         Test.knownProblem("SgtGraph DOESN'T SUPPORT TWO TIME AXES !!!!",
             "See SgtGraph \"yIsTimeAxis = false;\".");
         Math2.sleep(10000);       

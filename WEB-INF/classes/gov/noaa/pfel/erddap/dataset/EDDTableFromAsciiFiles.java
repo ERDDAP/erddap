@@ -17,6 +17,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -1546,9 +1547,14 @@ expected=
             //test that using longitude0360 as the x axis still draws a map (not a graph)
             dapQuery = 
 "longitude0360%2Clatitude%2CseaTemperatureF&time%3E=2013-05-17T00%3A00%3A00Z&time%3C=2013-05-24T00%3A00%3A00Z&.draw=markers&.marker=5%7C5";
+            String baseName = eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test;
             tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-                dir, eddTable.className() + "_XIsLon0360AndcolorBarTemperatureF_test" + test,  ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            //Test.displayInBrowser("file://" + dir + tName);
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
         EDD.debugMode = oDebugMode;

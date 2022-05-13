@@ -1041,8 +1041,8 @@ Ang UTC ay ang modernong bersyon ng GMT time system.
 Gumagamit ang UTC ng paminsan-minsang mga leap seconds para manatiling malapit sa International Atomic Time (TAI).
 Ang mga GPS device ay gumagamit ng oras ng GPS (na hindi gumagamit ng mga leap seconds) sa loob, ngunit ipinapakita ang oras ng UTC sa mga user.
 (Tingnan
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >ang https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >ang https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> o iba pang mga talakayan ng System of Time.) Sa mahigpit na pagsasalita, ang UTC ay hindi magagamit sa ilang mga sitwasyon para sa malayong hinaharap na mga panahon (hal., sa mga modelo), dahil ang paglitaw ng mga leap seconds ay hindi mahulaan.
 <br>&nbsp;
@@ -6059,7 +6059,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

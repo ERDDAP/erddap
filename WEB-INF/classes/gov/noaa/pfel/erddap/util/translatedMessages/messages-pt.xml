@@ -1069,8 +1069,8 @@ UTC é a versão moderna do sistema de horário GMT.
 UTC usa segundos bissextos ocasionais para ficar perto do Tempo Atômico Internacional (TAI).
 Os dispositivos GPS usam a hora do GPS (que não usa segundos bissextos) internamente, mas exibem a hora UTC aos usuários.
 (Veja
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Este link para um site externo não constitui um endosso."></a> ou outras discussões de Sistemas de Tempo.) Estritamente falando, UTC não pode ser usado em algumas situações em tempos futuros distantes (por exemplo, em modelos), uma vez que a ocorrência de segundos bissextos não pode ser prevista.
 <br>&nbsp;
@@ -6108,7 +6108,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

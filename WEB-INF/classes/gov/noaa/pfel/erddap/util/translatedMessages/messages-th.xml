@@ -929,8 +929,8 @@ AstronomicalYear = 1 - BCEYear (ดูด้วยตัวคุณเอง:
 >Coordinated Universal Time (UTC) <img 
     src="../images/external.png" alt=" (external link)" 
     title="ลิงก์นี้ไปยังเว็บไซต์ภายนอกไม่ถือเป็นการรับรอง"></a> ระบบเวลา UTC เป็นระบบเวลา GMT ที่ทันสมัย UTC ใช้วินาทีอธิกเป็นครั้งคราวเพื่อให้อยู่ใกล้กับเวลาปรมาณูสากล (TAI) อุปกรณ์ GPS จะใช้เวลา GPS (ซึ่งไม่ใช้วินาทีกระโดด) ภายใน แต่แสดงเวลา UTC ให้ผู้ใช้เห็น (ดู
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="ลิงก์นี้ไปยังเว็บไซต์ภายนอกไม่ถือเป็นการรับรอง"></a> หรือการอภิปรายอื่นๆ เกี่ยวกับระบบแห่งเวลา) พูดอย่างเคร่งครัดแล้ว UTC ไม่สามารถใช้ในบางสถานการณ์สำหรับอนาคตอันไกล (เช่น ในแบบจำลอง) เนื่องจากไม่สามารถคาดการณ์การเกิดวินาทีกระโดดได้
 <br>&nbsp;
@@ -5402,7 +5402,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov
