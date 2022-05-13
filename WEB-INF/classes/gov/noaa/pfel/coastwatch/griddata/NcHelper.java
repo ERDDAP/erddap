@@ -571,11 +571,11 @@ public class NcHelper  {
             byte    byteAr[] = new byte[n];
             for (int i = 0; i < n; i++)
                 byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
-            return PrimitiveArray.factory(byteAr, isUnsigned || nc2Array.isUnsigned());
+            return PrimitiveArray.factory(byteAr, false); //never unsigned (not needed, and unsigned is often trouble)
         }
 
         //ArrayXxxnumeric
-        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), nc2Array.isUnsigned() || isUnsigned);
+        return PrimitiveArray.factory(nc2Array.copyTo1DJavaArray(), isUnsigned || nc2Array.isUnsigned());
     }
 
 //was

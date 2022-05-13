@@ -425,6 +425,7 @@ public class EDV {
                 //attributes are supposed to be unsigned if _Unsigned=true, but sometimes aren't
                 if (sourceIsUnsigned)
                     vr = vr.makeUnsignedPA();
+                //vr is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same PA (not a new one).
                 vr = vr.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
                 combinedAttributes.set("valid_range", vr);
             }
@@ -437,6 +438,7 @@ public class EDV {
         if (vMin != null) {
             if (sourceIsUnsigned)
                 vMin = vMin.makeUnsignedPA();
+            //vMin is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same PA (not a new one).
             vMin = vMin.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
             combinedAttributes.set("valid_min", vMin);
         }
@@ -444,6 +446,7 @@ public class EDV {
         if (vMax != null) {
             if (sourceIsUnsigned)
                 vMax = vMax.makeUnsignedPA();
+            //vMax is coming from and going to combinedAttributes. So okay if scaleAddOffset returns same PA (not a new one).
             vMax = vMax.scaleAddOffset(destinationDataPAType, scaleFactor, addOffset);
             combinedAttributes.set("valid_max", vMax);
         }
@@ -1310,6 +1313,7 @@ will show NaN).
 
         //change to destType and scaleAddOffset if needed
         PrimitiveArray pa = scaleAddOffset?
+            //this is method is okay if scaleAddOffset returns same PA (not a new one).
             source.scaleAddOffset(sourceIsUnsigned, destinationDataPAType,
                 scaleFactor, addOffset):
             PrimitiveArray.factory(destinationDataPAType, source); //if already correct type, maxIsMV setting won't be changed
