@@ -805,8 +805,8 @@ AstronomicalYear = 1 - BCEYear (خود کے لیے دیکھیں:
     src="../images/external.png" alt=" (external link)" 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a> وقت کا نظام.
 UTC GMT ٹائم سسٹم کا جدید ورژن ہے۔ UTC انٹرنیشنل اٹامک ٹائم (TAI) کے قریب رہنے کے لیے کبھی کبھار لیپ سیکنڈ کا استعمال کرتا ہے۔ GPS آلات اندرونی طور پر GPS ٹائم (جو لیپ سیکنڈ استعمال نہیں کرتے) استعمال کرتے ہیں، لیکن صارفین کو UTC وقت دکھاتے ہیں۔ (دیکھیں
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a> یا سسٹمز آف ٹائم کے دیگر مباحث۔
 <br>&nbsp;<li style=";text-align:right;direction:rtl"><a class="selfLink" id="leapSeconds" href="#leapSeconds" rel="help">لیپ سیکنڈز</a> - یونکس ٹائم اور UDUNITS کی طرح، ERDDAP کا &quot;seconds since 1970-01-01T00:00:00Z&quot; UTC وقت (جو لیپ سیکنڈ استعمال کرتا ہے) کی عددی انکوڈنگ (جو لیپ سیکنڈ استعمال نہیں کرتا) ہے۔ سٹرنگ کے اوقات کو عددی اوقات میں/سے تبدیل کرتے وقت، ERDDAP ، جیسے Unix time اور UDUNITS ، لیپ سیکنڈ کو نظر انداز کرتا ہے۔ پھر بھی، ERDDAP ، Unix time، اور UDUNITS عددی اوقات سبھی کہتے ہیں کہ وہ UTC استعمال کرتے ہیں۔ یہاں کیوں اور کیسے ہے:
@@ -4677,7 +4677,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

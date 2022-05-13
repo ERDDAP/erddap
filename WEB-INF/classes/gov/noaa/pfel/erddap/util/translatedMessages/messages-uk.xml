@@ -1057,8 +1057,8 @@ UTC — сучасна версія системи часу GMT.
 UTC використовує час від часу високосні секунди, щоб залишатися близьким до Міжнародного атомного часу (TAI).
 Пристрої GPS внутрішньо використовують час GPS (який не використовує високосні секунди), але відображає час UTC для користувачів.
 (Див.
-<a rel="help" href="https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time"
-    >https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Це посилання на зовнішній веб-сайт не є рекомендацією."></a> або інші обговорення систем часу.) Строго кажучи, UTC не можна використовувати в деяких ситуаціях для далекого майбутнього часу (наприклад, у моделях), оскільки настання високосних секунд неможливо передбачити.
 <br>&nbsp;
@@ -6074,7 +6074,7 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

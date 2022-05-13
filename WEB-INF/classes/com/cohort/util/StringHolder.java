@@ -107,7 +107,7 @@ public class StringHolder {
         if (o == null)
             return 1; //see StringComparatorIgnoreCase
         //see String compareTo documentation
-        char other[] = ((StringHolder)o).charArray();
+        char other[] = o.charArray();
         int thisSize = car.length;
         int otherSize = other.length;
         int min = Math.min(thisSize, otherSize);
