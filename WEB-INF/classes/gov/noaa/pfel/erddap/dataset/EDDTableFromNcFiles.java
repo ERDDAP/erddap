@@ -18919,7 +18919,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 45749784;\n" + //changes
+"    Int32 actual_range 1, 46173615;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -18964,7 +18964,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.64751888e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.6510572e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -19026,7 +19026,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2022-04-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +

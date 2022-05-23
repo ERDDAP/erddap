@@ -8906,7 +8906,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         results = "should be this";
         try {
             String dapQuery = 
-                "sst[(2014-03-01):(2014-02-01)][(0.0)][(30):(31)][(225):(226)]"; 
+                "sst[(2010-03-01):(2014-02-01)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "should be this";
@@ -8922,7 +8922,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         results = "shouldn't be this";
         try {
             String dapQuery = 
-                "sst[(2014-03-03):(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
+                "sst[(2010-03-06):(2014-03-07)][(0.0)][(30):(31)][(225):(226)]"; 
             String tName = gridDataset.makeNewFileForDapQuery(language, null, null, dapQuery, 
                 dir, gridDataset.className() + "_timeError", ".nc"); 
             results = "shouldn't get here";
@@ -8931,7 +8931,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         }
         expected = 
 "SimpleException: Your query produced no matching results. Query error: " +
-"For variable=sst axis#0=time Constraint=\"[(2014-03-03):(2014-03-07)]\": " +
+"For variable=sst axis#0=time Constraint=\"[(2010-03-06):(2014-03-07)]\": " +
 "Stop=\"2014-03-07\" is greater than the axis maximum=2014-03-05T12:00:00Z " +
 "(and even 2014-03-06T01:10:43Z).";
         po = results.indexOf("SimpleException");
@@ -10127,7 +10127,7 @@ expected =
 "        <sourceName>lat</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">17999</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">17999</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"comment\">geolocations inherited from the input data without correction</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
@@ -10146,7 +10146,7 @@ expected =
 "        <sourceName>lon</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">36000</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">36000</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"comment\">geolocations inherited from the input data without correction</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
@@ -10165,7 +10165,7 @@ expected =
 "        <sourceName>analysed_sst</sourceName>\n" +
 "        <destinationName>analysed_sst</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">298.15</att>\n" +
 "            <att name=\"comment\">Interim near-real-time (nrt) version using Multi-Resolution Variational Analysis (MRVA) method for interpolation; to be replaced by Final version</att>\n" +
@@ -10192,7 +10192,7 @@ expected =
 "        <sourceName>analysis_error</sourceName>\n" +
 "        <destinationName>analysis_error</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">uncertainty in &quot;analysed_sst&quot;</att>\n" +
@@ -10216,7 +10216,7 @@ expected =
 "        <sourceName>mask</sourceName>\n" +
 "        <destinationName>mask</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
 "            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"comment\">mask can be used to further filter the data.</att>\n" +
@@ -10241,7 +10241,7 @@ expected =
 "        <sourceName>sea_ice_fraction</sourceName>\n" +
 "        <destinationName>sea_ice_fraction</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
 "            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
@@ -10266,7 +10266,7 @@ expected =
 "        <sourceName>dt_1km_data</sourceName>\n" +
 "        <destinationName>dt_1km_data</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-128</att>\n" +
 "            <att name=\"_Unsigned\">false</att>\n" +
 "            <att name=\"comment\">The grid value is hours between the analysis time and the most recent MODIS or VIIRS 1km L2P datum within 0.01 degrees from the grid point.  &quot;Fill value&quot; indicates absence of such 1km data at the grid point.</att>\n" +
@@ -10289,7 +10289,7 @@ expected =
 "        <sourceName>sst_anomaly</sourceName>\n" +
 "        <destinationName>sst_anomaly</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">anomaly reference to the day-of-year average between 2003 and 2014</att>\n" +
@@ -10442,7 +10442,7 @@ expected =
 "        <att name=\"start_date\">2002-07-04 UTC</att>\n" +
 "        <att name=\"start_orbit_number\" type=\"int\">[START_ORBIT_NUMBER]</att>\n" +
 "        <att name=\"start_time\">00:00:00 UTC</att>\n" +
-"        <att name=\"stop_date\">2021-07-20 UTC</att>\n" +  //changes 
+"        <att name=\"stop_date\">2022-03-30 UTC</att>\n" +  //changes 
 "        <att name=\"stop_time\">23:59:59 UTC</att>\n" +
 "        <att name=\"suggested_image_scaling_applied\">No</att>\n" +
 "        <att name=\"suggested_image_scaling_maximum\" type=\"float\">45.0</att>\n" +
@@ -10490,8 +10490,8 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-//"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
-"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2021</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
+"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -10599,24 +10599,25 @@ expected =
         String tName = edd.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".dds"); 
         results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
+        results = results.replaceAll("time = \\d{3,4}", "time = ###");
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 876];\n" +  //changes
+"  Float64 time[time = ###];\n" + 
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 sst4[time = 876][latitude = 4320][longitude = 8640];\n" +
+"      Float32 sst4[time = ###][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 876];\n" +
+"      Float64 time[time = ###];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } sst4;\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      UInt16 qual_sst4[time = 876][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
+"      UInt16 qual_sst4[time = ###][latitude = 4320][longitude = 8640];\n" +  //UInt16 is important test
 "    MAPS:\n" +
-"      Float64 time[time = 876];\n" +
+"      Float64 time[time = ###];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
 "  } qual_sst4;\n" +
@@ -10633,7 +10634,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0257408e+9, 1.6267392e+9;\n" +  //changes
+"    Float64 actual_range 1.0257408e+9, 1.6485984e+9;\n" +  //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -10767,10 +10768,10 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-//"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
-"    String time_coverage_end \"2021-07-20T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
+"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
+"    String time_coverage_end \"2022-03-30T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2021\";\n" + //2021-05-03 changes between -present and current year
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" + //2021-05-03 changes between -present and current year
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
@@ -11417,7 +11418,7 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); 
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); //2022-05-23 new THREDDS fail: https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PH2/sstd/1day has unsorted time dimension:  AxisVariable=time isn't sorted.  IntArray isn't sorted in ascending order: [30]=376056000 > [31]=375969600.  IntArray isn't sorted in descending order: [0]=373377600 < [1]=373464000.
 
          //.dds -- error only occurs on .nc
         userDapQuery = ""; 
@@ -11962,7 +11963,8 @@ String expected =
         //test find several datasets
         StringWriter writer = null;
         String results = EDDGridFromDap.crawlThreddsCatalog(
-            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/MPOC/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/remoteCatalogService?catalog=https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.xml",
+            //was "https://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.html",
             null, null, null, writer).toNewlineString();
         String expected = 
 "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/1day\n" +
@@ -11982,7 +11984,7 @@ String expected =
         //test negativePathRegex
         writer = new StringWriter();
         results = EDDGridFromDap.crawlThreddsCatalog(
-            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatBA/ssta/catalog.html",
             null, null, ".*(8day).*", writer).toNewlineString();
         expected = 
 "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +
@@ -11992,7 +11994,7 @@ String expected =
         //test generateDatasetsXml
         writer = new StringWriter();
         results = EDDGridFromDap.crawlThreddsCatalog(
-            "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html",
+            "https://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatBA/ssta/catalog.html",
             null, null, null, writer).toNewlineString();
         expected = 
 "https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\n" +

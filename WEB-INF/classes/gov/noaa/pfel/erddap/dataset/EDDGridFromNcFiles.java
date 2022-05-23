@@ -725,7 +725,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">1</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"calendar\">Gregorian</att>\n" +
 "            <att name=\"comment\">This is the reference time of the SST file. Add sst_dtime to this value to get pixel-by-pixel times. Note: in PFV5.2 that sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>\n" +
@@ -780,7 +780,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>sea_surface_temperature</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">273.15</att>\n" +
 "            <att name=\"comment\">Skin temperature of the ocean</att>\n" +
@@ -807,7 +807,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>sst_dtime</destinationName>\n" +
 "        <dataType>int</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"int\">-2147483648</att>\n" +
 "            <att name=\"add_offset\" type=\"int\">0</att>\n" +
 "            <att name=\"comment\">time plus sst_dtime gives seconds after 1981-01-01 00:00:00. Note: in PFV5.2 this sst_dtime is empty. PFV6 will contain the correct sst_dtime values.</att>\n" +
@@ -833,7 +833,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>sses_bias</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Bias estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_bias is empty. PFV6 will contain the correct sses_bias values.</att>\n" +
@@ -859,7 +859,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>sses_standard_deviation</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">2.54</att>\n" +
 "            <att name=\"comment\">Standard deviation estimate derived using the techniques described at http://www.ghrsst.org/SSES-Description-of-schemes.html. Note: in PFV5.2 this sses_standard_deviation is empty. PFV6 will contain the correct sses_standard_deviation values.</att>\n" +
@@ -885,7 +885,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>dt_analysis</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">The difference between this SST and the previous day&#39;s SST.</att>\n" +
@@ -912,7 +912,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>wind_speed</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">These wind speeds were created by NCEP-DOE Atmospheric Model Intercomparison Project (AMIP-II) reanalysis (R-2) and represent winds at 10 metres above the sea surface.</att>\n" +
@@ -942,7 +942,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>sea_ice_fraction</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">Sea ice concentration data are taken from the EUMETSAT Ocean and Sea Ice Satellite Application Facility (OSISAF) Global Daily Sea Ice Concentration Reprocessing Data Set (http://accession.nodc.noaa.gov/0068294) when these data are available. The data are reprojected and interpolated from their original polar stereographic projection at 10km spatial resolution to the 4km Pathfinder Version 5.2 grid. When the OSISAF data are not available for both hemispheres on a given day, the sea ice concentration data are taken from the sea_ice_fraction variable found in the L4 GHRSST DailyOI SST product from NOAA/NCDC, and are interpolated from the 25km DailyOI grid to the 4km Pathfinder Version 5.2 grid.</att>\n" +
@@ -972,7 +972,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>aerosol_dynamic_indicator</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">1.1</att>\n" +
 "            <att name=\"comment\">Aerosol optical thickness (100 KM) data are taken from the CLASS AERO100 products, which are created from AVHRR channel 1 optical thickness retrievals from AVHRR global area coverage (GAC) data. The aerosol optical thickness measurements are interpolated from their original 1 degree x 1 degree resolution to the 4km Pathfinder Version 5.2 grid.</att>\n" +
@@ -1000,7 +1000,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>quality_level</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">0</att>\n" +
 "            <att name=\"comment\">Note, the native Pathfinder processing system returns quality levels ranging from 0 to 7 (7 is best quality; -1 represents missing data) and has been converted to the extent possible into the six levels required by the GDS2 (ranging from 0 to 5, where 5 is best). Below is the conversion table: \n" +
 " GDS2 required quality_level 5  =  native Pathfinder quality level 7 == best_quality \n" +
@@ -1030,7 +1030,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>pathfinder_quality_level</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-1</att>\n" +
 "            <att name=\"comment\">This variable contains the native Pathfinder processing system quality levels, ranging from 0 to 7, where 0 is worst and 7 is best. And value -1 represents missing data.</att>\n" +
 "            <att name=\"flag_meanings\">bad_data worst_quality low_quality low_quality acceptable_quality acceptable_quality acceptable_quality best_quality</att>\n" +
@@ -1053,7 +1053,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <destinationName>l2p_flags</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 540 540</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 540 540</att>\n" +
 "            <att name=\"comment\">Bit zero (0) is always set to zero to indicate infrared data. Bit one (1) is set to zero for any pixel over water (ocean, lakes and rivers). Land pixels were determined by rasterizing the Global Self-consistent Hierarchical High-resolution Shoreline (GSHHS) Database from the NOAA National Geophysical Data Center. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by land has bit one (1) set to 1. Bit two (2) is set to 1 when the sea_ice_fraction is 0.15 or greater. Bits three (3) and four (4) indicate lake and river pixels, respectively, and were determined by rasterizing the US World Wildlife Fund&#39;s Global Lakes and Wetlands Database. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by lake has bit three (3) set to 1. Any 4 km Pathfinder pixel whose area is 50&#37; or more covered by river has bit four (4) set to 1.</att>\n" +
 "            <att name=\"flag_masks\" type=\"shortList\">1 2 4 8 16 32 64 128 256</att>\n" +
 "            <att name=\"flag_meanings\">microwave land ice lake river reserved_for_future_use unused_currently unused_currently unused_currently</att>\n" +
@@ -1238,7 +1238,7 @@ expected =
 "        <sourceName>lat</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">17999</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">17999</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"comment\">none</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
@@ -1258,7 +1258,7 @@ expected =
 "        <sourceName>lon</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">36000</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">36000</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"comment\">none</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
@@ -1279,7 +1279,7 @@ expected =
 "        <destinationName>analysed_sst</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">298.15</att>\n" +
 "            <att name=\"comment\">Interim near-real-time (nrt) version using Multi-Resolution Variational Analysis (MRVA) method for interpolation; to be replaced by Final version</att>\n" +
@@ -1307,7 +1307,7 @@ expected =
 "        <destinationName>analysis_error</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1023 2047</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1023 2047</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32768</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">none</att>\n" +
@@ -1333,7 +1333,7 @@ expected =
 "        <destinationName>mask</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"comment\">mask can be used to further filter the data.</att>\n" +
 "            <att name=\"coordinates\">lon lat</att>\n" +
@@ -1359,7 +1359,7 @@ expected =
 "        <destinationName>sea_ice_fraction</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"add_offset\" type=\"double\">0.0</att>\n" +
 "            <att name=\"comment\">ice data interpolated by a nearest neighbor approach.</att>\n" +
@@ -1385,7 +1385,7 @@ expected =
 "        <destinationName>dt_1km_data</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 1447 2895</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 1447 2895</att>\n" +
 "            <att name=\"_FillValue\" type=\"byte\">-128</att>\n" +
 "            <att name=\"comment\">The grid value is hours between the analysis time and the most recent MODIS or VIIRS 1km L2P datum within 0.01 degrees from the grid point.  &quot;Fill value&quot; indicates absence of such 1km data at the grid point.</att>\n" +
 "            <att name=\"coordinates\">lon lat</att>\n" +
@@ -1601,7 +1601,7 @@ expected =
 "        <destinationName>chlor_a</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">44 87</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">44 87</att>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-32767.0</att>\n" +
 "            <att name=\"display_max\" type=\"float\">20.0</att>\n" +
 "            <att name=\"display_min\" type=\"float\">0.01</att>\n" +
@@ -2064,7 +2064,7 @@ expected =
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">1</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">1</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"bounds\">time_bnds</att>\n" +
 "            <att name=\"calendar\">standard</att>\n" +
@@ -2083,7 +2083,7 @@ expected =
 "        <sourceName>lat</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">3105</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">3105</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"bounds\">lat_bnds</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
@@ -2101,7 +2101,7 @@ expected =
 "        <sourceName>lon</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">7025</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">7025</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"bounds\">lon_bnds</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
@@ -2121,7 +2121,7 @@ expected =
 "        <destinationName>tasmin</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">1 369 836</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">1 369 836</att>\n" +
 "            <att name=\"_FillValue\" type=\"float\">1.0E20</att>\n" +
 "            <att name=\"associated_files\">baseURL: http://cmip-pcmdi.llnl.gov/CMIP5/dataLocation gridspecFile: gridspec_atmos_fx_CESM1-CAM5_rcp26_r0i0p0.nc areacella: areacella_fx_CESM1-CAM5_rcp26_r0i0p0.nc</att>\n" +
 "            <att name=\"cell_measures\">area: areacella</att>\n" +
@@ -9688,8 +9688,8 @@ expected =
 "        <dataType>ubyte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"long_name\">Radiometer RFI flags</att>\n" +
-"            <att name=\"valid_max\" type=\"byte\">0</att>\n" +
-"            <att name=\"valid_min\" type=\"byte\">0</att>\n" +
+"            <att name=\"valid_max\" type=\"ubyte\">0</att>\n" + //min and max are 0?? so the only valid value is 0??
+"            <att name=\"valid_min\" type=\"ubyte\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"ubyte\">255</att>\n" +        //important test of addMvFvAttsIfNeeded and unsigned var
@@ -10035,8 +10035,8 @@ expected =
 "            <att name=\"Sun_glint\">SUNGLINT</att>\n" +
 "            <att name=\"Tb_consistency\">TBCONS</att>\n" +
 "            <att name=\"Unusual_brighness_temperature\">TEMP</att>\n" +
-"            <att name=\"valid_max\" type=\"int\">0</att>\n" +
-"            <att name=\"valid_min\" type=\"int\">0</att>\n" +
+"            <att name=\"valid_max\" type=\"uint\">0</att>\n" +
+"            <att name=\"valid_min\" type=\"uint\">0</att>\n" +
 "            <att name=\"Wind_foam_contamination\">WIND</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -10054,8 +10054,8 @@ expected =
 "        <dataType>ushort</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"long_name\">Number of radiometer samples per average</att>\n" +
-"            <att name=\"valid_max\" type=\"short\">0</att>\n" +
-"            <att name=\"valid_min\" type=\"short\">0</att>\n" +
+"            <att name=\"valid_max\" type=\"ushort\">0</att>\n" + //min and max are 0?? so the only valid value is 0??
+"            <att name=\"valid_min\" type=\"ushort\">0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"ushort\">65535</att>\n" +
@@ -12837,7 +12837,6 @@ expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  latitude {\n" +
-"    Int32 _ChunkSizes 4320;\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float32 actual_range -89.979, 89.979;\n" + //2021-03-08 was -89.97916, 89.97917
 "    String axis \"Y\";\n" +
@@ -12851,7 +12850,6 @@ expected =
 "    Float32 valid_min -90.0;\n" +
 "  }\n" +
 "  longitude {\n" +
-"    Int32 _ChunkSizes 8640;\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float32 actual_range -179.979, 179.979;\n" + //2021-03-08 was -179.9792, 179.9792 
 "    String axis \"X\";\n" +
@@ -14029,7 +14027,7 @@ expected =
         int language = 0; 
 
         String2.log("\n*** EDDGridFromNcFiles.testDapErrors()");
-        String comment = "\n!!! These tests require erdBAssta5day and noaaPassiveAcoustic in localhost ERDDAP.";
+        String comment = "\n!!! These tests require erdBAssta5day|noaaPassiveAcoustic|testPrivate in localhost ERDDAP.";
 
 /*400 Bad Request - for request syntax errors
   401 Unauthorized - for when the user isn't authorized to access a given dataset
@@ -14206,7 +14204,7 @@ expected =
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">524288</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">524288</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"calendar\">Julian</att>\n" +
 "            <att name=\"long_name\">time</att>\n" +
@@ -14222,7 +14220,7 @@ expected =
 "        <sourceName>latitude</sourceName>\n" +
 "        <destinationName>latitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">391</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">391</att>\n" +
 "            <att name=\"axis\">Y</att>\n" +
 "            <att name=\"long_name\">latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
@@ -14241,7 +14239,7 @@ expected =
 "        <sourceName>longitude</sourceName>\n" +
 "        <destinationName>longitude</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"int\">737</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uint\">737</att>\n" +
 "            <att name=\"axis\">X</att>\n" +
 "            <att name=\"long_name\">longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
@@ -14261,7 +14259,7 @@ expected =
 "        <destinationName>VHMAX</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_ChunkSizes\" type=\"intList\">61 391 737</att>\n" +
+"            <att name=\"_ChunkSizes\" type=\"uintList\">61 391 737</att>\n" +
 "            <att name=\"_FillValue\" type=\"short\">-32767</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"calculation_method\">Expected wave height greater than 95.0th percentile of distribution</att>\n" +
