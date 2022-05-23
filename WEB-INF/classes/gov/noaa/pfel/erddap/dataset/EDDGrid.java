@@ -1789,11 +1789,11 @@ public abstract class EDDGrid extends EDD {
                 }
 
                 startDestD = validateGreaterThanThrowOrRepair(precision,
-                        startDestD, startS, av, repair, language, diagnostic0,
-                        diagnosticl);
+                        startDestD, startS, av, repair, 
+                        EDStatic.EDDGridStartAr, language, diagnostic0, diagnosticl);
                 startDestD = validateLessThanThrowOrRepair(precision,
-                        startDestD, startS, av, repair, language, diagnostic0,
-                        diagnosticl);
+                        startDestD, startS, av, repair, 
+                        EDStatic.EDDGridStartAr, language, diagnostic0, diagnosticl);
 
                 startI = av.destinationToClosestIndex(startDestD);
                 //String2.log("!ParseAxisBrackets startS=" + startS + " startD=" + startDestD + " startI=" + startI);
@@ -1844,10 +1844,9 @@ public abstract class EDDGrid extends EDD {
                 }
                 
                 stopDestD = validateGreaterThanThrowOrRepair(precision,
-                        stopDestD, stopS, av, repair, language, diagnostic0,
-                        diagnosticl);
-                stopDestD = validateLessThanThrowOrRepair(precision, stopDestD,
-                        stopS, av, repair, language, diagnostic0, diagnosticl);
+                    stopDestD, stopS, av, repair, EDStatic.EDDGridStopAr, language, diagnostic0, diagnosticl); 
+                stopDestD = validateLessThanThrowOrRepair(precision, 
+                    stopDestD, stopS, av, repair, EDStatic.EDDGridStopAr, language, diagnostic0, diagnosticl); 
 
                 stopI = av.destinationToClosestIndex(stopDestD);
                 //String2.log("!ParseAxisBrackets stopS=" + stopS + " stopD=" + stopDestD + " stopI=" + stopI);
@@ -6936,6 +6935,7 @@ Attributes {
      * @param repair If true and the less than check fails, this returns
      *      the repaired value. If false and the check fails, then an error
      *      is thrown.
+     * @param idAr A String[] with translations of the item being tested.
      * @param language the index of the selected language
      * @param diagnostic0 Informational string about the axis for this check.
      *      In language 0.
@@ -6944,12 +6944,15 @@ Attributes {
      * @return the value or the repaired value.
      */
     private double validateLessThanThrowOrRepair(int precision, double value,
-            String stringValue, EDVGridAxis av, boolean repair, int language,
+            String stringValue, EDVGridAxis av, boolean repair, String[] idAr, int language,
             String diagnostic0, String diagnosticl) {
         return validateLessThanThrowOrRepair(precision, value, stringValue,
-                av.destinationMaxString(), av.lastDestinationValue(),
-                av.destinationCoarseMax(), repair, language, diagnostic0,
-                diagnosticl);
+            av.destinationMaxString(), av.lastDestinationValue(),
+            av.destinationCoarseMax(), 
+            av instanceof EDVTimeStampGridAxis? 
+                Calendar2.epochSecondsToIsoStringTZ(av.destinationCoarseMax()) : 
+                "" + av.destinationCoarseMax(),
+            repair, idAr, language, diagnostic0, diagnosticl);
     }
 
     /**
@@ -6969,6 +6972,7 @@ Attributes {
      * @param repair If true and the less than check fails, this returns
      *      the repaired value. If false and the check fails, then an error
      *      is thrown.
+     * @param idAr A String[] with translations of the item being tested.
      * @param language the index of the selected language
      * @param diagnostic0 Informational string about the axis for this check.
      *      In language 0.
@@ -6977,12 +6981,16 @@ Attributes {
      * @return the value or the repaired value.
      */
     private double validateGreaterThanThrowOrRepair(int precision, double value,
-            String stringValue, EDVGridAxis av, boolean repair, int language,
+            String stringValue, EDVGridAxis av, boolean repair, 
+            String idAr[], int language,
             String diagnostic0, String diagnosticl) {
         return validateGreaterThanThrowOrRepair(precision, value, stringValue,
                 av.destinationMinString(), av.firstDestinationValue(),
-                av.destinationCoarseMin(), repair, language, diagnostic0,
-                diagnosticl);
+                av.destinationCoarseMin(), 
+                av instanceof EDVTimeStampGridAxis? 
+                    Calendar2.epochSecondsToIsoStringTZ(av.destinationCoarseMin()) : 
+                    "" + av.destinationCoarseMin(),
+                repair, idAr, language, diagnostic0, diagnosticl);
     }
 
     /**
@@ -6995,41 +7003,50 @@ Attributes {
      * @param value The value to validate.
      * @param stringValue A string representation of the input, this is used in
      *      the error message. 
-     * @param max The exact maximum value. This is used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
+     * @param stringMax The exact maximum value, as a string. This is only used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
      * @param repairTo The value to repair to if repair is true.
      * @param coarseMax The maximum value to check against.
+     * @param coarseMaxString This is only used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
      * @param repair If true and the less than check fails, this returns
      *      the repaired value. If false and the check fails, then an error
      *      is thrown.
+     * @param idAr A String[] with translations of the item being tested.
      * @param language the index of the selected language
      * @param diagnostic0 Informational string about the axis for this check.
      *      In language 0.
      * @param diagnosticl Informational string about the axis for this check.
      *      In the language that matches the language input.
+     * @param isStart true if testing start value. false if testing stop value.
      * @return the value or the repaired value.
      */
     private double validateLessThanThrowOrRepair(int precision, double value,
-            String stringValue, String max, double repairTo, double coarseMax,
-            boolean repair, int language, String diagnostic0,
-            String diagnosticl) {
+            String stringValue, String stringMax, double repairTo, 
+            double coarseMax, String coarseMaxString,
+            boolean repair, String idAr[], int language, 
+            String diagnostic0, String diagnosticl) {
         if (Math2.lessThanAE(precision, value, coarseMax)) {
         } else {
             if (repair)
                 value = repairTo;
             else
                 throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]
-                                + diagnostic0 + ": " + MessageFormat.format(
-                                        EDStatic.queryErrorGridGreaterMaxAr[0],
-                                        EDStatic.EDDGridStartAr[0], stringValue,
-                                        max, "" + coarseMax),
-                        MustBe.THERE_IS_NO_DATA + " "
-                                + EDStatic.queryErrorAr[language] + diagnosticl
-                                + ": "
-                                + MessageFormat.format(
-                                        EDStatic.queryErrorGridGreaterMaxAr[language],
-                                        EDStatic.EDDGridStartAr[language],
-                                        stringValue, max, "" + coarseMax)));
+                    MustBe.THERE_IS_NO_DATA + " " + 
+                    EDStatic.queryErrorAr[0] + diagnostic0 + ": " + 
+                    MessageFormat.format(
+                        EDStatic.queryErrorGridGreaterMaxAr[0],
+                        idAr[0], 
+                        stringValue,
+                        stringMax, coarseMaxString),
+                    MustBe.THERE_IS_NO_DATA + " " + 
+                    EDStatic.queryErrorAr[language] + diagnosticl + ": " + 
+                    MessageFormat.format(
+                        EDStatic.queryErrorGridGreaterMaxAr[language],
+                        idAr[language], 
+                        stringValue, 
+                        stringMax, coarseMaxString)));
         }
         return value;
     }
@@ -7044,9 +7061,13 @@ Attributes {
      * @param value The value to validate.
      * @param stringValue A string representation of the input, this is used in
      *      the error message. 
-     * @param min The exact minimum value. This is used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
+     * @param stringMin The exact minimum value, as a string. This is only used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
      * @param repairTo The value to repair to if repair is true.
      * @param coarseMin The minimum value to check against.
+     * @param coarseMinString This is only used in the error message.
+     *      If the value is a dateTime, this should be the ISO 8601 representation.
      * @param repair If true and the greater than check fails, this returns
      *      the repaired value. If false and the check fails, then an error
      *      is thrown.
@@ -7055,11 +7076,13 @@ Attributes {
      *      In language 0.
      * @param diagnosticl Informational string about the axis for this check.
      *      In the language that matches the language input.
+     * @param isStart true if testing start value. false if testing stop value.
      * @return the value or the repaired value.
      */
     private double validateGreaterThanThrowOrRepair(int precision, double value,
-            String stringValue, String min, double repairTo, double coarseMin,
-            boolean repair, int language, String diagnostic0,
+            String stringValue, String stringMin, double repairTo, 
+            double coarseMin, String coarseMinString,
+            boolean repair, String idAr[], int language, String diagnostic0,
             String diagnosticl) {
         if (Math2.greaterThanAE(precision, value, coarseMin)) {
         } else {
@@ -7067,18 +7090,18 @@ Attributes {
                 value = repairTo;
             else
                 throw new SimpleException(EDStatic.bilingual(language,
-                        MustBe.THERE_IS_NO_DATA + " " + EDStatic.queryErrorAr[0]
-                                + diagnostic0 + ": " + MessageFormat.format(
-                                        EDStatic.queryErrorGridLessMinAr[0],
-                                        EDStatic.EDDGridStartAr[0], stringValue,
-                                        min, "" + coarseMin),
-                        MustBe.THERE_IS_NO_DATA + " "
-                                + EDStatic.queryErrorAr[language] + diagnosticl
-                                + ": "
-                                + MessageFormat.format(
-                                        EDStatic.queryErrorGridLessMinAr[language],
-                                        EDStatic.EDDGridStartAr[language],
-                                        stringValue, min, "" + coarseMin)));
+                    MustBe.THERE_IS_NO_DATA + " " + 
+                    EDStatic.queryErrorAr[0] + diagnostic0 + ": " + 
+                    MessageFormat.format(
+                        EDStatic.queryErrorGridLessMinAr[0],
+                        idAr[0], 
+                        stringValue, stringMin, coarseMinString),
+                    MustBe.THERE_IS_NO_DATA + " " + 
+                    EDStatic.queryErrorAr[language] + diagnosticl + ": " + 
+                    MessageFormat.format(
+                        EDStatic.queryErrorGridLessMinAr[language],
+                        idAr[language], 
+                        stringValue, stringMin, coarseMinString)));
         }
         return value;
     }
@@ -7116,32 +7139,34 @@ Attributes {
                 av.destinationName());
         // Validate Longitude values.
         // Validate request contains some data.
-        validateLessThanThrowOrRepair(precision, minX, "" + minX, av,
-                false /* repair */, language, diagnostic0, diagnosticl);
-        validateGreaterThanThrowOrRepair(precision, maxX, "" + maxX, av,
-                false /* repair */, language, diagnostic0, diagnosticl);
+        validateLessThanThrowOrRepair(precision, minX, "" + minX, av, false /* repair */, 
+            EDStatic.advl_minLongitudeAr, language, diagnostic0, diagnosticl);
+        validateGreaterThanThrowOrRepair(precision, maxX, "" + maxX, av, false /* repair */, 
+            EDStatic.advl_maxLongitudeAr, language, diagnostic0, diagnosticl);
 
         // Y / Latitude.
         av = axisVariables[latIndex];
         diagnostic0 = MessageFormat.format(
-                EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
-                "" + latIndex, av.destinationName());
+            EDStatic.queryErrorGridDiagnosticAr[0], av.destinationName(),
+            "" + latIndex, av.destinationName());
         diagnosticl = MessageFormat.format(
-                EDStatic.queryErrorGridDiagnosticAr[language],
-                av.destinationName(), "" + latIndex,
-                av.destinationName());
+            EDStatic.queryErrorGridDiagnosticAr[language],
+            av.destinationName(), "" + latIndex,
+            av.destinationName());
         // Validate Latitude values.
         validateGreaterThanThrowOrRepair(precision, minY, "" + minY, "-90",
-                -90 /* repairTo */, -91 /* coarseMin */, false /* repair */,
-                language, diagnostic0, diagnosticl);
+            -90 /* repairTo */, -91, "-91" /* coarseMin */, false /* repair */,
+            EDStatic.advl_minLatitudeAr, language, diagnostic0, diagnosticl);
         validateLessThanThrowOrRepair(precision, maxY, "" + maxY, "90",
-                90/* repairTo */, 91 /* coarseMax */, false /* repair */,
-                language, diagnostic0, diagnosticl);
+            90/* repairTo */, 91, "91" /* coarseMax */, false /* repair */,
+            EDStatic.advl_maxLatitudeAr, language, diagnostic0, diagnosticl);
         // Validate request contains some data.
         validateLessThanThrowOrRepair(precision, minY, "" + minY, av,
-                false /* repair */, language, diagnostic0, diagnosticl);
+            false /* repair */, 
+            EDStatic.advl_minLatitudeAr, language, diagnostic0, diagnosticl);
         validateGreaterThanThrowOrRepair(precision, maxY, "" + maxY, av,
-                false /* repair */, language, diagnostic0, diagnosticl);
+            false /* repair */, 
+            EDStatic.advl_maxLatitudeAr, language, diagnostic0, diagnosticl);
     }
 
     /**

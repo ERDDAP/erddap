@@ -1,6 +1,6 @@
 /* This file is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
+ * For more information visit www.cohortsoftware.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.util;
 
@@ -2512,7 +2512,7 @@ public class String2 {
             //"This program includes open source com.cohort classes (version " + 
             //    version + "),\n" +
             //"Copyright(c) 2004 - 2007, CoHort Software.\n" +
-            //"For more information, visit www.cohort.com.\n" +
+            //"For more information, visit www.cohortsoftware.com.\n" +
             //"\n" + 
             //"This program is using\n" + 
             javaInfo() + "\n" +

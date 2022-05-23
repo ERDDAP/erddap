@@ -1091,7 +1091,8 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = false;
+        boolean doSlowTestsToo = true;
+
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
@@ -1214,7 +1215,7 @@ WaitThenTryAgainException wttae;
         EDDGridFromNcFilesUnpacked.test( errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromMergeIRFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromAudioFiles.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
+/*        EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridCopy.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridSideBySide.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //the best grid graphics tests are here
         EDDGridLonPM180.test(            errorSB, interactive, doSlowTestsToo, 0, -1);

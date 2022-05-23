@@ -1,7 +1,7 @@
 /* This file is part of the EMA project and is 
  * Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in LICENSE.txt.
- * For more information visit www.cohort.com or contact CoHortSoftware@gmail.com.
+ * For more information visit www.cohortsoftware.com or contact CoHortSoftware@gmail.com.
  */
 package com.cohort.ema;
 
@@ -792,7 +792,7 @@ public class EmaClass extends HttpServlet {
                   "</form>\n");
         sb.append("<!-- This form generated " + 
             Calendar2.getCurrentISODateTimeStringLocalTZ() + 
-//            " by Ema (www.cohort.com)" +
+//            " by Ema (www.cohortsoftware.com)" +
             (startMillis > 0 ? 
                 " in " + tTime + " ms" :
                 "") +

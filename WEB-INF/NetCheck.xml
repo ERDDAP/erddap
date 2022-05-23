@@ -91,7 +91,7 @@ read the comments in it) and rename your .xml file to its original name.
 
 License information for software included with NetCheck: 
   * The com/cohort/util utilities are from CoHort Software 
-    (http://www.cohort.com) and have an MIT/X-like license 
+    (https://www.cohortsoftware.com) and have an MIT/X-like license 
     (see classes/com/cohort/ema/LICENSE.txt).
   * SftpTest uses code from the J2SSH project which is distributed by   
     SSHTools (see http://sourceforge.net/projects/sshtools/) 

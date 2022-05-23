@@ -12,6 +12,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
@@ -1139,7 +1140,7 @@ public class EDDGridSideBySide extends EDDGrid {
         int language = 0;
         String dir = EDStatic.fullTestCacheDirectory;
         String name, tName, userDapQuery, results, expected, error;
-        String dapQuery;
+        String dapQuery, baseName;
 
         EDDGrid qsWind8 = (EDDGrid)oneFromDatasetsXml(null, "erdQSwind8day");
 /* */
@@ -1148,58 +1149,113 @@ public class EDDGridSideBySide extends EDDGrid {
         dapQuery = 
             "x_wind[0][][][]" +
             "&.draw=surface&.vars=longitude|latitude|x_wind";  
+        baseName = "EDDGridSideBySide_testTransparentPng__surface";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, qsWind8.className() + "_surface", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = "EDDGridSideBySide_testTransparentPng__surface360150";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
-            dir, qsWind8.className() + "_surface360150", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //vector  map
         dapQuery = 
             "x_wind[0][][][]," +
             "y_wind[0][][][]" +
             "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xff0000";
+        baseName = "EDDGridSideBySide_testTransparentPng__vectors";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, qsWind8.className() + "_vectors", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = "EDDGridSideBySide_testTransparentPng__vectors360150";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
-            dir, qsWind8.className() + "_vectors360150", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //lines on a graph
         dapQuery = 
             "x_wind[0:20][0][300][0]" +
             "&.draw=lines&.vars=time|x_wind&.color=0xff0000";
+        baseName = "EDDGridSideBySide_testTransparentPng__lines";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, qsWind8.className() + "_lines", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = "EDDGridSideBySide_testTransparentPng__lines500400";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, qsWind8.className() + "_lines500400", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //markers on a graph
         dapQuery = 
             "x_wind[0:20][0][300][0]" +
             "&.draw=markers&.vars=time|x_wind&.color=0xff0000";
+        baseName = "EDDGridSideBySide_testTransparentPng__markers";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, qsWind8.className() + "_markers",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = "EDDGridSideBySide_testTransparentPng__markers500400";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, qsWind8.className() + "_markers500400",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //sticks on a graph
         dapQuery = 
             "x_wind[0:20][0][300][0]," +
             "y_wind[0:20][0][300][0]" +
             "&.draw=sticks&.vars=time|x_wind|y_wind&.color=0xff0000";
+        baseName = "EDDGridSideBySide_testTransparentPng__sticks";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, qsWind8.className() + "_sticks", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = "EDDGridSideBySide_testTransparentPng__sticks500500";
         tName = qsWind8.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|500", 
-            dir, qsWind8.className() + "_sticks500500", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        //Test.displayInBrowser("file://" + dir + tName);
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 /* */
     }
 
