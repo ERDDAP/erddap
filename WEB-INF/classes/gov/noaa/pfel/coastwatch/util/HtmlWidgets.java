@@ -2009,7 +2009,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             htmlTooltipImage(imageDir + "QuestionMark.png", "?",
             "Hi <strong>bold</strong>\n<br>there \\/'\"&amp;&brvbar;!" +
             //height=\"331\" width=\"375\" 
-            "<br><img src=\"http://www.cohort.com/wings.gif\" alt=\"wings\">", ""));
+            "<br><img src=\"https://www.cohortsoftware.com/wings.gif\" alt=\"wings\">", ""));
         sb.append("<br>Large image scaled down to max=600:\n" +
             imageInTooltip(
             "/programs/_tomcat/webapps/cwexperimental/images/HowDoISpecifyARegion.png", 

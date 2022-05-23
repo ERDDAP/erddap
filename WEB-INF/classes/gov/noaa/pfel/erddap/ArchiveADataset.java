@@ -1059,7 +1059,7 @@ public class ArchiveADataset {
         String results = ra[1];
         String expected = 
 "READ_ME.txt                                                      " + today + "T.{8}Z           4..\n" +
-"scrippsGliders.das                                               " + today + "T.{8}Z         14...\n" +
+"scrippsGliders.das                                               " + today + "T.{8}Z         1....\n" +
 "scrippsGliders.dds                                               " + today + "T.{8}Z           7..\n" +
 "data/\n" +
 "  sp051-20141112.nc                                              " + today + "T.{8}Z        1.....\n" +

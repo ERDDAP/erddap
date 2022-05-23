@@ -91,6 +91,11 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
   <li>NEW: Now, if the data in a cell is a standard base64 encoded png (which starts with "data:image/png;base64,") 
     Thanks to Marco Alba (who contributed the code) and Bob Simons (who modified it slightly).
     <br>&nbsp;
+  <li>BUG FIX: For Docker users setting setup.xml parameters via ERDDAP_<i>paramName</i>: 
+    for int and boolean parameters (e.g., emailSmtpPort), ERDDAP was incorrectly looking for just <i>paramName</i>.
+    Now it looks for <i>ERDDAP_paramName</i>.
+    Thanks to Alessandro De Donno.
+
   </ul>
 </ul>
 
