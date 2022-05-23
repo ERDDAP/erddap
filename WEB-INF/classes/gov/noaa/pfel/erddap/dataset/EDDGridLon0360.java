@@ -1050,17 +1050,18 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddGrid.className() + "_PM181_Entire", ".dds"); 
         results = File2.directReadFrom88591File(dir + tName);
+        results = results.replaceAll("\\[time = \\d{3}\\]", "[time = ###]"); 
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 371];\n" +   //changes
+"  Float64 time[time = ###];\n" +   //changes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4788];\n" +
 "  Float64 longitude[longitude = 9600];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlor_a[time = 371][altitude = 1][latitude = 4788][longitude = 9600];\n" + //changes
+"      Float32 chlor_a[time = ###][altitude = 1][latitude = 4788][longitude = 9600];\n" + //changes
 "    MAPS:\n" +
-"      Float64 time[time = 371];\n" + //changes
+"      Float64 time[time = ###];\n" + //changes
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4788];\n" +
 "      Float64 longitude[longitude = 9600];\n" +

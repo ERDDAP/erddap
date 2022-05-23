@@ -1633,7 +1633,7 @@ NcHelper.debugMode = true;
             NcHelper.getVariableAttributes(var, atts);
             results = atts.toString();
             expected = 
-    "    _ChunkSizes=64i,64i\n" +
+    "    _ChunkSizes=64ui,64ui\n" +
     "    _FillValue=-32767.0f\n" +
     "    add_offset=0.0f\n" +
     "    display_max=1000.0d\n" +
@@ -1651,7 +1651,7 @@ NcHelper.debugMode = true;
             Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
             results = atts.toString();
             expected = 
-    "    _ChunkSizes=64i,64i\n" +
+    "    _ChunkSizes=64ui,64ui\n" +
     "    _FillValue=NaNf\n" +  //standardized
     //"    add_offset=0.0f\n" +  //removed
     "    display_max=1000.0d\n" +
@@ -1804,7 +1804,7 @@ NcHelper.debugMode = true;
             NcHelper.getVariableAttributes(var, atts);
             results = atts.toString();
             expected = 
-    "    _ChunkSizes=40i,1729i\n" +
+    "    _ChunkSizes=40ui,1729ui\n" +
     "    _FillValue=-32767s\n" +
     "    add_offset=6400.0f\n" +
     "    display_max=1000.0f\n" +
@@ -1822,7 +1822,7 @@ NcHelper.debugMode = true;
             Units2.unpackVariableAttributes(atts, var.getFullName(), NcHelper.getElementPAType(var));
             results = atts.toString();
             expected = 
-    "    _ChunkSizes=40i,1729i\n" +
+    "    _ChunkSizes=40ui,1729ui\n" +
     "    _FillValue=NaNf\n" +  //standardized
     //"    add_offset=6400.0\n" +  //removed
     "    display_max=1000.0f\n" +

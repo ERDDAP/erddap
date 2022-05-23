@@ -874,7 +874,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String2.log("\n*** start TestBrowsers.testGetTimeSeries");
         String url = 
             //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; //oceanwatch
-            "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; 
+            "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatGA/ssta/"; 
 
         DataHelper.verbose = true;
         GridDataSetThredds.verbose = true;
@@ -1073,7 +1073,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         internalName = "TQSux10";
         sixName = internalName.substring(1);
         gridDataSet = new GridDataSetThredds(fnu, internalName,
-            "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatQS/ux10/",
+            "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatQS/ux10/",
             "BlueWhiteRed", "Linear", "-10", "10", -1, "", null, null, "S", 1, 0, "", 1, 1);
 
         Grid grid = gridDataSet.makeGrid(
@@ -1203,7 +1203,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         //Comment out this line with /* to comment out this test. 
         gridDataSet = new GridDataSetThredds(fnu, "TMBchla",
             //was "https://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/", //was :8081
-            "https://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatMB/chla/",
+            "https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMB/chla/",
             "Rainbow", "Log", ".001", "30", -1, "", null, null, "S", 1, 0, "", 1, 1);
         fileName = "temp";
 

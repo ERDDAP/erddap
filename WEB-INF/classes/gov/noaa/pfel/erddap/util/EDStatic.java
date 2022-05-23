@@ -3748,7 +3748,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     private static boolean getSetupEVBoolean(ResourceBundle2 setup, Map<String,String>ev, 
         String paramName, boolean tDefault) {
-        String value = ev.get(paramName);
+        String value = ev.get("ERDDAP_" + paramName);
         if (value != null) {
             String2.log("got " + paramName + " from ERDDAP_" + paramName);
             return String2.parseBoolean(value);
@@ -3767,7 +3767,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      */
     private static int getSetupEVInt(ResourceBundle2 setup, Map<String,String>ev, 
         String paramName, int tDefault) {
-        String value = ev.get(paramName);
+        String value = ev.get("ERDDAP_" + paramName);
         if (value != null) {
             int valuei = String2.parseInt(value);
             if (valuei < Integer.MAX_VALUE) {

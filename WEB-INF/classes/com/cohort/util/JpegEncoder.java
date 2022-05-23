@@ -11,7 +11,7 @@
 // See license.txt for details.
 
 /*
-Changes by Bob Simons, CoHort Software: www.cohort.com:
+Changes by Bob Simons, CoHort Software: www.cohortsoftware.com:
 * Changed all instances of System.out.println to System.err.println.
 * Added "JpegEncoder " to all error messages.
 */
