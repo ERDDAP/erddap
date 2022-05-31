@@ -2839,7 +2839,7 @@ expected =
     }
      
     /**
-     * This tests orderBy.
+     * This tests orderBy and orderByDescending.
      *
      * @throws Throwable if trouble
      */
@@ -2892,6 +2892,44 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //.csv  Descending
+        //from NdbcMetStation.test31201
+        //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
+        //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
+        userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
+            "&time>=2005-04-19T21&time<2005-04-20&orderByDescending(\"station,time\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obd", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        expected = 
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T22:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T21:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T23:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T22:00:00Z,51202,24.6,NaN\n" +
+"2005-04-19T21:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T23:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T22:00:00Z,51201,24.9,NaN\n" +
+"2005-04-19T21:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T23:00:00Z,51028,27.8,27.5\n" +
+"2005-04-19T22:00:00Z,51028,27.8,27.1\n" +
+"2005-04-19T21:00:00Z,51028,27.7,27.6\n" +
+"2005-04-19T23:00:00Z,51004,25.0,24.3\n" +
+"2005-04-19T22:00:00Z,51004,25.0,23.8\n" +
+"2005-04-19T21:00:00Z,51004,25.0,24.0\n" +
+"2005-04-19T23:00:00Z,51003,25.4,24.7\n" +
+"2005-04-19T22:00:00Z,51003,25.4,24.3\n" +
+"2005-04-19T21:00:00Z,51003,25.3,23.9\n" +
+"2005-04-19T23:00:00Z,51002,25.2,24.8\n" +
+"2005-04-19T22:00:00Z,51002,25.2,25.4\n" +
+"2005-04-19T21:00:00Z,51002,25.1,25.4\n" +
+"2005-04-19T23:00:00Z,51001,24.2,22.1\n" +
+"2005-04-19T22:00:00Z,51001,24.2,23.6\n" +
+"2005-04-19T21:00:00Z,51001,24.1,23.5\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
         //.csv
         //from NdbcMetStation.test31201
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
@@ -2930,6 +2968,44 @@ expected =
 "2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //.csv  Descending
+        //from NdbcMetStation.test31201
+        //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
+        //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
+        userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
+            "&time>=2005-04-19T21&time<2005-04-20&orderByDescending(\"time,station\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obd2", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        expected = 
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T23:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T23:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T23:00:00Z,51028,27.8,27.5\n" +
+"2005-04-19T23:00:00Z,51004,25.0,24.3\n" +
+"2005-04-19T23:00:00Z,51003,25.4,24.7\n" +
+"2005-04-19T23:00:00Z,51002,25.2,24.8\n" +
+"2005-04-19T23:00:00Z,51001,24.2,22.1\n" +
+"2005-04-19T22:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T22:00:00Z,51202,24.6,NaN\n" +
+"2005-04-19T22:00:00Z,51201,24.9,NaN\n" +
+"2005-04-19T22:00:00Z,51028,27.8,27.1\n" +
+"2005-04-19T22:00:00Z,51004,25.0,23.8\n" +
+"2005-04-19T22:00:00Z,51003,25.4,24.3\n" +
+"2005-04-19T22:00:00Z,51002,25.2,25.4\n" +
+"2005-04-19T22:00:00Z,51001,24.2,23.6\n" +
+"2005-04-19T21:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T21:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T21:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T21:00:00Z,51028,27.7,27.6\n" +
+"2005-04-19T21:00:00Z,51004,25.0,24.0\n" +
+"2005-04-19T21:00:00Z,51003,25.3,23.9\n" +
+"2005-04-19T21:00:00Z,51002,25.1,25.4\n" +
+"2005-04-19T21:00:00Z,51001,24.1,23.5\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
         //.csv   test orderBy with 1 orderBy var and with implicit all data vars
         userDapQuery = "&station>\"51\"&station<\"512\"" +
             "&time=2005-04-19T23:00:00Z&orderBy(\"station\")";
@@ -2944,6 +3020,23 @@ expected =
 "51003,-160.66,19.087,2005-04-19T23:00:00Z,103,6.1,7.5,2.51,14.29,7.28,NaN,1017.7,24.7,25.4,NaN,NaN,NaN,NaN,-5.9,1.4\n" +
 "51004,-152.382,17.525,2005-04-19T23:00:00Z,65,9.9,11.7,NaN,NaN,NaN,NaN,1017.1,24.3,25.0,NaN,NaN,NaN,NaN,-9.0,-4.2\n" +
 "51028,-153.913,0.0,2005-04-19T23:00:00Z,108,5.4,6.4,1.97,10.0,7.72,40,1008.6,27.5,27.8,NaN,NaN,NaN,NaN,-5.1,1.7\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //Descending
+        //.csv   test orderBy with 1 orderBy var and with implicit all data vars
+        userDapQuery = "&station>\"51\"&station<\"512\"" +
+            "&time=2005-04-19T23:00:00Z&orderByDescending(\"station\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obd3", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        expected = 
+"station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+",degrees_east,degrees_north,UTC,degrees_true,m s-1,m s-1,m,s,s,degrees_true,hPa,degree_C,degree_C,degree_C,km,hPa,m,m s-1,m s-1\n" +
+"51028,-153.913,0.0,2005-04-19T23:00:00Z,108,5.4,6.4,1.97,10.0,7.72,40,1008.6,27.5,27.8,NaN,NaN,NaN,NaN,-5.1,1.7\n" +
+"51004,-152.382,17.525,2005-04-19T23:00:00Z,65,9.9,11.7,NaN,NaN,NaN,NaN,1017.1,24.3,25.0,NaN,NaN,NaN,NaN,-9.0,-4.2\n" +
+"51003,-160.66,19.087,2005-04-19T23:00:00Z,103,6.1,7.5,2.51,14.29,7.28,NaN,1017.7,24.7,25.4,NaN,NaN,NaN,NaN,-5.9,1.4\n" +
+"51002,-157.808,17.094,2005-04-19T23:00:00Z,72,9.5,12.0,3.11,10.0,6.19,NaN,1016.7,24.8,25.2,NaN,NaN,NaN,NaN,-9.0,-2.9\n" +
+"51001,-162.279,23.445,2005-04-19T23:00:00Z,89,7.7,10.6,3.16,14.29,8.32,NaN,1021.1,22.1,24.2,NaN,NaN,NaN,NaN,-7.7,-0.1\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test orderBy   with missing value data at 2012-01-01T04   
@@ -2969,6 +3062,29 @@ expected =
 "2012-01-01T11:50:00Z,41004,246,18.5,20.4\n"; 
 Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
+        //test orderByDescending   with missing value data at 2012-01-01T04   
+        userDapQuery = "time,station,wd,atmp,wtmp&station=\"41004\"" +
+            "&time>=2012-01-01&time<2012-01-01T12&orderByDescending(\"time\")";
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
+            eddTable.className() + "_obd4", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        expected = 
+"time,station,wd,atmp,wtmp\n" +
+"UTC,,degrees_true,degree_C,degree_C\n" +
+"2012-01-01T11:50:00Z,41004,246,18.5,20.4\n" +
+"2012-01-01T10:50:00Z,41004,249,18.5,20.4\n" +
+"2012-01-01T09:50:00Z,41004,262,18.6,20.3\n" +
+"2012-01-01T08:50:00Z,41004,270,18.8,20.2\n" +
+"2012-01-01T07:50:00Z,41004,288,19.0,20.2\n" +
+"2012-01-01T06:50:00Z,41004,289,19.2,20.3\n" +
+"2012-01-01T05:50:00Z,41004,273,19.3,20.4\n" +
+"2012-01-01T04:50:00Z,41004,272,19.5,20.4\n" +
+"2012-01-01T03:50:00Z,41004,NaN,NaN,NaN\n" +
+"2012-01-01T02:50:00Z,41004,271,19.3,20.3\n" +
+"2012-01-01T01:50:00Z,41004,264,19.3,20.2\n" +
+"2012-01-01T00:50:00Z,41004,252,19.4,20.1\n"; 
+Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
 
         //quick reject -> orderBy var not in results vars
         //orderBy()  
@@ -2981,6 +3097,21 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = "com.cohort.util.SimpleException: Query error: orderBy " +
+                "variable=latitude isn't in the list of results variables.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
+        //quick reject -> orderBy var not in results vars
+        //orderByDescending()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&orderByDescending(\"station,latitude\")",
+                dir, eddTable.className() + "_qrd1", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: orderBy " +  //not orderByDescending, but that's okay
                 "variable=latitude isn't in the list of results variables.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
@@ -2999,6 +3130,20 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
+        //quick reject -> / not allowed
+        //orderByDescending()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&orderByDescending(\"station,latitude/15\")",
+                dir, eddTable.className() + "_qrd1b", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: 'orderByDescending' doesn't support '/' (latitude/15).";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
         //quick reject -> no orderBy vars
         //orderBy()  
         try {
@@ -3014,12 +3159,33 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
+        //quick reject -> no orderBy vars
+        //orderByDescending()  
+        try {
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+                "station,wtmp&orderByDescending(\"\")",
+                dir, eddTable.className() + "_qrd2", ".csv"); 
+            throw new SimpleException("Shouldn't get here");
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            results = t.toString(); 
+            expected = "com.cohort.util.SimpleException: Query error: " +
+                "No column names were specified for 'orderByDescending'.";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results); 
+        }
+
         //distinct() + orderBy is not an error
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "station,wtmp&station>\"51\"&station<\"512\"" +
             "&time=2005-04-19T23:00:00Z&orderBy(\"station\")&distinct()",
             dir, eddTable.className() + "_qr3", ".csv"); 
 
+
+        //distinct() + orderByDescending is not an error
+        tName = eddTable.makeNewFileForDapQuery(language, null, null, 
+            "station,wtmp&station>\"51\"&station<\"512\"" +
+            "&time=2005-04-19T23:00:00Z&orderBy(\"station\")&distinct()",
+            dir, eddTable.className() + "_qrd3", ".csv"); 
 
     }
 
@@ -3748,7 +3914,7 @@ expected =
                 "you must specify a CSV list of orderBy column names (each of " +
                 "which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(col=atmp not in results variables)";
+                "col=atmp is not in results variables.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -3765,7 +3931,7 @@ expected =
                 "you must specify a CSV list of orderBy column names (each of " +
                 "which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(cannot group numerically for column=station)";
+                "Cannot group numerically for column=station.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -3778,11 +3944,7 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "com.cohort.util.SimpleException: Query error: For orderByMean, " +
-                "you must specify a CSV list of orderBy column names (each of " +
-                "which must be in the list of results variables; numeric columns " +
-                "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(no csv)";
+            expected = "com.cohort.util.SimpleException: Query error: orderByMean: no csv.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
         String2.log("End of intentional errors.");
@@ -4146,7 +4308,7 @@ expected =
                 "you must specify a CSV list of orderBy column names (each of " +
                 "which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(col=atmp not in results variables)";
+                "col=atmp is not in results variables.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -4163,7 +4325,7 @@ expected =
                 "you must specify a CSV list of orderBy column names (each of " +
                 "which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(cannot group numerically for column=station)";
+                "Cannot group numerically for column=station.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -4176,11 +4338,7 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "com.cohort.util.SimpleException: Query error: For orderBySum, " +
-                "you must specify a CSV list of orderBy column names (each of " +
-                "which must be in the list of results variables; numeric columns " +
-                "may have columnName[/divisor[timeUnits][:offset]]), e.g., \"stationID,time/10minutes\". " +
-                "(no csv)";
+            expected = "com.cohort.util.SimpleException: Query error: orderBySum: no csv.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
         String2.log("End of intentional errors.");
@@ -5354,7 +5512,7 @@ expected =
                 "orderByClosest, you must specify a CSV list of 1 or more orderBy " +
                 "column names (each of which must be in the list of results " +
                 "variables) plus the interval for the last orderBy variable " +
-                "(e.g., \"stationID,time,10 minutes\"). (CSV.length<2)";
+                "(e.g., \"stationID,time,10 minutes\"). CSV.length<2.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5371,7 +5529,7 @@ expected =
                 "orderByClosest, you must specify a CSV list of 1 or more orderBy " +
                 "column names (each of which must be in the list of results " +
                 "variables) plus the interval for the last orderBy variable " +
-                "(e.g., \"stationID,time,10 minutes\"). (CSV.length<2)";
+                "(e.g., \"stationID,time,10 minutes\"). CSV.length<2.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5385,12 +5543,7 @@ expected =
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
             expected = 
-                "java.lang.IllegalArgumentException: Query error: For " +
-                "orderByClosest, you must specify a CSV list of 1 or more orderBy " + 
-                "column names (each of which must be in the list of results variables) " + 
-                "plus the interval for the last orderBy variable (e.g., " +
-                "\"stationID,time,10 minutes\"). " +
-                "(The last orderBy column=station isn't numeric.)";
+                "java.lang.IllegalArgumentException: Query error: orderByClosest: The last orderBy column=station isn't numeric.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5407,7 +5560,7 @@ expected =
                 "you must specify a CSV list of 1 or more orderBy column names (each of which " +
                 "must be in the list of results variables) plus the interval for " +
                 "the last orderBy variable (e.g., \"stationID,time,10 minutes\"). " +
-                "(col=time not in results variables)";
+                "col=time is not in results variables.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5433,12 +5586,7 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "java.lang.IllegalArgumentException: Query error: For orderByClosest, " +
-                "you must specify a CSV list of 1 or more orderBy column names " +
-                "(each of which must be in the list of results variables) plus " +
-                "the interval for the last orderBy variable " +
-                "(e.g., \"stationID,time,10 minutes\"). " +
-                "(The last orderBy column=station isn't numeric.)";
+            expected = "java.lang.IllegalArgumentException: Query error: orderByClosest: The last orderBy column=station isn't numeric.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
         String2.log("End of intentional errors.");
@@ -5592,11 +5740,11 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "java.lang.IllegalArgumentException: Query error: For orderByLimit, " +
+            expected = "com.cohort.util.SimpleException: Query error: For orderByLimit, " +
                 "you must specify a CSV list of 0 or more orderBy column names " +
                 "(each of which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]) plus the " +
-                "maximum number of rows for each group (e.g., \"stationID,time/1day,10\"). (limit=0 must be a positive integer)";
+                "maximum number of rows for each group (e.g., \"stationID,time/1day,10\"). limit=0 must be a positive integer.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5610,11 +5758,11 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "java.lang.IllegalArgumentException: Query error: For orderByLimit, " +
+            expected = "com.cohort.util.SimpleException: Query error: For orderByLimit, " +
                 "you must specify a CSV list of 0 or more orderBy column names " +
                 "(each of which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]) plus the " +
-                "maximum number of rows for each group (e.g., \"stationID,time/1day,10\"). (limit=9999999999999999999 must be a positive integer)";
+                "maximum number of rows for each group (e.g., \"stationID,time/1day,10\"). limit=9999999999999999999 must be a positive integer.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5633,7 +5781,7 @@ expected =
                 "names (each of which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]) " +
                 "plus the maximum number of rows for each " +
-                "group (e.g., \"stationID,time/1day,10\"). (no CSV)";
+                "group (e.g., \"stationID,time/1day,10\"). No CSV.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5652,7 +5800,7 @@ expected =
                 "names (each of which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]) " +
                 "plus the maximum number of rows for each " +
-                "group (e.g., \"stationID,time/1day,10\"). (col=station not in results variables)";
+                "group (e.g., \"stationID,time/1day,10\"). col=station is not in results variables.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
 
@@ -5666,13 +5814,13 @@ expected =
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             results = t.toString(); 
-            expected = "java.lang.IllegalArgumentException: Query error: " +
+            expected = "com.cohort.util.SimpleException: Query error: " +
                 "For orderByLimit, you must specify a CSV list of 0 or more orderBy column " +
                 "names (each of which must be in the list of results variables; numeric columns " +
                 "may have columnName[/divisor[timeUnits][:offset]]) " +
                 "plus the maximum number of rows for each " +
                 "group (e.g., \"stationID,time/1day,10\"). " +
-                "(limit=zztop must be a positive integer)";
+                "limit=zztop must be a positive integer.";
             Test.ensureEqual(results, expected, "\nresults=\n" + results); 
         }
     }
@@ -19633,7 +19781,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test ==  9) testDapErrors();
                     if (test == 10) testId();
                     if (test == 11) testDistinct();
-                    if (test == 12) testOrderBy();  
+                    if (test == 12) testOrderBy();        //also tests orderByDescending()
                     if (test == 13) testOrderByCount();   //need to convert mv fv back for key cols?
                     if (test == 14) testOrderByMax();     //mv fv fixed //has the most tests
                     if (test == 15) testOrderByMin();     //mv fv fixed 
