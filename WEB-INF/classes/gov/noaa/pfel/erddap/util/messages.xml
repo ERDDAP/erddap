@@ -4769,6 +4769,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of 0 or more orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]) plus the maximum number of rows for each group (e.g., "stationID,time/1day,10").</queryErrorOrderByLimit>
 <queryErrorOrderByMean>For orderByMean, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderByMean>
 <queryErrorOrderBySum>For orderBySum, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderBySum>
+
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 

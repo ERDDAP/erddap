@@ -1,5 +1,5 @@
 /* 
- * TableWriterOrderBy Copyright 2009, NOAA.
+ * TableWriterOrderByDescending Copyright 2022, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -12,9 +12,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 
 
 /**
- * TableWriterOrderBy provides a way to gather all rows,
- * sort them, then write to some other TableWriter.
- * This functions like SQL's ORDER BY.
+ * TableWriterOrderByDescending provides a way to gather all rows,
+ * sort them (descending!), then write to some other TableWriter.
+ * This functions like SQL's ORDER BY, except in descending order.
  *
  * <p>This sort is stable: equal elements will not be reordered as a result of the sort.
  *
@@ -25,9 +25,9 @@ import gov.noaa.pfel.erddap.util.EDStatic;
  * or update metadata at end. It is assumed that this is like a filter,
  * and that a subsequent TableWriter will handle that if needed.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-05-10
+ * @author Bob Simons (bob.simons@noaa.gov) 2022-05-26 (based on TableWriterOrderBy)
  */
-public class TableWriterOrderBy extends TableWriterAll {
+public class TableWriterOrderByDescending extends TableWriterAll {
 
     //set by constructor
     protected TableWriter otherTableWriter;
@@ -45,13 +45,13 @@ public class TableWriterOrderBy extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderBy(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
+    public TableWriterOrderByDescending(int tLanguage, EDD tEdd, String tNewHistory, String tDir, 
         String tFileNameNoExt, TableWriter tOtherTableWriter, String tOrderByCsv) {
 
         super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         String err = EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) +
-            "No column names were specified for 'orderBy'.";
+            "No column names were specified for 'orderByDescending'.";
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
             throw new SimpleException(err);
         orderBy = String2.split(tOrderByCsv, ',');
@@ -59,8 +59,9 @@ public class TableWriterOrderBy extends TableWriterAll {
             throw new SimpleException(err);
         for (int i = 0; i < orderBy.length; i++)
             if (orderBy[i].indexOf('/') >= 0)
-                throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                    "'orderBy' doesn't support '/' (" + orderBy[i] + ").");
+                throw new SimpleException(
+                    EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                    "'orderByDescending' doesn't support '/' (" + orderBy[i] + ").");
     }
 
 
@@ -106,15 +107,14 @@ public class TableWriterOrderBy extends TableWriterAll {
 
 
     private void sort(Table table) {
-        //ensure orderBy columns are present in results table
+        //ensure orderByDescending columns are present in results table
         int[] keys = new int[orderBy.length];
-        boolean[] ascending = new boolean[orderBy.length];
+        boolean[] ascending = new boolean[orderBy.length];  //all false by default
         for (int ob = 0; ob < orderBy.length; ob++) {
             keys[ob] = table.findColumnNumber(orderBy[ob]);
-            ascending[ob] = true;
             if (keys[ob] < 0)
                 throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                    "'orderBy' column=" + orderBy[ob] + " isn't in the results table.");
+                    "'orderByDescending' column=" + orderBy[ob] + " isn't in the results table.");
         }
 
         table.sort(keys, ascending);  
