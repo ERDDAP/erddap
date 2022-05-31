@@ -88,7 +88,9 @@ public class TableWriterOrderByMean extends TableWriterAll {
 
         super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
-        final String[] cols = Table.parseOrderByColumnNamesCsvString(Table.ORDER_BY_MEAN_ERROR, tOrderByCsv);
+        final String[] cols = Table.parseOrderByColumnNamesCsvString(
+            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + "orderByMean: ", 
+            tOrderByCsv);
         orderBy = new String[cols.length];
 
         for (int col=0; col < cols.length; col++) {
@@ -252,17 +254,20 @@ public class TableWriterOrderByMean extends TableWriterAll {
         for (int k = 0; k < nKeyCols; k++) {
             int col = table.findColumnNumber(orderBy[k]);
             if (col < 0)
-                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-                    " (unknown orderBy column=" + orderBy[k] + ")");
+                throw new SimpleException(
+                    EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByMeanAr) +
+                    (language == 0? " " : "\n") + 
+                    "unknown orderBy column=" + orderBy[k] + ".");
             tKeyCols.add(col);
             isKeyCol.set(col);
         }
         rounders.keySet().forEach((columnName)-> {
             PrimitiveArray column = table.getColumn(columnName);
             if (!(column.isIntegerType() || column.isFloatingPointType())) {
-                throw new SimpleException(Table.QUERY_ERROR + Table.ORDER_BY_MEAN_ERROR + 
-                        " (cannot group numerically for column=" + columnName + ")");
-                
+                throw new SimpleException(
+                    EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByMeanAr) +
+                    (language == 0? " " : "\n") + 
+                    "Cannot group numerically for column=" + columnName + ".");                
             }
         });
         keyCols = tKeyCols.stream().mapToInt(i -> i).toArray();

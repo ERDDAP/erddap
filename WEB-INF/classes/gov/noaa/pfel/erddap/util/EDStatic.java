@@ -1474,6 +1474,10 @@ public static boolean developmentMode = false;
         queryErrorNotExpectedAtAr,
         queryErrorNotFoundAfterAr,
         queryErrorOccursTwiceAr,
+        queryErrorOrderByClosestAr,
+        queryErrorOrderByLimitAr,
+        queryErrorOrderByMeanAr,
+        queryErrorOrderBySumAr,
         queryErrorOrderByVariableAr,
         queryErrorUnknownVariableAr,
 
@@ -3135,7 +3139,6 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         queryErrorAr                 = getNotNothingString(messagesAr, "queryError",                 errorInMethod);
         for (int tl = 0; tl < nLanguages; tl++) 
             queryErrorAr[tl] += " ";
-        Table.QUERY_ERROR = queryErrorAr[0];
         queryError180Ar              = getNotNothingString(messagesAr, "queryError180",              errorInMethod);
         queryError1ValueAr           = getNotNothingString(messagesAr, "queryError1Value",           errorInMethod);
         queryError1VarAr             = getNotNothingString(messagesAr, "queryError1Var",             errorInMethod);
@@ -3158,9 +3161,10 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         queryErrorNotFoundAfterAr    = getNotNothingString(messagesAr, "queryErrorNotFoundAfter",    errorInMethod);
         queryErrorOccursTwiceAr      = getNotNothingString(messagesAr, "queryErrorOccursTwice",      errorInMethod);
 
-        Table.ORDER_BY_CLOSEST_ERROR = messagesAr[0].getNotNothingString("queryErrorOrderByClosest",   errorInMethod);
-        Table.ORDER_BY_LIMIT_ERROR   = messagesAr[0].getNotNothingString("queryErrorOrderByLimit",     errorInMethod);
-        Table.ORDER_BY_MEAN_ERROR    = messagesAr[0].getNotNothingString("queryErrorOrderByMean",      errorInMethod);
+        queryErrorOrderByClosestAr   = getNotNothingString(messagesAr, "queryErrorOrderByClosest",   errorInMethod);
+        queryErrorOrderByLimitAr     = getNotNothingString(messagesAr, "queryErrorOrderByLimit",     errorInMethod);
+        queryErrorOrderByMeanAr      = getNotNothingString(messagesAr, "queryErrorOrderByMean",      errorInMethod);
+        queryErrorOrderBySumAr       = getNotNothingString(messagesAr, "queryErrorOrderBySum",       errorInMethod);
 
         queryErrorOrderByVariableAr  = getNotNothingString(messagesAr, "queryErrorOrderByVariable",  errorInMethod);
         queryErrorUnknownVariableAr  = getNotNothingString(messagesAr, "queryErrorUnknownVariable",  errorInMethod);
@@ -4698,8 +4702,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * This is mostly used so that error messages can be bilingual.
      *
      * @param language the index of the selected language
-     * @param eng
-     * @param other
+     * @param ar0 one translated message array
+     * @param ar1 another translated message array
      * @return If language=0, this returns ar0[0]+ar1[0]. If language&gt;0, this returns ar0[0]+ar1[0]+newline+ar0[language]+ar1[language].
      */
     public static String bilingual(int language, String ar0[], String ar1[]) {

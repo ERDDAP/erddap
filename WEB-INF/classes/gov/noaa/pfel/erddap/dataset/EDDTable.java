@@ -146,19 +146,19 @@ public abstract class EDDTable extends EDD {
     /** The orderBy options. The order/positions may change as new ones are added. 
      * No codes depends on the specific order/positions, except [0]="". */
     public static String orderByOptions[] = { "",
-        "orderBy", "orderByClosest", "orderByCount", "orderByLimit", 
+        "orderBy", "orderByDescending", "orderByClosest", "orderByCount", "orderByLimit", 
         "orderByMax", "orderByMin", "orderByMinMax", "orderByMean", "orderBySum"};
     public static String DEFAULT_ORDERBYLIMIT   = "100";
     /** These are used on web pages when a user changes orderBy. 
      *  They parallel the orderByOptions. */    
     public static String orderByExtraDefaults[] = { "",
-        "",    "",     "",      DEFAULT_ORDERBYLIMIT,          
-        "",    "",     "",      "",                    ""};
+        "",    "",     "",     "",      DEFAULT_ORDERBYLIMIT,          
+        "",    "",     "",     "",                    ""};
      /** This is the minimum number of orderBy variables that must be specified
        (not counting the orderByExtra item). */
     public static byte minOrderByVariables[] = { 0,
-        1,        1,       0,      0,
-        1,        1,       1,      0,     0};
+        1,     1,       1,      0,     0,
+        1,     1,       1,      0,     0};
 
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
@@ -2054,7 +2054,8 @@ public abstract class EDDTable extends EDD {
                 continue;
 
             if (constraint.endsWith("\")") &&
-                constraint.startsWith("orderBy(\"")) {
+                (constraint.startsWith("orderBy(\"") ||
+                 constraint.startsWith("orderByDescending(\""))) {
                 //ensure all orderBy vars are in resultsVariables
                 //TableWriters for orderBy... do additional checking
                 if (!repair) {
@@ -2118,14 +2119,18 @@ public abstract class EDDTable extends EDD {
                     }
 
                     if (obv.size() < 2)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                            Table.ORDER_BY_CLOSEST_ERROR + " (csv.length<2)");
+                        throw new SimpleException(
+                            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) + 
+                            (language == 0? " " : "\n") + 
+                            "csv.length<2.");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is interval
                         String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
                         String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
-                            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                                Table.ORDER_BY_CLOSEST_ERROR + " (col=" + obv.get(obvi) + " not in results variables)");
+                            throw new SimpleException(
+                                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) + 
+                                (language == 0? " " : "\n") + 
+                                "col=" + obv.get(obvi) + " is not in results variables.");
                     }
                     // ??? verify that next to last item is numeric?
                     // ??? verify that last item is interval?
@@ -2143,14 +2148,18 @@ public abstract class EDDTable extends EDD {
                     StringArray obv = StringArray.fromCSV(constraint.substring(
                         ppo + 2, constraint.length() - 2));
                     if (obv.size() == 0)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                            Table.ORDER_BY_LIMIT_ERROR + " (csv.length=0)");
+                        throw new SimpleException(
+                            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr) + 
+                            (language == 0? " " : "\n") + 
+                            "csv.length=0.");
                     for (int obvi = 0; obvi < obv.size() - 1; obvi++) { //-1 since last item is limitN
                         String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
                         String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
-                            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                                Table.ORDER_BY_LIMIT_ERROR + " (col=" + obv.get(obvi) + " not in results variables)");
+                            throw new SimpleException(
+                                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr) + 
+                                (language == 0? " " : "\n") + 
+                                "col=" + obv.get(obvi) + " is not in results variables.");
                     }
                     // ??? verify that next to last item is numeric?
                     // ??? verify that last item is interval?
@@ -2171,8 +2180,10 @@ public abstract class EDDTable extends EDD {
                        String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
                        String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
-                            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                                Table.ORDER_BY_MEAN_ERROR + " (col=" + obv.get(obvi) + " not in results variables)");
+                            throw new SimpleException(
+                                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByMeanAr) + 
+                                (language == 0? " " : "\n") + 
+                                "col=" + obv.get(obvi) + " is not in results variables.");
                     }
                 }
                 continue;
@@ -2191,9 +2202,10 @@ public abstract class EDDTable extends EDD {
                        String[] obvParts = obv.get(obvi).split("\\s*/\\s*");
                        String item = obvParts[0];
                         if (item.length() > 0 && resultsVariables.indexOf(item) < 0)
-                            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                                Table.ORDER_BY_SUM_ERROR +
-                                " (col=" + obv.get(obvi) + " not in results variables)");
+                            throw new SimpleException(
+                                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderBySumAr) + 
+                                (language == 0? " " : "\n") + 
+                                "col=" + obv.get(obvi) + " is not in results variables.");
                     }
                 }
                 continue;
@@ -3449,8 +3461,23 @@ public abstract class EDDTable extends EDD {
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twob.orderBy.length; ob++) {
                     if (String2.indexOf(dataVariableDestinationNames(), twob.orderBy[ob]) < 0)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                        throw new SimpleException(
+                            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                             "'orderBy' variable=" + twob.orderBy[ob] + " isn't in the dataset.");
+                }
+
+            } else if (p.startsWith("orderByDescending(\"") && p.endsWith("\")")) {
+                TableWriterOrderByDescending twobd = new TableWriterOrderByDescending(language, 
+                    part == firstActiveDistinctOrOrderBy? this : null,
+                    tNewHistory, 
+                    dir, fileName, tableWriter, p.substring(19, p.length() - 2));
+                tableWriter = twobd;
+                //minimal test: ensure orderBy columns are valid column names
+                for (int ob = 0; ob < twobd.orderBy.length; ob++) {
+                    if (String2.indexOf(dataVariableDestinationNames(), twobd.orderBy[ob]) < 0)
+                        throw new SimpleException(
+                            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                            "'orderByDescending' variable=" + twobd.orderBy[ob] + " isn't in the dataset.");
                 }
 
             } else if (p.startsWith("orderByClosest(\"") && p.endsWith("\")")) {
@@ -3462,8 +3489,9 @@ public abstract class EDDTable extends EDD {
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobc.orderBy.length; ob++) {
                     if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                            Table.ORDER_BY_CLOSEST_ERROR + " (unknown column name=" + twobc.orderBy[ob] + ")");
+                        throw new SimpleException(
+                            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) + 
+                            "\nunknown column name=" + twobc.orderBy[ob] + ".");
                 }
 
             } else if (p.startsWith("orderByCount(\"") && p.endsWith("\")")) {
@@ -3475,7 +3503,8 @@ public abstract class EDDTable extends EDD {
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobc.orderBy.length; ob++) {
                     if (String2.indexOf(dataVariableDestinationNames(), twobc.orderBy[ob].split("/")[0]) < 0)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
+                        throw new SimpleException(
+                            EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                             "'orderByCount' variable=" + twobc.orderBy[ob] + " isn't in the dataset.");
                 }
 
@@ -3488,8 +3517,9 @@ public abstract class EDDTable extends EDD {
                 //minimal test: ensure orderBy columns (except last) are valid column names
                 for (int ob = 0; ob < twobl.orderBy.length; ob++) {
                     if (String2.indexOf(dataVariableDestinationNames(), twobl.orderBy[ob].split("/")[0]) < 0)
-                        throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                            Table.ORDER_BY_LIMIT_ERROR + " (unknown column name=" + twobl.orderBy[ob] + ")");
+                        throw new SimpleException(
+                            EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByLimitAr) + 
+                            "\nunknown column name=" + twobl.orderBy[ob] + ".");
                 }
 
             } else if (p.startsWith("orderByMean(\"") && p.endsWith("\")")) {
@@ -8525,6 +8555,9 @@ public abstract class EDDTable extends EDD {
             "      the divisor options for numeric variables, i.e.,\n" +
             "      <br><kbd>numericVariable[/number[timeUnits][:offset]]</kbd>\n" +
             "      <br>because they would be nonsensical.\n" +
+            "    <li><a class=\"selfLink\" id=\"orderByDescending\" href=\"#orderByDescending\" rel=\"bookmark\" " +
+                "><kbd>&amp;orderByDescending(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
+            "      <br>orderByDescending is just like orderBy, except the rows are sorted in descending, instead of ascending, order.\n" +
             "    <li><a class=\"selfLink\" id=\"orderByClosest\" href=\"#orderByClosest\" rel=\"bookmark\"\n" +
             "      ><kbd>&amp;orderByClosest(\"<i>comma-separated list of variable names</i>\")</kbd></a>\n" +
             "      <br>The comma-separated (CSV) list of 1 or more variable names\n" +

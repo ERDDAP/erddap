@@ -124,7 +124,7 @@ public class TestAll  {
 //      String tFileName = "/data/raju/O2_07MAR2022_009_011_LAP_L2B_CL_S.hdf"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"raju", "-verbose"});
+//      DasDds.main(new String[]{"nodcPH2sstd1day", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -1077,6 +1077,7 @@ TableWriterNccsv twn;
 TableWriterOrderBy twob;
 TableWriterOrderByClosest twobc;
 TableWriterOrderByCount twobcount;
+TableWriterOrderByDescending twod;
 TableWriterOrderByLimit twobl;
 TableWriterOrderByMax twobm;
 TableWriterOrderByMean twobmean;
@@ -1091,8 +1092,7 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = true;
-
+        boolean doSlowTestsToo = false;
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
