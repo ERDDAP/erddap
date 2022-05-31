@@ -196,34 +196,8 @@ public class Table  {
         {"!=", PrimitiveArray.REGEX_OP, "<=", ">=",   
          "=", "<", ">"}; 
     public final static String SEQUENCE_NAME = "s"; 
+
     public static String QUERY_ERROR = "Query error: ";
-
-    //EDStatic replaces this with queryErrorOrderByClosest from messages.xml 
-    public static String ORDER_BY_CLOSEST_ERROR = 
-        "For orderByClosest, you must specify a CSV list of 1 or more orderBy column names " +
-        "(each of which must be in the list of results variables) plus the interval " +
-        "for the last orderBy variable (e.g., \"stationID,time,10 minutes\").";
-
-    //EDStatic replaces this with queryErrorOrderByLimit from messages.xml 
-    public static String ORDER_BY_LIMIT_ERROR = 
-        "For orderByLimit, you must specify a CSV list of 0 or more orderBy column names " +
-        "(each of which must be in the list of results variables; " +
-        "numeric columns may have columnName[/divisor[timeUnits][:offset]]) plus the " +
-        "maximum number of rows for each group (e.g., \"stationID,time/1day,10\").";
-
-    //EDStatic replaces this with queryErrorOrderByMean from messages.xml 
-    public static String ORDER_BY_MEAN_ERROR = 
-        "For orderByMean, you must specify a CSV list of orderBy column names " +
-        "(each of which must be in the list of results variables; " +
-        "numeric columns may have columnName[/divisor[timeUnits][:offset]]), " +
-        "e.g., \"stationID,time/10minutes\".";
-
-    //EDStatic replaces this with queryErrorOrderBySum from messages.xml 
-    public static String ORDER_BY_SUM_ERROR = 
-        "For orderBySum, you must specify a CSV list of orderBy column names " +
-        "(each of which must be in the list of results variables; " +
-        "numeric columns may have columnName[/divisor[timeUnits][:offset]]), " +
-        "e.g., \"stationID,time/10minutes\".";
 
     public static String NOT_FOUND_EOF = " not found before end-of-file.";
     public static String ELAPSED_TIME = "elapsedTime"; 
@@ -25732,7 +25706,7 @@ String2.log(table.dataToString());
      *      matching the regular expression on the right hand side),
      *      but in percent encoded form. 
      *      (see https://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
-     *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
+     *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", "orderByDescending("...")", 
      *      "orderByMax("...")", "orderByMin("...")", "orderByMinMax("...")", 
      *      "orderByCount("...")", 
      *      "orderByClosest("...")", "orderByLimit("...")", "units("...")", 
@@ -25843,6 +25817,7 @@ String2.log(table.dataToString());
             if (constraint.equals("distinct()") ||
                 (constraint.endsWith("\")") &&
                  (constraint.startsWith("orderBy(\"") ||
+                  constraint.startsWith("orderByDescending(\"") ||
                   constraint.startsWith("orderByClosest(\"") ||
                   constraint.startsWith("orderByCount(\"") ||
                   constraint.startsWith("orderByLimit(\"") ||
@@ -26502,6 +26477,8 @@ String2.log(table.dataToString());
                 removeDuplicates();
             } else if (part.startsWith("orderBy(\"") && part.endsWith("\")")) {
                 ascendingSort(StringArray.arrayFromCSV(part.substring(9, partL-2)));  
+            } else if (part.startsWith("orderByDescending(\"") && part.endsWith("\")")) {
+                descendingSort(StringArray.arrayFromCSV(part.substring(9, partL-2)));  
             } else if (part.startsWith("orderByClosest(\"") && part.endsWith("\")")) {
                 orderByClosest(part.substring(16, partL-2));
             } else if (part.startsWith("orderByCount(\"") && part.endsWith("\")")) {
@@ -26851,6 +26828,16 @@ String2.log(table.dataToString());
     /** Like ascendingSort, but based on key column's names. */
     public void ascendingSort(String keyNames[]) {
         ascendingSort(keyColumnNamesToNumbers("orderBy", keyNames)); 
+    }
+
+    public void descendingSort(int keyColumns[]) {
+        boolean ascending[] = new boolean[keyColumns.length]; //all false
+        sort(keyColumns, ascending); 
+    }
+
+    /** Like descendingSort, but based on key column's names. */
+    public void descendingSort(String keyNames[]) {
+        descendingSort(keyColumnNamesToNumbers("orderByDescending", keyNames)); 
     }
 
     /**
@@ -27372,7 +27359,7 @@ String2.log(table.dataToString());
             if (i == nKeyColumnNames - 1 &&
                 keyColumnNames[i].indexOf('/') >= 0 &&
                 (responsible.equals("orderByMax") || responsible.startsWith("orderByMin"))) //catches orderByMinMax too
-                throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +  
+                throw new IllegalArgumentException(QUERY_ERROR + responsible +  
                     " cannot apply rounding to " + keyColumnNames[i] + 
                     " because it is the last variable in the CSV list.");                 
 
@@ -27386,7 +27373,7 @@ String2.log(table.dataToString());
                 //Bob added
                 if (!(srcColumn.isFloatingPointType() || srcColumn.isIntegerType())) {
                     // cannot apply rounding to this.
-                    throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +  
+                    throw new IllegalArgumentException(QUERY_ERROR + responsible +  
                         " cannot apply rounding to " + keyColumnNames[i] + 
                         " because it is not a numeric data type.");
                 }
@@ -27403,7 +27390,7 @@ String2.log(table.dataToString());
             final PrimitiveArray targetColumn = getColumn(targetColNumber);
             if (!(targetColumn.isFloatingPointType() || targetColumn.isIntegerType())) {
                 // cannot apply rounding to this.
-                throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +  
+                throw new IllegalArgumentException(QUERY_ERROR + responsible +  
                     " cannot apply rounding to " + keyColumnNames[i] + 
                     " because it is not a numeric data type.");
             }
@@ -27573,20 +27560,17 @@ String2.log(table.dataToString());
     public void orderByClosest(String orderByCSV) throws Exception {
 
         if (orderByCSV == null || orderByCSV.trim().length() == 0)
-            throw new SimpleException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (no csv)");
+            throw new SimpleException(QUERY_ERROR + "orderByClosest: no csv.");
         String csv[] = String2.split(orderByCSV, ',');
         if (csv.length < 2)
-            throw new SimpleException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (csv.length<2)");
+            throw new SimpleException(QUERY_ERROR + "orderByClosest: csv.length<2.");
 
         int nKeyCols = csv.length - 1;
         int keyCols[] = new int[nKeyCols];
         for (int k = 0; k < nKeyCols; k++) {
             keyCols[k] = findColumnNumber(csv[k]);
             if (keyCols[k] < 0)
-                throw new SimpleException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                    " (unknown orderBy column=" + csv[k] + ")");
+                throw new SimpleException(QUERY_ERROR + "orderByClosest: unknown orderBy column=" + csv[k] + ".");
         }
 
         double numberTimeUnits[] = Calendar2.parseNumberTimeUnits(csv[nKeyCols]); //throws Exception
@@ -27604,8 +27588,7 @@ String2.log(table.dataToString());
         for (int k = 0; k < nKeyCols; k++) {
             keyCols[k] = findColumnNumber(orderBy[k]);
             if (keyCols[k] < 0)
-                throw new SimpleException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                    " (unknown orderBy column=" + orderBy[k] + ")");
+                throw new SimpleException(QUERY_ERROR + "orderByClosest: unknown orderBy column=" + orderBy[k] + ".");
         }
 
         orderByClosest(keyCols, numberTimeUnits);
@@ -27635,16 +27618,15 @@ String2.log(table.dataToString());
 
         int nKeyColumns = keyColumns.length;
         if (nKeyColumns == 0) 
-            throw new SimpleException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (orderBy.length=0)"); 
+            throw new SimpleException(QUERY_ERROR + 
+                "orderByClosest: orderBy.length=0."); 
         int lastKeyColumn = keyColumns[nKeyColumns - 1];
         PrimitiveArray lastKeyCol = getColumn(lastKeyColumn);
 
         //ensure lastKeyCol is numeric
         if (lastKeyCol instanceof StringArray)
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (The last orderBy column=" + getColumnName(lastKeyColumn) + 
-                " isn't numeric.)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: The last orderBy column=" + getColumnName(lastKeyColumn) + " isn't numeric."); 
 
         //just 1 row?
         if (nRows == 1) {
@@ -27655,15 +27637,15 @@ String2.log(table.dataToString());
 
         //interval
         if (numberTimeUnits == null || numberTimeUnits.length != 2)
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (numberTimeUnits.length must be 2)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: numberTimeUnits.length must be 2."); 
         if (!Double.isFinite(numberTimeUnits[0]) || 
             !Double.isFinite(numberTimeUnits[1]))
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (numberTimeUnits values can't be NaNs)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: numberTimeUnits values can't be NaNs."); 
         if (numberTimeUnits[0] <= 0 || numberTimeUnits[1] <= 0)
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (numberTimeUnits values must be positive numbers)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: numberTimeUnits values must be positive numbers."); 
         double simpleInterval = numberTimeUnits[0] * numberTimeUnits[1];
         int field = 
             numberTimeUnits[1] ==  30 * Calendar2.SECONDS_PER_DAY? Calendar2.MONTH :
@@ -27672,11 +27654,11 @@ String2.log(table.dataToString());
         int intNumber = Math2.roundToInt(numberTimeUnits[0]); //used for Month and Year
         if (field != Integer.MAX_VALUE &&
             (intNumber < 1 || intNumber != numberTimeUnits[0])) 
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (The number of months or years must be a positive integer.)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: The number of months or years must be a positive integer."); 
         if (field == Calendar2.MONTH && intNumber > 6) 
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_CLOSEST_ERROR + 
-                " (The number of months must be 1 ... 6.)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByClosest: The number of months must be 1 ... 6."); 
 
         //handle missing_value and _FillValue 
         boolean someConverted = temporarilyConvertToStandardMissingValues(keyColumns); 
@@ -28113,12 +28095,12 @@ String2.log(table.dataToString());
     public void orderByLimit(String orderByCSV) throws Exception {
 
         if (orderByCSV == null || orderByCSV.trim().length() == 0)
-            throw new SimpleException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
-                " (no csv)");
+            throw new SimpleException(QUERY_ERROR + 
+                "orderByLimit: no csv.");
         String csv[] = String2.split(orderByCSV, ',');
         if (csv.length == 0)
-            throw new SimpleException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
-                " (csv.length=0)");
+            throw new SimpleException(QUERY_ERROR + 
+                "orderByLimit: csv.length=0.");
 
         int nKeyCols = csv.length - 1;
         int limitN = String2.parseInt(csv[nKeyCols]);
@@ -28153,8 +28135,8 @@ String2.log(table.dataToString());
 
         //limitN
         if (limitN < 0 || limitN == Integer.MAX_VALUE)
-            throw new IllegalArgumentException(QUERY_ERROR + ORDER_BY_LIMIT_ERROR + 
-                " (limitN=" + limitN + " must be a positive integer)"); 
+            throw new IllegalArgumentException(QUERY_ERROR + 
+                "orderByLimit: limitN=" + limitN + " must be a positive integer."); 
 
         //just 0 or 1 rows?
         int nRows = nRows();
@@ -34688,19 +34670,21 @@ readAsNcCF?
     /**
      * Parse the orderByCsv string into an array of strings. If the final string begins with a number (eg. 2days)
      * it is appended to the last field eg, time/2days.
+     *
+     * @param errorMessage (with a space at the end).
      * @param tOrderByCsv from the query
      * @return an array of strings representing the column names.
      */
     public static String[] parseOrderByColumnNamesCsvString(final String errorMessage, final String tOrderByCsv) {
         if ((tOrderByCsv == null || tOrderByCsv.trim().length() == 0))
-            throw new SimpleException(QUERY_ERROR + errorMessage +
-                " (no csv)");
+            throw new SimpleException(errorMessage +
+                "no csv.");
         String[] cols = String2.split(tOrderByCsv, ',');
         // filter out the blanks.
         cols =  Arrays.stream(cols).filter(value -> value.trim().length() > 0).toArray(size -> new String[size]);
         if (cols.length == 0)
-            throw new SimpleException(QUERY_ERROR + errorMessage +
-                " (csv.length=0)");
+            throw new SimpleException(errorMessage +
+                "csv.length=0.");
 
         // support the old format where interval was the last field.
         if (cols.length > 1 && cols[cols.length-1].trim().matches("^\\d")) {
@@ -34747,7 +34731,7 @@ readAsNcCF?
             Matcher alphaMatcher = alphaPattern.matcher(parts[0]);
             if (alphaMatcher.find()) { // eg: 2days.
                 if (parts.length == 2) {
-                    throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +
+                    throw new IllegalArgumentException(QUERY_ERROR + responsible +
                         " could not parse " + param + ". (Offset not allowed with date intervals.)");
                 }
                 return createTimeRounder(responsible, str, param);
@@ -34762,7 +34746,7 @@ readAsNcCF?
         }catch(IllegalArgumentException e) {
             throw e;
         }catch(Throwable t) {
-            throw new IllegalArgumentException(Table.QUERY_ERROR + responsible + 
+            throw new IllegalArgumentException(QUERY_ERROR + responsible + 
                 " could not parse " + param + ". (Format should be variable[/interval[:offset]] )");
         }
     }
@@ -34771,7 +34755,7 @@ readAsNcCF?
     private static Table.Rounder createTimeRounder(final String responsible, String str, String param) {
         final double[] numberTimeUnits = Calendar2.parseNumberTimeUnits(str); //throws RuntimeException if trouble
         if (numberTimeUnits[0] <= 0 || numberTimeUnits[1] <= 0)
-            throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +
+            throw new IllegalArgumentException(QUERY_ERROR + responsible +
                 " could not parse " + param + ". (numberTimeUnits values must be positive numbers)");
         final double simpleInterval = numberTimeUnits[0] * numberTimeUnits[1];
         final int field =
@@ -34781,10 +34765,10 @@ readAsNcCF?
         final int intNumber = Math2.roundToInt(numberTimeUnits[0]); //used for Month and Year
         if (field != Integer.MAX_VALUE &&
             (intNumber < 1 || intNumber != numberTimeUnits[0]))
-            throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +
+            throw new IllegalArgumentException(QUERY_ERROR + responsible +
                 " could not parse " + param + ". (The number of months or years must be a positive integer.)");
         if (field == Calendar2.MONTH && (intNumber == 5 || intNumber > 6))
-            throw new IllegalArgumentException(Table.QUERY_ERROR + responsible +
+            throw new IllegalArgumentException(QUERY_ERROR + responsible +
                 " could not parse " + param + ". (The number of months must be one of 1,2,3,4, or 6.)");
 
         if (field == Integer.MAX_VALUE) {

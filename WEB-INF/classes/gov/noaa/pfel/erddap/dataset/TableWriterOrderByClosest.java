@@ -59,8 +59,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         super(tLanguage, tEdd, tNewHistory, tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                Table.ORDER_BY_CLOSEST_ERROR + " (no CSV)");
+            throw new SimpleException(
+                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) + 
+                (language == 0? " " : "\n") + 
+                "no CSV.");
         String csv[] = String2.split(tOrderByCsv, ',');
 
         //bob added: allow csv[last] to be e.g., time/1day, instead of time,1day
@@ -77,8 +79,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         }
 
         if (csv.length < 2)
-            throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                Table.ORDER_BY_CLOSEST_ERROR + " (CSV.length<2)");
+            throw new SimpleException(
+                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) +
+                (language == 0? " " : "\n") + 
+                "CSV.length<2.");
 
         //ensure the next to last value is numeric -- done later: by table.orderByClosest()
 
@@ -87,8 +91,10 @@ public class TableWriterOrderByClosest extends TableWriterAll {
         System.arraycopy(csv, 0, orderBy, 0, csv.length - 1);
         numberTimeUnits = Calendar2.parseNumberTimeUnits(csv[csv.length - 1]); //throws Exception
         if (numberTimeUnits[0] <= 0)
-            throw new IllegalArgumentException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
-                Table.ORDER_BY_CLOSEST_ERROR + " (number=" + numberTimeUnits[0] + " must be a positive number)"); 
+            throw new SimpleException(
+                EDStatic.bilingual(language, EDStatic.queryErrorAr, EDStatic.queryErrorOrderByClosestAr) +
+                (language == 0? " " : "\n") + 
+                "number=" + numberTimeUnits[0] + " must be a positive number."); 
     }
 
 
