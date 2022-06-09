@@ -3216,7 +3216,9 @@ Herhangi bir orderBy ...
 işlevini kullanmamak için soldaki (&quot;&quot;) ilk seçeneği seçin.
 orderBy ...
 işlevleri şunlardır:
-<p><strong>orderBy</strong>, sonuçlar tablosunun satırlarını belirtilen değişkenlere göre sıralar.
+<p><strong>orderBy</strong>, sonuçlar tablosunun satırlarını artan düzende belirtilen değişkenlere göre sıralar.
+Örneğin, orderBy(&quot;stationID, time&quot;), sonuçları öncelikli olarak stationID ve ikincil olarak zamana göre sıralar.
+<p><strong>orderBy Descending</strong>, sonuçlar tablosunun satırlarını belirtilen değişkenlere göre azalan düzende sıralar.
 Örneğin, orderBy(&quot;stationID, time&quot;), sonuçları öncelikli olarak stationID ve ikincil olarak zamana göre sıralar.
 <p><strong>orderByClosest</strong>, sonuçlar tablosunun satırlarını belirtilen değişkenlere göre sıralar.
 Son değişken, bölenli sayısal bir değişken olmalıdır.
@@ -5123,7 +5125,7 @@ ERDDAP olmadan, bir kişi (veya bir bilgisayar programı) İnternet&#39;te belir
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
 <li>Her site, verileri farklı bir biçimde döndürür (örneğin, XML, SOAP+XML, OPeNDAP ikili veri akışı, ASCII metni, HDF 4, HDF 5, NetCDF, ...) ve bu, kullandığınız yaygın dosya biçimi değildir.
-istemek.
+istek.
 <br>&nbsp;
 <li>Tarihler+saatler farklı biçimlerde ifade edildiğinden, farklı sitelerden alınan verileri karşılaştırmak zordur, örneğin, &quot;2 Ocak 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot; veya 1 Ocak 1980&#39;den bu yana geçen gün sayısı veya ...).
 </ul>
@@ -5215,7 +5217,7 @@ ERDDAP ayrıca insanların OPeNDAP isteklerini oluşturmasına yardımcı olan V
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> ve bir
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Yer Bilimi Veri ve Bilgi Sistemi (ESDIS) standardı <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> .
@@ -5274,7 +5276,7 @@ Bu, farklı veri kaynaklarından elde edilen sonuçların karşılaştırılmas�
 Bu, haritalar veya zaman serileri ile görüntüler oluştururken ve coğrafi referanslı dosya türlerinde (örneğin, .esriAscii, .geoJson ve .kml ) verileri kaydederken kullanışlıdır.
 <p>Ölçü birimlerini yazmak için iki yaygın standart şunlardır:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(harici bağlantı)&quot; title=&quot;Harici bir web sitesine verilen bu bağlantı bir onay teşkil etmez.&quot;&gt; -
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(harici bağlantı)&quot; title=&quot;Harici bir web sitesine verilen bu bağlantı, bir onay teşkil etmez.&quot;&gt; -
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>
@@ -5418,7 +5420,7 @@ ERDDAP yaklaşımını onunla çalışmayı denemeye yetecek kadar kabul edersen
 <ul>
 <li>ERDDAP, eksen değerlerinin (örneğin, zaman değerlerinin) ne zaman değiştiğini algılayabildiğinden, gridlenmiş veri kümelerindeki değişiklikleri algılamada çok iyidir.
 <li>ERDDAP, yeni veriler eklendiğinde meta verilerde genellikle herhangi bir değişiklik olmadığı için tablo halindeki veri kümelerindeki değişiklikleri algılamada çok iyi değildir.
-<li>ERDDAP, bir veri kümesinin kullanılamaz hale gelip gelmediğini (ama belki hemen değil) algılayacaktır.
+<li>ERDDAP, bir veri kümesinin kullanılamaz hale gelip gelmediğini (ancak hemen değil) algılayacaktır.
 <li>ERDDAP, bu veri kümesinin tekrar kullanılabilir hale geldiğini algılayacaktır.
 <li>ERDDAP, bu hizmetlerin uygunluğu veya doğruluğu konusunda hiçbir taahhütte bulunmaz (bkz.
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAP SORUMLULUK REDDİ</a>).
@@ -5592,7 +5594,7 @@ Bu daha basit veri yapılarının orijinal veri yapılarının yerini alması am
 <br>Bazı insanlar ERDDAP çoğunlukla bir kişi (ben, Bob Simons) tarafından geliştirildiğini duyunca şaşırır ve hayal kırıklığına uğrar.
 [Bu arada, bu web sayfasındaki görüşler benim kişisel görüşlerimdir ve Hükümetin veya National Oceanic and Atmospheric Administration herhangi bir pozisyonunu yansıtmayabilir.] Bana bir şey olursa bunun ERDDAP sonu olacağından korkuyorlar.
 Bu doğru değil.
-ERDDAP uzun vadeli sürdürülebilirlik konumu mükemmel ve olabileceklerin en iyisine yakın.
+ERDDAP uzun vadeli sürdürülebilirlik için konumu mükemmel ve olabileceklerin en iyisine yakın.
 <p>Evet, ERDDAP ana geliştiricisiyim.
 Ben tamamen finanse edilen bir federal çalışanım.
 Finansmanım &quot;yumuşak&quot; para değil, bu yüzden hibe almıyorum veya onlara güvenmiyorum.
@@ -5670,6 +5672,17 @@ Teşekkürler Marco!
 <li>Kapsam dışı .transparentPng İstekleri
 <br>ERDDAP artık enlem ve/veya boylam değerleri kısmen veya tamamen aralık dışında olduğunda .transparentPng isteklerini kabul ediyor.
 (Bu, Rob Fuller tarafından yayınlanan ERDDAP GitHub Sorunları #19&#39;du - bunu gönderdiğiniz için teşekkürler Rob.) Bunu düzeltecek kod Chris John tarafından yazılmıştır.
+Teşekkürler, Chris!
+<br>&nbsp;
+<li>Base64 resim verilerini .htmlTable yanıtlarında görüntüleyin
+<br>Base64 görüntü verilerini .htmlTable yanıtlarında görüntüleme kodu, ETT / EMODnet Physics&#39;ten Marco Alba tarafından sağlanmıştır.
+Teşekkürler Marco Alba!
+<br>&nbsp;
+<li>nThreads İyileştirme
+<br>EDDTableFromFiles için nThreads sistemi önemli ölçüde iyileştirildi.
+Bu değişiklikler, en zorlu istekler için (sonuçları toplamak için çok sayıda dosyanın işlenmesi gerektiğinde) büyük bir hız artışına (örneğin, nThreads 2 veya daha fazla olarak ayarlandığında 2 kat hızlanma) yol açar.
+Bu değişiklikler aynı zamanda ERDDAP genelinde genel bir hızlanmaya da yol açacaktır.
+Bu değişikliklerin kodu Chris John tarafından sağlanmıştır.
 Teşekkürler, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -6160,6 +6173,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

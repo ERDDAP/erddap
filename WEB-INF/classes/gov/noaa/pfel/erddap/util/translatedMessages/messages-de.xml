@@ -3214,35 +3214,37 @@ Wenn dies ohne Einschränkungen verwendet wird, muss ERDDAP möglicherweise alle
 Daher sollten Sie normalerweise Einschränkungen (z.B. Zeitminimum und -maximum) einbeziehen.
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
-Die Funktionen orderBy ...
-sortieren die Zeilen der Ergebnistabelle, gruppieren sie manchmal und manipulieren sie manchmal weiter.
-Um eine orderBy ...-Funktion zu verwenden, wählen Sie links eine Funktion aus, wählen Sie dann rechts eine oder mehrere Variablen aus und fügen Sie dann optional zusätzliche Einstellungen hinzu, z.B. für numerische Variablen können Sie variableName[/divisor[timeUnits][:offset] angeben.
+Die orderBy ...-Funktionen sortieren die Zeilen der Ergebnistabelle und gruppieren sie manchmal und manipulieren sie weiter.
+Um eine orderBy ...-Funktion zu verwenden, wählen Sie links eine Funktion aus, wählen Sie dann rechts eine oder mehrere Variablen aus und fügen Sie dann optional zusätzliche Einstellungen hinzu, z.B. können Sie für numerische Variablen variableName[/divisor[timeUnits][:offset] angeben.
 ] .
-Um keine orderBy ...-Funktion zu verwenden, wählen Sie die erste Option links (&quot;&quot;).
+Um keine orderBy ...
+Funktion zu verwenden, wählen Sie die erste Option links (&quot;&quot;).
 Die orderBy ...
 Funktionen sind:
-<p><strong>orderBy</strong> sortiert die Zeilen der Ergebnistabelle nach den angegebenen Variablen.
+<p><strong>orderBy</strong> sortiert die Zeilen der Ergebnistabelle nach den angegebenen Variablen in aufsteigender Reihenfolge.
+Beispielsweise orderBy(&quot;stationID, time&quot;) die Ergebnisse primär nach stationID und sekundär nach Zeit.
+<p><strong>orderBy Descending</strong> sortiert die Zeilen der Ergebnistabelle nach den angegebenen Variablen in absteigender Reihenfolge.
 Beispielsweise orderBy(&quot;stationID, time&quot;) die Ergebnisse primär nach stationID und sekundär nach Zeit.
 <p><strong>orderByClosest</strong> sortiert die Zeilen der Ergebnistabelle nach den angegebenen Variablen.
 Die letzte Variable muss eine numerische Variable mit einem Divisor sein.
-Nur die Zeilen, die dem Teilerintervall am nächsten sind, werden beibehalten.
-orderByClosest(&quot;stationID, time/2hours&quot;) sortiert beispielsweise nach stationID und time, gibt aber nur die Zeilen für jede stationID zurück, bei denen die letzte orderBy Spalte (time) am nächsten an 2-Stunden-Intervallen liegt.
+Nur die Zeilen, die dem Intervall des Divisors am nächsten liegen, werden beibehalten.
+Beispielsweise orderByClosest(&quot;stationID, time/2hours&quot;) nach stationID und Zeit, gibt aber nur die Zeilen für jede stationID zurück, bei denen die letzte orderBy Spalte (time) am nächsten an 2-Stunden-Intervallen liegt.
 <p><strong>orderByCount</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur die Anzahl der nicht fehlenden Werte für jede Gruppe zurück.
-Zum Beispiel orderByCount(&quot;stationID, time/1day&quot;) nach stationID und gibt eine Zeile für jede stationID für jeden Tag zurück, wobei die Anzahl der nicht fehlenden Werte für jede der anderen Variablen gezählt wird.
-<p><strong>orderByLimit</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur die ersten nRows (wie durch den letzten orderByLimit Wert angegeben) innerhalb jeder Gruppe zurück.
-orderByMax(&quot;stationID, time/1day, 10&quot;) sortiert beispielsweise nach stationID und time, gibt aber nur die ersten 10 Zeilen für jede stationID für jeden Tag zurück.
-<p><strong>orderByMax</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur die Zeile innerhalb jeder Gruppe mit dem Maximalwert der letzten orderByMax Variablen in der Anfrage zurück.
-Beispielsweise orderByMax(&quot;stationID, time/1day, temperature&quot;) die Zeilen nach stationID und jeden Tag, gibt aber nur die Zeile mit dem maximalen Temperaturwert für jede stationID für jeden Tag zurück.
-<p><strong>orderBy Min</strong> ist wie orderByMax, behält aber nur die Zeile mit dem Mindestwert für die letzte Variable orderBy Min.
+Beispielsweise orderByCount(&quot;stationID, time/1day&quot;) nach stationID und gibt eine Zeile für jede stationID für jeden Tag zurück, mit einer Zählung der Anzahl nicht fehlender Werte für jede der anderen Variablen.
+<p><strong>orderByLimit</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur die ersten nRows (wie durch den letzten Wert von orderByLimit angegeben) innerhalb jeder Gruppe zurück.
+Beispielsweise orderByMax(&quot;stationID, time/1day, 10&quot;) nach stationID und Uhrzeit, gibt aber nur die ersten 10 Zeilen für jede stationID für jeden Tag zurück.
+<p><strong>orderByMax</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur die Zeile innerhalb jeder Gruppe mit dem maximalen Wert der letzten orderByMax Variablen in der Anfrage zurück.
+Beispielsweise orderByMax(&quot;stationID, time/1day, temperature&quot;) die Zeilen nach stationID und jedem Tag, gibt aber nur die Zeile mit dem maximalen Temperaturwert für jede stationID für jeden Tag zurück.
+<p><strong>orderBy Min</strong> ist wie orderByMax, behält aber nur die Zeile mit dem Mindestwert für die letzte orderBy Min -Variable.
 <p><strong>orderByMinMax</strong> ist wie orderBy Min plus orderByMax .
-Innerhalb jeder Sortiergruppe wird nur die Zeile mit dem Minimalwert und die Zeile mit dem Maximalwert für die letzte Variable orderByMinMax beibehalten.
-orderByMinMax(&quot;stationID, time/1day, temperature&quot;) gibt beispielsweise die Zeile mit dem minimalen Temperaturwert und die Zeile mit dem maximalen Temperaturwert für jede stationID -ID für jeden Tag zurück.
+Innerhalb jeder Sortiergruppe wird nur die Zeile mit dem Minimalwert und die Zeile mit dem Maximalwert für die letzte orderByMinMax Variable beibehalten.
+Beispielsweise gibt orderByMinMax(&quot;stationID, time/1day, temperature&quot;) die Zeile mit dem minimalen Temperaturwert und die Zeile mit dem maximalen Temperaturwert für jede stationID für jeden Tag zurück.
 <p><strong>orderByMean</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur eine Zeile für jede Gruppe zurück.
 Diese Zeile enthält den Mittelwert jeder der anderen Variablen.
-Beispielsweise erstellt orderByMax(&quot;stationID orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede Stations-ID für jeden Tag und berechnet den Mittelwert der anderen Variablen und gibt ihn zurück.
+Beispielsweise orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede stationID für jeden Tag und berechnet und gibt den Mittelwert der anderen Variablen zurück.
 <p><strong>orderBy Sum</strong> sortiert die Zeilen der Ergebnistabelle in Gruppen und gibt nur eine Zeile für jede Gruppe zurück.
 Diese Zeile enthält die Summe aller anderen Variablen.
-Zum Beispiel erstellt orderByMax(&quot; stationID orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede Stations-ID für jeden Tag und berechnet die Summe der anderen Variablen und gibt sie zurück.
+Beispielsweise orderByMax(&quot;stationID, time/1day&quot;) eine Gruppe für jede stationID für jeden Tag und berechnet die Summe der anderen Variablen und gibt sie zurück.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Geben Sie für orderByClosest das Intervall an (im Format n[timeUnits], zB 1 Stunde).
@@ -5082,8 +5084,8 @@ Dies kann sich auf &erddapUrl;, &ssUse; .
 <ul>
 <li><a rel="bookmark" href="#video">Sehen Sie sich für eine schnelle Einführung in ERDDAP die erste Hälfte an<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 Minuten)
-<li><a rel="bookmark" href="#localAndRemote">ERDDAP kann Daten von lokalen (auf der Festplatte des Servers) und entfernten (über das Internet zugänglichen) Datenquellen erhalten.</a>
-<li><a rel="bookmark" href="#scientificData">ERDDAP kann viele Arten von wissenschaftlichen Daten liefern, nicht nur ozeanographische Daten.</a>
+<li><a rel="bookmark" href="#localAndRemote">ERDDAP kann Daten von lokalen (auf der Festplatte des Servers) und entfernten (über das Internet zugänglichen) Datenquellen abrufen.</a>
+<li><a rel="bookmark" href="#scientificData">ERDDAP kann viele Arten von wissenschaftlichen Daten liefern, nicht nur ozeanografische Daten.</a>
 <li><a rel="bookmark" href="#search">ERDDAP bietet mehrere Möglichkeiten, nach interessanten Datensätzen zu suchen.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP können Sie Daten standardisiert anfordern.</a>
 <li><a rel="bookmark" href="#userUnits">Anfragen nach Rasterdaten können in Benutzereinheiten gestellt werden.</a>
@@ -5095,7 +5097,7 @@ Dies kann sich auf &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#interoperable">ERDDAP macht verschiedene Arten von Datenservern (OPeNDAP, OBIS, SOS, WMS, ...) interoperabel.</a>
 <li><a rel="bookmark" href="#dataStructures">ERDDAP verwendet nur zwei grundlegende Datenstrukturen, um Daten zu speichern.</a>
 <li><a rel="bookmark" href="#subscriptions">ERDDAP bietet E-Mail/URL- und RSS -Abonnementdienste an.</a>
-<li><a rel="bookmark" href="#diverseSources">ERDDAP ist eine Webanwendung und ein Webdienst.</a>
+<li><a rel="bookmark" href="#diverseSources">ERDDAP ist eine Webanwendung und ein Webservice.</a>
 <li><a rel="bookmark" href="#rest">ERDDAP verfügt über Links im REST und ROA -Stil, um seine Dienste für Computerprogramme verfügbar zu machen.</a>
 <li><a rel="bookmark" href="#security">Sicherheit</a>
 <li><a rel="bookmark" href="#chunks">ERDDAP verarbeitet Daten in Blöcken.</a>
@@ -5125,7 +5127,7 @@ Wenn eine Person (oder ein Computerprogramm) ohne ERDDAP im Internet nach einer 
 <li>Jede Site erfordert ein anderes Protokoll, um die Daten anzufordern:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Jede Site gibt die Daten in einem anderen Format zurück (z.B. XML, SOAP+XML, OPeNDAP -Binärdatenstrom, ASCII-Text, HDF 4, HDF 5, NetCDF, ...) und es ist nicht das übliche Dateiformat, das Sie verwenden will.
+<li>Jede Site gibt die Daten in einem anderen Format zurück (z.B. XML, SOAP+XML, OPeNDAP -Binärdatenstrom, ASCII-Text, HDF 4, HDF 5, NetCDF, ...) und es ist nicht das übliche Dateiformat, das Sie verwenden wollen.
 <br>&nbsp;
 <li>Daten von verschiedenen Standorten sind schwer zu vergleichen, da Datum und Uhrzeit in unterschiedlichen Formaten ausgedrückt werden, z.B. &quot;2.
 Januar 1985&quot;, &quot;02.
@@ -5152,7 +5154,7 @@ Dieses Video zeigt:
 <a href="#fileFormats">Daten herunterladen</a> .
 <li>ERDDAP kann Daten von
 <a href="#localAndRemote">lokalen und entfernten Datenquellen</a> über
-<a href="#standardizedRequests">standardisierte Anfragen</a> erhalten.
+<a href="#standardizedRequests">standardisierte Anfragen</a> abrufen.
 <li>ERDDAP bietet
 <a href="#rest">RESTful -Dienste an</a> .
 Eine URL gibt eine vollständige Anfrage an.
@@ -5174,11 +5176,11 @@ Danke an Rich Signell.
 Verwenden Sie bei der Suche nach Datensätzen kein <kbd>AND</kbd> zwischen Suchbegriffen.
 Es ist implizit.)
 <br>&nbsp;
-<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP kann Daten von lokalen (auf der Festplatte des Servers) und entfernten (über das Internet zugänglichen) Datenquellen erhalten.</a></strong>
+<li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP kann Daten von lokalen (auf der Festplatte des Servers) und entfernten (über das Internet zugänglichen) Datenquellen abrufen.</a></strong>
 <br>Sehen Sie sich die
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">Liste der Arten von Datenquellen an</a>, auf die ERDDAP zugreifen kann.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP kann viele Arten von wissenschaftlichen Daten liefern, nicht nur ozeanographische Daten.</a></strong>
+<li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP kann viele Arten von wissenschaftlichen Daten liefern, nicht nur ozeanografische Daten.</a></strong>
 <br>ERDDAP ist ein Datenserver, der bei
 <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
 <a title="Nationaler Dienst für Meeresfischerei" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
@@ -5191,7 +5193,7 @@ Der ERDDAP -Server bei ERD stellt ozeanografische Daten bereit, aber ERDDAP (das
 <a href="&erddapUrl;/search/index.html">Volltextsuche</a>,
 <a href="&erddapUrl;/categorize/index.html">Suche nach Kategorie</a> (auch Facettensuche genannt) und
 <a href="&erddapUrl;/search/advanced.html">Erweiterte Suche</a> .
-Die erweiterte Suche kombiniert alle Suchtechniken und fügt Suchen nach Datensätzen hinzu, die Daten innerhalb von Längengrad-, Breitengrad- und Zeitbereichen enthalten, sodass Sie Datensätze basierend auf vielen verschiedenen Kriterien gleichzeitig suchen können.
+Die erweiterte Suche kombiniert alle Suchtechniken und fügt Suchen nach Datensätzen hinzu, die Daten innerhalb von Längen-, Breiten- und Zeitbereichen enthalten, sodass Sie nach Datensätzen auf der Grundlage vieler verschiedener Kriterien gleichzeitig suchen können.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAP können Sie Daten standardisiert anfordern,</a></strong>
 <br>unabhängig vom Anforderungsprotokoll der Datenquelle.
@@ -5219,7 +5221,7 @@ ERDDAP stellt auch Datenzugriffsformulare (Webseiten) bereit, die Menschen dabei
     >technischen Empfehlungen der NOAA zum Datenzugriff <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> und ein
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >Standard des NASA Earth Science Data and Information System (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5235,7 +5237,7 @@ Andere Protokolle zum Anfordern der Daten (z.B. <a rel="help" href="https://www.
 ERDDAP ist für diese Ergänzungen strukturiert und es scheint keine Hindernisse zu geben.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Anfragen nach Rasterdaten können in Benutzereinheiten gestellt werden.</a></strong>
-<br>Obwohl Anforderungen für Rasterdaten in ERDDAP mit Array-Indizes (gemäß der OPeNDAP Spezifikation) gestellt werden können, können Anforderungen auch in Benutzereinheiten (z.B. Grad Ost) erfolgen, wobei
+<br>Obwohl Anforderungen für Rasterdaten in ERDDAP mit Array-Indizes (gemäß der OPeNDAP Spezifikation) erfolgen können, können Anforderungen auch in Benutzereinheiten (z.B. Grad Ost) erfolgen, wobei
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">eine Notation in Klammern verwendet</a> wird, da Benutzer in diesen Einheiten denken, nicht in Indizes.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP sendet Ergebnisse in gängigen Datendateiformaten.</a></strong>
@@ -5279,7 +5281,7 @@ Dadurch lassen sich die Ergebnisse aus unterschiedlichen Datenquellen einfach ve
 Dies ist nützlich, wenn Sie Bilder mit Karten oder Zeitreihen erstellen und Daten in georeferenzierten Dateitypen speichern (z.B. .esriAscii, .geoJson und .kml ).
 <p>Zwei gängige Standards zum Schreiben von Maßeinheiten sind:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (externer Link)&quot;title=&quot;Dieser Link zu einer externen Website stellt keine Empfehlung dar.&quot;&gt; - von
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (externer Link)&quot;title=&quot;Dieser Link zu einer externen Website stellt keine Billigung dar.&quot;&gt; - von
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a>, die in
@@ -5292,7 +5294,7 @@ Dies ist nützlich, wenn Sie Bilder mit Karten oder Zeitreihen erstellen und Dat
       title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> und
 <a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">NetCDF <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> Datendateien.
+      title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> Datei.
 Beispielsweise hat UDUNITS viele Optionen für Grad Celsius, einschließlich <kbd>degree_C</kbd> und <kbd>degC</kbd> .
 <br>&nbsp;
 <li><a rel="help" href="https://unitsofmeasure.org/ucum.html">UCUM <img 
@@ -5425,7 +5427,7 @@ Die
 </ul>
 <p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">E-Mail-/URL</a> -Abonnements</strong> (bei einigen ERDDAP Installationen nicht verfügbar) Wenn sich ein Datensatz ändert, sendet Ihnen das E-Mail-/URL-Abonnementsystem <strong>sofort</strong> eine E-Mail oder kontaktiert eine von Ihnen angegebene URL.
 E-Mail/URL-Abonnements sind bei einigen ERDDAP Installationen nicht verfügbar.
-Um ein E-Mail-/URL-Abonnement einzurichten, klicken Sie auf eines der Briefumschlagsymbole <img alt="Subscribe" style="vertical-align:top" title="Das Umschlagsymbol." src="&erddapUrl;/images/envelope.gif" > die ganz rechts auf ERDDAP -Webseiten mit Listen von Datensätzen (<a rel="contents" href="&erddapUrl;/info/index.html">Beispiel</a>) und auf den Webseiten Datenzugriffsformulare und Diagrammerstellung für einzelne Datensätze (<a href="&erddapUrl;/griddap/etopo180.html">Beispiel</a>) erscheinen, wenn diese ERDDAP Installation E-Mail-/URL-Abonnements unterstützt.
+Um ein E-Mail-/URL-Abonnement einzurichten, klicken Sie auf eines der Briefumschlagsymbole <img alt="Subscribe" style="vertical-align:top" title="Das Umschlagsymbol." src="&erddapUrl;/images/envelope.gif" > die ganz rechts auf ERDDAP -Webseiten mit Listen von Datensätzen (<a rel="contents" href="&erddapUrl;/info/index.html">Beispiel</a>) und auf den Webseiten Datenzugriffsformulare und Diagramm erstellen für einzelne Datensätze (<a href="&erddapUrl;/griddap/etopo180.html">Beispiel</a>) erscheinen, wenn diese ERDDAP Installation E-Mail-/URL-Abonnements unterstützt.
 (Computerprogrammierer:
 Wenn Sie Webdienste schreiben, können Sie das URL-System verwenden, damit ERDDAP Ihren Webdienst sofort benachrichtigt, wenn sich ein Datensatz ändert.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
@@ -5465,7 +5467,7 @@ Sie können Ihren RSS -Client möglicherweise so einstellen, dass er jede Minute
 <a rel="help" href="https://www.crummy.com/writing/RESTful-Web-Services/">ROA <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> -Stil-Links, um seine Dienste Computerprogrammen zur Verfügung zu stellen.</strong>
-<br>Diese Funktionen können verwendet werden, um einen weiteren Webdienst auf ERDDAP (wodurch ERDDAP die ganze Arbeit erledigt!).
+<br>Diese Funktionen können verwendet werden, um einen weiteren Webdienst auf ERDDAP (damit ERDDAP die ganze Arbeit erledigt!).
 ERDDAP ist nicht als High-Level-Datenexplorations-/Grafikdienst gedacht.
 Stattdessen soll ERDDAP Dienste für solche Websites und Programme bereitstellen.
 Wenn Sie also eine Idee für eine bessere Schnittstelle zu den von ERDDAP Daten haben, empfehlen wir Ihnen, Ihre eigene Webanwendung oder Ihren eigenen Webdienst zu erstellen und ERDDAP als Grundlage zu verwenden.
@@ -5562,13 +5564,13 @@ Es ist als agnostische Lösung konzipiert, die darauf abzielt, andere Datenserve
 Gibt es den perfekten Datenserver, der alle Anforderungen perfekt erfüllt?
 Wir denken nicht.
 Und selbst wenn Sie denken, dass es das gibt oder geben wird, wird es noch lange dauern, bis alle darauf umsteigen, wenn überhaupt.
-Bis dahin ist ERDDAP verfügbar, um andere Datenserver interoperabel zu machen und Daten sofort bereitzustellen.
+Bis dahin ist ERDDAP jetzt verfügbar, um andere Datenserver interoperabel zu machen und Daten jetzt bereitzustellen.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP kann viele/die meisten Datensätze unverändert verarbeiten, aber nicht alle.</a> Es ist nicht so, dass die verbleibenden Datensätze (z.B. Modelldaten unter Verwendung einer Würfelkugelprojektion) nicht wichtig sind.
 Es ist nur so, dass das Ziel von ERDDAP, Daten in gängigen Dateiformaten (von denen einige ziemlich einfach sind) zurückzugeben, eine komplexere interne Datenstruktur ausschließt.
 Forschergruppen, die mit komplexeren Datenstrukturen arbeiten, verfügen häufig bereits über spezialisierte Datenserver und spezialisierte Client-Software, die an die Bedürfnisse ihrer Gemeinschaft angepasst sind.
 ERDDAP versucht als Allzweck-Datenserver nicht, mit diesen spezialisierten Datenservern zu konkurrieren.
 Sie sind auf die Bedürfnisse ihrer Gemeinde zugeschnitten und leisten hervorragende Arbeit.
-Diese Datensätze werden jedoch oft nur von der spezialisierten Software in dieser Community&quot;verstanden&quot;.
+Diese Datensätze werden jedoch häufig nur von der spezialisierten Software in dieser Community&quot;verstanden&quot;.
 <p>Eine Problemumgehung für komplexe Datensätze - ERDDAP bietet eine Möglichkeit, komplexe Datensätze zu verarbeiten, die nicht direkt verarbeitet werden können.
 Genauso wie eine
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
@@ -5664,6 +5666,17 @@ Danke, Marco!
 <br>ERDDAP akzeptiert jetzt Anforderungen für .transparentPng-Dateien, wenn die Breiten- und/oder Längenwerte teilweise oder vollständig außerhalb des zulässigen Bereichs liegen.
 (Dies war ERDDAP GitHub Issues #19, gepostet von Rob Fuller – danke für das Posten, Rob.) Der Code zur Behebung dieses Problems wurde von Chris John geschrieben.
 Danke, Chris!
+<br>&nbsp;
+<li>Base64-Bilddaten in .htmlTable Antworten anzeigen
+<br>Der Code zum Anzeigen von base64-Bilddaten in .htmlTable Antworten wurde von Marco Alba von ETT / EMODnet Physics beigesteuert.
+Danke, Marco Alba!
+<br>&nbsp;
+<li>nThreads-Verbesserung
+<br>Das nThreads-System für EDDTableFromFiles wurde erheblich verbessert.
+Diese Änderungen führen zu einer enormen Geschwindigkeitsverbesserung (z.B. 2-fache Beschleunigung, wenn nThreads auf 2 oder mehr eingestellt ist) für die anspruchsvollsten Anforderungen (wenn eine große Anzahl von Dateien verarbeitet werden muss, um die Ergebnisse zu sammeln).
+Diese Änderungen werden auch zu einer allgemeinen Beschleunigung im gesamten ERDDAP .
+Der Code für diese Änderungen wurde von Chris John beigesteuert.
+Danke, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5672,7 +5685,7 @@ Wenn mir etwas zustößt, werden meine Chefs einen Ersatz mit dem konkreten Ziel
 Außerdem versuche ich, sehr sauberen Code zu schreiben.
 Ich schreibe Java -Doc-Kommentare.
 Ich schreibe Kommentare in den Code.
-Ich habe Variablennamen sorgfältig ausgewählt.
+Ich habe Variablennamen sorgfältig gewählt.
 Ich halte mich an die Java -Formatierungsrichtlinien.
 All dies ist ein Versuch, den Code lesbarer zu machen, für andere Programmierer, die ihn verstehen und/oder ändern wollen, und für mich, weil ich in ein oder zwei Jahren die Details, wie und warum der Code vergessen ist, vergessen habe wurde so geschrieben wie es war.
 Sauberer Code mit guten Kommentaren erleichtert meine laufende Arbeit an ERDDAP, daher habe ich einen großen Anreiz, sauberen Code mit guten Kommentaren zu schreiben.
@@ -6148,6 +6161,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

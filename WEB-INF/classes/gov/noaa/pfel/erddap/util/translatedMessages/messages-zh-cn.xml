@@ -2602,20 +2602,21 @@ Table DAP支持一些修改数据结果表的服务器端函数。它们是<stro
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
 orderBy ...
-函数对结果表的行进行排序，有时将它们分组，有时进一步操作它们。要使用orderBy ...
-函数，请在左侧选择一个函数，然后在右侧选择一个或多个变量，然后可选地添加加法设置，例如，对于数字变量，您可以指定 variableName[/divisor[timeUnits][:offset] ]。要不使用任何orderBy ...
+函数对结果表的行进行排序，有时对它们进行分组，有时对它们进行进一步操作。要使用orderBy ...
+函数，请在左侧选择一个函数，然后在右侧选择一个或多个变量，然后可选择添加附加设置，例如，对于数值变量，您可以指定 variableName[/divisor[timeUnits][:offset] ] .要不使用任何orderBy ...
 函数，请选择左侧的第一个选项 (&quot;&quot;)。
 orderBy ...
-函数是：
-<p><strong>orderBy</strong>按指定的变量对结果表的行进行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序结果，其次按时间排序。
-<p><strong>orderByClosest</strong>按指定的变量对结果表的行进行排序。最后一个变量必须是一个带除数的数值变量。只保留最接近除数间隔的行。例如， orderByClosest(&quot;stationID, time/2hours&quot;)将按stationID和时间排序，但只返回每个stationID的最后一个orderBy列（时间）最接近2 小时间隔的行。
-<p><strong>orderByCount</strong>将结果表的行排序为组，并只返回每个组的非缺失值数的计数。例如， orderByCount(&quot;stationID, time/1day&quot;)将按stationID stationID一行，并计算其他每个变量的非缺失值的数量。
-<p><strong>orderByLimit</strong>将结果表的行分类到组中，并只返回每个组中的前 nRows（由最后一个orderByLimit值指定）。例如orderByMax(&quot;stationID, time/1day, 10&quot;)将按stationID和 time 排序，但只返回每个stationID每天的前 10 行。
-<p><strong>orderByMax</strong>将结果表的行排序成组，并只返回每个组中具有请求中最后一个orderByMax变量的最大值的行。例如， orderByMax(&quot;stationID, time/1day, temperature&quot;)将按stationID和每天对行进行分组，但仅返回每个stationID每天具有最高温度值的行。
-<p><strong>orderBy Min</strong>类似于orderByMax ，但只保留最后一个orderBy Min 变量具有最小值的行。
-<p><strong>orderByMinMax</strong>就像orderBy Min 加上orderByMax 。在每个排序组中，仅保留最后一个orderByMinMax变量具有最小值的行和具有最大值的行。例如， orderByMinMax(&quot;stationID, time/1day, temperature&quot;)将返回每个stationID每天温度值最低的行和温度值最高的行。
-<p><strong>orderByMean</strong>将结果表的行排序为组，并且只为每个组返回一行。该行将具有每个其他变量的平均值。例如， orderByMax(&quot;stationID, time/1day&quot;)将为每天的每个stationID创建一个组，并计算并返回其他变量的平均值。
-<p><strong>orderBy Sum</strong>将结果表的行排序为组，并且只为每个组返回一行。该行将包含每个其他变量的总和。例如orderByMax(&quot;stationID, time/1day&quot;)会为每天的每个stationID创建一个组，并计算并返回其他变量的总和。
+功能是：
+<p><strong>orderBy</strong>按指定变量对结果表的行进行升序排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序结果，其次按时间排序。
+<p><strong>orderBy Descending</strong>按指定变量以降序对结果表的行进行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序结果，其次按时间排序。
+<p><strong>orderByClosest</strong>按指定变量对结果表的行进行排序。最后一个变量必须是带有除数的数值变量。仅保留最接近除数间隔的行。例如， orderByClosest(&quot;stationID, time/2hours&quot;)将按stationID和时间排序，但仅返回每个stationID的最后一个orderBy列（时间）最接近 2 小时间隔的行。
+<p><strong>orderByCount</strong>将结果表的行分组并仅返回每个组的非缺失值数量的计数。例如， orderByCount(&quot;stationID, time/1day&quot;)将按stationID stationID一行，并计算每个其他变量的非缺失值的数量。
+<p><strong>orderByLimit</strong>将结果表的行分组并仅返回每个组中的前 nRows（由最后一个orderByLimit值指定）。例如， orderByMax(&quot;stationID, time/1day, 10&quot;)将按stationID和时间排序，但每天只返回每个stationID的前 10 行。
+<p><strong>orderByMax</strong>将结果表的行分组并仅返回每个组中具有请求中最后一个orderByMax变量的最大值的行。例如， orderByMax(&quot;stationID, time/1day, temperature&quot;)将按stationID和每天对行进行分组，但仅返回每个stationID每天的最大温度值的行。
+<p><strong>orderBy Min</strong>类似于orderByMax ，但只保留最后一个orderBy Min 变量的最小值的行。
+<p><strong>orderByMinMax</strong>就像orderBy Min 加上orderByMax 。在每个排序组中，仅保留最后一个orderByMinMax变量的最小值行和最大值行。例如， orderByMinMax(&quot;stationID, time/1day, temperature&quot;)将返回每个stationID每天的最低温度值行和最高温度值行。
+<p><strong>orderByMean</strong>将结果表的行分组，并且只为每个组返回一行。该行将具有其他每个变量的平均值。例如， orderByMax(&quot;stationID, time/1day&quot;)将为每天的每个stationID创建一个组，并将计算并返回其他变量的平均值。
+<p><strong>orderBy Sum</strong>将结果表的行分组，并且只为每个组返回一行。该行将包含每个其他变量的总和。例如， orderByMax(&quot;stationID, time/1day&quot;)将为每天的每个stationID创建一个组，并将计算并返回其他变量的总和。
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 对于orderByClosest ，请在此处指定间隔（使用格式 n[timeUnits]，例如 1 小时）。
@@ -4242,7 +4243,7 @@ title="此指向外部网站的链接不构成认可。" /></a> .
 <li>每个站点都需要不同的协议来请求数据：
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>每个站点以不同的格式返回数据（例如，XML、 SOAP+XML 、 OPeNDAP二进制数据流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF等），这不是您常用的文件格式想。
+<li>每个站点以不同的格式返回数据（例如，XML、 SOAP+XML 、 OPeNDAP二进制数据流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF ，...），这不是您常用的文件格式想。
 <br>&nbsp;
 <li>来自不同站点的数据很难比较，因为日期+时间以不同的格式表示，例如，“1985 年 1 月 2 日”、“02-JAN-1985”、“85 年 1 月 2 日”、“85 年 2 月 1 日” &quot;、&quot;1985-01-02&quot;或自 1980 年 1 月 1 日以来的天数，或 ...)。
 </ul>
@@ -4304,7 +4305,7 @@ ERDDAP还提供数据访问表单（网页），帮助人们创建OPeNDAP请求�
     >NOAA的数据访问技术建议</a>之一<a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部网站的链接不构成认可。"></a>和<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+    title="此指向外部网站的链接不构成认可。"></a>和<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA 地球科学数据和信息系统 (ESDIS) 标准<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> .
@@ -4342,7 +4343,7 @@ ERDDAP是为这些添加而构建的，似乎没有任何障碍。
 <p>因为经度、纬度、高度和时间变量是专门识别的， ERDDAP知道每个数据集的地理/时间特征。这在使用地图或时间序列制作图像以及将数据保存为地理参考文件类型（例如，.esriAscii、.geoJson 和.kml ）时很有用。
 <p>编写度量单位的两个常见标准是：
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(external link)&quot; title=&quot;此指向外部网站的链接不构成背书。&quot;&gt; - 来自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(external link)&quot; title=&quot;此指向外部网站的链接不构成认可。&quot;&gt; - 来自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a> ，用于<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4440,7 +4441,7 @@ ERDDAP的 Make A Graph 可让您自定义图像。这些图像的一些特殊用
 <li>ERDDAP不对这些服务的适用性或准确性做出任何承诺（请参阅<a rel="license" href="&erddapUrl;/legal.html">ERDDAP的免责声明</a>）。
 </ul>
 <p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">电子邮件/URL</a>订阅</strong>（在某些ERDDAP安装中不可用） 每当数据集更改时，电子邮件/URL 订阅系统将<strong>立即</strong>向您发送电子邮件或联系您指定的 URL。某些ERDDAP安装不提供电子邮件/URL 订阅。要设置电子邮件/URL 订阅，请单击其中一个信封图标<img alt="Subscribe" style="vertical-align:top" title="信封图标。" src="&erddapUrl;/images/envelope.gif" >如果此ERDDAP安装支持电子邮件/URL 订阅，则显示在带有数据集列表的ERDDAP网页的最右侧（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）以及数据访问表单和制作单个数据集的图表网页（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）。
-（计算机程序员：如果您编写 Web 服务，则可以使用 URL 系统让ERDDAP在数据集更改时立即通知您的 Web 服务。）
+（计算机程序员：如果您编写 Web 服务，您可以使用 URL 系统让ERDDAP在数据集更改时立即通知您的 Web 服务。）
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a>订阅</strong>RSS是用于在网站内容发生更改时通知用户的标准系统。现代网络浏览器内置了RSS客户端，或者您可以使用单独的<a rel="help" href="https://www.rss-readers.org/list-of-rs-feed-reader/">RSS阅读器<img 
@@ -4466,7 +4467,7 @@ RSS客户端定期（每小时？）请求并读取RSS XML 文档以查找更改
 <br>这些功能可用于在ERDDAP之上构建另一个 Web 服务（让ERDDAP完成所有工作！）。
 ERDDAP并非旨在成为高级数据探索/绘图服务。相反， ERDDAP旨在为此类网站和程序提供服务。因此，如果您对ERDDAP服务的数据有更好的接口的想法，我们鼓励您构建自己的 Web 应用程序或 Web 服务，并使用ERDDAP作为基础。阅读更多关于ERDDAP的<a rel="help" href="&erddapUrl;/rest.html">计算机程序服务</a>。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全</a></strong>性——默认情况下， ERDDAP作为一个完全公共的服务器运行，没有登录系统，也没有数据访问限制。但是， ERDDAP管理员可以配置ERDDAP以限制登录并已分配特定角色的用户访问部分或所有数据集。
+<li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全</a></strong>性 - 默认情况下， ERDDAP作为一个完全公共的服务器运行，没有登录系统，也没有数据访问限制。但是， ERDDAP管理员可以配置ERDDAP以限制登录并已分配特定角色的用户访问部分或全部数据集。
 ERDDAP具有用于身份验证（登录）的内置方法。如果ERDDAP安装启用了身份验证，则每个网页的顶部都会有一个“登录”链接。用户无需登录即可访问公开可用的数据集。已登录的用户可以访问公共数据集和允许他们访问的私有数据集。用户必须使用 https:（安全套接字层）登录和访问私有数据集。数据集可以配置为具有可公开访问的图形和地图，但只有授权用户才能访问数据。
 （<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">更多信息</a>）
 <br>&nbsp;
@@ -4504,7 +4505,7 @@ DODS系统在 Internet 上创建并使用了 dods:
       title="此指向外部网站的链接不构成认可。"></a>并编写了<a rel="bookmark" href="https://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">DAP （数据访问协议）规范<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部网站的链接不构成认可。"></a> ，它标准化了元数据和/或数据请求的格式，以及元数据和/或数据的响应。
-OPeNDAP （组织）仍然是DAP （规范）的引领者，并且是Hyrax （通常被错误地称为OPeNDAP的数据服务器）的作者。
+OPeNDAP （组织）仍然是DAP （规范）的先驱，并且是Hyrax （通常被错误地称为OPeNDAP的数据服务器）的作者。
 <p>Hyrax 、THREDDS、GRADS、 ERDDAP等是实现DAP的数据服务器（软件）。他们每个人都实现了DAP的一个子集，但做其他事情却非常不同。
 <p>ERDDAP使用代码（在“dods”目录中）（实际上由 NASA JPL 的 Jake Hamby 编写）用于从外部DAP服务器读取数据的某些功能。
 ERDDAP使用自己的代码写出DAP响应。
@@ -4512,7 +4513,7 @@ ERDDAP使用自己的代码写出DAP响应。
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">ERDDAP是解决每个人的数据分布/数据访问问题的解决方案吗？</a></strong>
 <br>不ERDDAP试图找到一个最佳解决方案，它可以很好地解决我们遇到的大多数数据分布问题。
 ERDDAP采用中间件方法：它可以从许多不同类型的远程数据服务器获取数据，并且可以将这些数据以多种不同的文件格式提供给客户端。它被设计成一个不可知的解决方案，旨在使其他数据服务器（ OPeNDAP 、 SOS 、OBIS、 WMS ，...）可互操作。有没有一款完美的数据服务器可以完美满足大家的需求？我们不这么认为。即使你认为有或将会有，如果有的话，每个人都转向它也需要很长时间。在此之前， ERDDAP现在可以让其他数据服务器互操作并立即提供数据。
-<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原样处理许多/大多数数据集，但不是全部。</a>这并不是说剩余的数据集（例如，使用立方球体投影的模型数据）不重要。只是ERDDAP以常见文件格式（其中一些非常简单）返回数据的目标排除了更复杂的内部数据结构。使用更复杂数据结构的研究人员小组通常已经拥有专门的数据服务器和专门的客户端软件，这些软件可以根据社区的需求进行定制。
+<p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP可以按原样处理许多/大多数数据集，但不是全部。</a>这并不是说剩余的数据集（例如，使用立方球体投影的模型数据）不重要。只是ERDDAP以常见文件格式（其中一些非常简单）返回数据的目标排除了更复杂的内部数据结构。处理更复杂数据结构的研究人员小组通常已经拥有专门的数据服务器和专门的客户端软件，这些软件是根据社区的需求定制的。
 ERDDAP作为通用数据服务器，不会试图与这些专用数据服务器竞争。他们根据社区的需求进行了定制，并且做得很好。然而，这些数据集通常只能被该社区的专业软件“理解”。
 <p>复杂数据集的解决方法 - ERDDAP有一种方法可以处理它无法直接处理的复杂数据集。就像一个<a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system"
   >关系数据库<img 
@@ -4522,7 +4523,7 @@ ERDDAP作为通用数据服务器，不会试图与这些专用数据服务器�
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAP项目的可持续性如何？</strong></a>
 <br>ERDDAP非常可持续。
-<br>听到ERDDAP主要是由一个人（我，Bob Simons）开发的，有些人感到惊讶和失望。
+<br>听说ERDDAP主要由一个人（我，Bob Simons）开发，有些人感到惊讶和失望。
 [顺便说一下，这个网页上的观点是我的个人观点，并不一定反映政府或National Oceanic and Atmospheric Administration的任何立场。]他们担心如果我发生什么事， ERDDAP就会结束。那明显是错的。
 ERDDAP对长期可持续性的定位非常好，并且接近可能达到的最佳状态。
 <p>是的，我是ERDDAP的主要开发者。我是一名资金充足的联邦雇员。我的资金不是“软”钱，所以我不接受或依赖赠款。我花了一半以上的时间来开发ERDDAP 。我剩下的时间都花在管理数据集上。这项工作对ERDDAP很有用，因为我需要使用真实的数据集才能详细了解ERDDAP需要做什么。我的老板完全支持我在ERDDAP上的工作，因为它完成了我受聘要做的事情：让渔业科学家（主要是，但实际上是每个人）更容易从不同来源获取科学数据。
@@ -4554,7 +4555,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <br>tabledap 中tabledap
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean器</a>的代码以及对代码的广泛更改以支持所有orderBy过滤器的<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>variableName/divisor:offset</i>表示法</a>，由海洋研究所的 Rob Fuller 和 Adam Leadbetter 编写和贡献（许可证：受版权保护的开源）爱尔兰。谢谢你，罗伯和亚当！
+  ><i>variableName/divisor:offset</i>表示法</a>，由海洋研究所的 Rob Fuller 和 Adam Leadbetter 编写和贡献（许可：受版权保护的开源）爱尔兰。谢谢你，罗伯和亚当！
 <br>&nbsp;
 <li>无边界标记类型
 <br>三种新标记类型（无边框填充正方形、无边框填充圆形、无边框填充三角形）的代码由 ETT / EMODnet Physics 的 Marco Alba 提供。谢谢你，马可阿尔巴！
@@ -4569,6 +4570,12 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <li>超出范围的 .transparentPng 请求
 <br>当纬度和/或经度值部分或完全超出范围时， ERDDAP现在接受对 .transparentPng 的请求。
 （这是ERDDAP GitHub 问题 #19，由 Rob Fuller 发布——感谢 Rob 发布。）修复此问题的代码由 Chris John 编写。谢谢你，克里斯！
+<br>&nbsp;
+<li>在.htmlTable响应中显示 base64 图像数据
+<br>在.htmlTable响应中显示 base64 图像数据的代码由 ETT / EMODnet Physics 的 Marco Alba 提供。谢谢你，马可阿尔巴！
+<br>&nbsp;
+<li>nThreads 改进
+<br>EDDTableFromFiles 的 nThreads 系统得到了显着改进。对于最具挑战性的请求（当必须处理大量文件以收集结果时），这些更改导致了巨大的速度提升（例如，当 nThreads 设置为 2 或更多时，速度提高了 2 倍）。这些变化也将导致整个ERDDAP的总体加速。这些更改的代码由 Chris John 提供。谢谢你，克里斯！
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -4628,7 +4635,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亚州蒙特雷： NOAA / 
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>设置自己的ERDDAP服务器</strong></a>并提供自己的数据。
 <ul>
 <li>建立ERDDAP的小努力带来了很多好处。
-<li>如果您已经有一个用于分发数据的 Web 服务，您可以设置ERDDAP以通过现有服务或通过源文件或数据库访问您的数据。然后，人们将有另一种方式来访问您的数据，并且能够以其他文件格式或图形或地图的形式下载数据。
+<li>如果您已经有一个用于分发数据的 Web 服务，您可以设置ERDDAP以通过现有服务或通过源文件或数据库访问您的数据。然后，人们将有另一种方式访问您的数据，并能够以其他文件格式或图形或地图的形式下载数据。
 <li>如果您的数据集需求量很大，您可以安装<a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >多个协同工作的ERDDAP</a>以扩大规模并满足大型数据分发中心的需求。
@@ -4981,6 +4988,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

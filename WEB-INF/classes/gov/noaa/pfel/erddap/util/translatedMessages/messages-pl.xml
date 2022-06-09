@@ -3187,7 +3187,9 @@ Aby użyć funkcji orderBy ..., wybierz funkcję po lewej stronie, a następnie 
 dla zmiennych numerycznych możesz określić nazwa_zmiennej[/dzielnik[jednostki czasu][:przesunięcie] ] .
 Aby nie używać żadnej funkcji orderBy ..., wybierz pierwszą opcję po lewej (&quot;&quot;).
 Funkcje orderBy … to:
-<p><strong>orderBy</strong> sortuje wiersze tabeli wyników według określonych zmiennych.
+<p><strong>orderBy</strong> sortuje wiersze tabeli wyników według określonych zmiennych w kolejności rosnącej.
+Na przykład orderBy(&quot;stationID, time&quot;) sortuje wyniki głównie według stationID, a w drugiej kolejności według czasu.
+<p><strong>orderBy Descending</strong> sortuje wiersze tabeli wyników według określonych zmiennych w kolejności malejącej.
 Na przykład orderBy(&quot;stationID, time&quot;) sortuje wyniki głównie według stationID, a w drugiej kolejności według czasu.
 <p><strong>orderByClosest</strong> sortuje wiersze tabeli wyników według określonych zmiennych.
 Ostatnia zmienna musi być zmienną liczbową z dzielnikiem.
@@ -5179,7 +5181,7 @@ ERDDAP udostępnia również formularze dostępu do danych (strony internetowe),
     >zaleceń technicznych NOAA dotyczących dostępu do danych <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> oraz
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >standard NASA Earth Science Data and Information System (ESDIS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> .
@@ -5237,7 +5239,7 @@ Jest to przydatne podczas tworzenia obrazów z mapami lub szeregami czasowymi or
 .esriAscii, .geoJson i .kml ).
 <p>Dwa popularne standardy zapisywania jednostek miary to:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (link zewnętrzny)&quot;title=&quot;Ten link do zewnętrznej strony internetowej nie stanowi rekomendacji.&quot;&gt; - od
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (link zewnętrzny)&quot;title=&quot;Ten link do zewnętrznej strony internetowej nie stanowi rekomendacji.&quot;&gt; - od
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a>, który jest używany w
@@ -5367,7 +5369,7 @@ Nawet struktury typu „zrób to wszystko” mają swoje wady:
 praca z nimi jest złożona, a pliki można zapisywać lub odczytywać tylko za pomocą specjalnych bibliotek oprogramowania.
 Jeśli zaakceptujesz podejście ERDDAP na tyle, aby spróbować z nim pracować, może się okazać, że ma ono swoje zalety (w szczególności obsługę wielu typów plików, które mogą przechowywać odpowiedzi danych).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Oryginalny pokaz slajdów ERDDAP</a> (w szczególności
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">slajd struktur danych</a>) omawia te kwestie.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">slajd dotyczący struktur danych</a>) omawia te kwestie.
 <li>I nawet jeśli to podejście brzmi dla ciebie dziwnie, większość klientów ERDDAP nigdy tego nie zauważy -- po prostu zobaczą, że wszystkie zestawy danych mają ładną, prostą strukturę i będą wdzięczni, że mogą uzyskać dane z wielu różnych źródeł zwróconych w szeroka gama formatów plików.
 <br>&nbsp;
 </ul>
@@ -5401,7 +5403,7 @@ Nowoczesne przeglądarki internetowe mają wbudowanego klienta RSS lub możesz u
 ERDDAP oferuje oddzielny kanał RSS 2.01 dla każdego zestawu danych, dzięki czemu można dowiedzieć się, kiedy zmieniły się interesujące zestawy danych.
 Aby zasubskrybować kanał RSS zestawu danych, kliknij jedną z ikon RSS<img alt="RSS" style="vertical-align:top" title="Ikona RSS." src="&erddapUrl;/images/rss.gif" > które pojawiają się po prawej stronie na stronach internetowych ERDDAP z listami zestawów danych (<a rel="contents" href="&erddapUrl;/info/index.html">przykład</a>) lub na stronach internetowych Formularze dostępu do danych i Stwórz wykres dla poszczególnych zestawów danych (<a href="&erddapUrl;/griddap/etopo180.html">przykład</a>).
 <p><strong>Porównanie</strong> Usługa RSS może być właśnie tym, czego szukasz.
-To niezły standard.
+To fajny standard.
 Jeśli jednak chcesz jak najszybciej dowiedzieć się o zmianach w zbiorze danych, użyj systemu poczty e-mail/adresów URL, a nie RSS .
 Klienci RSS okresowo (co godzinę?) żądają i czytają dokument RSS XML w celu wyszukania zmian.
 Tak więc zazwyczaj klient RSS nie wykrywa szybko zmiany w zestawie danych (średnio 30 minut?).
@@ -5620,9 +5622,21 @@ Dziękuję, Qi!
 chronione prawem autorskim open source) przez Marco Alba z ETT Solutions i EMODnet.
 Dziękuję, Marco!
 <br>&nbsp;
-<li>Żądania spoza zakresu .transparentPng
+<li>Żądania poza zakresem .transparentPng
 <br>ERDDAP akceptuje teraz żądania dla .transparentPng, gdy wartości szerokości i/lub długości geograficznej są częściowo lub całkowicie poza zakresem.
 (To było ERDDAP GitHub Issues #19, opublikowane przez Roba Fullera -- dzięki za opublikowanie tego, Rob.) Kod, który to naprawił, został napisany przez Chrisa Johna.
+Dziękuję Chris!
+<br>&nbsp;
+<li>Wyświetlaj dane obrazu base64 w .htmlTable responses
+<br>Kod do wyświetlania danych obrazu base64 w odpowiedziach .htmlTable został napisany przez Marco Alba z ETT / EMODnet Physics.
+Dziękuję, Marco Albie!
+<br>&nbsp;
+<li>nPoprawa wątków
+<br>System nThreads dla EDDTableFromFiles został znacznie ulepszony.
+Zmiany te prowadzą do ogromnej poprawy szybkości (np.
+2X przyspieszenie, gdy nThreads jest ustawione na 2 lub więcej) dla najbardziej wymagających żądań (gdy duża liczba plików musi zostać przetworzona w celu zebrania wyników).
+Zmiany te doprowadzą również do ogólnego przyspieszenia całego ERDDAP .
+Kod do tych zmian został napisany przez Chrisa Johna.
 Dziękuję Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -6103,6 +6117,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

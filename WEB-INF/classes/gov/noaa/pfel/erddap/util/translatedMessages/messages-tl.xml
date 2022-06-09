@@ -3149,10 +3149,13 @@ Ang orderBy ...
 ay nag-uuri ng mga hilera ng talahanayan ng mga resulta at kung minsan ay pinapangkat ang mga ito at kung minsan ay higit pang minamanipula ang mga ito.
 Upang gumamit orderBy ...
 function, pumili ng function sa kaliwa, pagkatapos ay pumili ng isa o higit pang mga variable sa kanan, pagkatapos ay opsyonal na magdagdag ng mga setting ng karagdagan, hal, para sa mga numeric na variable, maaari mong tukuyin ang variableName[/divisor[timeUnits][:offset] ] .
-Upang hindi gumamit ng anumang function orderBy ..., piliin ang unang opsyon sa kaliwa (&quot;&quot;).
+Upang hindi gumamit ng anumang orderBy ...
+function, piliin ang unang opsyon sa kaliwa (&quot;&quot;).
 Ang orderBy ...
 function ay:
-<p><strong>orderBy</strong> -uuri ng mga hilera ng talahanayan ng mga resulta ayon sa mga tinukoy na variable.
+<p><strong>orderBy</strong> -uuri ng mga hilera ng talahanayan ng mga resulta ayon sa tinukoy na mga variable, sa pataas na pagkakasunud-sunod.
+Halimbawa, orderBy(&quot;stationID, time&quot;) ang mga resulta pangunahin sa pamamagitan ng stationID at pangalawa ayon sa oras.
+<p><strong>orderBy Descending ay nag</strong> -uuri ng mga hilera ng talahanayan ng mga resulta ayon sa mga tinukoy na variable, sa pababang pagkakasunud-sunod.
 Halimbawa, orderBy(&quot;stationID, time&quot;) ang mga resulta pangunahin sa pamamagitan ng stationID at pangalawa ayon sa oras.
 <p>Inuuri ng <strong>orderByClosest</strong> ang mga hilera ng talahanayan ng mga resulta ayon sa mga tinukoy na variable.
 Ang huling variable ay dapat na isang numerical variable na may divisor.
@@ -3162,7 +3165,7 @@ Halimbawa, orderByClosest(&quot;stationID, time/2hours&quot;) ay mag-uuri ayon s
 Halimbawa, orderByCount(&quot;stationID, time/1day&quot;) ay mag-uuri ayon sa stationID at magbabalik ng isang row para sa bawat stationID para sa bawat araw, na may bilang ng bilang ng mga hindi nawawalang value para sa bawat isa sa iba pang mga variable.
 <p>Inuuri ng <strong>orderByLimit</strong> ang mga row ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang mga unang nRows (tulad ng tinukoy ng huling halaga ng orderByLimit ) sa loob ng bawat pangkat.
 Halimbawa, orderByMax(&quot;stationID, time/1day, 10&quot;) ay mag-uuri ayon sa stationID at oras, ngunit ibabalik lamang ang unang 10 row para sa bawat stationID para sa bawat araw.
-<p>Inuuri ng <strong>orderByMax</strong> ang mga hilera ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang hilera sa loob ng bawat pangkat na may pinakamataas na halaga ng huling variable ng orderByMax sa kahilingan.
+<p>Inuuri ng <strong>orderByMax</strong> ang mga row ng talahanayan ng mga resulta sa mga pangkat at ibinabalik lamang ang row sa loob ng bawat pangkat na may pinakamataas na halaga ng huling variable ng orderByMax sa kahilingan.
 Halimbawa, orderByMax(&quot;stationID, time/1day, temperature&quot;) ang mga row ayon sa stationID at bawat araw, ngunit ibabalik lang ang row na may pinakamataas na halaga ng temperatura para sa bawat stationID para sa bawat araw.
 <p><strong>orderBy Min</strong> ay parang orderByMax, ngunit pinapanatili lamang ang row na may pinakamababang halaga para sa huling variable orderBy Min.
 <p><strong>orderByMinMax</strong> ay parang orderBy Min plus orderByMax .
@@ -5140,7 +5143,7 @@ Nagbibigay din ang ERDDAP Data Access Forms (mga web page) na tumutulong sa mga 
     >Data Access Technical Recommendations ng NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> at isang pamantayan ng
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5169,7 +5172,7 @@ Tingnan ang kumpletong listahan ng mga uri ng
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">file ng talahanayan</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP -standardize ng mga variable na pangalan at unit para sa longitude, latitude, altitude, depth, at oras sa mga resulta.</a></strong>
-<br>Upang mapadali ang mga paghahambing ng data mula sa iba&#39;t ibang mga dataset, ang mga kahilingan at resulta sa ERDDAP gumagamit ng standardized space/time axis units:
+<br>Upang mapadali ang mga paghahambing ng data mula sa iba&#39;t ibang dataset, ang mga kahilingan at resulta sa ERDDAP gumagamit ng mga standardized na space/time axis units:
 <ul>
 <li>ang longitude ay palaging nasa degrees_east .
 <li>ang latitude ay palaging nasa degrees_north .
@@ -5199,7 +5202,7 @@ Ginagawa nitong madaling ihambing ang mga resulta mula sa iba&#39;t ibang pinagm
 Ito ay kapaki-pakinabang kapag gumagawa ng mga larawan gamit ang mga mapa o time-series, at kapag nagse-save ng data sa mga geo-referenced na uri ng file (hal., .esriAscii, .geoJson, at .kml ).
 <p>Dalawang karaniwang pamantayan para sa pagsulat ng mga yunit ng sukat ay:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (external link)&quot;title=&quot;Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso.&quot;&gt; - mula sa
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (external link)&quot;title=&quot;Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso.&quot;&gt; - mula sa
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, na ginagamit sa
@@ -5322,7 +5325,7 @@ Ngunit ang lahat ng istruktura ng data ay may mga tradeoff.
 Walang perpekto.
 Kahit na ang mga do-it-all na istruktura ay may kanilang mga kawalan:
 ang pagtatrabaho sa kanila ay kumplikado at ang mga file ay maaari lamang isulat o basahin gamit ang mga espesyal na library ng software.
-Kung tinatanggap mo ang diskarte ERDDAP na sapat upang subukang magtrabaho kasama nito, maaari mong makita na mayroon itong mga pakinabang nito (kapansin-pansin ang suporta para sa maraming uri ng file na maaaring humawak ng mga tugon ng data).
+Kung tinatanggap mo ang diskarte ERDDAP na sapat upang subukang gamitin ito, maaari mong makita na ito ay may mga pakinabang nito (kapansin-pansin ang suporta para sa maraming uri ng file na maaaring magkaroon ng mga tugon ng data).
 Ang
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">orihinal ERDDAP slide show</a> (lalo na ang
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">data structures slide</a>) ay nagsasalita tungkol sa mga isyung ito.
@@ -5485,7 +5488,7 @@ At kahit na sa tingin mo ay mayroon o magkakaroon, ito ay matagal bago lumipat a
 Hanggang noon, available ang ERDDAP ngayon para gawing interoperable ang iba pang data server at maghatid ng data sa ngayon.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">Maaaring pangasiwaan ERDDAP ang marami/karamihan ng mga dataset, ngunit hindi lahat.</a> Hindi naman mahalaga ang natitirang mga dataset (hal., data ng modelo gamit ang isang cubed sphere projection).
 Kaya lang, ang layunin ng ERDDAP na ibalik ang data sa mga karaniwang format ng file (ang ilan sa mga ito ay medyo simple), ay humahadlang sa isang mas kumplikadong panloob na istraktura ng data.
-Ang mga pangkat ng mga mananaliksik na nagtatrabaho sa mas kumplikadong mga istruktura ng data ay kadalasang mayroon nang dalubhasang mga server ng data at espesyal na software ng kliyente na naka-customize sa mga pangangailangan ng kanilang komunidad.
+Ang mga pangkat ng mga mananaliksik na nagtatrabaho sa mas kumplikadong mga istruktura ng data ay kadalasang mayroon nang mga dalubhasang server ng data at espesyal na software ng kliyente na naka-customize sa mga pangangailangan ng kanilang komunidad.
 ERDDAP, bilang isang server ng data ng pangkalahatang layunin, ay hindi sumusubok na makipagkumpitensya sa mga dalubhasang data server na ito.
 Na-customize ang mga ito sa mga pangangailangan ng kanilang komunidad at gumagawa ng mahusay na trabaho.
 Gayunpaman, ang mga dataset na iyon ay kadalasang&quot;naiintindihan&quot;lamang ng espesyal na software sa komunidad na iyon.
@@ -5507,7 +5510,7 @@ Ang mga mas simpleng istruktura ng data na ito ay hindi nilalayong palitan ang m
 Iyan ay hindi totoo.
 Ang pagpoposisyon ng ERDDAP para sa pangmatagalang pagpapanatili ay mahusay, at malapit sa pinakamahusay na posibleng mangyari.
 <p>Oo, ako ang pangunahing developer ng ERDDAP .
-Ako ay isang empleyadong pederal na ganap na pinondohan.
+Isa akong ganap na pinondohan na pederal na empleyado.
 Ang pondo ko ay hindi&quot;malambot&quot;na pera, kaya hindi ako tumatanggap o umaasa sa mga gawad.
 Gumugugol ako ng higit sa kalahati ng aking oras sa pagbuo ERDDAP .
 Ang natitirang oras ko ay ginugugol sa pamamahala ng mga dataset.
@@ -5581,6 +5584,17 @@ Salamat, Marco!
 <br>Tumatanggap na ngayon ang ERDDAP ng mga kahilingan para sa .transparentPng kapag ang mga halaga ng latitude at/o longitude ay bahagyang o ganap na wala sa saklaw.
 (Ito ang ERDDAP GitHub Issues #19, na-post ni Rob Fuller -- salamat sa pag-post niyan, Rob.) Ang code para ayusin ito ay isinulat ni Chris John.
 Salamat, Chris!
+<br>&nbsp;
+<li>Ipakita ang base64 na data ng imahe sa .htmlTable tugon sa talahanayan
+<br>Ang code para sa pagpapakita ng base64 na data ng imahe sa .htmlTable tugon sa talahanayan ay iniambag ni Marco Alba ng ETT / EMODnet Physics.
+Salamat, Marco Alba!
+<br>&nbsp;
+<li>Pagpapahusay ng nThreads
+<br>Ang sistema ng nThreads para sa EDDTableFromFiles ay makabuluhang napabuti.
+Ang mga pagbabagong ito ay humahantong sa isang malaking pagpapabuti ng bilis (hal., 2X na bilis kapag ang nThreads ay nakatakda sa 2 o higit pa) para sa mga pinaka-mapanghamong kahilingan (kapag ang isang malaking bilang ng mga file ay kailangang iproseso upang makuha ang mga resulta).
+Ang mga pagbabagong ito ay hahantong din sa pangkalahatang pagpapabilis sa buong ERDDAP .
+Ang code para sa mga pagbabagong ito ay iniambag ni Chris John.
+Salamat, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5592,7 +5606,7 @@ Nagsusulat ako ng mga komento sa code.
 Maingat kong pinili ang mga variable na pangalan.
 Sinusunod ko ang mga alituntunin sa pag-format ng Java .
 Ang lahat ng ito ay isang pagsisikap na gawing mas nababasa ang code, para sa ibang mga programmer na gustong maunawaan at/o baguhin ito, at para sa akin, dahil, sa isang taon o dalawa, makakalimutan ko ang mga detalye kung paano at bakit ang code ay nakasulat sa paraang ito ay.
-Ang malinis na code na may magagandang komento ay nagpapadali sa aking patuloy na gawain sa ERDDAP, kaya mayroon akong magandang insentibo na magsulat ng malinis na code na may magagandang komento.
+Ang malinis na code na may magagandang komento ay nagpapadali sa aking patuloy na trabaho sa ERDDAP, kaya mayroon akong magandang insentibo na magsulat ng malinis na code na may magagandang komento.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ngunit lahat ng aking mga sagot sa ngayon ay hindi masyadong mahalaga.</a> Isang bagay lang talaga ang mahalaga.
 Isang bagay lamang ang naggagarantiya ng pagpapanatili para sa ERDDAP o anumang proyekto ng software:
 na ang ERDDAP ay
@@ -6059,6 +6073,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

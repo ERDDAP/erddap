@@ -3192,7 +3192,9 @@ orderBy funksjonene sorterer radene i resultattabellen og grupperer dem noen gan
 For å bruke en orderBy funksjon, velg en funksjon til venstre, velg deretter en eller flere variabler til høyre, og legg eventuelt til addisjonsinnstillinger, for eksempel for numeriske variabler kan du spesifisere variabelName[/divisor[timeUnits][:offset] ] .
 For ikke å bruke noen orderBy funksjon, velg det første alternativet til venstre (&quot;&quot;).
 orderBy funksjonene er:
-<p><strong>orderBy</strong> sorterer radene i resultattabellen etter de angitte variablene.
+<p><strong>orderBy</strong> sorterer radene i resultattabellen etter de angitte variablene, i stigende rekkefølge.
+orderBy(&quot;stationID, time&quot;) sorterer for eksempel resultatene primært etter stationID og sekundært etter tid.
+<p><strong>orderBy Descending</strong> sorterer radene i resultattabellen etter de angitte variablene, i synkende rekkefølge.
 orderBy(&quot;stationID, time&quot;) sorterer for eksempel resultatene primært etter stationID og sekundært etter tid.
 <p><strong>orderByClosest</strong> sorterer radene i resultattabellen etter de angitte variablene.
 Den siste variabelen må være en numerisk variabel med en divisor.
@@ -5183,7 +5185,7 @@ ERDDAP tilbyr også datatilgangsskjemaer (nettsider) som hjelper mennesker med �
     >NOAA tekniske anbefalinger for datatilgang <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> og en
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> .
@@ -5243,7 +5245,7 @@ Dette er nyttig når du lager bilder med kart eller tidsserier, og når du lagre
 .esriAscii, .geoJson og .kml ).
 <p>To vanlige standarder for å skrive måleenheter er:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(ekstern lenke)&quot; title=&quot;Denne lenken til en ekstern nettside utgjør ikke en påtegning.&quot;&gt; - fra
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(ekstern lenke)&quot; title=&quot;Denne lenken til en ekstern nettside utgjør ikke en påtegning.&quot;&gt; - fra
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a>, som brukes i
@@ -5631,6 +5633,18 @@ Takk, Marco!
 <br>ERDDAP godtar nå forespørsler om .transparentPng-er når bredde- og/eller lengdegradsverdiene er helt eller delvis utenfor området.
 (Dette var ERDDAP GitHub Issues #19, postet av Rob Fuller -- takk for at du postet det, Rob.) Koden for å fikse dette ble skrevet av Chris John.
 Takk, Chris!
+<br>&nbsp;
+<li>Vis base64-bildedata i .htmlTable
+<br>Koden for å vise base64-bildedata i .htmlTable svar ble bidratt av Marco Alba fra ETT / EMODnet Physics.
+Takk, Marco Alba!
+<br>&nbsp;
+<li>nForbedring av tråder
+<br>nThreads-systemet for EDDTableFromFiles ble betydelig forbedret.
+Disse endringene fører til en enorm hastighetsforbedring (f.eks.
+2X hastighetsøkning når nThreads er satt til 2 eller mer) for de mest utfordrende forespørslene (når et stort antall filer må behandles for å samle resultatene).
+Disse endringene vil også føre til en generell hastighetsøkning gjennom ERDDAP .
+Koden for disse endringene ble bidratt av Chris John.
+Takk, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5749,7 +5763,7 @@ Deretter vil folk ha en annen måte å få tilgang til dataene dine og vil kunne
   >flere ERDDAP er som jobber sammen</a> for å skalere opp og møte behovene til et stort datadistribusjonssenter.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakt oss</a></h2>
-Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), kan du sende en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkludere ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
+Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), vennligst send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Eller du kan bli med i ERDDAP Google Group / Mailing List</a> ved å gå til
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -6110,6 +6124,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

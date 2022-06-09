@@ -3211,7 +3211,9 @@ For ikke at bruge nogen orderBy ...
 funktion, vælg den første mulighed til venstre (&quot;&quot;).
 orderBy ...
 funktionerne er:
-<p><strong>orderBy</strong> sorterer rækkerne i resultattabellen efter de angivne variable.
+<p><strong>orderBy</strong> sorterer rækkerne i resultattabellen efter de angivne variable i stigende rækkefølge.
+For eksempel sorterer orderBy(&quot;stationID, time&quot;) resultaterne primært efter stationID og sekundært efter tid.
+<p><strong>orderBy Descending</strong> sorterer rækkerne i resultattabellen efter de angivne variable i faldende rækkefølge.
 For eksempel sorterer orderBy(&quot;stationID, time&quot;) resultaterne primært efter stationID og sekundært efter tid.
 <p><strong>orderByClosest</strong> sorterer rækkerne i resultattabellen efter de angivne variable.
 Den sidste variabel skal være en numerisk variabel med en divisor.
@@ -5125,7 +5127,7 @@ Hvad er forskellen?</a>
 <li><a rel="bookmark" href="#cite">Sådan ERDDAP i et papir</a>
 <li><a rel="bookmark" href="#acronym">Hvad står akronymet &quot;ERDDAP&quot; for?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Retningslinjer for datadistributionssystemer</a>
-<li><a rel="bookmark" href="#setup">Du kan oprette din egen ERDDAP -server.</a>
+<li><a rel="bookmark" href="#setup">Du kan opsætte din egen ERDDAP -server.</a>
 <li><a rel="bookmark" href="#contact">Kontakt os</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">De problemer, som ERDDAP forsøger at løse</a></h2>
@@ -5232,7 +5234,7 @@ ERDDAP leverer også dataadgangsformularer (websider), som hjælper mennesker me
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> og en
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> .
@@ -5254,7 +5256,7 @@ ERDDAP er struktureret til disse tilføjelser, og der ser ikke ud til at være n
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP sender resultater i almindelige datafilformater.</a></strong>
 <br>Resultaterne kan returneres i et hvilket som helst af flere almindelige &requestFormatExamplesHtml;, i stedet for kun det originale format eller blot OPeNDAP overførselsformatet (som ikke har nogen standard filmanifestation).
-Disse filer oprettes på farten.
+Disse filer er oprettet on-the-fly.
 Da der er få interne datastrukturer, er det nemt at tilføje yderligere filtypedrivere.
 Se den komplette liste over
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">gitterfiltyper</a> og
@@ -5295,7 +5297,7 @@ Dette er nyttigt, når du laver billeder med kort eller tidsserier, og når du g
 .esriAscii, .geoJson og .kml ).
 <p>To almindelige standarder for at skrive måleenheder er:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>intern.png&quot; alt=&quot;(eksternt link)&quot; title=&quot;Dette link til en ekstern hjemmeside udgør ikke en godkendelse.&quot;&gt; - fra
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(eksternt link)&quot; title=&quot;Dette link til en ekstern hjemmeside udgør ikke en godkendelse.&quot;&gt; - fra
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a>, som bruges i
@@ -5609,7 +5611,7 @@ Disse enklere datastrukturer er ikke beregnet til at erstatte de originale datas
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Hvor bæredygtigt er ERDDAP projektet?</strong></a>
 <br>ERDDAP er meget bæredygtigt.
 <br>Nogle mennesker er overraskede og skuffede over at høre, at ERDDAP for det meste er udviklet af én person (mig, Bob Simons).
-[For øvrigt er udtalelserne på denne webside mine personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .] De frygter, at hvis der sker noget med mig, vil det være slutningen af ERDDAP .
+[For øvrigt er meningerne på denne webside mine personlige meninger og afspejler ikke nødvendigvis nogen holdning fra regeringen eller National Oceanic and Atmospheric Administration .] De frygter, at hvis der sker mig noget, vil det være slutningen på ERDDAP .
 Det er simpelthen ikke sandt.
 ERDDAP &#39;s positionering for langsigtet bæredygtighed er fremragende, og tæt på det bedste, det overhovedet kunne være.
 <p>Ja, jeg er hovedudvikleren af ERDDAP .
@@ -5686,6 +5688,18 @@ Tak, Marco!
 <li>.transparentPng-anmodninger uden for rækkevidde
 <br>ERDDAP accepterer nu anmodninger om .transparentPng&#39;er, når bredde- og/eller længdegradsværdierne er helt eller delvist uden for området.
 (Dette var ERDDAP GitHub Issues #19, indsendt af Rob Fuller -- tak for at poste det, Rob.) Koden til at rette dette blev skrevet af Chris John.
+Tak, Chris!
+<br>&nbsp;
+<li>Vis base64-billeddata i .htmlTable
+<br>Koden til visning af base64-billeddata i .htmlTable svar blev bidraget af Marco Alba fra ETT/EMODnet Physics.
+Tak, Marco Alba!
+<br>&nbsp;
+<li>nForbedring af tråde
+<br>nThreads-systemet til EDDTableFromFiles blev væsentligt forbedret.
+Disse ændringer fører til en enorm hastighedsforbedring (f.eks.
+2X speedup, når nThreads er indstillet til 2 eller mere) for de mest udfordrende anmodninger (når et stort antal filer skal behandles for at indsamle resultaterne).
+Disse ændringer vil også føre til en generel fremskyndelse i hele ERDDAP .
+Koden til disse ændringer blev bidraget af Chris John.
 Tak, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -6166,6 +6180,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

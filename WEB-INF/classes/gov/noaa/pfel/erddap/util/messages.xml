@@ -3669,9 +3669,13 @@ for numeric variables, you may specify variableName[/divisor[timeUnits][:offset]
 To not use any orderBy... function, choose the first option at left ("").
 The orderBy... functions are:
 
-<p><strong>orderBy</strong> sorts the rows of the results table by the specified variables. 
-For example, orderBy("stationID, time") sorts the results primarily by stationID and
-secondarily by time.
+<p><strong>orderBy</strong> sorts the rows of the results table by the specified variables,
+in ascending order.  For example, orderBy("stationID, time") sorts the results 
+primarily by stationID and secondarily by time.
+
+<p><strong>orderByDescending</strong> sorts the rows of the results table by the 
+specified variables, in descending order. For example, orderBy("stationID, time") 
+sorts the results primarily by stationID and secondarily by time.
 
 <p><strong>orderByClosest</strong> sorts the rows of the results table by the specified variables. 
 The last variable must be a numerical variable with a divisor.
