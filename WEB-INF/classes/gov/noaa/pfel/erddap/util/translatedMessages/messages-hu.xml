@@ -3290,7 +3290,9 @@ Ha nem szeretne semmilyen orderBy ...
 függvényt használni, válassza az első lehetőséget a bal oldalon (&quot;&quot;).
 A orderBy ...
 függvények a következők:
-<p><strong>orderBy</strong> az eredménytábla sorait a megadott változók szerint rendezi.
+<p><strong>orderBy</strong> az eredménytábla sorait a megadott változók szerint, növekvő sorrendben rendezi.
+Például az orderBy(&quot;stationID, time&quot;) elsősorban stationID, másodsorban idő szerint rendezi az eredményeket.
+<p><strong>orderBy Descending</strong> az eredménytábla sorait a megadott változók szerint, csökkenő sorrendbe rendezi.
 Például az orderBy(&quot;stationID, time&quot;) elsősorban stationID, másodsorban idő szerint rendezi az eredményeket.
 <p><strong>orderByClosest</strong> a megadott változók szerint rendezi az eredménytábla sorait.
 Az utolsó változónak numerikus változónak kell lennie osztóval.
@@ -5194,7 +5196,7 @@ Mi a különbség?</a>
 <li><a rel="bookmark" href="#contact">Lépjen kapcsolatba velünk</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Problémák, amelyeket az ERDDAP megpróbál megoldani</a></h2>
-ERDDAP nélkül, amikor egy személy (vagy egy számítógépes program) bizonyos típusú tudományos adatokat (például műholdas tengerfelszíni hőmérsékleti adatokat) keres az interneten, problémák merülnek fel ...
+ERDDAP nélkül, amikor egy személy (vagy egy számítógépes program) bizonyos típusú tudományos adatokat keres az interneten (például műholdas tengerfelszíni hőmérsékleti adatokat), problémák merülnek fel ...
 <ul>
 <li>Érdekes adatkészleteket nehéz megtalálni, mert sok különböző webhelyen találhatók.
 <br>&nbsp;
@@ -5239,7 +5241,7 @@ Az URL egy teljes kérést határoz meg.
 <li>ERDDAP számos
 <a href="#fileFormats">fájlformátumban</a> képes visszaadni az adatokat, hogy lehetővé tegye az adatok bejutását sok más programba.
 <li>A NOAA együtt dolgozik:
-Az elemzés a NOAA két ingyenes szoftverét, az ERDDAP -ot és a GNOME -ot, valamint a NOAA NODC/NCDDC-je által szolgáltatott adatokat (amelyet a NOAA UAF projektje segít).
+Az elemzés a NOAA két ingyenes szoftverét, az ERDDAP -ot és a GNOME -ot, valamint a NOAA NODC/NCDDC-je által szolgáltatott adatokat (a NOAA UAF projektje által elősegített) használ.
 <li>ERDDAP könnyebben elérhetővé teszi a
 <a href="#scientificData">tudományos adatokat</a>, hogy segítse a tudósokat (és másokat) munkájuk hatékonyabb elvégzésében.
 <li>Az ERDDAP használata nem nehéz.
@@ -5295,7 +5297,7 @@ Az ERDDAP adatelérési űrlapokat (weboldalakat) is biztosít, amelyek segíten
     >NOAA egyik adathozzáférési műszaki ajánlása <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> és a
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Földtudományi Adat- és Információs Rendszer (ESDIS) szabványa <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> .
@@ -5311,7 +5313,7 @@ Egyéb protokollok az adatok lekéréséhez (például
 ERDDAP ezekhez a kiegészítésekhez készült, és úgy tűnik, hogy nincs akadálya.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">A rácsozott adatokra felhasználói egységekben lehet kérni.</a></strong>
-<br>Bár az ERDDAP -ban a rácsozott adatokra vonatkozó kérések tömbindexekkel is kérhetők (az OPeNDAP specifikációját követve), a kérések felhasználói egységekben (például keleti fokban) is lehetnek,
+<br>Bár az ERDDAP -ban a rácsozott adatokra vonatkozó kérések tömbindexekkel is kérhetők (az OPeNDAP specifikációt követve), a kérések felhasználói egységekben (például keleti fok) is lehetnek,
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zárójeles jelöléssel</a>, mivel a felhasználók ezekben az egységekben gondolkodnak, nem indexekben.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP az eredményeket általános adatfájl-formátumokban küldi el.</a></strong>
@@ -5344,7 +5346,7 @@ Tekintse meg a
 </ul>
 Ez megkönnyíti a megszorítások megadását a kérésekben anélkül, hogy aggódnia kellene a magassági adatok formátuma miatt (a pozitív értékek felfelé vagy lefelé vannak?
 méterben vagy ölben?), vagy az idő adatformátuma miatt (a lehetséges formátumok rémálomszerű birodalma, például&quot;jan.
-2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;, vagy 1980.
+2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;vagy 1980.
 január 1.
 óta eltelt napok.
 Ez megkönnyíti a különböző adatforrásokból származó eredmények összehasonlítását.
@@ -5357,7 +5359,7 @@ Ez akkor hasznos, ha térképes vagy idősoros képeket készít, és ha adatoka
 .esriAscii, .geoJson és .kml ).
 <p>A mértékegységek írására vonatkozó két általános szabvány a következő:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(külső hivatkozás)&quot; title=&quot;Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak.&quot;&gt; - az
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(külső hivatkozás)&quot; title=&quot;Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak.&quot;&gt; - az
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata</a> -tól
 <a rel="bookmark" href="https://www.unidata.ucar.edu/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5735,7 +5737,7 @@ Köszönöm Ádám és Rob!
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
   >orderByMean szűrő</a> kódját a tabledap -ban és a kódban a változóName
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>/divisor:offset</i> jelölés</a> támogatása érdekében végrehajtott kiterjedt módosításait az összes orderBy szűrőhöz Rob Fuller és Adam Leadbetter, a Marine Institute munkatársa írta és segítette (licenc:
+  ><i>/divisor:offset</i> jelölés</a> támogatása érdekében végrehajtott kiterjedt módosításait az összes orderBy szűrőhöz Rob Fuller és Adam Leadbetter, a Marine Institute munkatársai írták és segítették (licenc:
 nyílt forráskódú szerzői jogvédelem).
 Írország.
 Köszönöm, Rob és Ádám!
@@ -5761,6 +5763,18 @@ Köszönöm Marco!
 (Ez az ERDDAP GitHub Issues #19 volt, közzétette:
 Rob Fuller – köszönjük, hogy közzétetted, Rob.) A hiba javítására szolgáló kódot Chris John írta.
 Köszönöm, Chris!
+<br>&nbsp;
+<li>Base64 képadatok megjelenítése a .htmlTable
+<br>A base64 képadatok .htmlTable válaszokban való megjelenítéséhez szükséges kódot Marco Alba, az ETT / EMODnet Physics munkatársa készítette.
+Köszönöm Marco Alba!
+<br>&nbsp;
+<li>nSzálak javítása
+<br>Az EDDTableFromFiles nThreads rendszere jelentősen javult.
+Ezek a változtatások óriási sebességnövekedést eredményeznek (pl.
+2-szeres gyorsulás, ha az nThreads 2-re vagy többre van állítva) a legnagyobb kihívást jelentő kérések esetén (amikor nagyszámú fájlt kell feldolgozni az eredmények összegyűjtéséhez).
+Ezek a változtatások az ERDDAP általános felgyorsulásához is vezetnek.
+A változtatások kódját Chris John készítette.
+Köszönöm, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5773,7 +5787,7 @@ Gondosan választottam meg a változóneveket.
 Követem a Java formázási irányelveit.
 Mindez arra törekszik, hogy a kód olvashatóbbá váljon más programozók számára, akik meg akarják érteni és/vagy megváltoztatni, és nekem is, mert egy-két év múlva elfelejtem a kód részleteit, hogyan és miért.
 úgy volt megírva, ahogy volt.
-A tiszta kód jó megjegyzésekkel megkönnyíti az ERDDAP -fel kapcsolatos munkámat, így nagy ösztönzést kapok arra, hogy tiszta kódot írjak jó megjegyzésekkel.
+A tiszta kód jó megjegyzésekkel megkönnyíti az ERDDAP -pal kapcsolatos folyamatos munkámat, így nagy ösztönzést kapok arra, hogy tiszta kódot írjak jó megjegyzésekkel.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">De az összes eddigi válaszom nem túl fontos.</a> Csak egy dolog igazán fontos.
 Csak egy dolog garantálja az ERDDAP vagy bármely szoftverprojekt fenntarthatóságát:
 az, hogy az ERDDAP
@@ -5816,12 +5830,12 @@ Ennek fényében számomra nagyszerű jelnek tűnik, hogy az ERDDAP -t csak egy 
 Ha tény, rossz jel lenne, ha az ERDDAP több fejlesztőre lenne szüksége.
 Az, hogy az ERDDAP -nak csak egy fő fejlesztője van, azt jelenti, hogy ez nem egy hatalmas feladat, amely hatalmas, folyamatos finanszírozást igényel; ez egy viszonylag kis feladat, amely minimális erőfeszítést és finanszírozást igényel.
 Ez fenntarthatóbb, nem kevésbé.
-<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Azt gondolhatnánk, hogy jó ötlet egy szerződő céget felvenni szoftverek készítésére.</a> Térítés ellenében biztosítják a fejlesztőket és ígérik a folytonosságot (ami jó, hacsak/amíg ki nem szűnnek).
+<p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">Azt gondolhatnánk, hogy jó ötlet egy szerződő céget felvenni szoftverek készítésére.</a> Térítés ellenében biztosítják a fejlesztőket, és ígérik a folytonosságot (ami jó, hacsak/amíg nem szűnnek meg).
 De náluk is van egy hordó:
 fizetned kell nekik, amit kérnek, különben nincs több fejlesztés, <strong>hacsak</strong> nem FOSS a szoftver, és csak azért fizetsz, hogy dolgozzanak a kódon.
 A FOSS segítségével mindig megvan a választása a továbblépéssel kapcsolatban.
 Mivel az ERDDAP a FOSS, a vállalkozók mindig jó választást jelentenek Önnek vagy bárkinek az ERDDAP tekintetében:
-ha bármi történik velem (az egyik fő fejlesztővel), vagy ha nincs időm az Ön által kívánt változtatásra, vagy én menj nyugdíjba és nem tetszik a helyettesítőm munkája, mindig megbízhatsz egy szerződő céget a kívánt változtatások elvégzésére (vagy saját magad).
+ha bármi történik velem (az egyik fő fejlesztővel), vagy ha nincs időm az Ön által kívánt változtatásra, vagy én menj nyugdíjba, és nem tetszik a helyettesítőm munkája, mindig megbízhatsz egy szerződő céget a kívánt változtatások elvégzésére (vagy saját magad).
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">Összefoglalva, az ERDDAP két fenntarthatósági jellemzővel rendelkezik, amelyek a legfontosabbak:</a>
 <ol>
 <li>ERDDAP egy kis projekt (elég kicsi ahhoz, hogy egy fő fejlesztő kezelje néhány másik nem hivatalos közreműködésével), így nem igényel hatalmas erőforrásokat.
@@ -5867,8 +5881,8 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 Nos, kérem, gondolja csak névnek, ne mozaikszónak.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">Útmutató az adatelosztó rendszerekhez</a></strong>
-<br>Bob véleménye az adatelosztó rendszerek tervezéséről és értékeléséről
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">itt</a> található.
+<br>Bob véleményét az adatelosztó rendszerek tervezéséről és értékeléséről
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">itt találja</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Beállíthatja</a></strong>
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>saját ERDDAP szerverét</strong></a>, és kiszolgálhatja saját adatait.
@@ -6245,6 +6259,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

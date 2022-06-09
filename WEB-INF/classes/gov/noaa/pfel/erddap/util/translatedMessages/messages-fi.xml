@@ -3206,10 +3206,11 @@ orderBy ...
 Jos haluat käyttää orderBy ...
 -funktiota, valitse funktio vasemmalta, valitse sitten yksi tai useampi muuttuja oikealta ja lisää sitten valinnaisesti lisäysasetukset, esim.
 numeerisille muuttujille voit määrittää muuttujanNimi[/jakaja[aikayksiköt][:offset] ] .
-Jos et halua käyttää mitään orderBy ...
--toimintoa, valitse ensimmäinen vaihtoehto vasemmalta (&quot;&quot;).
+Jos et käytä orderBy ...-toimintoa, valitse ensimmäinen vaihtoehto vasemmalta (&quot;&quot;).
 orderBy ...-funktiot ovat:
-<p><strong>orderBy</strong> lajittelee tulostaulukon rivit määritettyjen muuttujien mukaan.
+<p><strong>orderBy</strong> lajittelee tulostaulukon rivit määritettyjen muuttujien mukaan nousevaan järjestykseen.
+Esimerkiksi orderBy(&quot;stationID, time&quot;) lajittelee tulokset ensisijaisesti stationID ja toissijaisesti ajan mukaan.
+<p><strong>orderBy Descending</strong> lajittelee tulostaulukon rivit määritettyjen muuttujien mukaan laskevaan järjestykseen.
 Esimerkiksi orderBy(&quot;stationID, time&quot;) lajittelee tulokset ensisijaisesti stationID ja toissijaisesti ajan mukaan.
 <p><strong>orderByClosest</strong> lajittelee tulostaulukon rivit määritettyjen muuttujien mukaan.
 Viimeisen muuttujan on oltava numeerinen muuttuja, jossa on jakaja.
@@ -5080,7 +5081,7 @@ Tämä voi viitata osoitteisiin &erddapUrl;, &ssUse; .
 <ul>
 <li><a rel="bookmark" href="#video">Katso tämän ensimmäisen puoliskon nopea esittely ERDDAP :iin<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video</a> .
 (5 minuuttia)
-<li><a rel="bookmark" href="#localAndRemote">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytettävä verkon kautta).</a>
+<li><a rel="bookmark" href="#localAndRemote">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytetään verkon kautta).</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP voi palvella monenlaista tieteellistä dataa, ei vain merentutkimusta.</a>
 <li><a rel="bookmark" href="#search">ERDDAP tarjoaa useita tapoja etsiä kiinnostavia tietojoukkoja.</a>
 <li><a rel="bookmark" href="#standardizedRequests">ERDDAP avulla voit pyytää tietoja standardoidulla tavalla.</a>
@@ -5094,7 +5095,7 @@ Tämä voi viitata osoitteisiin &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#dataStructures">ERDDAP käyttää vain kahta perustietorakennetta tietojen säilyttämiseen.</a>
 <li><a rel="bookmark" href="#subscriptions">ERDDAP tarjoaa sähköposti-/URL- ja RSS -tilauspalveluita.</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP on verkkosovellus ja verkkopalvelu.</a>
-<li><a rel="bookmark" href="#rest">ERDDAP on REST - ja ROA -tyylisiä linkkejä, jotka tuovat palvelunsa tietokoneohjelmien saataville.</a>
+<li><a rel="bookmark" href="#rest">ERDDAP on REST - ja ROA -tyylisiä linkkejä, joiden avulla sen palvelut ovat tietokoneohjelmien käytettävissä.</a>
 <li><a rel="bookmark" href="#security">Turvallisuus</a>
 <li><a rel="bookmark" href="#chunks">ERDDAP käsittelee tiedot paloina.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP on modulaarinen.</a>
@@ -5218,7 +5219,7 @@ ERDDAP tarjoaa myös Data Access Forms -sivuja, jotka auttavat ihmisiä luomaan 
     >NOAA :n Data Accessin teknisistä suosituksista <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> ja
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) -standardi <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> .
@@ -5234,8 +5235,8 @@ Muut protokollat tietojen pyytämiseen (esim.
 ERDDAP on rakennettu näitä lisäyksiä varten, eikä sillä näytä olevan mitään esteitä.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Ruudukkotietopyyntöjä voidaan tehdä käyttäjäyksiköissä.</a></strong>
-<br>Vaikka ERDDAP :n ruudukkotietojen pyyntöjä voidaan tehdä taulukko-indekseillä (OPeNDAP -määrityksen mukaisesti), pyynnöt voivat olla myös käyttäjäyksiköissä (esimerkiksi asteet itään)
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">suluissa</a>, koska käyttäjät ajattelevat niissä yksiköissä, ei indekseissä.
+<br>Vaikka ERDDAP :n ruudukkotietojen pyyntöjä voidaan tehdä jonoindekseillä (OPeNDAP -määrityksen mukaisesti), pyynnöt voivat olla myös käyttäjäyksiköissä (esimerkiksi asteet itään)
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">suluissa</a>, koska käyttäjät ajattelevat näissä yksiköissä, ei indekseissä.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP lähettää tulokset yleisissä tiedostomuodoissa.</a></strong>
 <br>Tulokset voidaan palauttaa missä tahansa useista yleisistä datatiedostomuodoista &requestFormatExamplesHtml;, pelkän alkuperäisen muodon tai vain OPeNDAP -siirtomuodon sijaan (jolla ei ole vakiomuotoista tiedostomuotoa).
@@ -5278,7 +5279,7 @@ Tämä on hyödyllistä, kun teet kuvia karttoja tai aikasarjoja ja tallennat ti
 .esriAscii, .geoJson ja .kml ).
 <p>Kaksi yleistä standardia mittayksiköiden kirjoittamiselle ovat:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (ulkoinen linkki)&quot;title=&quot;Tämä linkki ulkoiselle verkkosivustolle ei ole suositus.&quot;&gt; -
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (ulkoinen linkki)&quot;title=&quot;Tämä linkki ulkoiselle verkkosivustolle ei ole suositus.&quot;&gt; -
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>, jota käytetään
@@ -5405,7 +5406,7 @@ Mutta kaikilla tietorakenteilla on kompromisseja.
 Mikään ei ole täydellinen.
 Jopa tee-se-all-rakenteilla on huonot puolensa:
 niiden kanssa työskentely on monimutkaista ja tiedostot voidaan kirjoittaa tai lukea vain erityisillä ohjelmistokirjastoilla.
-Jos hyväksyt ERDDAP :n lähestymistavan tarpeeksi yrittääksesi työskennellä sen kanssa, saatat huomata, että sillä on etuja (erityisesti tuki useille tiedostotyypeille, jotka voivat sisältää datavastaukset).
+Jos hyväksyt ERDDAP :n lähestymistavan tarpeeksi yrittääksesi työskennellä sen kanssa, saatat huomata, että sillä on etunsa (erityisesti tuki useille tiedostotyypeille, jotka voivat sisältää datavastauksia).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">Alkuperäinen ERDDAP diaesitys</a> (erityisesti
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">tietorakennedia</a>) puhuu näistä ongelmista.
 <li>Ja vaikka tämä lähestymistapa kuulostaakin sinusta oudolta, useimmat ERDDAP asiakkaat eivät koskaan huomaa – he yksinkertaisesti näkevät, että kaikilla tietojoukoilla on mukava yksinkertainen rakenne, ja he ovat kiitollisia, että he voivat saada tietoja useista eri lähteistä.
@@ -5666,6 +5667,18 @@ Kiitos, Marco!
 <br>ERDDAP hyväksyy nyt .transparentPng-pyynnöt, kun leveys- ja/tai pituusastearvot ovat osittain tai kokonaan alueen ulkopuolella.
 (Tämä oli ERDDAP GitHub Issues #19, lähettäjä Rob Fuller – kiitos viestistäsi, Rob.) Koodi tämän korjaamiseksi on kirjoittanut Chris John.
 Kiitos, Chris!
+<br>&nbsp;
+<li>Näytä base64-kuvatiedot .htmlTable
+<br>Koodi base64-kuvatietojen näyttämiseen .htmlTable on Marco Alba, ETT / EMODnet Physics.
+Kiitos, Marco Alba!
+<br>&nbsp;
+<li>nSäikeiden parantaminen
+<br>EDDTableFromFilesin nThreads-järjestelmää parannettiin merkittävästi.
+Nämä muutokset johtavat valtavaan nopeuden parannukseen (esim.
+2-kertainen nopeus, kun nThreads on asetettu arvoon 2 tai enemmän) haastavimmissa pyynnöissä (kun tulosten keräämiseksi on käsiteltävä suuri määrä tiedostoja).
+Nämä muutokset johtavat myös yleiseen nopeuttamiseen koko ERDDAP :n ajan.
+Näiden muutosten koodin on antanut Chris John.
+Kiitos, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5774,7 +5787,7 @@ Ajattele sitä nyt vain nimenä, ei lyhenteenä.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">täältä</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Voit</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>perustaa oman ERDDAP palvelimen</strong></a> ja palvella omia tietojasi.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>perustaa oman ERDDAP palvelimesi</strong></a> ja palvella omia tietojasi.
 <ul>
 <li>Pieni vaiva ERDDAP :n perustamiseksi tuo monia etuja.
 <li>Jos sinulla on jo verkkopalvelu tietojesi jakeluun, voit määrittää ERDDAP :n käyttämään tietojasi olemassa olevan palvelun tai lähdetiedostojen tai tietokannan kautta.
@@ -6146,6 +6159,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

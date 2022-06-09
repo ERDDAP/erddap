@@ -1678,7 +1678,6 @@ Consenti&quot;
 Se stai effettuando richieste ERDDAP da un programma per computer (diverso da un browser), è difficile lavorare con i cookie.
 Scusate.
 ]]></cookiesHelp>
-
 <copyImageToClipboard>Copia l&#39;immagine negli appunti</copyImageToClipboard>
 <copyTextToClipboard>Copia il testo negli appunti</copyTextToClipboard>
 <copyToClipboardNotAvailable>Copia negli appunti non disponibile</copyToClipboardNotAvailable>
@@ -3192,26 +3191,28 @@ tempo minimo e massimo).
 <functionOrderByTooltip><![CDATA[
 Le funzioni orderBy ...
 ordinano le righe della tabella dei risultati e talvolta le raggruppano e talvolta le manipolano ulteriormente.
-Per utilizzare una funzione orderBy ..., selezionare una funzione a sinistra, quindi selezionare una o più variabili a destra, quindi aggiungere facoltativamente impostazioni aggiuntive, ad esempio, per variabili numeriche, è possibile specificare nomevariabile[/divisor[unitàditempo][:offset] ] .
-Per non utilizzare alcuna funzione orderBy ..., scegliere la prima opzione a sinistra (&quot;&quot;).
+Per utilizzare una funzione orderBy ..., seleziona una funzione a sinistra, quindi seleziona una o più variabili a destra, quindi opzionalmente aggiungi impostazioni di addizione, ad esempio, per le variabili numeriche, puoi specificare nomevariabile[/divisor[timeUnits][:offset] ] .
+Per non utilizzare alcuna funzione orderBy ..., scegli la prima opzione a sinistra (&quot;&quot;).
 Le funzioni orderBy ...
 sono:
-<p><strong>orderBy</strong> ordina le righe della tabella dei risultati in base alle variabili specificate.
+<p><strong>orderBy</strong> ordina le righe della tabella dei risultati in base alle variabili specificate, in ordine crescente.
+Ad esempio, orderBy(&quot;stationID, time&quot;) ordina i risultati principalmente per stationID e secondariamente per ora.
+<p><strong>orderBy Descending</strong> ordina le righe della tabella dei risultati in base alle variabili specificate, in ordine decrescente.
 Ad esempio, orderBy(&quot;stationID, time&quot;) ordina i risultati principalmente per stationID e secondariamente per ora.
 <p><strong>orderByClosest</strong> ordina le righe della tabella dei risultati in base alle variabili specificate.
 L&#39;ultima variabile deve essere una variabile numerica con un divisore.
 Verranno mantenute solo le righe più vicine all&#39;intervallo del divisore.
-Ad esempio, orderByClosest(&quot;stationID, time/2hours&quot;) ordinerà per stationID e ora, ma restituirà solo le righe per ogni stationID in cui l&#39;ultima colonna orderBy (time) è più vicina agli intervalli di 2 ore.
-<p><strong>orderByCount</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo il conteggio del numero di valori non mancanti per ciascun gruppo.
-Ad esempio, orderByCount(&quot;stationID, time/1day&quot;) ordinerà per stationID e restituirà una riga per ogni stationID per ogni giorno, con un conteggio del numero di valori non mancanti per ciascuna delle altre variabili.
-<p><strong>orderByLimit</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo le prime nRows (come specificato dall&#39;ultimo valore orderByLimit ) all&#39;interno di ciascun gruppo.
-Ad esempio, orderByMax(&quot;stationID, time/1day, 10&quot;) ordinerà per stationID e ora, ma restituirà solo le prime 10 righe per ogni stationID per ogni giorno.
-<p><strong>orderByMax</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo la riga all&#39;interno di ciascun gruppo con il valore massimo dell&#39;ultima variabile orderByMax nella richiesta.
-Ad esempio, orderByMax(&quot;stationID, time/1day, temperature&quot;) raggrupperà le righe per stationID e ogni giorno, ma restituirà solo la riga con il valore di temperatura massimo per ogni stationID per ogni giorno.
+Ad esempio, orderByClosest(&quot;stationID, time/2hours&quot;) ordinerà per stationID e time, ma restituirà solo le righe per ogni stationID in cui l&#39;ultima colonna orderBy (ora) è più vicina a intervalli di 2 ore.
+<p><strong>orderByCount</strong> ordina le righe della tabella dei risultati in gruppi e restituisce semplicemente il conteggio del numero di valori non mancanti per ciascun gruppo.
+Ad esempio, orderByCount(&quot;stationID, time/1day&quot;) ordina per stationID e restituisce una riga per ogni stationID per ogni giorno, con un conteggio del numero di valori non mancanti per ciascuna delle altre variabili.
+<p><strong>orderByLimit</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo le prime nRows (come specificato dall&#39;ultimo valore orderByLimit ) all&#39;interno di ogni gruppo.
+Ad esempio, orderByMax(&quot;stationID, time/1day, 10&quot;) ordina per stationID e ora, ma restituisce solo le prime 10 righe per ogni stationID per ogni giorno.
+<p><strong>orderByMax</strong> ordina le righe della tabella dei risultati in gruppi e restituisce semplicemente la riga all&#39;interno di ciascun gruppo con il valore massimo dell&#39;ultima variabile orderByMax nella richiesta.
+Ad esempio, orderByMax(&quot;stationID, time/1day, temperature&quot;) raggrupperà le righe per stationID e per ogni giorno, ma restituirà solo la riga con il valore di temperatura massimo per ogni stationID per ogni giorno.
 <p><strong>orderBy Min</strong> è come orderByMax, ma mantiene solo la riga con il valore minimo per l&#39;ultima variabile orderBy Min.
 <p><strong>orderByMinMax</strong> è come orderBy Min più orderByMax .
-All&#39;interno di ogni gruppo di ordinamento, verranno mantenute solo la riga con il valore minimo e la riga con il valore massimo per l&#39;ultima variabile orderByMinMax .
-Ad esempio, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) restituirà la riga con il valore della temperatura minima e la riga con il valore della temperatura massima per ogni stationID per ogni giorno.
+All&#39;interno di ogni gruppo di ordinamento, verranno conservate solo la riga con il valore minimo e la riga con il valore massimo per l&#39;ultima variabile orderByMinMax .
+Ad esempio, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) restituirà la riga con il valore di temperatura minimo e la riga con il valore di temperatura massimo per ogni stationID per ogni giorno.
 <p><strong>orderByMean</strong> ordina le righe della tabella dei risultati in gruppi e restituisce solo una riga per ogni gruppo.
 Quella riga avrà la media di ciascuna delle altre variabili.
 Ad esempio, orderByMax(&quot;stationID, time/1day&quot;) creerà un gruppo per ogni stationID per ogni giorno e calcolerà e restituirà la media delle altre variabili.
@@ -5060,7 +5061,7 @@ Questo può fare riferimento a &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#solutions">Le soluzioni di ERDDAP</a>
 <ul>
 <li><a rel="bookmark" href="#video">Per una rapida introduzione a ERDDAP, guarda la prima metà di questo<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video</a> .
-(Cinque minuti)
+(5 minuti)
 <li><a rel="bookmark" href="#localAndRemote">ERDDAP può ottenere dati da origini dati locali (sul disco rigido del server) e remote (accessibili tramite Web).</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP può servire molti tipi di dati scientifici, non solo dati oceanografici.</a>
 <li><a rel="bookmark" href="#search">ERDDAP offre diversi modi per cercare set di dati interessanti.</a>
@@ -5113,7 +5114,7 @@ Senza ERDDAP, quando una persona (o un programma per computer) cerca su Internet
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Per una rapida introduzione a ERDDAP,</a>
 <a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">guarda la prima metà di questo<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> .</strong> (Cinque minuti)
+    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> .</strong> (5 minuti)
 <br>In esso, uno scienziato scarica i dati di previsione delle correnti oceaniche da ERDDAP per modellare una fuoriuscita tossica nell&#39;oceano utilizzando
 <a rel="bookmark"  href="https://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">il software GNOME di NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5193,7 +5194,7 @@ ERDDAP fornisce anche moduli di accesso ai dati (pagine web) che aiutano le pers
     >raccomandazioni tecniche sull&#39;accesso ai dati della NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> e uno
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >standard ESDIS (Earth Science Data and Information System) della NASA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> .
@@ -5210,7 +5211,7 @@ ERDDAP è strutturato per queste integrazioni e non sembrano esserci impedimenti
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Le richieste di dati grigliati possono essere effettuate in unità utente.</a></strong>
 <br>Sebbene le richieste di dati in griglia in ERDDAP possano essere effettuate con indici di matrice (seguendo la specifica OPeNDAP ), le richieste possono anche essere in unità utente (ad esempio gradi est), utilizzando
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">una notazione tra parentesi</a>, poiché gli utenti pensano a quelle unità, non agli indici.
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">una notazione tra parentesi</a>, poiché gli utenti pensano in quelle unità, non in indici.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP invia i risultati in formati di file di dati comuni.</a></strong>
 <br>I risultati possono essere restituiti in uno qualsiasi dei diversi formati di file di dati comuni &requestFormatExamplesHtml;, invece del solo formato originale o solo del formato di trasferimento OPeNDAP (che non ha una manifestazione di file standard).
@@ -5233,7 +5234,7 @@ Consulta l&#39;elenco completo dei tipi di
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> o epoch secondi, che è<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> -compatibile) e, se formattato come stringa, è formattato secondo il
+    title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> -compatibile) e, se formattata come stringa, è formattata secondo il
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">formato &quot;extended&quot; ISO 8601:2004 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> standard <span class="N">(yyyy-MM-ddTHH:mm:ssZ,</span> ad esempio <span class="N">&quot;1985-01-02T00:00:00Z&quot;).</span> (Puoi convertire i tempi numerici in/da tempi di stringa ISO con il convertitore di
@@ -5243,14 +5244,14 @@ Ciò semplifica la specifica dei vincoli nelle richieste senza doversi preoccupa
 in metri o braccia?) o il formato dei dati temporali (un regno da incubo di possibili formati, ad esempio &quot;Jan 2, 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, o giorni dal 1 gennaio 1980).
 Ciò rende i risultati di diverse fonti di dati facili da confrontare.
 <p>ERDDAP ha un&#39;utilità per
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">convertire un&#39;ora numerica in/da una stringa</a> .
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">convertire un tempo numerico in/da un tempo di stringa</a> .
 <br>Per maggiori dettagli, vedere
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">Come ERDDAP tempo</a> .
 <p>Poiché le variabili di longitudine, latitudine, altitudine e tempo sono specificamente riconosciute, ERDDAP è a conoscenza delle caratteristiche geo/temporali di ciascun set di dati.
 Ciò è utile quando si creano immagini con mappe o serie temporali e quando si salvano dati in tipi di file georeferenziati (ad esempio, .esriAscii, .geoJson e .kml ).
 <p>Due standard comuni per la scrittura di unità di misura sono:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (link esterno)&quot;title=&quot;Questo collegamento a un sito Web esterno non costituisce un avallo.&quot;&gt; - da
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (link esterno)&quot;title=&quot;Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione.&quot;&gt; - da
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a>, che viene utilizzato in
@@ -5402,7 +5403,7 @@ i valori temporali).
 <p><strong>Abbonamenti
 <a rel="help" href="&erddapUrl;/subscriptions/index.html">e-mail/URL</a></strong> (non disponibili in alcune installazioni ERDDAP ) Ogni volta che un set di dati cambia, il sistema di abbonamento e-mail/URL ti invierà <strong>immediatamente</strong> un&#39;e-mail o contatterà un URL specificato.
 Gli abbonamenti e-mail/URL non sono disponibili in alcune installazioni ERDDAP .
-Per impostare un abbonamento e-mail/URL, fai clic su una delle icone della busta <img alt="Subscribe" style="vertical-align:top" title="L&#39;icona della busta." src="&erddapUrl;/images/envelope.gif" > che appaiono all&#39;estrema destra nelle pagine Web ERDDAP con elenchi di set di dati (<a rel="contents" href="&erddapUrl;/info/index.html">esempio</a>) e nelle pagine Web Moduli di accesso ai dati e Crea un grafico per singoli set di dati (<a href="&erddapUrl;/griddap/etopo180.html">esempio</a>) se questa installazione ERDDAP supporta le sottoscrizioni e-mail/URL.
+Per impostare un abbonamento e-mail/URL, fai clic su una delle icone della busta <img alt="Subscribe" style="vertical-align:top" title="L&#39;icona della busta." src="&erddapUrl;/images/envelope.gif" > che appaiono all&#39;estrema destra nelle pagine Web ERDDAP con elenchi di set di dati (<a rel="contents" href="&erddapUrl;/info/index.html">esempio</a>) e nelle pagine Web Moduli di accesso ai dati e Crea un grafico per singoli set di dati (<a href="&erddapUrl;/griddap/etopo180.html">esempio</a>) se questa installazione ERDDAP supporta abbonamenti e-mail/URL.
 (Programmatori di computer:
 se scrivi servizi web, puoi utilizzare il sistema URL per fare in modo che ERDDAP notifichi immediatamente il tuo servizio web ogni volta che un set di dati cambia.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
@@ -5627,7 +5628,7 @@ Grazie, Rob e Adam!
 Grazie Marco Alba!
 <br>&nbsp;
 <li>Traduzioni di messaggi.xml
-<br>La versione iniziale del codice in TranslateMessages.java che utilizza il servizio di traduzione di Google per tradurre messages.xml in varie lingue è stata scritta da Qi Zeng, che lavorava come stagista Google Summer of Code.
+<br>La versione iniziale del codice in TranslateMessages.java che utilizza il servizio di traduzione di Google per tradurre messages.xml in varie lingue è stata scritta da Qi Zeng, che lavorava come stagista di Google Summer of Code.
 Grazie, Qi!
 <br>&nbsp;
 <li>orderBy somma
@@ -5642,6 +5643,17 @@ Grazie, Marco!
 (Questo era ERDDAP GitHub Issues n.
 19, pubblicato da Rob Fuller -- grazie per averlo pubblicato, Rob.) Il codice per risolvere questo problema è stato scritto da Chris John.
 Grazie, Cris!
+<br>&nbsp;
+<li>Visualizza i dati dell&#39;immagine base64 nelle risposte .htmlTable
+<br>Il codice per visualizzare i dati dell&#39;immagine base64 in .htmlTable responses è stato fornito da Marco Alba di ETT / EMODnet Physics.
+Grazie Marco Alba!
+<br>&nbsp;
+<li>Miglioramento nThreads
+<br>Il sistema nThreads per EDDTableFromFiles è stato notevolmente migliorato.
+Queste modifiche portano a un enorme miglioramento della velocità (ad esempio, accelerazione 2X quando nThreads è impostato su 2 o più) per le richieste più impegnative (quando è necessario elaborare un numero elevato di file per raccogliere i risultati).
+Queste modifiche porteranno anche a un&#39;accelerazione generale in tutto ERDDAP .
+Il codice per queste modifiche è stato fornito da Chris John.
+Grazie, Cris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5653,7 +5665,7 @@ Scrivo commenti nel codice.
 Ho scelto con cura i nomi delle variabili.
 Seguo le linee guida di formattazione Java .
 Tutto questo è uno sforzo per rendere il codice più leggibile, per altri programmatori che vogliono capirlo e/o cambiarlo, e per me, perché tra un anno o due avrò dimenticato i dettagli di come e perché il codice è stato scritto così com&#39;era.
-Il codice pulito con buoni commenti rende più facile il mio lavoro in corso su ERDDAP, quindi ho un grande incentivo a scrivere codice pulito con buoni commenti.
+Il codice pulito con buoni commenti semplifica il mio lavoro in corso su ERDDAP, quindi ho un grande incentivo a scrivere codice pulito con buoni commenti.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Ma tutte le mie risposte finora non sono molto importanti.</a> Solo una cosa che è veramente importante.
 Solo una cosa garantisce la sostenibilità per ERDDAP o qualsiasi progetto software:
 che ERDDAP sia
@@ -5707,8 +5719,8 @@ se succede qualcosa a me (l&#39;unico sviluppatore principale), o se non ho temp
 <li>ERDDAP è un software gratuito e open source, quindi nessuno potrà mai impedire a te o a chiunque altro di lavorare su ERDDAP .
 </ol>
 Non riesco a pensare a una situazione migliore.
-Spero che questo allevi le paure che voi (o chiunque altro) avete avuto riguardo alla sostenibilità di ERDDAP .
-Se senti persone mettere in dubbio o scoraggiare l&#39;uso di ERDDAP perché c&#39;è un solo sviluppatore principale, ti preghiamo di metterle in chiaro indirizzandole alla discussione di cui sopra a questo URL:
+Spero che questo allevi le paure che voi (o chiunque altro) avete avuto sulla sostenibilità di ERDDAP .
+Se senti persone che mettono in dubbio o scoraggiano l&#39;uso di ERDDAP perché c&#39;è un solo sviluppatore principale, ti preghiamo di metterle in chiaro indirizzandole alla discussione di cui sopra a questo URL:
 <a rel="bookmark" href="#sustainable">https://coastwatch.pfeg.noaa.gov/erddap/information.
 html#sostenibile</a> .
 <!-- (&lt;sarc&gt;Or, if you would be more comfortable paying $1,000,000 a year
@@ -6121,6 +6133,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

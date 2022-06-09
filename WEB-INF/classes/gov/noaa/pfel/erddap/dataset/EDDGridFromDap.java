@@ -5193,6 +5193,235 @@ String expected1 =
             "SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "temp, salt, u, v, w", "");    
+
+
+        //test of doNotSetStandardNames
+        try {
+            doNotAddStandardNames = true;
+
+expected1 = 
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_82a3_7247_c8d7\" active=\"true\">\n" +
+"    <sourceUrl>http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4</sourceUrl>\n" +
+"    <reloadEveryNMinutes>43200</reloadEveryNMinutes>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"Conventions\">COARDS</att>\n" +
+"        <att name=\"dataType\">Grid</att>\n" +
+"        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
+"        <att name=\"history\">Fri Jan 28 10:59:19 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">chepurin@umd.edu</att>\n" +
+"        <att name=\"creator_name\">HAWAII SOEST</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.atmos.umd.edu/~ocean/</att>\n" +
+"        <att name=\"infoUrl\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
+"        <att name=\"institution\">HAWAII SOEST</att>\n" +         //some changes to keywords in this test vs above test
+"        <att name=\"keywords\">assimilation, currents, data, degc, depth, earth, hawaii, latitude, longitude, means, meridional, month, monthly, ocean, pop2.2.4, practical, psu, salinity, salt, school, science, simple, soda, soest, technology, temperature, time, u, unit, v, v2.2.4, velocity, vertical, w, zonal</att>\n" +
+//"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +  //removed in this test
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"summary\">Simple Ocean Data Assimilation (SODA) v2.2.4 monthly means (soda pop2.2.4)</att>\n" +
+"        <att name=\"title\">SODA v2.2.4 monthly means (soda pop2.2.4) [time][lev][lat][lon], 0.5°, 1871-2010</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">t</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_min\">00z15jan1871</att>\n" +
+"            <att name=\"grads_size\">1680</att>\n" +
+"            <att name=\"grads_step\">1mo</att>\n" +
+"            <att name=\"long_name\">time</att>\n" +
+"            <att name=\"maximum\">00z15dec2010</att>\n" +
+"            <att name=\"minimum\">00z15jan1871</att>\n" +
+"            <att name=\"resolution\" type=\"float\">30.43657</att>\n" +
+"            <att name=\"units\">days since 1-1-1 00:00:0.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"data_max\">00z15dec2010</att>\n" +
+"            <att name=\"data_min\">00z15jan1871</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_min\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"grads_step\">null</att>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +  //LLAT still set
+"            <att name=\"units\">days since 0001-01-01T00:00:00.000Z</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lev</sourceName>\n" +
+"        <destinationName>depth</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">z</att>\n" +
+"            <att name=\"grads_mapping\">levels</att>\n" +
+"            <att name=\"long_name\">altitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">5375.0</att>\n" +
+"            <att name=\"minimum\" type=\"double\">5.01</att>\n" +
+"            <att name=\"name\">Depth</att>\n" +
+"            <att name=\"positive\">down</att>\n" +
+"            <att name=\"resolution\" type=\"float\">137.69205</att>\n" +
+"            <att name=\"units\">meters</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"data_max\" type=\"double\">5375.0</att>\n" +
+"            <att name=\"data_min\" type=\"double\">5.01</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"source_name\">lev</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +   //LLAT still set
+"            <att name=\"units\">m</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">y</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_size\">330</att>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">89.25</att>\n" +
+"            <att name=\"minimum\" type=\"double\">-75.25</att>\n" +
+"            <att name=\"resolution\" type=\"float\">0.5</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"data_max\" type=\"double\">89.25</att>\n" +
+"            <att name=\"data_min\" type=\"double\">-75.25</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +  //LLAT still set
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"grads_dim\">x</att>\n" +
+"            <att name=\"grads_mapping\">linear</att>\n" +
+"            <att name=\"grads_size\">720</att>\n" +
+"            <att name=\"long_name\">longitude</att>\n" +
+"            <att name=\"maximum\" type=\"double\">359.75</att>\n" +
+"            <att name=\"minimum\" type=\"double\">0.25</att>\n" +
+"            <att name=\"resolution\" type=\"float\">0.5</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"data_max\" type=\"double\">359.75</att>\n" +
+"            <att name=\"data_min\" type=\"double\">0.25</att>\n" +
+"            <att name=\"grads_dim\">null</att>\n" +
+"            <att name=\"grads_mapping\">null</att>\n" +
+"            <att name=\"grads_size\">null</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"maximum\">null</att>\n" +
+"            <att name=\"minimum\">null</att>\n" +
+"            <att name=\"resolution\">null</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +  //LLAT still set
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>temp</sourceName>\n" +
+"        <destinationName>temp</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">temperature [degc]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>salt</sourceName>\n" +
+"        <destinationName>salt</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">salinity [psu]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +  
+//"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +
+//"            <att name=\"standard_name\">sea_water_practical_salinity</att>\n" +  //should not be set
+//"            <att name=\"units\">PSU</att>\n" + //should not be set  -- unfortunate
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>u</sourceName>\n" +
+"        <destinationName>u</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">zonal velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>v</sourceName>\n" +
+"        <destinationName>v</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">meridional velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>w</sourceName>\n" +
+"        <destinationName>w</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9.99E33</att>\n" +
+"            <att name=\"long_name\">vertical velocity [m/s]</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9.99E33</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_c755_ddeb_6545\" active=\"true\">\n";
+
+        results = generateDatasetsXml(url, 
+            null, null, null, -1, null);
+        
+        Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
+            "results=\n" + results);
+
+        } finally {
+            //always undo this, so if there is a failure, subsequent tests won't be screwed up
+            doNotAddStandardNames = false;
+        }
+
     }
 
 
@@ -10490,7 +10719,7 @@ expected =
 "        <att name=\"summary\">Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)</att>\n" +
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
-"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
+//"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
 "        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
@@ -10768,7 +10997,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v36\";\n" +
 "    String summary \"Moderate Resolution Imaging Spectroradiometer on Aqua (MODISA) Level-3 Standard Mapped Image (MODIS AQUA L3 Sea Surface Temperature (SST) MID InfraRed (IR) 8DAY 4KM NIGHTTIME v2019.0)\";\n" +
 "    String temporal_range \"8-day\";\n" +    //2020-09-21 6-day?! was and should be 8-day. I reported it to podaac
-"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
+//"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
 "    String time_coverage_end \"2022-03-30T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
 "    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" + //2021-05-03 changes between -present and current year

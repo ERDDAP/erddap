@@ -312,6 +312,12 @@ public abstract class EDD {
     public static int suggestReloadEveryNMinutesMin = 1;
     public static int suggestReloadEveryNMinutesMax = 2000000000;
 
+    /** 
+     * generateDatasetsXml may set this to true to force makeReadyToUseAddVariableAttributesForDatasetsXml()
+     * not to suggest a new/different standard_name.
+     */
+    public static boolean doNotAddStandardNames = false;
+
     //*********** END OF STATIC DECLARATIONS ***************************
 
     protected long creationTimeMillis = System.currentTimeMillis();
@@ -7028,13 +7034,16 @@ public abstract class EDD {
      * This is used by generateDatasetsXml methods to improve the  
      * variable's attributes as much as possible based on source information.
      *
+     * <p>If EDD.doNotAddStandardNames=true, this won't suggest standardNames
+     * (other than LLAT).
+     *
      * @param sourceGlobalAtts the source's global attributes (may be null)
      * @param sourceAtts the source's variable attributes
      * @param addAtts some atts that should be in addAtts (may be null if none).
      *   If not null, this is the Attributes that will be modified.
      * @param tSourceName   
      * @param tryToAddStandardName If the var doesn't have standard_name,
-     *   try to add it.
+     *   try to add it.  EDD.doNotAddStandardNames=true overrides this.
      * @param tryToAddColorBarMinMax If the var doesn't have colorBarMin and Max,
      *   try to add them.
      * @param tryToFindLLAT   This tries to identify longitude, latitude, altitude/depth, 
@@ -7881,6 +7890,7 @@ public abstract class EDD {
             testUnits.equals("k");                     //udunits and ucum
         boolean hasTemperatureUnits = isDegreesC || isDegreesF || isDegreesK;
 
+
         if (String2.isSomething2(tStandardName)) {
             //fix problems
 
@@ -7908,6 +7918,9 @@ public abstract class EDD {
             tStandardName = String2.replaceAll(tStandardName, 
                 "moles_concentration", "mole_concentration");
 
+        } else if (doNotAddStandardNames) {
+            //do nothing
+
         } else {
 
             //does the lcSourceName or ttLongName equal a cfName?
@@ -7923,7 +7936,10 @@ public abstract class EDD {
                 tStandardName = CfToFromGcmd.cfNames[i];
         }
 
-        if (!String2.isSomething2(tStandardName)) {
+        if (doNotAddStandardNames) {
+            //do nothing
+
+        } else if (!String2.isSomething2(tStandardName)) {
             tStandardName = sourceAtts.getString("Standard_name");  //wrong case?
             if (!String2.isSomething2(tStandardName)) tStandardName = sourceAtts.getString("Standard_Name");  //wrong case?
             if (!String2.isSomething2(tStandardName) &&

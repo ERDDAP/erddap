@@ -3315,30 +3315,32 @@ orderBy ...
 숫자 변수의 경우 variableName[/divisor[timeUnits][:offset]).
 ] .
 orderBy ...
-함수를 사용하지 않으려면 왼쪽에서 첫 번째 옵션(&quot;&quot;)을 선택합니다.
+기능을 사용하지 않으려면 왼쪽에서 첫 번째 옵션(&quot;&quot;)을 선택합니다.
 orderBy ...
-함수는 다음과 같습니다.
-<p><strong>orderBy</strong> 는 지정된 변수를 기준으로 결과 테이블의 행을 정렬합니다.
+기능은 다음과 같습니다.
+<p><strong>orderBy</strong> 는 지정된 변수를 기준으로 결과 테이블의 행을 오름차순으로 정렬합니다.
+예를 들어 orderBy(&quot;stationID, time&quot;) 는 주로 stationID 별로 결과를 정렬하고 두 번째로 시간별로 결과를 정렬합니다.
+<p><strong>orderBy Descending</strong> 은 지정된 변수를 기준으로 결과 테이블의 행을 내림차순으로 정렬합니다.
 예를 들어 orderBy(&quot;stationID, time&quot;) 는 주로 stationID 별로 결과를 정렬하고 두 번째로 시간별로 결과를 정렬합니다.
 <p><strong>orderByClosest</strong> 는 지정된 변수를 기준으로 결과 테이블의 행을 정렬합니다.
 마지막 변수는 제수가 있는 숫자 변수여야 합니다.
 제수 간격에 가장 가까운 행만 유지됩니다.
-예를 들어 orderByClosest(&quot;stationID, time/2hours&quot;) 는 stationID 와 시간을 기준으로 정렬하지만 마지막 orderBy 열(시간)이 2시간 간격에 가장 가까운 각 stationID 에 대한 행만 반환합니다.
+예를 들어 orderByClosest(&quot;stationID, time/2hours&quot;) 는 stationID 및 시간별로 정렬되지만 마지막 orderBy 열(시간)이 2시간 간격에 가장 가까운 각 stationID 에 대한 행만 반환합니다.
 <p><strong>orderByCount</strong> 는 결과 테이블의 행을 그룹으로 정렬하고 각 그룹에 대한 결측값이 아닌 값의 수를 반환합니다.
-예를 들어 orderByCount(&quot;stationID, time/1day&quot;) 는 stationID 별로 정렬하고 다른 각 변수에 대한 결측값이 아닌 값의 개수와 함께 매일 각 stationID 에 대해 하나의 행을 반환합니다.
-<p><strong>orderByLimit</strong> 은 결과 테이블의 행을 그룹으로 정렬하고 각 그룹 내에서 첫 번째 nRows(마지막 orderByLimit 값으로 지정된 대로)만 반환합니다.
+예를 들어 orderByCount(&quot;stationID, time/1day&quot;) 는 stationID 별로 정렬하고 다른 각 변수에 대한 결측값이 아닌 값의 수와 함께 각 stationID 에 대해 매일 하나의 행을 반환합니다.
+<p><strong>orderByLimit</strong> 는 결과 테이블의 행을 그룹으로 정렬하고 각 그룹 내에서 첫 번째 nRows(마지막 orderByLimit 값으로 지정된 대로)만 반환합니다.
 예를 들어 orderByMax(&quot;stationID, time/1day, 10&quot;) 는 stationID 와 시간을 기준으로 정렬하지만 매일 각 stationID 에 대해 처음 10개 행만 반환합니다.
 <p><strong>orderByMax</strong> 는 결과 테이블의 행을 그룹으로 정렬하고 요청에서 마지막 orderByMax 변수의 최대값과 함께 각 그룹 내의 행을 반환합니다.
-예를 들어 orderByMax(&quot;stationID, time/1day, temperature&quot;) 는 행을 stationID 및 각 날짜별로 그룹화하지만 각 날짜의 각 stationID 에 대한 최대 온도 값이 있는 행만 반환합니다.
+예를 들어 orderByMax(&quot;stationID, time/1day, temperature&quot;) 는 행을 stationID 및 각 요일별로 그룹화하지만 각 요일의 각 stationID 에 대한 최대 온도 값이 있는 행만 반환합니다.
 <p><strong>orderBy Min</strong> 은 orderByMax 와 비슷하지만 마지막 orderBy Min 변수에 대해 최소값이 있는 행만 유지합니다.
 <p><strong>orderByMinMax</strong> 는 orderBy Min에 orderByMax 를 더한 것과 같습니다.
 각 정렬 그룹 내에서 마지막 orderByMinMax 변수에 대해 최소값이 있는 행과 최대값이 있는 행만 유지됩니다.
-예를 들어 orderByMinMax(&quot;stationID, time/1day, temperature&quot;) 는 각 stationID 에 대한 각 날짜의 최소 온도 값이 있는 행과 최대 온도 값이 있는 행을 반환합니다.
+예를 들어 orderByMinMax(&quot;stationID, time/1day, temperature&quot;) 는 각 stationID 에 대해 각 날짜의 최소 온도 값이 있는 행과 최대 온도 값이 있는 행을 반환합니다.
 <p><strong>orderByMean</strong> 은 결과 테이블의 행을 그룹으로 정렬하고 각 그룹에 대해 하나의 행만 반환합니다.
 해당 행에는 다른 각 변수의 평균이 있습니다.
-예를 들어 orderByMax(&quot;stationID, time/1day&quot;) 는 각 요일의 stationID 에 대한 그룹을 만들고 다른 변수의 평균을 계산하여 반환합니다.
+예를 들어 orderByMax(&quot;stationID, time/1day&quot;) 는 매일 각 stationID 에 대한 그룹을 만들고 다른 변수의 평균을 계산하여 반환합니다.
 <p><strong>orderBy Sum</strong> 은 결과 테이블의 행을 그룹으로 정렬하고 각 그룹에 대해 하나의 행만 반환합니다.
-해당 행에는 다른 변수 각각의 합계가 있습니다.
+해당 행에는 다른 각 변수의 합계가 있습니다.
 예를 들어 orderByMax(&quot;stationID, time/1day&quot;) 는 각 stationID 에 대한 그룹을 매일 만들고 다른 변수의 합계를 계산하여 반환합니다.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
@@ -5349,7 +5351,7 @@ ERDDAP 는 또한 인간이 OPeNDAP 요청을 생성하는 데 도움이 되는 
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> 및
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA 지구 과학 데이터 및 정보 시스템(ESDIS) 표준 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> .
@@ -5402,15 +5404,15 @@ ERDDAP 는 이러한 추가를 위해 구성되었으며 아무런 장애가 없
 &quot;Jan 2, 1985&quot;,&quot;02-JAN-1985&quot;,&quot;1/2/85&quot;,&quot;2/1/85&quot;,&quot;1985-01-02&quot;또는 1980년 1월 1일 이후의 일).
 이렇게 하면 서로 다른 데이터 소스의 결과를 쉽게 비교할 수 있습니다.
 <p>ERDDAP 에는
-<a rel="bookmark" href="&erddapUrl;/convert/time.html">숫자 시간을 문자열 시간으로 변환</a> 하는 유틸리티가 있습니다.
+<a rel="bookmark" href="&erddapUrl;/convert/time.html">숫자 시간을 문자열 시간으로/에서 변환</a> 하는 유틸리티가 있습니다.
 <br>자세한 내용은
-<a rel="help" href="&erddapUrl;/convert/time.html#erddap">ERDDAP 가 시간을 다루는 방법</a> 을 참조하십시오.
+<a rel="help" href="&erddapUrl;/convert/time.html#erddap">ERDDAP 이 시간을 다루는 방법</a> 을 참조하십시오.
 <p>경도, 위도, 고도 및 시간 변수가 구체적으로 인식되기 때문에 ERDDAP 은 각 데이터 세트의 지리/시간적 특성을 인식합니다.
 이것은 지도 또는 시계열로 이미지를 만들 때와 지리 참조 파일 형식(예:
 .esriAscii, .geoJson 및 .kml )으로 데이터를 저장할 때 유용합니다.
 <p>측정 단위 작성에 대한 두 가지 일반적인 표준은 다음과 같습니다.
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(외부 링크)&quot; title=&quot;이 외부 웹사이트 링크는 보증을 구성하지 않습니다.&quot;&gt; -
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(외부 링크)&quot; title=&quot;이 외부 웹사이트 링크는 보증을 구성하지 않습니다.&quot;&gt; -
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata</a> 에서
 <a rel="bookmark" href="https://www.unidata.ucar.edu/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5539,11 +5541,11 @@ OPeNDAP, SOS, OBIS, ...)으로 변환하고 이를 소스 데이터 서버로 �
 완벽한 것은 없습니다.
 모든 것을 다 할 수 있는 구조에도 단점이 있습니다.
 작업이 복잡하고 특수 소프트웨어 라이브러리로만 파일을 쓰거나 읽을 수 있습니다.
-ERDDAP 의 접근 방식을 충분히 받아들인다면 ERDDAP의 장점이 있다는 것을 알게 될 것입니다(특히 데이터 응답을 저장할 수 있는 여러 파일 유형 지원).
+ERDDAP 의 접근 방식을 충분히 받아들인다면 ERDDAP의 장점이 있음을 알게 될 것입니다(특히 데이터 응답을 저장할 수 있는 여러 파일 형식 지원).
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">원본 ERDDAP 슬라이드 쇼</a> (특히
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">데이터 구조 슬라이드</a>)는 이러한 문제에 대해 설명합니다.
-<li>그리고 이 접근 방식이 이상하게 들릴지라도 대부분의 ERDDAP 클라이언트는 결코 알아차리지 못할 것입니다.
-그들은 모든 데이터 세트가 훌륭하고 단순한 구조를 가지고 있다는 것을 알게 될 것이며 다양한 소스에서 데이터를 반환할 수 있다는 사실에 감사할 것입니다.
+<li>이 접근 방식이 이상하게 들릴지라도 대부분의 ERDDAP 클라이언트는 결코 알아차리지 못할 것입니다.
+모든 데이터 세트가 훌륭하고 단순한 구조를 가지고 있다는 것을 알게 될 것이며 다양한 소스에서 데이터를 반환할 수 있다는 사실에 감사할 것입니다.
 다양한 파일 형식.
 <br>&nbsp;
 </ul>
@@ -5566,7 +5568,7 @@ ERDDAP 의 접근 방식을 충분히 받아들인다면 ERDDAP의 장점이 있
 이메일/URL 구독을 설정하려면 봉투 아이콘 중 하나를 클릭하십시오.
 <img alt="Subscribe" style="vertical-align:top" title="봉투 아이콘입니다." src="&erddapUrl;/images/envelope.gif" > 이 ERDDAP 설치가 이메일/URL 구독을 지원하는 경우 데이터 세트 목록이 있는 ERDDAP 웹 페이지(<a rel="contents" href="&erddapUrl;/info/index.html">예</a>)와 개별 데이터 세트에 대한 데이터 액세스 양식 및 그래프 만들기 웹 페이지(<a href="&erddapUrl;/griddap/etopo180.html">예</a>)의 맨 오른쪽에 표시됩니다.
 (컴퓨터 프로그래머:
-웹 서비스를 작성하는 경우 URL 시스템을 사용하여 데이터셋이 변경될 때마다 ERDDAP 이 즉시 웹 서비스에 알리도록 할 수 있습니다.)
+웹 서비스를 작성하는 경우 URL 시스템을 사용하여 데이터셋이 변경될 때마다 ERDDAP 이 웹 서비스에 즉시 알리도록 할 수 있습니다.)
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> 구독</strong> RSS 는 웹사이트의 콘텐츠가 변경되었을 때 사용자에게 알리는 표준 시스템입니다.
@@ -5592,7 +5594,7 @@ ERDDAP 서버에 연결하고 여전히 변경 사항을 즉시 감지하지 못
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application">웹 애플리케이션</a> 입니다.
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_application"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> (브라우저를 사용하는 인간을 위한 양식이 있는 웹 페이지)
+      title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> (브라우저를 사용하는 사람을 위한 양식이 있는 웹 페이지)
 <br>그리고
 <a rel="help" href="https://en.wikipedia.org/wiki/Web_service">웹 서비스 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5677,7 +5679,7 @@ EDDGrid FromErddap 데이터셋 주위에 EDDGrid Copy를 래핑하면(또는 ED
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata 의 IDD/IDM</a> 과 같은 프로그램으로 설정된 데이터 배포 네트워크와 거의 유사합니다.
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>, 그러나 덜 경직된 구조.
+      title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>, 그러나 덜 단단하게 구조화됩니다.
 <br>&nbsp;
 </ul>
 <p><strong><a class="selfLink" id="WhatsTheDifference" href="#WhatsTheDifference" rel="bookmark">DAP ?
@@ -5718,7 +5720,7 @@ ERDDAP 는 미들웨어 접근 방식을 취합니다.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP 는 많은/대부분의 데이터 세트를 있는 그대로 처리할 수 있지만 전부는 아닙니다.</a> 나머지 데이터 세트(예:
 큐브 구 투영을 사용한 모델 데이터)가 중요하지 않다는 것은 아닙니다.
 일반적인 파일 형식(일부는 매우 간단함)으로 데이터를 반환하려는 ERDDAP 의 목표는 더 복잡한 내부 데이터 구조를 배제합니다.
-보다 복잡한 데이터 구조로 작업하는 연구원 그룹은 커뮤니티의 요구에 맞게 맞춤화된 특수 데이터 서버와 특수 클라이언트 소프트웨어를 이미 보유하고 있는 경우가 많습니다.
+더 복잡한 데이터 구조로 작업하는 연구원 그룹은 커뮤니티의 요구에 맞게 맞춤화된 특수 데이터 서버와 특수 클라이언트 소프트웨어를 이미 보유하고 있는 경우가 많습니다.
 ERDDAP 은 범용 데이터 서버로서 이러한 특수 데이터 서버와 경쟁하려고 하지 않습니다.
 그들은 지역 사회의 필요에 맞게 조정되었으며 훌륭한 일을 합니다.
 그러나 이러한 데이터 세트는 해당 커뮤니티의 전문 소프트웨어에서만 &quot;이해&quot;하는 경우가 많습니다.
@@ -5822,6 +5824,18 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 (이것은 Rob Fuller가 게시한 ERDDAP GitHub Issues #19입니다.
 게시해 주셔서 감사합니다.
 Rob.) 이 문제를 해결하는 코드는 Chris John이 작성했습니다.
+고마워, 크리스!
+<br>&nbsp;
+<li>.htmlTable 응답에 base64 이미지 데이터 표시
+<br>.html테이블 응답에 base64 이미지 데이터를 표시하는 코드는 ETT/ .htmlTable Physics의 Marco Alba가 제공했습니다.
+고마워요, 마르코 알바!
+<br>&nbsp;
+<li>nThreads 개선
+<br>EDDTableFromFiles에 대한 nThreads 시스템이 크게 향상되었습니다.
+이러한 변경은 가장 까다로운 요청(결과를 수집하기 위해 많은 수의 파일을 처리해야 하는 경우)에 대해 엄청난 속도 향상(예:
+nThreads가 2 이상으로 설정된 경우 2배 속도 향상)으로 이어집니다.
+이러한 변경은 또한 ERDDAP 전반에 걸쳐 일반적인 속도 향상으로 이어질 것입니다.
+이러한 변경에 대한 코드는 Chris John이 제공했습니다.
 고마워, 크리스!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -5939,7 +5953,7 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
 자, 그냥 두문자어가 아닌 이름으로 생각해주세요.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">데이터 배포 시스템에 대한 지침</a></strong>
-<br>데이터 배포 시스템의 설계 및 평가에 대한 Bob의 의견은
+<br>데이터 분배 시스템의 설계 및 평가에 대한 Bob의 의견은
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">여기</a> 에서 찾을 수 있습니다.
 <br>&nbsp;
 <p><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>자신의 ERDDAP 서버</strong></a> <strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">를</a></strong> 설정하고 자신의 데이터를 제공할 수 있습니다.
@@ -6317,6 +6331,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

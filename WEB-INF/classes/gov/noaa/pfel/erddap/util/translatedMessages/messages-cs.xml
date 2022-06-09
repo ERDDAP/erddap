@@ -3213,7 +3213,9 @@ pro číselné proměnné můžete zadat název proměnné[/dělitel[časové je
 Pokud nechcete použít žádnou funkci orderBy ..., vyberte první možnost vlevo (&quot;&quot;).
 Funkce orderBy ...
 jsou:
-<p><strong>orderBy</strong> seřadí řádky výsledkové tabulky podle zadaných proměnných.
+<p><strong>orderBy</strong> seřadí řádky tabulky výsledků podle zadaných proměnných ve vzestupném pořadí.
+Například orderBy(&quot;stationID, time&quot;) seřadí výsledky primárně podle stationID a sekundárně podle času.
+<p><strong>orderBy Descending</strong> seřadí řádky tabulky výsledků podle zadaných proměnných v sestupném pořadí.
 Například orderBy(&quot;stationID, time&quot;) seřadí výsledky primárně podle stationID a sekundárně podle času.
 <p><strong>orderByClosest</strong> seřadí řádky výsledkové tabulky podle zadaných proměnných.
 Poslední proměnná musí být číselná proměnná s dělitelem.
@@ -5214,7 +5216,7 @@ ERDDAP také poskytuje formuláře pro přístup k datům (webové stránky), kt
     >technických doporučení NOAA pro přístup k datům <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >standard NASA Earth Science Data and Information System (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5232,7 +5234,7 @@ ERDDAP je strukturován pro tyto doplňky a nezdá se, že by existovaly nějak�
 <br>&nbsp;
 <li><strong><a class="selfLink" id="userUnits" href="#userUnits" rel="bookmark">Požadavky na mřížková data lze provádět v uživatelských jednotkách.</a></strong>
 <br>Ačkoli požadavky na mřížková data v ERDDAP lze provádět pomocí indexů pole (podle specifikace OPeNDAP ), požadavky mohou být také v uživatelských jednotkách (například ve stupních východně) pomocí
-<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zápisu v závorkách</a>, protože uživatelé přemýšlejí v těchto jednotkách, nikoli v indexech.
+<a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">zápisu v závorkách</a>, protože uživatelé uvažují v těchto jednotkách, nikoli v indexech.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="fileFormats" href="#fileFormats" rel="bookmark">ERDDAP odesílá výsledky v běžných formátech datových souborů.</a></strong>
 <br>Výsledky lze vrátit v libovolném z několika běžných formátů datových souborů &requestFormatExamplesHtml;, namísto pouze původního formátu nebo pouze přenosového formátu OPeNDAP (který nemá standardní souborový projev).
@@ -5242,7 +5244,7 @@ Podívejte se na úplný seznam
 <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">typů souborů mřížky a typů</a>
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">souborů tabulek</a> .
 <br>&nbsp;
-<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku, hloubku a čas ve výsledcích.</a></strong>
+<li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAP ve výsledcích standardizuje názvy proměnných a jednotky pro zeměpisnou délku, šířku, nadmořskou výšku, hloubku a čas.</a></strong>
 <br>Pro usnadnění porovnávání dat z různých datových sad používají požadavky a výsledky v ERDDAP standardizované jednotky prostorové/časové osy:
 <ul>
 <li>zeměpisná délka je vždy ve degrees_east .
@@ -5267,14 +5269,14 @@ ledna 1980).
 Díky tomu lze výsledky z různých zdrojů dat snadno porovnávat.
 <p>ERDDAP má nástroj pro
 <a rel="bookmark" href="&erddapUrl;/convert/time.html">převod číselného času na/z času řetězce</a> .
-<br>Další podrobnosti najdete v tématu
+<br>Další podrobnosti naleznete v části
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">Jak ERDDAP s časem</a> .
 <p>Protože zeměpisná délka, zeměpisná šířka, nadmořská výška a časové proměnné jsou specificky rozpoznávány, ERDDAP si je vědom geo/časových vlastností každé datové sady.
 To je užitečné při vytváření obrázků s mapami nebo časovými řadami a při ukládání dat do georeferencovaných typů souborů (např.
 .esriAscii, .geoJson a .kml ).
 <p>Dva běžné standardy pro psaní měrných jednotek jsou:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (externí odkaz)&quot;title=&quot;Tento odkaz na externí web nepředstavuje podporu.&quot;&gt; - od
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (externí odkaz)&quot;title=&quot;Tento odkaz na externí web nepředstavuje podporu.&quot;&gt; - od
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, který se používá v
@@ -5588,7 +5590,7 @@ Tyto jednodušší datové struktury nemají nahradit původní datové struktur
 <br>Někteří lidé jsou překvapeni a zklamáni, když slyší, že ERDDAP většinou vyvíjí jedna osoba (já, Bob Simons).
 [Mimochodem, názory na této webové stránce jsou mými osobními názory a nemusí nutně odrážet jakýkoli postoj vlády nebo National Oceanic and Atmospheric Administration .] Obávají se, že pokud se mi něco stane, bude to konec ERDDAP .
 To prostě není pravda.
-ERDDAP pro dlouhodobou udržitelnost je vynikající a téměř nejlepší, jaká by mohla být.
+ERDDAP pro dlouhodobou udržitelnost je vynikající a blíží se tomu nejlepšímu, co by mohlo být.
 <p>Ano, jsem hlavním vývojářem ERDDAP .
 Jsem plně financovaný federální zaměstnanec.
 Mé financování nejsou „měkké“ peníze, takže granty nedostávám ani se na ně nespoléhám.
@@ -5663,7 +5665,19 @@ Děkuji, Marco!
 <br>&nbsp;
 <li>Požadavky .transparentPng mimo dosah
 <br>ERDDAP nyní přijímá požadavky na .transparentPng, když jsou hodnoty zeměpisné šířky a/nebo délky částečně nebo zcela mimo rozsah.
-(Toto bylo ERDDAP GitHub Issues #19, zveřejněné Robem Fullerem -- děkujeme za zveřejnění, Robe.) Kód, který to opraví, napsal Chris John.
+(Toto bylo číslo 19 ERDDAP GitHub Issues, zveřejněné Robem Fullerem -- děkujeme za zveřejnění, Robe.) Kód, který to opraví, napsal Chris John.
+Děkuji, Chrisi!
+<br>&nbsp;
+<li>Zobrazte data obrázku base64 v odpovědích .htmlTable
+<br>Kód pro zobrazení obrazových dat base64 v odpovědích .htmlTable přispěl Marco Alba z ETT / EMODnet Physics.
+Děkuji, Marco Alba!
+<br>&nbsp;
+<li>Vylepšení nThreads
+<br>Systém nThreads pro EDDTableFromFiles byl výrazně vylepšen.
+Tyto změny vedou k obrovskému zvýšení rychlosti (např.
+2X zrychlení, když je nThreads nastaveno na 2 nebo více) u nejnáročnějších požadavků (když je nutné zpracovat velké množství souborů, aby se získaly výsledky).
+Tyto změny také povedou k obecnému zrychlení celého ERDDAP .
+Kód pro tyto změny přispěl Chris John.
 Děkuji, Chrisi!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -5790,7 +5804,7 @@ href="https://groups.google.com/forum/#!forum/erddap">adrese https://groups.goog
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a kliknutím na „Zažádat o členství“.
 Jakmile se stanete členem, můžete tam umístit svou otázku nebo vyhledat, zda již byla otázka položena a zodpovězena.
-<p>ODMÍTNUTÍ ODPOVĚDNOSTI:
+<p>OMEZENÍ ODPOVĚDNOSTI:
 Názory na této webové stránce jsou osobními názory Boba Simonse a nemusí nutně odrážet jakýkoli postoj vlády nebo National Oceanic and Atmospheric Administration .
 ]]></theLongDescriptionHtml>
 <Then>Pak</Then>
@@ -6144,6 +6158,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

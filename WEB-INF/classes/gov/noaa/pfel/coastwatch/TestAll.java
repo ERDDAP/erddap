@@ -121,10 +121,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/raju/O2_07MAR2022_009_011_LAP_L2B_CL_S.hdf"; 
-//      String2.log(NcHelper.ncdump(tFileName, "-h"));  
+//      String tFileName = "/u00/data/points/SanctSound/HI/SanctSound_HI05_01_GoogleAI_humpbackwhale_1h.nc"; 
+//      String2.log(NcHelper.ncdump(tFileName, "-v time_bounds"));  
 
-//      DasDds.main(new String[]{"nodcPH2sstd1day", "-verbose"});
+//      DasDds.main(new String[]{"noaaSanctSound_HI05_01_GoogleAI_humpbackwhale_1hy", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
