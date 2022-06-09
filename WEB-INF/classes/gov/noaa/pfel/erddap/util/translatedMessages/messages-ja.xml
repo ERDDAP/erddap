@@ -2702,15 +2702,16 @@ orderBy ...関数を使用するには、左側で関数を選択し、次に右
 ]。
 orderBy ...関数を使用しない場合は、左側の最初のオプション（ &quot;&quot;）を選択します。
 orderBy ...関数は次のとおりです。
-<p><strong>orderBy</strong>は、指定された変数で結果テーブルの行を並べ替えます。たとえば、 orderBy(&quot;stationID, time&quot;)は、結果を主にstationIDで並べ替え、次に時間で並べ替えます。
-<p><strong>orderByClosest</strong>は、指定された変数で結果テーブルの行を並べ替えます。最後の変数は、除数のある数値変数でなければなりません。除数の間隔に最も近い行のみが保持されます。たとえば、 orderByClosest(&quot;stationID, time/2hours&quot;)は、 stationIDとtimeで並べ替えますが、最後のorderBy列（time）が2時間間隔に最も近い各stationIDの行のみを返します。
-<p><strong>orderByCount</strong>は、結果テーブルの行をグループに並べ替え、各グループの非欠損値の数のカウントを返すだけです。たとえば、 orderByCount(&quot;stationID, time/1day&quot;)は、 stationIDで並べ替え、各日の各stationIDに対して1行を返し、他の各変数の非欠損値の数をカウントします。
-<p><strong>orderByLimit</strong>は、結果テーブルの行をグループに並べ替え、各グループ内の最初のnRows（最後のorderByLimit値で指定されたもの）を返すだけです。たとえば、 orderByMax(&quot;stationID, time/1day, 10&quot;)は、 stationIDとtimeで並べ替えますが、各日の各stationIDの最初の10行のみを返します。
-<p><strong>orderByMax</strong>は、結果テーブルの行をグループに並べ替え、リクエストの最後のorderByMax変数の最大値を持つ各グループ内の行を返すだけです。たとえば、 orderByMax(&quot;stationID, time/1day, temperature&quot;)は、 stationIDと毎日で行をグループ化しますが、各日の各stationIDの最大温度値を持つ行のみを返します。
+<p><strong>orderBy</strong>は、結果テーブルの行を指定された変数で昇順で並べ替えます。たとえば、 orderBy(&quot;stationID, time&quot;)は、結果を主にstationIDで並べ替え、次に時間で並べ替えます。
+<p><strong>orderBy Descending</strong>は、結果テーブルの行を指定された変数で降順で並べ替えます。たとえば、 orderBy(&quot;stationID, time&quot;)は、結果を主にstationIDで並べ替え、次に時間で並べ替えます。
+<p><strong>orderByClosest</strong>は、指定された変数で結果テーブルの行を並べ替えます。最後の変数は、除数を持つ数値変数でなければなりません。除数の間隔に最も近い行のみが保持されます。たとえば、 orderByClosest(&quot;stationID, time/2hours&quot;)は、 stationIDとtimeで並べ替えますが、最後のorderBy列（time）が2時間間隔に最も近い各stationIDの行のみを返します。
+<p><strong>orderByCount</strong>は、結果テーブルの行をグループに並べ替え、各グループの非欠損値の数のカウントを返します。たとえば、 orderByCount(&quot;stationID, time/1day&quot;) stationID 、 stationIDで並べ替え、他の各変数の非欠損値の数をカウントして、各ステーションIDごとに1行を返します。
+<p><strong>orderByLimit</strong>は、結果テーブルの行をグループに並べ替え、各グループ内の最初のnRows（最後のorderByLimit値で指定されたもの）を返すだけです。たとえば、 orderByMax(&quot;stationID, time/1day, 10&quot;)は、 stationIDと時刻で並べ替えますが、各日の各stationIDの最初の10行のみを返します。
+<p><strong>orderByMax</strong>は、結果テーブルの行をグループに並べ替え、リクエスト内の最後のorderByMax変数の最大値を持つ各グループ内の行を返すだけです。たとえば、 orderByMax(&quot;stationID, time/1day, temperature&quot;)は、 stationIDと毎日で行をグループ化しますが、各日の各stationIDの最大温度値を持つ行のみを返します。
 <p><strong>orderBy Min</strong>はorderByMaxに似ていますが、最後のorderBy変数の最小値を持つ行のみを保持します。
-<p><strong>orderByMinMax</strong>は、 orderByとorderByMaxのようなものです。各ソートグループ内では、最後のorderByMinMax変数の最小値の行と最大値の行のみが保持されます。たとえば、 orderByMinMax(&quot;stationID, time/1day, temperature&quot;)は、各日の各stationIDの最小温度値を持つ行と最大温度値を持つ行を返します。
-<p><strong>orderByMean</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1行だけを返します。その行には、他の各変数の平均が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の平均を計算して返します。
-<p><strong>orderBy Sum</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1行だけを返します。その行には、他の各変数の合計が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の合計を計算して返します。
+<p><strong>orderByMinMax</strong>は、 orderByとorderByMaxのようなものです。各ソートグループ内では、最後のorderByMinMax変数の最小値の行と最大値の行のみが保持されます。たとえば、 orderByMinMax(&quot;stationID, time/1day, temperature&quot;)は、各日の各stationIDの最小温度値の行と最大温度値の行を返します。
+<p><strong>orderByMean</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1つの行を返します。その行には、他の各変数の平均が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の平均を計算して返します。
+<p><strong>orderBy Sum</strong>は、結果テーブルの行をグループに並べ替え、グループごとに1つの行を返します。その行には、他の各変数の合計が含まれます。たとえば、 orderByMax(&quot;stationID, time/1day&quot;)は、各日の各stationIDのグループを作成し、他の変数の合計を計算して返します。
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 orderByClosestの場合、ここで間隔を指定します（n [timeUnits]の形式を使用して、たとえば1時間）。
@@ -4354,7 +4355,7 @@ title="この外部ウェブサイトへのリンクは、承認を構成する�
 <li><a rel="bookmark" href="#problems">ERDDAPが解決しようとする問題</a>
 <li><a rel="bookmark" href="#solutions">ERDDAPのソリューション</a>
 <ul>
-<li><a rel="bookmark" href="#video">ERDDAPの簡単な紹介については、この前半をご覧ください。<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >ビデオ</a>。
+<li><a rel="bookmark" href="#video">ERDDAPの簡単な紹介については、この前半をご覧ください<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >ビデオ</a>。
 （5分）
 <li><a rel="bookmark" href="#localAndRemote">ERDDAPは、ローカル（サーバーのハードドライブ上）およびリモート（Web経由でアクセス）のデータソースからデータを取得できます。</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAPは、海洋データだけでなく、さまざまな種類の科学データを提供できます。</a>
@@ -4374,7 +4375,7 @@ title="この外部ウェブサイトへのリンクは、承認を構成する�
 <li><a rel="bookmark" href="#security">安全</a>
 <li><a rel="bookmark" href="#chunks">ERDDAPはデータをチャンクで処理します。</a>
 <li><a rel="bookmark" href="#modular">ERDDAPはモジュラー構造です。</a>
-<li><a rel="bookmark" href="#pushPull">データ配布/データ配信ネットワーク： PushアンドPullテクノロジー</a>
+<li><a rel="bookmark" href="#pushPull">データ配布/データ配布ネットワーク： PushおよびPullテクノロジー</a>
 </ul>
 <li><a rel="bookmark" href="#WhatsTheDifference">DAP ？ OPeNDAP ？ DODS ？ ERDDAP ？違いは何ですか？</a>
 <li><a rel="bookmark" href="#sweetSpot">ERDDAPは、すべての人のデータ配布/データアクセスの問題に対するソリューションですか？</a>
@@ -4395,13 +4396,12 @@ title="この外部ウェブサイトへのリンクは、承認を構成する�
 <br>&nbsp;
 <li>各サイトは異なる形式（たとえば、XML、 SOAP+XML 、 OPeNDAPバイナリデータストリーム、ASCIIテキスト、 HDF 4、 HDF 5、 NetCDFなど）でデータを返しますが、これは一般的なファイル形式ではありません。欲しいです。
 <br>&nbsp;
-<li>日付と時刻は、「1985年1月2日」、「1985年1月2日」、「85年1月2日」、「85年2月1日」などのさまざまな形式で表されるため、さまざまなサイトのデータを比較するのは困難です。
+<li>日付と時刻は「1985年1月2日」、「1985年1月2日」、「85年1月2日」、「85年2月1日」などのさまざまな形式で表されるため、さまざまなサイトのデータを比較するのは困難です。
 &quot;、&quot; 1985-01-02 &quot;、または1980年1月1日からの日数、または...）。
 </ul>
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">ERDDAPのソリューション</a></h2>
 <ul>
-<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">ERDDAPの簡単な紹介については</a><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">、この前半</a>をご覧ください。
-<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM"><img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >ビデオ<img 
+<li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">ERDDAPの簡単な紹介については</a><a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">、この前半</a>をご覧ください<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM"><img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" >ビデオ<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 。</strong> （5分）
 <br>その中で、科学者はERDDAPから海流予測データをダウンロードし、
@@ -4410,14 +4410,14 @@ title="この外部ウェブサイトへのリンクは、承認を構成する�
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> （5分で！）。このビデオは以下を示しています：
 <ul>
-<li>ERDDAPを使用すると、データセットの<a href="#search">検索、データ</a>の<a href="#images">視覚化、データ</a>の<a href="#fileFormats">ダウンロード</a>を簡単に行うことができます。
+<li>ERDDAPを使用すると、データセットの<a href="#search">検索、データ</a>の<a href="#images">視覚化</a>、および<a href="#fileFormats">データのダウンロード</a>を簡単に行うことができます。
 <li>ERDDAPは、<a href="#standardizedRequests">標準化された要求</a>を介して<a href="#localAndRemote">ローカルおよびリモートのデータソース</a>からデータを取得できます。
 <li>ERDDAPは<a href="#rest">RESTfulサービス</a>を提供します。
 URLはリクエスト全体を指定します。
 <li>ERDDAPは<a href="#images">マップとグラフ</a>を作成できます。
 <li>ERDDAPは（マップやグラフだけでなく）<a href="#fileFormats">データ</a>を提供します。
 <li>ERDDAPは、多くの<a href="#fileFormats">ファイル形式</a>でデータを返し、他の多くのプログラムにデータを取り込むことができます。
-<li>NOAAは連携して機能します。分析では、 NOAAの2つの無料ソフトウェアプログラム、 ERDDAPとGNOME 、およびNOAAのNODC / NCDDC（ NOAAのUAFプロジェクトによって促進される）によって提供されるデータを使用します。
+<li>NOAAは連携して機能します。分析では、 NOAAの2つのフリーソフトウェアプログラム、 ERDDAPとGNOME 、およびNOAAのNODC / NCDDC（ NOAAのUAFプロジェクトによって促進される）によって提供されるデータを使用します。
 <li>ERDDAPは、科学者（およびその他）がより効率的に作業を行うのに役立つ<a href="#scientificData">科学データ</a>をより簡単に利用できるようにします。
 <li>ERDDAP使用は難しくありません。
 （はい、Rich Signellは本当に賢いですが、誰でもERDDAPを使用できます。）
@@ -4435,7 +4435,7 @@ URLはリクエスト全体を指定します。
 ERDのERDDAPサーバーは海洋データを提供しますが、 ERDDAP （プログラム）はグリッドデータまたは表形式データにアクセスして提供できます。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAPは、興味深いデータセットを検索するためのいくつかの方法を提供します。</a></strong>
-<br>たとえば、<a href="&erddapUrl;/search/index.html">全文検索</a>、<a href="&erddapUrl;/categorize/index.html">カテゴリによる検索</a>（ファセット検索とも呼ばれます）、<a href="&erddapUrl;/search/advanced.html">高度な検索</a>などです。
+<br>たとえば、<a href="&erddapUrl;/search/index.html">全文検索</a>、<a href="&erddapUrl;/categorize/index.html">カテゴリによる検索</a>（ファセット検索とも呼ばれます）、および<a href="&erddapUrl;/search/advanced.html">高度な検索</a>。
 Advanced Searchは、すべての検索手法を組み合わせて、経度、緯度、および時間範囲内のデータを持つデータセットの検索を追加するため、多くの異なる基準に基づいてデータセットを同時に検索できます。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="standardizedRequests" href="#standardizedRequests" rel="bookmark">ERDDAPを使用すると、標準化された方法でデータをリクエストできます。</a></strong>
@@ -4460,7 +4460,7 @@ ERDDAPは、人間がOPeNDAP要求を作成するのに役立つデータアク�
     >NOAAのデータアクセス技術推奨事項の</a>1つです<a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>および<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>および<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA地球科学データおよび情報システム（ESDIS）標準<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 。
@@ -4478,7 +4478,7 @@ ERDDAPはこれらの追加用に構成されており、障害はないよう�
 <br>結果は、いくつかの一般的なデータファイル形式のいずれかで返すことができます&requestFormatExamplesHtml; 、元の形式またはOPeNDAP転送形式（標準のファイル表示がない）の代わりに。これらのファイルはオンザフライで作成されます。内部データ構造が少ないため、ファイルタイプのドライバーを簡単に追加できます。<a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">グリッドファイルタイプ</a>と<a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">テーブルファイルタイプ</a>の完全なリストを参照してください。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="LLAT" href="#LLAT" rel="bookmark">ERDDAPは、結果の経度、緯度、高度、深度、および時間の変数名と単位を標準化します。</a></strong>
-<br>異なるデータセットからのデータの比較を容易にするために、 ERDDAPでの要求と結果は、標準化された空間/時間軸単位を使用します。
+<br>さまざまなデータセットからのデータの比較を容易にするために、 ERDDAPでの要求と結果は、標準化された空間/時間軸単位を使用します。
 <ul>
 <li>経度は常にdegrees_eastです。
 <li>緯度は常にdegrees_northです。
@@ -4495,16 +4495,16 @@ ERDDAPはこれらの追加用に構成されており、障害はないよう�
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601：2004の&quot;extended&quot;</a>フォーマットに従ってフォーマットされます。
 <a rel="help" href="https://en.wikipedia.org/wiki/ISO_8601"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>標準<span class="N">（ yyyy-MM-ddTHH:mm:ssZ 、</span>たとえば、 <span class="N">「1985-01-02T00：00：00Z」）。</span> （ ERDDAPの<a rel="bookmark" href="&erddapUrl;/convert/time.html">時間コンバーター</a>を使用してISO文字列時間との間で数値時間を変換できます。）また、タイムゾーンと夏時間の混乱を避けるために、時間値は常にZulu （UTC、GMT）タイムゾーンに変換されます。
+    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>標準<span class="N">（ yyyy-MM-ddTHH:mm:ssZ 、</span>たとえば、 <span class="N">「1985-01-02T00：00：00Z」）。</span> （ ERDDAPの<a rel="bookmark" href="&erddapUrl;/convert/time.html">時間コンバーター</a>を使用してISO文字列時間との間で数値時間を変換できます。）また、タイムゾーンと日照時間の混乱を避けるために、時間値は常にZulu （UTC、GMT）タイムゾーンに変換されます。
 </ul>
-これにより、高度データ形式（正の値はメートルまたはファゾムで上下？）または時間データ形式（悪夢のような形式の可能性のある領域、たとえば「1月2、1985」、「02-JAN-1985」、「1/2/85」、「2/1/85」、「1985-01-02」、または1980年1月1日からの日数）。これにより、さまざまなデータソースからの結果を簡単に比較できます。
+これにより、高度データ形式（正の値はメートルまたはファゾムで上下？）または時間データ形式（悪夢のような形式の可能性のある領域、たとえば「Jan 2、1985」、「02-JAN-1985」、「1/2/85」、「2/1/85」、「1985-01-02」、または1980年1月1日からの日数）。これにより、さまざまなデータソースからの結果を簡単に比較できます。
 <p>ERDDAPには<a rel="bookmark" href="&erddapUrl;/convert/time.html">、数値時間を文字列時間との間で変換</a>するユーティリティがあります。
 <br>詳細については、
 <a rel="help" href="&erddapUrl;/convert/time.html#erddap">ERDDAPが時間を処理する方法</a>を参照してください。
 <p>経度、緯度、高度、および時間の変数が明確に認識されるため、 ERDDAPは各データセットの地理的/時間的特徴を認識します。これは、地図や時系列を使用して画像を作成する場合や、地理参照ファイルタイプ（.esriAscii、.geoJson、 .kmlなど）でデータを保存する場合に便利です。
 <p>測定単位を書くための2つの一般的な基準は次のとおりです。
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt =&quot;（外部リンク）&quot;title =&quot;外部Webサイトへのこのリンクは、承認を構成するものではありません。&quot;&gt;-
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt =&quot;（外部リンク）&quot;title =&quot;外部Webサイトへのこのリンクは、承認を構成するものではありません。&quot;&gt;-
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata</a>から<a rel="bookmark" href="https://www.unidata.ucar.edu/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、
@@ -4530,12 +4530,12 @@ ERDDAPはこれらの追加用に構成されており、障害はないよう�
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、および<a rel="help" href="https://www.ogc.org/standards/wms">WMS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
-      title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>多くの場合、UCUMはUOM（単位）と呼ばれます。たとえば、UCUMには、摂氏で大文字と小文字を区別するオプションが1つだけあります。
+      title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>多くの場合、UCUMをUOM（単位）と呼びます。たとえば、UCUMには、摂氏で大文字と小文字を区別するオプションが1つだけあります。
 &quot;Cel&quot;です。
 <br>&nbsp;
 </ul>
-ERDDAPはどちらのユニットも標準で使用する必要はありませんが、ほとんどのERDDAPインストールではどちらか一方が優先されます。
-（ ERDDAP管理者：setup.xmlの<kbd>&lt;units_standard&gt;</kbd>タグを使用してこれを指定できます。） ERDDAPの<a rel="bookmark" href="&erddapUrl;/convert/units.html">単位コンバーター</a>を使用してUDUNITSをUCUM単位との間で変換できます。
+ERDDAPではどちらのユニットも標準で使用する必要はありませんが、ほとんどのERDDAPインストールではどちらか一方が優先されます。
+（ ERDDAP管理者：setup.xmlの<kbd>&lt;units_standard&gt;</kbd>タグを使用してこれを指定できます。） ERDDAPの<a rel="bookmark" href="&erddapUrl;/convert/units.html">ユニットコンバーター</a>を使用して、 UDUNITSをUCUMユニットとの間で変換できます。
 <a href="&erddapUrl;/tabledap/index.html">tabledapデータセット</a>からデータまたはグラフをリクエストする場合、URLの末尾に<kbd>&amp;units(&quot;UDUNITS&quot;)</kbd>または<kbd>&amp;units(&quot;UCUM&quot;)</kbd>を追加して、 UDUNITSまたはUCUMユニットをリクエストできます。<a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">詳しくは</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAPは、メタデータを追加または変更できます。</a></strong>
@@ -4565,7 +4565,7 @@ ERDDAPを使用すると、管理者は、データセットとその変数に�
     ><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>クライアントによって送信されたHTTP GETリクエストヘッダー。サポートされている圧縮タイプ（ gzip 、 x-gzip 、またはdeflate ）がaccept-encodingリストにある場合、 ERDDAPはHTTP応答ヘッダーに<kbd>content-encoding</kbd>を含め、データを送信するときにデータを圧縮します。
-<kbd>content-encoding</kbd>を探してデータを解凍するのはクライアントプログラム次第です。圧縮された応答は、多くの場合3〜10倍高速ですが、ファイルの内容はすでに圧縮されているため、圧縮された.pngファイルを要求するメリットはありません。ブラウザとOPeNDAPクライアントはデフォルトでこれを行います。彼らは圧縮データを要求し、返されたデータを自動的に解凍します。他のクライアント（ Javaプログラムなど）は、これを明示的に行う必要があります。
+<kbd>content-encoding</kbd>を探してデータを解凍するのはクライアントプログラム次第です。多くの場合、圧縮された応答は3〜10倍高速ですが、ファイルの内容はすでに圧縮されているため、圧縮された.pngファイルを要求するメリットはありません。ブラウザとOPeNDAPクライアントはデフォルトでこれを行います。彼らは圧縮データを要求し、返されたデータを自動的に解凍します。他のクライアント（ Javaプログラムなど）は、これを明示的に行う必要があります。
 curlを使用して、コマンドラインに<kbd>--compressed</kbd>を追加し、圧縮された応答を要求して自動的に解凍するようにcurlに指示します。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="interoperable" href="#interoperable" rel="bookmark">ERDDAPは、さまざまなタイプのデータサーバー（ OPeNDAP 、OBIS、 SOS 、 WMS 、...）を相互運用可能にします。</a></strong>
@@ -4607,10 +4607,10 @@ ERDDAPのアプローチを十分に受け入れて使用できる場合は、ER
 <li>ERDDAPは、通常、新しいデータが追加されてもメタデータに変更がないため、表形式のデータセットへの変更を検出するのはあまり得意ではありません。
 <li>ERDDAPは、データセットが使用できなくなったかどうかを検出します（ただし、すぐには検出されない可能性があります）。
 <li>ERDDAPは、そのデータセットが再び利用可能になると検出します。
-<li>ERDDAPは、これらのサービスの適合性または正確性について何ら約束しません（
+<li>ERDDAPは、これらのサービスの適合性または正確性について何も約束しません（
 <a rel="license" href="&erddapUrl;/legal.html">ERDDAPの免責事項</a>を参照）。
 </ul>
-<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子メール/URL</a>サブスクリプション</strong>（一部のERDDAPインストールでは使用できません）データセットが変更されると、電子メール/ URLサブスクリプションシステムは<strong>すぐ</strong>に電子メールを送信するか、指定したURLに連絡します。電子メール/URLサブスクリプションは、一部のERDDAPインストールでは利用できません。メール/URLサブスクリプションを設定するには、封筒アイコンの1つをクリックします<img alt="Subscribe" style="vertical-align:top" title="封筒のアイコン。" src="&erddapUrl;/images/envelope.gif" >このERDDAPインストールが電子メール/URLサブスクリプションをサポートしている場合は、データセットのリストをERDDAP Webページ（<a rel="contents" href="&erddapUrl;/info/index.html">例</a>）および個々のデータセットのデータアクセスフォームとMake A Graph Webページ（<a href="&erddapUrl;/griddap/etopo180.html">例</a>）の右端に表示されます。
+<p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子メール/URL</a>サブスクリプション</strong>（一部のERDDAPインストールでは使用できません）データセットが変更されると、電子メール/ URLサブスクリプションシステムは<strong>すぐ</strong>に電子メールを送信するか、指定したURLに連絡します。電子メール/URLサブスクリプションは、一部のERDDAPインストールでは使用できません。メール/URLサブスクリプションを設定するには、封筒アイコンの1つをクリックします<img alt="Subscribe" style="vertical-align:top" title="封筒のアイコン。" src="&erddapUrl;/images/envelope.gif" >このERDDAPインストールが電子メール/URLサブスクリプションをサポートしている場合は、データセットのリストをERDDAP Webページ（<a rel="contents" href="&erddapUrl;/info/index.html">例</a>）および個々のデータセットのデータアクセスフォームとMake A Graph Webページ（<a href="&erddapUrl;/griddap/etopo180.html">例</a>）の右端に表示されます。
 （コンピュータープログラマー：Webサービスを作成する場合は、URLシステムを使用して、データセットが変更されるたびにERDDAPがWebサービスにすぐに通知するようにすることができます。）
 <p><strong><a rel="help" href="https://en.wikipedia.org/wiki/RSS_(file_format)">RSS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4620,7 +4620,7 @@ ERDDAPのアプローチを十分に受け入れて使用できる場合は、ER
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 。
 ERDDAPは、データセットごとに個別のRSS 2.01フィードを提供するため、興味深いデータセットがいつ変更されたかを知ることができます。データセットのRSSフィードを購読するには、 RSSアイコンの1つをクリックします<img alt="RSS" style="vertical-align:top" title="RSSアイコン。" src="&erddapUrl;/images/rss.gif" >これは、データセットのリストをERDDAP Webページ（<a rel="contents" href="&erddapUrl;/info/index.html">例</a>）または個々のデータセットのデータアクセスフォームとMake A Graph Webページ（<a href="&erddapUrl;/griddap/etopo180.html">例</a>）の右端に表示されます。
 <p><strong>比較</strong>RSSサービスはまさにあなたが探しているものかもしれません。それは素晴らしい基準です。ただし、データセットがいつ変更されるかをできるだけ早く知る必要がある場合は、 RSSではなく電子メール/URLシステムを使用してください。
-RSSクライアントは定期的に（1時間ごと？） RSS XMLドキュメントを要求して読み取り、変更を探します。したがって、通常、 RSSクライアントはデータセットへの変更をすばやく検出しません（平均30分？）。対照的に、電子メール/ URLサブスクリプションシステムは、 ERDDAPがデータセットへの変更を検出するとすぐに機能します。電子メール/URLシステムのよりプロアクティブなアプローチもはるかに効率的ですRSSクライアントを毎分変更をチェックするように設定できる場合がありますが（実行しないでください）、それは多くの不要な要求につながるだけです。
+RSSクライアントは定期的に（1時間ごと？） RSS XMLドキュメントを要求して読み取り、変更を探します。したがって、通常、 RSSクライアントはデータセットへの変更をすばやく検出しません（平均30分？）。対照的に、電子メール/ URLサブスクリプションシステムは、 ERDDAPがデータセットへの変更を検出するとすぐに機能します。電子メール/URLシステムのよりプロアクティブなアプローチもはるかに効率的ですRSSクライアントを毎分変更をチェックするように設定できる場合がありますが（実行しないでください！）、それは多くの不要な要求につながるだけです。
 ERDDAPサーバーに送信しても、変更をすぐに検出することはできません。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="diverseSources" href="#diverseSources" rel="bookmark">ERDDAPは</a><a rel="help" href="https://en.wikipedia.org/wiki/Web_application">Webアプリケーションです<img 
@@ -4637,7 +4637,7 @@ ERDDAPサーバーに送信しても、変更をすぐに検出することは�
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>そのサービスをコンピュータプログラムで利用できるようにするためのスタイルのリンク。</strong>
 <br>これらの機能を使用して、 ERDDAP上に別のWebサービスを構築できます（ ERDDAPにすべての作業を実行させます！）。
-ERDDAPは、高レベルのデータ探索/グラフ作成サービスを目的としたものではありません。代わりに、 ERDDAPはそのようなWebサイトやプログラムにサービスを提供することを目的としています。したがって、 ERDDAPが提供するデータへのより良いインターフェースのアイデアがある場合は、独自のWebアプリケーションまたはWebサービスを構築し、 ERDDAPを基盤として使用することをお勧めします。<a rel="help" href="&erddapUrl;/rest.html">コンピュータプログラムのため</a>のERDDAPのサービスについてもっと読む。
+ERDDAPは、高レベルのデータ探索/グラフ作成サービスを目的としたものではありません。代わりに、 ERDDAPはそのようなWebサイトやプログラムにサービスを提供することを目的としています。したがって、 ERDDAPが提供するデータへのより良いインターフェースについてのアイデアがある場合は、独自のWebアプリケーションまたはWebサービスを構築し、 ERDDAPを基盤として使用することをお勧めします。<a rel="help" href="&erddapUrl;/rest.html">コンピュータプログラムのため</a>のERDDAPのサービスについてもっと読む。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">セキュリティ</a></strong>-デフォルトでは、 ERDDAPは完全にパブリックサーバーとして実行され、ログインシステムやデータアクセスの制限はありません。ただし、 ERDDAP管理者は、一部またはすべてのデータセットへのアクセスを、ログインして特定の役割が割り当てられているユーザーに制限するようにERDDAPを構成できます。
 ERDDAPには、認証（ログイン）のための組み込みメソッドがあります。
@@ -4645,7 +4645,7 @@ ERDDAPインストールで認証がオンになっている場合は、各Web�
 （<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">詳細情報</a>）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAPはデータをチャンクで処理します。</a></strong>
-<br>メモリを節約し（大きな問題）、応答をより早く開始するために、 ERDDAPはデータ要求をチャンクで処理します—ソースからデータのチャンクを繰り返し取得し、クリーンアップします（たとえば、<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">メタデータ</a>を追加します）。
+<br>メモリを節約し（大きな問題）、応答をより早く開始するために、 ERDDAPはデータリクエストをチャンクで処理します—ソースからデータのチャンクを繰り返し取得し、クリーンアップします（たとえば、<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">メタデータ</a>を追加します）。
 <a rel="help" href="https://en.wikipedia.org/wiki/Metadata"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> ）、それをクライアントに送信します。多くのデータソースの場合、これは、データの最初のチャンク（たとえば、最初のセンサーから）が数分ではなく数秒でクライアントに到達することを意味します（たとえば、最後のセンサーからのデータが取得された後）。データが来ています。メモリの観点から、これにより、多数の大きな要求（それぞれが使用可能なメモリよりも大きい）を同時に処理できます。
@@ -4653,7 +4653,7 @@ ERDDAPインストールで認証がオンになっている場合は、各Web�
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAPはモジュラー構造です。</a></strong>
 <br>ERDDAPは、さまざまなコンポーネント（たとえば、 SOSサーバーからデータを要求してテーブルとして格納するクラス）を簡単に追加できるように構成されています。次に、新しいコンポーネントは、親のすべての機能を取得します（たとえば、 OPeNDAP要求のサポート、およびいくつかの一般的なファイル形式でデータを保存する機能）。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">データ配布/データ配信ネットワーク： PushアンドPullテクノロジー</a></strong>
+<li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">データ配布/データ配布ネットワーク： PushおよびPullテクノロジー</a></strong>
 <br>通常、 ERDDAPは仲介者として機能します。ユーザーからの要求を受け取ります。リモートデータソースからデータを取得します。データを再フォーマットします。そしてそれをユーザーに送信します。
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pullテクノロジー<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4662,7 +4662,7 @@ ERDDAPインストールで認証がオンになっている場合は、各Web�
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> ： ERDDAPの<a href="#subscriptions">サブスクリプションサービス</a>を使用することにより、他のデータサーバーは、新しいデータが利用可能になるとすぐに通知を受け、データを要求できるようになります（データをプルすることによって）。
 ERDDAPの<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a>および<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>は、 ERDDAPのサブスクリプションサービスと<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">フラグシステム</a>を使用して、新しいデータが利用可能になったときにすぐに通知されるようにします。これらを組み合わせて大きな効果を得ることができますEDDGridコピーをEDDGridデータセットにラップする（またはEDDTableCopyをEDDTableFromErddapデータセットにラップする）と、 ERDDAPは別のERDDAPのデータセットのローカルコピーを自動的に作成して維持します。サブスクリプションサービスは新しいデータが利用可能になるとすぐに機能するため、プッシュテクノロジーはデータを非常に迅速に（数秒以内に）配布します。
-<p>このアーキテクチャでは、各ERDDAP管理者が、自分のERDDAPのデータがどこから来ているかを判断する必要があります。他のERDDAP管理者も同じことができます。管理者間の調整は必要ありません。多くのERDDAP管理者が互いのERDDAPにリンクすると、データ配信ネットワークが形成されます。データは、データソース（ ERDDAPおよびその他のサーバー）からネットワーク内の任意のデータ再配布サイト（ ERDDAP ）に迅速、効率的、かつ自動的に配布されます。特定のERDDAPは、一部のデータセットのデータソースと他のデータセットの再配布サイトの両方になります。結果として得られるネットワークは、
+<p>このアーキテクチャでは、各ERDDAP管理者が、自分のERDDAPのデータがどこから来ているかを判断する必要があります。他のERDDAP管理者も同じことができます。管理者間の調整は必要ありません。多くのERDDAP管理者が互いのERDDAPにリンクすると、データ配信ネットワークが形成されます。データは、データソース（ ERDDAPおよびその他のサーバー）からネットワーク内のデータ再配布サイト（ ERDDAP ）に迅速、効率的、かつ自動的に配布されます。特定のERDDAPは、一部のデータセットのデータソースと他のデータセットの再配布サイトの両方になります。結果として得られるネットワークは、
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">UnidataのIDD/IDM</a>などのプログラムでセットアップされたデータ配信ネットワークとほぼ同じです。
 <a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4699,20 +4699,20 @@ ERDDAPは、汎用データサーバーとして、これらの特殊なデー�
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>ERDDAPプロジェクトはどの程度持続可能ですか？</strong></a>
 <br>ERDDAPは非常に持続可能です。
-<br>一部の人々は、 ERDDAPが主に1人の人（私、Bob Simons）によって開発されていると聞いて驚いて失望しています。
+<br>一部の人々は、 ERDDAPが主に1人の人（私、ボブ・サイモンズ）によって開発されていると聞いて驚いて失望しています。
 [ちなみに、このウェブページの意見は私の個人的な意見であり、必ずしも政府やNational Oceanic and Atmospheric Administrationの立場を反映しているわけではありません。]彼らは私に何かが起こった場合、それがERDDAPの終わりになることを恐れています。それは単に真実ではありません。
 ERDDAPの長期的な持続可能性に対する位置付けは優れており、可能な限り最高に近いものです。
 <p>はい、私はERDDAPの主な開発者です。私は全額出資の連邦職員です。私の資金は「ソフト」なお金ではないので、助成金を受け取ったり頼ったりすることはありません。私は自分の時間の半分以上をERDDAPの開発に費やしています。残りの時間は、データセットの管理に費やされています。
 ERDDAPが何をする必要があるかを詳細に知るために実際のデータセットを操作する必要があるため、この作業はERDDAPに役立ちます。私の上司は、ERDDAPでの私の仕事を完全にサポートしています。なぜなら、 ERDDAPは、私が雇われたことを実行するからです。つまり、水産業の科学者（主に、しかし実際にはすべての人）がさまざまなソースから科学データを簡単に取得できるようにします。
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">ソフトウェアの奇跡的な点は、複製するのに費用がかからないことです。</a>それで、私の仕事をするために、私はERDで使用するためにERDDAPを書きます。それが私の仕事をするための最良の方法だと思います。その理由だけで、 ERDDAPの開発費用が正当化されます。
 （ ERDDAPは、私がERDDAPの開発に費やした時間よりも多くのNOAA科学者の時間を節約したことを示すことができると思います。時間=お金。）しかし、副次的な利点は、他の組織がERDDAP<strong>を無料</strong><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAPダウンロード、インストール、および使用</a>して配布できることです。科学データ。
+href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAPダウンロード、インストール、および使用</a>して配布できることです。科学的データ。
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >少なくとも14か国の90を超える組織がERDDAPを使用しています</a>。たぶん、フリーランチのようなものがあります。
 <p>ERDDAPはJavaプログラムです。すべてのバージョンのソースコードは<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a>にあります<a rel="bookmark" href="https://github.com/BobSimons"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、コラボレーションソフトウェアプロジェクトで最も一般的に使用されるシステム。これまでのところ、これらのグループ/人々はERDDAPにコードを提供しています：
+    title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、共同ソフトウェアプロジェクトで最も一般的に使用されるシステム。これまでのところ、これらのグループ/人々はERDDAPにコードを提供しています：
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
@@ -4738,7 +4738,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <br>3つの新しいマーカータイプ（ボーダーレス塗りつぶし正方形、ボーダーレス塗りつぶし円、ボーダーレス塗りつぶし三角形）のコードは、ETT /EMODnetPhysicsのMarcoAlbaによって提供されました。ありがとう、マルコ・アルバ！
 <br>&nbsp;
 <li>messages.xmlの翻訳
-<br>Googleの翻訳サービスを使用してmessages.xmlをさまざまな言語に翻訳するTranslateMessages.javaのコードの初期バージョンは、Google SummerofCodeのインターンとして働いていたQiZengによって作成されました。ありがとう、気！
+<br>Googleの翻訳サービスを使用してmessages.xmlをさまざまな言語に翻訳するTranslateMessages.javaのコードの初期バージョンは、Google SummerofCodeのインターンとして働いていたQiZengによって作成されました。ありがとう、チー！
 <br>&nbsp;
 <li>orderBy Sum
 <br>tabledapの<a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderBySum" rel="bookmark"
@@ -4747,11 +4747,17 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <li>範囲外の.transparentPngリクエスト
 <br>ERDDAPは、緯度や経度の値が部分的または完全に範囲外の場合に、.transparentPngの要求を受け入れるようになりました。
 （これは、 ERDDAPによって投稿されたERDDAPGitHub Issue＃19でした。投稿してくれてありがとう、Rob。）これを修正するコードはChrisJohnによって書かれました。ありがとう、クリス！
+<br>&nbsp;
+<li>base64画像データを.htmlTable応答で表示する
+<br>.htmlTable応答でbase64画像データを表示するためのコードは、ETT /EMODnetPhysicsのMarcoAlbaによって提供されました。ありがとう、マルコ・アルバ！
+<br>&nbsp;
+<li>nThreadsの改善
+<br>EDDTableFromFilesのnThreadsシステムが大幅に改善されました。これらの変更により、最も困難な要求（結果を収集するために多数のファイルを処理する必要がある場合）の速度が大幅に向上します（たとえば、nThreadsが2以上に設定されている場合は2倍の速度向上）。これらの変更は、 ERDDAP全体の一般的なスピードアップにもつながります。これらの変更のコードは、ChrisJohnによって提供されました。ありがとう、クリス！
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-将来、他の人がコードを提供してくれることを願っています。私に何かが起こった場合、私の上司は、 ERDDAPの開発を継続するという特定の目標を持った交代要員を雇います。さらに、私は非常にクリーンなコードを書こうとしています。
-JavaDocコメントを書きJava 。コードにコメントを書きます。変数名は慎重に選びました。私はJavaフォーマットのガイドラインに従います。これはすべて、コードを理解したり変更したりしたい他のプログラマーにとって、コードを読みやすくするための取り組みです。私にとっては、1、2年後には、コードの方法と理由の詳細を忘れてしまうからです。それがそうであったように書かれました。良いコメントのあるクリーンなコードは、 ERDDAPでの進行中の作業を容易にするので、良いコメントのあるクリーンなコードを書く大きなインセンティブがあります。
+将来、他の人がコードを提供してくれることを願っています。私に何かが起こった場合、私の上司は、 ERDDAPの開発を継続するという特定の目標を持った後任者を雇います。さらに、私は非常にクリーンなコードを書こうとしています。
+JavaDocコメントを書きJava 。コードにコメントを書きます。変数名は慎重に選びました。私はJavaフォーマットのガイドラインに従います。これはすべて、コードを理解したり変更したりしたい他のプログラマーにとって、コードを読みやすくするための努力です。私にとっては、1、2年後には、コードの方法と理由の詳細を忘れてしまうからです。それがそうであったように書かれました。良いコメントのあるクリーンなコードは、 ERDDAPでの進行中の作業を容易にするので、良いコメントのあるクリーンなコードを書く大きなインセンティブがあります。
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">しかし、これまでの私の答えはすべてそれほど重要ではありません。</a>本当に重要なことは1つだけです。
 ERDDAPまたは任意のソフトウェアプロジェクトの持続可能性を保証するのは1つだけです。それは、 ERDDAPが<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">フリーでオープンソースのソフトウェア（FOSS）</a>であることです。
 <a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software"><img 
@@ -4759,7 +4765,7 @@ ERDDAPまたは任意のソフトウェアプロジェクトの持続可能性�
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 。具体的には、 ERDDAPは<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">Apache互換のソフトウェアライセンス</a>を使用します<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、したがって、誰でもコードを使ってやりたいことが何でもできます。
-<p>なぜそれが重要なのですか？大企業がその背後にあるので、ソフトウェアは将来確実に利用可能になると思うかもしれません。しかし、例えば、グーグルは多くのプロジェクトを中止しました（
+<p>なぜそれが重要なのですか？大企業がその背後にあるので、ソフトウェアは将来確実に利用可能になると思うかもしれません。しかし、たとえば、Googleは多くのプロジェクトを中止しました（
 <a rel="bookmark"
 href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_products_and_services"
 >ここにリストがあります<img 
@@ -4770,11 +4776,11 @@ Appleはプロジェクトを中止しました。
 ...要点は、大企業の支援を受けただけでは、プロジェクトが継続するという保証はないということです。そのソフトウェアのユーザーは、そのソフトウェアがフリーでオープンソースのソフトウェア（FOSS）で<strong>ない限り</strong>、運が悪いです。そうすれば、1人の開発者でも関心があるときはいつでも、プロジェクトは進化し続けることができます。
 FOSSは保険証券です。実際、FOSSは重要な唯一の保険契約であり、唯一の保証です。
 FOSSは、ソフトウェアを前進させる方法が常にあることを保証します。それは誰も奪うことができない権利です。
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">また、開発者の大規模なチームを持つソフトウェアは、1人の主要な開発者を持つソフトウェアよりも持続可能であると考えるかもしれません</a>。しかし、多くの開発者は通常、多くの資金を必要とします。私は、10人の開発者がいる有名で適度に大規模なプロジェクトを知っています（名前を付けても困惑することはありません）。彼らには十分な資金がないため、プロジェクトを停止するという深刻な危険が常にあります。彼らは助成金に依存しています。彼らは常に赤字を出します。彼らの常連客はいつも土壇場で彼らを救い出しましたが、彼らを救い出すことに本当にうんざりしています。したがって、彼らが年間100万ドルの助成金を集めることができない場合（または、常連客が彼らを救済することに飽き飽きしている場合）、彼らはやめます。そして、グループは10人未満の開発者を持つことを想像することはできません。各開発者には、グループ内で果たすべき役割があります。それを踏まえると、 ERDDAPは、他の数人の非公式な支援を受けて、たった1人の主要な開発者（完全に資金提供されている）によって積極的に開発される可能性があり、積極的に開発されていることを示す素晴らしい兆候だと思います。実際、 ERDDAPに複数の開発者が必要な場合は、悪い兆候になります。
-ERDDAPの主要な開発者が1人だけであるということは、それが大規模な継続的な資金を必要とする大きなタスクではないことを意味します。それは最小限の労力と資金を必要とする比較的小さなタスクです。それはより持続可能であり、少なくはありません。
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">また、開発者の大規模なチームを持つソフトウェアは、1人の主要な開発者を持つソフトウェアよりも持続可能であると考えるかもしれません</a>。しかし、多くの開発者は通常、多くの資金を必要とします。私は、10人の開発者がいる有名で適度に大規模なプロジェクトを知っています（名前を付けても恥ずかしくない）。彼らには十分な資金がないため、プロジェクトを停止するという深刻な危険が常にあります。彼らは助成金に依存しています。彼らは常に赤字を出します。彼らの常連客はいつも土壇場で彼らを救い出しましたが、彼らを救い出すことに本当にうんざりしています。したがって、彼らが年間100万ドルの助成金を集めることができない場合（または、常連客が彼らを救済することに飽き飽きしている場合）、彼らはやめます。そして、グループは10人未満の開発者を持つことを想像することはできません。各開発者には、グループ内で果たすべき役割があります。それを踏まえると、 ERDDAPは、他の数人の非公式な支援を受けて、たった1人の主要な開発者（完全に資金提供されている）によって積極的に開発される可能性があり、積極的に開発されていることを示す素晴らしい兆候だと思います。実際、 ERDDAPに複数の開発者が必要な場合は、悪い兆候になります。
+ERDDAPには主要な開発者が1人しかいないということは、それが大規模な継続的な資金を必要とする大きなタスクではないことを意味します。それは最小限の労力と資金を必要とする比較的小さな仕事です。それはより持続可能であり、少なくはありません。
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">ソフトウェアを書くために契約会社を雇うのは良い考えだと思うかもしれません。</a>有料で、彼らは開発者を提供し、継続性を約束します（これは彼らが廃業しない限り/廃業するまでは良いことです）。しかし、彼らはまたあなたをバレル以上に持っています：ソフトウェアがFOSSであり、あなたがコードで作業するために彼らに支払うだけで<strong>ない限り</strong>、あなたは彼らが要求するものを彼らに支払う必要があります。
 FOSSを使用すると、前進する方法を常に選択できます。
-ERDDAPはFOSSであるため、 ERDDAPに関しては、請負業者は常にあなたや誰にとっても良い選択肢です。私（1人の主要な開発者）に何かが起こった場合、またはあなたが望む変更を加える時間がない場合、または私引退して、私の交代要員の仕事が気に入らない場合は、いつでも請負業者を雇って、必要な変更を加えることができます（または自分で変更することができます）。
+ERDDAPはFOSSであるため、 ERDDAPに関しては、請負業者は常にあなたや誰にとっても良い選択肢です。私（1人の主要な開発者）に何かが起こった場合、またはあなたが望む変更を加える時間がない場合、または私引退して、私の交代要員の仕事が気に入らない場合は、いつでも契約会社を雇って、必要な変更を加えることができます（または自分で変更することもできます）。
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">要約すると、 ERDDAPには、最も重要な2つの持続可能性機能があります。</a>
 <ol>
 <li>ERDDAPは小さなプロジェクトであるため（1人の主要な開発者が他の数人の非公式な支援を受けて処理できるほど小さい）、大量のリソースを必要としません。
@@ -4793,7 +4799,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
   >RSS</a> 。メタデータには、データセットに必要な、または推奨される引用形式が含まれる場合があります。
 「ライセンス」メタデータには、データの使用に関する制限が記載されている場合があります。
 <p>データセットの引用を生成するには：
-<br>データセットを科学記事と考える場合は、著者（「creator_name」または&quot;institution&quot;メタデータを参照）、データをダウンロードした日付、タイトル（ &quot;title&quot;メタデータを参照）に基づいて引用を生成できます。
+<br>データセットを科学論文と考える場合は、著者（「creator_name」または&quot;institution&quot;メタデータを参照）、データをダウンロードした日付、タイトル（ &quot;title&quot;メタデータを参照）に基づいて引用を生成できます。
 ）、および発行者（「publisher_name」メタデータを参照）。可能であれば、データのダウンロードに使用した特定のURLを含めてください。データセットのメタデータに<a rel="help" 
   href="https://en.wikipedia.org/wiki/Digital_object_identifier"
   >デジタルオブジェクト識別子（ DOI ）</a>が含まれている場合<a rel="help" 
@@ -4810,7 +4816,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。カリフォルニア州モントレ�
 <br>「 ERDDAP 」は以前は頭字語でしたが、元の説明よりも大きくなりました。さて、頭字語ではなく名前として考えてください。
 <br>&nbsp;
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">データ配信システムのガイドライン</a></strong>
-<br>データ配布システムの設計と評価に関するボブの意見は、<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">ここ</a>にあります。
+<br>データ配信システムの設計と評価に関するボブの意見は、<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">ここ</a>にあります。
 <br>&nbsp;
 <p><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>独自のERDDAPサーバーをセットアップ</strong></a>して、独自のデータを提供<strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">でき</a></strong>ます。
 <ul>
@@ -5171,6 +5177,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

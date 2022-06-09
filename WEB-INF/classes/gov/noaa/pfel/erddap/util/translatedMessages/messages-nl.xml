@@ -3201,7 +3201,9 @@ Om een orderBy functie te gebruiken, selecteert u een functie aan de linkerkant,
 Om geen orderBy functie te gebruiken, kiest u de eerste optie links (&quot;&quot;).
 De orderBy ...
 functies zijn:
-<p><strong>orderBy</strong> sorteert de rijen van de resultatentabel op de opgegeven variabelen.
+<p><strong>orderBy</strong> sorteert de rijen van de resultatentabel op de opgegeven variabelen, in oplopende volgorde.
+orderBy(&quot;stationID, time&quot;) sorteert de resultaten bijvoorbeeld primair op stationID en secundair op tijd.
+<p><strong>orderBy Descending</strong> sorteert de rijen van de resultatentabel op de opgegeven variabelen, in aflopende volgorde.
 orderBy(&quot;stationID, time&quot;) sorteert de resultaten bijvoorbeeld primair op stationID en secundair op tijd.
 <p><strong>orderByClosest</strong> sorteert de rijen van de resultatentabel op de opgegeven variabelen.
 De laatste variabele moet een numerieke variabele zijn met een deler.
@@ -5081,7 +5083,7 @@ Dit kan verwijzen naar &erddapUrl;, &ssUse; .
 <li><a rel="bookmark" href="#subscriptions">ERDDAP biedt e-mail/URL- en RSS -abonnementsdiensten.</a>
 <li><a rel="bookmark" href="#diverseSources">ERDDAP is een webapplicatie en een webservice.</a>
 <li><a rel="bookmark" href="#rest">ERDDAP heeft links in REST en ROA -stijl om zijn diensten beschikbaar te maken voor computerprogramma&#39;s.</a>
-<li><a rel="bookmark" href="#security">Beveiliging</a>
+<li><a rel="bookmark" href="#security">Veiligheid</a>
 <li><a rel="bookmark" href="#chunks">ERDDAP verwerkt data in chunks.</a>
 <li><a rel="bookmark" href="#modular">ERDDAP is modulair opgebouwd.</a>
 <li><a rel="bookmark" href="#pushPull">Gegevensverspreiding / gegevensdistributienetwerken:
@@ -5099,7 +5101,7 @@ Wat is het verschil?</a>
 <li><a rel="bookmark" href="#acronym">Waar staat de afkorting &quot;ERDDAP&quot; voor?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Richtlijnen voor datadistributiesystemen</a>
 <li><a rel="bookmark" href="#setup">U kunt uw eigen ERDDAP -server opzetten.</a>
-<li><a rel="bookmark" href="#contact">Neem contact op</a>
+<li><a rel="bookmark" href="#contact">Neem contact met ons op</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">De problemen die ERDDAP probeert op te lossen</a></h2>
 Zonder ERDDAP, wanneer een persoon (of een computerprogramma) op internet zoekt naar een specifiek type wetenschappelijke gegevens (bijvoorbeeld gegevens over de temperatuur van het zeeoppervlak van de satelliet), zijn er problemen ...
@@ -5200,7 +5202,7 @@ ERDDAP biedt ook formulieren voor gegevenstoegang (webpagina&#39;s) waarmee mens
     >NOAA &#39;s technische aanbevelingen voor gegevenstoegang <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> en een
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS)-standaard <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> .
@@ -5260,7 +5262,7 @@ Dit is handig bij het maken van afbeeldingen met kaarten of tijdreeksen en bij h
 .esriAscii, .geoJson en .kml ).
 <p>Twee veel voorkomende normen voor het schrijven van maateenheden zijn:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (externe link)&quot;title=&quot;Deze link naar een externe website vormt geen goedkeuring.&quot;&gt; - van
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (externe link)&quot;title=&quot;Deze link naar een externe website vormt geen goedkeuring.&quot;&gt; - van
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Deze link naar een externe website houdt geen goedkeuring in."></a>, die wordt gebruikt in
@@ -5649,6 +5651,18 @@ Bedankt, Marco!
 <br>ERDDAP accepteert nu verzoeken voor .transparentPng&#39;s wanneer de breedte- en/of lengtegraadwaarden gedeeltelijk of volledig buiten bereik zijn.
 (Dit was ERDDAP GitHub Issues #19, gepost door Rob Fuller -- bedankt voor het plaatsen ervan, Rob.) De code om dit op te lossen is geschreven door Chris John.
 Dank je, Kris!
+<br>&nbsp;
+<li>Base64-afbeeldingsgegevens weergeven in .htmlTable reacties
+<br>De code voor het weergeven van base64-afbeeldingsgegevens in .htmlTable reacties is bijgedragen door Marco Alba van ETT / EMODnet Physics.
+Bedankt, Marco Alba!
+<br>&nbsp;
+<li>Verbetering van nThreads
+<br>Het nThreads-systeem voor EDDTableFromFiles is aanzienlijk verbeterd.
+Deze veranderingen leiden tot een enorme snelheidsverbetering (bijv.
+2X speedup wanneer nThreads is ingesteld op 2 of meer) voor de meest uitdagende verzoeken (wanneer een groot aantal bestanden moet worden verwerkt om de resultaten te verzamelen).
+Deze veranderingen zullen ook leiden tot een algemene versnelling in ERDDAP .
+De code voor deze wijzigingen is bijgedragen door Chris John.
+Dank je, Kris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5770,7 +5784,7 @@ Dan hebben mensen een andere manier om toegang te krijgen tot uw gegevens en kun
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >meerdere ERDDAP &#39;s installeren die samenwerken</a> om op te schalen en te voldoen aan de behoeften van een groot datadistributiecentrum.
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Neem contact op</a></h2>
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Neem contact met ons op</a></h2>
 Als u vragen, suggesties of opmerkingen heeft over ERDDAP in het algemeen (niet deze specifieke ERDDAP installatie), stuur dan een e-mail naar <kbd>bob dot simons at noaa dot gov</kbd> en vermeld de ERDDAP URL die rechtstreeks verband houdt met uw vraag of opmerking.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Of u kunt lid worden van de ERDDAP Google Group / Mailing List</a> door naar
 <a rel="help"
@@ -6134,6 +6148,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

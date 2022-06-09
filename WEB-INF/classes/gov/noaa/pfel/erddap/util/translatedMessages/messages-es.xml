@@ -3287,34 +3287,35 @@ Por lo tanto, generalmente debe incluir restricciones (por ejemplo, tiempo míni
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
 Las funciones orderBy ...
-clasifican las filas de la tabla de resultados y, a veces, las agrupan y, a veces, las manipulan más.
-Para usar una función orderBy ..., seleccione una función a la izquierda, luego seleccione una o más variables a la derecha, luego opcionalmente agregue configuraciones de adición, por ejemplo, para variables numéricas, puede especificar variableName [/ divisor [timeUnits] [:
-offset] ].
-Para no usar ninguna función orderBy ..., elija la primera opción a la izquierda (&quot;&quot;).
+ordenan las filas de la tabla de resultados y, a veces, las agrupan y, a veces, las manipulan.
+Para usar una función orderBy ..., seleccione una función a la izquierda, luego seleccione una o más variables a la derecha, luego, opcionalmente, agregue configuraciones adicionales, por ejemplo, para variables numéricas, puede especificar variableName[/divisor[timeUnits][:offset] ] .
+Para no utilizar ninguna función orderBy ..., elija la primera opción a la izquierda (&quot;&quot;).
 Las funciones orderBy ...
 son:
-<p><strong>orderBy</strong> ordena las filas de la tabla de resultados por las variables especificadas.
-Por ejemplo, orderBy(&quot;stationID, time&quot;) ordena los resultados principalmente por stationID y, en segundo lugar, por tiempo.
+<p><strong>orderBy</strong> ordena las filas de la tabla de resultados por las variables especificadas, en orden ascendente.
+Por ejemplo, orderBy(&quot;stationID, time&quot;) ordena los resultados principalmente por ID de stationID y, en segundo lugar, por hora.
+<p><strong>orderBy Descending</strong> ordena las filas de la tabla de resultados por las variables especificadas, en orden descendente.
+Por ejemplo, orderBy(&quot;stationID, time&quot;) ordena los resultados principalmente por ID de stationID y, en segundo lugar, por hora.
 <p><strong>orderByClosest</strong> ordena las filas de la tabla de resultados por las variables especificadas.
-La última variable debe ser una variable numérica con divisor.
-Solo se conservarán las filas más cercanas al intervalo del divisor.
-Por ejemplo, orderByClosest(&quot;stationID, time/2hours&quot;) ordenará por stationID y time, pero solo devolverá las filas para cada stationID donde la última columna orderBy (tiempo) esté más cerca de los intervalos de 2 horas.
-<p><strong>orderByCount</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve el recuento del número de valores no perdidos para cada grupo.
-Por ejemplo, orderByCount(&quot;stationID, time/1day&quot;) ordenará por stationID y devolverá una fila para cada stationID para cada día, con un recuento del número de valores no perdidos para cada una de las otras variables.
-<p><strong>orderByLimit</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve las primeras nRows (según lo especificado por el último valor orderByLimit ) dentro de cada grupo.
+La última variable debe ser una variable numérica con un divisor.
+Solo se mantendrán las filas más cercanas al intervalo del divisor.
+Por ejemplo, orderByClosest(&quot;stationID, time/2hours&quot;) ordenará por stationID y time, pero solo devolverá las filas para cada stationID donde la última columna orderBy (hora) está más cerca de intervalos de 2 horas.
+<p><strong>orderByCount</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve el recuento de la cantidad de valores que no faltan para cada grupo.
+Por ejemplo, orderByCount(&quot;stationID, time/1day&quot;) ordenará por stationID y devolverá una fila para cada stationID para cada día, con un recuento de la cantidad de valores no faltantes para cada una de las otras variables.
+<p><strong>orderByLimit</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve las primeras nRows (según lo especificado por el último valor de orderByLimit ) dentro de cada grupo.
 Por ejemplo, orderByMax(&quot;stationID, time/1day, 10&quot;) ordenará por stationID y time, pero solo devolverá las primeras 10 filas para cada stationID para cada día.
 <p><strong>orderByMax</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve la fila dentro de cada grupo con el valor máximo de la última variable orderByMax en la solicitud.
-Por ejemplo, orderByMax(&quot;stationID, time/1day, temperature&quot;) las filas por stationID y cada día, pero solo devolverá la fila con el valor máximo de temperatura para cada stationID para cada día.
-<p><strong>orderBy Min</strong> es como orderByMax, pero solo mantiene la fila con el valor mínimo de la última variable orderBy Min.
+Por ejemplo, orderByMax(&quot;stationID, time/1day, temperature&quot;) las filas por stationID de estación y cada día, pero solo devolverá la fila con el valor máximo de temperatura para cada stationID de estación para cada día.
+<p><strong>orderBy Min</strong> es como orderByMax, pero solo mantiene la fila con el valor mínimo para la última variable orderBy Min.
 <p><strong>orderByMinMax</strong> es como orderBy Min más orderByMax .
 Dentro de cada grupo de clasificación, solo se mantendrá la fila con el valor mínimo y la fila con el valor máximo para la última variable orderByMinMax .
-Por ejemplo, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) devolverá la fila con el valor de temperatura mínima y la fila con el valor de temperatura máxima para cada stationID para cada día.
+Por ejemplo, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) devolverá la fila con el valor de temperatura mínimo y la fila con el valor de temperatura máximo para cada stationID de estación para cada día.
 <p><strong>orderByMean</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve una fila para cada grupo.
 Esa fila tendrá la media de cada una de las otras variables.
-Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día, y calculará y devolverá la media de las otras variables.
+Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día y calculará y devolverá la media de las otras variables.
 <p><strong>orderBy Sum</strong> ordena las filas de la tabla de resultados en grupos y solo devuelve una fila para cada grupo.
 Esa fila tendrá la suma de cada una de las otras variables.
-Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día, y calculará y devolverá la suma de las otras variables.
+Por ejemplo, orderByMax(&quot;stationID, time/1day&quot;) creará un grupo para cada stationID para cada día y calculará y devolverá la suma de las otras variables.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Para orderByClosest, especifique el intervalo (usando el formato n [timeUnits], por ejemplo, 1 hora) aquí.
@@ -5178,7 +5179,7 @@ Esto puede hacer referencia a &amp; erddapUrl ;, &amp; ssUse; .
 <li><a rel="bookmark" href="#problems">Los problemas que ERDDAP intenta resolver</a>
 <li><a rel="bookmark" href="#solutions">Soluciones ERDDAP</a>
 <ul>
-<li><a rel="bookmark" href="#video">Para una introducción rápida a ERDDAP, vea la primera mitad de este<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > vídeo</a> (5 minutos)
+<li><a rel="bookmark" href="#video">Para una introducción rápida a ERDDAP, vea la primera mitad de este<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > vídeo</a> (5 minutos)
 <li><a rel="bookmark" href="#localAndRemote">ERDDAP puede obtener datos de fuentes de datos locales (en el disco duro del servidor) y remotas (a las que se accede a través de la web).</a>
 <li><a rel="bookmark" href="#scientificData">ERDDAP puede servir muchos tipos de datos científicos, no solo datos oceanográficos.</a>
 <li><a rel="bookmark" href="#search">ERDDAP ofrece varias formas de buscar conjuntos de datos interesantes.</a>
@@ -5207,7 +5208,7 @@ DODS ?
 ¿Cual es la diferencia?</a>
 <li><a rel="bookmark" href="#sweetSpot">¿Es ERDDAP una solución a los problemas de distribución de datos/acceso a datos de todos?</a>
 <li><a rel="bookmark" href="#sustainable">¿Qué tan sostenible es el proyecto ERDDAP ?</a>
-<li><a rel="bookmark" href="#citeDataset">Cómo citar un conjunto de datos en un documento</a>
+<li><a rel="bookmark" href="#citeDataset">Cómo citar un conjunto de datos en un artículo</a>
 <li><a rel="bookmark" href="#cite">Cómo citar ERDDAP en un artículo</a>
 <li><a rel="bookmark" href="#acronym">¿Qué significa la sigla &quot;ERDDAP&quot;?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Directrices para los sistemas de distribución de datos</a>
@@ -5222,7 +5223,7 @@ Sin ERDDAP, cuando una persona (o un programa de computadora) busca en Internet 
 <li>Cada sitio requiere un protocolo diferente para solicitar los datos:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Cada sitio devuelve los datos en un formato diferente (por ejemplo, XML, SOAP+XML, flujo de datos binarios OPeNDAP, texto ASCII, HDF 4, HDF 5, NetCDF, ...) y no es el formato de archivo común que usted querer.
+<li>Cada sitio devuelve los datos en un formato diferente (por ejemplo, XML, SOAP+XML, flujo de datos binarios OPeNDAP, texto ASCII, HDF 4, HDF 5, NetCDF, ...) y no es el formato de archivo común que usted desear.
 <br>&nbsp;
 <li>Los datos de diferentes sitios son difíciles de comparar porque las fechas y las horas se expresan en diferentes formatos, por ejemplo, &quot;2 de enero de 1985&quot;, &quot;02-ENE-1985&quot;, &quot;2/1/85&quot;, &quot;1/2/85&quot;.
 &quot;,&quot;1985-01-02&quot;, o días desde el 1 de enero de 1980, o ...).
@@ -5230,7 +5231,7 @@ Sin ERDDAP, cuando una persona (o un programa de computadora) busca en Internet 
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Soluciones ERDDAP</a></h2>
 <ul>
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Para una introducción rápida a ERDDAP,</a>
-<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">vea la primera mitad de este<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
+<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">vea la primera mitad de este<img style="vertical-align:middle" alt="Youtube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este enlace a un sitio web externo no constituye un respaldo."></a> .</strong> (5 minutos)
 <br>En él, un científico descarga datos de pronóstico de corrientes oceánicas de ERDDAP para modelar un derrame tóxico en el océano utilizando
@@ -5313,7 +5314,7 @@ ERDDAP también proporciona formularios de acceso a datos (páginas web) que ayu
     >las recomendaciones técnicas de acceso a datos de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este enlace a un sitio web externo no constituye un respaldo."></a> y un
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >estándar del Sistema de Información y Datos de Ciencias de la Tierra (ESDIS) de la NASA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Este enlace a un sitio web externo no constituye un respaldo."></a> .
@@ -5372,7 +5373,7 @@ Esto es útil cuando se crean imágenes con mapas o series temporales y cuando s
 ej., .esriAscii, .geoJson y .kml ).
 <p>Dos estándares comunes para escribir unidades de medida son:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (enlace externo)&quot;title=&quot;Este enlace a un sitio web externo no constituye una aprobación.&quot;&gt; - de
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (enlace externo)&quot;title=&quot;Este enlace a un sitio web externo no constituye una aprobación.&quot;&gt; - de
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Este enlace a un sitio web externo no constituye un respaldo."></a>, que se utiliza en
@@ -5412,7 +5413,7 @@ puede especificar esto con la etiqueta <kbd>&lt;units_standard&gt;</kbd> en setu
 Puede convertir UDUNITS a/desde unidades ERDDAP con el convertidor de
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">unidades</a> de ERDDAP.
 Cuando solicita datos o un gráfico de un conjunto de
-<a href="&erddapUrl;/tabledap/index.html">datos tabledap</a>, puede agregar <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> o <kbd>&amp;units(&quot;UCUM&quot;)</kbd> al final de la URL para solicitar unidades UDUNITS o UCUM.
+<a href="&erddapUrl;/tabledap/index.html">datos tabledap</a>, puede agregar <kbd>&amp;units(&quot;UDUNITS&quot;)</kbd> o <kbd>&amp;units(&quot;UCUM&quot;)</kbd> al final de la URL para solicitar UDUNITS o unidades UCUM.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">más información</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP puede agregar o modificar metadatos.</a></strong>
@@ -5767,6 +5768,17 @@ fuente abierta con derechos de autor) por Marco Alba de ETT Solutions y EMODnet.
 (Este fue el número 19 de GitHub de ERDDAP, publicado por Rob Fuller; gracias por publicarlo, Rob).
 El código para solucionarlo fue escrito por Chris John.
 ¡Gracias, Chris!
+<br>&nbsp;
+<li>Mostrar datos de imagen base64 en respuestas .htmlTable
+<br>Marco Alba de ETT/EMODnet Physics contribuyó con el código para mostrar datos de imagen base64 en respuestas .htmlTable .
+¡Gracias Marco Alba!
+<br>&nbsp;
+<li>n Mejora de subprocesos
+<br>El sistema nThreads para EDDTableFromFiles se mejoró significativamente.
+Estos cambios conducen a una gran mejora de la velocidad (por ejemplo, 2X de aceleración cuando nThreads se establece en 2 o más) para las solicitudes más desafiantes (cuando se debe procesar una gran cantidad de archivos para recopilar los resultados).
+Estos cambios también conducirán a una aceleración general en todo ERDDAP .
+El código para estos cambios fue aportado por Chris John.
+¡Gracias, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5859,7 +5871,7 @@ Si los metadatos del conjunto de datos incluyen un
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
   title="Este enlace a un sitio web externo no constituye un respaldo."></a>, inclúyalo en la cita que cree.
 <br>&nbsp;
-<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cómo citar ERDDAP en un artículo</a></strong>
+<p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cómo citar ERDDAP en un documento</a></strong>
 <br>Si desea citar al propio ERDDAP en un artículo científico, utilice algo como
 <br><kbd>Simons, RA 2020.
 ERDDAP .
@@ -6246,6 +6258,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

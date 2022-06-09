@@ -76,7 +76,9 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>NONE
+  <li>NEW: The new server-side function, orderByDescending, works like
+    orderBy, but sorts in descending order.
+    Thanks to Adam Ledbetter.
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
@@ -91,11 +93,26 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
   <li>NEW: Now, if the data in a cell is a standard base64 encoded png (which starts with "data:image/png;base64,") 
     Thanks to Marco Alba (who contributed the code) and Bob Simons (who modified it slightly).
     <br>&nbsp;
+  <li>NEW: -doNotAddStandardNames --
+        If you include <kbd>-doNotAddStandardNames</kbd>
+        as a command line parameter when you run generateDatasetsXml, 
+        generateDatasetsXml will not add <kbd>standard_name</kbd> to the <kbd>addAttributes</kbd>
+        for any variables other than variables named <kbd>latitude, longitude, altitude, depth</kbd> or 
+        <kbd>time</kbd> (which have obvious standard_names).
+        This can be useful if you are using the output from generateDatasetsXml directly in 
+        ERDDAP without editing the output, because generateDatasetsXml often guesses
+        standard_names incorrectly. (Note that we always recommend that you 
+        do edit the output before using it in ERDDAP.) Using this parameter 
+        will have other minor related effects because the guessed standard_name
+        is often used for other purposes, e.g., to create a new long_name,
+        and to create the colorBar settings.
   <li>BUG FIX: For Docker users setting setup.xml parameters via ERDDAP_<i>paramName</i>: 
     for int and boolean parameters (e.g., emailSmtpPort), ERDDAP was incorrectly looking for just <i>paramName</i>.
     Now it looks for <i>ERDDAP_paramName</i>.
     Thanks to Alessandro De Donno.
-
+  <li>CHANGE: The ERDDAP testing system now uses an automated system to check that 
+    newly created test images are exactly as expected. Thanks to Chris John for the suggestion
+    and Bob Simons for the implementation.
   </ul>
 </ul>
 

@@ -3138,32 +3138,34 @@ Vous devez donc généralement inclure des contraintes (par exemple, le temps mi
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
 Les fonctions orderBy ...
-trient les lignes du tableau des résultats et parfois les regroupe et parfois les manipule davantage.
+trient les lignes du tableau des résultats et parfois les regroupent et parfois les manipulent davantage.
 Pour utiliser une fonction orderBy ..., sélectionnez une fonction à gauche, puis sélectionnez une ou plusieurs variables à droite, puis ajoutez éventuellement des paramètres supplémentaires, par exemple, pour les variables numériques, vous pouvez spécifier variableName[/divisor[timeUnits][:offset] ] .
-Pour n&#39;utiliser aucune fonction orderBy ..., choisissez la première option à gauche (&quot;&quot;).
+Pour ne pas utiliser de fonction orderBy ..., choisissez la première option à gauche (&quot;&quot;).
 Les fonctions orderBy ...
 sont :
-<p><strong>orderBy</strong> trie les lignes du tableau des résultats selon les variables spécifiées.
+<p><strong>orderBy</strong> trie les lignes du tableau des résultats selon les variables spécifiées, dans l&#39;ordre croissant.
 Par exemple, orderBy(&quot;stationID, time&quot;) trie les résultats principalement par stationID et secondairement par heure.
-<p><strong>orderByClosest</strong> trie les lignes du tableau des résultats selon les variables spécifiées.
+<p><strong>orderBy Descending</strong> trie les lignes du tableau de résultats selon les variables spécifiées, dans l&#39;ordre décroissant.
+Par exemple, orderBy(&quot;stationID, time&quot;) trie les résultats principalement par stationID et secondairement par heure.
+<p><strong>orderByClosest</strong> trie les lignes du tableau de résultats selon les variables spécifiées.
 La dernière variable doit être une variable numérique avec un diviseur.
 Seules les lignes les plus proches de l&#39;intervalle du diviseur seront conservées.
-Par exemple, orderByClosest(&quot;stationID, time/2hours&quot;) triera par stationID et time, mais ne renverra que les lignes pour chaque stationID où la dernière colonne orderBy (time) est la plus proche d&#39;intervalles de 2 heures.
+Par exemple, orderByClosest(&quot;stationID, time/2hours&quot;) triera par stationID et heure, mais ne renverra que les lignes pour chaque stationID où la dernière colonne orderBy (time) est la plus proche d&#39;intervalles de 2 heures.
 <p><strong>orderByCount</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement le nombre de valeurs non manquantes pour chaque groupe.
 Par exemple, orderByCount(&quot;stationID, time/1day&quot;) par stationID et renverra une ligne pour chaque stationID pour chaque jour, avec un décompte du nombre de valeurs non manquantes pour chacune des autres variables.
-<p><strong>orderByLimit</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement les premières nRows (comme spécifié par la dernière valeur orderByLimit ) dans chaque groupe.
-Par exemple, orderByMax(&quot;stationID, time/1day, 10&quot;) par stationID et time, mais ne renverra que les 10 premières lignes pour chaque stationID pour chaque jour.
-<p><strong>orderByMax</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement la ligne dans chaque groupe avec la valeur maximale de la dernière variable orderByMax dans la demande.
+<p><strong>orderByLimit</strong> trie les lignes de la table de résultats en groupes et renvoie simplement les premières nRows (comme spécifié par la dernière valeur orderByLimit ) dans chaque groupe.
+Par exemple, orderByMax(&quot;stationID, time/1day, 10&quot;) par stationID et heure, mais ne renverra que les 10 premières lignes pour chaque stationID pour chaque jour.
+<p><strong>orderByMax</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement la ligne de chaque groupe avec la valeur maximale de la dernière variable orderByMax de la requête.
 Par exemple, orderByMax(&quot;stationID, time/1day, temperature&quot;) regroupera les lignes par stationID et chaque jour, mais ne renverra que la ligne avec la valeur de température maximale pour chaque stationID pour chaque jour.
 <p><strong>orderBy Min</strong> est comme orderByMax, mais ne conserve que la ligne avec la valeur minimale pour la dernière variable orderBy Min.
 <p><strong>orderByMinMax</strong> est comme orderBy Min plus orderByMax .
-Au sein de chaque groupe de tri, seule la ligne avec la valeur minimale et la ligne avec la valeur maximale pour la dernière variable orderByMinMax seront conservées.
+Au sein de chaque groupe de tri, seules la ligne avec la valeur minimale et la ligne avec la valeur maximale de la dernière variable orderByMinMax seront conservées.
 Par exemple, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) renverra la ligne avec la valeur de température minimale et la ligne avec la valeur de température maximale pour chaque stationID pour chaque jour.
-<p><strong>orderByMean</strong> trie les lignes du tableau des résultats en groupes et renvoie juste une ligne pour chaque groupe.
+<p><strong>orderByMean</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement une ligne pour chaque groupe.
 Cette ligne aura la moyenne de chacune des autres variables.
 Par exemple, orderByMax(&quot;stationID, time/1day&quot;) créera un groupe pour chaque stationID pour chaque jour, et calculera et renverra la moyenne des autres variables.
-<p><strong>orderBy Sum</strong> trie les lignes du tableau des résultats en groupes et ne renvoie qu&#39;une ligne pour chaque groupe.
-Cette ligne aura la somme de chacune des autres variables.
+<p><strong>orderBy Sum</strong> trie les lignes du tableau des résultats en groupes et renvoie simplement une ligne pour chaque groupe.
+Cette ligne contiendra la somme de chacune des autres variables.
 Par exemple, orderByMax(&quot;stationID, time/1day&quot;) créera un groupe pour chaque stationID pour chaque jour, et calculera et renverra la somme des autres variables.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
@@ -5098,7 +5100,7 @@ C&#39;est implicite.)
 <a title="Service national des pêches maritimes" rel="bookmark" href="https://www.fisheries.noaa.gov">NMFS</a>
 <a title="Centre des sciences halieutiques du sud-ouest" rel="bookmark" href="https://www.fisheries.noaa.gov/about/southwest-fisheries-science-center">SWFSC</a>
 <a title="Division de la recherche environnementale" rel="bookmark" href="https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center">ERD</a> .
-Le serveur ERDDAP de l&#39; ERD sert les données océanographiques, mais l&#39; ERDDAP (le programme) peut accéder et servir toutes les données maillées ou tabulaires.
+Le serveur ERDDAP de l&#39; ERD sert des données océanographiques, mais ERDDAP (le programme) peut accéder et servir toutes les données maillées ou tabulaires.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="search" href="#search" rel="bookmark">ERDDAP propose plusieurs façons de rechercher des ensembles de données intéressants.</a></strong>
 <br>Par exemple, la recherche en
@@ -5113,7 +5115,7 @@ La recherche avancée combine toutes les techniques de recherche et ajoute des r
 <li>ERDDAP met à disposition des données maillées via griddap (implémentation ERDDAP
 <a rel="help" href="&erddapUrl;/griddap/index.html">du protocole OPeNDAP OPeNDAP</a>) et
 <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a> .
-<li>ERDDAP rend les données tabulaires disponibles via tabledap (ERDDAP implémentation par l&#39;
+<li>ERDDAP met à disposition des données tabulaires via tabledap (ERDDAP implémentation par l&#39;
 <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP du protocole de contrainte OPeNDAP</a>).
 <!--and
      
@@ -5133,7 +5135,7 @@ ERDDAP fournit également des formulaires d&#39;accès aux données (pages Web) 
     >recommandations techniques d&#39;accès aux données de la NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> et une
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >norme NASA Earth Science Data and Information System (ESDIS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> .
@@ -5190,7 +5192,7 @@ Cela facilite la comparaison des résultats de différentes sources de données.
 Ceci est utile lors de la création d&#39;images avec des cartes ou des séries chronologiques, et lors de l&#39;enregistrement de données dans des types de fichiers géo-référencés (par exemple, .esriAscii, .geoJson et .kml ).
 <p>Deux normes communes pour l&#39;écriture des unités de mesure sont :
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(lien externe)&quot; title=&quot;Ce lien vers un site Web externe ne constitue pas une approbation.&quot;&gt; - d&#39;
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(lien externe)&quot; title=&quot;Ce lien vers un site Web externe ne constitue pas une approbation.&quot;&gt; - d&#39;
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ce lien vers un site Web externe ne constitue pas une approbation."></a>, qui est utilisé dans
@@ -5249,7 +5251,7 @@ Voir la
  >ERDDAP vous permet de demander des fichiers image .png et .pdf avec des graphiques et des cartes</a></strong>
 <br>des données en plus des données réelles.
 Et Make A Graph de l&#39; ERDDAP vous permet de personnaliser les images.
-Certaines utilisations spéciales de ces images sont :
+Certaines utilisations spéciales de ces images sont :
 <ul>
 <li>Les auteurs de pages Web peuvent
 <a rel="help" href="&erddapUrl;/images/embed.html">intégrer un graphique avec les dernières données dans une page Web</a> à l&#39;aide d&#39;une balise HTML &lt;img&gt;.
@@ -5501,7 +5503,7 @@ Ce n&#39;est tout simplement pas vrai.
 Le positionnement de l&#39; ERDDAP pour la durabilité à long terme est excellent, et proche du meilleur possible.
 <p>Oui, je suis le principal développeur d&#39; ERDDAP .
 Je suis un employé fédéral entièrement financé.
-Mon financement n&#39;est pas de l&#39;argent &quot;soft&quot;, donc je ne reçois ni ne dépends de subventions.
+Mon financement n&#39;est pas de l&#39;argent &quot;soft&quot;, donc je ne reçois pas ou ne compte pas sur des subventions.
 Je passe plus de la moitié de mon temps à développer ERDDAP .
 Le reste de mon temps est consacré à la gestion des jeux de données.
 Ce travail est utile pour ERDDAP car j&#39;ai besoin de travailler avec de vrais ensembles de données afin de savoir en détail ce que ERDDAP doit faire.
@@ -5572,7 +5574,18 @@ Merci Marco!
 <br>&nbsp;
 <li>Requêtes .transparentPng hors plage
 <br>ERDDAP accepte désormais les demandes de .transparentPng lorsque les valeurs de latitude et/ou de longitude sont partiellement ou totalement hors plage.
-(Il s&#39;agissait du numéro 19 du problème ERDDAP GitHub, publié par Rob Fuller -- merci de l&#39;avoir publié, Rob.) Le code pour résoudre ce problème a été écrit par Chris John.
+(Il s&#39;agissait du numéro 19 du problème ERDDAP GitHub, publié par Rob Fuller - merci de l&#39;avoir publié, Rob.) Le code pour résoudre ce problème a été écrit par Chris John.
+Merci Chris!
+<br>&nbsp;
+<li>Afficher les données d&#39;image base64 dans les réponses .htmlTable
+<br>Le code d&#39;affichage des données d&#39;image base64 dans les réponses .htmlTable a été fourni par Marco Alba de ETT / EMODnet Physics.
+Merci Marco Alba!
+<br>&nbsp;
+<li>nThreads Amélioration
+<br>Le système nThreads pour EDDTableFromFiles a été considérablement amélioré.
+Ces modifications entraînent une amélioration considérable de la vitesse (par exemple, une accélération 2X lorsque nThreads est défini sur 2 ou plus) pour les requêtes les plus difficiles (lorsqu&#39;un grand nombre de fichiers doivent être traités pour recueillir les résultats).
+Ces changements conduiront également à une accélération générale dans l&#39;ensemble ERDDAP .
+Le code de ces changements a été fourni par Chris John.
 Merci Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -5693,7 +5706,7 @@ Ensuite, les gens auront un autre moyen d&#39;accéder à vos données et pourro
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Nous contacter</a></h2>
 Si vous avez des questions, des suggestions ou des commentaires sur ERDDAP en général (et non sur cette installation ERDDAP spécifique), veuillez envoyer un e-mail à <kbd>bob dot simons at noaa dot gov</kbd> et inclure l&#39;URL ERDDAP directement liée à votre question ou commentaire.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou, vous pouvez rejoindre le groupe Google / la liste de diffusion ERDDAP</a> en visitant
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou, vous pouvez rejoindre le groupe Google / liste de diffusion ERDDAP</a> en visitant
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -6052,6 +6065,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

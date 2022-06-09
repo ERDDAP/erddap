@@ -3669,9 +3669,13 @@ for numeric variables, you may specify variableName[/divisor[timeUnits][:offset]
 To not use any orderBy... function, choose the first option at left ("").
 The orderBy... functions are:
 
-<p><strong>orderBy</strong> sorts the rows of the results table by the specified variables. 
-For example, orderBy("stationID, time") sorts the results primarily by stationID and
-secondarily by time.
+<p><strong>orderBy</strong> sorts the rows of the results table by the specified variables,
+in ascending order.  For example, orderBy("stationID, time") sorts the results 
+primarily by stationID and secondarily by time.
+
+<p><strong>orderByDescending</strong> sorts the rows of the results table by the 
+specified variables, in descending order. For example, orderBy("stationID, time") 
+sorts the results primarily by stationID and secondarily by time.
 
 <p><strong>orderByClosest</strong> sorts the rows of the results table by the specified variables. 
 The last variable must be a numerical variable with a divisor.
@@ -4769,6 +4773,7 @@ Usually, the parameter values in the URL (the parts after '=' signs) must be pro
 <queryErrorOrderByLimit>For orderByLimit, you must specify a CSV list of 0 or more orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]) plus the maximum number of rows for each group (e.g., "stationID,time/1day,10").</queryErrorOrderByLimit>
 <queryErrorOrderByMean>For orderByMean, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderByMean>
 <queryErrorOrderBySum>For orderBySum, you must specify a CSV list of orderBy column names (each of which must be in the list of results variables; numeric columns may have columnName[/divisor[timeUnits][:offset]]), e.g., "stationID,time/10minutes".</queryErrorOrderBySum>
+
 <queryErrorOrderByVariable>orderBy variable={0} isn''t in the list of results variables.</queryErrorOrderByVariable>
 <queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
 
@@ -6179,7 +6184,7 @@ offers several ways to search for interesting datasets.</a></strong>
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     and a
-    <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+    <a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>.
@@ -6818,6 +6823,20 @@ So far, these groups/people have contributed code to ERDDAP:
     Thank you, Chris!
   <br>&nbsp;
 
+<li>Display base64 image data in .htmlTable responses
+  <br>The code for displaying base64 image data in .htmlTable responses 
+    was contributed by Marco Alba of ETT / EMODnet Physics.
+    Thank you, Marco Alba!
+  <br>&nbsp;
+
+<li>nThreads Improvement
+  <br>The nThreads system for EDDTableFromFiles was significantly improved. 
+    These changes lead to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
+    for the most challenging requests (when a large number of files must be processed to gather the results).
+    These changes will also lead to a general speedup throughout ERDDAP.
+    The code for these changes was contributed by Chris John. Thank you, Chris!
+  <br>&nbsp;
+
 
 <!-- This contributor's section above IDENTICAL in messages.xml and setup.html. -->
 </ul>
@@ -7365,6 +7384,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

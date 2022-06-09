@@ -2602,20 +2602,21 @@ Table DAP支持一些修改數據結果表的服務器端函數。它們是<stro
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
 orderBy ...
-函數對結果表的行進行排序，有時將它們分組，有時進一步操作它們。要使用orderBy ...
-函數，請在左側選擇一個函數，然後在右側選擇一個或多個變量，然後可選地添加加法設置，例如，對於數字變量，您可以指定 variableName[/divisor[timeUnits][:offset] ]。要不使用任何orderBy ...
+函數對結果表的行進行排序，有時對它們進行分組，有時對它們進行進一步操作。要使用orderBy ...
+函數，請在左側選擇一個函數，然後在右側選擇一個或多個變量，然後可選擇添加附加設置，例如，對於數值變量，您可以指定 variableName[/divisor[timeUnits][:offset] ] .要不使用任何orderBy ...
 函數，請選擇左側的第一個選項 (&quot;&quot;)。
 orderBy ...
-函數是：
-<p><strong>orderBy</strong>按指定的變量對結果表的行進行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序結果，其次按時間排序。
-<p><strong>orderByClosest</strong>按指定的變量對結果表的行進行排序。最後一個變量必須是一個帶除數的數值變量。只保留最接近除數間隔的行。例如， orderByClosest(&quot;stationID, time/2hours&quot;)將按stationID和時間排序，但只返回每個stationID的最後一個orderBy列（時間）最接近2 小時間隔的行。
-<p><strong>orderByCount</strong>將結果表的行排序為組，並只返回每個組的非缺失值數的計數。例如， orderByCount(&quot;stationID, time/1day&quot;)將按stationID stationID一行，併計算其他每個變量的非缺失值的數量。
-<p><strong>orderByLimit</strong>將結果表的行分類到組中，並只返回每個組中的前 nRows（由最後一個orderByLimit值指定）。例如orderByMax(&quot;stationID, time/1day, 10&quot;)將按stationID和 time 排序，但只返回每個stationID每天的前 10 行。
-<p><strong>orderByMax</strong>將結果表的行排序成組，並只返回每個組中具有請求中最後一個orderByMax變量的最大值的行。例如， orderByMax(&quot;stationID, time/1day, temperature&quot;)將按stationID和每天對行進行分組，但僅返回每個stationID每天具有最高溫度值的行。
-<p><strong>orderBy Min</strong>類似於orderByMax ，但只保留最後一個orderBy Min 變量具有最小值的行。
-<p><strong>orderByMinMax</strong>就像orderBy Min 加上orderByMax 。在每個排序組中，僅保留最後一個orderByMinMax變量具有最小值的行和具有最大值的行。例如， orderByMinMax(&quot;stationID, time/1day, temperature&quot;)將返回每個stationID每天溫度值最低的行和溫度值最高的行。
-<p><strong>orderByMean</strong>將結果表的行排序為組，並且只為每個組返回一行。該行將具有每個其他變量的平均值。例如， orderByMax(&quot;stationID, time/1day&quot;)將為每天的每個stationID創建一個組，併計算並返回其他變量的平均值。
-<p><strong>orderBy Sum</strong>將結果表的行排序為組，並且只為每個組返回一行。該行將包含每個其他變量的總和。例如orderByMax(&quot;stationID, time/1day&quot;)會為每天的每個stationID創建一個組，併計算並返回其他變量的總和。
+功能是：
+<p><strong>orderBy</strong>按指定變量按升序對結果表的行進行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序結果，其次按時間排序。
+<p><strong>orderBy Descending</strong>按指定變量以降序對結果表的行進行排序。例如， orderBy(&quot;stationID, time&quot;)主要按stationID排序結果，其次按時間排序。
+<p><strong>orderByClosest</strong>按指定變量對結果表的行進行排序。最後一個變量必須是帶有除數的數值變量。僅保留最接近除數間隔的行。例如， orderByClosest(&quot;stationID, time/2hours&quot;)將按stationID和時間排序，但僅返回每個stationID的最後一個orderBy列（時間）最接近 2 小時間隔的行。
+<p><strong>orderByCount</strong>將結果表的行分組並僅返回每個組的非缺失值數量的計數。例如， orderByCount(&quot;stationID, time/1day&quot;)將按stationID stationID一行，併計算每個其他變量的非缺失值的數量。
+<p><strong>orderByLimit</strong>將結果表的行分組並僅返回每個組中的前 nRows（由最後一個orderByLimit值指定）。例如， orderByMax(&quot;stationID, time/1day, 10&quot;)將按stationID和時間排序，但每天只返回每個stationID的前 10 行。
+<p><strong>orderByMax</strong>將結果表的行分組並僅返回每個組中具有請求中最後一個orderByMax變量的最大值的行。例如， orderByMax(&quot;stationID, time/1day, temperature&quot;)將按stationID和每天對行進行分組，但僅返回每個stationID每天的最大溫度值的行。
+<p><strong>orderBy Min</strong>類似於orderByMax ，但只保留最後一個orderBy Min 變量的最小值的行。
+<p><strong>orderByMinMax</strong>就像orderBy Min 加上orderByMax 。在每個排序組中，僅保留最後一個orderByMinMax變量的最小值行和最大值行。例如， orderByMinMax(&quot;stationID, time/1day, temperature&quot;)將返回每個stationID每天的最低溫度值行和最高溫度值行。
+<p><strong>orderByMean</strong>將結果表的行分組，並為每個組返回一行。該行將具有其他每個變量的平均值。例如， orderByMax(&quot;stationID, time/1day&quot;)將為每天的每個stationID創建一個組，並將計算並返回其他變量的平均值。
+<p><strong>orderBy Sum</strong>將結果表的行分組，並且只為每個組返回一行。該行將包含每個其他變量的總和。例如， orderByMax(&quot;stationID, time/1day&quot;)將為每天的每個stationID創建一個組，並將計算並返回其他變量的總和。
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 對於orderByClosest ，請在此處指定間隔（使用格式 n[timeUnits]，例如 1 小時）。
@@ -4241,7 +4242,7 @@ title="此指向外部網站的鏈接不構成認可。" /></a> .
 <li>每個站點都需要不同的協議來請求數據：
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>每個站點以不同的格式返回數據（例如，XML、 SOAP+XML 、 OPeNDAP二進制數據流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF等），這不是您常用的文件格式想。
+<li>每個站點以不同的格式返回數據（例如，XML、 SOAP+XML 、 OPeNDAP二進制數據流、ASCII 文本、 HDF 4、 HDF 5、 NetCDF ，...），這不是您常用的文件格式想。
 <br>&nbsp;
 <li>來自不同站點的數據很難比較，因為日期+時間以不同的格式表示，例如，“1985 年 1 月 2 日”、“02-JAN-1985”、“85 年 1 月 2 日”、“85 年 2 月 1 日” &quot;、&quot;1985-01-02&quot;或自 1980 年 1 月 1 日以來的天數，或 ...)。
 </ul>
@@ -4303,7 +4304,7 @@ ERDDAP還提供數據訪問表單（網頁），幫助人們創建OPeNDAP請求�
     >NOAA的數據訪問技術建議</a>之一<a rel="bookmark" href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendations#Software_implementations"
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="此指向外部網站的鏈接不構成認可。"></a>和<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+    title="此指向外部網站的鏈接不構成認可。"></a>和<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA 地球科學數據和信息系統 (ESDIS) 標準<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> .
@@ -4341,7 +4342,7 @@ ERDDAP是為這些添加而構建的，似乎沒有任何障礙。
 <p>因為經度、緯度、高度和時間變量是專門識別的， ERDDAP知道每個數據集的地理/時間特徵。這在使用地圖或時間序列製作圖像以及將數據保存為地理參考文件類型（例如，.esriAscii、.geoJson 和.kml ）時很有用。
 <p>編寫度量單位的兩個常見標準是：
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(external link)&quot; title=&quot;此指向外部網站的鏈接不構成背書。&quot;&gt; - 來自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(external link)&quot; title=&quot;此指向外部網站的鏈接不構成認可。&quot;&gt; - 來自<a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> ，用於<a rel="help" href="https://ferret.pmel.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4368,7 +4369,7 @@ ERDDAP是為這些添加而構建的，似乎沒有任何障礙。
       title="此指向外部網站的鏈接不構成認可。"></a>通常將 UCUM 稱為 UOM（計量單位）。例如，UCUM 對於攝氏度只有一個區分大小寫的選項： &quot;Cel&quot; 。
 <br>&nbsp;
 </ul>
-儘管ERDDAP不需要使用任何一種單位標準，但大多數ERDDAP安裝都偏愛其中一種。
+儘管ERDDAP不要求使用任何一種單位標準，但大多數ERDDAP安裝偏愛其中一種。
 （ ERDDAP管理員：您可以使用 setup.xml 中的<kbd>&lt;units_standard&gt;</kbd>標記指定此項。）您可以使用ERDDAP的<a rel="bookmark" href="&erddapUrl;/convert/units.html">單位轉換器</a>將UDUNITS轉換為/從 UCUM 單位。當您從<a href="&erddapUrl;/tabledap/index.html">tabledap dataset</a>請求數據或圖形時，您可以將<kbd>&amp;units(&quot;UDUNITS&quot;)</kbd>或<kbd>&amp;units(&quot;UCUM&quot;)</kbd>附加到 URL 的末尾以請求UDUNITS或 UCUM 單位。<a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">更多信息</a>
 <br>&nbsp;
 <li><strong><a class="selfLink" id="metadata" href="#metadata" rel="bookmark">ERDDAP可以添加或修改元數據。</a></strong>
@@ -4421,7 +4422,7 @@ ERDDAP的 Make A Graph 可讓您自定義圖像。這些圖像的一些特殊用
       title="此指向外部網站的鏈接不構成認可。"></a>程式）。
 <li>這使得數據查詢更容易構建。
 <li>這使得數據響應具有簡單的結構，從而更容易以更廣泛的標准文件類型（通常只支持簡單的數據結構）提供數據。這是我們以這種方式設置ERDDAP的主要原因。
-<li>這反過來又讓我們（或任何人）很容易編寫適用於所有ERDDAP數據集的客戶端軟件。
+<li>這反過來又使我們（或任何人）很容易編寫適用於所有ERDDAP數據集的客戶端軟件。
 <li>這使得比較來自不同來源的數據變得更加容易，例如綜合生態系統分析 (IEA)。
 <li>我們非常清楚，如果您習慣於使用其他數據結構中的數據，您最初可能會認為這種方法過於簡單或不夠充分。但是所有數據結構都有權衡。沒有一個是完美的。即使是全能結構也有其缺點：使用它們很複雜，並且只能使用特殊的軟件庫來寫入或讀取文件。如果您接受ERDDAP的方法足以嘗試使用它，您可能會發現它有其優勢（特別是對可以保存數據響應的多種文件類型的支持）。
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">最初的ERDDAP幻燈片</a>（尤其是<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">數據結構幻燈片</a>）討論了這些問題。
@@ -4436,7 +4437,7 @@ ERDDAP的 Make A Graph 可讓您自定義圖像。這些圖像的一些特殊用
 <li>ERDDAP不太擅長檢測表格數據集的更改，因為添加新數據時元數據通常沒有更改。
 <li>ERDDAP將檢測數據集是否不可用（但可能不會立即）。
 <li>ERDDAP將檢測該數據集何時再次可用。
-<li>ERDDAP不對這些服務的適用性或準確性做出任何承諾（請參閱<a rel="license" href="&erddapUrl;/legal.html">ERDDAP的免責聲明</a>）。
+<li>ERDDAP不承諾這些服務的適用性或準確性（請參閱<a rel="license" href="&erddapUrl;/legal.html">ERDDAP的免責聲明</a>）。
 </ul>
 <p><strong><a rel="help" href="&erddapUrl;/subscriptions/index.html">電子郵件/URL</a>訂閱</strong>（在某些ERDDAP安裝中不可用） 每當數據集更改時，電子郵件/URL 訂閱系統將<strong>立即</strong>向您發送電子郵件或聯繫您指定的 URL。某些ERDDAP安裝不提供電子郵件/URL 訂閱。要設置電子郵件/URL 訂閱，請單擊其中一個信封圖標<img alt="Subscribe" style="vertical-align:top" title="信封圖標。" src="&erddapUrl;/images/envelope.gif" >如果此ERDDAP安裝支持電子郵件/URL 訂閱，則顯示在帶有數據集列表的ERDDAP網頁的最右側（<a rel="contents" href="&erddapUrl;/info/index.html">示例</a>）以及數據訪問表單和製作單個數據集的圖表網頁（<a href="&erddapUrl;/griddap/etopo180.html">示例</a>）。
 （計算機程序員：如果您編寫 Web 服務，您可以使用 URL 系統讓ERDDAP在數據集更改時立即通知您的 Web 服務。）
@@ -4524,7 +4525,7 @@ ERDDAP作為通用數據服務器，不會試圖與這些專用數據服務器�
 <br>聽說ERDDAP主要由一個人（我，Bob Simons）開發，有些人感到驚訝和失望。
 [順便說一下，這個網頁上的觀點是我的個人觀點，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。]他們擔心如果我發生什麼事， ERDDAP就會結束。那明顯是錯的。
 ERDDAP對長期可持續性的定位非常好，並且接近於它可能達到的最佳狀態。
-<p>是的，我是ERDDAP的主要開發者。我是一名資金充足的聯邦僱員。我的資金不是“軟”錢，所以我不接受或依賴贈款。我花了一半以上的時間來開發ERDDAP 。我剩下的時間都花在管理數據集上。這項工作對ERDDAP很有用，因為我需要使用真實的數據集才能詳細了解ERDDAP需要做什麼。我的老闆完全支持我在ERDDAP上的工作，因為它完成了我受聘要做的事情：讓漁業科學家（主要是，但實際上是每個人）更容易從不同來源獲取科學數據。
+<p>是的，我是ERDDAP的主要開發者。我是一名資金充足的聯邦僱員。我的資金不是“軟”錢，所以我不接受或依賴贈款。我花了一半以上的時間來開發ERDDAP 。我剩下的時間都花在管理數據集上。這項工作對ERDDAP很有用，因為我需要使用真實的數據集才能詳細了解ERDDAP需要做什麼。我的老闆完全支持我在ERDDAP上的工作，因為它完成了我受僱要做的事情：讓漁業科學家（主要是，但實際上是每個人）更容易從不同來源獲取科學數據。
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">軟件的神奇之處在於復制不需要任何成本。</a>因此，為了完成我的工作，我編寫ERDDAP供ERD使用。我認為這是我完成工作的最佳方式。僅這個原因就證明了開發ERDDAP的費用是合理的。
 （我認為可以證明ERDDAP為NOAA科學家節省的時間比我開發ERDDAP所花費的時間要多。時間=金錢。）但附帶的好處是任何其他組織都可以<a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">免費下載、安裝和使用ERDDAP</a><strong>來</strong>分發他們的科學數據。
@@ -4568,10 +4569,16 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 <li>超出範圍的 .transparentPng 請求
 <br>當緯度和/或經度值部分或完全超出範圍時， ERDDAP現在接受對 .transparentPng 的請求。
 （這是ERDDAP GitHub 問題 #19，由 Rob Fuller 發布——感謝 Rob 發布。）修復此問題的代碼由 Chris John 編寫。謝謝你，克里斯！
+<br>&nbsp;
+<li>在.htmlTable響應中顯示 base64 圖像數據
+<br>在.htmlTable響應中顯示 base64 圖像數據的代碼由 ETT / EMODnet Physics 的 Marco Alba 提供。謝謝你，馬可阿爾巴！
+<br>&nbsp;
+<li>nThreads 改進
+<br>EDDTableFromFiles 的 nThreads 系統得到了顯著改進。對於最具挑戰性的請求（當必須處理大量文件以收集結果時），這些更改導致了巨大的速度提升（例如，當 nThreads 設置為 2 或更多時，速度提高了 2 倍）。這些變化也將導致整個ERDDAP的總體加速。這些更改的代碼由 Chris John 提供。謝謝你，克里斯！
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
-我希望其他人將來會貢獻代碼。如果我發生了什麼事，我的老闆會僱傭一個替代者，其具體目標是繼續開發ERDDAP 。此外，我嘗試編寫非常乾淨的代碼。我寫Java Doc 註釋。我在代碼中寫註釋。我仔細選擇了變量名。我遵循Java格式指南。所有這一切都是為了使代碼更具可讀性，對於其他想要理解和/或更改它的程序員來說，對我來說，因為在一兩年內，我會忘記代碼的方式和原因的細節是這樣寫的。帶有良好註釋的干淨代碼使我在ERDDAP上的工作更容易，因此我有很大的動力來編寫帶有良好註釋的干淨代碼。
+我希望其他人將來會貢獻代碼。如果我發生了什麼事，我的老闆會僱傭一個替代者，其具體目標是繼續開發ERDDAP 。此外，我嘗試編寫非常乾淨的代碼。我寫Java Doc 註釋。我在代碼中寫註釋。我仔細選擇了變量名。我遵循Java格式指南。所有這一切都是為了使代碼更具可讀性，對於其他想要理解和/或更改它的程序員來說，對我來說，因為在一兩年內，我會忘記代碼的方式和原因的細節是這樣寫的。帶有良好註釋的干淨代碼使我在ERDDAP上的持續工作更容易，因此我有很大的動力來編寫帶有良好註釋的干淨代碼。
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">但到目前為止，我所有的答案都不是很重要。</a>只有一件事真的很重要。只有一件事可以保證ERDDAP或任何軟件項目的可持續性： ERDDAP是<a rel="bookmark" href="https://en.wikipedia.org/wiki/Free_and_open-source_software">免費和開源軟件 (FOSS) <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> .具體來說， ERDDAP使用<a rel="bookmark" href="https://en.wikipedia.org/wiki/Apache_License">Apache 兼容的軟件許可證<img 
@@ -4587,7 +4594,7 @@ href="https://en.wikipedia.org/wiki/List_of_Google_products#Discontinued_product
 關鍵是，僅僅得到一家大公司的支持並不能保證該項目將繼續進行。該軟件的用戶不走運，<strong>除非</strong>該軟件是（因此始終是）免費和開源軟件 (FOSS)。然後，只要有一個開發人員感興趣，該項目就可以並且將繼續發展。
 FOSS 是一種保險單。事實上，FOSS 是唯一重要的保險單，唯一的保證。
 FOSS 確保軟件始終有前進的方向。這是一項任何人都無法剝奪的權利。
-<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">人們也可能認為擁有大量開發人員團隊的</a>軟件將比擁有一個主要開發人員的軟件更具可持續性。但很多開發商通常需要大量資金。我知道一個有 10 名開發人員的著名的、相當大的項目（我不會通過命名他們來讓他們難堪），因為他們沒有足夠的資金，該項目一直處於停止該項目的嚴重危險中。他們依靠贈款。他們總是出現赤字。他們的讚助人總是在最後一刻救助他們，但真的厭倦了救助他們。因此，如果他們不能每年籌集一百萬美元的贈款（或者贊助人厭倦了救助他們），他們就會停止。而且該團隊無法想像擁有少於 10 名開發人員的情況。每個開發人員在他們的團隊中都可以發揮作用。鑑於此，在我看來，這是一個很好的跡象，即ERDDAP可以並且正在由一個主要開發人員（資金充足）在其他一些人的非官方協助下積極開發。事實上，如果ERDDAP需要多個開發人員，那將是一個不好的跡象。
+<p><a class="selfLink" id="largeTeam" href="#largeTeam" rel="bookmark">人們也可能認為擁有大量開發人員團隊的</a>軟件將比擁有一個主要開發人員的軟件更具可持續性。但很多開發商通常需要大量資金。我知道一個有 10 名開發人員的著名的、相當大的項目（我不會通過命名他們來讓他們難堪），因為他們沒有足夠的資金，該項目一直處於停止項目的嚴重危險中。他們依靠贈款。他們總是出現赤字。他們的讚助人總是在最後一刻救助他們，但真的厭倦了救助他們。因此，如果他們不能每年籌集一百萬美元的贈款（或者贊助人厭倦了救助他們），他們就會停止。而且該團隊無法想像擁有少於 10 名開發人員的情況。每個開發人員在他們的團隊中都可以發揮作用。鑑於此，在我看來，這是一個很好的跡象，即ERDDAP可以並且正在由一個主要開發人員（資金充足）在其他一些人的非官方協助下積極開發。事實上，如果ERDDAP需要多個開發人員，那將是一個不好的跡象。
 ERDDAP只有一個主要開發人員，這意味著這不是一項需要大量持續資金的艱鉅任務；這是一項相對較小的任務，需要最少的努力和資金。這是更可持續的，而不是更少。
 <p><a class="selfLink" id="contractingCompany" href="#contractingCompany" rel="bookmark">有人可能認為聘請承包公司編寫軟件是個好主意。</a>收費，他們將提供開發人員並承諾連續性（這很好，除非/直到他們倒閉）。但是他們也讓你吃不消：你必須按照他們的要求支付他們的費用，否則就沒有更多的開發，<strong>除非</strong>軟件是自由和開放源碼軟件，而你只是付錢給他們處理代碼。使用 FOSS，您始終可以選擇如何前進。因為ERDDAP是 FOSS，對於您或任何與ERDDAP的人來說，承包商始終是一個不錯的選擇：如果我（一個主要開發人員）發生任何事情，或者如果我沒有時間進行您想要的一些更改，或者我退休並且您不喜歡我的替代工作，您可以隨時聘請承包公司進行您想要的更改（或自己進行更改）。
 <p><a class="selfLink" id="sustainabilitySummary" href="#sustainabilitySummary" rel="bookmark">總之， ERDDAP具有兩個最重要的可持續性特徵：</a>
@@ -4627,7 +4634,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亞州蒙特雷： NOAA / 
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>設置自己的ERDDAP服務器</strong></a>並提供自己的數據。
 <ul>
 <li>建立ERDDAP的小努力帶來了很多好處。
-<li>如果您已經有一個用於分發數據的 Web 服務，您可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式訪問您的數據，並能夠以其他文件格式或圖形或地圖的形式下載數據。
+<li>如果您已經有一個用於分發數據的 Web 服務，您可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式來訪問您的數據，並且能夠以其他文件格式或圖形或地圖的形式下載數據。
 <li>如果您的數據集需求量很大，您可以安裝<a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >多個協同工作的ERDDAP</a>以擴大規模並滿足大型數據分發中心的需求。
@@ -4637,7 +4644,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亞州蒙特雷： NOAA / 
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">加入ERDDAP Google 群組/郵件列表</a><a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap"><img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
-  title="此指向外部網站的鏈接不構成認可。"></a>並點擊“申請會員”。成為會員後，您可以在此處發布您的問題或搜索以查看該問題是否已被提出和回答。
+  title="此指向外部網站的鏈接不構成認可。"></a>並點擊“申請會員”。成為會員後，您可以在那裡發布您的問題或搜索以查看該問題是否已被提出和回答。
 <p>免責聲明：本網頁上的觀點是 Bob Simons 的個人觀點，並不一定反映政府或National Oceanic and Atmospheric Administration的任何立場。
 ]]></theLongDescriptionHtml>
 <Then>然後</Then>
@@ -4980,6 +4987,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

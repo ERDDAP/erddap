@@ -3309,7 +3309,10 @@ offset] ].
 nào, hãy chọn tùy chọn đầu tiên ở bên trái (&quot;&quot;).
 Các hàm orderBy ...
 là:
-<p><strong>orderBy</strong> sắp xếp các hàng của bảng kết quả theo các biến được chỉ định.
+<p><strong>orderBy</strong> sắp xếp các hàng của bảng kết quả theo các biến được chỉ định, theo thứ tự tăng dần.
+Ví dụ:
+orderBy(&quot;stationID, time&quot;) sắp xếp các kết quả chủ yếu theo stationID và thứ hai theo thời gian.
+<p><strong>orderBy Descending</strong> sắp xếp các hàng của bảng kết quả theo các biến được chỉ định, theo thứ tự giảm dần.
 Ví dụ:
 orderBy(&quot;stationID, time&quot;) sắp xếp các kết quả chủ yếu theo stationID và thứ hai theo thời gian.
 <p><strong>orderByClosest</strong> sắp xếp các hàng của bảng kết quả theo các biến được chỉ định.
@@ -5270,7 +5273,7 @@ XML, SOAP+XML, luồng dữ liệu nhị phân OPeNDAP, văn bản ASCII, HDF 4,
 <h2><a class="selfLink" id="solutions" href="#solutions" rel="bookmark">Giải pháp của ERDDAP</a></h2>
 <ul>
 <li><strong><a class="selfLink" id="video" href="#video" rel="bookmark">Để được giới thiệu nhanh về ERDDAP,</a>
-<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">hãy xem nửa đầu của phần này<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > băng hình <img 
+<a rel="help" href="https://www.youtube.com/watch?v=18xZoXu1USM">hãy xem nửa đầu của phần này<img style="vertical-align:middle" alt="YouTube" src="&erddapUrl;/images/youtube.png" > video <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> .</strong> (5 phút)
 <br>Trong đó, một nhà khoa học tải dữ liệu dự báo dòng chảy đại dương từ ERDDAP để lập mô hình tràn chất độc trong đại dương bằng
@@ -5352,7 +5355,7 @@ ERDDAP cũng cung cấp Biểu mẫu truy cập dữ liệu (trang web) giúp co
     >Khuyến nghị Kỹ thuật Truy cập Dữ liệu của NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> và
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >tiêu chuẩn Hệ thống Thông tin và Dữ liệu Khoa học Trái đất (ESDIS) của NASA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> .
@@ -5417,7 +5420,7 @@ Tính bằng mét hay định nghĩa?) Hoặc định dạng dữ liệu thời 
 .esriAscii, .geoJson và .kml ).
 <p>Hai tiêu chuẩn phổ biến để viết các đơn vị đo lường là:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png &quot;alt =&quot; (liên kết ngoài) &quot;title =&quot; Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực.
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png &quot;alt =&quot; (liên kết bên ngoài) &quot;title =&quot; Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực.
 &quot;&gt; - từ
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5614,12 +5617,12 @@ Bạn có thể đặt ứng dụng khách RSS của mình để kiểm tra các
 <br>Các tính năng này có thể được sử dụng để xây dựng một dịch vụ web khác trên ERDDAP (làm cho ERDDAP thực hiện tất cả công việc!).
 ERDDAP không nhằm mục đích là một dịch vụ thăm dò / vẽ đồ thị dữ liệu cấp cao.
 Thay vào đó, ERDDAP nhằm cung cấp dịch vụ cho các trang web và chương trình đó.
-Vì vậy, nếu bạn có ý tưởng về một giao diện tốt hơn cho dữ liệu mà ERDDAP phân phát, chúng tôi khuyến khích bạn xây dựng ứng dụng web hoặc dịch vụ web của riêng mình và sử dụng ERDDAP làm nền tảng.
+Vì vậy, nếu bạn có ý tưởng về giao diện tốt hơn cho dữ liệu mà ERDDAP phân phát, chúng tôi khuyến khích bạn xây dựng ứng dụng web hoặc dịch vụ web của riêng mình và sử dụng ERDDAP làm nền tảng.
 Đọc thêm về Dịch vụ của ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">dành cho Chương trình Máy tính</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">Bảo mật</a></strong> - Theo mặc định, ERDDAP chạy như một máy chủ hoàn toàn công cộng, không có hệ thống đăng nhập và không có giới hạn truy cập dữ liệu.
-Tuy nhiên, quản trị viên ERDDAP có thể định cấu hình ERDDAP để hạn chế quyền truy cập vào một số hoặc tất cả các tập dữ liệu đối với người dùng đăng nhập và đã được chỉ định một số vai trò nhất định.
+Tuy nhiên, quản trị viên ERDDAP có thể định cấu hình ERDDAP để hạn chế quyền truy cập vào một số hoặc tất cả các bộ dữ liệu đối với người dùng đăng nhập và đã được chỉ định một số vai trò nhất định.
 ERDDAP có các phương thức tích hợp để xác thực (đăng nhập).
 Nếu cài đặt ERDDAP đã bật xác thực, sẽ có một liên kết&quot;đăng nhập&quot;ở đầu mỗi trang web.
 Người dùng không bao giờ phải đăng nhập để truy cập các bộ dữ liệu có sẵn công khai.
@@ -5642,14 +5645,14 @@ Từ quan điểm bộ nhớ, điều này cho phép nhiều yêu cầu lớn (m
 <br>&nbsp;
 <li><strong><a class="selfLink" id="modular" href="#modular" rel="bookmark">ERDDAP có cấu trúc mô-đun.</a></strong>
 <br>ERDDAP được cấu trúc để có thể dễ dàng thêm các thành phần khác nhau (ví dụ:
-một lớp để yêu cầu dữ liệu từ máy chủ SOS và lưu trữ dưới dạng bảng).
-Sau đó, thành phần mới có được tất cả các tính năng và khả năng của thành phần chính (ví dụ:
-hỗ trợ cho các yêu cầu OPeNDAP và khả năng lưu dữ liệu ở một số định dạng tệp phổ biến).
+một lớp để yêu cầu dữ liệu từ máy chủ SOS và lưu trữ nó dưới dạng bảng).
+Sau đó, thành phần mới có được tất cả các tính năng và khả năng của thành phần gốc (ví dụ:
+hỗ trợ các yêu cầu OPeNDAP và khả năng lưu dữ liệu ở một số định dạng tệp phổ biến).
 <br>&nbsp;
 <li><strong><a class="selfLink" id="pushPull" href="#pushPull" rel="bookmark">Truyền bá dữ liệu / Mạng phân phối dữ liệu:
 Công nghệ Push và Pull</a></strong>
 <br>Thông thường, ERDDAP hoạt động như một trung gian:
-nó nhận yêu cầu từ người dùng; lấy dữ liệu từ một nguồn dữ liệu từ xa; định dạng lại dữ liệu; và gửi nó cho người dùng.
+nó nhận yêu cầu từ người dùng; lấy dữ liệu từ một nguồn dữ liệu từ xa; định dạng lại dữ liệu; và gửi cho người dùng.
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Công nghệ Pull <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a> :
@@ -5662,8 +5665,8 @@ Bằng cách sử dụng các
 <a href="#subscriptions">dịch vụ đăng ký</a> của ERDDAP, các máy chủ dữ liệu khác có thể được thông báo ngay khi có dữ liệu mới để họ có thể yêu cầu dữ liệu (bằng cách kéo dữ liệu).
 ERDDAP
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> và
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> của ERDDAP sử dụng
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">hệ thống cờ</a> và dịch vụ đăng ký của ERDDAP để chúng sẽ được thông báo ngay lập tức khi có dữ liệu mới.
+<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> của ERDDAP sử dụng các dịch vụ đăng ký và
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">hệ thống cờ</a> của ERDDAP để chúng sẽ được thông báo ngay lập tức khi có dữ liệu mới.
 Bạn có thể kết hợp những điều này để tạo ra hiệu quả tuyệt vời:
 nếu bạn bọc Bản sao EDDGrid quanh tập dữ liệu EDDGrid FromErddap (hoặc bọc EDDTableCopy xung quanh tập dữ liệu EDDTableFromErddap), ERDDAP sẽ tự động tạo và duy trì bản sao cục bộ của tập dữ liệu ERDDAP khác.
 Bởi vì các dịch vụ đăng ký hoạt động ngay khi có dữ liệu mới, công nghệ đẩy phổ biến dữ liệu rất nhanh (trong vòng vài giây).
@@ -5716,8 +5719,8 @@ Và ngay cả khi bạn nghĩ rằng có hoặc sẽ có, sẽ còn rất lâu n
 Cho đến lúc đó, ERDDAP có sẵn ngay bây giờ để làm cho các máy chủ dữ liệu khác có thể tương tác và cung cấp dữ liệu ngay bây giờ.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP có thể xử lý nhiều / hầu hết các bộ dữ liệu, nhưng không phải tất cả.</a> Không phải là các bộ dữ liệu còn lại (ví dụ:
 dữ liệu mô hình sử dụng phép chiếu hình cầu lập phương) không quan trọng.
-Chỉ là mục tiêu của ERDDAP là trả về dữ liệu ở các định dạng tệp phổ biến (một số định dạng tệp khá đơn giản), loại trừ cấu trúc dữ liệu bên trong phức tạp hơn.
-Các nhóm nhà nghiên cứu làm việc với các cấu trúc dữ liệu phức tạp hơn thường đã có các máy chủ dữ liệu chuyên dụng và phần mềm máy khách chuyên dụng được tùy chỉnh theo nhu cầu của cộng đồng.
+Chỉ là mục tiêu của ERDDAP là trả về dữ liệu ở các định dạng tệp phổ biến (một số trong số đó khá đơn giản), loại trừ cấu trúc dữ liệu bên trong phức tạp hơn.
+Các nhóm nhà nghiên cứu làm việc với các cấu trúc dữ liệu phức tạp hơn thường đã có các máy chủ dữ liệu chuyên biệt và phần mềm máy khách chuyên dụng được tùy chỉnh theo nhu cầu của cộng đồng.
 ERDDAP, với tư cách là một máy chủ dữ liệu cho mục đích chung, không cố gắng cạnh tranh với các máy chủ dữ liệu chuyên dụng này.
 Họ được tùy chỉnh theo nhu cầu của cộng đồng của họ và làm một công việc tuyệt vời.
 Tuy nhiên, những bộ dữ liệu đó thường chỉ được&quot;hiểu&quot;bởi các phần mềm chuyên dụng trong cộng đồng đó.
@@ -5732,7 +5735,7 @@ một số bộ dữ liệu mô hình môi trường dạng lưới có thể đ
 Chúng tôi biết điều này không lý tưởng, nhưng cần phải cho phép ERDDAP trả về dữ liệu ở các định dạng tệp phổ biến (một số trong số đó khá đơn giản).
 <p>Một cách tiếp cận khác để xử lý các tập dữ liệu phức tạp (ví dụ:
 đối với dữ liệu mô hình bằng phép chiếu hình cầu lập phương) là cung cấp phiên bản được chiếu lại của tập dữ liệu ([thời gian] [độ cao] [vĩ độ] [kinh độ]) mà ERDDAP có thể hoạt động dễ dàng.
-Những cấu trúc dữ liệu đơn giản hơn này không nhằm thay thế cấu trúc dữ liệu ban đầu, nhưng chúng có thể là một cách hữu ích để phân phối dữ liệu đến nhiều đối tượng hơn.
+Các cấu trúc dữ liệu đơn giản hơn này không nhằm thay thế cấu trúc dữ liệu ban đầu, nhưng chúng có thể là một cách hữu ích để phân phối dữ liệu đến nhiều đối tượng hơn.
 <br>&nbsp;
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>Dự án ERDDAP bền vững như thế nào?</strong></a>
 <br>ERDDAP rất bền vững.
@@ -5815,6 +5818,18 @@ Cảm ơn, Marco!
 <li>Yêu cầu .transparentPng nằm ngoài phạm vi
 <br>ERDDAP hiện chấp nhận các yêu cầu đối với .transparentPng khi giá trị vĩ độ và / hoặc kinh độ nằm ngoài phạm vi một phần hoặc hoàn toàn.
 (Đây là ERDDAP GitHub Issues # 19, được đăng bởi Rob Fuller - cảm ơn vì đã đăng bài đó, Rob.) Mã để sửa lỗi này được viết bởi Chris John.
+Cảm ơn bạn, Chris!
+<br>&nbsp;
+<li>Hiển thị dữ liệu hình ảnh base64 trong .htmlTable phản hồi trên bảng
+<br>Mã để hiển thị dữ liệu hình ảnh base64 trong .htmlTable phản hồi trên bảng do Marco Alba của ETT / EMODnet Physics đóng góp.
+Cảm ơn, Marco Alba!
+<br>&nbsp;
+<li>Cải tiến nThreads
+<br>Hệ thống nThreads cho EDDTableFromFiles đã được cải thiện đáng kể.
+Những thay đổi này dẫn đến cải thiện tốc độ rất lớn (ví dụ:
+tăng tốc gấp 2 lần khi nThreads được đặt thành 2 hoặc nhiều hơn) cho các yêu cầu khó khăn nhất (khi một số lượng lớn tệp phải được xử lý để thu thập kết quả).
+Những thay đổi này cũng sẽ dẫn đến một tốc độ chung trong toàn bộ ERDDAP .
+Mã cho những thay đổi này do Chris John đóng góp.
 Cảm ơn bạn, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -6296,7 +6311,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

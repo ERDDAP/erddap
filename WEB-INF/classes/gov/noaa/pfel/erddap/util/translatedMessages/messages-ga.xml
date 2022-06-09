@@ -3216,36 +3216,36 @@ Mar sin ba chóir duit srianta a áireamh de ghnáth (m.sh.
 ]]></functionDistinctTooltip>
 <functionOrderByTooltip><![CDATA[
 Déanann na feidhmeanna orderBy ...
-sraitheanna an tábla torthaí a shórtáil agus uaireanta iad a ghrúpáil agus uaireanta iad a ionramháil tuilleadh.
+na sraitheanna sa tábla torthaí a shórtáil agus uaireanta iad a ghrúpáil agus uaireanta a láimhseáil tuilleadh.
 Chun feidhm orderBy ...
-a úsáid, roghnaigh feidhm ar chlé, ansin roghnaigh athróg amháin nó níos mó ar dheis, ansin cuir socruithe breise leis go roghnach, m.sh., le haghaidh athróg uimhriúil, féadfaidh tú athrógName [/ divisor [timeUnits] [:
-fritháireamh] a shonrú.
-].
+a úsáid, roghnaigh feidhm ar chlé, ansin roghnaigh athróg amháin nó níos mó ar dheis, ansin cuir socruithe suimiúcháin leis go roghnach, m.sh., le haghaidh athróg uimhriúil, is féidir leat athrógName[/divisor[timeUnits][:offset] a shonrú ].
 Chun gan aon fheidhm orderBy ...
 a úsáid, roghnaigh an chéad rogha ar chlé (&quot;&quot;).
 Is iad na feidhmeanna orderBy ...
-<p><strong>orderBy</strong> sraitheanna an tábla torthaí de réir na n-athróg sonraithe.
-Mar shampla, orderBy(&quot;stationID, time&quot;) na torthaí go príomha de réir stationID agus sa dara háit de réir ama.
-<p><strong>orderByClosest</strong> sraitheanna an tábla torthaí de réir na n-athróg sonraithe.
-Caithfidh an athróg dheireanach a bheith ina athróg uimhriúil le roinnteoir.
-Ní choimeádfar ach na sraitheanna is gaire d’idir eatramh an roinnteora.
-Mar shampla, orderByClosest(&quot;stationID, time/2hours&quot;) de réir stationID agus am, ach ní fhillfidh sé ach na sraitheanna do gach stationID áit a bhfuil an colún deireanach orderBy (am) is gaire do eatraimh 2 uair an chloig.
-<p><strong>orderByCount</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach comhaireamh líon na luachanna nach bhfuil in easnamh a chur ar ais do gach grúpa.
-Mar shampla, orderByCount(&quot;stationID, time/1day&quot;) de réir stationID agus fillfidh sé sraith amháin do gach stationID do gach lá, le comhaireamh ar líon na luachanna nach bhfuil in easnamh do gach ceann de na hathróga eile.
-<p><strong>orderByLimit</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus díreach na chéad nRows (mar a shonraítear leis an luach deireanach orderByLimit ) a chur ar ais laistigh de gach grúpa.
-Mar shampla, orderByMax(&quot;stationID, time/1day, 10&quot;) de réir stationID agus am, ach ní thabharfaidh sé ach na chéad 10 sraitheanna do gach stationID ar ais do gach lá.
-<p><strong>orderByMax</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus díreach an tsraith a chur ar ais laistigh de gach grúpa le huasluach na orderByMax deireanach san iarraidh.
-Mar shampla, orderByMax(&quot;stationID, time/1day, temperature&quot;) na sraitheanna a ghrúpáil de réir stationID agus gach lá, ach ní fhillfidh siad ach an tsraith leis an uasluach teochta do gach stationID do gach lá.
-<p><strong>orderBy Min</strong> cosúil le orderByMax, ach ní choinníonn sé ach an tsraith leis an íosluach don orderBy Min deireanach.
-<p>tá <strong>orderByMinMax</strong> cosúil le orderBy Min móide orderByMax .
-Laistigh de gach grúpa sórtála, ní choimeádfar ach an tsraith leis an íosluach agus an tsraith leis an uasluach don athróg deireanach orderByMinMax .
-Mar shampla, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) an tsraith ar ais leis an luach teochta íosta agus an tsraith leis an uasluach teochta do gach stationID do gach lá.
-<p><strong>orderByMean</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach sraith amháin a chur ar ais do gach grúpa.
-Beidh meán gach ceann de na hathróga eile sa tsraith sin.
-Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh sé agus seolfaidh sé meán na n-athróg eile ar ais.
-<p><strong>orderBy Sum</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus gan ach sraith amháin a chur ar ais do gach grúpa.
-Beidh suim gach ceann de na hathróga eile sa tsraith sin.
-Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh sé agus seolfaidh sé suim na n-athróg eile ar ais.
+<p><strong>orderBy</strong> réir sraitheanna tábla na dtorthaí a shórtáil de réir na n-athróg sonraithe, in ord ardaitheach.
+Mar shampla, orderBy(&quot;stationID, time&quot;) na torthaí a shórtáil go príomha de réir stationID agus sa dara háit de réir ama.
+<p><strong>orderBy Íslitheach</strong> na sraitheanna de tábla na dtorthaí a shórtáil de réir na n-athróg sonraithe, in ord íslitheach.
+Mar shampla, orderBy(&quot;stationID, time&quot;) na torthaí a shórtáil go príomha de réir stationID agus sa dara háit de réir ama.
+<p><strong>orderByClosest</strong> na sraitheanna sa tábla torthaí a shórtáil de réir na n-athróg sonraithe.
+Caithfidh an t-athróg dheireanach a bheith ina athróg uimhriúil le roinnteoir.
+Ní choimeádfar ach na sraitheanna is gaire d&#39;eatramh an roinnteora.
+Mar shampla, orderByClosest(&quot;stationID, time/2hours&quot;) a shórtáil de réir stationID agus ama, ach ní sheolfar ar ais ach na sraitheanna do gach stationID áit a bhfuil an colún orderBy (am) is gaire do eatraimh 2 uair an chloig.
+<p><strong>orderByCount</strong> na sraitheanna de thábla na dtorthaí ina ngrúpaí agus cuireann sé ar ais an comhaireamh ar líon na luachanna neamh-in easnamh do gach grúpa.
+Mar shampla, orderByCount(&quot;stationID, time/1day&quot;) de réir stationID agus seolfaidh sé ró amháin do gach stationID do gach lá, le comhaireamh ar líon na luachanna neamh-in easnamh do gach ceann de na hathróga eile.
+<p><strong>orderByLimit</strong> na sraitheanna de thábla na dtorthaí a shórtáil ina ngrúpaí agus níl le déanamh ach na chéad sraitheanna (mar atá sonraithe ag an luach orderByLimit ) a chur ar ais laistigh de gach grúpa.
+Mar shampla, orderByMax(&quot;stationID, time/1day, 10&quot;) a shórtáil de réir stationID agus ama, ach gan ach na chéad 10 rónna a thabhairt ar ais do gach stationID do gach lá.
+<p><strong>orderByMax</strong> sraitheanna an tábla torthaí a shórtáil ina ngrúpaí agus níl le déanamh ach an tsraith a sheoladh ar ais laistigh de gach grúpa le huasluach na orderByMax deireanaí san iarratas.
+Mar shampla, orderByMax(&quot;stationID, time/1day, temperature&quot;) na sraitheanna a ghrúpáil de réir stationID agus gach lá, gan ach an tsraith a thabhairt ar ais leis an uasluach teochta do gach stationID do gach lá.
+<p><strong>orderBy Min</strong> cosúil le orderByMax, ach ní choinníonn sé ach an ró leis an luach íosta don athróg dheireanach orderBy Min.
+<p>Tá <strong>orderByMinMax</strong> cosúil le orderBy Min móide orderByMax .
+Laistigh de gach grúpa sórtála, ní choinneofar ach an ró leis an íosluach agus an ró leis an uasluach don athróg dheireanach orderByMinMax .
+Mar shampla, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) an tsraith ar ais leis an íosluach teochta agus an ró leis an luach uasta teochta do gach stationID do gach lá.
+<p><strong>orderByMean</strong> na sraitheanna de thábla na dtorthaí ina ngrúpaí agus ní thugann sé ach ró amháin do gach grúpa ar ais.
+Beidh meán gach athróg eile ag an ró sin.
+Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh sé agus seolfaidh sé meán na n-athróg eile.
+<p><strong>orderBy Suim</strong>, déanann sé sraitheanna tábla na dtorthaí a shórtáil ina ngrúpaí agus gan ach sraith amháin a thabhairt ar ais do gach grúpa.
+Beidh suim gach ceann de na hathróga eile ag an tsraith sin.
+Mar shampla, orderByMax(&quot;stationID, time/1day&quot;) grúpa do gach stationID do gach lá, agus ríomhfaidh agus seolfaidh sé suim na n-athróg eile.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Maidir orderByClosest, sonraigh an t-eatramh (ag úsáid an fhormáid n [timeUnits], m.sh., 1 uair) anseo.
@@ -5228,7 +5228,7 @@ Soláthraíonn ERDDAP Foirmeacha Rochtana Sonraí (leathanaigh ghréasáin) frei
     >Mholtaí Teicniúla um Rochtain Sonraí NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> agus
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >caighdeán Córas Sonraí agus Faisnéise Domhaneolaíochta NASA (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5286,7 +5286,7 @@ Fágann sé sin go bhfuil sé éasca na torthaí ó fhoinsí sonraí éagsúla a
 Tá sé seo úsáideach agus íomhánna á ndéanamh le léarscáileanna nó sraith ama, agus nuair a bhíonn sonraí á sábháil i gcineálacha comhaid geo-thagartha (eg, .esriAscii, .geoJson, agus .kml ).
 <p>Is iad dhá chomhchaighdeán maidir le haonaid tomhais a scríobh:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (nasc seachtrach)&quot;title=&quot;Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach.&quot;&gt; - ó
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (nasc seachtrach)&quot;title=&quot;Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach.&quot;&gt; - ó
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, a úsáidtear i
@@ -5600,7 +5600,7 @@ Níl sé i gceist na struchtúir sonraí níos simplí seo a chur in ionad na mb
 <br>Tá iontas agus díomá ar roinnt daoine a chloisteáil go bhfuil ERDDAP forbartha ag duine amháin den chuid is mó (mise, Bob Simons).
 [Dála an scéil, is iad na tuairimí ar an leathanach gréasáin seo mo thuairimí pearsanta agus ní gá go léiríonn siad aon seasamh de chuid an Rialtais nó an National Oceanic and Atmospheric Administration .] Tá eagla orthu, má tharlaíonn rud éigin domsa, gurb é sin deireadh ERDDAP .
 Níl sé sin fíor go simplí.
-ERDDAP maidir le hinbhuanaitheacht fhadtéarmach ar fheabhas, agus gar don fheabhas a d’fhéadfadh a bheith ann.
+ERDDAP maidir le hinbhuanaitheacht fhadtéarmach ar fheabhas, agus gar don chuid is fearr a d’fhéadfadh a bheith ann.
 <p>Sea, is mise príomhfhorbróir ERDDAP .
 Is fostaí feidearálach lánmhaoinithe mé.
 Ní airgead“bog” é mo mhaoiniú, mar sin ní fhaighim deontais ná ní bhraithim ar dheontais.
@@ -5654,12 +5654,10 @@ Go raibh maith agat, Adam agus Rob!
 <li>orderBy
 <br>Scríobh Rob Fuller agus Adam Leadbetter ó Fhoras na Mara an cód don
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByMean" rel="bookmark"
-  >orderByMean</a> tabledap ar an tábla agus na hathruithe fairsinge ar an gcód chun tacú leis an athrógName
+  >orderByMean</a> tabledap ar an tábla agus na hathruithe fairsinge ar an gcód chun tacú leis an athrógName/ orderBy
 <a href="https://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#orderByDivisorOptions" rel="bookmark"
-  ><i>/rannoir:
-nodaireacht fhritháireamh</i></a> do gach scagairí orderBy (ceadúnas:
-foinse oscailte faoi chóipcheart).
-Éireann.
+  ><i>:
+nodaireacht fhritháireamh</i></a> do gach scagairí ordaitheBy Éireann.
 Go raibh maith agat, Rob agus Adam!
 <br>&nbsp;
 <li>Cineálacha Marcóirí Gan Teorainn
@@ -5681,6 +5679,17 @@ Go raibh maith agat, Marco!
 <li>Iarratais lasmuigh den raon .transparentPng
 <br>Glacann ERDDAP anois le hiarratais ar .transparentPnganna nuair atá na luachanna domhanleithead agus/nó domhanfhad i bpáirt nó go hiomlán lasmuigh den raon.
 (Ba é seo ERDDAP GitHub Issues #19, arna phostáil ag Rob Fuller - go raibh maith agat as é sin a phostáil, Rob.) Chris John a scríobh an cód chun é seo a shocrú.
+Go raibh maith agat, Chris!
+<br>&nbsp;
+<li>Taispeáin sonraí íomhá base64 i bhfreagraí .htmlTable
+<br>Chuir Marco Alba ó ETT / EMODnet Physics an cód chun sonraí íomhá base64 a thaispeáint i bhfreagraí .htmlTable .
+Go raibh maith agat, Marco Alba!
+<br>&nbsp;
+<li>nFeabhsú Snáithe
+<br>Feabhsaíodh an córas nThreads do EDDTableFromFiles go suntasach.
+Tagann feabhas ollmhór ar luas mar thoradh ar na hathruithe seo (m.sh., 2X speedup nuair a shocraítear nThreads go 2 nó níos mó) do na hiarratais is dúshlánaí (nuair is gá líon mór comhad a phróiseáil chun na torthaí a bhailiú).
+Tiocfaidh luasghéarú ginearálta ar fud ERDDAP de bharr na n-athruithe seo freisin.
+Chuir Chris John an cód le haghaidh na n-athruithe seo leis.
 Go raibh maith agat, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -5717,7 +5726,7 @@ Chuir Microsoft deireadh le tionscadail.
 Tá tionscadail scortha ag Apple.
 ...
 Is é an pointe nach bhfuil ach tacaíocht cuideachta mhór a bheith cinnte go leanfaidh an tionscadal.
-Níl an t-ádh ar úsáideoirí na mbogearraí sin, <strong>ach amháin má</strong> bhí na bogearraí (agus mar sin, i gcónaí) Saor in Aisce agus Bogearraí Foinse Oscailte (FOSS).
+Níl an t-ádh ar úsáideoirí na mbogearraí sin, <strong>ach amháin má</strong> bhí (agus dá bhrí sin, i gcónaí) na bogearraí saor in aisce agus Foinse Oscailte (FOSS).
 Ansin, aon uair a bhíonn suim ag fiú forbróir amháin, féadann agus leanfaidh an tionscadal ag éabhlóidiú.
 Is polasaí árachais é FOSS.
 Déanta na fírinne, is é FOSS an t-aon pholasaí árachais, an t-aon dearbhú amháin, atá tábhachtach.
@@ -6162,6 +6171,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

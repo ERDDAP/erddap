@@ -505,6 +505,20 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
         to ensure that the resulting dataset appears as you want it to in ERDDAP.
       <li>Feel free to make small changes to the datasets.xml chunk that was generated, 
         for example, supply a better <kbd>infoUrl, summary,</kbd> or <kbd>title</kbd>.             
+      <li><a class="selfLink" id="doNotAddStandardNames" href="#doNotAddStandardNames" rel="bookmark">-doNotAddStandardNames</a> --
+        If you include <kbd>-doNotAddStandardNames</kbd>
+        as a command line parameter when you run generateDatasetsXml, 
+        generateDatasetsXml will not add <kbd>standard_name</kbd> to the <kbd>addAttributes</kbd>
+        for any variables other than variables named <kbd>latitude, longitude, altitude, depth</kbd> or 
+        <kbd>time</kbd> (which have obvious standard_names).
+        This can be useful if you are using the output from generateDatasetsXml directly in 
+        ERDDAP without editing the output, because generateDatasetsXml often guesses
+        standard_names incorrectly. (Note that we always recommend that you 
+        do edit the output before using it in ERDDAP.) Using this parameter 
+        will have other minor related effects because the guessed standard_name
+        is often used for other purposes, e.g., to create a new long_name,
+        and to create the colorBar settings.
+
       <li><a class="selfLink" id="ScriptingGenerateDatasetsXml" href="#ScriptingGenerateDatasetsXml" rel="bookmark">Scripting:</a> 
         As an alternative to answering the questions interactively 
         at the keyboard and looping to generate additional datasets, 

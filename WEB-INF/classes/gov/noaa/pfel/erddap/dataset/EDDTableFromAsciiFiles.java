@@ -726,6 +726,248 @@ String expected =
 //                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
 //            } else 
 
+
+        //try with -doNotAddStandardNames
+        try {
+        doNotAddStandardNames = true;
+        results = generateDatasetsXml(
+            dir,  "31201_2009_NoComments\\.csv", "",
+            File2.ISO_8859_1, 1, 3, "", -1,
+            "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
+            "time", "station time", 
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
+            -1, "", externalAddAttributes) + "\n";
+
+        //GenerateDatasetsXml
+        doNotAddStandardNames = false; //because it will be set with params
+        gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
+            "EDDTableFromAsciiFiles",
+            dir,  "31201_2009_NoComments\\.csv", "",
+            "-verbose", //can be in any slot
+            File2.ISO_8859_1, "1", "3", "", "-1",
+            "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
+            "time", "station time", 
+            "-doNotAddStandardNames",  //can be in any slot
+            "https://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!", 
+            "-1", ""}, //defaultStandardizeWhat
+            false); //doIt loop?
+        Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
+expected = 
+"<!-- NOTE! Since the source files don't have any metadata, you must add metadata\n" +
+"  below, notably 'units' for each of the dataVariables. -->\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "ascii/</fileDir>\n" +
+"    <fileNameRegex>31201_2009_NoComments\\.csv</fileNameRegex>\n" +
+"    <recursive>true</recursive>\n" +
+"    <pathRegex>.*</pathRegex>\n" +
+"    <metadataFrom>last</metadataFrom>\n" +
+"    <standardizeWhat>0</standardizeWhat>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
+"    <columnSeparator></columnSeparator>\n" +
+"    <columnNamesRow>1</columnNamesRow>\n" +
+"    <firstDataRow>3</firstDataRow>\n" +
+"    <preExtractRegex></preExtractRegex>\n" +
+"    <postExtractRegex>_.*$</postExtractRegex>\n" +
+"    <extractRegex>.*</extractRegex>\n" +
+"    <columnNameForExtract>stationID</columnNameForExtract>\n" +
+"    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
+"    <sortFilesBySourceNames>station time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <!-- sourceAttributes>\n" +
+"    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Point</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_type\">institution</att>\n" +
+"        <att name=\"creator_url\">https://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"infoUrl\">https://www.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"institution\">NOAA NDBC</att>\n" +   //changes below because of -doNotAddStandardNames
+"        <att name=\"keywords\">altitude, atmosphere, atmp, buoy, center, data, earth, Earth Science &gt; Atmosphere &gt; Altitude &gt; Station Height, end, height, identifier, latitude, longitude, national, ndbc, newer, noaa, not, parens, science, speed, station, stationID, temperature, test, test_parens_not_at_end, time, title, water, wind, wspd, wtmp</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"sourceUrl\">(local files)</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF Standard Name Table v70</att>\n" +
+"        <att name=\"summary\">The new summary! NOAA National Data Buoy Center (NDBC) data from a local source.</att>\n" +
+"        <att name=\"title\">The Newer Title!</att>\n" +
+"    </addAttributes>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>stationID</sourceName>\n" +
+"        <destinationName>stationID</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Station ID</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>longitude</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>latitude</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>altitude</sourceName>\n" +
+"        <destinationName>altitude</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Altitude</att>\n" +
+"            <att name=\"standard_name\">altitude</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <dataType>String</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"time_precision\">1970-01-01T00:00:00Z</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss&#39;Z&#39;</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>station</sourceName>\n" +
+"        <destinationName>station</destinationName>\n" +
+"        <dataType>short</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"short\">32767</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
+"            <att name=\"long_name\">Station</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wd</sourceName>\n" +
+"        <destinationName>wd</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" + //was Wind
+"            <att name=\"long_name\">WD</att>\n" +  //was Wind Direction
+//"            <att name=\"standard_name\">wind_from_direction</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wspd</sourceName>\n" +
+"        <destinationName>wspd</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
+//"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+//"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +  //was Wind
+"            <att name=\"long_name\">Wind Speed</att>\n" + 
+//"            <att name=\"standard_name\">wind_speed</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>atmp</sourceName>\n" +
+"        <destinationName>atmp</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"double\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Atmp</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wtmp</sourceName>\n" +
+"        <destinationName>wtmp</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Water Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wtmp (test dup name and remove parens)</sourceName>\n" +
+"        <destinationName>wtmp_2</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Water Temperature</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>test (parens) not at end</sourceName>\n" +
+"        <destinationName>test_parens_not_at_end</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">NaN</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Test (parens) Not At End</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n\n";
+
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+        //    expected, "");
+
+        } finally {
+            //set it back to normal so error doesn't screw up subsequent tests
+            doNotAddStandardNames = false; 
+        }
     }
 
     /**

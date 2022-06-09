@@ -133,7 +133,7 @@ public class GenerateDatasetsXml {
                 args = sa.toArray();
             }
 
-            //look for -I (testmode) or -i
+            //look for -I (testmode) or -i (and remove it)
             int ii = String2.lineStartsWith(args, "-I");
             if (ii < 0)
                 ii = String2.lineStartsWith(args, "-i");
@@ -142,6 +142,16 @@ public class GenerateDatasetsXml {
                 String2.log(insert);
                 StringArray sa = new StringArray(args);
                 sa.remove(ii);
+                args = sa.toArray();
+            }
+
+            //look for -doNotAddStandardNames (and remove it)
+            int dnssni = String2.indexOf(args, "-doNotAddStandardNames");
+            if (dnssni >= 0) {
+                String2.log("doNotAddStandardNames=true");
+                EDD.doNotAddStandardNames = true;
+                StringArray sa = new StringArray(args);
+                sa.remove(dnssni);
                 args = sa.toArray();
             }
 

@@ -3170,7 +3170,9 @@ Pentru a utiliza o funcție orderBy ..., selectați o funcție din stânga, apoi
 Pentru a nu folosi nicio funcție orderBy ..., alegeți prima opțiune din stânga (&quot;&quot;).
 Funcțiile orderBy ...
 sunt:
-<p><strong>orderBy</strong> sortează rândurile tabelului de rezultate după variabilele specificate.
+<p><strong>orderBy</strong> sortează rândurile tabelului de rezultate după variabilele specificate, în ordine crescătoare.
+De exemplu, orderBy(&quot;stationID, time&quot;) stationID rezultatele în primul rând după ID-ul stației și în al doilea rând după timp.
+<p><strong>orderBy Descending</strong> sortează rândurile tabelului de rezultate după variabilele specificate, în ordine descrescătoare.
 De exemplu, orderBy(&quot;stationID, time&quot;) stationID rezultatele în primul rând după ID-ul stației și în al doilea rând după timp.
 <p><strong>orderByClosest</strong> sortează rândurile tabelului de rezultate după variabilele specificate.
 Ultima variabilă trebuie să fie o variabilă numerică cu un divizor.
@@ -5090,7 +5092,7 @@ Care este diferența?</a>
 <li><a rel="bookmark" href="#acronym">Ce înseamnă acronimul „ERDDAP ”?</a>
 <li><a rel="bookmark" href="#dataDistributionSystems">Ghid pentru sistemele de distribuție a datelor</a>
 <li><a rel="bookmark" href="#setup">Vă puteți configura propriul server ERDDAP .</a>
-<li><a rel="bookmark" href="#contact">Contactează-ne</a>
+<li><a rel="bookmark" href="#contact">Contactaţi-ne</a>
 </ul>
 <h2><a class="selfLink" id="problems" href="#problems" rel="bookmark">Problemele pe care ERDDAP încearcă să le rezolve</a></h2>
 Fără ERDDAP, atunci când o persoană (sau un program de calculator) caută pe Internet un anumit tip de date științifice (de exemplu, date satelitare privind temperatura suprafeței mării), există probleme ...
@@ -5189,7 +5191,7 @@ ERDDAP oferă, de asemenea, formulare de acces la date (pagini web) care ajută 
     >Recomandările tehnice de acces la date ale NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> și un
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >standard NASA Earth Science Data and Information System (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5229,7 +5231,7 @@ Consultați lista completă a tipurilor de
 <li>timpul, când este formatat ca număr, este întotdeauna în&quot;seconds since 1970-01-01T00:00:00Z&quot;(cunoscut sub numele de
 <a rel="help" href="https://en.wikipedia.org/wiki/Unix_time">ora Unix <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
-    title="Acest link către un site extern nu constituie o aprobare."></a> sau secunde de epocă, care este<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
+    title="Acest link către un site extern nu constituie o aprobare."></a> sau epoca secunde, care este<a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/"
       >UDUNITS <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> -compatibil) și, atunci când este formatat ca șir, este formatat conform
@@ -5250,7 +5252,7 @@ Acest lucru face ca rezultatele din diferite surse de date să fie ușor de comp
 Acest lucru este util atunci când se realizează imagini cu hărți sau serii temporale și când se salvează date în tipuri de fișiere georeferențiate (de exemplu, .esriAscii, .geoJson și .kml ).
 <p>Două standarde comune pentru scrierea unităților de măsură sunt:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot; alt=&quot;(link extern)&quot; title=&quot;Acest link către un site web extern nu constituie o aprobare.&quot;&gt; - de la
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot; alt=&quot;(link extern)&quot; title=&quot;Acest link către un site web extern nu constituie o aprobare.&quot;&gt; - de la
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a>, care este folosit în
@@ -5374,7 +5376,7 @@ Dar toate structurile de date au compromisuri.
 Niciuna nu este perfectă.
 Chiar și structurile do-it-all au dezavantajele lor:
 lucrul cu ele este complex și fișierele pot fi scrise sau citite doar cu biblioteci speciale de software.
-Dacă acceptați abordarea ERDDAP suficient pentru a încerca să lucrați cu ea, este posibil să descoperiți că are avantajele sale (în special suportul pentru mai multe tipuri de fișiere care pot deține răspunsurile la date).
+Dacă acceptați abordarea ERDDAP suficient pentru a încerca să lucrați cu ea, este posibil să descoperiți că are avantajele sale (în special suportul pentru mai multe tipuri de fișiere care pot stoca răspunsurile de date).
 Prezentarea
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">de diapozitive ERDDAP originală</a> (în special
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">diapozitivul structurilor de date</a>) vorbește despre aceste probleme.
@@ -5635,6 +5637,17 @@ Mulțumesc, Marco!
 <br>ERDDAP acceptă acum cereri pentru .transparentPng atunci când valorile de latitudine și/sau longitudine sunt parțial sau complet în afara intervalului.
 (Acesta a fost ERDDAP GitHub Issues #19, postat de Rob Fuller -- mulțumesc pentru postare, Rob.) Codul pentru a remedia acest lucru a fost scris de Chris John.
 Mulțumesc, Chris!
+<br>&nbsp;
+<li>Afișați datele de imagine base64 în .htmlTable la tabel
+<br>Codul pentru afișarea datelor de imagine base64 în răspunsurile .htmlTable a fost contribuit de Marco Alba de la ETT / EMODnet Physics.
+Mulțumesc, Marco Alba!
+<br>&nbsp;
+<li>n Îmbunătățirea firelor
+<br>Sistemul nThreads pentru EDDTableFromFiles a fost îmbunătățit semnificativ.
+Aceste modificări duc la o îmbunătățire uriașă a vitezei (de exemplu, accelerare de 2X când nThreads este setat la 2 sau mai mult) pentru cele mai dificile solicitări (când trebuie procesate un număr mare de fișiere pentru a aduna rezultatele).
+Aceste modificări vor duce, de asemenea, la o accelerare generală în întreaga ERDDAP .
+Codul pentru aceste modificări a fost contribuit de Chris John.
+Mulțumesc, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5753,7 +5766,7 @@ Apoi, oamenii vor avea o altă modalitate de a vă accesa datele și vor putea d
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >mai multe ERDDAP uri care funcționează împreună</a> pentru a se extinde și a satisface nevoile unui centru mare de distribuție de date.
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contactează-ne</a></h2>
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contactaţi-ne</a></h2>
 Dacă aveți întrebări, sugestii sau comentarii despre ERDDAP în general (nu această instalare specifică ERDDAP ), vă rugăm să trimiteți un e-mail la <kbd>bob dot simons at noaa dot gov</kbd> și să includeți adresa URL ERDDAP direct legată de întrebarea sau comentariul dvs.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Sau, vă puteți alătura grupului Google/listei de corespondență ERDDAP</a> vizitând
 <a rel="help"
@@ -6115,6 +6128,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
