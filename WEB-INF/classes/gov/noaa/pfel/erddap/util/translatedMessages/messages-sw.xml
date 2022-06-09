@@ -3170,33 +3170,36 @@ Kwa hivyo unapaswa kujumuisha vizuizi (kwa mfano, kiwango cha chini cha wakati n
 <functionOrderByTooltip><![CDATA[
 orderBy ...
 hupanga safu mlalo za jedwali la matokeo na wakati mwingine huzipanga na wakati mwingine kuzibadilisha zaidi.
-Ili kutumia orderBy ..., chagua chaguo la kukokotoa upande wa kushoto, kisha uchague kigezo kimoja au zaidi upande wa kulia, kisha uongeze mipangilio ya kuongeza kwa hiari, kwa mfano, kwa viambishi vya nambari, unaweza kubainisha variableName[/divisor[timeUnits][:offset] ] .
+Ili kutumia orderBy ...
+kitendakazi, chagua chaguo la kukokotoa upande wa kushoto, kisha uchague kigezo kimoja au zaidi kulia, kisha ongeza kwa hiari mipangilio ya nyongeza, kwa mfano, kwa viambishi vya nambari, unaweza kubainishaName variable[/divisor[timeUnits][:offset] ] .
 Ili kutotumia orderBy ...
 kitendaji, chagua chaguo la kwanza kushoto (&quot;&quot;).
 orderBy ...
 ni:
-<p><strong>orderBy</strong> safu mlalo za jedwali la matokeo kwa vigeu vilivyobainishwa.
+<p><strong>orderBy</strong> safu mlalo za jedwali la matokeo kwa vigeu vilivyobainishwa, kwa mpangilio wa kupanda.
+Kwa mfano, orderBy(&quot;stationID, time&quot;) hupanga matokeo kimsingi kwa stationID na pili kwa wakati.
+<p><strong>orderBy Kushuka</strong> hupanga safu mlalo za jedwali la matokeo kwa vigeu vilivyobainishwa, kwa mpangilio wa kushuka.
 Kwa mfano, orderBy(&quot;stationID, time&quot;) hupanga matokeo kimsingi kwa stationID na pili kwa wakati.
 <p><strong>orderByClosest</strong> hupanga safu mlalo za jedwali la matokeo kwa vigeu vilivyobainishwa.
 Tofauti ya mwisho lazima iwe tofauti ya nambari na kigawanyiko.
 Ni safu mlalo zilizo karibu zaidi na muda wa kigawanyaji pekee ndizo zitahifadhiwa.
-Kwa mfano, orderByClosest(&quot;stationID, time/2hours&quot;) itapanga kulingana na stationID na saa, lakini itarudisha safu mlalo kwa kila stationID cha kituo ambapo safu wima ya mwisho ya orderBy (muda) iko karibu na vipindi vya saa 2.
+Kwa mfano, orderByClosest(&quot;stationID, time/2hours&quot;) itapanga kulingana na stationID na saa, lakini itarudisha safu mlalo kwa kila stationID cha kituo ambapo safu wima ya mwisho ya orderBy (wakati) iko karibu zaidi na vipindi vya saa 2.
 <p><strong>orderByCount</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha hesabu ya nambari zisizokosekana kwa kila kikundi.
-Kwa mfano, orderByCount(&quot;stationID, time/1day&quot;) itapanga kulingana na stationID na kurudisha safu mlalo moja kwa kila stationID cha kituo kwa kila siku, pamoja na hesabu ya idadi ya thamani zisizokosekana kwa kila moja ya vigeu vingine.
-<p><strong>orderByLimit</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na hurejesha tu nRows za kwanza (kama ilivyobainishwa na thamani ya mwisho ya orderByLimit ) ndani ya kila kikundi.
+Kwa mfano, orderByCount(&quot;stationID, time/1day&quot;) itapanga kulingana na stationID na kurudisha safu mlalo moja kwa kila stationID cha kituo kwa kila siku, pamoja na hesabu ya idadi ya thamani zisizokosekana kwa kila mojawapo ya vigeu vingine.
+<p><strong>orderByLimit</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha safu mlalo za kwanza (kama ilivyobainishwa na thamani ya mwisho ya orderByLimit ) ndani ya kila kikundi.
 Kwa mfano, orderByMax(&quot;stationID, time/1day, 10&quot;) itapanga kulingana na stationID na saa, lakini itarudisha safu mlalo 10 za kwanza kwa kila stationID cha kituo kwa kila siku.
 <p><strong>orderByMax</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurudisha tu safu mlalo ndani ya kila kikundi na thamani ya juu zaidi ya mpangilio wa mwisho orderByMax katika ombi.
 Kwa mfano, orderByMax(&quot;stationID, time/1day, temperature&quot;) itapanga safu mlalo kulingana na stationID na kila siku, lakini itarudisha tu safu mlalo yenye thamani ya juu zaidi ya halijoto kwa kila stationID cha kituo kwa kila siku.
 <p><strong>orderBy Min</strong> ni kama orderByMax, lakini huweka tu safu mlalo na thamani ya chini kwa mpangilio wa orderBy Min kutofautiana.
 <p><strong>orderByMinMax</strong> ni kama orderBy Min plus orderByMax .
-Ndani ya kila kikundi cha kupanga, ni safu mlalo yenye thamani ya chini pekee na safu mlalo yenye thamani ya juu zaidi kwa mpangilio wa mwisho wa kutofautisha wa orderByMinMax zitawekwa.
+Ndani ya kila kikundi cha kupanga, ni safu mlalo yenye thamani ya chini pekee na safu mlalo yenye thamani ya juu zaidi kwa mpangilio wa mwisho wa orderByMinMax zitawekwa.
 Kwa mfano, orderByMinMax(&quot;stationID, time/1day, temperature&quot;) safu mlalo yenye thamani ya chini zaidi ya halijoto na safu mlalo yenye thamani ya juu zaidi ya halijoto kwa kila stationID cha kituo kwa kila siku.
 <p><strong>orderByMean</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha safu mlalo moja kwa kila kikundi.
 Safu hiyo itakuwa na maana ya kila moja ya vigezo vingine.
 Kwa mfano, orderByMax(&quot;stationID, time/1day&quot;) itaunda kikundi kwa kila stationID cha kituo kwa kila siku, na itakokotoa na kurudisha wastani wa vigeu vingine.
 <p><strong>orderBy Sum</strong> hupanga safu mlalo za jedwali la matokeo katika vikundi na kurejesha safu mlalo moja kwa kila kikundi.
 Safu hiyo itakuwa na jumla ya kila moja ya vigezo vingine.
-Kwa mfano, orderByMax(&quot;stationID, time/1day&quot;) itaunda kikundi kwa kila stationID cha kituo kwa kila siku, na itakokotoa na kurudisha jumla ya vigeu vingine.
+Kwa mfano, orderByMax(&quot;stationID, time/1day&quot;) itaunda kikundi kwa kila stationID cha kituo kwa kila siku, na itakokotoa na kurudisha jumla ya viambajengo vingine.
 ]]></functionOrderByTooltip>
 <functionOrderByExtra><![CDATA[
 Kwa orderByClosest, bainisha muda (kwa kutumia umbizo n[timeUnits], kwa mfano, saa 1) hapa.
@@ -5163,7 +5166,7 @@ ERDDAP pia hutoa Fomu za Ufikiaji Data (kurasa za wavuti) ambazo huwasaidia wana
     >Mapendekezo ya Kiufundi ya Ufikiaji wa Data ya NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> na kiwango
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >cha Data na Mfumo wa Habari wa Sayansi ya Dunia ya NASA (ESDIS).
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -5223,7 +5226,7 @@ Hii hufanya matokeo kutoka kwa vyanzo tofauti vya data kuwa rahisi kulinganisha.
 Hii ni muhimu wakati wa kutengeneza picha kwa kutumia ramani au mfululizo wa saa, na unapohifadhi data katika aina za faili zinazorejelewa na geo (km, .esriAscii, .geoJson, na .kml ).
 <p>Viwango viwili vya kawaida vya uandishi wa vitengo vya kipimo ni:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (kiungo cha nje)&quot;title=&quot;Kiungo hiki cha tovuti ya nje hakijumuishi uidhinishaji.&quot;&gt; - kutoka
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (kiungo cha nje)&quot;title=&quot;Kiungo hiki cha tovuti ya nje hakijumuishi uidhinishaji.&quot;&gt; - kutoka
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, ambayo hutumiwa katika
@@ -5413,7 +5416,7 @@ kwa seva ya ERDDAP na bado haingegundua mabadiliko mara moja.
 <br>Vipengele hivi vinaweza kutumika kuunda huduma nyingine ya wavuti juu ya ERDDAP (kufanya ERDDAP kufanya kazi yote!).
 ERDDAP haikusudiwi kuwa huduma ya kiwango cha juu cha uchunguzi/upigaji picha wa data.
 Badala yake, ERDDAP inakusudiwa kutoa huduma kwa tovuti na programu kama hizo.
-Kwa hivyo ikiwa una wazo la kiolesura bora zaidi cha data inayotolewa na ERDDAP, tunakuhimiza uunde programu yako ya wavuti au huduma ya tovuti, na utumie ERDDAP kama msingi.
+Kwa hivyo ikiwa una wazo la kiolesura bora zaidi cha data inayotolewa na ERDDAP, tunakuhimiza uunde programu yako ya wavuti au huduma ya wavuti, na utumie ERDDAP kama msingi.
 Soma zaidi kuhusu Huduma za ERDDAP
 <a rel="help" href="&erddapUrl;/rest.html">kwa Programu za Kompyuta</a> .
 <br>&nbsp;
@@ -5459,7 +5462,7 @@ Kwa kutumia
 ERDDAP ya
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid kwaErddap</a> na
 <a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> hutumia huduma za usajili za ERDDAP na
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">mfumo wa kuripoti</a> ili wataarifiwa mara moja data mpya inapopatikana.
+<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">mfumo wa kuripoti</a> ili wataarifiwe mara moja data mpya inapopatikana.
 Unaweza kuchanganya haya kwa matokeo mazuri:
 ukifunga Nakala ya EDDGrid karibu na seti ya data ya EDDGrid FromErddap (au kufunika EDDTableCopy karibu na seti ya data ya EDDTableFromErddap), ERDDAP itaunda na kudumisha nakala ya ndani ya hifadhidata nyingine ya ERDDAP .
 Kwa sababu huduma za usajili hufanya kazi mara tu data mpya inapopatikana, teknolojia ya kusukuma husambaza data haraka sana (ndani ya sekunde).
@@ -5505,15 +5508,15 @@ ERDDAP hutumia msimbo wake kuandika majibu ya DAP .
 <p><strong><a class="selfLink" id="sweetSpot" href="#sweetSpot" rel="bookmark">Je, ERDDAP ni suluhisho kwa matatizo ya usambazaji wa data/ufikiaji wa data ya kila mtu?</a></strong>
 <br>Hapana.
 ERDDAP inajaribu kutafuta sehemu tamu ambayo ni suluhu nzuri kwa matatizo mengi ya usambazaji wa data ambayo tulikabiliana nayo.
-ERDDAP inachukua mbinu ya vifaa vya kati:
+ERDDAP inachukua mbinu ya kati:
 Inaweza kupata data kutoka kwa aina nyingi tofauti za seva za data za mbali na inaweza kuwapa wateja data hiyo katika fomati nyingi tofauti za faili.
-Imeundwa kuwa suluhu ya kiagnostiki ambayo inataka kufanya seva zingine za data (OPeNDAP, SOS, OBIS, WMS, ...) zishirikiane.
+Imeundwa kuwa suluhu ya kiagnostiki ambayo inatafuta kufanya seva zingine za data (OPeNDAP, SOS, OBIS, WMS, ...) zishirikiane.
 Je, kuna seva moja kamili ya data ambayo inakidhi mahitaji ya kila mtu kikamilifu?
 Hatufikiri hivyo.
 Na hata kama unafikiri ipo au itakuwepo, itachukua muda mrefu kabla ya kila mtu kuibadilisha, kama itawahi kutokea.
 Hadi wakati huo, ERDDAP inapatikana sasa hivi ili kufanya seva zingine za data zishirikiane na kutoa data hivi sasa.
 <p><a class="selfLink" id="complexDatasets" href="#complexDatasets" rel="bookmark">ERDDAP inaweza kushughulikia hifadhidata nyingi/nyingi kama zilivyo, lakini si zote.</a> Sio kwamba hifadhidata zilizobaki (kwa mfano, data ya mfano inayotumia makadirio ya duara ya mchemraba) sio muhimu.
-Ni kwamba lengo la ERDDAP la kurudisha data katika fomati za kawaida za faili (ambazo zingine ni rahisi sana), huzuia muundo wa data wa ndani changamano zaidi.
+Ni kwamba lengo la ERDDAP la kurudisha data katika fomati za kawaida za faili (zingine ni rahisi sana), huzuia muundo wa data wa ndani changamano zaidi.
 Makundi ya watafiti wanaofanya kazi na miundo changamano zaidi ya data mara nyingi tayari wana seva maalum za data na programu maalum za mteja ambazo zimeboreshwa kulingana na mahitaji ya jumuiya yao.
 ERDDAP, kama seva ya data yenye madhumuni ya jumla, haijaribu kushindana na seva hizi maalum za data.
 Wameboreshwa kulingana na mahitaji ya jumuiya yao na hufanya kazi nzuri.
@@ -5611,6 +5614,17 @@ Asante, Marco!
 <li>Maombi ya nje ya anuwai ya .transparentPng
 <br>ERDDAP sasa inakubali maombi ya .transparentPng wakati thamani za latitudo na/au longitudo ziko nje ya masafa kwa kiasi au nje kabisa.
 (Hii ilikuwa ERDDAP GitHub Issues #19, iliyochapishwa na Rob Fuller -- asante kwa kuchapisha hilo, Rob.) Msimbo wa kurekebisha hili uliandikwa na Chris John.
+Asante, Chris!
+<br>&nbsp;
+<li>Onyesha data ya picha ya base64 katika majibu ya .htmlTable
+<br>Msimbo wa kuonyesha data ya picha ya base64 katika .htmlTable ya jedwali ilichangiwa na Marco Alba wa ETT / EMODnet Fizikia.
+Asante, Marco Alba!
+<br>&nbsp;
+<li>nUboreshaji wa nyuzi
+<br>Mfumo wa nThreads wa EDDTableFromFiles uliboreshwa kwa kiasi kikubwa.
+Mabadiliko haya husababisha uboreshaji mkubwa wa kasi (kwa mfano, kasi ya 2X wakati nThreads imewekwa kuwa 2 au zaidi) kwa maombi yenye changamoto nyingi (wakati idadi kubwa ya faili lazima ichakatwa ili kukusanya matokeo).
+Mabadiliko haya pia yatasababisha kuongeza kasi ya jumla kote katika ERDDAP .
+Kanuni za mabadiliko haya zilichangiwa na Chris John.
 Asante, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
@@ -6090,6 +6104,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

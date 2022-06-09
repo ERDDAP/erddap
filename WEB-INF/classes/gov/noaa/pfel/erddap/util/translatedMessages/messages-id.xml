@@ -3139,11 +3139,13 @@ Jadi, Anda biasanya harus menyertakan batasan (misalnya, waktu minimum dan maksi
 Fungsi orderBy ...
 mengurutkan baris tabel hasil dan terkadang mengelompokkannya dan terkadang memanipulasinya lebih lanjut.
 Untuk menggunakan fungsi orderBy ..., pilih fungsi di sebelah kiri, lalu pilih satu atau lebih variabel di sebelah kanan, lalu secara opsional tambahkan pengaturan tambahan, misalnya, untuk variabel numerik, Anda dapat menentukan variableName[/divisor[timeUnits][:offset] ] .
-Untuk tidak menggunakan fungsi orderBy ..., pilih opsi pertama di sebelah kiri (&quot;&quot;).
+Untuk tidak menggunakan fungsi orderBy ..., pilih opsi pertama di kiri (&quot;&quot;).
 Fungsi orderBy ...
 adalah:
-<p><strong>orderBy</strong> mengurutkan baris tabel hasil berdasarkan variabel yang ditentukan.
-Misalnya, orderBy(&quot;stationID, time&quot;) mengurutkan hasil terutama berdasarkan stationID dan yang kedua menurut waktu.
+<p><strong>orderBy</strong> mengurutkan baris tabel hasil berdasarkan variabel yang ditentukan, dalam urutan menaik.
+Misalnya, orderBy(&quot;stationID, time&quot;) mengurutkan hasil terutama menurut stationID dan yang kedua menurut waktu.
+<p><strong>orderBy Descending</strong> mengurutkan baris tabel hasil berdasarkan variabel yang ditentukan, dalam urutan menurun.
+Misalnya, orderBy(&quot;stationID, time&quot;) mengurutkan hasil terutama menurut stationID dan yang kedua menurut waktu.
 <p><strong>orderByClosest</strong> mengurutkan baris tabel hasil berdasarkan variabel yang ditentukan.
 Variabel terakhir harus berupa variabel numerik dengan pembagi.
 Hanya baris yang paling dekat dengan interval pembagi yang akan disimpan.
@@ -5038,7 +5040,7 @@ Tanpa ERDDAP, ketika seseorang (atau program komputer) mencari di Internet untuk
 <li>Setiap situs memerlukan protokol yang berbeda untuk meminta data:
 <br>&requestFormatExamplesHtml; .
 <br>&nbsp;
-<li>Setiap situs mengembalikan data dalam format yang berbeda (misalnya, XML, SOAP+XML, aliran data biner OPeNDAP, teks ASCII, HDF 4, HDF 5, NetCDF, ...) mau.
+<li>Setiap situs mengembalikan data dalam format yang berbeda (misalnya, XML, SOAP+XML, aliran data biner OPeNDAP, teks ASCII, HDF 4, HDF 5, NetCDF, ...) ingin.
 <br>&nbsp;
 <li>Data dari situs yang berbeda sulit untuk dibandingkan karena tanggal+waktu dinyatakan dalam format yang berbeda misalnya, &quot;2 Jan 1985&quot;, &quot;02-JAN-1985&quot;, &quot;1/2/85&quot;, &quot;2/1/85&quot;, &quot;1985-01-02&quot;, atau hari sejak 1 Januari 1980, atau ...).
 </ul>
@@ -5127,7 +5129,7 @@ ERDDAP juga menyediakan Formulir Akses Data (halaman web) yang membantu manusia 
     >Rekomendasi Teknis Akses Data NOAA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> dan
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >standar Sistem Data dan Informasi Ilmu Bumi (ESDIS) NASA <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> .
@@ -5184,7 +5186,7 @@ Hal ini membuat hasil dari sumber data yang berbeda mudah untuk dibandingkan.
 Ini berguna saat membuat gambar dengan peta atau deret waktu, dan saat menyimpan data dalam jenis file yang direferensikan secara geografis (misalnya, .esriAscii, .geoJson, dan .kml ).
 <p>Dua standar umum untuk menulis satuan ukuran adalah:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (link eksternal)&quot;title=&quot;Tautan ke situs web eksternal ini bukan merupakan dukungan.&quot;&gt; - dari
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (link eksternal)&quot;title=&quot;Tautan ke situs web eksternal ini bukan merupakan dukungan.&quot;&gt; - dari
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a>, yang digunakan dalam
@@ -5563,6 +5565,17 @@ Terima kasih, Marco!
 <br>ERDDAP sekarang menerima permintaan untuk .transparentPng ketika nilai garis lintang dan/atau garis bujur sebagian atau seluruhnya berada di luar jangkauan.
 (Ini adalah ERDDAP GitHub Issues #19, diposting oleh Rob Fuller -- terima kasih telah mempostingnya, Rob.) Kode untuk memperbaikinya ditulis oleh Chris John.
 Terima kasih, Kris!
+<br>&nbsp;
+<li>Tampilkan data gambar base64 di .htmlTable
+<br>Kode untuk menampilkan data gambar base64 dalam tanggapan .htmlTable disumbangkan oleh Marco Alba dari ETT / EMODnet Physics.
+Terima kasih, Marco Alba!
+<br>&nbsp;
+<li>nPerbaikan Benang
+<br>Sistem nThreads untuk EDDTableFromFiles ditingkatkan secara signifikan.
+Perubahan ini menghasilkan peningkatan kecepatan yang besar (misalnya, kecepatan 2X saat nThreads disetel ke 2 atau lebih) untuk permintaan yang paling menantang (ketika sejumlah besar file harus diproses untuk mengumpulkan hasilnya).
+Perubahan ini juga akan mengarah pada percepatan umum di seluruh ERDDAP .
+Kode untuk perubahan ini disumbangkan oleh Chris John.
+Terima kasih, Kris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5575,7 +5588,7 @@ Saya memilih nama variabel dengan hati-hati.
 Saya mengikuti pedoman pemformatan Java .
 Semua ini adalah upaya untuk membuat kode lebih mudah dibaca, untuk programmer lain yang ingin memahami dan/atau mengubahnya, dan bagi saya, karena, dalam satu atau dua tahun, saya akan lupa detail bagaimana dan mengapa kode itu.
 ditulis seperti itu.
-Kode bersih dengan komentar bagus membuat pekerjaan saya yang sedang berlangsung di ERDDAP lebih mudah, jadi saya memiliki insentif besar untuk menulis kode bersih dengan komentar bagus.
+Kode yang bersih dengan komentar yang baik membuat pekerjaan saya yang sedang berlangsung di ERDDAP lebih mudah, jadi saya memiliki insentif yang besar untuk menulis kode yang bersih dengan komentar yang baik.
 <p><a class="selfLink" id="FOSS" href="#FOSS" rel="bookmark">Tetapi semua jawaban saya sejauh ini tidak terlalu penting.</a> Hanya satu hal yang benar-benar penting.
 Hanya satu hal yang menjamin keberlanjutan ERDDAP atau proyek perangkat lunak apa pun:
 bahwa ERDDAP adalah
@@ -5683,7 +5696,7 @@ Kemudian, orang akan memiliki cara lain untuk mengakses data Anda dan dapat meng
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Hubungi kami</a></h2>
 Jika Anda memiliki pertanyaan, saran, atau komentar tentang ERDDAP secara umum (bukan instalasi ERDDAP khusus ini), silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
-<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Grup / Milis</a> dengan mengunjungi
+<br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Group / Mailing List</a> dengan mengunjungi
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
   src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -6042,6 +6055,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org

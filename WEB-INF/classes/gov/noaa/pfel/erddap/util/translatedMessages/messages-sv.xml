@@ -3183,7 +3183,9 @@ för numeriska variabler kan du ange variabelNamn[/divisor[timeUnits][:offset] ]
 För att inte använda någon orderBy ...-funktion, välj det första alternativet till vänster (&quot;&quot;).
 orderBy ...
 funktionerna är:
-<p><strong>orderBy</strong> sorterar raderna i resultattabellen efter de angivna variablerna.
+<p><strong>orderBy</strong> sorterar raderna i resultattabellen efter de angivna variablerna, i stigande ordning.
+Till exempel orderBy(&quot;stationID, time&quot;) resultaten primärt efter stationID och sekundärt efter tid.
+<p><strong>orderBy Descending</strong> sorterar raderna i resultattabellen efter de angivna variablerna, i fallande ordning.
 Till exempel orderBy(&quot;stationID, time&quot;) resultaten primärt efter stationID och sekundärt efter tid.
 <p><strong>orderByClosest</strong> sorterar raderna i resultattabellen efter de angivna variablerna.
 Den sista variabeln måste vara en numerisk variabel med en divisor.
@@ -5116,7 +5118,7 @@ En URL anger en hel begäran.
 <li>NOAA arbetar tillsammans:
 Analysen använder två gratisprogram från NOAA, ERDDAP och GNOME, och data som betjänas av NOAA NODC/NCDDC (underlättad av NOAA UAF-projekt).
 <li>ERDDAP gör
-<a href="#scientificData">vetenskaplig data</a> mer lättillgänglig för att hjälpa forskare (och andra) att göra sitt arbete mer effektivt.
+<a href="#scientificData">vetenskapliga data</a> lättare tillgängliga för att hjälpa forskare (och andra) att göra sitt arbete mer effektivt.
 <li>Att använda ERDDAP är inte svårt.
 (Ja, Rich Signell är riktigt smart, men alla kan använda ERDDAP .)
 </ul>
@@ -5172,7 +5174,7 @@ ERDDAP tillhandahåller också Data Access Forms (webbsidor) som hjälper männi
     ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> och en
-<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/eso/standards-and-references#ed-standards"
+<a rel="bookmark" href="https://earthdata.nasa.gov/esdis/esco/standards-and-references#ed-standards"
     >NASA Earth Science Data and Information System (ESDIS) standard <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> .
@@ -5230,7 +5232,7 @@ Detta är användbart när du gör bilder med kartor eller tidsserier och när d
 .esriAscii, .geoJson och .kml ).
 <p>Två vanliga standarder för att skriva måttenheter är:
 <ul>
-<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>ternal.png&quot;alt=&quot; (extern länk)&quot;title=&quot;Denna länk till en extern webbplats utgör inte ett stöd.&quot;&gt; - från
+<li><a rel="help" href="https://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>xternal.png&quot;alt=&quot; (extern länk)&quot;title=&quot;Denna länk till en extern webbplats utgör inte ett stöd.&quot;&gt; - från
 <a rel="bookmark" href="https://www.unidata.ucar.edu/">Unidata <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, som används i
@@ -5264,7 +5266,7 @@ Till exempel har UCUM bara ett skiftlägeskänsligt alternativ för grader Celsi
 &quot;Cel&quot;.
 <br>&nbsp;
 </ul>
-Även om ERDDAP inte kräver användning av någon av enheternas standard, föredrar de flesta ERDDAP installationer det ena eller det andra.
+Även om ERDDAP inte kräver användning av endera enhetsstandarden, föredrar de flesta ERDDAP installationer det ena eller det andra.
 (ERDDAP administratörer:
 du kan ange detta med <kbd>&lt;units_standard&gt;</kbd> i setup.xml.) Du kan konvertera UDUNITS till/från UCUM-
 <a rel="bookmark" href="&erddapUrl;/convert/units.html">enheter</a> med ERDDAP :s enhetsomvandlare .
@@ -5344,7 +5346,7 @@ De får bara den data de vill ha, i det filformat de vill ha.
 <a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabellformad datastruktur</a> (till exempel för in-situ boj-, stations- och banadata).
 </ul>
 <li>Visst kan inte all data uttryckas i dessa strukturer, men mycket av det kan.
-Speciellt tabeller är mycket flexibla datastrukturer (titta på den fenomenala framgången för
+Tabeller, i synnerhet, är mycket flexibla datastrukturer (titta på den fenomenala framgången för
 <a rel="help" href="https://en.wikipedia.org/wiki/Relational_database_management_system">relationsdatabasen <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> program).
@@ -5373,7 +5375,7 @@ Det
 <ul>
 <li>ERDDAP är mycket bra på att upptäcka ändringar i rutnätsdatauppsättningar eftersom den kan upptäcka när axelvärdena (t.ex.
 tidsvärdena) ändras.
-<li>ERDDAP är inte särskilt bra på att upptäcka ändringar i tabelluppsättningar eftersom det vanligtvis inte sker några ändringar av metadata när ny data läggs till.
+<li>ERDDAP är inte särskilt bra på att upptäcka ändringar i tabelluppsättningar eftersom det vanligtvis inte sker några ändringar i metadata när ny data läggs till.
 <li>ERDDAP kommer att upptäcka om en datauppsättning blir otillgänglig (men kanske inte omedelbart).
 <li>ERDDAP kommer att upptäcka när den datamängden blir tillgänglig igen.
 <li>ERDDAP ger inga löften om dessa tjänsters lämplighet eller noggrannhet (se
@@ -5617,6 +5619,18 @@ Tack, Marco!
 <br>ERDDAP accepterar nu förfrågningar om .transparentPng:er när latitud- och/eller longitudvärdena ligger helt eller delvis utanför intervallet.
 (Detta var ERDDAP GitHub Issues #19, postat av Rob Fuller -- tack för att du postade det, Rob.) Koden för att fixa detta skrevs av Chris John.
 Tack, Chris!
+<br>&nbsp;
+<li>Visa base64-bilddata i .htmlTable
+<br>Koden för att visa base64-bilddata i .htmlTable svar bidrog med Marco Alba från ETT/EMODnet Physics.
+Tack, Marco Alba!
+<br>&nbsp;
+<li>n Förbättring av trådar
+<br>nThreads-systemet för EDDTableFromFiles förbättrades avsevärt.
+Dessa ändringar leder till en enorm hastighetsförbättring (t.ex.
+2X snabbare när nThreads är inställd på 2 eller mer) för de mest utmanande förfrågningarna (när ett stort antal filer måste bearbetas för att samla in resultaten).
+Dessa förändringar kommer också att leda till en allmän påskyndning i hela ERDDAP .
+Koden för dessa ändringar har bidragit med Chris John.
+Tack, Chris!
 <br>&nbsp;<!-- This contributor's section above IDENTICAL in messages.xml and setup.html.
 -->
 </ul>
@@ -5728,7 +5742,7 @@ Tänk bara på det som ett namn, inte en akronym.
 <ul>
 <li>Den lilla ansträngningen att sätta upp ERDDAP ger många fördelar.
 <li>Om du redan har en webbtjänst för att distribuera dina data kan du ställa in ERDDAP för att komma åt dina data via den befintliga tjänsten eller via källfilerna eller databasen.
-Då kommer människor att ha ett annat sätt att komma åt dina data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
+Sedan kommer människor att ha ett annat sätt att komma åt din data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
 <li>Om du har datauppsättningar som är mycket efterfrågade kan du installera
 <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
@@ -6096,6 +6110,9 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
+https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+
+https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
 https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
