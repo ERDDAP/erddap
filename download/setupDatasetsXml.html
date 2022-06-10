@@ -113,6 +113,7 @@ in <i>tomcat</i>/content/erddap/ to describe the datasets that your ERDDAP insta
   <li><a rel="help" href="#standardText">Standard Text</a>
   <li><a rel="help" href="#subscriptionEmailBlacklist"><kbd>&lt;subscriptionEmailBlacklist&gt;</kbd></a>
   <li><a rel="help" href="#unusualActivity"><kbd>&lt;unusualActivity&gt;</kbd></a>
+  <li><a rel="help" href="#updateMaxEvents"><kbd>&lt;updateMaxEvents&gt;</kbd></a>
 
 
   <li><a rel="help" href="#user"><kbd>&lt;user&gt;</kbd></a>
@@ -1015,6 +1016,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
   <a rel="help" href="#slowDownTroubleMillis">&lt;slowDownTroubleMillis&gt;</a>...&lt;/slowDownTroubleMillis&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#subscriptionEmailBlacklist">&lt;subscriptionEmailBlacklist&gt;</a>...&lt;/subscriptionEmailBlacklist&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#unusualActivity">&lt;unusualActivity&gt;</a>...&lt;/unusualActivity&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#updateMaxEvents">&lt;updateMaxEvents&gt;</a>...&lt;/updateMaxEvents&gt; &lt;!-- 0 or 1 --&gt;
 
   <a rel="help" href="#standardText">&lt;standardLicense&gt;</a>...&lt;/standardLicense&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#standardText">&lt;standardContact&gt;</a>...&lt;/standardContact&gt; &lt;!-- 0 or 1 --&gt;
@@ -11105,6 +11107,19 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   but discouraged.
   <br>&nbsp;
 
+<li><a class="selfLink" id="updateMaxEvents" href="#updateMaxEvents" rel="bookmark"
+  ><kbd><strong>&lt;updateMaxEvents&gt;</strong></kbd></a>
+  is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml to specify
+  the maximum number of file change events (default=10) that will be handled by the 
+  <a rel="help" href="#updateEveryNMillis"><kbd>&lt;updateEveryNMillis&gt;</kbd></a> system
+  before switching to reloading the dataset instead. For example,
+  <br><kbd>&lt;updateMaxEvents&gt;</a>10&lt;/updateMaxEvents&gt;</kbd>
+  <br>The updateEveryNMillis system is intended to run very quickly right before a user's
+  request is processed. If there are a lot of file change events, then presumably
+  it can't run quickly, so it instead calls for the dataset to be reloaded. 
+  If your ERDDAP deals with datasets that must be kept up-to-date even when there are
+  changes to a large number of data files, you can set this to a larger number (100?).
+  <br>&nbsp;
 
 <li><a class="selfLink" id="user" href="#user" rel="bookmark"><kbd><strong>&lt;user&gt;</strong></kbd></a>
   is an OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml that identifies a user's
@@ -12206,6 +12221,12 @@ while processing each request.
       <br>Or, use higher numbers if the problem persists.
       The default for watches is 8192. The default for instances is 128.
     </ul>
+  <li>You can put <kbd>&lt;updateMaxEvents&gt;10&lt;/updateMaxEvents&gt;</kbd>
+    in datasets.xml (in with the other settings near the top) to change the maximum
+    number of file changes (default=10) that will be processed by the updateEveryNMillis system.
+    A larger number may be useful for dataset where it is very important that they
+    be kept always up-to-date.
+    See the <a rel="help" href="#updateMaxEvents">updateMaxEvents documentation</a>.
   <li>For Curious Programmers -- these incremental updates, unlike ERDDAP's full
     <a rel="help" href="#reloadEveryNMinutes"><kbd>reloadEveryNMinutes</kbd></a>
     system, occur within user request threads.

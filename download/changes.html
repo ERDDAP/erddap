@@ -106,6 +106,16 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
         will have other minor related effects because the guessed standard_name
         is often used for other purposes, e.g., to create a new long_name,
         and to create the colorBar settings.
+        Thanks to Kevin O'Brien.
+  <li>NEW: You can now put <kbd>&lt;updateMaxEvents&gt;10&lt;/updateMaxEvents&gt;</kbd>
+    in datasets.xml (in with the other settings near the top) to change the maximum
+    number of file changes (default=10) that will be processed by the updateEveryNMillis system.
+    A larger number may be useful for dataset where it is very important that they
+    be kept always up-to-date.
+    See the <a rel="help" 
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateMaxEvents"
+        >updateMaxEvents documentation</a>.
+    Thanks to John Maurer.
   <li>BUG FIX: For Docker users setting setup.xml parameters via ERDDAP_<i>paramName</i>: 
     for int and boolean parameters (e.g., emailSmtpPort), ERDDAP was incorrectly looking for just <i>paramName</i>.
     Now it looks for <i>ERDDAP_paramName</i>.

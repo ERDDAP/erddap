@@ -338,6 +338,7 @@ public static boolean developmentMode = false;
     public final static int    DEFAULT_partialRequestMaxCells  = 10000000;
     public final static int    DEFAULT_slowDownTroubleMillis   = 1000;
     public final static int    DEFAULT_unusualActivity         = 10000;
+    public final static int    DEFAULT_updateMaxEvents         = 10;
     public static long   cacheMillis            = DEFAULT_cacheMinutes           * Calendar2.MILLIS_PER_MINUTE;
     public static String drawLandMask           = DEFAULT_drawLandMask;    
     public static boolean emailDiagnosticsToErdData = true;
@@ -349,6 +350,7 @@ public static boolean developmentMode = false;
     public static int    partialRequestMaxCells = DEFAULT_partialRequestMaxCells;
     public static int    slowDownTroubleMillis  = DEFAULT_slowDownTroubleMillis;
     public static int    unusualActivity        = DEFAULT_unusualActivity;
+    public static int    updateMaxEvents        = DEFAULT_updateMaxEvents;
 
     //not translated
     public static String  //these are set by setup.xml (deprecated) and/or messages.xml and/or datasets.xml (v2.00+)    
