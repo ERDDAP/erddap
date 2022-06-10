@@ -780,6 +780,13 @@ public class LoadDatasets extends Thread {
                         EDStatic.DEFAULT_unusualActivity : tnt; 
                     String2.log("unusualActivity=" + EDStatic.unusualActivity);
 
+                } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
+                } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
+                    int tnt = String2.parseInt(xmlReader.content());
+                    EDStatic.updateMaxEvents = tnt < 1 || tnt == Integer.MAX_VALUE? 
+                        EDStatic.DEFAULT_updateMaxEvents : tnt; 
+                    String2.log("updateMaxEvents=" + EDStatic.updateMaxEvents);
+
                 //<user username="bsimons" password="..." roles="admin, role1" />
                 //this mimics tomcat syntax
                 } else if (tags.equals("<erddapDatasets><user>")) { 
