@@ -646,6 +646,8 @@ public abstract class EDD {
                 } else if (tags.equals("<erddapDatasets></convertInterpolateDatasetIDVariableList>")) {
                 } else if (tags.equals("<erddapDatasets><unusualActivity>")) {
                 } else if (tags.equals("<erddapDatasets></unusualActivity>")) {
+                } else if (tags.equals("<erddapDatasets><updateMaxEvents>")) {
+                } else if (tags.equals("<erddapDatasets></updateMaxEvents>")) {
                 } else if (tags.equals("<erddapDatasets><user>")) {
                 } else if (tags.equals("<erddapDatasets></user>")) {
                 } else {
