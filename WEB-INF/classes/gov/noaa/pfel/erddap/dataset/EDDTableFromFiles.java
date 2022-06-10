@@ -2504,9 +2504,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //If too many events, call for reload.
         //This method isn't as nearly as efficient as full reload.
-        if (nEvents > 10) {
+        if (nEvents > EDStatic.updateMaxEvents) {
             if (reallyVerbose) String2.log(msg + nEvents + 
-                ">10 file events, so I called requestReloadASAP() instead of making changes here."); 
+                ">" + EDStatic.updateMaxEvents + " file events, so I called requestReloadASAP() instead of making changes here."); 
             requestReloadASAP();
             return false;
         }
