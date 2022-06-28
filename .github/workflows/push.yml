@@ -80,8 +80,7 @@ jobs:
       - name: Debug directory structure
         if: ${{ failure() }}
         run: |
-          apt update
-          apt install tree
+          sudo apt-get install tree
           tree
 
   docker:
