@@ -77,14 +77,60 @@ jobs:
         working-directory: ./apache-tomcat-9.0.64/webapps/erddap/WEB-INF
         run: java -cp classes:../../../lib/servlet-api.jar:lib/* -Xmx4000M -Xms4000M classes/gov/noaa/pfel/coastwatch/TestAll
 
-  # docker:
-  #   name: Build Docker image
-  #   runs-on: ubuntu-22.04
-  #   timeout-minutes: 15
-  #   needs:
-  #   - build
-  #   - test
+      - name: Debug directory structure
+        if: ${{ failure() }}
+        run: |
+          apt update
+          apt install tree
+          tree
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+  docker:
+    name: Build Docker image
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    needs:
+      - build
+    # - test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download erddap.war
+        uses: actions/download-artifact@v3
+        with:
+          name: erddap.war
+          path: ./docker-files/erddap.war
+
+      # - name: Download ERDDAP Content
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name:
+
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Docker meta
+      #   id: meta
+      #   uses: docker/metadata-action@v4
+      #   with:
+      #     images: ghcr.io/${{ github.repository_owner }}/erddap
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./docker-files/
+          # push: true
+          push: false
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/erddap:${{ github.sha }}
+          # push: ${{ github.event_name != 'pull_request' }}
+          # tags: ${{ steps.meta.outputs.tags }}
+          # labels: ${{ steps.meta.outputs.labels }}

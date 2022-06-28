@@ -1,0 +1,6 @@
+git
+.gitignore
+README.md
+jar-input-files
+makeErddapWar.bat
+pom.xml
