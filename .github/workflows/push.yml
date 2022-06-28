@@ -1,0 +1,90 @@
+name: Push
+
+on:
+  - push
+
+jobs:
+  build:
+    name: Build ERDDAP WAR and content
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v3.4.0
+        with:
+          distribution: "temurin" # See 'Supported distributions' for available options
+          java-version: "8"
+
+      - name: Move files
+        run: cp WEB-INF/erddap.web.xml WEB-INF/web.xml
+
+      - name: Make WEB-INF/temp/
+        run: mkdir WEB-INF/temp/
+
+      - name: Build ERDDAP WAR
+        # Force an exit code of 0 since jar usually returns 1
+        run: "jar cvf erddap.war $(cat jar-input-files) || :"
+
+      - name: ERDDAP WAR contents
+        run: jar tf erddap.war
+
+      - name: Upload erddap.war
+        uses: actions/upload-artifact@v3
+        with:
+          name: erddap.war
+          path: erddap.war
+
+      - name: Build ERDDAP Content
+        run: echo "Not yet"
+
+  test:
+    name: Test ERDDAP
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Setup Java 8
+        uses: actions/setup-java@v3.4.0
+        with:
+          distribution: "temurin" # See 'Supported distributions' for available options
+          java-version: "8"
+
+      - run: which java
+
+      - name: Install Tomcat
+        env:
+          JAVA_HOME: /usr/bin/java
+        run: |
+          wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.64/bin/apache-tomcat-9.0.64.tar.gz
+          tar xvfz apache-tomcat-9.0.64.tar.gz
+          rm apache-tomcat-9.0.64.tar.gz
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: apache-tomcat-9.0.64/webapps/erddap
+
+      - name: Move files
+        run: cp apache-tomcat-9.0.64/webapps/erddap/WEB-INF/erddap.web.xml apache-tomcat-9.0.64/webapps/erddap/WEB-INF/web.xml
+
+      - name: Make WEB-INF/temp/
+        run: mkdir apache-tomcat-9.0.64/webapps/erddap/WEB-INF/temp/
+
+      - name: Compile TestAll
+        working-directory: ./apache-tomcat-9.0.64/webapps/erddap/WEB-INF
+        run: java -cp classes;../../../lib/servlet-api.jar;lib/* -Xmx4000M -Xms4000M classes/gov/noaa/pfel/coastwatch/TestAll
+
+  # docker:
+  #   name: Build Docker image
+  #   runs-on: ubuntu-22.04
+  #   timeout-minutes: 15
+  #   needs:
+  #   - build
+  #   - test
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
