@@ -75,7 +75,7 @@ jobs:
 
       - name: Compile TestAll
         working-directory: ./apache-tomcat-9.0.64/webapps/erddap/WEB-INF
-        run: java -cp classes;../../../lib/servlet-api.jar;lib/* -Xmx4000M -Xms4000M classes/gov/noaa/pfel/coastwatch/TestAll
+        run: java -cp classes:../../../lib/servlet-api.jar:lib/* -Xmx4000M -Xms4000M classes/gov/noaa/pfel/coastwatch/TestAll
 
   # docker:
   #   name: Build Docker image
