@@ -44,6 +44,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -263,14 +264,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
         //json   https://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
         String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
-
-        byte sourceInfoBytes[] = quickRestartAttributes == null?
-            SSR.getUrlResponseBytes(jsonUrl) : //has timeout and descriptive error
-            ((ByteArray)quickRestartAttributes.get("sourceInfoBytes")).toArray();          
-            
-        Table table = new Table();
-        table.readJson(jsonUrl, 
-            new String(sourceInfoBytes, File2.UTF_8));  //.json should always be UTF-8
+        String sourceInfoBytes = quickRestartAttributes == null?
+            SSR.getUrlResponseStringNewline(jsonUrl) :
+            new String(((ByteArray)quickRestartAttributes.get("sourceInfoBytes")).toArray(), File2.UTF_8);
+        Table table = new Table();        
+        table.readJson("sourceInfoBytes", new BufferedReader(new StringReader(sourceInfoBytes)) ); //att is a UTF-8 ByteArray
 
         //go through the rows of table from bottom to top
         int nRows = table.nRows();
@@ -489,18 +487,18 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
         //has edvga[0] changed size?
         EDVGridAxis edvga = axisVariables[0];
-        EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
-            (EDVTimeStampGridAxis)edvga : null;
+        EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis t? 
+            t : null;
         PrimitiveArray oldValues = edvga.sourceValues();
         int oldSize = oldValues.size();
 
         //get mainDArray
         BaseType bt = dds.getVariable(dataVariables[0].sourceName()); //throws NoSuchVariableException
         DArray mainDArray = null;
-        if (bt instanceof DGrid) {
-            mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
-        } else if (bt instanceof DArray) {
-            mainDArray = (DArray)bt;
+        if (bt instanceof DGrid dgrid) {
+            mainDArray = (DArray)dgrid.getVar(0); //first element is always main array
+        } else if (bt instanceof DArray darray) {
+            mainDArray = darray;
         } else { 
             String2.log(msg + String2.ERROR + ": Unexpected " + dataVariables[0].destinationName() + 
                 " source type=" + bt.getTypeName() + ".");
@@ -947,67 +945,55 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 "-->\n");
 */
         //get the griddap datasets in a json table
-        String jsonUrl = url + "/griddap/index.json?page=1&itemsPerPage=100000";
-        String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
-        if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
-        if (sourceInfo.indexOf("\"table\"") > 0) {
-            Table table = new Table();
-            table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
+        String jsonUrl = url + "/griddap/index.json?page=1&itemsPerPage=1000000";
+        Table table = new Table();
+        table.readJson(jsonUrl, SSR.getBufferedUrlReader(jsonUrl));   //they are sorted by title
 
-            if (keepOriginalID) {
-                //sort by datasetID 
-                table.ascendingSortIgnoreCase(new int[]{table.findColumnNumber("Dataset ID")});
-            }
+        if (keepOriginalID) {
+            //sort by datasetID 
+            table.ascendingSortIgnoreCase(new int[]{table.findColumnNumber("Dataset ID")});
+        }
 
-            PrimitiveArray urlCol = table.findColumn("griddap");
-            PrimitiveArray titleCol = table.findColumn("Title");
-            PrimitiveArray datasetIdCol = table.findColumn("Dataset ID");
+        PrimitiveArray urlCol = table.findColumn("griddap");
+        PrimitiveArray titleCol = table.findColumn("Title");
+        PrimitiveArray datasetIdCol = table.findColumn("Dataset ID");
 
-            //go through the rows of the table
-            int nRows = table.nRows();
-            for (int row = 0; row < nRows; row++) {
-                String id = datasetIdCol.getString(row);
-                if (id.equals("etopo180") || id.equals("etopo360"))
-                    continue;
-                //localSourceUrl isn't available (and we generally don't want it)
-                String tPublicSourceUrl = urlCol.getString(row); 
-                if (!keepOriginalID)
-                    id = suggestDatasetID(tPublicSourceUrl);
-                sb.append(
+        //go through the rows of the table
+        int nRows = table.nRows();
+        for (int row = 0; row < nRows; row++) {
+            String id = datasetIdCol.getString(row);
+            if (id.equals("etopo180") || id.equals("etopo360"))
+                continue;
+            //localSourceUrl isn't available (and we generally don't want it)
+            String tPublicSourceUrl = urlCol.getString(row); 
+            if (!keepOriginalID)
+                id = suggestDatasetID(tPublicSourceUrl);
+            sb.append(
 "<dataset type=\"EDDGridFromErddap\" datasetID=\"" + id + "\" active=\"true\">\n" +
 "    <!-- " + XML.encodeAsXML(String2.replaceAll(titleCol.getString(row), "--", "- - ")) + " -->\n" +
 "    <sourceUrl>" + XML.encodeAsXML(tPublicSourceUrl) + "</sourceUrl>\n" +
 "</dataset>\n");
-            }
         }
 
         //get the EDDGridFromErddap datasets 
-        jsonUrl = url + "/search/index.json?searchFor=EDDGridFromErddap";
-        sourceInfo = "";
         try {
-            sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
-        } catch (Throwable t) {
-            //error if remote erddap has no EDDGridFromErddap's
-        }
-        if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
-        PrimitiveArray datasetIdCol;
-        if (sourceInfo.indexOf("\"table\"") > 0) {
-            Table table = new Table();
-            table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
-            datasetIdCol = table.findColumn("Dataset ID");
-        } else {
-            datasetIdCol = new StringArray();
-        }
+            jsonUrl = url + "/search/index.json?searchFor=EDDGridFromErddap";
+            table = new Table();
+            table.readJson(jsonUrl, SSR.getBufferedUrlReader(jsonUrl));   //throws exception if none
+            datasetIdCol = table.findColumn("Dataset ID"); //throws exception if none
 
-        sb.append(
-            "\n<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n" +
-            "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n" +
-            "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n" +
-            "The remote EDDGridFromErddap datasets are:\n");
-        if (datasetIdCol.size() == 0)
-            sb.append("(none)");
-        else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
-        sb.append("\n-->\n");
+            sb.append(
+                "\n<!-- Of the datasets above, the following datasets are EDDGridFromErddap's at the remote ERDDAP.\n" +
+                "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n" +
+                "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n" +
+                "The remote EDDGridFromErddap datasets are:\n");
+            if (datasetIdCol.size() == 0)
+                sb.append("(none)");
+            else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
+            sb.append("\n-->\n");
+        } catch (Throwable t) {
+            String2.log("The remote erddap has no EDDGridFromErddap's.");
+        }
 
         String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
         return sb.toString();

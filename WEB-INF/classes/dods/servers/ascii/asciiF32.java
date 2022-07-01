@@ -60,7 +60,7 @@ public class asciiF32 extends DFloat32 implements toASCII {
             pw.print(", ");
 
 
-        pw.print((new Float(getValue())).toString());
+        pw.print((Float.valueOf(getValue())).toString());
 
         if(newLine)
             pw.print("\n");

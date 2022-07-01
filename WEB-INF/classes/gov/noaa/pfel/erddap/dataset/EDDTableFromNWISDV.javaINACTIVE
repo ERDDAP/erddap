@@ -1086,7 +1086,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                             Integer row = (Integer)timeRowMap.get(tTime);
                             if (row == null) {
                                 //add a row
-                                row = new Integer(nRows);
+                                row = Integer.valueOf(nRows);
                                 timeRowMap.put(tTime, row);
                                 table.insertBlankRow(nRows++);
                                 timePA.set(nRows - 1, tTime);

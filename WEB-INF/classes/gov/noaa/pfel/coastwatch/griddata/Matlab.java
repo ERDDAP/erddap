@@ -385,9 +385,8 @@ clear sst2
      * @return an NDimensionalIndex
      */
     public static NDimensionalIndex make2DNDIndex(PrimitiveArray pa) {
-        if (pa instanceof StringArray) {
+        if (pa instanceof StringArray sa) {
             //make ndIndex as if 2DCharArray
-            StringArray sa = (StringArray)pa;
             int maxStringLength = sa.maxStringLength(); 
             //String2.log("maxStringLength = " + maxStringLength);
             return make2DNDIndex(sa.size(), maxStringLength); 

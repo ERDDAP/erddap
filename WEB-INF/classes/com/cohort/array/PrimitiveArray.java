@@ -145,8 +145,7 @@ public abstract class PrimitiveArray {
             throw new IllegalArgumentException(String2.ERROR + 
                 " in PrimitiveArray.factory: o is null.");
 
-        if (o instanceof char[][]) {
-            char[][] car = (char[][])o;
+        if (o instanceof char[][] car) {
             int nStrings = car.length;
             StringArray sa = new StringArray(nStrings, false);
             for (int i = 0; i < nStrings; i++) {
@@ -158,14 +157,14 @@ public abstract class PrimitiveArray {
             }
             return sa;
         }
-        if (o instanceof double[]) return new DoubleArray((double[])o);
-        if (o instanceof float[])  return new FloatArray((float[])o);
-        if (o instanceof long[])   return isUnsigned? new ULongArray( (long[] )o) : new LongArray( (long[] )o);
-        if (o instanceof int[])    return isUnsigned? new UIntArray(  (int[]  )o) : new IntArray(  (int[]  )o);
-        if (o instanceof short[])  return isUnsigned? new UShortArray((short[])o) : new ShortArray((short[])o);
-        if (o instanceof byte[])   return isUnsigned? new UByteArray( (byte[] )o) : new ByteArray( (byte[] )o);
-        if (o instanceof char[])   return new CharArray((char[])o);
-        if (o instanceof String[]) return new StringArray((String[])o);
+        if (o instanceof double[] da) return new DoubleArray(da);
+        if (o instanceof float[]  fa) return new FloatArray(fa);
+        if (o instanceof long[]   la) return isUnsigned? new ULongArray( la) : new LongArray( la);
+        if (o instanceof int[]    ia) return isUnsigned? new UIntArray(  ia) : new IntArray(  ia);
+        if (o instanceof short[]  sa) return isUnsigned? new UShortArray(sa) : new ShortArray(sa);
+        if (o instanceof byte[]   ba) return isUnsigned? new UByteArray( ba) : new ByteArray( ba);
+        if (o instanceof char[]   ca) return new CharArray(ca);
+        if (o instanceof String[] sa) return new StringArray(sa);
 
         if (o instanceof Object[]) {
             Object oar[] = (Object[])o;
@@ -176,13 +175,13 @@ public abstract class PrimitiveArray {
             return sa;
         }
 
-        if (o instanceof Double)   return new DoubleArray(new double[]{((Double)o).doubleValue()});
-        if (o instanceof Float)    return new FloatArray( new float[ ]{((Float)o).floatValue()});
-        if (o instanceof Long)     return new LongArray(  new long[  ]{((Long)o).longValue()});
-        if (o instanceof Integer)  return new IntArray(   new int[   ]{((Integer)o).intValue()});
-        if (o instanceof Short)    return new ShortArray( new short[ ]{((Short)o).shortValue()});
-        if (o instanceof Byte)     return new ByteArray(  new byte[  ]{((Byte)o).byteValue()});
-        if (o instanceof Character)return new CharArray(  new char[  ]{((Character)o).charValue()});
+        if (o instanceof Double    d) return new DoubleArray(new double[]{d.doubleValue()});
+        if (o instanceof Float     f) return new FloatArray( new float[ ]{f.floatValue()});
+        if (o instanceof Long      l) return new LongArray(  new long[  ]{l.longValue()});
+        if (o instanceof Integer   i) return new IntArray(   new int[   ]{i.intValue()});
+        if (o instanceof Short     s) return new ShortArray( new short[ ]{s.shortValue()});
+        if (o instanceof Byte      b) return new ByteArray(  new byte[  ]{b.byteValue()});
+        if (o instanceof Character c) return new CharArray(  new char[  ]{c.charValue()});
 
         //String and fall through
         return new StringArray(new String[]{o.toString()});
@@ -4333,7 +4332,7 @@ public abstract class PrimitiveArray {
      * or null if no duplicates.
      */
     public int[] firstDuplicates() {
-        HashSet hs = new HashSet(); 
+        HashSet<String> hs = new HashSet(); 
         for (int i = 0; i < size(); i++) {
             String s = getString(i);
             if (!hs.add(s)) 
@@ -4735,13 +4734,13 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(factory(new double[]{1}).elementType(), PAType.DOUBLE, "");
         Test.ensureEqual(factory(new String[]{"1"}).elementType(), PAType.STRING, "");
 
-        Test.ensureEqual(factory(new Byte((byte)1)).elementType(), PAType.BYTE, "");
-        Test.ensureEqual(factory(new Character((char)1)).elementType(), PAType.CHAR, "");
-        Test.ensureEqual(factory(new Short((short)1)).elementType(), PAType.SHORT, "");
-        Test.ensureEqual(factory(new Integer(1)).elementType(), PAType.INT, "");
-        Test.ensureEqual(factory(new Long(1)).elementType(), PAType.LONG, "");
-        Test.ensureEqual(factory(new Float(1)).elementType(), PAType.FLOAT, "");
-        Test.ensureEqual(factory(new Double(1)).elementType(), PAType.DOUBLE, "");
+        Test.ensureEqual(factory(Byte.valueOf((byte)1)).elementType(), PAType.BYTE, "");
+        Test.ensureEqual(factory(Character.valueOf((char)1)).elementType(), PAType.CHAR, "");
+        Test.ensureEqual(factory(Short.valueOf((short)1)).elementType(), PAType.SHORT, "");
+        Test.ensureEqual(factory(Integer.valueOf(1)).elementType(), PAType.INT, "");
+        Test.ensureEqual(factory(Long.valueOf(1)).elementType(), PAType.LONG, "");
+        Test.ensureEqual(factory(Float.valueOf(1)).elementType(), PAType.FLOAT, "");
+        Test.ensureEqual(factory(Double.valueOf(1)).elementType(), PAType.DOUBLE, "");
         Test.ensureEqual(factory(new String("1")).elementType(), PAType.STRING, "");
 
         Test.ensureEqual(factory(PAType.BYTE, 1, true).elementType(), PAType.BYTE, "");

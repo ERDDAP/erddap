@@ -83,8 +83,8 @@ public class TestUtil {
 "  regex[1]=.{3}[end]\n", 
             "\nresult=\n" + result);
         
-        Double Dar1[] = {new Double(1.1), new Double(2.2)};
-        Double Dar2[] = {new Double(1.1), new Double(2.2)};
+        Double Dar1[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
+        Double Dar2[] = {Double.valueOf(1.1), Double.valueOf(2.2)};
         Test.ensureEqual(   Dar1, Dar2,   "j");
 
         /*
@@ -1320,6 +1320,14 @@ public class TestUtil {
         s = "-1.0ee+5"; Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "e2";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
 
+        //isUrl
+        Test.ensureEqual(String2.isUrl(null), false, "");
+        Test.ensureEqual(String2.isUrl("http://"), false, "");
+        Test.ensureEqual(String2.isUrl("http://a"), true, "");
+        Test.ensureEqual(String2.isUrl("https://a.com"), true, "");
+        Test.ensureEqual(String2.isUrl("rttp://a.com"), false, "");
+
+
         //isSomething
         Test.ensureEqual(String2.isSomething(null), false, "");
         Test.ensureEqual(String2.isSomething(""), false, "");
@@ -1765,7 +1773,7 @@ public class TestUtil {
         }
         Test.ensureEqual(sum, -1000000, "");
         time = System.currentTimeMillis() - time;
-        Test.ensureTrue(time <= 70, 
+        Test.ensureTrue(time <= 80, 
             "time for 1000000 StringHolder.compareTo=" + time + "ms (usual = 46-63)");
 
         //compareTo times
@@ -2350,44 +2358,44 @@ public class TestUtil {
 
         //toIntArray(I[])
         String2.log("test toIntArray(I[])");
-        Integer Iar[] = {new Integer(1), new Integer(333)};
+        Integer Iar[] = {Integer.valueOf(1), Integer.valueOf(333)};
         Test.ensureEqual(String2.toCSSVString(String2.toIntArray(Iar)), "1, 333", "a");
-        Object oar[] = {new Integer(-1), " -333 ", "b"};
+        Object oar[] = {Integer.valueOf(-1), " -333 ", "b"};
         Test.ensureEqual(String2.toCSSVString(String2.toIntArray(oar)), "-1, -333, 2147483647", "b");
 
         //toFloatArray(F[])
         String2.log("test toFloatArray(F[])");
-        Float Far[] = {new Float(1.1f), new Float(333.3f)};
+        Float Far[] = {Float.valueOf(1.1f), Float.valueOf(333.3f)};
         Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(Far)), "1.1, 333.3", "a");
-        oar = new Object[] {new Float(-1.1f), " -333.3 ", "b"};
+        oar = new Object[] {Float.valueOf(-1.1f), " -333.3 ", "b"};
         Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(oar)), "-1.1, -333.3, NaN", "b");
 
         //toDoubleArray(D[])
         String2.log("test toDoubleArray(D[])");
-        Double Dar[] = {new Double(1.1), new Double(333.3)};
+        Double Dar[] = {Double.valueOf(1.1), Double.valueOf(333.3)};
         Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(Dar)), "1.1, 333.3", "a");
-        oar = new Object[] {new Double(-1.1), " -333.3 ", "b"};
+        oar = new Object[] {Double.valueOf(-1.1), " -333.3 ", "b"};
         Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(oar)), "-1.1, -333.3, NaN", "b");
 
         //toIntArray(arrayList)
         String2.log("test toIntArray(arrayList)");
         al = new ArrayList();
-        al.add(new Integer(1));
-        al.add(new Integer(333));
+        al.add(Integer.valueOf(1));
+        al.add(Integer.valueOf(333));
         Test.ensureEqual(String2.toCSSVString(String2.toIntArray(al)), "1, 333", "a");
 
         //toFloatArray(arrayList)
         String2.log("test toFloatArray(arrayList)");
         al = new ArrayList();
-        al.add(new Float(1.1f));
-        al.add(new Float(333.3f));
+        al.add(Float.valueOf(1.1f));
+        al.add(Float.valueOf(333.3f));
         Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(al)), "1.1, 333.3", "a");
 
         //toDoubleArray(arrayList)
         String2.log("test toDoubleArray(arrayList)");
         al = new ArrayList();
-        al.add(new Double(1.1));
-        al.add(new Double(333.3));
+        al.add(Double.valueOf(1.1));
+        al.add(Double.valueOf(333.3));
         Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(al)), "1.1, 333.3", "a");
 
         //justFiniteValues(int[])
@@ -2536,12 +2544,14 @@ public class TestUtil {
                 testSum += test == 0? Long.parseLong(ts) : String2.parseLong(ts);
             }
             speedResults[test] = System.currentTimeMillis() - time;
-            String2.log("sum=" + testSum);
+            String2.log("sum=" + testSum); //so compiler can't delete all of this
         }
+        Test.ensureTrue(speedResults[1] < 2700, 
+            "String2.parseLong is too slow! " + speedResults[1] + " (Java 17 typical: 1900ms in TestAll)");
         String2.log("test speed of Long.parseLong vs String2.parseLong (now using parseBigDecimal): " + 
             String2.toCSSVString(speedResults));
-        Test.ensureTrue(speedResults[1] < speedResults[0] * 1.3, 
-            "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0] + " (typical: 3473ms vs 2920ms");
+        Test.ensureTrue(speedResults[1] < speedResults[0] * 2, 
+            "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0] + " (Java 17 typical: 1900ms vs 1300ms");
         Math2.gc(2000);
         Math2.gc(2000);
 
@@ -6513,7 +6523,7 @@ expected =
                 "\ntime=" + time + "ms (should be Java 1.8=~" + shouldBe + 
                 "ms [1st pass is slower]) " + 
                 Math2.memoryString());
-            Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
+            Test.ensureTrue(time < shouldBe * 2, "Unexpected time (" + time + "ms > " + shouldBe + "ms");
             if (oMemoryInUse == -1) {
                 //initial sizes
                 oMemoryInUse = memoryInUse; 

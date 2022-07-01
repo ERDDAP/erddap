@@ -50,7 +50,7 @@ public class LayerContainer extends java.awt.Container implements LayerControl {
    */
   public void drawDraggableItems(Graphics g) throws PaneNotFoundException {
     /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
-    throw new java.lang.UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
+    throw new UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
   }
 
   /**

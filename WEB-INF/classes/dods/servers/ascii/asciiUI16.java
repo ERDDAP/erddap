@@ -59,7 +59,7 @@ public class asciiUI16 extends DUInt16 implements toASCII {
         if(addName)
             pw.print(", ");
 	            
-        pw.print((new Integer(getValue()&0xFFFF)).toString());
+        pw.print((Integer.valueOf(getValue()&0xFFFF)).toString());
        
         if(newLine)
             pw.print("\n");

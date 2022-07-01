@@ -76,8 +76,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
@@ -679,8 +679,8 @@ public abstract class EDDTable extends EDD {
         String errorInMethod = "datasets.xml/EDDTable.ensureValid error for datasetID=" + 
             datasetID + ":\n ";
 
-        HashSet sourceNamesHS = new HashSet(2 * dataVariables.length);
-        HashSet destNamesHS   = new HashSet(2 * dataVariables.length);        
+        HashSet<String> sourceNamesHS = new HashSet(2 * dataVariables.length);
+        HashSet<String> destNamesHS   = new HashSet(2 * dataVariables.length);        
         for (int v = 0; v < dataVariables.length; v++) {
             //ensure unique sourceNames
             String sn = dataVariables[v].sourceName();
@@ -2851,7 +2851,7 @@ public abstract class EDDTable extends EDD {
         }
 
         //special EDDTableFromHttpGet file types
-        if (this instanceof EDDTableFromHttpGet &&
+        if (this instanceof EDDTableFromHttpGet etfhg &&
             (fileTypeName.equals(".insert") ||
              fileTypeName.equals(".delete"))) {
             if (!EDStatic.developmentMode &&
@@ -2859,7 +2859,6 @@ public abstract class EDDTable extends EDD {
                 throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                     fileTypeName + " requests must be made to the https URL.");
 
-            EDDTableFromHttpGet etfhg = (EDDTableFromHttpGet)this;
             String jsonResponse = etfhg.insertOrDelete(language,   //throws exception if trouble
                 fileTypeName.equals(".insert")? 
                     EDDTableFromHttpGet.INSERT_COMMAND :
@@ -4589,7 +4588,7 @@ public abstract class EDDTable extends EDD {
                 markerType, markerSize,
                 vectorStandard,
                 GraphDataLayer.REGRESS_NONE);
-            ArrayList graphDataLayers = new ArrayList();
+            ArrayList<GraphDataLayer> graphDataLayers = new ArrayList();
             graphDataLayers.add(graphDataLayer);
 
             //setup graphics2D
@@ -5365,11 +5364,11 @@ public abstract class EDDTable extends EDD {
                             " ncOffset=" + ncOffset + " bufferSize=" + bufferSize + 
                             " pa.capacity=" + pa.capacity() + " pa.size=" + pa.size());
                         Variable newVar = ncWriter.findVariable(newVars[col].getFullName()); //because newVars are Variable.Builder's
-                        if (nc3Mode && pa instanceof StringArray) {
+                        if (nc3Mode && pa instanceof StringArray tsa) {
                             //pa is temporary, so ok to change strings
                             array = Array.factory(NcHelper.getNc3DataType(colType),      
                                 new int[]{bufferSize}, 
-                                ((StringArray)pa).toIso88591().toObjectArray());
+                                tsa.toIso88591().toObjectArray());
                             ncWriter.writeStringDataToChar(newVar, new int[]{ncOffset}, array);
 
                         } else {
@@ -5380,10 +5379,10 @@ public abstract class EDDTable extends EDD {
                                 //String2.log(">> saveAsFlatNc twawm=" + twawm + " colName=" + twawm.columnName(col) + " doublePA=" + pa.toString());                                
                             }
 
-                            if (pa instanceof CharArray) {
+                            if (pa instanceof CharArray ca) {
                                 //pa is temporary, so ok to change chars
                                 array = Array.factory(DataType.CHAR, new int[]{bufferSize}, 
-                                    ((CharArray)pa).toIso88591().toObjectArray());                            
+                                    ca.toIso88591().toObjectArray());                            
                             } else { 
                                 array = Array.factory(NcHelper.getNc3DataType(colType), 
                                     new int[]{bufferSize}, pa.toObjectArray());
@@ -6372,7 +6371,7 @@ public abstract class EDDTable extends EDD {
                 writer.write("IGOR" + Table.IgorEndOfLine);
 
                 //write each col as a wave separately, so data type is preserved
-                HashSet colNamesHashset = new HashSet();
+                HashSet<String> colNamesHashset = new HashSet();
                 int nCols = twawm.nColumns();
                 for (int col = 0; col < nCols; col++) {
                     Attributes atts = twawm.columnAttributes(col);
@@ -9930,9 +9929,9 @@ public abstract class EDDTable extends EDD {
                     //ensure conVal[cv][con] is valid
                     if (conVal[cv][con] == null) {
                     } else if (conVal[cv][con].length() > 0) {
-                        if (conEdv != null && conEdv instanceof EDVTimeStamp) { 
+                        if (conEdv != null && conEdv instanceof EDVTimeStamp ts) { 
                             //convert numeric time (from parseUserDapQuery) to iso
-                            conVal[cv][con] = ((EDVTimeStamp)conEdv).destinationToString(
+                            conVal[cv][con] = ts.destinationToString(
                                 String2.parseDouble(conVal[cv][con]));
                         } else if (dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.CHAR ||
                                    dataVariables[conVar[cv] - 1].destinationDataPAType() == PAType.STRING) { 
@@ -11388,8 +11387,7 @@ public abstract class EDDTable extends EDD {
                 continue;
  
             EDV edv = findDataVariableByDestinationName(subsetVariables[p]);
-            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
-                null;
+            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp t? t : null;
             String tTime_precision = edvTimeStamp == null? null : 
                 edvTimeStamp.time_precision();
             PrimitiveArray pa = subsetTable.findColumn(subsetVariables[p]);
@@ -11418,8 +11416,7 @@ public abstract class EDDTable extends EDD {
             keep.set(0, nRows); //set all to true
 
             EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
-            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
-                null;
+            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts? ts : null;
             String tTime_precision = edvTimeStamp == null? null : 
                 edvTimeStamp.time_precision();
 
@@ -11659,8 +11656,7 @@ public abstract class EDDTable extends EDD {
             for (int p = 0; p < subsetVariables.length; p++) {
                 String pName = subsetVariables[p];
                 EDV edv = findDataVariableByDestinationName(pName);
-                EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
-                    null;
+                EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp ts? ts : null;
                 String tTime_precision = edvTimeStamp == null? null : 
                     edvTimeStamp.time_precision();
 
@@ -12882,10 +12878,10 @@ public abstract class EDDTable extends EDD {
                     distinctOptions[sv][i + 1] = String2.toJson(sa.get(i), 65536);
                 }
 
-            } else if (edv instanceof EDVTimeStamp) { 
+            } else if (edv instanceof EDVTimeStamp tts) { 
 
                 //convert epochSeconds to iso Strings
-                String tTime_precision = ((EDVTimeStamp)edv).time_precision();
+                String tTime_precision = tts.time_precision();
                 int n = pa.size();
                 distinctOptions[sv] = new String[n + 1];
                 distinctOptions[sv][0] = "";
@@ -14804,8 +14800,7 @@ public abstract class EDDTable extends EDD {
         } finally { 
             try {
                 if (out != null) {
-                    if (out instanceof ZipOutputStream) 
-                        ((ZipOutputStream)out).closeEntry();
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
                     out.close();             
                 }
             } catch (Exception e) {}
@@ -19295,8 +19290,8 @@ writer.write(
                                                            200 * nDup))) { //floating point
 
                 //if long strings skip it.
-                if (pa instanceof StringArray) {
-                    if (((StringArray)pa).maxStringLength() > 100)
+                if (pa instanceof StringArray sa) {
+                    if (sa.maxStringLength() > 100)
                         continue;
                 }
 

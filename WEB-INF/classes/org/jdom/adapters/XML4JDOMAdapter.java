@@ -103,7 +103,7 @@ public class XML4JDOMAdapter extends AbstractDOMAdapter {
             // Set validation
             Method setFeature =
                 parserClass.getMethod("setFeature",
-                                      new Class[] {java.lang.String.class,
+                                      new Class[] {String.class,
                                                    boolean.class});
             setFeature.invoke(parser, new Object[] {"http://xml.org/sax/features/validation",
                                                     new Boolean(validate)});

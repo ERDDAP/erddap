@@ -17,8 +17,8 @@ import java.nio.file.FileSystem;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * OutputStreamViaAwsS3 writes to a file in an S3 bucket, then redirects user to download that file.

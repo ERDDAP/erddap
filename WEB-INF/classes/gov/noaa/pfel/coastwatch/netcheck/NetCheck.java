@@ -336,8 +336,8 @@ public class NetCheck  {
        
         try {
             //set up the email lists
-            ArrayList emailRecipients = new ArrayList();
-            ArrayList emailContents   = new ArrayList(); //parallels emailRecipients
+            ArrayList<String>        emailRecipients = new ArrayList();
+            ArrayList<StringBuilder> emailContents   = new ArrayList(); //parallels emailRecipients
 
             //do the tests
             for (int i = 0; i < netCheckTests.size(); i++) {
@@ -418,7 +418,7 @@ public class NetCheck  {
                         String2.right((nPass[i] * 100 / nTry[i]) + "%", 4) + 
                         ") ";
                 headline += netCheckTest.getTitle() + "\n";
-                HashSet notifiedReThisTest = new HashSet();               
+                HashSet<String> notifiedReThisTest = new HashSet();               
 
                 //addResults to emails to subscribers 
                 if (testMode) {
@@ -462,7 +462,7 @@ public class NetCheck  {
                 ").\n";
             String2.log(footer);
             for (int i = 0; i < emailRecipients.size(); i++) {
-                StringBuilder contents = (StringBuilder)emailContents.get(i);
+                StringBuilder contents = emailContents.get(i);
                 if (doStatusReport) 
                     contents.insert(0, "Status Report:\n\n");
                 contents.append(footer); 
@@ -472,9 +472,9 @@ public class NetCheck  {
                     (allPassed? "All PASSED": "Some FAILED") + "\n";
                 try {
                     if (doStatusReport || someChanged) {
-                        if (verbose) String2.log("sending email to " + (String)emailRecipients.get(i));
+                        if (verbose) String2.log("sending email to " + emailRecipients.get(i));
                         SSR.sendEmail(smtpServer, smtpPort, smtpUser, smtpPassword, smtpProperties,
-                            smtpFromAddress, (String)emailRecipients.get(i), 
+                            smtpFromAddress, emailRecipients.get(i), 
                             subject, contents.toString());
 
                     }
@@ -538,19 +538,19 @@ public class NetCheck  {
      * @param notifiedReThisTest is a hashset of subscribers who have been notified about this test's results
      * @param result is the result string for one test
      */
-    private static void addResults(ArrayList emailRecipients, ArrayList emailContents, 
-        ArrayList subscribers, HashSet notifiedReThisTest, String result) {
+    private static void addResults(ArrayList<String> emailRecipients, ArrayList<StringBuilder> emailContents, 
+        ArrayList<String> subscribers, HashSet<String> notifiedReThisTest, String result) {
 
         for (int i = 0; i < subscribers.size(); i++) {
             //subscriber already notified re this test?
-            String subscriber = (String)subscribers.get(i);
+            String subscriber = subscribers.get(i);
             if (notifiedReThisTest.add(subscriber)) { //true if subscriber wasn't already in set, i.e. new
 
                 //look for subscriber in the list
                 int po = String2.indexOf(emailRecipients.toArray(), subscriber);
                 if (po >= 0) {
                     //the recipient is already in the list
-                    ((StringBuilder)emailContents.get(po)).append(result);
+                    emailContents.get(po).append(result);
                 } else {
                     //add the recepient to the list
                     emailRecipients.add(subscriber);

@@ -292,7 +292,7 @@ public class JpegEncoder extends Frame {
         COM[1] = (byte) 0xFE;
         COM[2] = (byte) ((length >> 8) & 0xFF);
         COM[3] = (byte) (length & 0xFF);
-        java.lang.System.arraycopy(JpegObj.Comment.getBytes(), 0, COM, 4,
+        System.arraycopy(JpegObj.Comment.getBytes(), 0, COM, 4,
             JpegObj.Comment.length());
         WriteArray(COM, out);
 
@@ -382,9 +382,9 @@ public class JpegEncoder extends Frame {
             }
 
             DHT3 = new byte[index];
-            java.lang.System.arraycopy(DHT4, 0, DHT3, 0, oldindex);
-            java.lang.System.arraycopy(DHT1, 0, DHT3, oldindex, 17);
-            java.lang.System.arraycopy(DHT2, 0, DHT3, oldindex + 17, bytes);
+            System.arraycopy(DHT4, 0, DHT3, 0, oldindex);
+            System.arraycopy(DHT1, 0, DHT3, oldindex, 17);
+            System.arraycopy(DHT2, 0, DHT3, oldindex + 17, bytes);
             DHT4 = DHT3;
             oldindex = index;
         }

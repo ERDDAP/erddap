@@ -78,14 +78,14 @@ public class PAOne {
     /**
      * This constructs a String paOne with the specified value.
      */
-    public static PAOne fromString(String s) {
+    public final static PAOne fromString(String s) {
         return new PAOne(PAType.STRING).setString(s);
     }
 
     /**
      * This constructs a char paOne with the specified value.
      */
-    public static PAOne fromChar(char c) {
+    public final static PAOne fromChar(char c) {
         PAOne paOne = new PAOne(PAType.CHAR);
         ((CharArray)paOne.pa()).set(0, c);
         return paOne;
@@ -94,35 +94,35 @@ public class PAOne {
     /**
      * This constructs a double paOne with the specified value.
      */
-    public static PAOne fromDouble(double d) {
+    public final static PAOne fromDouble(double d) {
         return new PAOne(PAType.DOUBLE).setDouble(d);
     }
 
     /**
      * This constructs a float paOne with the specified value.
      */
-    public static PAOne fromFloat(float f) {
+    public final static PAOne fromFloat(float f) {
         return new PAOne(PAType.FLOAT).setFloat(f);
     }
 
     /**
      * This constructs a long paOne with the specified value.
      */
-    public static PAOne fromLong(long i) {
+    public final static PAOne fromLong(long i) {
         return new PAOne(PAType.LONG).setLong(i);
     }
 
     /**
      * This constructs a ulong paOne with the specified value.
      */
-    public static PAOne fromULong(BigInteger bi) {
+    public final static PAOne fromULong(BigInteger bi) {
         return new PAOne(PAType.ULONG).setULong(bi);
     }
 
     /**
      * This constructs an int paOne with the specified value.
      */
-    public static PAOne fromInt(int i) {
+    public final static PAOne fromInt(int i) {
         return new PAOne(PAType.INT).setInt(i);
     }
 
@@ -141,21 +141,21 @@ public class PAOne {
      *
      * @return the pa held by this PAOne.
      */
-    public PrimitiveArray pa() {
+    public final PrimitiveArray pa() {
         return pa;
     }
 
     /**
      * This indicates if the PAOne is an integer type.
      */
-    public boolean isIntegerType() {
+    public final boolean isIntegerType() {
         return pa.isIntegerType();
     }
 
     /**
      * This returns the PAType of this PAOne.
      */
-    public PAType paType() {
+    public final PAType paType() {
         return pa.elementType();
     }
 
@@ -165,7 +165,7 @@ public class PAOne {
      * @param s a String
      * @return this PAOne, for convenience
      */
-    public PAOne setString(String s) {
+    public final PAOne setString(String s) {
         pa.setString(0, s);
         return this;
     }
@@ -178,7 +178,7 @@ public class PAOne {
      *   or "" (for missing value).
      *   If this PA is unsigned, this method returns the unsigned value.
      */
-    public String getString() {
+    public final String getString() {
         return pa.getString(0);
     }
 
@@ -188,7 +188,7 @@ public class PAOne {
      * @param d a double
      * @return this PAOne, for convenience
      */
-    public PAOne setDouble(double d) {
+    public final PAOne setDouble(double d) {
         pa.setDouble(0, d);
         return this;
     }
@@ -198,7 +198,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a double.
      */
-    public double getDouble() {
+    public final double getDouble() {
         return pa.getDouble(0);
     }
 
@@ -209,7 +209,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a double.
      */
-    public double getRawDouble() {
+    public final double getRawDouble() {
         return pa.getRawDouble(0);
     }
 
@@ -220,7 +220,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a double.
      */
-    public double getUnsignedDouble() {
+    public final double getUnsignedDouble() {
         return pa.getUnsignedDouble(0);
     }
 
@@ -231,7 +231,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a double.
      */
-    public double getNiceDouble() {
+    public final double getNiceDouble() {
         return pa.getNiceDouble(0);
     }
 
@@ -241,7 +241,7 @@ public class PAOne {
      * @param f a float
      * @return this PAOne, for convenience
      */
-    public PAOne setFloat(float f) {
+    public final PAOne setFloat(float f) {
         pa.setFloat(0, f);
         return this;
     }
@@ -251,7 +251,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a float.
      */
-    public float getFloat() {
+    public final float getFloat() {
         return pa.getFloat(0);
     }
 
@@ -261,7 +261,7 @@ public class PAOne {
      * @param i a ULong
      * @return this PAOne, for convenience
      */
-    public PAOne setULong(BigInteger i) {
+    public final PAOne setULong(BigInteger i) {
         pa.setULong(0, i);
         return this;
     }
@@ -271,7 +271,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a ULong (which may be null)
      */
-    public BigInteger getULong() {
+    public final BigInteger getULong() {
         return pa.getULong(0);
     }
 
@@ -281,7 +281,7 @@ public class PAOne {
      * @param i a long
      * @return this PAOne, for convenience
      */
-    public PAOne setLong(long i) {
+    public final PAOne setLong(long i) {
         pa.setLong(0, i);
         return this;
     }
@@ -291,7 +291,7 @@ public class PAOne {
      *
      * @return this PAOne's value as a long.
      */
-    public long getLong() {
+    public final long getLong() {
         return pa.getLong(0);
     }
 
@@ -301,7 +301,7 @@ public class PAOne {
      * @param i an int
      * @return this PAOne, for convenience
      */
-    public PAOne setInt(int i) {
+    public final PAOne setInt(int i) {
         pa.setInt(0, i);
         return this;
     }
@@ -311,7 +311,7 @@ public class PAOne {
      *
      * @return this PAOne's value as an int.
      */
-    public int getInt() {
+    public final int getInt() {
         return pa.getInt(0);
     }
 
@@ -321,7 +321,7 @@ public class PAOne {
      * @param otherPA the source PAOne which must be of the same (or smaller) PAType.
      * @return this PAOne, for convenience
      */
-    public PAOne readFrom(PAOne otherPA) {
+    public final PAOne readFrom(PAOne otherPA) {
         pa.setFromPA(0, otherPA.pa, 0);
         return this;
     }
@@ -333,7 +333,7 @@ public class PAOne {
      * @param index the source index in PAOne.
      * @return this PAOne, for convenience
      */
-    public PAOne readFrom(PrimitiveArray otherPA, int index) {
+    public final PAOne readFrom(PrimitiveArray otherPA, int index) {
         pa.setFromPA(0, otherPA, index);
         return this;
     }
@@ -344,7 +344,7 @@ public class PAOne {
      * @param otherPA the destination PAOne which must be of the same (or smaller) PAType.
      * @param index the destination index in PAOne.
      */
-    public void writeTo(PrimitiveArray otherPA, int index) {
+    public final void writeTo(PrimitiveArray otherPA, int index) {
         otherPA.setFromPA(index, pa, 0);
     }
 
@@ -353,7 +353,7 @@ public class PAOne {
      *
      * @param otherPA the destination PAOne which must be of the same (or smaller) PAType.
      */
-    public void addTo(PrimitiveArray otherPA) {
+    public final void addTo(PrimitiveArray otherPA) {
         otherPA.addFromPA(pa, 0);
     }
 
@@ -361,7 +361,7 @@ public class PAOne {
      * This indicates if the PAOne's value is a missing value.
      * For integerTypes, isMissingValue can only be true if maxIsMv is 'true'.
      */
-    public boolean isMissingValue() {
+    public final boolean isMissingValue() {
         return pa.isMissingValue(0);
     }
 
@@ -374,7 +374,7 @@ public class PAOne {
      *   same as Other), or a positive integer (if this is greater than Other).
      *   Think "this - other".
      */
-    public int compareTo(PrimitiveArray otherPA, int index) {
+    public final int compareTo(PrimitiveArray otherPA, int index) {
         return pa.compare(0, otherPA, index); 
     }
 
@@ -386,7 +386,7 @@ public class PAOne {
      *   same as Other), or a positive integer (if this is greater than Other).
      *   Think "this - other".
      */
-    public int compareTo(PAOne otherPAOne) {
+    public final int compareTo(PAOne otherPAOne) {
         return pa.compare(0, otherPAOne.pa, 0); 
     }
 
@@ -394,7 +394,7 @@ public class PAOne {
      * This returns the lesser of this or otherPA.
      * If this or other isNaN, this returns the non-NaN value.
      */
-    public PAOne min(PAOne otherPAOne) {
+    public final PAOne min(PAOne otherPAOne) {
         if (isMissingValue())
             return otherPAOne;
         if (otherPAOne.isMissingValue())
@@ -406,7 +406,7 @@ public class PAOne {
      * This returns the max of this or otherPA.
      * If this or other isNaN, this returns the non-NaN value.
      */
-    public PAOne max(PAOne otherPAOne) {
+    public final PAOne max(PAOne otherPAOne) {
         if (isMissingValue())
             return otherPAOne;
         if (otherPAOne.isMissingValue())
@@ -421,7 +421,7 @@ public class PAOne {
      * @param index the index in otherPA
      * @return true if they are equal.
      */
-    public boolean equals(PrimitiveArray otherPA, int index) {
+    public final boolean equals(PrimitiveArray otherPA, int index) {
         return pa.compare(0, otherPA, index) == 0; 
     }
 
@@ -431,7 +431,7 @@ public class PAOne {
      * @param otherPAOne the other PA which must be of the same (or smaller) PAType. 
      * @return true if the values are equal.  This returns false if otherPAOne is null.
      */
-    public boolean equals(PAOne otherPAOne) {
+    public final boolean equals(PAOne otherPAOne) {
         if (otherPAOne == null)
             return false;
         return compareTo(otherPAOne) == 0; 
@@ -520,7 +520,7 @@ public class PAOne {
      * This returns a string representation of the value.
      * Integer types show MAX_VALUE number (not "").
      */
-    public String toString() {
+    public final String toString() {
         return pa.toString();
     }
 
@@ -532,7 +532,7 @@ public class PAOne {
      * @param raf the RandomAccessFile, which MUST have data of the same PAType as this PAOne.
      * @throws Exception if trouble
      */
-    public void readFromRAF(RandomAccessFile raf) throws Exception {
+    public final void readFromRAF(RandomAccessFile raf) throws Exception {
         pa.clear();
         pa.readFromRAF(raf);
     }
@@ -548,7 +548,7 @@ public class PAOne {
      * @return this (for convenience)
      * @throws Exception if trouble
      */
-    public PAOne readFromRAF(RandomAccessFile raf, long start, long index) throws Exception {
+    public final PAOne readFromRAF(RandomAccessFile raf, long start, long index) throws Exception {
         raf.seek(start + elementSize * index);
         pa.clear();
         pa.readFromRAF(raf);
@@ -563,7 +563,7 @@ public class PAOne {
      * @param raf the RandomAccessFile
      * @throws Exception if trouble
      */
-    public void writeToRAF(RandomAccessFile raf) throws Exception {
+    public final void writeToRAF(RandomAccessFile raf) throws Exception {
         pa.writeToRAF(raf, 0);
     }
 
@@ -577,7 +577,7 @@ public class PAOne {
      * @param index the index of the value (0..)
      * @throws Exception if trouble
      */
-    public void writeToRAF(RandomAccessFile raf, long start, long index) throws Exception {
+    public final void writeToRAF(RandomAccessFile raf, long start, long index) throws Exception {
         raf.seek(start + elementSize * index);
         pa.writeToRAF(raf, 0);
     }
@@ -590,7 +590,7 @@ public class PAOne {
      * @param dos the DataOutputStream
      * @throws Exception if trouble
      */
-    public void writeToDOS(DataOutputStream dos) throws Exception {
+    public final void writeToDOS(DataOutputStream dos) throws Exception {
         pa.writeDos(dos, 0);
     }
 

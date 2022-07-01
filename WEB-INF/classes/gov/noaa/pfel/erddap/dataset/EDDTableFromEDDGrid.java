@@ -213,8 +213,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         //is oChildDataset a fromErddap from this erddap?
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = null;
-        if (tErddap != null && oChildDataset instanceof EDDGridFromErddap) {
-            EDDGridFromErddap tFromErddap = (EDDGridFromErddap)oChildDataset;
+        if (tErddap != null && oChildDataset instanceof EDDGridFromErddap tFromErddap) {
             String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
             if (EDStatic.urlIsThisComputer(tSourceUrl)) { 
                 String lcdid = File2.getNameNoExtension(tSourceUrl);

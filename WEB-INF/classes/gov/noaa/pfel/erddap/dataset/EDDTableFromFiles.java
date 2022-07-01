@@ -1343,7 +1343,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //remove "badFiles" if they no longer exist (in tFileNames)
             if (badFileMap.size() > 0) {
                 //make hashset with all tFileNames
-                HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+                HashSet<String> tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
                 for (int i = 0; i < ntft; i++) {
                     tFileSet.add(tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));
                     //String2.log("tFileSet add: " +   tFileDirIndexPA.get(i) + "/" + tFileNamePA.get(i));                    
@@ -1847,7 +1847,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //Do all files contain just one value of sosOfferingIndex (e.g., 1 station)?
             //If so, easy to find min/max lon/lat/time for each station.
             int tnFiles = fLonMin.size();
-            HashMap offeringIndexHM = new HashMap(); //key=offering value=new Integer(SosXxx index)
+            HashMap offeringIndexHM = new HashMap(); //key=offering value=Integer.valueOf(SosXxx index)
             for (int f = 0; f < tnFiles; f++) {
                 String offMin  = fOfferingMin.getString(f);
                 String offMax  = fOfferingMax.getString(f);
@@ -1864,7 +1864,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     Integer soI = (Integer)offeringIndexHM.get(offMin);
                     if (soI == null) {
                         //it's a new offering.  add it.
-                        soI = new Integer(sosOfferings.size());
+                        soI = Integer.valueOf(sosOfferings.size());
                         offeringIndexHM.put(offMin, soI);
                         sosMinLon.addFromPA(fLonMin, f);
                         sosMaxLon.addFromPA(fLonMax, f);
@@ -3573,9 +3573,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     reasonNotOk = 
                         "No data matches " +
                         edv.destinationName() + tOp + 
-                        (edv instanceof EDVTimeStamp? 
+                        (edv instanceof EDVTimeStamp ets? 
                             Calendar2.epochSecondsToLimitedIsoStringT(
-                                ((EDVTimeStamp)edv).time_precision(), conValD, "NaN") : 
+                                ets.time_precision(), conValD, "NaN") : 
                             conValues.get(con)) + 
                         " because the numeric variable's source min=" + 
                         edv.destinationMinString() +  //works well with numbers and numeric EDVTimeStamp
@@ -3749,9 +3749,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         } //else don't reject based on this constraint
 
 
-                    } else if (edv instanceof EDVTimeStamp) {
+                    } else if (edv instanceof EDVTimeStamp tdv) {
                         //conValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
-                        EDVTimeStamp tdv = (EDVTimeStamp)edv;
                         if (conEdvSourcePAType == PAType.STRING &&
                             (!tdv.sourceTimeFormat().toLowerCase().startsWith("yyyy") ||
                              Double.isNaN(conValuesD[con]))) {

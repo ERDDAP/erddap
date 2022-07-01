@@ -657,9 +657,9 @@ public class EDDTableFromDapSequence extends EDDTable{
                 }
 
                 //convert time constraints (epochSeconds) to source String format
-                if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
+                if ((edv instanceof EDVTimeStamp ets) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
                     constraintValues.set(c, 
-                        ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(
+                        ets.epochSecondsToSourceTimeString(
                             String2.parseDouble(constraintValues.get(c))));
                 }
 
@@ -668,9 +668,9 @@ public class EDDTableFromDapSequence extends EDDTable{
 
             } else {
                 //convert time constraints (epochSeconds) to source units
-                if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
+                if ((edv instanceof EDVTimeStamp ets) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
                     constraintValues.set(c, 
-                        ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(
+                        ets.epochSecondsToSourceTimeString(
                             String2.parseDouble(constraintValues.get(c))));
                 }
 
@@ -802,8 +802,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                 gridMappingAtts = NcHelper.getGridMappingAtts(tSourceAtts);
             }
 
-            if (outerSequenceName == null && datasetVar instanceof DSequence) {
-                DSequence outerSequence = (DSequence)datasetVar;
+            if (outerSequenceName == null && datasetVar instanceof DSequence outerSequence) {
                 outerSequenceName = outerSequence.getName();
 
                 //get list of outerSequence variables
@@ -812,10 +811,9 @@ public class EDDTableFromDapSequence extends EDDTable{
                     BaseType outerVar = (BaseType)outerVars.nextElement();
 
                     //catch innerSequence
-                    if (outerVar instanceof DSequence) {
+                    if (outerVar instanceof DSequence innerSequence) {
                         if (innerSequenceName == null) {
                             innerSequenceName = outerVar.getName();
-                            DSequence innerSequence = (DSequence)outerVar;
                             Enumeration innerVars = innerSequence.getVariables();
                             while (innerVars.hasMoreElements()) {
                                 //inner variable
@@ -1664,16 +1662,16 @@ expected =
                     if (outerCol > 0)
                         sb.append(", ");
                     BaseType obt = (BaseType)outerVector.get(outerCol);
-                    if      (obt instanceof DByte)     sb.append(((DByte)obt).getValue());
-                    else if (obt instanceof DFloat32)  sb.append(((DFloat32)obt).getValue());
-                    else if (obt instanceof DFloat64)  sb.append(((DFloat64)obt).getValue());
-                    else if (obt instanceof DInt16)    sb.append(((DInt16)obt).getValue());
-                    else if (obt instanceof DUInt16)   sb.append(((DUInt16)obt).getValue());
-                    else if (obt instanceof DInt32)    sb.append(((DInt32)obt).getValue());
-                    else if (obt instanceof DUInt32)   sb.append(((DUInt32)obt).getValue());
-                    else if (obt instanceof DBoolean)  sb.append(((DBoolean)obt).getValue());
-                    else if (obt instanceof DString)   sb.append(((DString)obt).getValue());
-                    else if (obt instanceof DSequence) sb.append("DSequence)");
+                    if      (obt instanceof DByte     t) sb.append(t.getValue());
+                    else if (obt instanceof DFloat32  t) sb.append(t.getValue());
+                    else if (obt instanceof DFloat64  t) sb.append(t.getValue());
+                    else if (obt instanceof DInt16    t) sb.append(t.getValue());
+                    else if (obt instanceof DUInt16   t) sb.append(t.getValue());
+                    else if (obt instanceof DInt32    t) sb.append(t.getValue());
+                    else if (obt instanceof DUInt32   t) sb.append(t.getValue());
+                    else if (obt instanceof DBoolean  t) sb.append(t.getValue());
+                    else if (obt instanceof DString   t) sb.append(t.getValue());
+                    else if (obt instanceof DSequence t) sb.append("DSequence)");
                     else sb.append(obt.getTypeName());
                 }
                 System.out.println(sb.toString());

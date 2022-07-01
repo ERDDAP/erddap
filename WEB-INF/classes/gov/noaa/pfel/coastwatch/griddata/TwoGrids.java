@@ -409,7 +409,7 @@ public class TwoGrids  {
             //time attributes
             timeVar.addAttribute(NcHelper.newAttribute("actual_range", NcHelper.get1DArray(new double[]{centerSeconds, centerSeconds}, false)));     
             timeVar.addAttribute(new Attribute("axis",                 "T"));
-            timeVar.addAttribute(new Attribute("fraction_digits",      new Integer(0)));     
+            timeVar.addAttribute(new Attribute("fraction_digits",      Integer.valueOf(0)));     
             timeVar.addAttribute(new Attribute("long_name",            "Centered Time"));
             timeVar.addAttribute(new Attribute("standard_name",        "time"));
             timeVar.addAttribute(new Attribute("units",                Calendar2.SECONDS_SINCE_1970));
@@ -418,7 +418,7 @@ public class TwoGrids  {
             //altitude attributes
             altitudeVar.addAttribute(NcHelper.newAttribute("actual_range",   NcHelper.get1DArray(new double[]{0, 0}, false)));     
             altitudeVar.addAttribute(new Attribute("axis",                   "Z"));
-            altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
+            altitudeVar.addAttribute(new Attribute("fraction_digits",        Integer.valueOf(0)));     
             altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
             altitudeVar.addAttribute(new Attribute("positive",               "up"));
             altitudeVar.addAttribute(new Attribute("standard_name",          "altitude"));

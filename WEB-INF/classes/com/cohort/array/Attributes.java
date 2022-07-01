@@ -774,8 +774,7 @@ public class Attributes {
                     connect = ", ";
                     sb.append(String2.toJson(pa.getRawString(i), 65536, isCharArray)); //encodeNewline?
                 }
-            } else if (pa instanceof FloatArray) {
-                FloatArray fa = (FloatArray)pa;
+            } else if (pa instanceof FloatArray fa) {
                 int n = fa.size();
                 for (int i = 0; i < n; i++) {
                     sb.append(connect);
@@ -858,12 +857,12 @@ public class Attributes {
             return;
 
         //go through all atts in this or otherAtts
-        HashSet set = new HashSet();
+        HashSet<String> set = new HashSet();
         set.addAll(otherAtts.hashmap.keySet());
         set.addAll(hashmap.keySet());
-        Iterator it = set.iterator();
+        Iterator<String> it = set.iterator();
         while (it.hasNext()) {
-            String name = (String)it.next();
+            String name = it.next();
             PrimitiveArray pa = get(name); //prefer from this Atts
             if (pa == null) 
                 pa = otherAtts.get(name);

@@ -38,7 +38,7 @@ public class ResourceBundle2 {
     public static boolean reallyVerbose = false; 
 
     protected ResourceBundle primaryRB, secondaryRB; //both or just secondary may be null
-    protected ConcurrentHashMap concurrentHashMap; //it is thread-safe (and needs to be)
+    protected ConcurrentHashMap<String,String> concurrentHashMap; //it is thread-safe (and needs to be)
 
     /**
      * A constructor that uses the one specified primary ResourceBundle.
@@ -99,7 +99,7 @@ public class ResourceBundle2 {
      * 
      * @param concurrentHashMap
      */
-    public ResourceBundle2(ConcurrentHashMap concurrentHashMap) {
+    public ResourceBundle2(ConcurrentHashMap<String,String> concurrentHashMap) {
         this.concurrentHashMap = concurrentHashMap;
     }
 
@@ -116,7 +116,7 @@ public class ResourceBundle2 {
         XPath xPath = XML.getXPath();
         NodeList nodeList = XML.getNodeList(doc, xPath, "/*/*"); //all elements directly under root element
         int n = nodeList.getLength();
-        ConcurrentHashMap tHash = new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
+        ConcurrentHashMap<String,String> tHash = new ConcurrentHashMap(Math2.roundToInt(1.4 * 16), 0.75f, 4);
         //String2.log("ResourceBundle2.fromXml  nNodes=" + n);
         for (int i = 0; i < n; i++) {
             Element element = (Element)nodeList.item(i);
@@ -233,7 +233,7 @@ public class ResourceBundle2 {
                     else s = secondaryRB.getString(key);
                 }
             } else {
-                s = (String)concurrentHashMap.get(key);
+                s = concurrentHashMap.get(key);
             }
             s = s.trim();
             if (reallyVerbose)

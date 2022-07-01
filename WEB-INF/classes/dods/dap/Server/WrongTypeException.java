@@ -10,7 +10,6 @@
 /////////////////////////////////////////////////////////////////////////////
 
 package dods.dap.Server;
-import java.lang.String;
 import dods.dap.DODSException;
 
 /** Report a type-mismatch problem in the constraint expression. Examples are

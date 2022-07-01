@@ -175,7 +175,7 @@ public class Math2 {
      *    !isFinite(d), this returns NaN.
      *    d=trunc(d)+frac(d);
      */
-    public static double trunc(double d) {
+    public static double trunc(final double d) {
         return (d < 0) ? Math.ceil(d) : Math.floor(d);
     }
 
@@ -186,7 +186,7 @@ public class Math2 {
      * @return the truncated version of d (or NaN if trouble)
      * @see Math2#trunc
      */
-    public static int truncToInt(double d) {
+    public static int truncToInt(final double d) {
         return roundToInt(trunc(d));
     }
 
@@ -198,7 +198,7 @@ public class Math2 {
      * @param d a double
      * @return the fractional part of d
      */
-    public static double frac(double d) {
+    public static double frac(final double d) {
         return d - trunc(d);
     }
 
@@ -212,7 +212,7 @@ public class Math2 {
      * and 1 if i is 0 (i.e., 0 is treated as a positive number).
      * 
      */
-    public static int sign1(int i) {
+    public static int sign1(final int i) {
         return (i < 0) ? -1 : 1;
     }
 
@@ -230,7 +230,7 @@ public class Math2 {
      *     If !isFinite(d), this returns Integer.MAX_VALUE
      *     d=0 returns 0.
      */
-    public static int intExponent(double d) {
+    public static int intExponent(final double d) {
         if (!Double.isFinite(d))
             return Integer.MAX_VALUE;
         if (d == 0)
@@ -249,8 +249,8 @@ public class Math2 {
      * @return the exponent of the number. d=0 returns 1.
      *   If !isFinite(d), this returns NaN.
      */
-    public static double exponent(double d) {
-        int iExp = intExponent(d);
+    public static double exponent(final double d) {
+        final int iExp = intExponent(d);
         return iExp == Integer.MAX_VALUE? Double.NaN: Math.pow(10, iExp); 
     }
 
@@ -266,7 +266,7 @@ public class Math2 {
      * @param d any double
      * @return d / exponent(d)   (or 0 if d=0, or NaN if !finite(d))
      */
-    public static double mantissa(double d) {
+    public static double mantissa(final double d) {
         if (d == 0)
             return 0;
 
@@ -284,7 +284,7 @@ public class Math2 {
      * @param d and double value
      * @return d (or NaN if !isFinite(d))
      */
-    public static double NaNCheck(double d) {
+    public static double NaNCheck(final double d) {
         return !Double.isFinite(d) ? Double.NaN : d;
     }
 
@@ -295,7 +295,7 @@ public class Math2 {
      *
      * @param millis the number of milliseconds for the thread to pause
      */
-    public static void sleep(long millis) {
+    public static void sleep(final long millis) {
         try { 
 
             if (millis <= 0) {
@@ -333,7 +333,7 @@ public class Math2 {
      * @param allocatedMemory the value from getAllocatedMemory()
      * @return the number of bytes currently in use by this program
      */
-    public static long getMemoryInUse(long allocatedMemory) {
+    public static long getMemoryInUse(final long allocatedMemory) {
         return allocatedMemory - Runtime.getRuntime().freeMemory();
     }
 
@@ -358,7 +358,7 @@ public class Math2 {
      * in this session)
      */
     public static String memoryString() {
-        long using = getMemoryInUse();
+        final long using = getMemoryInUse();
         maxUsingMemory = Math.max(maxUsingMemory, using); //before gc
 
         return "MemoryInUse=" + String2.right("" + using/BytesPerMB, 6) + 
@@ -382,11 +382,11 @@ public class Math2 {
      * 
      * @param millis the number of millis to sleep
      */
-    public static void incgc(long millis) {
+    public static void incgc(final long millis) {
         //long time = System.currentTimeMillis(); //diagnostic
 
         //get usingMemory 
-        long using = getMemoryInUse();
+        final long using = getMemoryInUse();
         maxUsingMemory = Math.max(maxUsingMemory, using); //before gc
 
         //memory usage declined?
@@ -432,8 +432,8 @@ public class Math2 {
      * @param millis the number of milliseconds to sleep
      * @see Math2#incgc
      */
-    public static void gc(long millis) {
-        long time = System.currentTimeMillis();
+    public static void gc(final long millis) {
+        final long time = System.currentTimeMillis();
 
         //System.err.println("********** Math2.gc"); //diagnostic
         String2.log("[Math2.gc is calling System.gc]");
@@ -463,20 +463,18 @@ public class Math2 {
      *   to which this not-enough-memory issue should be attributed.
      * @throws RuntimeException if the requested nBytes are unlikely to be available.
      */
-    public static void ensureMemoryAvailable(long nBytes, String attributeTo) {
+    public static void ensureMemoryAvailable(final long nBytes, final String attributeTo) {
 
         //this is a little risky, but avoids frequent calls to calculate memoryInUse
         if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
             return;
-        String attributeToParen = 
-            attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
        
         //is this single request by itself too big under any circumstances?
         if (nBytes > maxSafeMemory) {
             throw new RuntimeException(memoryTooMuchData + "  " +
                 MessageFormat.format(memoryThanSafe, "" + (nBytes / BytesPerMB),  
                     "" + (maxSafeMemory / BytesPerMB)) +
-                attributeToParen); 
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")")); 
         }
 
         //request is fine without gc?
@@ -497,13 +495,15 @@ public class Math2 {
             memoryInUse = getMemoryInUse();
         }
         if (memoryInUse > maxSafeMemory) {
-            String2.log("WARNING: memoryInUse > maxSafeMemory" + attributeToParen + ".");
+            String2.log("WARNING: memoryInUse > maxSafeMemory" + 
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")") +
+                ".");
         }
         if (memoryInUse + nBytes > maxSafeMemory) {
             throw new RuntimeException(memoryTooMuchData + "  " +
                 MessageFormat.format(memoryThanCurrentlySafe,
                     "" + (nBytes / BytesPerMB), "" + ((maxSafeMemory - memoryInUse) / BytesPerMB)) +
-                attributeToParen); 
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")")); 
         }
     }
 
@@ -530,7 +530,7 @@ public class Math2 {
      * @param i any int
      * @return true if i is an odd number
      */
-    public static boolean odd(int i) {
+    public static boolean odd(final int i) {
         return (i & 1) == 1;
     }
 
@@ -544,7 +544,7 @@ public class Math2 {
      * @param toThe the number that ten is to be raised to the power of
      * @return 10^toThe
      */
-    public static double ten(int toThe) {
+    public static double ten(final int toThe) {
         if ((toThe >= 0) && (toThe <= 18))
             return Ten[toThe];
 
@@ -561,7 +561,7 @@ public class Math2 {
      *    If !isFinite(d), this return BinaryLimit (which is a flag, not a real 
      *       value).
      */
-    public static int binaryExponent(double d) {
+    public static int binaryExponent(final double d) {
         //see the description of doubles in FileInput notes
         //(from turbo Pascal 7 Language guide manual, pg 278)
         if (d == 0)
@@ -570,7 +570,7 @@ public class Math2 {
         if (!Double.isFinite(d))
             return BinaryLimit;
 
-        int e = (int) (Double.doubleToLongBits(d) >> 52); //safe since the binary exponent of a finite double is +-1024
+        final int e = (int) (Double.doubleToLongBits(d) >> 52); //safe since the binary exponent of a finite double is +-1024
         return (e & 2047) - 1023;
     }
 
@@ -586,7 +586,7 @@ public class Math2 {
      * @return true if Math.abs(d) &lt; dEps. 
      *     NaN and Infinity correctly return false.
      */
-    public static final boolean almost0(double d) {
+    public static final boolean almost0(final double d) {
         return Math.abs(d) < dEps;
     }
 
@@ -599,7 +599,7 @@ public class Math2 {
      * @return true if d1 is less than or almostEqual d2. 
      *    If isNaN(d1) || isNaN(d2), this returns false.
      */
-    public static boolean lessThanAE(int nSignificantDigits, double d1, double d2) {
+    public static boolean lessThanAE(final int nSignificantDigits, final double d1, final double d2) {
         return d1 <= d2 || almostEqual(nSignificantDigits, d1, d2);
     }
 
@@ -612,7 +612,7 @@ public class Math2 {
      * @return true if d1 is greater than or almostEqual9 d2. 
      *    If isNaN(d1) || isNaN(d2), this returns false.
      */
-    public static boolean greaterThanAE(int nSignificantDigits, double d1, double d2) {
+    public static boolean greaterThanAE(final int nSignificantDigits, final double d1, final double d2) {
         return d1 >= d2 || almostEqual(nSignificantDigits, d1, d2);
     }
 
@@ -631,9 +631,9 @@ public class Math2 {
      *    (or are both almost0).
      *    If either number is NaN or Infinity, this returns false.
      */
-    public static boolean almostEqual(int nSignificantDigits, double d1, double d2) {
+    public static boolean almostEqual(final int nSignificantDigits, final double d1, final double d2) {
         //System.err.println(d1+" "+d2+" "+d2/d1);
-        double eps = nSignificantDigits >= 6? dEps : fEps;
+        final double eps = nSignificantDigits >= 6? dEps : fEps;
         if (Math.abs(d2) < eps) {
             //This won't overflow, since d1 can't be <eps.
             return (Math.abs(d1) < eps) ? true :
@@ -654,7 +654,7 @@ public class Math2 {
      *    (or are both almost0).
      *    If either number is NaN or Infinity, this returns false.
      */
-    public static boolean almostEqual(int nSignificantDigits, float f1, float f2) {
+    public static boolean almostEqual(final int nSignificantDigits, final float f1, final float f2) {
         //System.err.println(f1+" "+f2+" "+Math.rint(f2 / f1 * Ten[nSignificantDigits]) + "=?" + Ten[nSignificantDigits]);
         if (Math.abs(f2) < fEps) {
             //This won't overflow, since f1 can't be <eps.
@@ -675,7 +675,7 @@ public class Math2 {
      * @param den the denominator  (a positive number)
      * @return num/den, but rounded to the next larger (abs) int
      */
-    public static int roundDiv(int num, int den) {
+    public static int roundDiv(final int num, final int den) {
         return (num + (den >> 1)) / den;
     }
 
@@ -688,7 +688,7 @@ public class Math2 {
      * @param den the denominator (a positive number)
      * @return num/den, but rounded to the next larger (abs) int
      */
-    public static int hiDiv(int num, int den) {
+    public static int hiDiv(final int num, final int den) {
          return (num % den == 0)? num/den : num/den + 1;
     }
 
@@ -701,7 +701,7 @@ public class Math2 {
      * @param den the denominator (a positive number)
      * @return num/den, but rounded to the next larger (abs) int
      */
-    public static long hiDiv(long num, long den) {
+    public static long hiDiv(final long num, final long den) {
          return (num % den == 0)? num/den : num/den + 1;
     }
 
@@ -716,7 +716,7 @@ public class Math2 {
      * @param den the denominator (a positive number)
      * @return num/den, but is consistent for positive and negative numbers
      */
-    public static int floorDiv(int num, int den) {
+    public static int floorDiv(final int num, final int den) {
         return (num % den < 0) ? (num / den) - 1 : num / den;
     }
 
@@ -731,7 +731,7 @@ public class Math2 {
      * @param den the denominator (a positive number)
      * @return num/den, but is consistent for positive and negative numbers
      */
-    public static long floorDiv(long num, long den) {
+    public static long floorDiv(final long num, final long den) {
         return (num % den < 0) ? (num / den) - 1 : num / den;
     }
 
@@ -745,7 +745,7 @@ public class Math2 {
      *         max if current is greater than max; else 
      *         it returns the current value.
      */
-    public static final int minMax(int min, int max, int current) {
+    public static final int minMax(final int min, final int max, final int current) {
         return (current < min) ? min : ((current > max) ? max : current);
     }
 
@@ -759,7 +759,7 @@ public class Math2 {
      *         max if current is greater than max; else 
      *         it returns the current value.
      */
-    public static final double minMax(double min, double max, double current) {
+    public static final double minMax(final double min, final double max, final double current) {
         return (current < min) ? min : ((current > max) ? max : current);
     }
 
@@ -774,7 +774,7 @@ public class Math2 {
      *         def if current is greater than max; else 
      *         it returns the current value.
      */
-    public static final int minMaxDef(int min, int max, int def, int current) {
+    public static final int minMaxDef(final int min, final int max, final int def, final int current) {
         return ((current < min) || (current > max)) ? def : current;
     }
 
@@ -789,8 +789,7 @@ public class Math2 {
      *         def if current is greater than max; else 
      *         it returns the current value.
      */
-    public static final double minMaxDef(double min, double max, double def,
-        double current) {
+    public static final double minMaxDef(final double min, final double max, final double def, double current) {
         return ((current < min) || (current > max)) ? def : current;
     }
 
@@ -802,7 +801,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest byte.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final byte roundToByte(double d) {
+    public static final byte roundToByte(final double d) {
         return d >= Byte.MAX_VALUE || d <= Byte.MIN_VALUE - 0.5 || !Double.isFinite(d)? 
             Byte.MAX_VALUE : 
             (byte)Math.round(d);
@@ -816,7 +815,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest byte.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final short roundToUByte(double d) {
+    public static final short roundToUByte(final double d) {
         return d >= 255 || d <= -0.5 || !Double.isFinite(d)? 
             255 : 
             (short)Math.round(d);
@@ -830,7 +829,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest char.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final char roundToChar(double d) {
+    public static final char roundToChar(final double d) {
         return d > Character.MAX_VALUE || d <= Character.MIN_VALUE - 0.5 || !Double.isFinite(d)?
             Character.MAX_VALUE : 
             (char)Math.round(d);
@@ -844,7 +843,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest short.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final short roundToShort(double d) {
+    public static final short roundToShort(final double d) {
         return d > Short.MAX_VALUE || d <= Short.MIN_VALUE - 0.5 || !Double.isFinite(d)? 
             Short.MAX_VALUE : 
             (short)Math.round(d);
@@ -858,7 +857,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest short.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final int roundToUShort(double d) {
+    public static final int roundToUShort(final double d) {
         return d > 0xffff || d <= -0.5 || !Double.isFinite(d)? 
             0xffff : 
             (short)Math.round(d);
@@ -873,7 +872,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest int.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final int roundToInt(double d) {
+    public static final int roundToInt(final double d) {
         return d > Integer.MAX_VALUE || d <= Integer.MIN_VALUE - 0.5 || !Double.isFinite(d)? 
             Integer.MAX_VALUE : 
             (int)Math.round(d); //safe since checked for larger values above
@@ -887,7 +886,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest short.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final long roundToUInt(double d) {
+    public static final long roundToUInt(final double d) {
         return d > UINT_MAX_VALUE || d <= -0.5 || !Double.isFinite(d)? 
             UINT_MAX_VALUE : 
             Math.round(d);
@@ -901,7 +900,7 @@ public class Math2 {
      *   otherwise d, rounded to the nearest int.
      *   Undesirable: d.5 rounds up for positive numbers, down for negative.
      */
-    public static final long roundToLong(double d) {
+    public static final long roundToLong(final double d) {
         return d > Long.MAX_VALUE || d < -9.223372036854776E18 || !Double.isFinite(d)? 
             Long.MAX_VALUE : 
             Math.round(d);
@@ -915,8 +914,8 @@ public class Math2 {
      *   otherwise d, rounded (with MathContext.DECIMAL128) to the nearest integer double
      *   in the ULONG range.
      */
-    public static BigInteger roundToULong(double d) {
-        BigInteger bi = roundToULongOrNull(d);
+    public static BigInteger roundToULong(final double d) {
+        final BigInteger bi = roundToULongOrNull(d);
         return bi == null? ULONG_MAX_VALUE : bi; 
     }
 
@@ -928,7 +927,7 @@ public class Math2 {
      *   otherwise d, rounded (with MathContext.DECIMAL128) to the nearest integer double
      *   in the ULONG range.
      */
-    public static BigInteger roundToULongOrNull(double d) {
+    public static BigInteger roundToULongOrNull(final double d) {
         if (d <= -0.5 || !Double.isFinite(d)) 
             return null; 
         return roundToULong(new BigDecimal(d));
@@ -942,8 +941,8 @@ public class Math2 {
      *   otherwise d, rounded (with MathContext.DECIMAL128) to the nearest integer double
      *   in the ULONG range.
      */
-    public static BigInteger roundToULong(BigDecimal d) {
-        BigInteger bi = roundToULongOrNull(d);
+    public static BigInteger roundToULong(final BigDecimal d) {
+        final BigInteger bi = roundToULongOrNull(d);
         return bi == null? ULONG_MAX_VALUE : bi; 
     }
 
@@ -955,10 +954,10 @@ public class Math2 {
      *   otherwise d, rounded (with MathContext.DECIMAL128) to the nearest integer
      *   in the ULONG range.
      */
-    public static BigInteger roundToULongOrNull(BigDecimal bd) {
+    public static BigInteger roundToULongOrNull(final BigDecimal bd) {
         if (bd == null) 
             return null; 
-        BigInteger bi = bd.round(MathContext.DECIMAL128).toBigInteger();
+        final BigInteger bi = bd.round(MathContext.DECIMAL128).toBigInteger();
         return bi.compareTo(BigInteger.ZERO) < 0 || bi.compareTo(ULONG_MAX_VALUE) >= 0? null : bi; 
     }
 
@@ -973,7 +972,7 @@ public class Math2 {
      *   But this rounds d.5 in a way that is often more useful than Math.rint
      *   (which rounds to nearest even number).
      */
-    public static final double roundToDouble(double d) {
+    public static final double roundToDouble(final double d) {
         return Double.isFinite(d)? Math.floor(d + 0.5) : Double.NaN;
     }
 
@@ -984,7 +983,7 @@ public class Math2 {
      * @return Double.NaN if d is &gt;= ULONG_MAX_VALUE, otherwise bi rounded to the nearest double.
      *   !!!Rounding method???
      */
-    public static final double roundToDouble(BigInteger bi) {
+    public static final double roundToDouble(final BigInteger bi) {
         double d = bi == null || bi.compareTo(Math2.ULONG_MAX_VALUE) >= 0? 
             Double.NaN : 
             bi.doubleValue();
@@ -998,7 +997,7 @@ public class Math2 {
      * @param nPlaces the desired number of digits to the right of the 
      *     decimal point
      */
-    public static final double roundTo(double d, int nPlaces) {
+    public static final double roundTo(final double d, final int nPlaces) {
         double factor = ten(nPlaces);
         return roundToDouble(d * factor) / factor;
     }
@@ -1010,7 +1009,7 @@ public class Math2 {
      * @param i any int
      * @return Byte.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final byte narrowToByte(int i) {
+    public static final byte narrowToByte(final int i) {
         return i > Byte.MAX_VALUE || i < Byte.MIN_VALUE? 
             Byte.MAX_VALUE : (byte)i;
     }
@@ -1021,7 +1020,7 @@ public class Math2 {
      * @param i any long
      * @return Byte.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final byte narrowToByte(long i) {
+    public static final byte narrowToByte(final long i) {
         return i > Byte.MAX_VALUE || i < Byte.MIN_VALUE? 
             Byte.MAX_VALUE : (byte)i;
     }
@@ -1032,7 +1031,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return Byte.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final byte narrowToByte(BigInteger i) {
+    public static final byte narrowToByte(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + Byte.MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + Byte.MIN_VALUE)) < 0? 
@@ -1045,7 +1044,7 @@ public class Math2 {
      * @param i any int
      * @return Character.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final char narrowToChar(int i) {
+    public static final char narrowToChar(final int i) {
         return i > Character.MAX_VALUE || i < Character.MIN_VALUE? 
             Character.MAX_VALUE : (char)i;
     }
@@ -1056,7 +1055,7 @@ public class Math2 {
      * @param i any long
      * @return Character.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final char narrowToChar(long i) {
+    public static final char narrowToChar(final long i) {
         return i > Character.MAX_VALUE || i < Character.MIN_VALUE? 
             Character.MAX_VALUE : (char)i;
     }
@@ -1067,7 +1066,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return Character.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final char narrowToChar(BigInteger i) {
+    public static final char narrowToChar(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + (int)Character.MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + (int)Character.MIN_VALUE)) < 0? 
@@ -1080,7 +1079,7 @@ public class Math2 {
      * @param i any int
      * @return Short.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToShort(int i) {
+    public static final short narrowToShort(final int i) {
         return i > Short.MAX_VALUE || i < Short.MIN_VALUE? 
             Short.MAX_VALUE : (short)i;
     }
@@ -1091,7 +1090,7 @@ public class Math2 {
      * @param i any long
      * @return Short.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToShort(long i) {
+    public static final short narrowToShort(final long i) {
         return i > Short.MAX_VALUE || i < Short.MIN_VALUE? 
             Short.MAX_VALUE : (short)i;
     }
@@ -1102,7 +1101,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return Short.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToShort(BigInteger i) {
+    public static final short narrowToShort(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + Short.MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + Short.MIN_VALUE)) < 0? 
@@ -1115,7 +1114,7 @@ public class Math2 {
      * @param i any long
      * @return Integer.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final int narrowToInt(long i) {
+    public static final int narrowToInt(final long i) {
         return i > Integer.MAX_VALUE || i < Integer.MIN_VALUE? 
             Integer.MAX_VALUE : (int)i;
     }
@@ -1126,7 +1125,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return Integer.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final int narrowToInt(BigInteger i) {
+    public static final int narrowToInt(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + Integer.MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + Integer.MIN_VALUE)) < 0? 
@@ -1139,7 +1138,7 @@ public class Math2 {
      * @param i any int
      * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToUByte(int i) {
+    public static final short narrowToUByte(final int i) {
         return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE? 
             UBYTE_MAX_VALUE : (short)i;
     }
@@ -1150,7 +1149,7 @@ public class Math2 {
      * @param i any long
      * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToUByte(long i) {
+    public static final short narrowToUByte(final long i) {
         return i > UBYTE_MAX_VALUE || i < UBYTE_MIN_VALUE? 
             UBYTE_MAX_VALUE : (short)i;
     }
@@ -1161,7 +1160,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final short narrowToUByte(BigInteger i) {
+    public static final short narrowToUByte(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + UBYTE_MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + UBYTE_MIN_VALUE)) < 0? 
@@ -1174,7 +1173,7 @@ public class Math2 {
      * @param i any int
      * @return USHORT_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final int narrowToUShort(int i) {
+    public static final int narrowToUShort(final int i) {
         return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE? 
             USHORT_MAX_VALUE : i;
     }
@@ -1185,7 +1184,7 @@ public class Math2 {
      * @param i any long
      * @return USHORT_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final int narrowToUShort(long i) {
+    public static final int narrowToUShort(final long i) {
         return i > USHORT_MAX_VALUE || i < USHORT_MIN_VALUE? 
             USHORT_MAX_VALUE : (int)i;
     }
@@ -1196,7 +1195,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final int narrowToUShort(BigInteger i) {
+    public static final int narrowToUShort(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + USHORT_MAX_VALUE)) > 0 ||
                i.compareTo(new BigInteger("" + USHORT_MIN_VALUE)) < 0? 
@@ -1209,7 +1208,7 @@ public class Math2 {
      * @param i any long
      * @return UINT_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final long narrowToUInt(long i) {
+    public static final long narrowToUInt(final long i) {
         return i > UINT_MAX_VALUE || i < UINT_MIN_VALUE? 
             UINT_MAX_VALUE : i;
     }
@@ -1220,7 +1219,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return UBYTE_MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final long narrowToUInt(BigInteger i) {
+    public static final long narrowToUInt(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + UINT_MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + UINT_MIN_VALUE)) < 0? 
@@ -1233,7 +1232,7 @@ public class Math2 {
      * @param i any BigInteger
      * @return Long.MAX_VALUE if i is too small or too big; otherwise i.
      */
-    public static final long narrowToLong(BigInteger i) {
+    public static final long narrowToLong(final BigInteger i) {
         return i == null ||
                i.compareTo(new BigInteger("" + Long.MAX_VALUE)) > 0 || 
                i.compareTo(new BigInteger("" + Long.MIN_VALUE)) < 0? 
@@ -1250,7 +1249,7 @@ public class Math2 {
      *     want the lower 8 bits stored as 0..255)
      * @return a char (0..255)
      */
-    public static final char byteToChar(int b) {
+    public static final char byteToChar(final int b) {
         return (char) (b & 255);
     }
 
@@ -1263,7 +1262,7 @@ public class Math2 {
      *     want the lower 8 bits stored as 0..255)
      * @return an int (0..255)
      */
-    public static final int unsignedByte(int b) {
+    public static final int unsignedByte(final int b) {
         return b & 255;
     }
 
@@ -1317,7 +1316,7 @@ public class Math2 {
      * @param compass
      * @return degrees always &gt;=0 and &lt;360  (compass=NaN -&gt; 0).
      */
-    public static final double compassToMathDegrees(double compass) {
+    public static final double compassToMathDegrees(final double compass) {
         return angle0360(90 - compass);
     }
 
@@ -1328,7 +1327,7 @@ public class Math2 {
      * @param math
      * @return degrees always &gt;=0 and &lt;360  (compass=NaN -&gt; 0).
      */
-    public static final double mathToCompassDegrees(double math) {
+    public static final double mathToCompassDegrees(final double math) {
         return compassToMathDegrees(math); //they work the same! so reuse compassToMath
     }
 
@@ -1437,7 +1436,7 @@ public class Math2 {
      * </pre>
      * </UL>
      */
-    public static void guessFrac(double r, int[] int3) {
+    public static void guessFrac(double r, final int[] int3) {
         // faster if done with long and shifts?
         //better and faster if done initially with gcd?
         //quickly catch r= almost an integer
@@ -1475,7 +1474,7 @@ public class Math2 {
         }
 
         //ensure it is reduced fraction (especially if denominator=1000)
-        int gcd = gcd(int3[1], int3[2]);
+        final int gcd = gcd(int3[1], int3[2]);
         int3[1] /= gcd;
         int3[2] /= gcd;
     }
@@ -1483,8 +1482,8 @@ public class Math2 {
     /**
      * This creates a String based on the results of guessFrac()
      */
-    public static String guessFracString(double d) {
-        int[] ar3 = new int[3];
+    public static String guessFracString(final double d) {
+        final int[] ar3 = new int[3];
         guessFrac(d, ar3);
 
         if ((ar3[0] == 0) && (ar3[1] == 0))
@@ -1507,7 +1506,7 @@ public class Math2 {
      * @return a double.
      *    If tl is Long.MAX_VALUE, this returns Double.NaN.
      */
-    public static final double longToDoubleNaN(long tl) {
+    public static final double longToDoubleNaN(final long tl) {
         if (tl == Long.MAX_VALUE)
             return Double.NaN;
         return tl;
@@ -1520,7 +1519,7 @@ public class Math2 {
      * @return a double.
      *    If tl is ULongArray.MAX_VALUE, this returns Double.NaN.
      */
-    public static final double ulongToDoubleNaN(BigInteger bi) {
+    public static final double ulongToDoubleNaN(final BigInteger bi) {
         if (bi == null || bi.equals(ULONG_MAX_VALUE))
             return Double.NaN;
         return bi.doubleValue();
@@ -1535,7 +1534,7 @@ public class Math2 {
      * @param tl
      * @return a double.
      */
-    public static final double ulongToDouble(long tl) {
+    public static final double ulongToDouble(final long tl) {
         //https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
         //  9,223,372,036,854,775,808
         // +9,223,372,036,854,775,808
@@ -1551,7 +1550,7 @@ public class Math2 {
      *    If f is NaN, this returns Double.NaN.
      *    If f is +-INFINITY, this returns Double.+-INFINITY.
      */
-    public static final double floatToDouble(double f) {
+    public static final double floatToDouble(final double f) {
         return niceDouble(f, 7); //8 is not enough rounding
     }
 
@@ -1564,7 +1563,7 @@ public class Math2 {
      * @return a double.
      *    If f is NaN or +-INFINITY, this returns Double.NaN.
      */
-    public static final double floatToDoubleNaN(double f) {
+    public static final double floatToDoubleNaN(final double f) {
         if (Double.isNaN(f) || Double.isInfinite(f))
             return Double.NaN;
 
@@ -1580,7 +1579,7 @@ public class Math2 {
      *    If f is not finite or greater than Float.MAX_VALUE,
      *    this returns Float.NaN.
      */
-    public static final float doubleToFloatNaN(double d) {
+    public static final float doubleToFloatNaN(final double d) {
         if (Double.isFinite(d) && Math.abs(d) <= Float.MAX_VALUE)
             return (float)d;
         return Float.NaN;
@@ -1599,7 +1598,7 @@ public class Math2 {
      * @param d a double (often bruised)
      * @param nDigits the desired number of significant digits
      */
-    public static final double niceDouble(double d, int nDigits) {
+    public static final double niceDouble(final double d, final int nDigits) {
         if (!Double.isFinite(d))
             return d; //avoid possible overflow if nDigits>7
 
@@ -1619,7 +1618,7 @@ public class Math2 {
      * @param seed the new seed -- be sure that it is randomly chosen
      *    from the full range of longs
      */
-    public static void setSeed(long seed) {
+    public static void setSeed(final long seed) {
 
         //Random is threadsafe, but has issues in a multi threaded situation.
         //So synchronize it to be extra careful
@@ -1653,7 +1652,7 @@ public class Math2 {
      * @param max a int greater than 0
      * @return a "random" number in the range 0 .. max-1
      */
-    public static int random(int max) {
+    public static int random(final int max) {
 
         //Random is threadsafe, but has issues in a multi threaded situation.
         //So synchronize it to be extra careful
@@ -1672,14 +1671,14 @@ public class Math2 {
      *    If !Double.isFinite(d), it returns d.
      *    If almost 0, it returns 0.01.
      */
-    public static double bigger(double d) {
+    public static double bigger(final double d) {
         if (!Double.isFinite(d))
             return d;
 
         if (almost0(d))
             return 0.01;
 
-        int m = roundToInt(mantissa(d) * 10); //-100..-10, 10..100
+        final int m = roundToInt(mantissa(d) * 10); //-100..-10, 10..100
         int i = 0;
 
         while (niceNumbers[i] <= m)
@@ -1696,7 +1695,7 @@ public class Math2 {
      *    If !Double.isFinite(d), it returns d.
      *    If almost 0, it returns -0.01.
      */
-    public static double smaller(double d) {
+    public static double smaller(final double d) {
         if (!Double.isFinite(d))
             return d;
 
@@ -1725,7 +1724,7 @@ public class Math2 {
      * @return d, rounded to a single digit mantissa and
      *     with the initial digit increased
      */
-    public static double oneDigitBigger(double max, double def, double d) {
+    public static double oneDigitBigger(final double max, final double def, final double d) {
         if (!Double.isFinite(d))
             return def;
 
@@ -1747,7 +1746,7 @@ public class Math2 {
      * @return d, rounded to a single digit mantissa and
      *     with the initial digit decreased
      */
-    public static double oneDigitSmaller(double min, double def, double d) {
+    public static double oneDigitSmaller(final double min, final double def, final double d) {
         if (!Double.isFinite(d))
             return def;
 
@@ -1764,7 +1763,7 @@ public class Math2 {
      * @param range 
      * @return an appropriate increment for the range
      */
-    public static double getSmallIncrement(double range) {
+    public static double getSmallIncrement(final double range) {
         if (!Double.isFinite(range) || range == 0)
             return 0.1;
 
@@ -1782,7 +1781,7 @@ public class Math2 {
      *     It rounds to nearest mult, then changes it.
      *     If !Double.isFinite(d), it returns def.
      */
-    public static double biggerDouble(double def, double mult, double max, double d) {
+    public static double biggerDouble(final double def, final double mult, final double max, final double d) {
         if (!Double.isFinite(d))
             return def;
 
@@ -1800,7 +1799,7 @@ public class Math2 {
      *     It rounds to nearest mult, then changes it.
      *     If !Double.isFinite(d), it returns def.
      */
-    public static double smallerDouble(double def, double mult, double min, double d) {
+    public static double smallerDouble(final double def, final double mult, final double min, final double d) {
         if (!Double.isFinite(d))
             return def;
 
@@ -1816,7 +1815,7 @@ public class Math2 {
      *     It rounds to nearest mult, then changes it.
      *     If !Double.isFinite(d), it returns d.
      */
-    public static double biggerAngle(double d) {
+    public static double biggerAngle(final double d) {
         if (!Double.isFinite(d))
             return d;
 
@@ -1837,7 +1836,7 @@ public class Math2 {
      *     It rounds to nearest mult, then changes it.
      *     If !Double.isFinite(d), it returns d.
      */
-    public static double smallerAngle(double d) {
+    public static double smallerAngle(final double d) {
         if (!Double.isFinite(d))
             return d;
 
@@ -1859,7 +1858,7 @@ public class Math2 {
      *     If !Double.isFinite(d), it returns d.
      *     If almost0(d), it returns 0.01.
      */
-    public static double bigger15(double d) {
+    public static double bigger15(final double d) {
         if (!Double.isFinite(d))
             return d;
 
@@ -1880,7 +1879,7 @@ public class Math2 {
      *     If !Double.isFinite(d), it returns d.
      *     If almost0(d), it returns 0.01.
      */
-    public static double smaller15(double d) {
+    public static double smaller15(final double d) {
         if (!Double.isFinite(d))
             return d;
 
@@ -2068,7 +2067,7 @@ public class Math2 {
      *   If x &gt; the largest element, this returns dar.length-1.
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindLastLE(double[] dar, double x) {
+    public static int binaryFindLastLE(final double[] dar, final double x) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
@@ -2097,7 +2096,7 @@ public class Math2 {
      *   If x &gt; the largest element, this returns dar.length-1.
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindLastLAE(double[] dar, double x, int precision) {
+    public static int binaryFindLastLAE(final double[] dar, final double x, final int precision) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
@@ -2131,7 +2130,7 @@ public class Math2 {
      *   If x &gt; the largest element, this returns dar.length (no element is appropriate).
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindFirstGE(double[] dar, double x) {
+    public static int binaryFindFirstGE(final double[] dar, final double x) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
@@ -2159,7 +2158,7 @@ public class Math2 {
      *   If x &gt; the largest element, this returns dar.length (no element is appropriate).
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindFirstGAE(double[] dar, double x, int precision) {
+    public static int binaryFindFirstGAE(final double[] dar, final double x, final int precision) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
@@ -2189,7 +2188,7 @@ public class Math2 {
      * @return the index of the index of the element closest to x.
      *   If x is NaN, this returns -1.
      */
-    public static int binaryFindClosest(double[] dar, double x) {
+    public static int binaryFindClosest(final double[] dar, final double x) {
         if (Double.isNaN(x))
             return -1;
         int i = Arrays.binarySearch(dar, x);
@@ -2218,7 +2217,7 @@ public class Math2 {
      * @param hashCode
      * @return the reduced version 
      */
-    public static String reduceHashCode(int hashCode) {
+    public static String reduceHashCode(final int hashCode) {
         return Long.toString((long)hashCode - (long)Integer.MIN_VALUE); //-negativeNumber  is like +positiveNumber
     }
 
@@ -2227,7 +2226,7 @@ public class Math2 {
      * This returns the lesser value.
      * If one is NaN and the other isn't, this returns the other.
      */
-    public static double finiteMin(double a, double b) {
+    public static double finiteMin(final double a, final double b) {
         return Double.isNaN(a)? b :
                Double.isNaN(b)? a : Math.min(a,b);
     }
@@ -2236,7 +2235,7 @@ public class Math2 {
      * This returns the greater value.
      * If one is NaN and the other isn't, this returns the other.
      */
-    public static double finiteMax(double a, double b) {
+    public static double finiteMax(final double a, final double b) {
         return Double.isNaN(a)? b :
                Double.isNaN(b)? a : Math.max(a,b);
     }
@@ -2250,7 +2249,7 @@ public class Math2 {
      * @param b
      * @return true if a == b. 
      */
-    public static boolean equalsIncludingNanOrInfinite(double a, double b) {
+    public static boolean equalsIncludingNanOrInfinite(final double a, final double b) {
         return a == b ||   //handles +infinity==+infinity and -infinity==-infinity
                (Double.isNaN(a) && Double.isNaN(b));
     }
@@ -2264,7 +2263,7 @@ public class Math2 {
      * @param b
      * @return true if a == b. 
      */
-    public static boolean equalsIncludingNanOrInfinite(float a, float b) {
+    public static boolean equalsIncludingNanOrInfinite(final float a, final float b) {
         return a == b ||   //handles +infinity==+infinity and -infinity==-infinity
                (Float.isNaN(a) && Float.isNaN(b));
     }
@@ -2275,7 +2274,7 @@ public class Math2 {
      *
      * @param bdar a BigDecimal array
      */
-    public static double[] toDoubleArray(BigDecimal bdar[]) {
+    public static double[] toDoubleArray(final BigDecimal bdar[]) {
         if (bdar == null)
             return null;
         int n = bdar.length;
@@ -2293,7 +2292,7 @@ public class Math2 {
      * @param dar a double array
      *
      */
-    public static BigDecimal[] toBigDecimalArray(double dar[]) {
+    public static BigDecimal[] toBigDecimalArray(final double dar[]) {
         if (dar == null)
             return null;
         int n = dar.length;
@@ -2309,7 +2308,7 @@ public class Math2 {
      * @param d a double value
      * @return d*d.
      */
-    public static double sqr(double d) {
+    public final static double sqr(final double d) {
         return d*d;
     }
     

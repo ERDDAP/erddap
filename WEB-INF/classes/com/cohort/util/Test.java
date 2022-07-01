@@ -643,9 +643,7 @@ public class Test {
             error(errorInObjectEquals + message + "\nSpecifically: b=null");
 
         //test for some things that have no equals method
-        if (a instanceof byte[] && b instanceof byte[]) {
-            byte aar[] = (byte[])a;
-            byte bar[] = (byte[])b;
+        if (a instanceof byte[] aar && b instanceof byte[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -658,9 +656,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof char[] && b instanceof char[]) {
-            char aar[] = (char[])a;
-            char bar[] = (char[])b;
+        if (a instanceof char[] aar && b instanceof char[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -673,9 +669,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof short[] && b instanceof short[]) {
-            short aar[] = (short[])a;
-            short bar[] = (short[])b;
+        if (a instanceof short[] aar && b instanceof short[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -688,9 +682,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof int[] && b instanceof int[]) {
-            int aar[] = (int[])a;
-            int bar[] = (int[])b;
+        if (a instanceof int[] aar && b instanceof int[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -703,9 +695,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof long[] && b instanceof long[]) {
-            long aar[] = (long[])a;
-            long bar[] = (long[])b;
+        if (a instanceof long[] aar && b instanceof long[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -718,9 +708,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof BigInteger[] && b instanceof BigInteger[]) {
-            BigInteger aar[] = (BigInteger[])a;
-            BigInteger bar[] = (BigInteger[])b;
+        if (a instanceof BigInteger[] aar && b instanceof BigInteger[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -733,9 +721,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof float[] && b instanceof float[]) {
-            float aar[] = (float[])a;
-            float bar[] = (float[])b;
+        if (a instanceof float[] aar && b instanceof float[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -748,9 +734,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof double[] && b instanceof double[]) {
-            double aar[] = (double[])a;
-            double bar[] = (double[])b;
+        if (a instanceof double[] aar && b instanceof double[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -763,9 +747,7 @@ public class Test {
                         "b=" + String2.toCSSVString(bar) + "\n");
             return;
         }
-        if (a instanceof String[] && b instanceof String[]) {
-            String aar[] = (String[])a;
-            String bar[] = (String[])b;
+        if (a instanceof String[] aar && b instanceof String[] bar) {
             int an = aar.length;
             int bn = bar.length;
             ensureEqual(an, bn, 
@@ -783,8 +765,8 @@ public class Test {
             return;
         }
 
-        if (a instanceof PrimitiveArray) {
-            String err = ((PrimitiveArray)a).testEquals(b);
+        if (a instanceof PrimitiveArray pa) {
+            String err = pa.testEquals(b);
             if (err.length() > 0)
                 error(err);
         }

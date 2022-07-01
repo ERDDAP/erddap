@@ -24,8 +24,8 @@ import java.io.*;
 //import java.text.*;
 import java.util.*;
 //import java.util.zip.DeflaterOutputStream;
-//import javax.servlet.*;
-//import javax.servlet.http.*;
+//import jakarta.servlet.*;
+//import jakarta.servlet.http.*;
 
 import dods.dap.*;
 import dods.util.*;

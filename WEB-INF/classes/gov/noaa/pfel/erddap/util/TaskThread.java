@@ -36,30 +36,30 @@ public class TaskThread extends Thread {
     /** If taskOA[0].equals(TASK_MAKE_A_DATAFILE), then make
      * taskOA[1]=edd, taskOA[2]=query, taskOA[3]=fileDir, taskOA[4]=fileName, taskOA[5]=fileType 
      */
-    public final static Integer TASK_MAKE_A_DATAFILE = new Integer(0);
+    public final static Integer TASK_MAKE_A_DATAFILE = Integer.valueOf(0);
 
     /** If taskOA[0].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID 
      */
-    public final static Integer TASK_SET_FLAG = new Integer(1);
+    public final static Integer TASK_SET_FLAG = Integer.valueOf(1);
 
     /** If taskOA[0].equals(TASK_DAP_TO_NC), then make
      * taskOA[1]=dapUrl, taskOA[2]=StringArray(vars), taskOA[3]=projection, 
      * taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
      * taskOA[6]=lastModified (Long)
      */
-    public final static Integer TASK_DAP_TO_NC = new Integer(2);
+    public final static Integer TASK_DAP_TO_NC = Integer.valueOf(2);
 
     /** If taskOA[0].equals(TASK_ALL_DAP_TO_NC), then make
      * taskOA[1]=dapUrl, taskOA[2]=fullFileName,
      * taskOA[3]=lastModified (Long)
      */
-    public final static Integer TASK_ALL_DAP_TO_NC = new Integer(3);
+    public final static Integer TASK_ALL_DAP_TO_NC = Integer.valueOf(3);
 
     /** If taskOA[0].equals(TASK_DOWNLOAD), then make
      * taskOA[1]=remoteUrl, taskOA[2]=fullFileName,
      * taskOA[3]=lastModified (Long)   if MAX_VALUE, will be ignored
      */
-    public final static Integer TASK_DOWNLOAD = new Integer(4);
+    public final static Integer TASK_DOWNLOAD = Integer.valueOf(4);
 
     /**
      * TASK_NAMES parallels the TASK Integers.

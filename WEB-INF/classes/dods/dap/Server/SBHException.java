@@ -37,7 +37,6 @@
 //
 
 package dods.dap.Server;
-import java.lang.String;
 import dods.dap.DODSException;
 
 /**

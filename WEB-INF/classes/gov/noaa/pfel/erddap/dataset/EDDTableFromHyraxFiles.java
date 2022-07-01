@@ -193,7 +193,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             if (errorMessages.length() == 0 && sourceFileName.size() > 0) {
                 //make a hashset of theoretical local fileNames that will exist 
                 //  after copying based on getHyraxFileInfo
-                HashSet hashset = new HashSet();
+                HashSet<String> hashset = new HashSet();
                 int nFiles = sourceFileName.size();
                 for (int f = 0; f < nFiles; f++) {
                     String sourceName = sourceFileName.get(f);
@@ -288,7 +288,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
                 taskOA[1] = sourceName;
                 taskOA[2] = localFile;
-                taskOA[3] = new Long(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
+                taskOA[3] = Long.valueOf(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
                 int tTaskNumber = EDStatic.addTask(taskOA);
                 if (tTaskNumber >= 0) {
                     nTasksCreated++;
@@ -322,7 +322,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         }
 
         if (taskNumber > -1) {
-            EDStatic.lastAssignedTask.put(tDatasetID, new Integer(taskNumber));
+            EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
             EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
         }
     }
@@ -447,12 +447,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 gridMappingAtts = NcHelper.getGridMappingAtts(sourceAtts);
 
             PrimitiveVector pv = null; //for determining data type
-            if (baseType instanceof DGrid) {   //for multidim vars
-                DGrid dGrid = (DGrid)baseType;
+            if (baseType instanceof DGrid dGrid) {   //for multidim vars
                 BaseType bt0 = dGrid.getVar(0); //holds the data
-                pv = bt0 instanceof DArray? ((DArray)bt0).getPrimitiveVector() : bt0.newPrimitiveVector();
-            } else if (baseType instanceof DArray) {  //for the dimension vars
-                DArray dArray = (DArray)baseType;
+                pv = bt0 instanceof DArray tbt0? tbt0.getPrimitiveVector() : bt0.newPrimitiveVector();
+            } else if (baseType instanceof DArray dArray) {  //for the dimension vars
                 pv = dArray.getPrimitiveVector();
             } else {
                 if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");

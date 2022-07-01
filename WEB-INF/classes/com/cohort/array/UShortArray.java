@@ -79,7 +79,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index The index in question
      * @return true if the value is a missing value.
      */
-    public boolean isMaxValue(int index) {
+    public boolean isMaxValue(final int index) {
         return getPacked(index) == PACKED_MAX_VALUE;
     }
 
@@ -90,27 +90,27 @@ public class UShortArray extends PrimitiveArray {
      * @param index The index in question
      * @return true if the value is a missing value.
      */
-    public boolean isMissingValue(int index) {
+    public boolean isMissingValue(final int index) {
         return maxIsMV && isMaxValue(index);
     }
 
     /**
      * This packs a signed int holding an unsigned short as a short.
      */
-    public static short pack(int i) {
+    public static short pack(final int i) {
         return i < 0 || i >= MAX_VALUE? PACKED_MAX_VALUE : (short)(i & MAX_VALUE);
     }
     /**
      * This packs a signed long holding an unsigned short as a short.
      */
-    public static short pack(long i) {
+    public static short pack(final long i) {
         return (short)(i & 0xffff);
     }
 
     /**
      * This unpacks a ushort stored in a short as an int.
      */
-    public static int unpack(short s) {
+    public static int unpack(final short s) {
         return s >= 0? s : s + MAX_VALUE + 1;
     }
 
@@ -155,7 +155,7 @@ public class UShortArray extends PrimitiveArray {
      * @param active if true, size will be set to capacity and all elements 
      *    will equal 0; else size = 0.
      */
-    public UShortArray(int capacity, boolean active) {
+    public UShortArray(final int capacity, final boolean active) {
         Math2.ensureMemoryAvailable(2L * capacity, "UShortArray");
         array = new short[capacity];
         if (active) 
@@ -168,7 +168,7 @@ public class UShortArray extends PrimitiveArray {
      * @param first the value of the first element.
      * @param last the value of the last element (inclusive).
      */
-    public UShortArray(int first, int last) {
+    public UShortArray(final int first, final int last) {
         size = last - first + 1;
         array = new short[size];
         for (int i = 0; i < size; i++) 
@@ -181,7 +181,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param anArray the array with already packed values to be used as this object's array.
      */
-    public UShortArray(short[] anArray) {
+    public UShortArray(final short[] anArray) {
         array = anArray;
         size = anArray.length;
     }
@@ -192,7 +192,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param anArray the array with not-yet-packed values.
      */
-    public UShortArray(int[] anArray) {
+    public UShortArray(final int[] anArray) {
         size = anArray.length;
         Math2.ensureMemoryAvailable(2L * size, "UShortArray");
         array = new short[size];
@@ -209,7 +209,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param charArray 
      */
-    public UShortArray(char[] charArray) {
+    public UShortArray(final char[] charArray) {
         size = charArray.length;
         array = new short[size];
         for (int i = 0; i < size; i++)
@@ -228,11 +228,11 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param ca CharArray 
      */
-    public static UShortArray fromCharArrayBytes(CharArray ca) {
-        int size = ca.size();
-        UShortArray sa = new UShortArray(size, true); //active
-        short sarray[] = sa.array;
-        char  carray[] = ca.array;
+    public static UShortArray fromCharArrayBytes(final CharArray ca) {
+        final int size = ca.size();
+        final UShortArray sa = new UShortArray(size, true); //active
+        final short sarray[] = sa.array;
+        final char  carray[] = ca.array;
         for (int i = 0; i < size; i++)
             sarray[i] = (short)carray[i];
         return sa;
@@ -248,7 +248,7 @@ public class UShortArray extends PrimitiveArray {
      */
     public PrimitiveArray makeSignedPA() {
         Math2.ensureMemoryAvailable(2L * size, "UShortArray");
-        short ar[] = new short[size];
+        final short ar[] = new short[size];
         System.arraycopy(array, 0, ar, 0, size);
         return new ShortArray(ar);
     }
@@ -263,7 +263,7 @@ public class UShortArray extends PrimitiveArray {
      * @param csv the comma-separated-value string
      * @return a UShortArray from the comma-separated values.
      */
-    public static UShortArray fromCSV(String csv) {
+    public static UShortArray fromCSV(final String csv) {
         return (UShortArray)PrimitiveArray.csvFactory(PAType.USHORT, csv);
     }
 
@@ -305,6 +305,7 @@ public class UShortArray extends PrimitiveArray {
         for (int i = 0; i < size; i++)
             code = 31*code + array[i];
         return code;
+        //return HashDigest.murmur32(array, size);
     }
 
     /**
@@ -319,7 +320,7 @@ public class UShortArray extends PrimitiveArray {
      *    If new, it will have a backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
-    public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
+    public PrimitiveArray subset(final PrimitiveArray pa, final int startIndex, final int stride, int stopIndex) {
         if (pa != null)
             pa.clear();
         if (startIndex < 0)
@@ -333,7 +334,7 @@ public class UShortArray extends PrimitiveArray {
         if (stopIndex < startIndex)
             return pa == null? new UShortArray(new short[0]) : pa;  //no need to call .setMaxIsMV(maxIsMV) since size=0
 
-        int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
+        final int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         UShortArray sa = null;
         if (pa == null) {
             sa = new UShortArray(willFind, true);
@@ -342,7 +343,7 @@ public class UShortArray extends PrimitiveArray {
             sa.ensureCapacity(willFind);
             sa.size = willFind;
         }
-        short tar[] = sa.array;
+        final short tar[] = sa.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -369,18 +370,18 @@ public class UShortArray extends PrimitiveArray {
      * @return the minimum PAType needed to completely and precisely contain
      * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
-    public PAType needPAType(PAType tPAType) {
-        //if tPAType is smaller or same, return this.PAType
-        if (tPAType == PAType.UBYTE ||
-            tPAType == PAType.USHORT) return PAType.USHORT;
+    public PAType needPAType(final PAType tPAType) {
+        return switch (tPAType) {
+            //if tPAType is smaller or same, return this.PAType
+            case UBYTE, USHORT -> PAType.USHORT;
 
-        //if sideways
-        if (tPAType == PAType.CHAR)  return PAType.STRING;
-        if (tPAType == PAType.BYTE ||
-            tPAType == PAType.SHORT) return PAType.INT;
+            //if sideways
+            case CHAR          -> PAType.STRING;
+            case BYTE, SHORT   -> PAType.INT;
 
-        //if tPAType is bigger. INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING
-        return tPAType;
+            //if tPAType is bigger. INT, UINT, LONG, ULONG, FLOAT, DOUBLE, STRING
+            default            -> tPAType;
+        };
     }
 
     /**
@@ -388,7 +389,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param value the value to be added to the array
      */
-    public void add(int value) {
+    public void add(final int value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
         if (value < 0)
@@ -401,7 +402,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param packedValue the already packed value to be added to the array
      */
-    public void addPacked(short packedValue) {
+    public void addPacked(final short packedValue) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
         array[size++] = packedValue;
@@ -416,10 +417,10 @@ public class UShortArray extends PrimitiveArray {
      *    then convert DoubleArray to UShortArray.)
      *    If null or not a Number, this adds MAX_VALUE.
      */
-    public void addObject(Object value) {
+    public void addObject(final Object value) {
         //double is good intermediate because it has the idea of NaN
-        addDouble(value != null && value instanceof Number?
-            ((Number)value).doubleValue() : Double.NaN); 
+        addDouble(value != null && value instanceof Number nu?
+            nu.doubleValue() : Double.NaN); 
     }
 
     /**
@@ -428,7 +429,7 @@ public class UShortArray extends PrimitiveArray {
      * @param sd from an .nc file
      * @param memberName
      */
-    public void add(StructureData sd, String memberName) {
+    public void add(final StructureData sd, final String memberName) {
         addPacked(sd.getScalarShort(memberName));
     }
 
@@ -437,8 +438,8 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param ar an array
      */
-    public void add(short ar[]) {
-        int arSize = ar.length; 
+    public void add(final short ar[]) {
+        final int arSize = ar.length; 
         ensureCapacity(size + (long)arSize);
         System.arraycopy(ar, 0, array, size, arSize);
         size += arSize;
@@ -451,7 +452,7 @@ public class UShortArray extends PrimitiveArray {
      * @param value the value to be added to the array.
      *    n &lt; 0 throws an Exception.
      */
-    public void addN(int n, int value) {
+    public void addN(final int n, final int value) {
         if (n == 0) return;
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
@@ -468,7 +469,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void atInsert(int index, int value) {
+    public void atInsert(final int index, final int value) {
         if (index < 0 || index > size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
@@ -486,8 +487,8 @@ public class UShortArray extends PrimitiveArray {
      * @param index 0..
      * @param value the value, as a String.
      */
-    public void atInsertString(int index, String value) {
-        int ti = String2.parseInt(value); //NaN -> Integer.MAX_VALUE
+    public void atInsertString(final int index, final String value) {
+        final int ti = String2.parseInt(value); //NaN -> Integer.MAX_VALUE
         if (ti < MIN_VALUE || ti > MAX_VALUE) {
             maxIsMV = true;
             atInsert(index, MAX_VALUE);
@@ -503,7 +504,7 @@ public class UShortArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a PAOne (or null).
      */
-    public void addNPAOnes(int n, PAOne value) {
+    public void addNPAOnes(final int n, final PAOne value) {
         addNInts(n, value == null? Integer.MAX_VALUE : value.getInt());  //handles NaN and MV
     }
 
@@ -514,7 +515,7 @@ public class UShortArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a String.
      */
-    public void addNStrings(int n, String value) {
+    public void addNStrings(final int n, final String value) {
         addNInts(n, String2.parseInt(value)); //handles NaN and MV
     }
 
@@ -525,7 +526,7 @@ public class UShortArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a float.
      */
-    public void addNFloats(int n, float value) {
+    public void addNFloats(final int n, final float value) {
         if (!maxIsMV && (!Float.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
             maxIsMV = true;
         addN(n, Math2.roundToUShort(value));
@@ -538,7 +539,7 @@ public class UShortArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a double.
      */
-    public void addNDoubles(int n, double value) {
+    public void addNDoubles(final int n, final double value) {
         if (!maxIsMV && (!Double.isFinite(value) || value < MIN_VALUE || value > MAX_VALUE)) 
             maxIsMV = true;
         addN(n, Math2.roundToUShort(value));
@@ -550,7 +551,7 @@ public class UShortArray extends PrimitiveArray {
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
-    public void addNInts(int n, int value) {
+    public void addNInts(final int n, final int value) {
         if (value < MIN_VALUE || value > MAX_VALUE) {
             maxIsMV = true;
             addN(n, MAX_VALUE);
@@ -565,7 +566,7 @@ public class UShortArray extends PrimitiveArray {
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
-    public void addNLongs(int n, long value) {
+    public void addNLongs(final int n, final long value) {
         if (value < MIN_VALUE || value > MAX_VALUE) {
             maxIsMV = true;
             addN(n, MAX_VALUE);
@@ -582,7 +583,7 @@ public class UShortArray extends PrimitiveArray {
      * @param nValues the number of values to be added
      * @return 'this' for convenience
      */
-    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
+    public PrimitiveArray addFromPA(final PrimitiveArray otherPA, int otherIndex, final int nValues) {
 
         //add from same type
         if (otherPA.elementType() == elementType()) {
@@ -612,7 +613,7 @@ public class UShortArray extends PrimitiveArray {
      * @param otherPA the other PrimitiveArray
      * @param otherIndex the index of the item in otherPA
      */
-    public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
+    public void setFromPA(final int index, final PrimitiveArray otherPA, final int otherIndex) {
         setInt(index, otherPA.getInt(otherIndex)); //handles maxIsMV
     }
 
@@ -621,7 +622,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param index the element to be removed, 0 ... size-1
      */
-    public void remove(int index) {
+    public void remove(final int index) {
         if (index >= size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
@@ -637,7 +638,7 @@ public class UShortArray extends PrimitiveArray {
      * @param from the first element to be removed, 0 ... size
      * @param to one after the last element to be removed, from ... size
      */
-    public void removeRange(int from, int to) {
+    public void removeRange(final int from, final int to) {
         if (to > size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.removeRange: to (" + 
                 to + ") > size (" + size + ").");
@@ -661,8 +662,8 @@ public class UShortArray extends PrimitiveArray {
      * @param last  (exclusive)
      * @param destination the destination, can't be in the range 'first+1..last-1'.
      */
-    public void move(int first, int last, int destination) {
-        String errorIn = String2.ERROR + " in UShortArray.move:\n";
+    public void move(final int first, final int last, final int destination) {
+        final String errorIn = String2.ERROR + " in UShortArray.move:\n";
 
         if (first < 0) 
             throw new RuntimeException(errorIn + "first (" + first + ") must be >= 0.");
@@ -684,8 +685,8 @@ public class UShortArray extends PrimitiveArray {
         //String2.log("move initial " + String2.toCSSVString(array));
 
         //store the range to be moved
-        int nToMove = last - first;
-        short[] temp = new short[nToMove];
+        final int nToMove = last - first;
+        final short[] temp = new short[nToMove];
         System.arraycopy(array, first, temp, 0, nToMove);
 
         //if moving to left...    (draw diagram to visualize this)
@@ -715,7 +716,7 @@ public class UShortArray extends PrimitiveArray {
      *
      * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
-    public void justKeep(BitSet bitset) {
+    public void justKeep(final BitSet bitset) {
         int newSize = 0;
         for (int row = 0; row < size; row++) {
             if (bitset.get(row)) 
@@ -730,7 +731,7 @@ public class UShortArray extends PrimitiveArray {
      * @param minCapacity the minimum acceptable capacity.
      *    minCapacity is type long, but &gt;= Integer.MAX_VALUE will throw exception.
      */
-    public void ensureCapacity(long minCapacity) {
+    public void ensureCapacity(final long minCapacity) {
         if (array.length < minCapacity) {
             //ensure minCapacity is < Integer.MAX_VALUE
             Math2.ensureArraySizeOkay(minCapacity, "UShortArray");  
@@ -739,7 +740,7 @@ public class UShortArray extends PrimitiveArray {
             if (newCapacity < minCapacity) 
                 newCapacity = (int)minCapacity; //safe since checked above
             Math2.ensureMemoryAvailable(2L * newCapacity, "UShortArray");
-            short[] newArray = new short[newCapacity];
+            final short[] newArray = new short[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
             array = newArray; //do last to minimize concurrency problems
         }
@@ -780,9 +781,9 @@ public class UShortArray extends PrimitiveArray {
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "UShortArray.toDoubleArray");
-        double dar[] = new double[size];
+        final double dar[] = new double[size];
         for (int i = 0; i < size; i++) {
-            int s = unpack(array[i]);
+            final int s = unpack(array[i]);
             dar[i] = maxIsMV && s == MAX_VALUE? Double.NaN : s;
         }
         return dar;
@@ -796,9 +797,9 @@ public class UShortArray extends PrimitiveArray {
      */
     public String[] toStringArray() {
         Math2.ensureMemoryAvailable(8L * size, "UShortArray.toStringArray"); //8L is feeble minimal estimate
-        String sar[] = new String[size];
+        final String sar[] = new String[size];
         for (int i = 0; i < size; i++) {
-            int s = unpack(array[i]);
+            final int s = unpack(array[i]);
             sar[i] = maxIsMV && s == MAX_VALUE? "" : String.valueOf(s);
         }
         return sar;
@@ -810,7 +811,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public int get(int index) {
+    public int get(final int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -823,7 +824,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public short getPacked(int index) {
+    public short getPacked(final int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -836,7 +837,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index 0 ... size-1
      * @param value the value for that element
      */
-    public void set(int index, int value) {
+    public void set(final int index, final int value) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.set: index (" + 
                 index + ") >= size (" + size + ").");
@@ -851,8 +852,8 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as an int. 
      *   If maxIsMV, MAX_VALUE is returned as Integer.MAX_VALUE.
      */
-    public int getInt(int index) {
-        int s = get(index);
+    public int getInt(final int index) {
+        final int s = get(index);
         return maxIsMV && s == MAX_VALUE? Integer.MAX_VALUE : s;
     }
 
@@ -866,7 +867,7 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as an int. String values are parsed
      *   with String2.parseInt and so may return Integer.MAX_VALUE.
      */
-    public int getRawInt(int index) {
+    public int getRawInt(final int index) {
         return get(index);
     }
 
@@ -877,7 +878,7 @@ public class UShortArray extends PrimitiveArray {
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(i).
      */
-    public void setInt(int index, int i) {
+    public void setInt(final int index, final int i) {
         if (i < MIN_VALUE || i > MAX_VALUE) {
             maxIsMV = true;
             set(index, MAX_VALUE);
@@ -893,8 +894,8 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as a long. 
      *   If maxIsMV, MAX_VALUE is returned as Long.MAX_VALUE.
      */
-    public long getLong(int index) {
-        int s = get(index);
+    public long getLong(final int index) {
+        final int s = get(index);
         return maxIsMV && s == MAX_VALUE? Long.MAX_VALUE : s;
     }
 
@@ -905,7 +906,7 @@ public class UShortArray extends PrimitiveArray {
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToUShort(long).
      */
-    public void setLong(int index, long i) {
+    public void setLong(final int index, final long i) {
         if (i < MIN_VALUE || i > MAX_VALUE) {
             maxIsMV = true;
             set(index, MAX_VALUE);
@@ -921,8 +922,8 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as a ulong. 
      *   If maxIsMV, MAX_VALUE is returned as ULong.MAX_VALUE.
      */
-    public BigInteger getULong(int index) {
-        int b = get(index);
+    public BigInteger getULong(final int index) {
+        final int b = get(index);
         return maxIsMV && b == MAX_VALUE? ULongArray.MAX_VALUE : new BigInteger("" + b);
     }
 
@@ -933,7 +934,7 @@ public class UShortArray extends PrimitiveArray {
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(long).
      */
-    public void setULong(int index, BigInteger i) {
+    public void setULong(final int index, final BigInteger i) {
         setDouble(index, i == null? Double.NaN : i.doubleValue()); //easier to work with. handles NaN. wide range
     }
 
@@ -946,8 +947,8 @@ public class UShortArray extends PrimitiveArray {
      *   with String2.parseFloat and so may return Float.NaN.
      *   If maxIsMV, MAX_VALUE is returned as Float.NaN.
      */
-    public float getFloat(int index) {
-        int s = get(index);
+    public float getFloat(final int index) {
+        final int s = get(index);
         return maxIsMV && s == MAX_VALUE? Float.NaN : s;
     }
 
@@ -958,7 +959,7 @@ public class UShortArray extends PrimitiveArray {
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
      *   if needed by methods like Math2.roundToUShort(d).
      */
-    public void setFloat(int index, float d) {
+    public void setFloat(final int index, final float d) {
         if (!maxIsMV && (!Float.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
             maxIsMV = true;
         set(index, Math2.roundToUShort(d));
@@ -973,8 +974,8 @@ public class UShortArray extends PrimitiveArray {
      *   with String2.parseDouble and so may return Double.NaN.
      *   If maxIsMV, MAX_VALUE is returned as Double.NaN.
      */
-    public double getDouble(int index) {
-        int s = get(index);
+    public double getDouble(final int index) {
+        final int s = get(index);
         return maxIsMV && s == MAX_VALUE? Double.NaN : s;
     }
 
@@ -988,7 +989,7 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getUnsignedDouble(int index) {
+    public double getUnsignedDouble(final int index) {
         //or see https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/reference/faq.html#Unsigned
         return getDouble(index); //already unsigned
     }
@@ -1004,7 +1005,7 @@ public class UShortArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getRawDouble(int index) {
+    public double getRawDouble(final int index) {
         return get(index);
     }
 
@@ -1015,7 +1016,7 @@ public class UShortArray extends PrimitiveArray {
      * @param d the value. For numeric PrimitiveArray, it is narrowed 
      *   if needed by methods like Math2.roundToUShort(d).
      */
-    public void setDouble(int index, double d) {
+    public void setDouble(final int index, final double d) {
         if (!maxIsMV && (!Double.isFinite(d) || d < MIN_VALUE || d > MAX_VALUE)) 
             maxIsMV = true;
         set(index, Math2.roundToUShort(d));
@@ -1030,8 +1031,8 @@ public class UShortArray extends PrimitiveArray {
      *   or "" for NaN or infinity.
      *   If this PA is unsigned, this method returns the unsigned value.
      */
-    public String getString(int index) {
-        short b = getPacked(index);
+    public String getString(final int index) {
+        final short b = getPacked(index);
         return maxIsMV && b == PACKED_MAX_VALUE? "" : String.valueOf(unpack(b));
     }
 
@@ -1043,8 +1044,8 @@ public class UShortArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or "null" for NaN or infinity.
      */
-    public String getJsonString(int index) {
-        short b = getPacked(index);
+    public String getJsonString(final int index) {
+        final short b = getPacked(index);
         return maxIsMV && b == PACKED_MAX_VALUE? "null" : String.valueOf(unpack(b));
     }
 
@@ -1059,7 +1060,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a String. 
      */
-    public String getRawString(int index) {
+    public String getRawString(final int index) {
         return String.valueOf(get(index));
     }
 
@@ -1070,7 +1071,7 @@ public class UShortArray extends PrimitiveArray {
      * @param s the value. For numeric PrimitiveArray's, it is parsed
      *   with String2.parseInt and narrowed by Math2.narrowToUShort(i).
      */
-    public void setString(int index, String s) {
+    public void setString(final int index, final String s) {
         setInt(index, String2.parseInt(s)); //handles mv
     }
 
@@ -1080,7 +1081,7 @@ public class UShortArray extends PrimitiveArray {
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(int lookFor) {
+    public int indexOf(final int lookFor) {
         return indexOf(lookFor, 0);
     }
 
@@ -1092,8 +1093,8 @@ public class UShortArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(int lookFor, int startIndex) {
-        short packedLookFor = pack(lookFor);
+    public int indexOf(final int lookFor, final int startIndex) {
+        final short packedLookFor = pack(lookFor);
         for (int i = startIndex; i < size; i++) 
             if (array[i] == packedLookFor) 
                 return i;
@@ -1107,7 +1108,7 @@ public class UShortArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(String lookFor, int startIndex) {
+    public int indexOf(final String lookFor, final int startIndex) {
         if (startIndex >= size)
             return -1;
         return indexOf(Math2.roundToUShort(String2.parseInt(lookFor)), startIndex);
@@ -1120,11 +1121,11 @@ public class UShortArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(int lookFor, int startIndex) {
+    public int lastIndexOf(final int lookFor, final int startIndex) {
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in UShortArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
-        short packedLookFor = pack(lookFor);
+        final short packedLookFor = pack(lookFor);
         for (int i = startIndex; i >= 0; i--) 
             if (array[i] == packedLookFor) 
                 return i;
@@ -1138,7 +1139,7 @@ public class UShortArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(String lookFor, int startIndex) {
+    public int lastIndexOf(final String lookFor, final int startIndex) {
         return lastIndexOf(Math2.roundToUShort(String2.parseInt(lookFor)), startIndex);
     }
 
@@ -1156,7 +1157,7 @@ public class UShortArray extends PrimitiveArray {
      * @param o the object that will be compared to this UShortArray
      * @return true if equal.  o=null returns false.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         return testEquals(o).length() == 0;
     }
 
@@ -1168,11 +1169,11 @@ public class UShortArray extends PrimitiveArray {
      * @return a String describing the difference (or "" if equal).
      *   o=null doesn't throw an exception.
      */
-    public String testEquals(Object o) {
+    public String testEquals(final Object o) {
         if (!(o instanceof UShortArray))
             return "The two objects aren't equal: this object is a UShortArray; the other is a " + 
                 (o == null? "null" : o.getClass().getName()) + ".";
-        UShortArray other = (UShortArray)o;
+        final UShortArray other = (UShortArray)o;
         if (other.size() != size)
             return "The two UShortArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
@@ -1194,7 +1195,7 @@ public class UShortArray extends PrimitiveArray {
      */
     public String toString() {
         //estimate 7 bytes/element
-        StringBuilder sb = new StringBuilder(7 * Math.min(size, (Integer.MAX_VALUE-8192) / 7));
+        final StringBuilder sb = new StringBuilder(7 * Math.min(size, (Integer.MAX_VALUE-8192) / 7));
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
@@ -1210,7 +1211,7 @@ public class UShortArray extends PrimitiveArray {
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
-        StringBuilder sb = new StringBuilder(size * 8);
+        final StringBuilder sb = new StringBuilder(size * 8);
         for (int i = 0; i < size; i++) 
             sb.append((i == 0? "" : ",") + unpack(array[i]) + "us"); 
         return sb.toString();
@@ -1256,7 +1257,7 @@ public class UShortArray extends PrimitiveArray {
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+    public int compare(final int index1, final PrimitiveArray otherPA, final int index2) {
         return Integer.compare(getInt(index1), otherPA.getInt(index2));  //int handles mv
     }
 
@@ -1269,7 +1270,7 @@ public class UShortArray extends PrimitiveArray {
      * @param from an index number 0 ... size-1
      * @param to an index number 0 ... size-1
      */
-    public void copy(int from, int to) {
+    public void copy(final int from, final int to) {
         array[to] = array[from];
     }
 
@@ -1282,10 +1283,10 @@ public class UShortArray extends PrimitiveArray {
      * in the sorted list, rank[1] is the row number of the
      * second item in the sorted list, ...).
      */
-    public void reorder(int rank[]) {
-        int n = rank.length;
+    public void reorder(final int rank[]) {
+        final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
-        short newArray[] = new short[array.length]; 
+        final short newArray[] = new short[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
@@ -1310,7 +1311,7 @@ public class UShortArray extends PrimitiveArray {
      *    But if size=0, this returns 0.
      * @throws Exception if trouble
      */
-    public int writeDos(DataOutputStream dos) throws Exception {
+    public int writeDos(final DataOutputStream dos) throws Exception {
         for (int i = 0; i < size; i++)
             dos.writeShort(array[i]);
         return size == 0? 0 : 2;
@@ -1325,7 +1326,7 @@ public class UShortArray extends PrimitiveArray {
      *    (for Strings, this varies; for others it is consistent)
      * @throws Exception if trouble
      */
-    public int writeDos(DataOutputStream dos, int i) throws Exception {
+    public int writeDos(final DataOutputStream dos, final int i) throws Exception {
         dos.writeShort(array[i]);
         return 2;
     }
@@ -1337,7 +1338,7 @@ public class UShortArray extends PrimitiveArray {
      * @param n the number of elements to be read/added
      * @throws Exception if trouble
      */
-    public void readDis(DataInputStream dis, int n) throws Exception {
+    public void readDis(final DataInputStream dis, final int n) throws Exception {
         ensureCapacity(size + (long)n);
         for (int i = 0; i < n; i++)
             array[size++] = dis.readShort();
@@ -1351,7 +1352,7 @@ public class UShortArray extends PrimitiveArray {
      * @param dos
      * @throws Exception if trouble
      */
-    public void externalizeForDODS(DataOutputStream dos) throws Exception {
+    public void externalizeForDODS(final DataOutputStream dos) throws Exception {
         dos.writeInt(size);
         dos.writeInt(size); //yes, a second time
         //shorts are written as ints (see dods.dap.Int16PrimitiveVector.externalize)
@@ -1369,7 +1370,7 @@ public class UShortArray extends PrimitiveArray {
      * @param i the index of the element to be written
      * @throws Exception if trouble
      */
-    public void externalizeForDODS(DataOutputStream dos, int i) throws Exception {
+    public void externalizeForDODS(final DataOutputStream dos, final int i) throws Exception {
         dos.writeInt(array[i]); //as if int
     }
 
@@ -1380,8 +1381,8 @@ public class UShortArray extends PrimitiveArray {
      * @param dis
      * @throws IOException if trouble
      */
-    public void internalizeFromDODS(DataInputStream dis) throws java.io.IOException {
-        int nValues = dis.readInt();
+    public void internalizeFromDODS(final DataInputStream dis) throws java.io.IOException {
+        final int nValues = dis.readInt();
         dis.readInt(); //skip duplicate of nValues
         ensureCapacity(size + (long)nValues);
         for (int i = 0; i < nValues; i++) 
@@ -1395,7 +1396,7 @@ public class UShortArray extends PrimitiveArray {
      * @param index
      * @throws Exception if trouble
      */
-    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+    public void writeToRAF(final RandomAccessFile raf, final int index) throws Exception {
         raf.writeShort(array[index]);
     }
 
@@ -1406,7 +1407,7 @@ public class UShortArray extends PrimitiveArray {
      * @param raf the RandomAccessFile
      * @throws Exception if trouble
      */
-    public void readFromRAF(RandomAccessFile raf) throws Exception {
+    public void readFromRAF(final RandomAccessFile raf) throws Exception {
         addPacked(raf.readShort());
     }
 
@@ -1418,13 +1419,13 @@ public class UShortArray extends PrimitiveArray {
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.narrowToChar.
      */
-    public void append(PrimitiveArray pa) {
-        int otherSize = pa.size(); 
+    public void append(final PrimitiveArray pa) {
+        final int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (pa instanceof UShortArray) {
+        if (pa instanceof UShortArray ua) {
             if (pa.getMaxIsMV())
                 setMaxIsMV(true);
-            System.arraycopy(((UShortArray)pa).array, 0, array, size, otherSize);
+            System.arraycopy(ua.array, 0, array, size, otherSize);
             size += otherSize;
         } else {
             for (int i = 0; i < otherSize; i++)
@@ -1442,11 +1443,11 @@ public class UShortArray extends PrimitiveArray {
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.narrowToChar.
      */
-    public void rawAppend(PrimitiveArray pa) {
-        int otherSize = pa.size(); 
+    public void rawAppend(final PrimitiveArray pa) {
+        final int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (pa instanceof UShortArray) {
-            System.arraycopy(((UShortArray)pa).array, 0, array, size, otherSize);
+        if (pa instanceof UShortArray ua) {
+            System.arraycopy(ua.array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = pack(Math2.narrowToUShort(pa.getRawInt(i))); //this DOESN'T convert mv's
@@ -1463,17 +1464,17 @@ public class UShortArray extends PrimitiveArray {
      * @return a PrimitveArray (the same type as this class) with the unique values, sorted.
      *     If all the values are unique and already sorted, this returns 'this'.
      */
-    public PrimitiveArray makeIndices(IntArray indices) {
+    public PrimitiveArray makeIndices(final IntArray indices) {
         indices.clear();
         if (size == 0) {
             return new UShortArray();
         }
 
         //make a hashMap with all the unique values (associated values are initially all dummy)
-        Integer dummy = new Integer(-1);
-        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+        final Integer dummy = Integer.valueOf(-1);
+        final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
         int lastValue = unpack(array[0]); //since lastValue often equals currentValue, cache it
-        hashMap.put(new Integer(lastValue), dummy);
+        hashMap.put(Integer.valueOf(lastValue), dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
             int currentValue = unpack(array[i]);
@@ -1481,12 +1482,12 @@ public class UShortArray extends PrimitiveArray {
                 if (currentValue < lastValue) 
                     alreadySorted = false;
                 lastValue = currentValue;
-                hashMap.put(new Integer(lastValue), dummy);
+                hashMap.put(Integer.valueOf(lastValue), dummy);
             }
         }
 
         //quickly deal with: all unique and already sorted
-        Set keySet = hashMap.keySet();
+        final Set keySet = hashMap.keySet();
         int nUnique = keySet.size();
         if (nUnique == size && alreadySorted) {
             indices.ensureCapacity(size);
@@ -1496,8 +1497,8 @@ public class UShortArray extends PrimitiveArray {
         }
 
         //store all the elements in an array
-        Object unique[] = new Object[nUnique];
-        Iterator iterator = keySet.iterator();
+        final Object unique[] = new Object[nUnique];
+        final Iterator iterator = keySet.iterator();
         int count = 0;
         while (iterator.hasNext())
             unique[count++] = iterator.next();
@@ -1510,23 +1511,23 @@ public class UShortArray extends PrimitiveArray {
 
         //put the unique values back in the hashMap with the ranks as the associated values
         //and make tUnique 
-        int tUnique[] = new int[nUnique];
+        final int tUnique[] = new int[nUnique];
         for (int i = 0; i < count; i++) {
-            hashMap.put(unique[i], new Integer(i));
+            hashMap.put(unique[i], Integer.valueOf(i));
             tUnique[i] = ((Integer)unique[i]).intValue();
         }
 
         //convert original values to ranks
-        int ranks[] = new int[size];
+        final int ranks[] = new int[size];
         lastValue = unpack(array[0]);
-        ranks[0] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
+        ranks[0] = ((Integer)hashMap.get(Integer.valueOf(lastValue))).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
             if (array[i] == lastValue) {
                 ranks[i] = lastRank;
             } else {
                 lastValue = unpack(array[i]);
-                ranks[i] = ((Integer)hashMap.get(new Integer(lastValue))).intValue();
+                ranks[i] = ((Integer)hashMap.get(Integer.valueOf(lastValue))).intValue();
                 lastRank = ranks[i];
             }
         }
@@ -1545,10 +1546,10 @@ public class UShortArray extends PrimitiveArray {
      * @param tTo   the new value (use "" or "NaN" for standard missingValue)
      * @return the number of values switched
      */
-    public int switchFromTo(String tFrom, String tTo) {
-        short packedFrom = pack(Math2.roundToUShort(String2.parseDouble(tFrom)));
-        double d = String2.parseDouble(tTo);
-        short packedTo   = pack(Math2.roundToUShort(d));
+    public int switchFromTo(final String tFrom, final String tTo) {
+        final short packedFrom = pack(Math2.roundToUShort(String2.parseDouble(tFrom)));
+        final double d = String2.parseDouble(tTo);
+        final short packedTo   = pack(Math2.roundToUShort(d));
         if (packedFrom == packedTo)
             return 0;
         int count = 0;
@@ -1613,7 +1614,7 @@ public class UShortArray extends PrimitiveArray {
      */
     public void changeSignedToFromUnsigned() {
         for (int i = 0; i < size; i++) {
-            int i2 = array[i];
+            final int i2 = array[i];
             array[i] = (short)(i2 < 0? i2 + MAX_VALUE + 1: 
                                        i2 - MAX_VALUE - 1); //order of ops is important
         }

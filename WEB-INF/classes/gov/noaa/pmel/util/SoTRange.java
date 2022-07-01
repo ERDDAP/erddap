@@ -313,13 +313,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       delta = ((SoTValue.Time)value).getValue();
     }
     public Object getStartObject() {
-      return new java.lang.Long(start);
+      return java.lang.Long.valueOf(start);
     }
     public Object getEndObject() {
-      return new java.lang.Long(end);
+      return java.lang.Long.valueOf(end);
     }
     public Object getDeltaObject() {
-      return new java.lang.Long(delta);
+      return java.lang.Long.valueOf(delta);
     }
     /**
      * Adds the <code>SoTRange</code> object to this
@@ -490,13 +490,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       delta = ((SoTValue.Integer)value).getValue();
     }
     public Object getStartObject() {
-      return new java.lang.Integer(start);
+      return java.lang.Integer.valueOf(start);
     }
     public Object getEndObject() {
-      return new java.lang.Integer(end);
+      return java.lang.Integer.valueOf(end);
     }
     public Object getDeltaObject() {
-      return new java.lang.Integer(delta);
+      return java.lang.Integer.valueOf(delta);
     }
     /**
      * Adds the <code>SoTRange</code> object to this
@@ -667,13 +667,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       delta = ((SoTValue.Short)value).getValue();
     }
     public Object getStartObject() {
-      return new java.lang.Short(start);
+      return java.lang.Short.valueOf(start);
     }
     public Object getEndObject() {
-      return new java.lang.Short(end);
+      return java.lang.Short.valueOf(end);
     }
     public Object getDeltaObject() {
-      return new java.lang.Short(delta);
+      return java.lang.Short.valueOf(delta);
     }
     /**
      * Adds the <code>SoTRange</code> object to this
@@ -844,13 +844,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       delta = ((SoTValue.Float)value).getValue();
     }
     public Object getStartObject() {
-      return new java.lang.Float(start);
+      return java.lang.Float.valueOf(start);
     }
     public Object getEndObject() {
-      return new java.lang.Float(end);
+      return java.lang.Float.valueOf(end);
     }
     public Object getDeltaObject() {
-      return new java.lang.Float(delta);
+      return java.lang.Float.valueOf(delta);
     }
     /**
      * Adds the <code>SoTRange</code> object to this
@@ -1021,13 +1021,13 @@ public abstract class SoTRange implements java.io.Serializable, Cloneable {
       delta = ((SoTValue.Double)value).getValue();
     }
     public Object getStartObject() {
-      return new java.lang.Double(start);
+      return java.lang.Double.valueOf(start);
     }
     public Object getEndObject() {
-      return new java.lang.Double(end);
+      return java.lang.Double.valueOf(end);
     }
     public Object getDeltaObject() {
-      return new java.lang.Double(delta);
+      return java.lang.Double.valueOf(delta);
     }
     /**
      * Adds the <code>SoTRange</code> object to this

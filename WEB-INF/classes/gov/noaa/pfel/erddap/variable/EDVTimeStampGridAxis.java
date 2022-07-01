@@ -418,8 +418,8 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
      */
     public PrimitiveArray toDestination(PrimitiveArray source) {
         int size = source.size();
-        DoubleArray destPa = source instanceof DoubleArray?
-            (DoubleArray)source :
+        DoubleArray destPa = source instanceof DoubleArray da?
+            da :
             new DoubleArray(size, true);
         if (sourceTimeIsNumeric) {
             if (setSourceMaxIsMV)
@@ -443,8 +443,8 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
     public PrimitiveArray toDestinationStrings(PrimitiveArray source) {
         //memory is an issue! always generate this on-the-fly
         int n = source.size();
-        StringArray sa =  source instanceof StringArray?
-            (StringArray)source :
+        StringArray sa =  source instanceof StringArray tsa?
+            tsa :
             new StringArray(n, true);
         if (sourceTimeIsNumeric) {
             for (int i = 0; i < n; i++)
