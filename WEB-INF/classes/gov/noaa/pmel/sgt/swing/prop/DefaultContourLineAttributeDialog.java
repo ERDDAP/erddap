@@ -506,7 +506,7 @@ public class DefaultContourLineAttributeDialog extends JDialog {
     int index = 0;
     float[] array = new float[token.countTokens()];
     while(token.hasMoreTokens()) {
-      array[index] = new Float(token.nextToken()).floatValue();
+      array[index] = Float.valueOf(token.nextToken()).floatValue();
       index++;
     }
     return array;
@@ -526,7 +526,7 @@ public class DefaultContourLineAttributeDialog extends JDialog {
     //
     // width
     //
-    attr_.setWidth(new Float(widthTextField.getText()).floatValue());
+    attr_.setWidth(Float.valueOf(widthTextField.getText()).floatValue());
     //
     // dash array
     //
@@ -534,7 +534,7 @@ public class DefaultContourLineAttributeDialog extends JDialog {
     //
     // dash phase
     //
-    attr_.setDashPhase(new Float(dashPhaseTextField.getText()).floatValue());
+    attr_.setDashPhase(Float.valueOf(dashPhaseTextField.getText()).floatValue());
     //
     // cap style
     //
@@ -546,7 +546,7 @@ public class DefaultContourLineAttributeDialog extends JDialog {
     //
     // miter limit
     //
-    attr_.setMiterLimit(new Float(miterLimitTextField.getText()).floatValue());
+    attr_.setMiterLimit(Float.valueOf(miterLimitTextField.getText()).floatValue());
     //
     // Label attributes
     //
@@ -564,7 +564,7 @@ public class DefaultContourLineAttributeDialog extends JDialog {
     //
     // heightP
     //
-    attr_.setLabelHeightP(new Double(heightTextField.getText()).doubleValue());
+    attr_.setLabelHeightP(Double.valueOf(heightTextField.getText()).doubleValue());
     //
     // label format
     //

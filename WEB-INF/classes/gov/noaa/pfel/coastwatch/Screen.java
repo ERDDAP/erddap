@@ -11,8 +11,8 @@ import com.cohort.util.String2;
 
 import gov.noaa.pfel.coastwatch.util.IntObject;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This is the super class of all screens.

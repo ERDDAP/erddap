@@ -287,8 +287,8 @@ public class EDDTableFromCassandra extends EDDTable{
     protected EDV partitionKeyEDV[];          //edv of each partitionKey
     protected final static String PartitionKeysDistinctTableName = 
         "PartitionKeysDistinctTable.nc";
-    protected HashSet clusterColumnSourceNames;
-    protected HashSet indexColumnSourceNames;
+    protected HashSet<String> clusterColumnSourceNames;
+    protected HashSet<String> indexColumnSourceNames;
     protected double maxRequestFraction = 1; //>0..1; 1 until subsetVarTable has been made
     protected String partitionKeyRelatedVariables; //CSSV for error message
     protected EDV rvToResultsEDV[]; //needed in expandPartitionKeyCSV

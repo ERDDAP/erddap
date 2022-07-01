@@ -303,7 +303,7 @@ public class JDOMException extends Exception {
             return nestedException;
         }
         
-        nestedException = getNestedException(parent, "javax.servlet.ServletException", "getRootCause");
+        nestedException = getNestedException(parent, "jakarta.servlet.ServletException", "getRootCause");
         if (nestedException != null) {
             return nestedException;
         }

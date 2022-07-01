@@ -293,7 +293,7 @@ public class Table  {
         "WhichListItem", "Window", "WinName", "wnoise", 
         "x", "x2pnt", "xcsr", "y", "z", "zcsr"};
         
-    public final static HashSet IgorReservedNames = new HashSet();
+    public final static HashSet<String> IgorReservedNames = new HashSet();
     static {
         for (String s : IgorReservedNamesSA)
             IgorReservedNames.add(String2.canonical(s));
@@ -982,7 +982,7 @@ public class Table  {
         String2.log("Integer[] bytes/int  = " + ((Math2.getUsingMemory() - oMemory) / (double)n));
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++)
-            nar[i] = new Integer(i);
+            nar[i] = Integer.valueOf(i);
         String2.log("Integer[] create time=" + (System.currentTimeMillis() - time) + "ms"); //2271!
         time = System.currentTimeMillis();
         for (int i = 0; i < n; i++)
@@ -1588,8 +1588,7 @@ public class Table  {
         int nColumns = nColumns();
         for (int col = 0; col < nColumns; col++) {
             PrimitiveArray pa = columns.get(col);
-            if (pa instanceof StringArray) {
-                StringArray sa = (StringArray)pa;
+            if (pa instanceof StringArray sa) {
                 //String2.log(">>getNcHeader sa=" + sa.toNccsvAttString());
                 sb.append("\t" + getColumnName(col) + NcHelper.StringLengthSuffix + 
                     " = " + sa.maxStringLength() + " ;\n");
@@ -1601,8 +1600,7 @@ public class Table  {
         for (int col = 0; col < nColumns; col++) {
             PrimitiveArray pa = columns.get(col);
             String columnName = getColumnName(col);
-            if (pa instanceof StringArray) {
-                StringArray sa = (StringArray)pa;
+            if (pa instanceof StringArray sa) {
                 sb.append("\tchar " + columnName + "(" + dimensionName + ", " +
                     columnName + NcHelper.StringLengthSuffix + ") ;\n");
             } else {
@@ -2478,6 +2476,7 @@ public class Table  {
         StringArray loadColumnSA[] = null;
         boolean missingItemNoted = false;
         StringBuilder warnings = new StringBuilder();
+        ArrayList<String> items = new ArrayList(16);
         while (true) {
             oneLine = null;
             if (nextLinesCache < linesCacheSize) {
@@ -2503,29 +2502,32 @@ public class Table  {
             //    String2.log(Math2.memoryString() + "\n" + String2.canonicalStatistics());
             //}
 
-            String items[];
             try {
                 //break the lines into items
-                if (colSeparator == ',')
-                    items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases, but leaves them quoted
-                else if (colSeparator == ' ')
-                    items = StringArray.wordsAndQuotedPhrases(oneLine).toArray();
-                else if (colSeparator == '\u0000')
-                    items = new String[]{oneLine.trim()};
-                else items = String2.split(oneLine, colSeparator);
+                if (colSeparator == ',') {
+                    StringArray.arrayListFromCSV(oneLine, ",", true, true, items); //trim=true keep=true   //does handle "'d phrases, but leaves them quoted  
+                } else if (colSeparator == ' ') {
+                    StringArray.wordsAndQuotedPhrases(oneLine, items); //items are trim'd
+                } else if (colSeparator == '\u0000') {
+                    items.clear();
+                    items.add(oneLine.trim());
+                } else {
+                    String2.splitToArrayList(oneLine, colSeparator, true, items); //trim=true
+                }
                 //if (debugMode && logicalLine-dataStartLine<5) String2.log(">> row=" + row + " nItems=" + items.length + "\nitems=" + String2.toCSSVString(items));
             } catch (Exception e) {
                 warnings.append(String2.WARNING + ": line #" + row + ": " + e.getMessage() + "\n");
                 continue;
             }
+            int nItems = items.size();
 
             //one time things 
             if (logicalLine == dataStartLine) {
                 if (expectedNItems < 0)
-                    expectedNItems = items.length;
+                    expectedNItems = nItems;
 
                 //make column names (if not done already) 
-                for (int col = fileColumnNames.size(); col < items.length; col++) 
+                for (int col = fileColumnNames.size(); col < nItems; col++) 
                     fileColumnNames.add("Column#" + col);
 
                 //identify the testColumnNumbers
@@ -2562,7 +2564,6 @@ public class Table  {
             }
 
             //ensure nItems is correct
-            int nItems = items.length;
             if (nItems == 0)
                 continue; //silent error
             if (nItems > expectedNItems ||
@@ -2579,7 +2580,7 @@ public class Table  {
                 int which = testColumnNumbers[test];
                 if (which < 0 || which >= nItems)  //value treated as NaN. NaN will fail any test.
                     continue;
-                double d = String2.parseDouble(items[which]);
+                double d = String2.parseDouble(items.get(which));
                 if (d >= testMin[test] && d <= testMax[test]) { //NaN will fail this test
                     continue;
                 } else {ok = false; 
@@ -2598,7 +2599,7 @@ public class Table  {
                     //request col is not in the file
                     loadColumnSA[col].add(""); 
                 } else if (itemNumber < nItems) {
-                    loadColumnSA[col].add(String2.fromNccsvString(items[itemNumber]));
+                    loadColumnSA[col].add(String2.fromNccsvString(items.get(itemNumber)));
                 } else if (allowRaggedRightInReadASCII) {  
                     //it is a bad idea to allow this (who knows which value is missing?), 
                     //but some buoy files clearly lack the last value,
@@ -5905,25 +5906,25 @@ Dataset {
         int n = names.length;
         for (int i = 0; i < n; i++) {
             PrimitiveArray pa = atts.get(names[i]);
-            if (pa instanceof CharArray) {
+            if (pa instanceof CharArray ca) {
                 atts.remove(names[i]);
                 atts.set("_encodedCharArray_" + names[i], 
-                    ShortArray.fromCharArrayBytes((CharArray)pa));
+                    ShortArray.fromCharArrayBytes(ca));
 
-            } else if (pa instanceof UByteArray) {
+            } else if (pa instanceof UByteArray ua) {
                 atts.remove(names[i]);
                 atts.set("_encodedUByteArray_" + names[i], 
-                    new ByteArray(((UByteArray)pa).toArray()));
+                    new ByteArray(ua.toArray()));
 
-            } else if (pa instanceof UShortArray) {
+            } else if (pa instanceof UShortArray ua) {
                 atts.remove(names[i]);
                 atts.set("_encodedUShortArray_" + names[i], 
-                    new ShortArray(((UShortArray)pa).toArray()));
+                    new ShortArray(ua.toArray()));
 
-            } else if (pa instanceof UIntArray) {
+            } else if (pa instanceof UIntArray ua) {
                 atts.remove(names[i]);
                 atts.set("_encodedUIntArray_" + names[i], 
-                    new IntArray(((UIntArray)pa).toArray()));
+                    new IntArray(ua.toArray()));
 
             } else if (pa instanceof LongArray) {
                 atts.remove(names[i]);
@@ -6108,16 +6109,16 @@ Dataset {
                 String2.log(String2.ERROR + ": Table.readEnhancedFlatNc(" + fullName + ") contained a CharArray variable.");
                 return -1; //trouble
      
-            } else if (sourceVersion == 3 && pa instanceof ShortArray &&
+            } else if (sourceVersion == 3 && pa instanceof ShortArray sa &&
                 "true".equals(atts.getString("_Unsigned"))) { //netcdf recommendation
                 //convert sourceVersion=3 unsigned short to char
                 atts.remove("_Unsigned");
-                setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
+                setColumn(col, CharArray.fromShortArrayBytes(sa));                
 
-            } else if (sourceVersion >= 4 && pa instanceof ShortArray &&
+            } else if (sourceVersion >= 4 && pa instanceof ShortArray sa &&
                 "fromChar".equals(atts.getString("_encoded_"))) {
                 atts.remove("_encoded_");
-                setColumn(col, CharArray.fromShortArrayBytes((ShortArray)pa));                
+                setColumn(col, CharArray.fromShortArrayBytes(sa));                
 
             } else if (pa instanceof StringArray) {
                 String enc = atts.getString("_encoded_");
@@ -6829,8 +6830,8 @@ Dataset {
             if (loadVariableNames.length == 0) {
                 loadVariables = NcHelper.findMaxDVariables(ncFile, ""); //throws exception if no vars with dimensions
             } else {
-                ArrayList varList = new ArrayList();
-                ArrayList dimList = new ArrayList(); //just dims that aren't also variables
+                ArrayList<Variable> varList = new ArrayList();
+                ArrayList<Dimension> dimList = new ArrayList(); //just dims that aren't also variables
                 for (int i = 0; i < loadVariableNames.length; i++) {
                     Variable variable = ncFile.findVariable(loadVariableNames[i]);
                     if (variable == null) {
@@ -7035,7 +7036,7 @@ Dataset {
 
                 //ensure names are available dimensions 
                 //  !!they could be nDimensional vars that aren't in this file
-                ArrayList dimensions = new ArrayList();
+                ArrayList<Dimension> dimensions = new ArrayList();
                 for (int v = 0; v < loadVariableNames.length; v++) {
                     String axisName = loadVariableNames[v];
                     Dimension dimension = ncFile.findDimension(axisName);
@@ -7507,8 +7508,8 @@ Dataset {
 
                     //read info
                     PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isCharArray);
-                    if (pa instanceof StringArray) 
-                        ((StringArray)pa).trimEndAll();
+                    if (pa instanceof StringArray t) 
+                        t.trimEndAll();
                     Attributes atts = new Attributes();
                     if (getMetadata)
                         NcHelper.getVariableAttributes(tVar, atts);
@@ -7598,8 +7599,8 @@ Dataset {
                 if (pa == null) {
                     //String2.log(">> tVar=" + tVar.getFullName() + " isCharArray=" + isCharArray);
                     pa = NcHelper.getPrimitiveArray(tVar, isCharArray);
-                    if (pa instanceof StringArray) 
-                        ((StringArray)pa).trimEndAll();
+                    if (pa instanceof StringArray t) 
+                        t.trimEndAll();
                     atts = new Attributes();
                     if (getMetadata)
                         NcHelper.getVariableAttributes(tVar, atts);
@@ -7695,8 +7696,8 @@ Dataset {
                     //don't use knownPAs here: different vars and different v's.
                     PrimitiveArray pa = NcHelper.getPrimitiveArray(tVar, isCharArray);
                     //FUTURE: be smarter? just trim values that are STRING_LENGTH long?
-                    if (pa instanceof StringArray)
-                        ((StringArray)pa).trimEndAll();
+                    if (pa instanceof StringArray t)
+                        t.trimEndAll();
                     Attributes atts = new Attributes();
                     NcHelper.getVariableAttributes(tVar, atts);   //needed for removeMVRows
                     pa = atts.standardizeVariable(standardizeWhat, tVar.getFullName(), pa);
@@ -7950,8 +7951,8 @@ Dataset {
                     knownAtts[v] = null;
                     if (pa == null) {
                         pa = NcHelper.getPrimitiveArray(tVar, isCharArray);
-                        if (pa instanceof StringArray)
-                            ((StringArray)pa).trimEndAll();
+                        if (pa instanceof StringArray t)
+                            t.trimEndAll();
                         atts = new Attributes();
                         if (getMetadata)
                             NcHelper.getVariableAttributes(tVar, atts);
@@ -8839,8 +8840,7 @@ Dataset {
 
 
                 //is it a sequence???
-                if (outerVar instanceof Sequence) {
-                    Sequence seq1 = (Sequence)outerVar;
+                if (outerVar instanceof Sequence seq1) {
 // new attempt
                     ArraySequence arSeq = (ArraySequence)seq1.read(); //reads all, in memory
                     List<StructureMembers.Member> memberList1 = arSeq.getMembers();
@@ -8850,9 +8850,8 @@ Dataset {
                             //add it
                             Array tar = arSeq.extractMemberArray(mem1);
  String2.log("mem1=" + memName1 + "=" + tar.getClass().getCanonicalName());
-                            if (tar instanceof ArrayObject.D1) {
+                            if (tar instanceof ArrayObject.D1 seq2) {
                                 //member is a sequence
-                                ArrayObject.D1 seq2 = (ArrayObject.D1)tar;
                                 String2.log("[0]=" + seq2.get(0).getClass().getCanonicalName());
 
 
@@ -8885,9 +8884,8 @@ Dataset {
     String2.log("mFullName1=" + mFullName1);
 
                                 //is it a sequence???
-                                if (m1 instanceof Sequence) {
+                                if (m1 instanceof Sequence seq2) {
                                     //e.g., "seq1" in the test file
-                                    Sequence seq2 = (Sequence)m1;
                                     StructureDataIterator seqIter2 = seq2.getStructureIterator(65536); //go through the rows
                                     int rowNum2 = -1;
                                     try {
@@ -10043,7 +10041,7 @@ Dataset {
         //if loadVariableNames was specified, 
         if (loadVariableNames.size() > 0) {
             //ENSURE all conNames are in loadVariableNames
-            HashSet loadVarHS = loadVariableNames.toHashSet();
+            HashSet<String> loadVarHS = loadVariableNames.toHashSet();
             for (int c = 0; c < conNames.size(); c++) {
                 if (!loadVarHS.contains(conNames.get(c)))
                     throw new RuntimeException(errorInMethod +
@@ -12046,7 +12044,7 @@ Dataset {
         expected = "Invalid request: loadVariables includes variables that use two different sample_dimension's (z_obs and Temperature_obs).";
         int po = Math.max(0, results.indexOf(expected));        
         Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
-
+        debugMode = oDebug;
     }
 
 
@@ -12231,6 +12229,7 @@ Dataset {
         Test.ensureEqual(table.nRows(), 0, "");
 
         String2.log("\n*** Table.testReadNcCFPoint finished successfully");
+        debugMode = oDebug;
     }
 
     
@@ -24559,7 +24558,7 @@ String2.log(table.dataToString());
             lutKeyPA[key] = lookUpTable.getColumn(key);
         }
 
-        //make hashtable of keys->new Integer(row#) in lookUpTable
+        //make hashtable of keys->Integer.valueOf(row#) in lookUpTable
         //so join is fast with any number of rows in lookUpTable
         int lutNRows = lutKeyPA[0].size();
         HashMap<String,Integer> hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
@@ -24567,7 +24566,7 @@ String2.log(table.dataToString());
             StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
             for (int key = 1; key < nKeys; key++) 
                 sb.append("\t" + lutKeyPA[key].getString(row));
-            hashMap.put(sb.toString(), new Integer(row));
+            hashMap.put(sb.toString(), Integer.valueOf(row));
         }
         
         //insert columns to be filled
@@ -24698,7 +24697,7 @@ String2.log(table.dataToString());
             StringBuilder sb = new StringBuilder();
             for (int key = 0; key < nKeyCols; key++) 
                 sb.append(keyPAs[key].getString(row) + "\n");
-            rowHash.put(sb.toString(), new Integer(row));
+            rowHash.put(sb.toString(), Integer.valueOf(row));
         }
 
         //find columns in otherTable which correspond to the columns in this table
@@ -24739,7 +24738,7 @@ String2.log(table.dataToString());
             if (thisRowI == null) {
                 //add blank row at end
                 nNewRows++;
-                rowHash.put(sbString, new Integer(nRows++));
+                rowHash.put(sbString, Integer.valueOf(nRows++));
                 for (int col = 0; col < nCols; col++) {
                     if (otherPAs[col] == null)
                          getColumn(col).addString(missingValues[col]);
@@ -24874,7 +24873,7 @@ String2.log(table.dataToString());
 
 
         //make a list of the needed variables (loadColumns and testColumns)
-        ArrayList allVariables = new ArrayList();
+        ArrayList<Variable> allVariables = new ArrayList();
         if (loadColumns == null) {
             //get a list of all variables which use just mainDimension
             List variableList = ncFile.getVariables();
@@ -25207,15 +25206,15 @@ String2.log(table.dataToString());
                     for (int innerCol = 0; innerCol < nInnerColumns; innerCol++) {
                         //if (reallyVerbose) String2.log("  OR=" + outerRow + " OC=" + col + " IR=" + innerRow + " IC=" + innerCol);
                         BaseType ibt = (BaseType)innerVector.get(innerCol); 
-                        if      (ibt instanceof DByte)    (  (ByteArray)columns.get(col + innerCol)).add(((DByte)ibt).getValue());
-                        else if (ibt instanceof DFloat32) ( (FloatArray)columns.get(col + innerCol)).add(((DFloat32)ibt).getValue());
-                        else if (ibt instanceof DFloat64) ((DoubleArray)columns.get(col + innerCol)).add(((DFloat64)ibt).getValue());
-                        else if (ibt instanceof DInt16)   ( (ShortArray)columns.get(col + innerCol)).add(((DInt16)ibt).getValue());
-                        else if (ibt instanceof DUInt16)  ( (ShortArray)columns.get(col + innerCol)).add(((DUInt16)ibt).getValue());
-                        else if (ibt instanceof DInt32)   (   (IntArray)columns.get(col + innerCol)).add(((DInt32)ibt).getValue());
-                        else if (ibt instanceof DUInt32)  (   (IntArray)columns.get(col + innerCol)).add(((DUInt32)ibt).getValue());
-                        else if (ibt instanceof DBoolean) (  (ByteArray)columns.get(col + innerCol)).add((byte)(((DBoolean)ibt).getValue()? 1 : 0)); //.nc doesn't support booleans, so store byte=0|1
-                        else if (ibt instanceof DString)  ((StringArray)columns.get(col + innerCol)).add(((DString)ibt).getValue());
+                        if      (ibt instanceof DByte    t) (  (ByteArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DFloat32 t) ( (FloatArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DFloat64 t) ((DoubleArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DInt16   t) ( (ShortArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DUInt16  t) ( (ShortArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DInt32   t) (   (IntArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DUInt32  t) (   (IntArray)columns.get(col + innerCol)).add(t.getValue());
+                        else if (ibt instanceof DBoolean t) (  (ByteArray)columns.get(col + innerCol)).add((byte)(t.getValue()? 1 : 0)); //.nc doesn't support booleans, so store byte=0|1
+                        else if (ibt instanceof DString  t) ((StringArray)columns.get(col + innerCol)).add(t.getValue());
                         else throw new Exception(errorInMethod + "Unexpected inner variable type=" + 
                             ibt.getTypeName() + " for name=" + ibt.getName());
                     }
@@ -25235,15 +25234,15 @@ String2.log(table.dataToString());
                 //note addN (not add)
                 //I tried storing type of column to avoid instanceof, but no faster.
                 BaseType obt = (BaseType)outerVector.get(outerCol);
-                if      (obt instanceof DByte)    (  (ByteArray)columns.get(col++)).addN(nInnerRows, ((DByte)obt).getValue());
-                else if (obt instanceof DFloat32) ( (FloatArray)columns.get(col++)).addN(nInnerRows, ((DFloat32)obt).getValue());
-                else if (obt instanceof DFloat64) ((DoubleArray)columns.get(col++)).addN(nInnerRows, ((DFloat64)obt).getValue());
-                else if (obt instanceof DInt16)   ( (ShortArray)columns.get(col++)).addN(nInnerRows, ((DInt16)obt).getValue());
-                else if (obt instanceof DUInt16)  ( (ShortArray)columns.get(col++)).addN(nInnerRows, ((DUInt16)obt).getValue());
-                else if (obt instanceof DInt32)   (   (IntArray)columns.get(col++)).addN(nInnerRows, ((DInt32)obt).getValue());
-                else if (obt instanceof DUInt32)  (   (IntArray)columns.get(col++)).addN(nInnerRows, ((DUInt32)obt).getValue());
-                else if (obt instanceof DBoolean) (  (ByteArray)columns.get(col++)).addN(nInnerRows, (byte)(((DBoolean)obt).getValue()? 1 : 0)); //.nc doesn't support booleans, so store byte=0|1
-                else if (obt instanceof DString)  ((StringArray)columns.get(col++)).addN(nInnerRows, ((DString)obt).getValue());
+                if      (obt instanceof DByte    t) (  (ByteArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DFloat32 t) ( (FloatArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DFloat64 t) ((DoubleArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DInt16   t) ( (ShortArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DUInt16  t) ( (ShortArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DInt32   t) (   (IntArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DUInt32  t) (   (IntArray)columns.get(col++)).addN(nInnerRows, t.getValue());
+                else if (obt instanceof DBoolean t) (  (ByteArray)columns.get(col++)).addN(nInnerRows, (byte)(t.getValue()? 1 : 0)); //.nc doesn't support booleans, so store byte=0|1
+                else if (obt instanceof DString  t) ((StringArray)columns.get(col++)).addN(nInnerRows, t.getValue());
                 else throw new Exception(errorInMethod + "Unexpected outer variable type=" +
                     obt.getTypeName() + " for name=" + obt.getName());
             }
@@ -28758,7 +28757,7 @@ String2.log(table.dataToString());
 
                 //define unlimited dimension
                 dim = file.addUnlimitedDimension(dimName);
-                ArrayList dims = new ArrayList();
+                ArrayList<Dimension> dims = new ArrayList();
                 dims.add(dim);
 
                 //define Variables
@@ -28776,7 +28775,7 @@ String2.log(table.dataToString());
                         }
                         strlens[col] = strlen;
                         Dimension tDim = file.addUnlimitedDimension(colName + "_strlen");
-                        ArrayList tDims = new ArrayList();
+                        ArrayList<Dimension> tDims = new ArrayList();
                         tDims.add(dim);
                         tDims.add(tDim);
                         colVars[col] = NcHelper.addNc3StringVariable(rootGroup, colName, dims, strlen);                        
@@ -28807,7 +28806,7 @@ String2.log(table.dataToString());
                 
                 Variable var = vars.get  ;
                 class elementPAType = NcHelper.  var.
-                ArrayList tDims = var.getDimensions ();
+                //ArrayList<Dimension> tDims = var.getDimensions();
                 String colName = var.getFullName();
                 Attributes atts = new Attributes();
                 NcHelper.getAttributes(colName, atts);
@@ -29163,8 +29162,7 @@ String2.log(table.dataToString());
                 } else if  (col == tColumn) { ar = NcHelper.get1DArray(uniqueT);
                 } else {
                     //other columns are 4D arrays
-                    if (pa instanceof StringArray) {
-                        StringArray sa = (StringArray)pa;
+                    if (pa instanceof StringArray sa) {
                         ArrayChar.D5 tar = new ArrayChar.D5(nT, nZ, nY, nX, stringLength[col]);
                         ucar.ma2.Index index = tar.getIndex();
                         for (int row = 0; row < nRows; row++) 
@@ -29587,11 +29585,11 @@ String2.log(table.dataToString());
             //get the caught exception
             caughtException = e; 
             try {
-                if (e instanceof BatchUpdateException) {
+                if (e instanceof BatchUpdateException t) {
                     //If e was BatchUpdateException there is additional information. 
                     //Try to combine the e exception (identifies bad row's data) 
                     //and bue.getNextException (says what the problem was).
-                    Exception bue2 = ((BatchUpdateException)e).getNextException(); 
+                    Exception bue2 = t.getNextException(); 
                     caughtException = new Exception(
                         errorInMethod +
                         "[BU ERROR] " + MustBe.throwableToString(e) + 
@@ -30418,15 +30416,12 @@ String2.log(table.dataToString());
      *    in the column are converted to doubles (seconds since 1970-01-01).   
      * </ul>
      *
-     * @param fileName the full file name
+     * @param fileName the full file name. The file is assumed to be a UTF-8 file.
+     *   If the file is compressed (e.g., .zip), it will be decompresssed on-the-fly.
      * @throws Exception if trouble
      */
     public void readJson(String fileName) throws Exception {
-        //this can't use BufferedReader because json parsers need access to entire file's content
-        String results[] = File2.readFromFile(fileName, File2.UTF_8, 2);
-        if (results[0].length() > 0)
-            throw new Exception(results[0]);
-        readJson(fileName, results[1]);
+        readJson(fileName, File2.getDecompressedBufferedFileReaderUtf8(fileName));
     }
 
 
@@ -30441,24 +30436,22 @@ String2.log(table.dataToString());
      * </ul>
      *
      * @param fileName for diagnostic messages only
-     * @param source the json info
+     * @param bufferedReader the json info as a bufferedReader
      * @throws Exception if trouble
      */
-    public void readJson(String fileName, String source) throws Exception {
+    public void readJson(String fileName, BufferedReader bufferedReader) throws Exception {
         if (reallyVerbose) String2.log("Table.readJson " + fileName); 
         long time = System.currentTimeMillis();
-        String note = "In Table.readJson(" + fileName + "): ";
-        String errorInMethod = String2.ERROR + " in Table.readJson(" + fileName + "):\n";
+        final String note = "In Table.readJson(" + fileName + "): ";
+        final String errorInMethod = String2.ERROR + " in Table.readJson(" + fileName + "): JSON syntax error: ";
 
         //clear everything
         clear();
-        JSONTokener tokener = new JSONTokener(source);
-        char ch;
-        String s, s2;
-        String[] cNames = null, cTypes = null, cUnits = null;
-        StringArray sa;
-        int nCol = 0;
+        ArrayList<String> cNames = null;
+        ArrayList<String> cTypes = null;
+        ArrayList<String> cUnits = null;
         PrimitiveArray pas[] = null;
+        boolean endFound = false;
 
 //{
 //  "table": {
@@ -30470,133 +30463,159 @@ String2.log(table.dataToString());
 //      [180.099, 0.032, null, null],
 //      [189.971, -7.98, "2007-10-04T12:00:00Z", 29.08]
 //    ]
+//  }
 //}
-        if ((ch = tokener.nextClean()) != '{')     throw new IOException(errorInMethod + "Initial '{' not found (" + ch + ").");
-        if ((ch = tokener.nextClean()) != '\"')    throw new IOException(errorInMethod + "\"table\" not found (" + ch + ").");
-        if (!(s  = tokener.nextString('\"')).equals("table")) 
-                                                   throw new IOException(errorInMethod + "\"table\" not found (" + s + ").");
-        if ((ch = tokener.nextClean()) != ':')     throw new IOException(errorInMethod + "':' after \"table\" not found (" + ch + ").");
-        if ((ch = tokener.nextClean()) != '{')     throw new IOException(errorInMethod + "'{' after \"table\": not found (" + ch + ").");
-        ch = tokener.nextClean();
-        while (ch == '\"') {
-            s = tokener.nextString('\"');
-            if ((ch = tokener.nextClean()) != ':') throw new IOException(errorInMethod + "':' after \"" + s + "\" not found (" + ch + ").");
-            if ((ch = tokener.nextClean()) != '[') throw new IOException(errorInMethod + "'{' after \"" + s + "\": not found (" + ch + ").");
-            if (s.equals("columnNames")) {
-                s2 = tokener.nextTo('\n'); //assumes all content is on this line!
-                if (!s2.endsWith("],")) throw new IOException(errorInMethod + "columnNames line should end with '],' (" + s2 + ").");
-                cNames = StringArray.arrayFromCSV(s2.substring(0, s2.length() - 2));
+        try {
+            String line = bufferedReader.readLine();
+            if (line == null || !line.trim().equals("{"))
+                throw new IOException(errorInMethod + "First line of file should have been '{'.\nline=" + line);
+            line = bufferedReader.readLine();
+            if (!line.trim().equals("\"table\": {"))
+                throw new IOException(errorInMethod + "Second line of file should have been '\"table\": {'.\nline=" + line);
+            while ((line = bufferedReader.readLine()) != null) {
+                line = line.trim();
+                if (debugMode) String2.log("line=" + line);
 
-            } else if (s.equals("columnTypes")) {
-                s2 = tokener.nextTo('\n'); //assumes all content is on this line!
-                if (!s2.endsWith("],")) throw new IOException(errorInMethod + "columnTypes line should end with '],' (" + s2 + ").");
-                cTypes = StringArray.arrayFromCSV(s2.substring(0, s2.length() - 2));
+                if        (line.startsWith("\"columnNames\": [")) {
+                    if (!line.endsWith("],")) throw new IOException(errorInMethod + "columnNames line should have ended with '],'.\nline=" + line);
+                    cNames = new ArrayList();
+                    StringArray.arrayListFromCSV(line.substring(16, line.length() - 2), ",", true, true, cNames); //trim, keepNothing
 
-            } else if (s.equals("columnUnits")) {
-                s2 = tokener.nextTo('\n'); //assumes all content is on this line!
-                if (!s2.endsWith("],")) throw new IOException(errorInMethod + "columnUnits line should end with '],' (" + s2 + ").");
-                cUnits = StringArray.arrayFromCSV(s2.substring(0, s2.length() - 2));
-                for (int i = 0; i < cUnits.length; i++)
-                    if ("null".equals(cUnits[i]))
-                        cUnits[i] = null;
+                } else if (line.startsWith("\"columnTypes\": [")) {
+                    if (!line.endsWith("],")) throw new IOException(errorInMethod + "columnTypes line should have ended with '],'.\nline=" + line);
+                    cTypes = new ArrayList();
+                    StringArray.arrayListFromCSV(line.substring(16, line.length() - 2), ",", true, true, cTypes); //trim, keepNothing
 
-            } else if (s.equals("rows")) {
-                //build the table
-                nCol = cNames.length;
-                if (cTypes != null && cTypes.length != nCol) throw new IOException(errorInMethod + "columnTypes size=" + cTypes.length + " should be " + nCol + ".");
-                if (cUnits != null && cUnits.length != nCol) throw new IOException(errorInMethod + "columnUnits size=" + cUnits.length + " should be " + nCol + ".");
-                pas = new PrimitiveArray[nCol];
-                //need isString since null in numeric col is NaN, but null in String col is the word null.
-                boolean isString[] = new boolean[nCol]; //all false  (includes UTC times -- initially Strings)
-                boolean isUTC[] = new boolean[nCol]; //all false
-                for (int col = 0; col < nCol; col++) {
-                    PAType elementPAType = cTypes == null? PAType.STRING : PAType.fromCohortString(cTypes[col]);
-                    isString[col] = elementPAType == PAType.STRING;
-                    Attributes atts = new Attributes();
-                    if (cUnits != null) {
-                        isUTC[col] = isString[col] && "UTC".equals(cUnits[col]);
-                        if (isUTC[col]) {
-                            elementPAType = PAType.DOUBLE;
-                            cUnits[col] = Calendar2.SECONDS_SINCE_1970;
-                        }
-                        atts.add("units", cUnits[col]);
-                    }
-                    pas[col] = PrimitiveArray.factory(elementPAType, 128, false);
-                    addColumn(col, cNames[col], pas[col], atts);
-                }
+                } else if (line.startsWith("\"columnUnits\": [")) {
+                    if (!line.endsWith("],")) throw new IOException(errorInMethod + "columnUnits line should have ended with '],'.\nline=" + line);
+                    cUnits = new ArrayList();
+                    StringArray.arrayListFromCSV(line.substring(16, line.length() - 2), ",", true, true, cUnits); //trim, keepNothing
+                    for (int i = 0; i < cUnits.size(); i++)
+                        if ("null".equals(cUnits.get(i)))
+                            cUnits.set(i, null);
 
-                //read the rows of data
-                //I can use StringArray.arrayFromCSV to process a row of data 
-                //  even though it doesn't distinguish a null String from the word "null" in a String column
-                //  because ERDDAP never has null Strings (closest thing is "").
-                //  If this becomes a problem, switch to grabbing the nCol items separately
-                //     utilizing the specifics of the json syntax.
-                while ((ch = tokener.nextClean()) == '[') {
-                    s2 = tokener.nextTo('\n'); //assumes all content is on this line!
-                    if (s2.endsWith("],"))
-                        s2 = s2.substring(0, s2.length() - 2);
-                    else if (s2.endsWith("]"))
-                        s2 = s2.substring(0, s2.length() - 1);
-                    else throw new IOException(errorInMethod + "JSON syntax error (missing final ']'?) on data row #" + pas[0].size() + ".");
-                    String sar[] = StringArray.arrayFromCSV(s2);
-                    if (sar.length != nCol)
-                        throw new IOException( errorInMethod + "JSON syntax error (incorrect number of data values?) on data row #" + pas[0].size() + ".");
+                } else if (line.equals("\"rows\": [")) {
+                    //build the table
+                    //cNames is required
+                    if (cNames == null || cNames.size() == 0)    throw new IOException(errorInMethod + "columnNames line not found.");
+                    int nCol = cNames.size();
+                    //cTypes and cUnits are optional
+                    if (cTypes != null && cTypes.size() != nCol) throw new IOException(errorInMethod + "columnTypes size=" + cTypes.size() + " should be " + nCol + ".");
+                    if (cUnits != null && cUnits.size() != nCol) throw new IOException(errorInMethod + "columnUnits size=" + cUnits.size() + " should be " + nCol + ".");
+                    pas = new PrimitiveArray[nCol];
+                    //need isString since null in numeric col is NaN, but null in String col is the word null.
+                    boolean isString[] = new boolean[nCol]; //all false  (includes UTC times -- initially Strings)
+                    boolean isUTC[] = new boolean[nCol]; //all false
+                    ArrayList<String> sal = new ArrayList(nCol);
                     for (int col = 0; col < nCol; col++) {
-                        String ts = String2.fromJsonNotNull(sar[col]);
-                        //String2.log(">> col=" + col + " ts=" + String2.annotatedString(ts));
-                        if (isUTC[col]) 
-                            pas[col].addDouble(Calendar2.safeIsoStringToEpochSeconds(ts)); //returns NaN if trouble
+                        PAType elementPAType = cTypes == null? PAType.STRING : PAType.fromCohortString(cTypes.get(col));
+                        isString[col] = elementPAType == PAType.STRING;
+                        Attributes atts = new Attributes();
+                        if (cUnits != null) {
+                            isUTC[col] = isString[col] && "UTC".equals(cUnits.get(col));
+                            if (isUTC[col]) {
+                                elementPAType = PAType.DOUBLE;
+                                cUnits.set(col, Calendar2.SECONDS_SINCE_1970);
+                            }
+                            atts.add("units", cUnits.get(col));
+                        }
+                        pas[col] = PrimitiveArray.factory(elementPAType, 128, false);
+                        addColumn(col, cNames.get(col), pas[col], atts);
+                    }
 
-                        //For both null and "null, arrayFromCSV returns "null"!
-                        //String columns will treat null (shouldn't be any) and "null" as the word "null", 
-                        //  numeric columns will treat null as NaN.  So all is well.
-                        else pas[col].addString(ts); 
+                    //read the rows of data
+                    //I can use StringArray.arrayFromCSV to process a row of data 
+                    //  even though it doesn't distinguish a null String from the word "null" in a String column
+                    //  because ERDDAP never has null Strings (closest thing is "").
+                    //  If this becomes a problem, switch to grabbing the nCol items separately
+                    //     utilizing the specifics of the json syntax.
+                    while ((line = bufferedReader.readLine()) != null) {
+                        line = line.trim();
+                        if (line.equals("]"))   //no more data
+                            break;
+
+                        if (!line.startsWith("["))
+                            throw new IOException(errorInMethod + "Data lines must start with '['.\ndata line #" + pas[0].size() + "=" + line);
+
+                        if (line.endsWith("],")) {
+                            line = line.substring(1, line.length() - 2);
+                        } else if (line.endsWith("]")) {  //last data line
+                            line = line.substring(1, line.length() - 1);
+                        } else {
+                            throw new IOException(errorInMethod + "Data lines must end with '],'.\ndata line #" + pas[0].size() + "=" + line);
+                        }
+
+                        StringArray.arrayListFromCSV(line, ",", true, true, sal); //trim, keepNothing    This accepts json CSV strings.
+                        if (sal.size() != nCol)
+                            throw new IOException( errorInMethod + "incorrect number of data values: " + 
+                                sal.size() + "!=" + nCol + ".\ndata line #" + pas[0].size() + "=" + line);
+                        for (int col = 0; col < nCol; col++) {
+                            String ts = sal.get(col);  //will be "null" for empty cells.  Note that this treats null and "null" in file as empty cell.
+                            //String2.log(">> col=" + col + " ts=" + String2.annotatedString(ts));
+                            if (isUTC[col]) 
+                                pas[col].addDouble(Calendar2.safeIsoStringToEpochSeconds(ts)); //returns NaN if trouble
+
+                            //For both null and "null, arrayFromCSV returns "null"!
+                            //String columns will treat null (shouldn't be any) and "null" as the word "null", 
+                            //  numeric columns will treat null as NaN.  So all is well.
+                            else pas[col].addString(ts.equals("null")? "" : ts); 
+                        }
+                    }
+
+                } else if (line.equals("}")) {
+                    //end of table. no need to look at rest of file
+                    endFound = true;
+                    break;
+
+                } else if (line.equals("")) {
+                    //allowed and ignored blank line
+
+                } else {
+                    String2.log(note + "Unexpected/ignored line: " + line);
+                    //it better all be on this line.
+                }
+            }
+            if (pas == null)
+                throw new IOException(errorInMethod + "The line with '\"rows\": [' wasn't found.");
+            if (!endFound)
+                throw new IOException(errorInMethod + "The '}' line marking the end of the table wasn't found.");
+
+            //current ch should be final }, but don't insist on it.
+
+            //simplify
+            if (cTypes == null)
+                simplify();
+
+            /*
+            //convert times to epoch seconds  (after simplify, so dates are still Strings)
+            int tnRows = nRows();
+            if (cUnits != null) {
+                for (int col = 0; col < nCol; col++) {
+                    String ttUnits = cUnits[col];
+                    if ((pas[col] instanceof StringArray) && 
+                        ttUnits != null && ttUnits.equals("UTC")) {
+                        sa = (StringArray)pas[col];
+                        DoubleArray da = new DoubleArray(tnRows, false);
+                        for (int row = 0; row < tnRows; row++) {
+                            String iso = sa.get(row);
+                            da.add((iso == null || iso.length() == 0)? 
+                                Double.NaN : 
+                                Calendar2.isoStringToEpochSeconds(iso));
+                        }
+                        setColumn(col, da);
+                        columnAttributes(col).set("units", Calendar2.SECONDS_SINCE_1970);
                     }
                 }
+            }*/
 
-                //after last data row, should be ]
-                if (ch != ']') throw new IOException(errorInMethod + "']' not found after all rows of data (" + ch + ").");
-
-            } else {
-                String2.log(note + "Unexpected \"" + s + "\".");
-                //it better all be on this line.
-            }
-            ch = tokener.nextClean();
+            //String2.log(" place3 nColumns=" + nColumns() + " nRows=" + nRows() + " nCells=" + (nColumns() * nRows()));
+            //String2.log(toString(10));
+            if (reallyVerbose) String2.log("  Table.readJson done. fileName=" + fileName + 
+                " nColumns=" + nColumns() + " nRows=" + nRows() + 
+                " TIME=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            bufferedReader.close(); 
         }
-
-        //current ch should be final }, but don't insist on it.
-
-        //simplify
-        if (cTypes == null)
-            simplify();
-
-        /*
-        //convert times to epoch seconds  (after simplify, so dates are still Strings)
-        int tnRows = nRows();
-        if (cUnits != null) {
-            for (int col = 0; col < nCol; col++) {
-                String ttUnits = cUnits[col];
-                if ((pas[col] instanceof StringArray) && 
-                    ttUnits != null && ttUnits.equals("UTC")) {
-                    sa = (StringArray)pas[col];
-                    DoubleArray da = new DoubleArray(tnRows, false);
-                    for (int row = 0; row < tnRows; row++) {
-                        String iso = sa.get(row);
-                        da.add((iso == null || iso.length() == 0)? 
-                            Double.NaN : 
-                            Calendar2.isoStringToEpochSeconds(iso));
-                    }
-                    setColumn(col, da);
-                    columnAttributes(col).set("units", Calendar2.SECONDS_SINCE_1970);
-                }
-            }
-        }*/
-
-        //String2.log(" place3 nColumns=" + nColumns() + " nRows=" + nRows() + " nCells=" + (nColumns() * nRows()));
-        //String2.log(toString(10));
-        if (reallyVerbose) String2.log("  Table.readJson done. fileName=" + fileName + 
-            " nColumns=" + nColumns() + " nRows=" + nRows() + 
-            " TIME=" + (System.currentTimeMillis() - time) + "ms");
     }
 
 
@@ -31025,7 +31044,7 @@ String2.log(table.dataToString());
      * @param colNamesHashset
      * @return the safe name.
      */
-    public static String makeUniqueIgorColumnName(String colName, HashSet colNamesHashset) {
+    public static String makeUniqueIgorColumnName(String colName, HashSet<String> colNamesHashset) {
         colName = String2.encodeMatlabNameSafe(colName);
         for (int i = 1; i < 1000000; i++) {
             String tColName = colName + (i == 1? "" : "" + i);
@@ -31178,7 +31197,7 @@ String2.log(table.dataToString());
             writer.write("IGOR" + IgorEndOfLine);
 
             //write each col as a wave separately, so data type is preserved
-            HashSet colNamesHashset = new HashSet();
+            HashSet<String> colNamesHashset = new HashSet();
             int nCols = nColumns();
             for (int col = 0; col < nCols; col++) {
                 Attributes atts = columnAttributes(col);
@@ -31237,7 +31256,7 @@ String2.log(table.dataToString());
         //read the json source
         //"columnNames": ["Row Type", "Variable Name", "Attribute Name", "Java Type", "Value"],
         Table infoTable = new Table();
-        infoTable.readJson(url, SSR.getUrlResponseStringUnchanged(url));
+        infoTable.readJson(url, SSR.getBufferedUrlReader(url));
         String tColNames = " column not found in colNames=" + String2.toCSSVString(infoTable.getColumnNames());
         int nRows = infoTable.nRows();
         int rowTypeCol = infoTable.findColumnNumber("Row Type");
@@ -32240,7 +32259,6 @@ String2.log(table.dataToString());
         table.globalAttributes().set("global_att2", new IntArray(new int[]{1,100}));
 
         //add the data variables (and their attributes)
-        ArrayList variableAttributes;
 
         //0=seconds
         double[] ad = new double[nRows];
@@ -33669,7 +33687,7 @@ expected =
                 break;
         }
         if (time > 130)
-            throw new SimpleException("readASCII took too long (but often does when computer is busy).");
+            throw new SimpleException("readASCII took too long (time=" + time + "ms > 130ms) (but often does when computer is busy).");
     }
 
 
@@ -33677,28 +33695,28 @@ expected =
     public static void testReadJsonSpeed() throws Exception {
 
         //warmup
-        String fileName = String2.unitTestDataDir + "cPostDet3.files.json"; 
+        String fileName = String2.unitTestDataDir + "cPostDet3.files.json.gz"; 
         long time = 0;
         String msg = "";
+        String expected = 
+"dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,latitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_min_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_\n" +
+"0,52038_A69-1303_1059305.nc,1.284567715046E12,0.0,52038_A69-1303_1059305,52038_A69-1303_1059305,BARBARA BLOCK,BARBARA BLOCK,-146.36933,-146.1137,60.6426,60.7172,1.2192849E9,1.238062751E9,13.4146341463415,130.487804878049,SALMON SHARK,SALMON SHARK,1.273271649385E9,1.273271649385E9,,PORT GRAVINA,,9,HOPKINS MARINE STATION,HOPKINS MARINE STATION,,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,LAMNA DITROPIS,1059305,1059305,N/A,N/A,1.2192156E9,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\"PORT GRAVINA, PRINCE WILLIAM SOUND\",,\n" +
+"1,16955_A69-1303_8685G.nc,1.284567719796E12,-1.0,16955_A69-1303_8685G,16955_A69-1303_8685G,BARRY BEREJIKIAN,BARRY BEREJIKIAN,-122.78316,-122.78316,47.65223,47.65223,1.1466882E9,1.1466882E9,,,STEELHEAD,STEELHEAD,1.222730955645E9,1.222730955645E9,,,,,NOAA|NOAA FISHERIES,NOAA|NOAA FISHERIES,,,BEREJIKIAN_BARRY_ONCORHYNCHUS_MYKISS_BIGBEEFCREEK,BEREJIKIAN_BARRY_ONCORHYNCHUS_MYKISS_BIGBEEFCREEK,ONCORHYNCHUS MYKISS,ONCORHYNCHUS MYKISS,8685G,8685G,BIG BEEF CREEK,BIG BEEF CREEK,1.146528E9,1.146528E9,BIG BEEF CREEK,BIG BEEF CREEK,SKIP TEZAK,SKIP TEZAK\n" +
+"1,16956_A69-1303_8686G.nc,1.284567723515E12,-1.0,16956_A69-1303_8686G,16956_A69-1303_8686G,BARRY BEREJIKIAN,BARRY BEREJIKIAN,-122.78316,-122.78316,47.65223,47.65223,1.1466882E9,1.1466882E9,,,STEELHEAD,STEELHEAD,1.222730955653E9,1.222730955653E9,,,,,NOAA|NOAA FISHERIES,NOAA|NOAA FISHERIES,,,BEREJIKIAN_BARRY_ONCORHYNCHUS_MYKISS_BIGBEEFCREEK,BEREJIKIAN_BARRY_ONCORHYNCHUS_MYKISS_BIGBEEFCREEK,ONCORHYNCHUS MYKISS,ONCORHYNCHUS MYKISS,8686G,8686G,BIG BEEF CREEK,BIG BEEF CREEK,1.146528E9,1.146528E9,BIG BEEF CREEK,BIG BEEF CREEK,SKIP TEZAK,SKIP TEZAK\n" +
+"...\n";
 
         for (int attempt = 0; attempt < 3; attempt++) {
             String2.log("\n*** Table.testReadJsonSpeed attempt#" + attempt + "\n");
-            Math2.gcAndWait(); //in a test
 
             //time it
             time = System.currentTimeMillis();
-            long fileLength = File2.length(fileName); //was 10,166KB
-            Test.ensureTrue(fileLength > 9000000, "fileName=" + fileName + " length=" + fileLength); 
+            long fileLength = File2.length(fileName); //before gz was 10,166KB, now 574572
+            Test.ensureTrue(fileLength > 574000, "fileName=" + fileName + " length=" + fileLength); 
             Table table=new Table();
             table.readJson(fileName);
 
             String results = table.dataToString(3);
-            String2.log("results=\n" + results);
-//row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
-//atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
-//_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
-//n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
-// stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
+            Test.ensureEqual(results, expected, "results=" + results);
             Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
             Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
             Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
@@ -33707,7 +33725,7 @@ expected =
             time = System.currentTimeMillis() - time;
             msg = "*** Done. cells/ms=" + 
                 (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
-                "\ntime=" + time + "ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"; 
+                "\ntime=" + time + "ms (usual=300, java 8 was 219, Java 1.7M4700, was 844, java 1.5 was 1687)"; 
             String2.log(msg);
             if (time <= 400)
                 break;
@@ -34876,7 +34894,7 @@ readAsNcCF?
         String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 
-            "ms. file read time should be ~45s (but longer when computer is busy) (was 36s before v2.10)";
+            "ms. file read time should be ~70 - 90s in java 17 (but I think it should be faster -- too much gc) (but longer when computer is busy) (Java 8 was 45s. was 36s before v2.10)";
         String2.log(msg);
         Test.ensureTrue(time < 55000, "Too slow! " + msg); 
     }

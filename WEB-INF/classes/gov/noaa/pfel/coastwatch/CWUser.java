@@ -31,8 +31,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This is a collection of the things unique to a user's CWBrowser or CWBrowserSA session.
@@ -1197,7 +1197,7 @@ public class CWUser extends User  {
         ArrayList imageReturn = new ArrayList();
         imageReturn.add(imageFileName);
         imageReturn.add(sgtMapResultsTable);
-        imageReturn.add(new Integer(imageWidth2));
+        imageReturn.add(Integer.valueOf(imageWidth2));
         imageReturn.add(mapGDLs);
         imageReturn.add(graphGDLs);
         imageReturn.add(warning);

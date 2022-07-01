@@ -548,16 +548,16 @@ class JSlider2Double extends JComponent implements java.io.Serializable
   
   void testMax() {
     if(oldMaxValue_ != maxValue_) {
-      Double tempOldValue = new Double(oldMaxValue_);
+      Double tempOldValue = Double.valueOf(oldMaxValue_);
       oldMaxValue_ = maxValue_;
-      changes.firePropertyChange("maxValue", tempOldValue, new Double(maxValue_)); 
+      changes.firePropertyChange("maxValue", tempOldValue, Double.valueOf(maxValue_)); 
     }
   }
   void testMin() {
     if(oldMinValue_ != minValue_) {
-      Double tempOldValue = new Double(oldMinValue_);
+      Double tempOldValue = Double.valueOf(oldMinValue_);
       oldMinValue_ = minValue_;
-      changes.firePropertyChange("minValue", tempOldValue, new Double(minValue_)); 
+      changes.firePropertyChange("minValue", tempOldValue, Double.valueOf(minValue_)); 
     }
   }
 

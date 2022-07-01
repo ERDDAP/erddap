@@ -195,8 +195,8 @@ public class NcHelper  {
      */
     private static PrimitiveArray decodeAttributeToPrimitive(Array nc2Array) {
       //String[] from ArrayChar.Dn
-        if (nc2Array instanceof ArrayChar) {
-            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
+        if (nc2Array instanceof ArrayChar ac) {
+            ArrayObject ao = ac.make1DStringArray();
             Object[] oa = (Object[])ao.copyTo1DJavaArray();
             StringArray sa = new StringArray(oa.length, false);
             for (int i = 0; i < oa.length; i++) 
@@ -205,7 +205,7 @@ public class NcHelper  {
         }
 
         //byte[] from ArrayBoolean.Dn
-        if (nc2Array instanceof ArrayBoolean) {
+        if (nc2Array instanceof ArrayBoolean ab) {
             boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
             int n = boolAr.length;
             byte    byteAr[] = new byte[n];
@@ -332,8 +332,8 @@ public class NcHelper  {
      */
     public static int get1DArrayLength(Array array) {
         long n;
-        if (array instanceof ArrayChar.D2) {
-            n = ((ArrayChar.D2)array).getShape()[0]; 
+        if (array instanceof ArrayChar.D2 da) {
+            n = da.getShape()[0]; 
         } else {
             n = array.getSize();
         }
@@ -431,9 +431,8 @@ public class NcHelper  {
             //will be handled below
         }
 
-        if (o instanceof char[]) {
+        if (o instanceof char[] car1) {
             //netcdf-java just writes low byte, so use String2.toIso88591Chars()
-            char[] car1 = (char[])o;
             int n = car1.length;
             char[] car2 = new char[n];
             for (int i = 0; i < n; i++)
@@ -442,12 +441,11 @@ public class NcHelper  {
         }
 
 
-        if (o instanceof byte[])   return Array.factory(isUnsigned? DataType.UBYTE  : DataType.BYTE,   new int[]{((byte[] )o).length}, o);
-        if (o instanceof short[])  return Array.factory(isUnsigned? DataType.USHORT : DataType.SHORT,  new int[]{((short[])o).length}, o);
-        if (o instanceof int[])    return Array.factory(isUnsigned? DataType.UINT   : DataType.INT,    new int[]{((int[]  )o).length}, o);
-        if (o instanceof long[])   {
+        if (o instanceof byte[]  ba) return Array.factory(isUnsigned? DataType.UBYTE  : DataType.BYTE,   new int[]{ba.length}, ba);
+        if (o instanceof short[] sa) return Array.factory(isUnsigned? DataType.USHORT : DataType.SHORT,  new int[]{sa.length}, sa);
+        if (o instanceof int[]   ia) return Array.factory(isUnsigned? DataType.UINT   : DataType.INT,    new int[]{ia.length}, ia);
+        if (o instanceof long[]  lar) {
             //String2.log("\n>> long values=" + String2.toCSSVString((long[])o));
-            long lar[] = (long[])o;
             o = null;
             int tSize = lar.length;
             double dar[] = new double[tSize];
@@ -462,14 +460,13 @@ public class NcHelper  {
             //then falls through to Double handling
             //String2.log(">> as doubles=" + String2.toCSSVString((double[])o));
         }
-        if (o instanceof float[])  return Array.factory(DataType.FLOAT,  new int[]{((float[])o).length}, o);
-        if (o instanceof double[]) {
+        if (o instanceof float[]  fa) return Array.factory(DataType.FLOAT,  new int[]{fa.length}, fa);
+        if (o instanceof double[] da) {
             //String2.log(">> double o = " + String2.toCSSVString((double[])o));
-            return Array.factory(DataType.DOUBLE, new int[]{((double[])o).length}, o);
+            return Array.factory(DataType.DOUBLE, new int[]{da.length}, da);
         }
-        if (o instanceof String[]) {
+        if (o instanceof String[] sar) {
             //make ArrayChar.D2
-            String[] sar = (String[])o;
             //String2.log("NcHelper.get1DArray sar=" + String2.toCSSVString(sar));
             int max = 1; //nc wants at least 1
             for (int i = 0; i < sar.length; i++) {
@@ -555,8 +552,8 @@ public class NcHelper  {
     public static PrimitiveArray getPrimitiveArray(Array nc2Array, boolean buildStringsFromChars, boolean isUnsigned) {
         //String2.log(">> NcHelper.getPrimitiveArray nc2Array.isUnsigned=" + nc2Array.isUnsigned());
         //String[] from ArrayChar.Dn
-        if (buildStringsFromChars && nc2Array instanceof ArrayChar) {
-            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
+        if (buildStringsFromChars && nc2Array instanceof ArrayChar na) {
+            ArrayObject ao = na.make1DStringArray();
             Object[] oa = (Object[])ao.copyTo1DJavaArray();
             StringArray sa = new StringArray(oa.length, false);
             for (int i = 0; i < oa.length; i++) 
@@ -565,8 +562,8 @@ public class NcHelper  {
         }
 
         //byte[] from ArrayBoolean.Dn
-        if (nc2Array instanceof ArrayBoolean) {
-            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
+        if (nc2Array instanceof ArrayBoolean ab) {
+            boolean boolAr[] = (boolean[])ab.copyTo1DJavaArray();
             int n = boolAr.length;
             byte    byteAr[] = new byte[n];
             for (int i = 0; i < n; i++)
@@ -752,8 +749,7 @@ public class NcHelper  {
             sb.append(arrayList.get(index).toString());
             sb.append(" = ");
             Object o = arrayList.get(index+1);
-            if (o instanceof StringArray) {
-                StringArray sa = (StringArray)o;
+            if (o instanceof StringArray sa) {
                 int n = sa.size();
                 String connect = "";
                 for (int i = 0; i < n; i++) {
@@ -763,8 +759,7 @@ public class NcHelper  {
                     s = String2.replaceAll(s, "\"", "\\\"");                 //  " becomes \"
                     sb.append("\"" + s + "\"");
                 }
-            } else if (o instanceof FloatArray) {
-                FloatArray fa = (FloatArray)o;
+            } else if (o instanceof FloatArray fa) {
                 int n = fa.size();
                 String connect = "";
                 for (int i = 0; i < n; i++) {
@@ -855,12 +850,12 @@ public class NcHelper  {
     }
 
     /** 
-     * This converts a List of variables to a Variable[].
+     * This converts a List&lt;variable&gt; to a Variable[].
      *
      * @param list   
      * @return a Variable[]  (or null if list is null)
      */
-    public static Variable[] variableListToArray(List list) {
+    public static Variable[] variableListToArray(List<Variable> list) {
         return (Variable[])(list == null? null : list.toArray(new Variable[0]));
     }
 
@@ -870,7 +865,7 @@ public class NcHelper  {
      * @param list   
      * @return a Dimensione[]  (or null if list is null)
      */
-    public static Dimension[] dimensionListToArray(List list) {
+    public static Dimension[] dimensionListToArray(List<Dimension> list) {
         return (Dimension[])(list == null? null : list.toArray(new Dimension[0]));
     }
 
@@ -887,7 +882,7 @@ public class NcHelper  {
     public static Variable[] findVariables(NetcdfFile netcdfFile, String variableNames[]) {
         //just use the variable names
         if (variableNames != null) {
-            ArrayList list = new ArrayList();
+            ArrayList<Variable> list = new ArrayList();
             for (int i = 0; i < variableNames.length; i++) {
                 Variable variable = netcdfFile.findVariable(variableNames[i]);
                 Test.ensureNotNull(variable, 
@@ -901,12 +896,12 @@ public class NcHelper  {
         //find a structure among the variables in the rootGroup
         //if no structure found, it falls through the loop
         Group rootGroup = netcdfFile.getRootGroup();
-        List rootGroupVariables = rootGroup.getVariables(); 
+        List<Variable> rootGroupVariables = rootGroup.getVariables(); 
         //String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
         for (int v = 0; v < rootGroupVariables.size(); v++) {
-            if (rootGroupVariables.get(v) instanceof Structure) {
+            if (rootGroupVariables.get(v) instanceof Structure structure) {
                 if (reallyVerbose) String2.log("    NcHelper.findVariables found a Structure.");
-                return variableListToArray(((Structure)rootGroupVariables.get(v)).getVariables());
+                return variableListToArray(structure.getVariables());
             }
         }
 
@@ -1094,7 +1089,7 @@ public class NcHelper  {
     public static Variable[] find4DVariables(NetcdfFile netcdfFile, String variableNames[]) {
         //just use the variable names
         if (variableNames != null) {
-            ArrayList list = new ArrayList();
+            ArrayList<Variable> list = new ArrayList();
             for (int i = 0; i < variableNames.length; i++) {
                 Variable variable = netcdfFile.findVariable(variableNames[i]);
                 Test.ensureNotNull(variable, 
@@ -1106,12 +1101,12 @@ public class NcHelper  {
         }
 
         //find a 4D variable among the variables in the rootGroup
-        List allVariables = netcdfFile.getVariables(); 
+        List<Variable> allVariables = netcdfFile.getVariables(); 
         String foundDimensionNames[] = null;
-        ArrayList foundVariables = new ArrayList();
+        ArrayList<Variable> foundVariables = new ArrayList();
         for (int v = 0; v < allVariables.size(); v++) {
-            Variable variable = (Variable)allVariables.get(v);
-            List dimensions = variable.getDimensions();
+            Variable variable = allVariables.get(v);
+            List<Dimension> dimensions = variable.getDimensions();
 
             if ((dimensions.size() == 4 && variable.getDataType() != DataType.CHAR) ||
                 (dimensions.size() == 5 && variable.getDataType() == DataType.CHAR)) {
@@ -1120,13 +1115,13 @@ public class NcHelper  {
                 if (foundDimensionNames == null) {
                     foundDimensionNames = new String[4];
                     for (int i = 0; i < 4; i++)
-                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getName();  //the full name
+                       foundDimensionNames[i] = dimensions.get(i).getName();  //the full name
                 }
 
                 //does it match foundDimensions
                 boolean matches = true;
                 for (int i = 0; i < 4; i++) {
-                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getName())) {   //the full name
+                    if (!foundDimensionNames[i].equals(dimensions.get(i).getName())) {   //the full name
                         matches = false;
                         break;
                     }
@@ -2212,11 +2207,11 @@ public class NcHelper  {
             //+ " \n  loadVarNames=" + String2.toCSSVString(loadVarNames)
             ; 
         varNames.clear();
-        ArrayList pas = new ArrayList();
+        ArrayList<PrimitiveArray> pas = new ArrayList();
         long time = System.currentTimeMillis();
         NetcdfFile netcdfFile = openFile(fullName);
         try {
-            List rootGroupVariables = null;
+            List<Variable> rootGroupVariables = null;
             if (loadVarNames == null) {
                 //find variables in the rootGroup
                 Group rootGroup = netcdfFile.getRootGroup();
@@ -2226,13 +2221,13 @@ public class NcHelper  {
 
             for (int v = 0; v < n; v++) {
                 Variable tVariable = loadVarNames == null? 
-                    (Variable)rootGroupVariables.get(v) :
+                    rootGroupVariables.get(v) :
                     netcdfFile.findVariable(loadVarNames[v]);
                 if (tVariable == null)
                     throw new RuntimeException(
                         String2.ERROR + ": Expected variable #" + v + " not found while reading " + fullName + 
                         " (loadVarNames=" + String2.toCSSVString(loadVarNames) + ").");
-                List tDimensions = tVariable.getDimensions();
+                List<Dimension> tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
                 //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
                 //    " type=" + tVariable.getNc3DataType());
@@ -2275,7 +2270,7 @@ public class NcHelper  {
         int pasSize = pas.size();
         PrimitiveArray paar[] = new PrimitiveArray[pasSize];
         for (int i = 0; i < pasSize; i++)
-            paar[i] = (PrimitiveArray)pas.get(i);
+            paar[i] = pas.get(i);
         if (reallyVerbose) String2.log(msg + " done. nPAs=" + pasSize + 
             " TIME=" + (System.currentTimeMillis() - time) + "ms");
         return paar;
@@ -2430,7 +2425,7 @@ String2.log(pas13.toString());
             Dimension timeDim = Dimension.builder().setName("time").setIsUnlimited(true).setLength(0).build();
             rootGroup.addDimension(timeDim);
 
-            ArrayList dims = new ArrayList();
+            ArrayList<Dimension> dims = new ArrayList();
             dims.add(timeDim);
 
             // define Variables
@@ -2801,7 +2796,7 @@ String2.log(pas13.toString());
             ncOut.setFill(false);
             Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
             Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
-            ArrayList dims = new ArrayList();
+            ArrayList<Dimension> dims = new ArrayList();
             dims.add(dim0);
             dims.add(dim1);
             NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); //test strLength not long enough for all strings!
@@ -2864,7 +2859,7 @@ String2.log(pas13.toString());
             ncOut.setFill(false);
             Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
             Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
-            ArrayList dims = new ArrayList();
+            ArrayList<Dimension> dims = new ArrayList();
             dims.add(dim0);
             dims.add(dim1);
             NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); //test strLength not long enough for all strings!
@@ -3064,9 +3059,8 @@ String2.log(pas13.toString());
         try {
             System.out.println(nc.toString());
             Variable v = nc.findVariable("ArrayOfStructures");
-            if (v instanceof Structure) {
+            if (v instanceof Structure s) {
                 System.out.println("v=" + v);
-                Structure s = (ucar.nc2.Structure)v;
                 StructureMembers sm = s.makeStructureMembers();
                 System.out.println("sm=" + sm);
                 StructureMembers.Member smma = sm.findMember("a_name");

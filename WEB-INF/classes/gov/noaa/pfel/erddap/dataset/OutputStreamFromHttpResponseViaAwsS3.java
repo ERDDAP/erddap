@@ -18,8 +18,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * OutputStreamFromHttpResponseViaAwsS3 provides an OutputStream upon request.

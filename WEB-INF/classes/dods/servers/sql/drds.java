@@ -51,7 +51,7 @@ import dods.dap.parser.ParseException;
  *
  * <p>
  * <strong>Configuration:</strong><br>
- * The DODSServlet relies on the javax.servlet.ServletConfig
+ * The DODSServlet relies on the jakarta.servlet.ServletConfig
  * interface (in particular the getInitParameter() method)
  * to retrieve configuration information used by the servlet.
  * <strong>InitParameters:</strong>

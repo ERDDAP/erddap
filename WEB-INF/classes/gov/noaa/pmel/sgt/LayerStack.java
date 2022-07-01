@@ -24,15 +24,15 @@ public class LayerStack extends Container implements LayerControl {
     }
   public void setPane(AbstractPane pane) {
     /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
-    throw new java.lang.UnsupportedOperationException("Method setPane() not yet implemented.");
+    throw new UnsupportedOperationException("Method setPane() not yet implemented.");
   }
   public void draw(Graphics g) {
     /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
-    throw new java.lang.UnsupportedOperationException("Method draw() not yet implemented.");
+    throw new UnsupportedOperationException("Method draw() not yet implemented.");
   }
   public void drawDraggableItems(Graphics g) {
     /**@todo Implement this gov.noaa.pmel.sgt.LayerControl method*/
-    throw new java.lang.UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
+    throw new UnsupportedOperationException("Method drawDraggableItems() not yet implemented.");
   }
   public String getId() {
     return getName();

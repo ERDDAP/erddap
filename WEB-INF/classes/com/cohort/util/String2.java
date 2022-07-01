@@ -182,9 +182,10 @@ public class String2 {
     private static DecimalFormat genEngFormat10 = new DecimalFormat("##0.#########E0");
     private static DecimalFormat genExpFormat10 = new DecimalFormat("0.##########E0");
 
-    //splitting canonicalMap and canonicalStringHolderMap into 128 maps allows each 
+    //splitting canonicalMap and canonicalStringHolderMap into 127 maps allows each 
     //to be bigger and makes synchronized contention less common.
-    private final static int nCanonicalMaps = 128;
+    //127 seems better than 128. See stats at end of Table.testBigAscii();
+    private final static int nCanonicalMaps = 127;
     private static Map<String,       WeakReference<String>>      canonicalMap[]             = new Map[nCanonicalMaps];
     private static Map<StringHolder, WeakReference<StringHolder>>canonicalStringHolderMap[] = new Map[nCanonicalMaps];
     static {
@@ -215,7 +216,7 @@ public class String2 {
      * @param s2
      * @return the string which sorts higher.
      */
-    public static String max(String s1, String s2) {
+    public static String max(final String s1, final String s2) {
         if (s1 == null)
             return s2;
         if (s2 == null)
@@ -231,7 +232,7 @@ public class String2 {
      * @param s2
      * @return the string which sorts lower.
      */
-    public static String min(String s1, String s2) {
+    public static String min(final String s1, final String s2) {
         if (s1 == null)
             return s1;
         if (s2 == null)
@@ -248,7 +249,7 @@ public class String2 {
      * @return a String 'length' long, filled with ch.
      *    If length &lt; 0 or &gt;= 1000000, this returns "".
      */
-    public static String makeString(char ch, int length) {
+    public static String makeString(final char ch, final int length) {
         if ((length < 0) || (length >= 1000000))
             return "";
 
@@ -266,7 +267,7 @@ public class String2 {
      * @param length is desired length of the resulting string.
      * @return 's' right-justified to make the result 'length' long.
      */
-    public static String right(String s, int length) {
+    public static String right(final String s, final int length) {
         int toAdd = length - s.length();
 
         if (toAdd <= 0)
@@ -284,7 +285,7 @@ public class String2 {
      * @param length is desired length of the resulting string.
      * @return 's' left-justified to make the result 'length' long.
      */
-    public static String left(String s, int length) {
+    public static String left(final String s, final int length) {
         int toAdd = length - s.length();
 
         if (toAdd <= 0)
@@ -302,7 +303,7 @@ public class String2 {
      * @param length is desired length of the resulting string.
      * @return 's' centered to make the result 'length' long.
      */
-    public static String center(String s, int length) {
+    public static String center(final String s, final int length) {
         int toAdd = length - s.length();
 
         if (toAdd <= 0)
@@ -322,7 +323,7 @@ public class String2 {
      * @return s (if it is short) or the first max characters of s.
      *   If s==null, this returns "".
      */
-    public static String noLongerThan(String s, int max) {
+    public static String noLongerThan(final String s, final int max) {
         if (s == null)
             return "";
         if (s.length() <= max)  
@@ -337,7 +338,7 @@ public class String2 {
      * @param max
      * @return s (if it is short) or the first max characters of s
      */
-    public static String noLongerThanDots(String s, int max) {
+    public static String noLongerThanDots(final String s, final int max) {
         if (s == null)
             return "";
         if (s.length() <= max)  
@@ -354,14 +355,14 @@ public class String2 {
      *    The result ends with "[end]".
      *    null returns "[null][end]".
      */
-    public static String annotatedString(String s) {
+    public static String annotatedString(final String s) {
         if (s == null) 
             return "[null][end]";
-        int sLength = s.length();
-        StringBuilder buffer = new StringBuilder(sLength / 5 * 6);
+        final int sLength = s.length();
+        final StringBuilder buffer = new StringBuilder(sLength / 5 * 6);
 
         for (int i = 0; i < sLength; i++) {
-            char ch = s.charAt(i);
+            final char ch = s.charAt(i);
 
             if (ch >= 32 && ch <= 126) {
                 buffer.append(ch);
@@ -385,8 +386,8 @@ public class String2 {
      * @return the number of characters that are the same at the start
      *   of both strings.
      */
-    public static int getNMatchingCharacters(String s1, String s2) {
-        int minLength = Math.min(s1.length(), s2.length());
+    public static int getNMatchingCharacters(final String s1, final String s2) {
+        final int minLength = Math.min(s1.length(), s2.length());
         for (int i = 0; i < minLength; i++)
             if (s1.charAt(i) != s2.charAt(i))
                 return i;
@@ -400,7 +401,7 @@ public class String2 {
      * @param find
      * @return the first instance of 'find' at or after fromIndex (0..), ignoring case.
      */
-    public static int indexOfIgnoreCase(String s, String find) {
+    public static int indexOfIgnoreCase(final String s, final String find) {
         return indexOfIgnoreCase(s, find, 0);
     }
 
@@ -412,18 +413,18 @@ public class String2 {
      * @param fromIndex
      * @return the first instance of 'find' at or after fromIndex (0..), ignoring case.
      */
-    public static int indexOfIgnoreCase(String s, String find, int fromIndex) {
+    public static int indexOfIgnoreCase(final String s, String find, final int fromIndex) {
         if (s == null) 
             return -1;
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength == 0)
             return -1;
         find = find.toLowerCase();
-        int findLength = find.length();
+        final int findLength = find.length();
         if (findLength == 0)
             return fromIndex;
-        int maxPo = sLength - findLength;
-        char ch0 = find.charAt(0);
+        final int maxPo = sLength - findLength;
+        final char ch0 = find.charAt(0);
 
         int po = fromIndex;
         while (po <= maxPo) {
@@ -447,24 +448,24 @@ public class String2 {
      * @param find
      * @return true if find is loosely in s. Return false if s or find !isSomething.
      */
-    public static boolean looselyContains(String s, String find) {
+    public static boolean looselyContains(final String s, final String find) {
         if (s == null || find == null) 
             return false;
 
-        int sLength = s.length();
-        StringBuilder ssb = new StringBuilder();
+        final int sLength = s.length();
+        final StringBuilder ssb = new StringBuilder();
         for (int i = 0; i < sLength; i++) {
-            char ch = s.charAt(i);
+            final char ch = s.charAt(i);
             if (Character.isLetterOrDigit(ch))
                 ssb.append(Character.toLowerCase(ch));
         }
         if (ssb.length() == 0)
             return false;
 
-        int fLength = find.length();
-        StringBuilder fsb = new StringBuilder();
+        final int fLength = find.length();
+        final StringBuilder fsb = new StringBuilder();
         for (int i = 0; i < fLength; i++) {
-            char ch = find.charAt(i);
+            final char ch = find.charAt(i);
             if (Character.isLetterOrDigit(ch))
                 fsb.append(Character.toLowerCase(ch));
         }
@@ -481,24 +482,24 @@ public class String2 {
      * @param s2
      * @return true if find is loosely in s. Return false if s or find !isSomething.
      */
-    public static boolean looselyEquals(String s1, String s2) {
+    public static boolean looselyEquals(final String s1, final String s2) {
         if (s1 == null || s2 == null) 
             return false;
 
-        int s1Length = s1.length();
-        StringBuilder s1sb = new StringBuilder();
+        final int s1Length = s1.length();
+        final StringBuilder s1sb = new StringBuilder();
         for (int i = 0; i < s1Length; i++) {
-            char ch = s1.charAt(i);
+            final char ch = s1.charAt(i);
             if (Character.isLetterOrDigit(ch))
                 s1sb.append(Character.toLowerCase(ch));
         }
         if (s1sb.length() == 0)
             return false;
 
-        int s2Length = s2.length();
-        StringBuilder s2sb = new StringBuilder();
+        final int s2Length = s2.length();
+        final StringBuilder s2sb = new StringBuilder();
         for (int i = 0; i < s2Length; i++) {
-            char ch = s2.charAt(i);
+            final char ch = s2.charAt(i);
             if (Character.isLetterOrDigit(ch))
                 s2sb.append(Character.toLowerCase(ch));
         }
@@ -516,16 +517,16 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The starting position of s. If s is null or not found, it returns -1.
      */
-    public static int indexOf(StringBuilder sb, String s, int fromIndex) {
+    public static int indexOf(final StringBuilder sb, final String s, final int fromIndex) {
         if (s == null) 
             return -1;
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength == 0)
             return -1;
 
-        char ch = s.charAt(0);
+        final char ch = s.charAt(0);
         int index = Math.max(fromIndex, 0);
-        int tSize = sb.length() - sLength + 1; //no point in searching last few char
+        final int tSize = sb.length() - sLength + 1; //no point in searching last few char
         while (index < tSize) {
             if (sb.charAt(index) == ch) {
                 int nCharsMatched = 1;
@@ -550,7 +551,7 @@ public class String2 {
      * @param word must be a simple word (without regex special characters)
      * @return -1 if not found (or trouble, e.g., find=null)
      */
-    public static int findWholeWord(String s, String word) {
+    public static int findWholeWord(final String s, final String word) {
         if (s == null || s.length() == 0 ||
             word == null || word.length() == 0)
             return -1;
@@ -560,8 +561,8 @@ public class String2 {
             return 0;
         if (s.matches(".*\\b" + word))
             return s.length() - word.length();
-        Pattern pattern = Pattern.compile("\\b(" + word + ")\\b");
-        Matcher matcher = pattern.matcher(s);
+        final Pattern pattern = Pattern.compile("\\b(" + word + ")\\b");
+        final Matcher matcher = pattern.matcher(s);
         return matcher.find()? matcher.start(1) : -1;
     }
 
@@ -573,12 +574,12 @@ public class String2 {
      * @param text
      * @return hashset of the unique acronyms in text.
      */
-    public static HashSet<String> findAcronyms(String text) {
-        HashSet<String> hs = new HashSet();
+    public static HashSet<String> findAcronyms(final String text) {
+        final HashSet<String> hs = new HashSet();
         if (text == null || text.length() < 2)
             return hs;
-        Pattern pattern = Pattern.compile("[^a-zA-Z0-9]([A-Z]{2,})[^a-zA-Z0-9]");
-        Matcher matcher = pattern.matcher(text);
+        final Pattern pattern = Pattern.compile("[^a-zA-Z0-9]([A-Z]{2,})[^a-zA-Z0-9]");
+        final Matcher matcher = pattern.matcher(text);
         int po = 0;
         while (po < text.length()) {
             if (matcher.find(po)) {
@@ -603,9 +604,9 @@ public class String2 {
      * @return the section of s which matches regex, or null if not found
      * @throws RuntimeException if trouble
      */
-    public static String extractRegex(String s, String regex, int fromIndex) {
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(s);
+    public static String extractRegex(final String s, final String regex, final int fromIndex) {
+        final Pattern p = Pattern.compile(regex);
+        final Matcher m = p.matcher(s);
         if (m.find(fromIndex)) 
             return s.substring(m.start(), m.end());
         return null; 
@@ -625,12 +626,12 @@ public class String2 {
      * @return a String[] with all the matching sections of s (or String[0] if none)
      * @throws RuntimeException if trouble
      */
-    public static String[] extractAllRegexes(String s, String regex) {
+    public static String[] extractAllRegexes(final String s, final String regex) {
         return extractAllRegexes(s, Pattern.compile(regex));
     }
-    public static String[] extractAllRegexes(String s, Pattern pattern) {
-        ArrayList<String> al = new ArrayList();
-        Matcher m = pattern.matcher(s);
+    public static String[] extractAllRegexes(final String s, final Pattern pattern) {
+        final ArrayList<String> al = new ArrayList();
+        final Matcher m = pattern.matcher(s);
         int fromIndex = 0;
         while (m.find(fromIndex)) {
             al.add(s.substring(m.start(), m.end()));
@@ -650,12 +651,12 @@ public class String2 {
      *    which match as many chars as possible (e.g., ?, *, +).
      * @return a HashSet with the found strings.
      */
-    public static HashSet<String> extractAllCaptureGroupsAsHashSet(String s, String regex, int captureGroupNumber) {
+    public static HashSet<String> extractAllCaptureGroupsAsHashSet(final String s, final String regex, final int captureGroupNumber) {
         return extractAllCaptureGroupsAsHashSet(s, Pattern.compile(regex), captureGroupNumber);
     }
-    public static HashSet<String> extractAllCaptureGroupsAsHashSet(String s, Pattern pattern, int captureGroupNumber) {
-        HashSet<String> hs = new HashSet();
-        Matcher m = pattern.matcher(s);
+    public static HashSet<String> extractAllCaptureGroupsAsHashSet(final String s, final Pattern pattern, final int captureGroupNumber) {
+        final HashSet<String> hs = new HashSet();
+        final Matcher m = pattern.matcher(s);
         int fromIndex = 0;
         while (m.find(fromIndex)) {
             hs.add(m.group(captureGroupNumber));
@@ -675,9 +676,9 @@ public class String2 {
      *    which match as many chars as possible (e.g., ?, *, +).
      * @return a String[] with the found strings in their original order.
      */
-    public static String[] extractAllCaptureGroupsAsStringArray(String s, String regex, int captureGroupNumber) {
-        ArrayList<String> al = new ArrayList();
-        Matcher m = Pattern.compile(regex).matcher(s);
+    public static String[] extractAllCaptureGroupsAsStringArray(final String s, final String regex, final int captureGroupNumber) {
+        final ArrayList<String> al = new ArrayList();
+        final Matcher m = Pattern.compile(regex).matcher(s);
         int fromIndex = 0;
         while (m.find(fromIndex)) {
             al.add(m.group(captureGroupNumber));
@@ -694,7 +695,7 @@ public class String2 {
      * @return the index of the first value that matches the regex, or -1 if none matches.
      * @throws RuntimeException if regex won't compile.
      */
-    public int firstMatch(Object ar[], String regex) {
+    public int firstMatch(final Object ar[], final String regex) {
         return firstMatch(ar, Pattern.compile(regex));
     }
 
@@ -705,11 +706,11 @@ public class String2 {
      * @param p
      * @return the index of the first value that matches the regex pattern p, or -1 if none matches.
      */
-    public int firstMatch(Object ar[], Pattern p) {
+    public int firstMatch(final Object ar[], final Pattern p) {
         if (ar == null)
             return -1;
         for (int i = 0; i < ar.length; i++) {
-            Object s = ar[i];
+            final Object s = ar[i];
             if (s != null && p.matcher(s.toString()).matches())
                 return i;                
         }
@@ -721,9 +722,9 @@ public class String2 {
      * This converts a hashset to a String[] via o.toString().
      *
      */
-    public static String[] setToStringArray(Set set) {
-        int n = set.size();
-        String sar[] = new String[n];
+    public static String[] setToStringArray(final Set set) {
+        final int n = set.size();
+        final String sar[] = new String[n];
         int i = 0;
         for (Object o : set)
             sar[i++] = o.toString();
@@ -735,9 +736,9 @@ public class String2 {
      * This converts a String[] to a HashSet&lt;String&gt;.
      *
      */
-    public static HashSet<String> stringArrayToSet(String sar[]) {
-        HashSet<String> hs = new HashSet();
-        int n = sar.length;
+    public static HashSet<String> stringArrayToSet(final String sar[]) {
+        final HashSet<String> hs = new HashSet();
+        final int n = sar.length;
         for (int i = 0; i < n; i++)
             hs.add(sar[i]);
         return hs; 
@@ -754,7 +755,7 @@ public class String2 {
           or null if the s doesn't match the regex
      * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
-    public static String extractCaptureGroup(String s, String regex, int captureGroupNumber) {
+    public static String extractCaptureGroup(final String s, final String regex, final int captureGroupNumber) {
         return extractCaptureGroup(s, Pattern.compile(regex), captureGroupNumber);
     }
 
@@ -769,8 +770,8 @@ public class String2 {
           or null if the s doesn't match the regex
      * @throws RuntimeException if trouble, e.g., invalid regex syntax
      */
-    public static String extractCaptureGroup(String s, Pattern regexPattern, int captureGroupNumber) {
-        Matcher m = regexPattern.matcher(s);
+    public static String extractCaptureGroup(final String s, final Pattern regexPattern, final int captureGroupNumber) {
+        final Matcher m = regexPattern.matcher(s);
         if (m.find()) 
             return m.group(captureGroupNumber);
         else return null; 
@@ -786,8 +787,8 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance of i. If not found, it returns -1.
      */
-    public static int indexOf(int[] iArray, int i, int fromIndex) {
-        int iArrayLength = iArray.length;
+    public static int indexOf(final int[] iArray, final int i, final int fromIndex) {
+        final int iArrayLength = iArray.length;
         for (int index = Math.max(fromIndex, 0); index < iArrayLength; index++) {
             if (iArray[index] == i) 
                 return index;
@@ -802,7 +803,7 @@ public class String2 {
      * @param i the int you want to find
      * @return The first instance of i. If not found, it returns -1.
      */
-    public static int indexOf(int[] iArray, int i) {
+    public static int indexOf(final int[] iArray, final int i) {
         return indexOf(iArray, i, 0);
     }
 
@@ -814,8 +815,8 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance of c. If not found, it returns -1.
      */
-    public static int indexOf(char[] cArray, char c, int fromIndex) {
-        int cArrayLength = cArray.length;
+    public static int indexOf(final char[] cArray, final char c, final int fromIndex) {
+        final int cArrayLength = cArray.length;
         for (int index = Math.max(fromIndex, 0); index < cArrayLength; index++) {
             if (cArray[index] == c) 
                 return index;
@@ -830,7 +831,7 @@ public class String2 {
      * @param c the char you want to find
      * @return The first instance of c. If not found, it returns -1.
      */
-    public static int indexOf(char[] cArray, char c) {
+    public static int indexOf(final char[] cArray, final char c) {
         return indexOf(cArray, c, 0);
     }
 
@@ -842,8 +843,8 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance in s of any char in car. If not found, it returns -1.
      */
-    public static int indexOfChar(String s, char[] car, int fromIndex) {
-        int sLength = s.length();
+    public static int indexOfChar(final String s, final char[] car, final int fromIndex) {
+        final int sLength = s.length();
         for (int index = Math.max(fromIndex, 0); index < sLength; index++) {
             if (indexOf(car, s.charAt(index)) >= 0)
                 return index;
@@ -859,8 +860,8 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance in s of any char in car. If not found, it returns -1.
      */
-    public static int indexOf(String s, String car, int fromIndex) {
-        int sLength = s.length();
+    public static int indexOf(final String s, final String car, final int fromIndex) {
+        final int sLength = s.length();
         for (int index = Math.max(fromIndex, 0); index < sLength; index++) {
             if (car.indexOf(s.charAt(index)) >= 0)
                 return index;
@@ -879,8 +880,8 @@ public class String2 {
      * @param fromIndex the index number of the position to start the search
      * @return The first instance of d. If not found, it returns -1.
      */
-    public static int indexOf(double[] dArray, double d, int fromIndex) {
-        int dArrayLength = dArray.length;
+    public static int indexOf(final double[] dArray, final double d, final int fromIndex) {
+        final int dArrayLength = dArray.length;
         for (int index = Math.max(fromIndex, 0); index < dArrayLength; index++) {
             if (Math2.almostEqual(5, dArray[index], d)) 
                 return index;
@@ -894,10 +895,10 @@ public class String2 {
      *
      * @return index of the matching word (or -1 if no match or other trouble)
      */
-    public static int whichWord(String longerString, String words[]) {
+    public static int whichWord(final String longerString, final String words[]) {
         if (longerString == null || longerString.length() == 0 || words == null)
             return -1;
-        int n = words.length;
+        final int n = words.length;
         for (int i = 0; i < n; i++) 
             if (longerString.indexOf(words[i]) >= 0)
                 return i;
@@ -912,7 +913,7 @@ public class String2 {
      * @param d the double you want to find
      * @return The first instance of d. If not found, it returns -1.
      */
-    public static int indexOf(double[] dArray, double d) {
+    public static int indexOf(final double[] dArray, final double d) {
         return indexOf(dArray, d, 0);
     }
 
@@ -920,7 +921,7 @@ public class String2 {
      * A string of Java info (version, vendor).  32 bit.
      */
     public static String javaInfo() {
-        String javaVersion = System.getProperty("java.version");
+        final String javaVersion = System.getProperty("java.version");
         String mrjVersion = System.getProperty("mrj.version");
         mrjVersion = (mrjVersion == null) ? "" : (" (mrj=" + mrjVersion + ")"); //unofficial Mac property
         return "Java " + javaVersion + mrjVersion + " (" + Math2.JavaBits + " bit, " +
@@ -934,7 +935,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a letter
      */
-    public static final boolean isAsciiLetter(int c) {
+    public static final boolean isAsciiLetter(final int c) {
         if (c <  'A') return false;
         if (c <= 'Z') return true;
         if (c <  'a') return false;
@@ -950,7 +951,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a letter
      */
-    public static final boolean isLetter(int c) {
+    public static final boolean isLetter(final int c) {
         //return (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z'))
         //|| ((c >= '\u00c0') && (c <= '\u00FF') && (c != '\u00d7')
         //&& (c != '\u00f7')));
@@ -971,7 +972,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a valid character for the first character if a Java ID
      */
-    public static final boolean isIDFirstLetter(int c) {
+    public static final boolean isIDFirstLetter(final int c) {
         if (c == '_') return true;
         if (c == '$') return true;
         return isLetter(c);
@@ -984,7 +985,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a valid hex digit
      */
-    public static final boolean isHexDigit(int c) {
+    public static final boolean isHexDigit(final int c) {
         //return (((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'f'))
         //|| ((c >= 'A') && (c <= 'F')));
         if (c <  '0') return false;
@@ -999,10 +1000,10 @@ public class String2 {
     /** Returns true if all of the characters in s are hex digits.
      * A 0-length string returns false.
      */
-    public static final boolean isHexString(String s) {
+    public static final boolean isHexString(final String s) {
         if (s == null)
             return false;
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength == 0)
             return false;
         for (int i = 0; i < sLength; i++)
@@ -1018,7 +1019,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a digit
      */
-    public static final boolean isDigit(int c) {
+    public static final boolean isDigit(final int c) {
         return (c >= '0') && (c <= '9');
     }
 
@@ -1029,7 +1030,7 @@ public class String2 {
      * @param c a char
      * @return true if c is an octal digit
      */
-    public static final boolean isOctalDigit(int c) {
+    public static final boolean isOctalDigit(final int c) {
         return (c >= '0') && (c <= '7');
     }
 
@@ -1040,10 +1041,10 @@ public class String2 {
      * @param s a string
      * @return true if c is a digit
      */
-    public static final boolean allDigits(String s) {
+    public static final boolean allDigits(final String s) {
         if (s == null)
             return false;
-        int n = s.length();
+        final int n = s.length();
         if (n == 0)
             return false;
         for (int po = 0; po < n; po++)
@@ -1058,7 +1059,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a letter or a digit
      */
-    public static final boolean isDigitLetter(int c) {
+    public static final boolean isDigitLetter(final int c) {
         return isLetter(c) || isDigit(c);
     }
 
@@ -1075,13 +1076,13 @@ public class String2 {
      *     "NaN" (case insensitive) returns true.  (It is a numeric value of sorts.)
      *     null and "" return false.
      */
-    public static final boolean isNumber(String s) {
+    public static final boolean isNumber(final String s) {
         if (s == null)
             return false;
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength == 0)
             return false;
-        char ch0 = s.charAt(0);
+        final char ch0 = s.charAt(0);
 
         if (ch0 == '0') {
             //hexadecimal? e.g., 0x2AFF            //octal not supported
@@ -1165,7 +1166,7 @@ public class String2 {
      * @param c a char
      * @return true if c is a whitespace character
      */
-    public static final boolean isWhite(int c) {
+    public static final boolean isWhite(final int c) {
         return ((c >= '\u0001') && (c <= ' ')) || c == '\u00a0'; //nbsp
     }
 
@@ -1190,7 +1191,7 @@ public class String2 {
      * @param ch a char
      * @return true if ch is a printable character
      */
-    public static final boolean isPrintable(int ch) {
+    public static final boolean isPrintable(final int ch) {
         //return (ch&gt;=32 &amp;&amp; ch<127) || (ch&gt;=161 &amp;&amp; ch&lt;=255);  //was 160
         if (ch <   32) return false;
         if (ch <= 126) return true;  //was 127 
@@ -1200,10 +1201,10 @@ public class String2 {
     }
 
     /** Returns true if all of the characters in s are printable */
-    public static final boolean isPrintable(String s) {
+    public static final boolean isPrintable(final String s) {
         if (s == null)
             return false;
-        int sLength = s.length();
+        final int sLength = s.length();
         for (int i = 0; i < sLength; i++)
             if (!isPrintable(s.charAt(i)))
                 return false;
@@ -1211,17 +1212,17 @@ public class String2 {
     }
 
     /** returns true if ch is 32..126. */
-    public static final boolean isAsciiPrintable(int ch) {
+    public static final boolean isAsciiPrintable(final int ch) {
         if (ch <   32) return false;
         if (ch <= 126) return true; 
         return false;
     }
 
     /** Returns true if all of the characters in s are 32..126 */
-    public static final boolean isAsciiPrintable(String s) {
+    public static final boolean isAsciiPrintable(final String s) {
         if (s == null)
             return false;
-        int sLength = s.length();
+        final int sLength = s.length();
         for (int i = 0; i < sLength; i++)
             if (!isAsciiPrintable(s.charAt(i)))
                 return false;
@@ -1234,9 +1235,9 @@ public class String2 {
      * @return s with all the non-isPrintable characters removed.
      *   If s is null, this throws null pointer exception.
      */
-    public static String justPrintable(String s) {
-        int n = s.length();
-        StringBuilder sb = new StringBuilder(n);
+    public static String justPrintable(final String s) {
+        final int n = s.length();
+        final StringBuilder sb = new StringBuilder(n);
         int start = 0;
         for (int i = 0; i < n; i++) {
             if (!isPrintable(s.charAt(i))) {
@@ -1271,11 +1272,11 @@ public class String2 {
      * @param s
      * @return the string converted to plain ascii (0..127).
      */
-    public static String modifyToBeASCII(String s) {
-        StringBuilder sb = new StringBuilder(s);
-        int n = s.length();
+    public static String modifyToBeASCII(final String s) {
+        final StringBuilder sb = new StringBuilder(s);
+        final int n = s.length();
         for (int i = 0; i < n; i++) {
-            char ch = sb.charAt(i);
+            final char ch = sb.charAt(i);
             if (ch <= 127) {}
             else if (ch >= 160 && ch <= 255) sb.setCharAt(i, plainASCII.charAt(ch - 160));
             else sb.setCharAt(i, '?');
@@ -1294,7 +1295,7 @@ public class String2 {
      * @param ch
      * @return true if ch is a file-name-safe character (A-Z, a-z, 0-9, _, -, .).
      */
-    public static boolean isFileNameSafe(char ch) {
+    public static boolean isFileNameSafe(final char ch) {
         //return (ch >= 'A' &amp;&amp; ch <= 'Z') ||                
         //       (ch >= 'a' &amp;&amp; ch <= 'z') ||                
         //       (ch >= '0' &amp;&amp; ch <= '9') ||
@@ -1316,7 +1317,7 @@ public class String2 {
      * @param email a possible email address
      * @return true if 'email' is a valid email address.
      */
-    public static boolean isEmailAddress(String email) {
+    public static boolean isEmailAddress(final String email) {
         if (email == null || email.length() == 0)
             return false;
 
@@ -1329,7 +1330,7 @@ public class String2 {
      * @param email a possible email address
      * @return "" if email is a valid email address, or an error message.
      */
-    public static String testEmailAddress(String email) {
+    public static String testEmailAddress(final String email) {
         return isEmailAddress(email)? "" : ERROR + ": \"" + email + "\" is not a valid email address.";
     }
 
@@ -1338,8 +1339,8 @@ public class String2 {
      *
      * @param email a possible email address
      */
-    public static void ensureEmailAddress(String email) {
-        String s = testEmailAddress(email);
+    public static void ensureEmailAddress(final String email) {
+        final String s = testEmailAddress(email);
         if (s.length() > 0)
            throw new RuntimeException(s);
     }
@@ -1354,22 +1355,27 @@ public class String2 {
      *    false if 'url' is not a valid url.
      *    Note that "file://..." is a url.
      */
-    public static boolean isUrl(String url) {
+    public static boolean isUrl(final String url) {
         if (url == null)
             return false;
-        int po = url.indexOf("://");
-        if (po == -1 ||
+        final int po = url.indexOf("://");
+        if (po <= 0 ||
+            po + 3 == url.length() || //nothing after ://
             !isPrintable(url))
             return false;
 
-        String protocol = url.substring(0, po);
-        return 
+        final String protocol = url.substring(0, po);
+        /*return 
             protocol.equals("file") ||
             protocol.equals("ftp") ||
             protocol.equals("http") ||
             protocol.equals("https") ||
             protocol.equals("sftp") ||
-            protocol.equals("smb");
+            protocol.equals("smb"); */
+        return switch (protocol) {
+            case "file", "ftp", "http", "https", "sftp", "smb" -> true;
+            default -> false;
+        };
     }
 
     /** 
@@ -1381,7 +1387,7 @@ public class String2 {
      * @return true if the dir is remote (but not an AWS S3 URL) (e.g., a URL other than file://)
      *   If dir is null or "", this returns false.
      */
-    public static boolean isRemote(String dir) {
+    public static boolean isRemote(final String dir) {
         if (isUrl(dir))
             return dir.startsWith("file://")? false : true;
         return false;
@@ -1396,7 +1402,7 @@ public class String2 {
      * @return true if the dir is remote (e.g., a URL other than file://)
      *   If dir is null or "", this returns false.
      */
-    public static boolean isTrulyRemote(String dir) {
+    public static boolean isTrulyRemote(final String dir) {
         if (isUrl(dir))
             return dir.startsWith("file://")? false : 
                    isAwsS3Url(dir)? false : true;
@@ -1415,10 +1421,10 @@ public class String2 {
      * @return true if s has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
      *    It returns false if s is null or "".
      */
-    public static boolean isFileNameSafe(String s) {
+    public static boolean isFileNameSafe(final String s) {
         if (s == null || s.length() == 0)
             return false;
-        int sLength = s.length();
+        final int sLength = s.length();
         for (int i = 0; i < sLength; i++)
             if (!isFileNameSafe(s.charAt(i)))
                 return false;
@@ -1446,10 +1452,10 @@ public class String2 {
         if (s == null)
             return "_null";
         s = modifyToBeASCII(s);
-        int n = s.length();
+        final int n = s.length();
         if (n == 0)
             return "_";
-        StringBuilder sb = new StringBuilder(n);
+        final StringBuilder sb = new StringBuilder(n);
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
             sb.append(isFileNameSafe(ch)? ch : '_');
@@ -1471,10 +1477,10 @@ public class String2 {
      * @param s a possible variable name
      * @return true if s is a valid variableName.
      */
-    public static boolean isVariableNameSafe(String s) {
+    public static boolean isVariableNameSafe(final String s) {
         if (s == null)
             return false;
-        int n = s.length();
+        final int n = s.length();
         if (n == 0)
             return false;
 
@@ -1521,7 +1527,7 @@ public class String2 {
         if (n == 0)
             return "_";
 
-        StringBuilder sb = new StringBuilder(n + 1);
+        final StringBuilder sb = new StringBuilder(n + 1);
 
         //first character must be (iso8859Letter|_)
         char ch = s.charAt(0);
@@ -1561,7 +1567,7 @@ public class String2 {
     public static boolean isJsonpNameSafe(String s) {
         if (s == null)
             return false;
-        int n = s.length();
+        final int n = s.length();
         if (n == 0 || n > 255)
             return false;
 
@@ -1569,13 +1575,13 @@ public class String2 {
         if (s.charAt(n - 1) == '.')
             return false;
 
-        ArrayList<String> al = splitToArrayList(s, '.', false); //trim=false
-        int nal = al.size();
+        final ArrayList<String> al = splitToArrayList(s, '.', false); //trim=false
+        final int nal = al.size();
 
         //test each word
         for (int part = 0; part < nal; part++) {
-            String ts = al.get(part);
-            int tn = ts.length();
+            final String ts = al.get(part);
+            final int tn = ts.length();
             if (tn == 0)
                 return false;
 
@@ -1603,7 +1609,7 @@ public class String2 {
      * @param sb the source StringBuilder
      * @param findS the string to be searched for
      */
-    public static int countAll(StringBuilder sb, String findS) {
+    public static int countAll(final StringBuilder sb, final String findS) {
         if (sb == null || findS == null || findS.length() == 0) return 0;
         int n = 0;
         int sLength = findS.length();
@@ -1622,10 +1628,10 @@ public class String2 {
      * @param s the source string
      * @param findS the string to be searched for
      */
-    public static int countAll(String s, String findS) {
+    public static int countAll(final String s, final String findS) {
         if (s == null || findS == null || findS.length() == 0) return 0;
         int n = 0;
-        int sLength = findS.length();
+        final int sLength = findS.length();
         int po = s.indexOf(findS, 0);
         while (po >= 0) {
             n++;
@@ -1641,10 +1647,10 @@ public class String2 {
      * @param s the source string
      * @param findS the char to be searched for
      */
-    public static int countAll(String s, char findS) {
+    public static int countAll(final String s, final char findS) {
         if (s == null) return 0;
         int n = 0;
-        int sLength = s.length();
+        final int sLength = s.length();
         for (int po = 0; po < sLength; po++) {
             if (s.charAt(po) == findS) 
                 n++;
@@ -1662,10 +1668,10 @@ public class String2 {
      * @param nth 1+
      * @return This returns the index of the nth occurrence of <tt>findS</tt> in s.
      */
-    public static int findNth(String s, char findS, int nth) {
+    public static int findNth(final String s, final char findS, final int nth) {
         if (s == null || nth <= 0) 
             return -1;
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength == 0) 
             return -1;
         int nFound = 0;
@@ -1687,7 +1693,7 @@ public class String2 {
      * @param oldS the string to be searched for
      * @param newS the string to replace oldS
      */
-    public static void replaceAll(StringBuilder sb, String oldS, String newS) {
+    public static void replaceAll(final StringBuilder sb, final String oldS, final String newS) {
         replaceAll(sb, oldS, newS, false);
     }
 
@@ -1701,7 +1707,7 @@ public class String2 {
      * @param oldS the string to be searched for
      * @param newS the string to replace oldS
      */
-    public static void replaceAllIgnoreCase(StringBuilder sb, String oldS, String newS) {
+    public static void replaceAllIgnoreCase(final StringBuilder sb, final String oldS, final String newS) {
         replaceAll(sb, oldS, newS, true);
     }
 
@@ -1716,12 +1722,12 @@ public class String2 {
      * @param ignoreCase   If true, when searching sb for oldS, this ignores the case of sb and oldS.
      * @return the number of replacements made.
      */
-    public static int replaceAll(StringBuilder sb, String oldS, String newS, boolean ignoreCase) {
-        int sbL = sb.length();
-        int oldSL = oldS.length();
+    public static int replaceAll(final StringBuilder sb, final String oldS, final String newS, final boolean ignoreCase) {
+        final int sbL = sb.length();
+        final int oldSL = oldS.length();
         if (oldSL == 0)
             return 0;
-        int newSL = newS.length();
+        final int newSL = newS.length();
         StringBuilder testSB = sb;
         String testOldS = oldS;
         if (ignoreCase) {
@@ -1733,7 +1739,7 @@ public class String2 {
         int po = testSB.indexOf(testOldS);
         //System.out.println("testSB=" + testSB.toString() + " testOldS=" + testOldS + " po=" + po); //not String2.log
         if (po < 0) return 0;
-        StringBuilder sb2 = new StringBuilder(sbL / 5 * 6); //a little bigger
+        final StringBuilder sb2 = new StringBuilder(sbL / 5 * 6); //a little bigger
         int base = 0;
         int n = 0;
         while (po >= 0) {
@@ -1757,7 +1763,9 @@ public class String2 {
      *
      * @return sb for convenience
      */
-    public static StringBuilder repeatedlyReplaceAll(StringBuilder sb, String oldS, String newS, boolean ignoreCase) {        
+    public static StringBuilder repeatedlyReplaceAll(final StringBuilder sb, 
+        final String oldS, final String newS, final boolean ignoreCase) {        
+
         while (replaceAll(sb, oldS, newS, ignoreCase) > 0) {}
         return sb;
     }
@@ -1767,8 +1775,8 @@ public class String2 {
      * e.g., replace "++" with "+" in "++++" will yield "+".
      *
      */
-    public static String repeatedlyReplaceAll(String s, String oldS, String newS, boolean ignoreCase) {        
-        StringBuilder sb = new StringBuilder(s);
+    public static String repeatedlyReplaceAll(final String s, final String oldS, final String newS, final boolean ignoreCase) {        
+        final StringBuilder sb = new StringBuilder(s);
         while (replaceAll(sb, oldS, newS, ignoreCase) > 0) {}
         return sb.toString();
     }
@@ -1787,8 +1795,8 @@ public class String2 {
      * @return a modified version of s, with newS in place of all the olds.
      * @throws RuntimeException if s is null.
      */
-    public static String replaceAll(String s, String oldS, String newS) {
-        StringBuilder sb = new StringBuilder(s);
+    public static String replaceAll(final String s, final String oldS, final String newS) {
+        final StringBuilder sb = new StringBuilder(s);
         replaceAll(sb, oldS, newS, false);
         return sb.toString();
     }
@@ -1806,8 +1814,8 @@ public class String2 {
      * @return a modified version of s, with newS in place of all the olds.
      *   throws RuntimeException if s is null.
      */
-    public static String replaceAllIgnoreCase(String s, String oldS, String newS) {
-        StringBuilder sb = new StringBuilder(s);
+    public static String replaceAllIgnoreCase(final String s, final String oldS, final String newS) {
+        final StringBuilder sb = new StringBuilder(s);
         replaceAll(sb, oldS, newS, true);
         return sb.toString();
     }
@@ -1821,8 +1829,10 @@ public class String2 {
      * @param replacement the replacement string
      * @return sb for convenience 
      */
-    public static StringBuilder regexReplaceAll(StringBuilder sb, String regex, int captureGroup, String replacement) {
-        Pattern pattern = Pattern.compile(regex);
+    public static StringBuilder regexReplaceAll(final StringBuilder sb, 
+        final String regex, final int captureGroup, final String replacement) {
+
+        final Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(sb);
         while (matcher.find()) {
             sb.replace(matcher.start(1), matcher.end(1), replacement);
@@ -1845,13 +1855,13 @@ public class String2 {
         if (s == null)
             return null;
         s = s.trim();
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength <= 2) //first and last chars must be non-space
             return s; 
-        StringBuilder sb = new StringBuilder(sLength);
+        final StringBuilder sb = new StringBuilder(sLength);
         sb.append(s.charAt(0));
         for (int po = 1; po < sLength; po++) {
-            char ch = s.charAt(po);
+            final char ch = s.charAt(po);
             if (ch == ' ') {
                 if ("{( ".indexOf(sb.charAt(sb.length() - 1)) < 0) //prev isn't {( or ' '
                     sb.append(ch);
@@ -1872,19 +1882,19 @@ public class String2 {
      *
      * @param sb 
      */
-    public static void whitespacesToSpace(StringBuilder sb) {
+    public static void whitespacesToSpace(final StringBuilder sb) {
         if (sb == null)
             return;
-        String s = sb.toString().trim(); //this removes whitespace, not just ' '
-        int sLength = s.length();
+        final String s = sb.toString().trim(); //this removes whitespace, not just ' '
+        final int sLength = s.length();
         sb.setLength(0);
         if (sLength == 0)
             return;
         sb.append(s.charAt(0));
         for (int po = 1; po < sLength; po++) {
-            char ch = s.charAt(po);
+            final char ch = s.charAt(po);
             if (Character.isWhitespace(ch)) {
-                char ch2 = sb.charAt(sb.length() - 1);
+                final char ch2 = sb.charAt(sb.length() - 1);
                 if (!(ch2 == '{' || ch2 =='(' || ch2 == ' ')) //prev isn't {( or ' '
                     sb.append(' ');
             } else if ((ch == ')' || ch == '}') && 
@@ -1897,10 +1907,10 @@ public class String2 {
     }
 
     /* A variant that takes and returns a string */
-    public static String whitespacesToSpace(String s) {
+    public static String whitespacesToSpace(final String s) {
         if (s == null)
             return null;
-        StringBuilder sb = new StringBuilder(s);
+        final StringBuilder sb = new StringBuilder(s);
         whitespacesToSpace(sb);
         return sb.toString();
     }
@@ -1910,12 +1920,12 @@ public class String2 {
      *   been replaced with <tt>newCh</tt>.
      * This doesn't throw exceptions if bad values.
      */
-    public static String replaceAll(String s, char oldCh, char newCh) {
+    public static String replaceAll(final String s, final char oldCh, final char newCh) {
         int po = s.indexOf(oldCh);
         if (po < 0)
             return s;
 
-        StringBuilder buffer = new StringBuilder(s);
+        final StringBuilder buffer = new StringBuilder(s);
         while (po >= 0) {
             buffer.setCharAt(po, newCh);
             po = s.indexOf(oldCh, po + 1);
@@ -1929,8 +1939,8 @@ public class String2 {
      *
      * @return the same StringBuilder, for convenience.
      */
-    public static StringBuilder replaceAll(StringBuilder sb, char oldCh, char newCh) {
-        String oldS = "" + oldCh;
+    public static StringBuilder replaceAll(final StringBuilder sb, final char oldCh, final char newCh) {
+        final String oldS = "" + oldCh;
         int po = sb.indexOf(oldS);
         while (po >= 0) {
             sb.setCharAt(po, newCh);
@@ -1945,7 +1955,7 @@ public class String2 {
      *
      * @return sb for convenience
      */
-    public static StringBuilder commonUnicodeToPlainText(StringBuilder sb) {
+    public static StringBuilder commonUnicodeToPlainText(final StringBuilder sb) {
         replaceAll(sb, '\u2013', '-');  //endash 
         replaceAll(sb, '\u2014', '-');  //emdash   --?
         replaceAll(sb, '\u2018', '\''); //left quote
@@ -1959,7 +1969,7 @@ public class String2 {
         return sb;
     }
 
-    public static String commonUnicodeToPlainText(String s) {
+    public static String commonUnicodeToPlainText(final String s) {
         return commonUnicodeToPlainText(new StringBuilder(s)).toString();
     }
 
@@ -1975,12 +1985,12 @@ public class String2 {
      * @return the number, left-padded with 0's so there are nDigits to 
      * the left of the decimal point
      */
-    public static String zeroPad(String number, int nDigits) {
+    public static String zeroPad(final String number, final int nDigits) {
         int decimal = number.indexOf(".");
         if (decimal < 0)
             decimal = number.length();
 
-        int toAdd = nDigits - decimal;
+        final int toAdd = nDigits - decimal;
         if (toAdd <= 0)
             return number;
 
@@ -1994,12 +2004,11 @@ public class String2 {
      * @return e.g., ["aa", "bb", "cc"].
      *     If sa is null, this returns null (as a String).
      */
-    public static String toJsonArray(String sa[]) {
+    public static String toJsonArray(final String sa[]) {
         if (sa == null)
             return "null";
-        int saLength = sa.length;
-        StringBuilder sb = new StringBuilder(10 * saLength);
-        int start = 0;
+        final int saLength = sa.length;
+        final StringBuilder sb = new StringBuilder(10 * saLength);
         for (int i = 0; i < saLength; i++) {
             sb.append(i == 0? "[" : ",");
             sb.append(toJson(sa[i]));
@@ -2017,7 +2026,7 @@ public class String2 {
      * @return "null" if not finite. Return an integer if it ends with ".0".
      *    Else returns the number as a string.
      */
-    public static String toJson(float f) {
+    public static String toJson(final float f) {
         if (!Float.isFinite(f))
             return "null";
         String s = "" + f;
@@ -2031,7 +2040,7 @@ public class String2 {
      * @return "null" if not finite. Return an integer if it ends with ".0".
      *    Else returns the number as a string.
      */
-    public static String toJson(double d) {
+    public static String toJson(final double d) {
         if (!Double.isFinite(d))
             return "null";
         String s = "" + d;
@@ -2048,7 +2057,7 @@ public class String2 {
      * @param s
      * @return the JSON-encoded string surrounded by "'s.
      */
-    public static String toJson(String s) {
+    public static String toJson(final String s) {
         return toJson(s, 127, true);
     }
 
@@ -2058,7 +2067,7 @@ public class String2 {
      * @param s
      * @return the JSON-encoded string surrounded by "'s.
      */
-    public static String toJson65536(String s) {
+    public static String toJson65536(final String s) {
         return toJson(s, 65536, true);
     }
 
@@ -2074,7 +2083,7 @@ public class String2 {
      *   commonly 127, 256, or 65536.
      * @return the JSON-encoded string surrounded by "'s.
      */
-    public static String toJson(String s, int firstUEncodedChar) {
+    public static String toJson(final String s, final int firstUEncodedChar) {
         return toJson(s, firstUEncodedChar, true);
     }
 
@@ -2082,10 +2091,10 @@ public class String2 {
      * This returns a json version of s if there is a character &lt; 32
      * or &gt;= firstUEncodedChar or if the first or last char is whitespace.
      */
-    public static String toJsonIfNeeded(String s, int firstUEncodedChar) {
-        int slen = s.length();
+    public static String toJsonIfNeeded(final String s, final int firstUEncodedChar) {
+        final int slen = s.length();
         for (int po = 0; po < slen; po++) {
-            char ch = s.charAt(po);
+            final char ch = s.charAt(po);
             if (ch < 32 || //notably  \n \f \t
                 ch == '\\' ||
                 ch == '\"' ||
@@ -2106,12 +2115,12 @@ public class String2 {
      * @param firstUEncodedChar usually 127 to avoid trouble
      * @return an encoding of the string (like jsonIfNeeded) suitable for a CSSV or TSV string. s=null returns "".
      */
-    public static String toSVString(String s, int firstUEncodedChar) {
+    public static String toSVString(final String s, final int firstUEncodedChar) {
         if (s == null)
             return EMPTY_STRING;
-        int slen = s.length();
+        final int slen = s.length();
         for (int po = 0; po < slen; po++) {
-            char ch = s.charAt(po);
+            final char ch = s.charAt(po);
             if (ch < 32 || //notably  \n \f \t
                 ch == ','  ||  //because of csv
                 ch == '\\' ||
@@ -2132,15 +2141,15 @@ public class String2 {
      *   commonly 127, 256, or 65536.
      * @return the JSON-encoded string surrounded by "'s.
      */
-    public static String toJson(String s, int firstUEncodedChar, boolean encodeNewline) {
+    public static String toJson(final String s, final int firstUEncodedChar, final boolean encodeNewline) {
         if (s == null)
             return "null";
-        int sLength = s.length();
-        StringBuilder sb = new StringBuilder((sLength / 5 + 1) * 6);
+        final int sLength = s.length();
+        final StringBuilder sb = new StringBuilder((sLength / 5 + 1) * 6);
         sb.append('\"');
         int start = 0;
         for (int i = 0; i < sLength; i++) {
-            char ch = s.charAt(i);
+            final char ch = s.charAt(i);
             //using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
             if (ch < 32 || ch >= firstUEncodedChar) { 
                 sb.append(s.substring(start, i));  
@@ -2168,7 +2177,7 @@ public class String2 {
     }
 
     /** This encodes one char to the Json encoding. */
-    public static String charToJsonString(char ch, int firstUEncodedChar, boolean encodeNewline) {
+    public static String charToJsonString(final char ch, final int firstUEncodedChar, final boolean encodeNewline) {
         //using 127 (not 255) means the output is 7bit ASCII and file encoding is irrelevant
         if (ch < 32 || ch >= firstUEncodedChar) { 
             if      (ch == '\f') return "\\f";
@@ -2198,7 +2207,7 @@ public class String2 {
     /** 
      * If the String is surrounded by ", this returns fromJson(s), else it returns s.
      */
-    public static String ifJsonFromJson(String s) {
+    public static String ifJsonFromJson(final String s) {
         if (s == null || s.length() < 2) 
             return s;
         if (s.charAt(0) == '\"' && s.charAt(s.length() - 1) == '\"')
@@ -2222,8 +2231,8 @@ public class String2 {
             return null;
         if (s.length() >= 2 && s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
             s = s.substring(1, s.length() - 1);
-        int sLength = s.length();
-        StringBuilder sb = new StringBuilder(sLength);
+        final int sLength = s.length();
+        final StringBuilder sb = new StringBuilder(sLength);
         int po = 0;
         int start = 0;
         while (po < sLength) {
@@ -2344,7 +2353,7 @@ public class String2 {
         //Avoid the effort if no " or \ in the string.
         //If s starts with ", this will quickly (and correctly) go to full effort.
         //This is significant time savings for Table.readASCII().
-        int sLength = s.length();
+        final int sLength = s.length();
         if (sLength >= 2 && s.charAt(0) == '\"' && s.charAt(sLength - 1) == '\"') {
             s = s.substring(1, sLength - 1); //remove surrounding "
             s = replaceAll(s, "\"\"", "\""); //then convert "" to \" 
@@ -2364,7 +2373,7 @@ public class String2 {
     /**
      * This encodes one char for an NCCSV char or String (7-bit ASCII), without surrounding quotes.
      */
-    public static String toNccsvChar(char ch) {
+    public static String toNccsvChar(final char ch) {
         if (ch == '\\') return "\\\\";
         if (ch == '\b') return "\\b"; //trouble
         if (ch == '\f') return "\\f";
@@ -2380,12 +2389,12 @@ public class String2 {
      * This encodes one String as an NCCSV data String (7-bit ASCII), with surrounding double quotes
      * only if necessary.
      */
-    public static String toNccsvDataString(String s) {
+    public static String toNccsvDataString(final String s) {
         //encode the string
         if (s == null || s.length() == 0)
             return "";
-        int n = s.length();
-        StringBuilder sb = new StringBuilder(n * 2);
+        final int n = s.length();
+        final StringBuilder sb = new StringBuilder(n * 2);
         for (int i = 0; i < n; i++)
             sb.append(toNccsvChar(s.charAt(i)));
 
@@ -2403,10 +2412,10 @@ public class String2 {
      * This encodes one String as an NCCSV att String (7-bit ASCII), with surrounding double quotes
      * only if necessary.
      */
-    public static String toNccsvAttString(String s) {
+    public static String toNccsvAttString(final String s) {
         //encode the string
-        int n = s.length();
-        StringBuilder sb = new StringBuilder(n * 2);
+        final int n = s.length();
+        final StringBuilder sb = new StringBuilder(n * 2);
         for (int i = 0; i < n; i++)
             sb.append(toNccsvChar(s.charAt(i)));
 
@@ -2446,11 +2455,11 @@ public class String2 {
      * @param s the string with internal line separators
      * @return an arrayList&lt;Strings&gt; (separate lines of text)
      */
-    public static ArrayList<String> multiLineStringToArrayList(String s) {
-        char endOfLineChar = s.indexOf('\n') >= 0? '\n' : '\r';
-        int sLength = s.length();
-        ArrayList<String> arrayList = new ArrayList(); //this is local, so okay if not threadsafe
-        StringBuilder oneLine = new StringBuilder(512);
+    public static ArrayList<String> multiLineStringToArrayList(final String s) {
+        final char endOfLineChar = s.indexOf('\n') >= 0? '\n' : '\r';
+        final int sLength = s.length();
+        final ArrayList<String> arrayList = new ArrayList(); //this is local, so okay if not threadsafe
+        final StringBuilder oneLine = new StringBuilder(512);
         char ch;
         int start = 0;
         for (int po = 0; po < sLength; po++) {
@@ -2481,8 +2490,8 @@ public class String2 {
      * @param e an enumeration
      * @return arrayList with the objects from the enumeration
      */
-    public static ArrayList toArrayList(Enumeration e) {
-        ArrayList al = new ArrayList();
+    public static ArrayList toArrayList(final Enumeration e) {
+        final ArrayList al = new ArrayList();
         while (e.hasMoreElements()) 
             al.add(e.nextElement());
         return al;
@@ -2494,9 +2503,9 @@ public class String2 {
      * @param objectArray an Object[]
      * @return arrayList with the objects
      */
-    public static ArrayList toArrayList(Object objectArray[]) {
-        int n = objectArray.length;
-        ArrayList al = new ArrayList(n);
+    public static ArrayList toArrayList(final Object objectArray[]) {
+        final int n = objectArray.length;
+        final ArrayList al = new ArrayList(n);
         for (int i = 0; i < n; i++)
             al.add(objectArray[i]);
         return al;
@@ -2532,7 +2541,7 @@ public class String2 {
      *     won't be attempted.
      * @return the modified msg
      */
-    public static String substitute(String msg, String s0, String s1, String s2) {
+    public static String substitute(final String msg, final String s0, final String s1, final String s2) {
         StringBuilder msgSB = new StringBuilder(msg);
         if (s0 != null) 
             replaceAll(msgSB, "{0}", s0); 
@@ -2546,20 +2555,20 @@ public class String2 {
     /**
      * This returns a CSV (not CSSV) String.
      */
-    public static String toCSVString(Enumeration en) {
+    public static String toCSVString(final Enumeration en) {
         return toSVString(toArrayList(en).toArray(), ",", false);
     }
-    public static String toCSVString(ArrayList al) {
+    public static String toCSVString(final ArrayList al) {
         return toSVString(al.toArray(), ",", false);
     }
-    public static String toCSVString(Vector v) {
+    public static String toCSVString(final Vector v) {
         return toSVString(v.toArray(), ",", false);
     }
-    public static String toCSVString(Object ar[]) {
+    public static String toCSVString(final Object ar[]) {
         return toSVString(ar, ",", false);
     }
-    public static String toCSVString(Set set) {
-        Object ar[] = set.toArray();
+    public static String toCSVString(final Set set) {
+        final Object ar[] = set.toArray();
         Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
         return toCSVString(ar);
     }
@@ -2579,7 +2588,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSSVString(Enumeration en) {
+    public static String toCSSVString(final Enumeration en) {
         return toSVString(toArrayList(en).toArray(), ", ", false);
     }
 
@@ -2595,7 +2604,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSSVString(ArrayList al) {
+    public static String toCSSVString(final ArrayList al) {
         return toSVString(al.toArray(), ", ", false);
     }
 
@@ -2610,7 +2619,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSSVString(Vector v) {
+    public static String toCSSVString(final Vector v) {
         return toSVString(v.toArray(), ", ", false);
     }
 
@@ -2626,7 +2635,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSSVString(Object ar[]) {
+    public static String toCSSVString(final Object ar[]) {
         return toSVString(ar, ", ", false);
     }
 
@@ -2640,8 +2649,8 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSSVString(Set set) {
-        Object ar[] = set.toArray();
+    public static String toCSSVString(final Set set) {
+        final Object ar[] = set.toArray();
         Arrays.sort(ar, STRING_COMPARATOR_IGNORE_CASE);
         return toCSSVString(ar);
     }
@@ -2659,7 +2668,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toSSVString(Object ar[]) {
+    public static String toSSVString(final Object ar[]) {
         return toSVString(ar, " ", false);
     }
 
@@ -2675,7 +2684,7 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toNewlineString(Object ar[]) {
+    public static String toNewlineString(final Object ar[]) {
         return toSVString(ar, "\n", true);
     }
 
@@ -2693,18 +2702,18 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toSVString(Object ar[], String separator, boolean finalSeparator) {
+    public static String toSVString(final Object ar[], final String separator, final boolean finalSeparator) {
         if (ar == null) 
             return null;
-        int n = ar.length;
-        boolean csv = separator.charAt(0) == ',';
-        boolean tsv = separator.charAt(0) == ',';
+        final int n = ar.length;
+        final boolean csv = separator.charAt(0) == ',';
+        final boolean tsv = separator.charAt(0) == '\t';
         //8 bytes is lame estimate of bytes/element, but better than nothing
         StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(separator);
-            Object o = ar[i];
+            final Object o = ar[i];
             if (o == null) {
                 sb.append("[null]");
             } else {
@@ -2730,12 +2739,12 @@ public class String2 {
      * @param ar an array of boolean
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(boolean ar[]) {
+    public static String toCSSVString(final boolean ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 7 bytes/element
-        StringBuilder sb = new StringBuilder(7 * Math.min(n, (Integer.MAX_VALUE-8192) / 7));
+        final StringBuilder sb = new StringBuilder(7 * Math.min(n, (Integer.MAX_VALUE-8192) / 7));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
@@ -2751,12 +2760,12 @@ public class String2 {
      * @param ar an array of bytes
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(byte ar[]) {
+    public static String toCSSVString(final byte ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 5 bytes/element
-        StringBuilder sb = new StringBuilder(5 * Math.min(n, (Integer.MAX_VALUE-8192) / 5));
+        final StringBuilder sb = new StringBuilder(5 * Math.min(n, (Integer.MAX_VALUE-8192) / 5));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
@@ -2773,12 +2782,12 @@ public class String2 {
      * @param ar an array of char
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(char ar[]) {
+    public static String toCSSVString(final char ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 6 bytes/element
-        StringBuilder sb = new StringBuilder(6 * Math.min(n, (Integer.MAX_VALUE-8192) / 6));
+        final StringBuilder sb = new StringBuilder(6 * Math.min(n, (Integer.MAX_VALUE-8192) / 6));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
@@ -2792,7 +2801,7 @@ public class String2 {
      * e.g., 0x00FF00.
      * Negative numbers are twos compliment, e.g., -4 -&gt; 0xfffffffc.
      */
-    public static String to0xHexString(int i, int nHexDigits) {
+    public static String to0xHexString(final int i, final int nHexDigits) {
         return "0x" + zeroPad(Integer.toHexString(i), nHexDigits);
     }
 
@@ -2804,12 +2813,12 @@ public class String2 {
      * @param ar an array of bytes
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSSVString(byte ar[]) {
+    public static String toHexCSSVString(final byte ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 6 bytes/element
-        StringBuilder sb = new StringBuilder(6 * Math.min(n, (Integer.MAX_VALUE-8192) / 6));
+        final StringBuilder sb = new StringBuilder(6 * Math.min(n, (Integer.MAX_VALUE-8192) / 6));
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
@@ -2828,12 +2837,12 @@ public class String2 {
      * @param ar an array of shorts
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(short ar[]) {
+    public static String toCSSVString(final short ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 7 bytes/element
-        StringBuilder sb = new StringBuilder(7 * Math.min(n, (Integer.MAX_VALUE-8192) / 7));
+        final StringBuilder sb = new StringBuilder(7 * Math.min(n, (Integer.MAX_VALUE-8192) / 7));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             if (i < n - 1)
@@ -2850,12 +2859,12 @@ public class String2 {
      * @param ar an array of short
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSSVString(short ar[]) {
+    public static String toHexCSSVString(final short ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 8 bytes/element
-        StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
+        final StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
         for (int i = 0; i < n; i++) {
             String s = Integer.toHexString(ar[i]);
             if (s.length() == 8 && s.startsWith("ffff"))
@@ -2874,12 +2883,12 @@ public class String2 {
      * @param ar an array of ints
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(int ar[]) {
+    public static String toCSSVString(final int ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 8 bytes/element
-        StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
+        final StringBuilder sb = new StringBuilder(8 * Math.min(n, (Integer.MAX_VALUE-8192) / 8));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             if (i < n - 1)
@@ -2896,12 +2905,12 @@ public class String2 {
      * @param ar an array of ints
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSSVString(int ar[]) {
+    public static String toHexCSSVString(final int ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append("0x" + Integer.toHexString(ar[i]));
             if (i < n - 1)
@@ -2917,12 +2926,12 @@ public class String2 {
      * @param ar an array of longs
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(long ar[]) {
+    public static String toCSSVString(final long ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             if (i < n - 1)
@@ -2938,12 +2947,12 @@ public class String2 {
      * @param ar an array of float
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(float ar[]) {
+    public static String toCSSVString(final float ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             if (i < n - 1)
@@ -2959,12 +2968,12 @@ public class String2 {
      * @param ar an array of double
      * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSSVString(double ar[]) {
+    public static String toCSSVString(final double ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             if (i < n - 1)
@@ -2979,12 +2988,12 @@ public class String2 {
      * @param ar an array of ints
      * @return a newline-separated String (or null if ar is null)
      */
-    public static String toNewlineString(int ar[]) {
+    public static String toNewlineString(final int ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             sb.append('\n');
@@ -2998,12 +3007,12 @@ public class String2 {
      * @param ar an array of double
      * @return a newline-separated String (or null if ar is null)
      */
-    public static String toNewlineString(double ar[]) {
+    public static String toNewlineString(final double ar[]) {
         if (ar == null) 
             return null;
-        int n = ar.length;
+        final int n = ar.length;
         //estimate 12 bytes/element
-        StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
+        final StringBuilder sb = new StringBuilder(12 * Math.min(n, (Integer.MAX_VALUE-8192) / 12));
         for (int i = 0; i < n; i++) {
             sb.append(ar[i]);
             sb.append('\n');
@@ -3037,10 +3046,10 @@ public class String2 {
      * @param arrayList
      * @param ar the items to be added
      */
-    public static void add(ArrayList arrayList, Object ar[]) {
+    public static void add(final ArrayList arrayList, final Object ar[]) {
         if (arrayList == null || ar == null) 
             return;
-        int n = ar.length;
+        final int n = ar.length;
         for (int i = 0; i < n; i++)
             arrayList.add(ar[i]);
     }
@@ -3051,10 +3060,10 @@ public class String2 {
      * @param bitSet
      * @return the corresponding String (the 'true' bits, comma separated)
      */
-    public static String toString(BitSet bitSet) {
+    public static String toString(final BitSet bitSet) {
         if (bitSet == null)
             return null;
-        StringBuilder sb = new StringBuilder(1024);
+        final StringBuilder sb = new StringBuilder(1024);
 
         String separator = "";
         int i = bitSet.nextSetBit(0);
@@ -3074,15 +3083,15 @@ public class String2 {
      * @return the corresponding String, with one entry on each line 
      *    (key = value) sorted (case insensitive) by key
      */
-    public static String toString(Map map) {
+    public static String toString(final Map map) {
         if (map == null)
             return null;
-        StringBuilder sb = new StringBuilder(1024);
+        final StringBuilder sb = new StringBuilder(1024);
 
-        Set entrySet = map.entrySet();
-        Iterator it = entrySet.iterator();
+        final Set entrySet = map.entrySet();
+        final Iterator it = entrySet.iterator();
         while (it.hasNext()) {
-            Map.Entry me = (Map.Entry)it.next();
+            final Map.Entry me = (Map.Entry)it.next();
             sb.append(me.getKey().toString() + " = " + me.getValue().toString() + "\n");
         }
         return sb.toString();
@@ -3097,12 +3106,12 @@ public class String2 {
      * @param arrayList 
      * @return the desired string representation
      */
-    public static String alternateToString(ArrayList arrayList) {
+    public static String alternateToString(final ArrayList arrayList) {
         if (arrayList == null)
             return "    [null]\n";
-        int n = arrayList.size();
+        final int n = arrayList.size();
         //estimate 32 bytes/element
-        StringBuilder sb = new StringBuilder(32 * Math.min(n, (Integer.MAX_VALUE-8192) / 32));
+        final StringBuilder sb = new StringBuilder(32 * Math.min(n, (Integer.MAX_VALUE-8192) / 32));
         for (int i = 0; i < n; i += 2) {
             sb.append("    ");
             sb.append(arrayList.get(i).toString());
@@ -3122,11 +3131,11 @@ public class String2 {
      * @param arrayList 
      * @return the attributeNames in the arrayList
      */
-    public static String[] alternateGetNames(ArrayList arrayList) {
+    public static String[] alternateGetNames(final ArrayList arrayList) {
         if (arrayList == null)
             return null;
-        int n = arrayList.size();
-        String[] sar = new String[n / 2];
+        final int n = arrayList.size();
+        final String[] sar = new String[n / 2];
         int i2 = 0;
         for (int i = 0; i < n / 2; i++) {
             sar[i] = arrayList.get(i2).toString();
@@ -3144,10 +3153,10 @@ public class String2 {
      * @param attributeName
      * @return the associated value
      */
-    public static Object alternateGetValue(ArrayList arrayList, String attributeName) {
+    public static Object alternateGetValue(final ArrayList arrayList, final String attributeName) {
         if (arrayList == null)
             return null;
-        int n = arrayList.size();
+        final int n = arrayList.size();
         for (int i = 0; i < n; i += 2) {
             if (arrayList.get(i).toString().equals(attributeName))
                 return arrayList.get(i + 1);
@@ -3167,14 +3176,14 @@ public class String2 {
      * @return the previous value for the attribute (or null)
      * @throws RuntimeException of trouble (e.g., if arrayList is null)
      */
-    public static Object alternateSetValue(ArrayList arrayList, 
-            String attributeName, Object value) {
+    public static Object alternateSetValue(final ArrayList arrayList, 
+            final String attributeName, final Object value) {
         if (arrayList == null)
             throw new SimpleException(ERROR + " in String2.alternateSetValue: arrayList is null.");
-        int n = arrayList.size();
+        final int n = arrayList.size();
         for (int i = 0; i < n; i += 2) {
             if (arrayList.get(i).toString().equals(attributeName)) {
-                Object oldValue = arrayList.get(i + 1);
+                final Object oldValue = arrayList.get(i + 1);
                 if (value == null) {
                     arrayList.remove(i + 1); //order of removal is important
                     arrayList.remove(i);
@@ -3203,16 +3212,16 @@ public class String2 {
      * @param value
      * @return a nice String representation
      */
-    public static String arrayToCSSVString(Object value) {
-        if (value instanceof byte[])   return toCSSVString((byte[])value);
-        if (value instanceof char[])   return toCSSVString((char[])value);
-        if (value instanceof short[])  return toCSSVString((short[])value);
-        if (value instanceof int[])    return toCSSVString((int[])value);
-        if (value instanceof long[])   return toCSSVString((long[])value);
-        if (value instanceof float[])  return toCSSVString((float[])value);
-        if (value instanceof double[]) return toCSSVString((double[])value);
-        if (value instanceof String[]) return toCSSVString((String[])value);
-        if (value instanceof Object[]) return toCSSVString((Object[])value);
+    public static String arrayToCSSVString(final Object value) {
+        if (value instanceof byte[]   ba) return toCSSVString(ba);
+        if (value instanceof char[]   ca) return toCSSVString(ca);
+        if (value instanceof short[]  sa) return toCSSVString(sa);
+        if (value instanceof int[]    ia) return toCSSVString(ia);
+        if (value instanceof long[]   la) return toCSSVString(la);
+        if (value instanceof float[]  fa) return toCSSVString(fa);
+        if (value instanceof double[] da) return toCSSVString(da);
+        if (value instanceof String[] sa) return toCSSVString(sa);
+        if (value instanceof Object[] oa) return toCSSVString(oa);
         return value.toString();
     }
 
@@ -3223,13 +3232,13 @@ public class String2 {
      * @param s a String
      * @return the corresponding byte[] (or null if s is null)
      */
-    public static byte[] toByteArray(String s) {
+    public static byte[] toByteArray(final String s) {
         if (s == null)
             return null;
-        int sLength = s.length();
-        byte[] ba = new byte[sLength];
+        final int sLength = s.length();
+        final byte[] ba = new byte[sLength];
         for (int i = 0; i < sLength; i++) {
-            char c = s.charAt(i);  //2016-11-29 I added: char>255 -> '?', it's better than just low 8 bits
+            final char c = s.charAt(i);  //2016-11-29 I added: char>255 -> '?', it's better than just low 8 bits
             ba[i] = (byte)(c < 256? c : '?'); 
         }
         return ba;
@@ -3242,13 +3251,13 @@ public class String2 {
      * @param sb a StringBuilder
      * @return the corresponding byte[] (or null if s is null)
      */
-    public static byte[] toByteArray(StringBuilder sb) {
+    public static byte[] toByteArray(final StringBuilder sb) {
         if (sb == null)
             return null;
-        int sbLength = sb.length();
-        byte[] ba = new byte[sbLength];
+        final int sbLength = sb.length();
+        final byte[] ba = new byte[sbLength];
         for (int i = 0; i < sbLength; i++) {
-            char c = sb.charAt(i);  //2016-11-29 I added: char>255 -> 255, it's better than just low 8 bits
+            final char c = sb.charAt(i);  //2016-11-29 I added: char>255 -> 255, it's better than just low 8 bits
             ba[i] = (byte)(c < 256? c : 255); 
         }
         return ba;
@@ -3261,14 +3270,13 @@ public class String2 {
      * @return the hex dump of the bytes (or null if byteArray is null).
      *    Each line will be 71 chars long (char#71 will be newline).
      */
-    public static String hexDump(byte[] byteArray) {
-        int bal = byteArray.length;
-        StringBuilder printable = new StringBuilder(32);
+    public static String hexDump(final byte[] byteArray) {
+        final int bal = byteArray.length;
+        final StringBuilder printable = new StringBuilder(32);
         //~5 bytes/element
-        StringBuilder sb = new StringBuilder(5 * Math.min(bal, (Integer.MAX_VALUE-8192) / 5));
-        int i;
-        for (i = 0; i < bal; i++) {
-            int data = byteArray[i] & 255;
+        final StringBuilder sb = new StringBuilder(5 * Math.min(bal, (Integer.MAX_VALUE-8192) / 5));
+        for (int i = 0; i < bal; i++) {
+            final int data = byteArray[i] & 255;
             sb.append(zeroPad(Integer.toHexString(data), 2) + " ");
             printable.append(data >= 32 && data <= 126? (char)data: ' '); 
             if (i % 8 == 7) 
@@ -3299,10 +3307,10 @@ public class String2 {
      *    If startAt &gt;= ar.length, this returns -1.
      * @return the element number of ar which is equal to s (or -1 if ar is null, or s is null or not found)
      */
-    public static int indexOfObject(Object[] ar, Object o, int startAt) {
+    public static int indexOfObject(final Object[] ar, final Object o, final int startAt) {
         if (ar == null || o == null)
             return -1;
-        int n = ar.length;
+        final int n = ar.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (ar[i] != null && ar[i] == o)  
                 return i;
@@ -3310,7 +3318,7 @@ public class String2 {
     }
 
     /** A variant of indexOfObject() that uses startAt=0. */
-    public static int indexOfObject(Object[] ar, Object o) {
+    public static int indexOfObject(final Object[] ar, final Object o) {
         return indexOfObject(ar, o, 0);
     }
 
@@ -3323,7 +3331,7 @@ public class String2 {
      * @param s the String to be found
      * @return the element number of ar which is equal to s (or -1 if ar is null, or s is null or not found)
      */
-    public static int indexOf(Object[] ar, String s) {
+    public static int indexOf(final Object[] ar, final String s) {
         return indexOf(ar, s, 0);
     }
 
@@ -3338,7 +3346,7 @@ public class String2 {
      *    If startAt &gt;= ar.length, this returns -1.
      * @return the element number of ar which is equal to s (or -1 if ar is null, or s is null or not found)
      */
-    public static int indexOf(Object[] ar, String s, int startAt) {
+    public static int indexOf(final Object[] ar, final String s, final int startAt) {
         if (ar == null || s == null)
             return -1;
         int n = ar.length;
@@ -3357,10 +3365,10 @@ public class String2 {
      * @param s the String to be found
      * @return the element number of ar which is equal to s (or -1 if s is null or not found)
      */
-    public static int caseInsensitiveIndexOf(Object[] ar, String s) {
+    public static int caseInsensitiveIndexOf(final Object[] ar, String s) {
         if (ar == null || s == null)
             return -1;
-        int n = ar.length;
+        final int n = ar.length;
         s = s.toLowerCase();
         for (int i = 0; i < n; i++)
             if (ar[i] != null && s.equals(ar[i].toString().toLowerCase()))  
@@ -3376,7 +3384,7 @@ public class String2 {
      * @param s the String to be found
      * @return the element number of ar which is equal to s (or -1 if not found)
      */
-    public static int lineContaining(Object[] ar, String s) {
+    public static int lineContaining(final Object[] ar, final String s) {
         return lineContaining(ar, s, 0);
     }
 
@@ -3390,10 +3398,10 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which is equal to s (or -1 if not found)
      */
-    public static int lineContaining(Object[] ar, String s, int startAt) {
+    public static int lineContaining(final Object[] ar, final String s, final int startAt) {
         if (ar == null || s == null)
             return -1;
-        int n = ar.length;
+        final int n = ar.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (ar[i] != null && ar[i].toString().indexOf(s) >= 0) 
                 return i;
@@ -3411,10 +3419,10 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which is equal to s (or -1 if not found)
      */
-    public static int lineContainingIgnoreCase(Object[] ar, String s, int startAt) {
+    public static int lineContainingIgnoreCase(final Object[] ar, String s, final int startAt) {
         if (ar == null || s == null)
             return -1;
-        int n = ar.length;
+        final int n = ar.length;
         s = s.toLowerCase();
         for (int i = Math.max(0, startAt); i < n; i++)
             if (ar[i] != null && ar[i].toString().toLowerCase().indexOf(s) >= 0) 
@@ -3430,7 +3438,7 @@ public class String2 {
      * @param s the String to be found
      * @return the first element ar (as a String) which starts with s (or null if not found)
      */
-    public static String stringStartsWith(Object[] ar, String s) {
+    public static String stringStartsWith(final Object[] ar, final String s) {
         int i = lineStartsWith(ar, s, 0);
         return i < 0? null : ar[i].toString();
     }
@@ -3443,7 +3451,7 @@ public class String2 {
      * @param s the String to be found
      * @return the element number of ar which starts with s (or -1 if not found)
      */
-    public static int lineStartsWith(Object[] ar, String s) {
+    public static int lineStartsWith(final Object[] ar, final String s) {
         return lineStartsWith(ar, s, 0);
     }
 
@@ -3457,10 +3465,10 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which starts with s (or -1 if not found)
      */
-    public static int lineStartsWith(Object[] ar, String s, int startAt) {
+    public static int lineStartsWith(final Object[] ar, final String s, final int startAt) {
         if (ar == null || s == null)
             return -1;
-        int n = ar.length;
+        final int n = ar.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (ar[i] != null && ar[i].toString().startsWith(s)) 
                 return i;
@@ -3487,11 +3495,11 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of ar which starts with s (or -1 if not found)
      */
-    public static int lineStartsWithIgnoreCase(Object[] ar, String s, int startAt) {
+    public static int lineStartsWithIgnoreCase(final Object[] ar, String s, final int startAt) {
         if (ar == null || s == null)
             return -1;
         s = s.toLowerCase();
-        int n = ar.length;
+        final int n = ar.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (ar[i] != null && ar[i].toString().toLowerCase().startsWith(s)) 
                 return i;
@@ -3508,10 +3516,10 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of prefixes which longerString starts with (or -1 if not found)
      */
-    public static int whichPrefix(String[] prefixes, String longerString, int startAt) {
+    public static int whichPrefix(final String[] prefixes, final String longerString, final int startAt) {
         if (prefixes == null || longerString == null || longerString.length() == 0)
             return -1;
-        int n = prefixes.length;
+        final int n = prefixes.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (prefixes[i] != null && longerString.startsWith(prefixes[i])) 
                 return i;
@@ -3527,8 +3535,8 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the prefixes[i] which longerString starts with (or null if not found)
      */
-    public static String findPrefix(String[] prefixes, String longerString, int startAt) {
-        int i = whichPrefix(prefixes, longerString, startAt);
+    public static String findPrefix(final String[] prefixes, final String longerString, final int startAt) {
+        final int i = whichPrefix(prefixes, longerString, startAt);
         return i < 0? null : prefixes[i];
     }
 
@@ -3542,10 +3550,10 @@ public class String2 {
      *    If startAt &lt; 0, this starts with startAt = 0.
      * @return the element number of suffixes which longerString ends with (or -1 if not found)
      */
-    public static int whichSuffix(String[] suffixes, String longerString, int startAt) {
+    public static int whichSuffix(final String[] suffixes, final String longerString, final int startAt) {
         if (suffixes == null || longerString == null || longerString.length() == 0)
             return -1;
-        int n = suffixes.length;
+        final int n = suffixes.length;
         for (int i = Math.max(0, startAt); i < n; i++)
             if (suffixes[i] != null && longerString.endsWith(suffixes[i])) 
                 return i;
@@ -3830,9 +3838,28 @@ and zoom and pan with controls in
     public static ArrayList<String> splitToArrayList(String s, char separator, boolean trim) {
         if (s == null) 
             return null;
+        ArrayList<String> al = new ArrayList(16);
+        return splitToArrayList(s, separator, trim, al);
+    }
+
+    /**
+     * This splits the string at the specified character.
+     * A missing final string is treated as "" (not discarded as with String.split).
+     * 
+     * @param s a string with 0 or more separator chatacters
+     * @param separator
+     * @param trim  trim the substrings, or don't
+     * @param al an ArrayList<String> to receive the results. It is initially clear()'d.
+     * @return al for convenience. The strings are not canonical.
+     *   s=null returns al with 0 values.
+     *   s="" returns ArrayList with one value: "".
+     */
+    public static ArrayList<String> splitToArrayList(String s, char separator, boolean trim, ArrayList<String> al) {
 
         //go through the string looking for separators
-        ArrayList al = new ArrayList();
+        al.clear();
+        if (s == null)
+            return al;
         int sLength = s.length();
         int start = 0;
         //log("split line=" + annotatedString(s));
@@ -4265,7 +4292,7 @@ and zoom and pan with controls in
 
         //try to parse regular int        
         try {
-            return new Integer(Integer.parseInt(s));
+            return Integer.valueOf(s);
         } catch (Exception e) {      
             //fall through
         }
@@ -4274,7 +4301,7 @@ and zoom and pan with controls in
         try {
             double d = Double.parseDouble(s);
             return !Double.isFinite(d) || d > Integer.MAX_VALUE + 0.4999999999 || d <= Integer.MIN_VALUE - 0.4999999999? 
-                null : new Integer((int)Math.round(d)); //safe since checked for larger values above
+                null : Integer.valueOf((int)Math.round(d)); //safe since checked for larger values above
         } catch (Exception e) {
             return null;
         }
@@ -4301,20 +4328,23 @@ and zoom and pan with controls in
         if (s.length() == 0)
             return Double.NaN;
         char ch = s.charAt(0);
-        if ((ch < '0' || ch > '9') && ch != '-' && ch != '+' && ch != '.')
-            return Double.NaN;
+        if ((ch >= '0' && ch <= '9') || ch == '-' || ch == '+' || ch == '.') {
+            //it's probably a number
+            try {
+                if (s.startsWith("0x") || s.startsWith("0X")) 
+                    return Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int
 
-        try {
-            if (s.startsWith("0x") || s.startsWith("0X")) 
-                return Long.parseLong(s.substring(2), 16); //for >7fffffff, returns signed int
-
-            //2011-02-09 Bob Simons added to avoid Java hang bug.
-            //  But now, latest version of Java is fixed.
-            //if (isDoubleTrouble(s)) return 0;  
-            
-            double d = Double.parseDouble(s);
-            return Double.isFinite(d)? d : Double.NaN;
-        } catch (Exception e) {
+                //2011-02-09 Bob Simons added to avoid Java hang bug.
+                //  But now, latest version of Java is fixed.
+                //if (isDoubleTrouble(s)) return 0;  
+                
+                double d = Double.parseDouble(s);
+                return Double.isFinite(d)? d : Double.NaN;
+            } catch (Exception e) {
+                return Double.NaN;
+            }
+        } else {
+            //it isn't a number
             return Double.NaN;
         }
     }
@@ -4500,10 +4530,10 @@ and zoom and pan with controls in
 
         try {
             if (s.startsWith("0x") || s.startsWith("0X"))
-                return new Long(Long.parseLong(s.substring(2), 16));
+                return Long.valueOf(s.substring(2), 16);
             BigInteger bi = new BigDecimal(s).round(MathContext.DECIMAL128).toBigInteger();
             return bi.compareTo(Math2.LONG_MIN_VALUE) < 0 || bi.compareTo(Math2.LONG_MAX_VALUE) >= 0?
-                null : new Long(bi.longValueExact()); //should succeed, but throws exception if failure
+                null : Long.valueOf(bi.longValueExact()); //should succeed, but throws exception if failure
         } catch (Exception e) {
             return null;
         }
@@ -4851,7 +4881,7 @@ and zoom and pan with controls in
      * @return a string with the sorted (ignoreCase) keys and their values ("key1: value1\nkey2: value2\n")
      */
     public static String getKeysAndValuesString(Map map) {
-        ArrayList al = new ArrayList();
+        ArrayList<String> al = new ArrayList();
 
         //synchronize so protected from changes in other threads
         Iterator it = map.keySet().iterator();
@@ -4860,7 +4890,7 @@ and zoom and pan with controls in
             al.add(key.toString() + ": " + map.get(key).toString());
         }
         Collections.sort(al, STRING_COMPARATOR_IGNORE_CASE);
-        return toNewlineString(al.toArray());
+        return toNewlineString(al.toArray(new String[0]));
     }
 
     /**
@@ -6041,7 +6071,8 @@ and zoom and pan with controls in
             return EMPTY_STRING;
         //generally, it slows things down to see if same as last canonical String.
         Map<String, WeakReference<String>> tCanonicalMap = canonicalMap[
-            (s.charAt(s.length() / 2) + s.length()) % nCanonicalMaps]; //this is calculated quickly and leads to pretty good dispersion
+            Math.abs(s.hashCode() ^ s.length()) % nCanonicalMaps];  //^length makes it different, so not lots of collisions within tCanonicalMap[i]
+            //see stats at end of Table.testBigAscii();
        
         //faster and logically better to use synchronized(canonicalMap) once 
         //  (and use a few times in consistent state)
@@ -6085,7 +6116,8 @@ and zoom and pan with controls in
         if (car.length == 0)
             return STRING_HOLDER_ZERO;
         Map<StringHolder, WeakReference<StringHolder>> tCanonicalStringHolderMap = canonicalStringHolderMap[
-            (car[car.length / 2] + car.length) % nCanonicalMaps]; //this is calculated quickly and leads to pretty good dispersion
+            Math.abs(sh.hashCode() ^ sh.length()) % nCanonicalMaps];  //^length makes it different, so not lots of collisions within tCanonicalStringHolderMap[i]
+            //see stats at end of Table.testBigAscii();
        
         //faster and logically better to use synchronized(canonicalStringHolderMap) once 
         //  (and use a few times in consistent state)
@@ -6141,7 +6173,7 @@ and zoom and pan with controls in
         for (int i = 0; i < canonicalMap.length; i++) {
             int tSize = canonicalMap[i].size();
             sum += tSize;
-            sb.append((i==0? "" : " + ") + tSize);
+            sb.append((i==0? "" : " + ") + (i % 16 == 0? "\n" : "") + tSize);
         }
         sb.append(" = " + sum + 
             "\ncanonicalStringHolder map sizes: ");
@@ -6149,7 +6181,7 @@ and zoom and pan with controls in
         for (int i = 0; i < canonicalStringHolderMap.length; i++) {
             int tSize = canonicalStringHolderMap[i].size();
             sum += tSize;
-            sb.append((i==0? "" : " + ") + tSize);
+            sb.append((i==0? "" : " + ") + (i % 16 == 0? "\n" : "") + tSize);
         }
         sb.append(" = " + sum);
         return sb.toString();

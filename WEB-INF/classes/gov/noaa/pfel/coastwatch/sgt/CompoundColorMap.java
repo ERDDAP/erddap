@@ -689,8 +689,8 @@ public class CompoundColorMap extends ColorMap {
 
             //make a list of desired levels; add the first level
             double range = maxData - minData;
-            ArrayList levels = new ArrayList();
-            levels.add(new Double(minData));
+            DoubleArray levels = new DoubleArray(16, false);
+            levels.add(minData);
 
             //scale=Log 
             if (scale.equals("Log")) {
@@ -704,22 +704,22 @@ public class CompoundColorMap extends ColorMap {
 
                 //add toAdd*EveryDecade
                 for (int which = 0; which < toAdd.length; which++) {
-                    //String2.log("makeCPT which=" + which + " levels.size()=" + levels.size() + " " + String2.toCSSVString(levels.toArray()));
+                    //String2.log("makeCPT which=" + which + " levels.size()=" + levels.size() + " " + levels.toString());
                     if (levels.size() < nSections) { //if fewer than 8 sections, poor sampling of colors
                         for (int i = minExponent; i <= maxExponent; i++) {
                             double d = toAdd[which] * Math2.ten(i);
                             if (d > minData && d < maxData && 
                                 !Math2.almostEqual(9, d, minData) && !Math2.almostEqual(9, d, maxData)) {
-                                levels.add(new Double(d));
+                                levels.add(d);
                             }
                         }
                     }
                 }
                 if (reallyVerbose) 
-                    String2.log("CompoundColorMap.makeCPT levels=" + String2.toCSSVString(levels.toArray()));
+                    String2.log("CompoundColorMap.makeCPT levels=" + levels.toString());
 
                 //sort the values
-                Collections.sort(levels);
+                levels.sort();
 
             //default: scale="Linear"
             } else { 
@@ -747,24 +747,24 @@ public class CompoundColorMap extends ColorMap {
 
                 //generate the levels
                 for (int i = 1; i < nSections; i++)
-                    levels.add(new Double(minData + i * range / nSections));
+                    levels.add(minData + i * range / nSections);
 
             }
 
             /*//NO LONGER AN OPTION: scale=JumpAtEnd  0 1 2 3 4 5 10
             } else if (scale.equals("JumpAtEnd")) {
                 for (int i = 1; i <= 5; i++)
-                    levels.add(new Double(minData + i * range / 10));
+                    levels.add(minData + i * range / 10);
 
             //NO LONGER AN OPTION: scale=JumpAtBothEnds 0 3 4 5 6 7 10
             } else if (scale.equals("JumpAtBothEnds")) { 
                 for (int i = 3; i <= 7; i++)
-                    levels.add(new Double(minData +  i * range / 10));
+                    levels.add(minData +  i * range / 10);
             */
 
             //add the last level
-            levels.add(new Double(maxData)); 
-            double levelsArray[] = String2.toDoubleArray(levels);
+            levels.add(maxData); 
+            int nLevels = levels.size();
                 
             //make the cpt file
             //each line: low r g b high r g b
@@ -775,29 +775,29 @@ public class CompoundColorMap extends ColorMap {
             StringBuilder results = new StringBuilder();
             Color backColor = null;
             Color foreColor = null;
-            for (int i = 1; i < levelsArray.length; i++) { 
+            for (int i = 1; i < nLevels; i++) { 
                 Color lowColor, highColor;
                 if (continuous) {
                     //0.99999 gets color right before, in case colors sections are discontinuous (e.g., Topography.cpt)
-                    lowColor  = colorMap.getColor((i - 1) * nPieces / (levelsArray.length - 1));
-                    highColor = colorMap.getColor(0.99999 * i * nPieces / (levelsArray.length - 1));
+                    lowColor  = colorMap.getColor((i - 1) * nPieces / (nLevels - 1));
+                    highColor = colorMap.getColor(0.99999 * i * nPieces / (nLevels - 1));
                 } else {
                     //get color from center of its range
-                    lowColor  = colorMap.getColor((i - 0.5) * nPieces / (levelsArray.length - 1));
+                    lowColor  = colorMap.getColor((i - 0.5) * nPieces / (nLevels - 1));
                     highColor = lowColor;
                 }
                 results.append(
-                    levelsArray[i - 1] + "\t" +
+                    levels.get(i - 1) + "\t" +
                     lowColor.getRed() + "\t" +
                     lowColor.getGreen() + "\t" +
                     lowColor.getBlue() + "\t" +
-                    levelsArray[i] + "\t" +
+                    levels.get(i) + "\t" +
                     highColor.getRed() + "\t" +
                     highColor.getGreen() + "\t" +
                     highColor.getBlue() + "\n");
                 if (i == 1)
                     backColor = lowColor;
-                if (i == levelsArray.length - 1)
+                if (i == nLevels - 1)
                     foreColor = highColor;
             }
 

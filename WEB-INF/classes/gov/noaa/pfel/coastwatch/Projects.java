@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3389,8 +3390,8 @@ public static void testJanino() throws Exception {
             );
             Integer res = (Integer) ee.evaluate(
                 new Object[] {          // parameterValues
-                    new Integer(10),
-                    new Integer(11),
+                    Integer.valueOf(10),
+                    Integer.valueOf(11),
                 }
             );
             System.out.println("res = " + res);
@@ -4482,7 +4483,7 @@ String2.log("Projects.touchUrls is finished.");
         Test.ensureEqual(fishnames.length, nFish, "fishnames.length");
 
         //fishOrder only used for documentation
-        ArrayList list = new ArrayList();
+        ArrayList<PrimitiveArray> list = new ArrayList();
         list.add(new StringArray(fishnames));
         int fishOrder[] = PrimitiveArray.rank(list, new int[]{0}, new boolean[]{true});
         for (int f = 0; f < nFish; f++)
@@ -4765,7 +4766,7 @@ String2.log("Projects.touchUrls is finished.");
         Test.ensureEqual(fishnames.length, nFish, "fishnames.length");
 
         //fishOrder only used for documentation
-        ArrayList list = new ArrayList();
+        ArrayList<PrimitiveArray> list = new ArrayList();
         list.add(new StringArray(fishnames));
         int fishOrder[] = PrimitiveArray.rank(list, new int[]{0}, new boolean[]{true});
         //for (int f = 0; f < nFish; f++)
@@ -7073,9 +7074,8 @@ project)
                     if (verbose) String2.log("  for var=" + tName + ": " + t.toString());
                     continue;
                 }
-                if (baseType instanceof DGrid) {
+                if (baseType instanceof DGrid dGrid) {
                     //dGrid has main dArray + dimensions
-                    DGrid dGrid = (DGrid)baseType;
                     int nEl = dGrid.elementCount(true);
                     for (int el = 1; el < nEl; el++) { //1..
                         BaseType bt2 = dGrid.getVar(el);
@@ -7086,9 +7086,8 @@ project)
                             " has unexpected baseType=" + bt2.getClass().getName());
                     }
                     break;
-                } else if (baseType instanceof DArray) {
+                } else if (baseType instanceof DArray dArray) {
                     //dArray is usually 1 dim, but may be multidimensional
-                    DArray dArray = (DArray)baseType;
                     int nDim = dArray.numDimensions();
                     if (nDim == 0) 
                         throw new RuntimeException(beginError + 
@@ -7820,7 +7819,7 @@ towTypesDescription);
             "}\n";
         String2.log(lines.substring(0, Math.min(lines.length(), 1500)));
         Table table = new Table();
-        table.readJson(inFile, lines);
+        table.readJson(inFile, new BufferedReader(new StringReader(lines)));
         String2.log("Before adjustments:\n" + String2.annotatedString(table.dataToString(5)));  
         int nRows = table.nRows();
         int nErrors = 0;
@@ -9940,9 +9939,9 @@ towTypesDescription);
         StringArray names = (StringArray)table.getColumn(1);
         StringBuilder sb     = new StringBuilder();
         StringBuilder errors = new StringBuilder();
-        HashSet ignoredTags = new HashSet();
+        HashSet<String> ignoredTags = new HashSet();
         int nFiles = dirs.size();
-        HashSet bucketsAlreadyDone = new HashSet();
+        HashSet<String> bucketsAlreadyDone = new HashSet();
         String skipBuckets[] = new String[]{
             //skip because too many files in initial directory
             "aws-earth-mo-atmospheric-ukv-prd",
@@ -9973,7 +9972,7 @@ towTypesDescription);
             String name = null, deprecated = null, description = null, documentation = null, contact = null,
                 managedBy = null, updateFrequency = null, license = null,
                 name2 = null, bucket = null, region = null;
-            HashSet keywords = new HashSet();
+            HashSet<String> keywords = new HashSet();
             EDD.chopUpCsvAndAdd("AWS, bucket, data, file, lastModified, names, S3", 
                 keywords);
             int line = 0; //next line to be read

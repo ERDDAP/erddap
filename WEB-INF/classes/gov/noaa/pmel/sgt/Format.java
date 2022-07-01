@@ -297,7 +297,7 @@ public class Format {
 	  else
 	    parse_state = 1;
 	  }
-	else throw new java.lang.IllegalArgumentException();
+	else throw new IllegalArgumentException();
 	}
       else
 	pre = pre + s.charAt(i);
@@ -485,7 +485,7 @@ public class Format {
     	}
     else if (fmt == 'e' || fmt == 'E' || fmt == 'g' || fmt == 'G')
       r = exp_format(x);
-    else throw new java.lang.IllegalArgumentException();
+    else throw new IllegalArgumentException();
     return pad(sign(s, r));
   }
   /** 
@@ -506,7 +506,7 @@ public class Format {
       r = convert(x, 4, 15, "0123456789abcdef");
     else if (fmt == 'X')
       r = convert(x, 4, 15, "0123456789ABCDEF");
-    else throw new java.lang.IllegalArgumentException();
+    else throw new IllegalArgumentException();
          
     return pad(sign(s, r));
   }
@@ -516,7 +516,7 @@ public class Format {
    * @return the formatted string 
    */
   public String form(char c) {
-    if (fmt != 'c')    throw new java.lang.IllegalArgumentException();
+    if (fmt != 'c')    throw new IllegalArgumentException();
 
     String r = "" + c;
     return pad(r);
@@ -527,7 +527,7 @@ public class Format {
    * @return the formatted string 
    */
   public String form(String s) {
-    if (fmt != 's')    throw new java.lang.IllegalArgumentException();
+    if (fmt != 's')    throw new IllegalArgumentException();
     if (precision >= 0) s = s.substring(0, precision);
     return pad(s);
   }

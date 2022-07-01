@@ -167,7 +167,7 @@ public class SgtGraph  {
         String imageDir, String logoImageFile,
         double minX, double maxX, boolean xAscending, boolean xIsTimeAxis, boolean xIsLogAxis,
         double minY, double maxY, boolean yAscending, boolean yIsTimeAxis, boolean yIsLogAxis,
-        ArrayList graphDataLayers,
+        ArrayList<GraphDataLayer> graphDataLayers,
         Graphics2D g2,
         int baseULXPixel, int baseULYPixel,
         int imageWidthPixels, int imageHeightPixels,
@@ -228,7 +228,7 @@ public class SgtGraph  {
             boolean useTableData[] = new boolean[graphDataLayers.size()];
             boolean someUseGridData = false;
             for (int i = 0; i < graphDataLayers.size(); i++) {
-                GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(i);
+                GraphDataLayer gdl = graphDataLayers.get(i);
                 if (reallyVerbose) String2.log("  graphDataLayer" + i + "=" + gdl);
                 tables[i] = gdl.table;
                 grids[i] = gdl.grid1;
@@ -246,7 +246,7 @@ public class SgtGraph  {
                 double tMinX = Double.MAX_VALUE;
                 double tMaxX = -Double.MAX_VALUE;
                 for (int i = 0; i < tables.length; i++) {
-                    GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(i);
+                    GraphDataLayer gdl = graphDataLayers.get(i);
                     double xStats[] = useTableData[i]?
                         tables[i].getColumn(gdl.v1).calculateStats() :
                         (new DoubleArray(grids[i].lon)).calculateStats();
@@ -311,7 +311,7 @@ public class SgtGraph  {
             double minVData = Double.MAX_VALUE;
             double maxVData = -Double.MAX_VALUE;
             for (int spli = 0; spli < graphDataLayers.size(); spli++) {
-                GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(spli);
+                GraphDataLayer gdl = graphDataLayers.get(spli);
                 if (gdl.draw == GraphDataLayer.DRAW_STICKS) {
                     sticksGraph = true;
                     sticksGraphNRows = tables[spli].nRows();
@@ -336,7 +336,7 @@ public class SgtGraph  {
                 double tMinY = Double.MAX_VALUE;
                 double tMaxY = -Double.MAX_VALUE;
                 for (int i = 0; i < tables.length; i++) {
-                    GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(i);
+                    GraphDataLayer gdl = graphDataLayers.get(i);
                     double yStats[] = useTableData[i]?
                         tables[i].getColumn(gdl.v2).calculateStats() :
                         (new DoubleArray(grids[i].lat)).calculateStats();
@@ -528,7 +528,7 @@ public class SgtGraph  {
                 double legendLineCount = 
                     String2.isSomething(legendTitle1 + legendTitle2)? 1 : -1; //for legend title   //???needs adjustment for larger font size
                 for (int i = 0; i < graphDataLayers.size(); i++) 
-                    legendLineCount += ((GraphDataLayer)graphDataLayers.get(i)).legendLineCount(maxCharsPerLine);
+                    legendLineCount += graphDataLayers.get(i).legendLineCount(maxCharsPerLine);
                 //String2.log("legendLineCount=" + legendLineCount);
                 legendBoxWidth = imageWidthPixels;  
                 legendBoxHeight = (int)(legendLineCount * labelHeightPixels) + //safe
@@ -759,7 +759,7 @@ public class SgtGraph  {
                 long gdlTime = System.currentTimeMillis();
              
                 //prepare to plot the data              
-                GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(gdli);              
+                GraphDataLayer gdl = graphDataLayers.get(gdli);              
                 int tMarkerSize = rint(gdl.markerSize * fontScale); 
                 boolean drawMarkers = gdl.draw == GraphDataLayer.DRAW_MARKERS;
                 boolean drawLines = gdl.draw == GraphDataLayer.DRAW_LINES;
@@ -1794,7 +1794,7 @@ public class SgtGraph  {
             GraphDataLayer.MARKER_TYPE_PLUS, GraphDataLayer.MARKER_SIZE_SMALL,
             0, //vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-        ArrayList graphDataLayers1 = new ArrayList();
+        ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
         graphDataLayers1.add(graphDataLayer);
 
         //graph 1: plus 10 random points of each marker type
@@ -1844,7 +1844,7 @@ public class SgtGraph  {
             GraphDataLayer.MARKER_TYPE_FILLED_CIRCLE, GraphDataLayer.MARKER_SIZE_MEDIUM,
             0, //vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-        ArrayList graphDataLayers2 = new ArrayList();
+        ArrayList<GraphDataLayer> graphDataLayers2 = new ArrayList();
         graphDataLayers2.add(graphDataLayer);
 
         //graph 3: make a graphDataLayer with data for a sticks graph
@@ -1930,7 +1930,7 @@ public class SgtGraph  {
             GraphDataLayer.MARKER_TYPE_FILLED_SQUARE, GraphDataLayer.MARKER_SIZE_SMALL,
             0, //vectorStandard
             GraphDataLayer.REGRESS_NONE);
-        ArrayList graphDataLayers5 = new ArrayList();
+        ArrayList<GraphDataLayer> graphDataLayers5 = new ArrayList();
         graphDataLayers5.add(graphDataLayer);
 
         //graph 6: make a graphDataLayer with data for a x=data, y=time line
@@ -2183,7 +2183,7 @@ public class SgtGraph  {
             GraphDataLayer.MARKER_TYPE_PLUS, GraphDataLayer.MARKER_SIZE_SMALL,
             0, //vectorStandard
             GraphDataLayer.REGRESS_MEAN);
-        ArrayList graphDataLayers1 = new ArrayList();
+        ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
         graphDataLayers1.add(graphDataLayer);
 
         //graph 1: plus 100 random points of each marker type
@@ -2313,7 +2313,7 @@ public class SgtGraph  {
             GraphDataLayer.MARKER_TYPE_PLUS, GraphDataLayer.MARKER_SIZE_SMALL,
             0, //vectorStandard
             GraphDataLayer.REGRESS_NONE);
-        ArrayList graphDataLayers1 = new ArrayList();
+        ArrayList<GraphDataLayer> graphDataLayers1 = new ArrayList();
         graphDataLayers1.add(graphDataLayer);
 
         //draw the graph with data

@@ -119,8 +119,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 } else {
                     if (firstChild == null) {
                         EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                        if (edd instanceof EDDGrid) {
-                            firstChild = (EDDGrid)edd;
+                        if (edd instanceof EDDGrid eddGrid) {
+                            firstChild = eddGrid;
                         } else {
                             throw new RuntimeException("Datasets.xml error: " +
                                 "The dataset defined in an " +

@@ -23,7 +23,7 @@ package dods.servlet;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.*;
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 import dods.dap.*;
 import dods.util.*;

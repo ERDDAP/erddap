@@ -1497,7 +1497,7 @@ public class SSR {
             .s3ClientConfiguration(b -> b.region(Region.of(region))
                                        //.credentialsProvider(credentialProvider)  //handled by default credentials provider
                                          .targetThroughputInGbps(20.0)  //??? make a separate setting?
-                                         .minimumPartSizeInBytes(new Long(8 * Math2.BytesPerMB)))
+                                         .minimumPartSizeInBytes(Long.valueOf(8 * Math2.BytesPerMB)))
             .build();
     }
 
@@ -1775,8 +1775,7 @@ public class SSR {
 
         //The automatic redirect handling won't handle http to https.
         //So if error is 301, 302, 303 and there is a "location" header field: redirect
-        if (!touchMode && conn instanceof HttpURLConnection) {
-            HttpURLConnection httpUrlConn = (HttpURLConnection)conn;
+        if (!touchMode && conn instanceof HttpURLConnection httpUrlConn) {
             int code = httpUrlConn.getResponseCode();
             if (code != 200) 
                 String2.log(
@@ -1866,9 +1865,8 @@ public class SSR {
 
             return is;
         } catch (Exception e) {
-            if (con instanceof HttpURLConnection) {
+            if (con instanceof HttpURLConnection httpUrlCon) {
                 //try to read errorStream and append to e.
-                HttpURLConnection httpUrlCon = (HttpURLConnection)con;
                 int code = httpUrlCon.getResponseCode();
                 if (code != 200) {
                     String msg = null;

@@ -177,7 +177,7 @@ public class FilledMarkerRenderer extends CartesianRenderer {
         DoubleObject doy = new DoubleObject(0);
         IntArray markerXs = new IntArray();
         IntArray markerYs = new IntArray();
-        ArrayList markerInteriorColors = new ArrayList();
+        ArrayList<Color> markerInteriorColors = new ArrayList();
         g2.setColor(lineColor); //important in case never needs to be set below
         for (int row = 0; row < nRows; row++) {
             double x = xPA.getDouble(row);
@@ -243,13 +243,13 @@ public class FilledMarkerRenderer extends CartesianRenderer {
                     //count++;
                     SgtGraph.drawMarker(g2, markerType, markerSize, 
                         xarray[i], yarray[i],
-                        (Color)markerInteriorColors.get(i), lineColor);
+                        markerInteriorColors.get(i), lineColor);
                 }
             }
             //always draw last marker
             SgtGraph.drawMarker(g2, markerType, markerSize, 
                 xarray[nMarkerXs1], yarray[nMarkerXs1],
-                (Color)markerInteriorColors.get(nMarkerXs1), lineColor);
+                markerInteriorColors.get(nMarkerXs1), lineColor);
             if (reallyVerbose) 
                 String2.log("  draw markers time=" + 
                     (System.currentTimeMillis() - markerTime) + "ms");

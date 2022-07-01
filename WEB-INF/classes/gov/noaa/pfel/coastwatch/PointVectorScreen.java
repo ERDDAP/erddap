@@ -27,8 +27,8 @@ import java.awt.Color;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This handles the user interface for the point vector screen (the part of the form in 

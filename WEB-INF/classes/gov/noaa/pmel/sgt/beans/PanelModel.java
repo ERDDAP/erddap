@@ -241,7 +241,7 @@ public class PanelModel implements Serializable, ChangeListener, ComponentListen
   public void setDpi(float dpi) {
     float saved = this.dpi;
     this.dpi = dpi;
-    if(saved != this.dpi) firePropertyChange("dpi", new Float(saved), new Float(this.dpi));
+    if(saved != this.dpi) firePropertyChange("dpi", Float.valueOf(saved), Float.valueOf(this.dpi));
   }
   /**
    * <code>ChangeListner</code> callback.
@@ -447,8 +447,8 @@ public class PanelModel implements Serializable, ChangeListener, ComponentListen
     boolean saved = this.printBorders;
     this.printBorders = printBorders;
     if(saved != this.printBorders)
-      firePropertyChange("printBorders", new Boolean(saved),
-                         new Boolean(this.printBorders));
+      firePropertyChange("printBorders", Boolean.valueOf(saved),
+                         Boolean.valueOf(this.printBorders));
   }
   /**
    * Set the print  on white background property.  Default = true.
@@ -458,8 +458,8 @@ public class PanelModel implements Serializable, ChangeListener, ComponentListen
     boolean saved = this.printWhitePage;
     this.printWhitePage = printWhitePage;
     if(saved != this.printWhitePage)
-      firePropertyChange("printWhitePage", new Boolean(saved),
-                         new Boolean(this.printWhitePage));
+      firePropertyChange("printWhitePage", Boolean.valueOf(saved),
+                         Boolean.valueOf(this.printWhitePage));
   }
   public void propertyChange(PropertyChangeEvent evt) {
     if(Page.DEBUG) System.out.println("PanelModel.propertyChange("+evt.getPropertyName()+")");

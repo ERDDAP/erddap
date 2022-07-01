@@ -485,7 +485,7 @@ public class Format implements Cloneable {
             else {
                 if (canEncode != null && encoder != null) {
                     try {
-                        Boolean val = (Boolean) canEncode.invoke(encoder, new Object[]{new Character(ch)});
+                        Boolean val = (Boolean) canEncode.invoke(encoder, new Object[]{Character.valueOf(ch)});
                         return !val.booleanValue();
                     }
                     catch (Exception ignored) {

@@ -2578,9 +2578,8 @@ public class Calendar2 {
     public static DoubleArray unitsSinceToEpochSeconds(double baseSeconds, 
         double factorToGetSeconds, PrimitiveArray sourceUnitsSince)  {
         int n = sourceUnitsSince.size();
-        DoubleArray epSec = sourceUnitsSince instanceof DoubleArray? 
-            (DoubleArray)sourceUnitsSince : 
-            new DoubleArray(n, true); //active
+        DoubleArray epSec = sourceUnitsSince instanceof DoubleArray da? 
+            da : new DoubleArray(n, true); //active
         for (int i = 0; i < n; i++) 
             epSec.set(i, 
                 unitsSinceToEpochSeconds(baseSeconds, factorToGetSeconds, sourceUnitsSince.getDouble(i)));

@@ -73,8 +73,8 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
@@ -872,8 +872,8 @@ public abstract class EDDGrid extends EDD {
         (new StringArray(axisVariableSourceNames()     )).ensureNoDuplicates("Duplicate axisVariableSourceNames: ");
         (new StringArray(axisVariableDestinationNames())).ensureNoDuplicates("Duplicate axisVariableDestinationNames: ");
             
-        HashSet sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
-        HashSet destNamesHS   = new HashSet(2 * (axisVariables.length + dataVariables.length));        
+        HashSet<String> sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
+        HashSet<String> destNamesHS   = new HashSet(2 * (axisVariables.length + dataVariables.length));        
         for (int v = 0; v < axisVariables.length; v++) {
             Test.ensureTrue(axisVariables[v] != null, 
                 errorInMethod + "axisVariable[" + v + "] is null.");
@@ -4868,8 +4868,8 @@ Attributes {
             //even nc3 files write char and String attributes as UTF-8
 
             //write the attribute
-            if (pa instanceof StringArray) {
-                String s = String2.toSVString(((StringArray)pa).toArray(), "\n", false); //newline separated
+            if (pa instanceof StringArray sa) {
+                String s = String2.toSVString(sa.toArray(), "\n", false); //newline separated
                 writer.write("value=\"" + XML.encodeAsXML(s) + "\" />\n");
             } else {
                 String s = String2.replaceAll(pa.toString(), ",", ""); //comma-space -> space separated
@@ -6295,7 +6295,7 @@ Attributes {
             Grid grid = null;
             Table table = null;
             GraphDataLayer graphDataLayer = null;
-            ArrayList graphDataLayers = new ArrayList();
+            ArrayList<GraphDataLayer> graphDataLayers = new ArrayList();
             String cptFullName = null;
 
             if (drawVectors) {
@@ -7965,7 +7965,7 @@ Attributes {
         try {
             writer.write("IGOR" + Table.IgorEndOfLine);
 
-            HashSet colNamesHashset = new HashSet();
+            HashSet<String> colNamesHashset = new HashSet();
             StringBuilder setScaleForDims = new StringBuilder();
             StringArray avUNames = new StringArray();
             for (int av = 0; av < nAV; av++) {
@@ -11659,7 +11659,7 @@ Attributes {
         //close the outputStream  
         try {
             OutputStream out = outputStreamSource.outputStream("");
-            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
             out.close(); 
         } catch (Exception e) {}
     }
@@ -14760,7 +14760,7 @@ writer.write(
                 throw new SimpleException(EDStatic.simpleBilingual(language, EDStatic.queryErrorAr) + 
                     "datasetID=" + datasetID + " has no time variable.");
             PrimitiveArray pa = eddGrid.axisVariables[eddGrid.timeIndex].destinationValues();
-            times = pa instanceof DoubleArray? (DoubleArray)pa : //should be
+            times = pa instanceof DoubleArray da? da : //should be
                 new DoubleArray(pa);
         }
         return times.findTimeGaps();
@@ -14775,7 +14775,7 @@ writer.write(
                    "nGaps=0\n";
         
         PrimitiveArray pa = axisVariables[timeIndex].destinationValues();
-        DoubleArray times = pa instanceof DoubleArray? (DoubleArray)pa : //should be
+        DoubleArray times = pa instanceof DoubleArray da? da : //should be
             new DoubleArray(pa);
         return times.findTimeGaps();
     }

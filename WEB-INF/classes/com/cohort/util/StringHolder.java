@@ -16,13 +16,14 @@ import java.util.Arrays;
 public class StringHolder {
 
     private char[] car; //may be null
+    private int hashCode = -1;  //this uses extra memory but saves considerable time
 
 
     /**
      * A constructor.
      * @param string can be null
      */
-    public StringHolder(String string) {
+    public StringHolder(final String string) {
         car = string == null? null : string.toCharArray();
     }
 
@@ -30,14 +31,14 @@ public class StringHolder {
      * A constructor.
      * @param tcar can be null
      */
-    public StringHolder(char tcar[]) {
+    public StringHolder(final char tcar[]) {
         car = tcar;
     }
 
     /**
      * This returns the string.
      *
-     * @return the hashcode for this StringHolder (dependent only on values).
+     * @return the string.
      */
     public String string() {
         return car == null? null :
@@ -55,12 +56,26 @@ public class StringHolder {
     }
 
     /**
+     * This returns the number of characters.
+     *
+     * @return the number of characters
+     */
+    public int length() {
+        return car == null? 0 : car.length;
+    }
+
+    /**
      * This returns the hashcode for this StringHolder (dependent only on values).
      *
      * @return the hashcode for this StringHolder (dependent only on values).
      */
     public int hashCode() {
-        return Arrays.hashCode(car); //it allows null and returns 0
+        //return Arrays.hashCode(car); //it allows null and returns 0
+        //return car == null? 0 : HashDigest.murmur32(car, car.length); 
+
+        if (hashCode == -1) 
+            hashCode = Arrays.hashCode(car); //it allows null and returns 0
+        return hashCode;
     }
 
     /**
@@ -69,7 +84,7 @@ public class StringHolder {
      * @param o
      * @return true if equal.  o=null returns false
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null || !(o instanceof StringHolder))
             return false;
         return Arrays.equals(car, ((StringHolder)o).car); //either or both cars may be null
@@ -81,16 +96,16 @@ public class StringHolder {
      * @param o
      * @return true if equal.  o=null returns false
      */
-    public int compareTo(StringHolder o) {
+    public int compareTo(final StringHolder o) {
         if (o == null)
             return 1; //see StringComparatorIgnoreCase
         //see String compareTo documentation
-        char other[] = ((StringHolder)o).charArray();
-        int thisSize = car.length;
-        int otherSize = other.length;
-        int min = Math.min(thisSize, otherSize);
+        final char other[] = ((StringHolder)o).charArray();
+        final int thisSize = car == null? 0 : car.length;
+        final int otherSize = other.length;
+        final int min = Math.min(thisSize, otherSize);
         for (int po = 0; po < min; po++) {
-            int result = car[po] - other[po];
+            final int result = car[po] - other[po];
             if (result != 0)
                 return result;
         }
@@ -103,16 +118,16 @@ public class StringHolder {
      * @param o
      * @return this-o. o=null returns 1
      */
-    public int compareToIgnoreCase(StringHolder o) {
+    public int compareToIgnoreCase(final StringHolder o) {
         if (o == null)
             return 1; //see StringComparatorIgnoreCase
         //see String compareTo documentation
-        char other[] = o.charArray();
-        int thisSize = car.length;
-        int otherSize = other.length;
-        int min = Math.min(thisSize, otherSize);
+        final char other[] = o.charArray();
+        final int thisSize = car == null? 0 : car.length;
+        final int otherSize = other.length;
+        final int min = Math.min(thisSize, otherSize);
         for (int po = 0; po < min; po++) {
-            int result = Character.toLowerCase(car[po]) - Character.toLowerCase(other[po]);
+            final int result = Character.toLowerCase(car[po]) - Character.toLowerCase(other[po]);
             if (result != 0)
                 return result;
         }

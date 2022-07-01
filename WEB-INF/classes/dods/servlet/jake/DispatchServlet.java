@@ -12,8 +12,8 @@
 package dods.servlet.jake;
 import dods.dap.ServerVersion;
 import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 /**
  * DODS Dispatch servlet.  This abstract class preprocesses the query string,

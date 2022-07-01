@@ -334,8 +334,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             //dateTime?
             Attributes addAtts = new Attributes();
             boolean isDateTime = false;
-            if (sourcePA instanceof StringArray) {
-                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)sourcePA, false); //evenIfPurelyNumeric
+            if (sourcePA instanceof StringArray sa) {
+                String dtFormat = Calendar2.suggestDateTimeFormat(sa, false); //evenIfPurelyNumeric
                 if (dtFormat.length() > 0) { 
                     isDateTime = true;
                     addAtts.set("units", dtFormat);

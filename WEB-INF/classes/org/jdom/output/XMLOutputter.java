@@ -1506,7 +1506,7 @@ public class XMLOutputter implements Cloneable {
         try {
             return super.clone();
         }
-        catch (java.lang.CloneNotSupportedException e) {
+        catch (CloneNotSupportedException e) {
             // even though this should never ever happen, it's still
             // possible to fool Java into throwing a
             // CloneNotSupportedException.  If that happens, we

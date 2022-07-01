@@ -81,11 +81,11 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -4455,7 +4455,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
 
                 //essential
                 writer.flush();
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -4497,7 +4497,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
                 writer.write("</html>");           
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 writer.close(); 
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -4506,7 +4506,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 writer.write(EDStatic.endBodyHtml(language, tErddapUrl, loggedInAs));
                 writer.write("</html>");           
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 writer.close(); 
                 throw t; 
             }
@@ -4633,8 +4633,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         //if EDDGridFromErddap or EDDTableFromErddap, forward request
         //Note that .html and .graph are handled locally so links on web pages 
         //  are for this server and the responses can be handled quickly.
-        if (dataset instanceof FromErddap) {
-            FromErddap fromErddap = (FromErddap)dataset;
+        if (dataset instanceof FromErddap fromErddap) {
             int sourceVersion = fromErddap.intSourceErddapVersion();
             //some requests are handled locally...
             //more complicated test for new v184/200 orderBy features
@@ -4754,7 +4753,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         try {
             OutputStream out = outputStreamSource.existingOutputStream();
             if (out != null) {
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 out.close();  //often already closed; closing again does nothing
             }
         } catch (Exception e2) {
@@ -5574,7 +5573,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             Writer writer = File2.getBufferedWriterUtf8(out);
             try {
                 eddTable.sosPhenomenaDictionary(writer);
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -5591,8 +5590,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
         //No! Don't redirect! datasetID may be different so station and observedProperty names
         //  will be different.
         //if eddTable instanceof EDDTableFromErddap, redirect the request
-        /*if (eddTable instanceof EDDTableFromErddap && queryString != null) {
-            EDDTableFromErddap fromErddap = (EDDTableFromErddap)eddTable;
+        /*if (eddTable instanceof EDDTableFromErddap fromErddap && queryString != null) {
             if (fromErddap.redirect()) {
                 //https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle
                 String tUrl = fromErddap.getNextLocalSourceErddapUrl();
@@ -5632,7 +5630,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 try {
                     eddTable.sosGetCapabilities(language, queryMap, writer, loggedInAs); 
                     writer.flush();
-                    if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 } finally {
                     writer.close(); 
                 }
@@ -5699,7 +5697,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 try {
                     eddTable.sosDescribeSensor(language, loggedInAs, shortName, writer);
                     writer.flush();
-                    if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 } finally {
                     writer.close(); 
                 } 
@@ -5802,7 +5800,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
                 //essential
                 writer.flush();
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -5999,8 +5997,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
         }
 
         //if eddGrid instanceof EDDGridFromErddap, redirect the request
-        if (eddGrid instanceof EDDGridFromErddap && queryString != null) {
-            EDDGridFromErddap fromErddap = (EDDGridFromErddap)eddGrid;
+        if (eddGrid instanceof EDDGridFromErddap fromErddap && queryString != null) {
             if (fromErddap.redirect()) {
                 //https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day
                 String tUrl = fromErddap.getPublicSourceErddapUrl();
@@ -6039,7 +6036,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 try {
                     eddGrid.wcsGetCapabilities(language, loggedInAs, tVersion, writer); 
                     writer.flush();
-                    if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 } finally {
                     writer.close(); 
                 }
@@ -6055,7 +6052,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 try {
                     eddGrid.wcsDescribeCoverage(language, loggedInAs, tVersion, tCoverage, writer);
                     writer.flush();
-                    if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 } finally {
                     writer.close(); 
                 }
@@ -6132,7 +6129,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
                 //essential
                 writer.flush();
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -6319,8 +6316,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
         if (endEnd.equals(EDD.WMS_SERVER)) {
             //if eddGrid instanceof EDDGridFromErddap, redirect the request
-            if (eddGrid instanceof EDDGridFromErddap) {
-                EDDGridFromErddap fe = (EDDGridFromErddap)eddGrid;
+            if (eddGrid instanceof EDDGridFromErddap fe) {
                 if (fe.redirect() &&
                     //earlier versions of wms work ~differently
                     fe.sourceErddapVersion() >= 1.23 && 
@@ -6440,7 +6436,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
                 //essential
                 writer.flush();
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -6967,8 +6963,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                     EDStatic.sendHttpUnauthorizedError(language, requestNumber, loggedInAs, response, mainDatasetID,
                         false);
                     return;
-                } else if (eddGrid instanceof EDDGridFromErddap) {
-                    EDDGridFromErddap fromErddap = (EDDGridFromErddap)eddGrid;
+                } else if (eddGrid instanceof EDDGridFromErddap fromErddap) {
                     if (fromErddap.redirect() && 
                         //earlier versions of wms work ~differently
                         fromErddap.sourceErddapVersion() >= 1.23) {
@@ -8000,7 +7995,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
             //essential
             writer.flush();
-            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
         } finally {
             writer.close(); 
         }
@@ -12319,7 +12314,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 if (reallyVerbose) String2.log("booleanQuery=" + booleanQuery.toString());
 
                 //make a hashSet of tDatasetIDs (so seachable quickly)
-                HashSet hashSet = new HashSet(Math2.roundToInt(1.4 * tDatasetIDs.size()));
+                HashSet<String> hashSet = new HashSet(Math2.roundToInt(1.4 * tDatasetIDs.size()));
                 for (int i = 0; i < tDatasetIDs.size(); i++)
                     hashSet.add(tDatasetIDs.get(i));
 
@@ -12346,7 +12341,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                     //with EDStatic.luceneDocNToDatasetID
                     //(lazy population of luceneDocNToDatasetID);
                     int docN = hits.scoreDocs[i].doc;
-                    Integer docNI = new Integer(docN);
+                    Integer docNI = Integer.valueOf(docN);
                     String tDatasetID = EDStatic.luceneDocNToDatasetID.get(docNI);
                     if (tDatasetID == null) {  //not yet in luceneDocNToDatasetID
                         Document doc = indexSearcher.doc(docN);
@@ -13132,8 +13127,7 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
         //dimensions
         String axisNamesCsv = "";
-        if (edd instanceof EDDGrid) {
-            EDDGrid eddGrid = (EDDGrid)edd;
+        if (edd instanceof EDDGrid eddGrid) {
             int nDims = eddGrid.axisVariables().length;
             axisNamesCsv = String2.toCSSVString(eddGrid.axisVariableDestinationNames());
             for (int dim = 0; dim < nDims; dim++) {
@@ -13475,8 +13469,8 @@ writer.write(
         ArrayList<EDV> edv = new ArrayList();
         EDV arr[];
         int nAxisVariables = 0;
-        if (edd instanceof EDDGrid) {  //axisVars first so lat/lon/timeIndex are correct
-            arr = ((EDDGrid)edd).axisVariables();
+        if (edd instanceof EDDGrid eddGrid) {  //axisVars first so lat/lon/timeIndex are correct
+            arr = eddGrid.axisVariables();
             nAxisVariables = arr.length;
             for (int j=0; j<arr.length; j++) 
                 edv.add(arr[j]);
@@ -13633,9 +13627,9 @@ writer.write(
 
         //spatialCoverage
         int ilat, ilon;
-        if (edd instanceof EDDGrid) {
-            ilat = ((EDDGrid)edd).latIndex();
-            ilon = ((EDDGrid)edd).lonIndex();
+        if (edd instanceof EDDGrid eddGrid) {
+            ilat = eddGrid.latIndex();
+            ilon = eddGrid.lonIndex();
         } else {
             ilat = ((EDDTable)edd).latIndex();
             ilon = ((EDDTable)edd).lonIndex();
@@ -14712,7 +14706,7 @@ writer.write(
                     writer.write(answerCounty);            
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
             } finally {
                 writer.close(); 
             }
@@ -14939,7 +14933,7 @@ writer.write(
                     writer.write(answerFullName);            
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -15163,7 +15157,7 @@ writer.write(
                     writer.write(answerFullName);            
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -15377,7 +15371,7 @@ writer.write(
                     writer.write(answerGCMD);            
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -16864,7 +16858,7 @@ UTC                  m   deg_n    deg_east m s-1
                 else if (toString)   writer.write(answerIsoTime);            
                             
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -17120,7 +17114,7 @@ UTC                  m   deg_n    deg_east m s-1
                                                       rUdunits);
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -17322,7 +17316,7 @@ UTC                  m   deg_n    deg_east m s-1
                 writer.write(rText);
                 
                 writer.flush(); //essential
-                if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+                if (out instanceof ZipOutputStream zos) zos.closeEntry();
                 return;
             } finally {
                 writer.close(); 
@@ -17515,7 +17509,7 @@ UTC                  m   deg_n    deg_east m s-1
 
             //essential
             writer.flush();
-            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
         } finally {
             writer.close();         
         }
@@ -18271,7 +18265,7 @@ UTC                  m   deg_n    deg_east m s-1
         //essential
         OutputStream out = outSource.existingOutputStream(); 
         if (out != null) {
-            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            if (out instanceof ZipOutputStream zos) zos.closeEntry();
             out.close(); 
         }
     }

@@ -12,8 +12,8 @@
 package dods.servlet.jake;
 import dods.dap.*;
 import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 /**
  * Proxy servlet.  This servlet searches its parameter list for a server URL

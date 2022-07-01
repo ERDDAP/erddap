@@ -150,7 +150,7 @@ public class MustBe {
                 ba[i] = (byte)32;
 
         //convert to ArrayList of Strings 
-        ArrayList arrayList = String2.multiLineStringToArrayList(new String(ba));
+        ArrayList<String> arrayList = String2.multiLineStringToArrayList(new String(ba));
       
         //remove the first nRemoveLines lines; trim strings; store results in ca
         if (nRemoveLines < 0)
@@ -163,7 +163,7 @@ public class MustBe {
         String seName = "SimpleException";
         StringBuilder sb = new StringBuilder();
         for (i = 0; i < arrayList.size(); i++) {
-          String s = (String)arrayList.get(i);
+          String s = arrayList.get(i);
           if (i == 0 && s.startsWith(seBase + seName))
               s = s.substring(seBase.length());
           String trims = s.trim();
@@ -323,7 +323,7 @@ public class MustBe {
     public static String throwableWithMessage(String classAndMethodName,
         String message, Throwable throwable) {
 
-        if (throwable instanceof java.lang.OutOfMemoryError)
+        if (throwable instanceof OutOfMemoryError)
             //unfortunately, there isn't (ever?) a stack trace for out of memory errors
             return classAndMethodName + ":" + lineSeparator + 
                 message + lineSeparator +

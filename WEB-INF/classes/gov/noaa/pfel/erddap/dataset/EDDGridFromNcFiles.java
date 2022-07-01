@@ -15726,8 +15726,8 @@ expected =
                     if (test == 65 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
                     if (test == 66 && doSlowTestsToo) testNThreads(3);
                     if (test == 67 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
-                    if (test == 68 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo   //Make the tests smaller!  Is this "making the data publicly accessible"?
-                    if (test == 69 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
+   // 2022-06-16 too slow: if (test == 68 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo //takes hours to download (but shouldn't!)  //Make the tests smaller!  Is this "making the data publicly accessible"?
+   // 2022-06-16 too slow: if (test == 69 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 
                     //NOT FINISHED
                     //none

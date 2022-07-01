@@ -462,10 +462,10 @@ public class EDDTableFromBMDE extends EDDTable{
             }
 
             //convert numeric time constraints (epochSeconds) to source format
-            if ((edv instanceof EDVTimeStamp) && 
+            if ((edv instanceof EDVTimeStamp ts) && 
                 !constraintOps.get(c).equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
                 constraintValues.set(c, 
-                    ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(
+                    ts.epochSecondsToSourceTimeString(
                         String2.parseDouble(constraintValues.get(c))));
             }
 

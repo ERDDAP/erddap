@@ -59,37 +59,37 @@ public class Geturl {
     
     try {
       Getopts opts = new Getopts("daDgVvc:m:zp", args);
-      if(opts.getSwitch(new Character('d')).set)
+      if(opts.getSwitch(Character.valueOf('d')).set)
 	get_dds = true;
-      if(opts.getSwitch(new Character('a')).set)
+      if(opts.getSwitch(Character.valueOf('a')).set)
 	get_das = true;
-      if(opts.getSwitch(new Character('D')).set)
+      if(opts.getSwitch(Character.valueOf('D')).set)
 	get_data = true;
-      if(opts.getSwitch(new Character('p')).set)
+      if(opts.getSwitch(Character.valueOf('p')).set)
 	dump_data = get_data = true;
-      if(opts.getSwitch(new Character('V')).set) {
+      if(opts.getSwitch(Character.valueOf('V')).set) {
 	System.err.println("geturl version: " + VERSION);
 	System.exit(0);
       }
-      if(opts.getSwitch(new Character('v')).set)
+      if(opts.getSwitch(Character.valueOf('v')).set)
 	verbose = true;
-      if(opts.getSwitch(new Character('g')).set)
+      if(opts.getSwitch(Character.valueOf('g')).set)
 	gui = true;
 
       String optVal;
-      optVal=opts.getSwitch(new Character('c')).val;
+      optVal=opts.getSwitch(Character.valueOf('c')).val;
       if (optVal != null) {
 	cexpr = true;
 	expr = optVal;
       }
 
-      optVal = opts.getSwitch(new Character('m')).val;
+      optVal = opts.getSwitch(Character.valueOf('m')).val;
       if (optVal != null) {
 	multi = true;
 	times = Integer.parseInt(optVal);
       }
 
-      if(opts.getSwitch(new Character('z')).set)
+      if(opts.getSwitch(Character.valueOf('z')).set)
 	accept_deflate = false;
 
       // If after processing all the command line options there is nothing left

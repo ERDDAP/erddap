@@ -124,8 +124,8 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                 columnMaxValue[col] = new PAOne(pa.elementType(), "");
             }
 
-            if (pa instanceof StringArray) {
-                columnMaxStringLength[col] = Math.max(columnMaxStringLength[col], ((StringArray)pa).maxStringLength());
+            if (pa instanceof StringArray sa) {
+                columnMaxStringLength[col] = Math.max(columnMaxStringLength[col], sa.maxStringLength());
 
             } else {
                 //update columnMinValue and columnMaxValue

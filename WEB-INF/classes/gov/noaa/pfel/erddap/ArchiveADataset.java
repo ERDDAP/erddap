@@ -229,10 +229,9 @@ public class ArchiveADataset {
             String archiveDataDir = archiveDir + "data/";
             File2.makeDirectory(archiveDataDir);
 
-            if (edd instanceof EDDGrid) {
+            if (edd instanceof EDDGrid eddGrid) {
 
                 //*** EDDGrid datasets
-                EDDGrid eddGrid = (EDDGrid)edd;
                 EDVGridAxis[] axisVars = eddGrid.axisVariables();
                 int nav = axisVars.length;
                 EDVGridAxis axis0 = axisVars[0];
