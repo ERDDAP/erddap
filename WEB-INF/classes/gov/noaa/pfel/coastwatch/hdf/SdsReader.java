@@ -77,10 +77,10 @@ public class SdsReader  {
 
                 //read all of the Data Descriptors 
                 for (int descriptor = 0; descriptor < nDataDescriptors; descriptor++) {
-                    tagTypeList.add(new Short(stream.readShort())); 
-                    tagRefNumberList.add(new Short(stream.readShort())); 
-                    tagOffsetList.add(new Integer(stream.readInt())); 
-                    tagLengthList.add(new Integer(stream.readInt())); 
+                    tagTypeList.add(Short.valueOf(stream.readShort())); 
+                    tagRefNumberList.add(Short.valueOf(stream.readShort())); 
+                    tagOffsetList.add(Integer.valueOf(stream.readInt())); 
+                    tagLengthList.add(Integer.valueOf(stream.readInt())); 
                     offset += 2 * 2 + 2 * 4;
                 }
 

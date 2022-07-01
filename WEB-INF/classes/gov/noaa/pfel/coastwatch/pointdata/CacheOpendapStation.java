@@ -217,7 +217,7 @@ public class CacheOpendapStation {
                     Dimension timeDimension = (Dimension)inDimList0.get(0);
                     opendapTimeDimensionSize = timeDimension.getLength();
                     outRootGroup.addAttribute(new ucar.nc2.Attribute(OPENDAP_TIME_DIMENSION_SIZE, 
-                        new Integer(opendapTimeDimensionSize)));
+                        Integer.valueOf(opendapTimeDimensionSize)));
 
                     //for each variable
                     HashSet<String> dimNameHashSet = new HashSet();

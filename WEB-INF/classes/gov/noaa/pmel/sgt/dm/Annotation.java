@@ -381,7 +381,7 @@ public class Annotation implements SGTData, PropertyChangeListener {
 
   public SGTData copy() {
     /**@todo: Implement this gov.noaa.pmel.sgt.dm.SGTData method*/
-    throw new java.lang.UnsupportedOperationException("Method copy() not yet implemented.");
+    throw new UnsupportedOperationException("Method copy() not yet implemented.");
   }
 
   public boolean isXTime() {

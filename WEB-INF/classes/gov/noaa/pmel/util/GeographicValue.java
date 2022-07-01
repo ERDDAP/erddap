@@ -35,15 +35,15 @@
         if (decimalValue < 0) sign = -1;
 
         float num1 = Math.abs( decimalValue );
-        degrees = (new Double( num1)).intValue();
+        degrees = (Double.valueOf( num1)).intValue();
         float f1 = Math.abs( num1 - degrees);
         float f2 = (f1 * 60);
 
         float num2 = Math.abs( f2 );
-        minutes = new Double( Math.floor( (new Double(num2)).doubleValue() )).intValue();
+        minutes = Double.valueOf( Math.floor( (Double.valueOf(num2)).doubleValue() )).intValue();
         float f3 = Math.abs( num2 - minutes);
 	double dd = f3 * 60;
-        seconds = new Long( Math.round( dd )).intValue();
+        seconds = Long.valueOf( Math.round( dd )).intValue();
 	if (seconds == 60) {
 	   seconds = 0;
 	   minutes++;

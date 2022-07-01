@@ -149,8 +149,8 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     xTime_ = false;
     xRange_ = computeSoTRange(xArray);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(xArray.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(xArray.length));
   }
 
   public void setXArray(GeoDate[] tArray) {
@@ -165,8 +165,8 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     xArray_ = null;
     xRange_ = computeSoTRange(tArray);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(tArray.getLength()));
+                                Integer.valueOf(0),
+                                Integer.valueOf(tArray.getLength()));
   }
 
   public double[] getYArray() {
@@ -178,8 +178,8 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     yTime_ = false;
     yRange_ = computeSoTRange(yArray);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(yArray.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(yArray.length));
   }
 
   public void setYArray(GeoDate[] tArray) {
@@ -194,8 +194,8 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     yArray_ = null;
     yRange_ = computeSoTRange(tArray);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(tArray.getLength()));
+                                Integer.valueOf(0),
+                                Integer.valueOf(tArray.getLength()));
   }
   public double[] getZArray() {
     return zArray_;
@@ -205,8 +205,8 @@ public class SimpleTuple implements Cloneable, SGTTuple, Cartesian, Serializable
     zArray_ = zArray;
     zRange_ = computeRange2D(zArray);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(zArray.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(zArray.length));
   }
 
   public int getSize() {

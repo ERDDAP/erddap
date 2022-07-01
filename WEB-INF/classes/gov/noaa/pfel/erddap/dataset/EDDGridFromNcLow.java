@@ -610,9 +610,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                     continue;
 
                 //is this a structure? 
-                if (var instanceof Structure) {
-
-                    Structure struct = (Structure)var;
+                if (var instanceof Structure struct) {
 
                     //does this structure have the expected dimensions
                     int nDim = dimensions.size(); //assume no Char->String in nc4 files   // - (tPAType == PAType.CHAR? 1 : 0);

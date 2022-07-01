@@ -167,7 +167,7 @@ public class LoadDatasets extends Thread {
             }
             HashMap tUserHashMap = new HashMap(); //no need for thread-safe, all puts are here (1 thread); future gets are thread safe
             StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
-            HashSet datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
+            HashSet<String> datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
             StringArray duplicateDatasetIDs = new StringArray(); //list of duplicates
             EDStatic.suggestAddFillValueCSV.setLength(0);
 
@@ -385,22 +385,22 @@ public class LoadDatasets extends Thread {
                             //put dataset in place
                             //(hashMap.put atomically replaces old version with new)
                             if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
-                                                          dataset instanceof EDDGrid) {
-                                erddap.gridDatasetHashMap.put(tId, (EDDGrid)dataset);  //was/is grid
+                                                          dataset instanceof EDDGrid eddGrid) {
+                                erddap.gridDatasetHashMap.put(tId, eddGrid);  //was/is grid
 
                             } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
-                                                                 dataset instanceof EDDTable) {
-                                erddap.tableDatasetHashMap.put(tId, (EDDTable)dataset); //was/is table 
+                                                                 dataset instanceof EDDTable eddTable) {
+                                erddap.tableDatasetHashMap.put(tId, eddTable); //was/is table 
 
-                            } else if (dataset instanceof EDDGrid) {
+                            } else if (dataset instanceof EDDGrid eddGrid) {
                                 if (oldDataset != null)
                                     erddap.tableDatasetHashMap.remove(tId);   //was table
-                                erddap.gridDatasetHashMap.put(tId, (EDDGrid)dataset);  //now grid
+                                erddap.gridDatasetHashMap.put(tId, eddGrid);  //now grid
 
-                            } else if (dataset instanceof EDDTable) {
+                            } else if (dataset instanceof EDDTable eddTable) {
                                 if (oldDataset != null)
-                                    erddap.gridDatasetHashMap.remove(tId);    //was grid
-                                erddap.tableDatasetHashMap.put(tId, (EDDTable)dataset); //now table
+                                    erddap.gridDatasetHashMap.remove(tId);     //was grid
+                                erddap.tableDatasetHashMap.put(tId, eddTable); //now table
                             }
 
                             //add new info to categoryInfo
@@ -952,8 +952,7 @@ public class LoadDatasets extends Thread {
                 String openFiles = "      ?";
                 try {
                     OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-                    if (os instanceof UnixOperatingSystemMXBean) {
-                        UnixOperatingSystemMXBean uBean = (UnixOperatingSystemMXBean)os;
+                    if (os instanceof UnixOperatingSystemMXBean uBean) {
                         long nF = uBean.getOpenFileDescriptorCount();
                         long maxF = uBean.getMaxFileDescriptorCount();
                         int percent = Math2.narrowToInt((nF * 100) / maxF);
@@ -1383,7 +1382,7 @@ public class LoadDatasets extends Thread {
 
                 //update the datasetIDs
                 long tTime = System.currentTimeMillis();
-                HashSet deletedSet = new HashSet();
+                HashSet<String> deletedSet = new HashSet();
                 for (int idi = 0; idi < nDatasetIDs; idi++) {
                     String tDatasetID = String2.canonical(datasetIDs.get(idi)); 
                     EDD edd = erddap.gridDatasetHashMap.get(tDatasetID);
@@ -1530,8 +1529,7 @@ public class LoadDatasets extends Thread {
         for (int dv = 0; dv < nd; dv++) 
             categorizeVariableAtts(add, catInfo, edd.dataVariables()[dv], id);
         
-        if (edd instanceof EDDGrid) {
-            EDDGrid eddGrid = (EDDGrid)edd;
+        if (edd instanceof EDDGrid eddGrid) {
             //go through axis variables
             int na = eddGrid.axisVariables().length;
             for (int av = 0; av < na; av++) 

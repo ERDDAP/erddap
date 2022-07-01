@@ -145,7 +145,7 @@ public class DoubleCenterGrids {
         //so I can quickly find out if they already exist
         int oldBaseDirLength = oldBaseDir.length();
         int newBaseDirLength = newBaseDir.length();
-        HashSet newFilesSet = new HashSet(Math2.roundToInt(1.4 * newFiles.length));
+        HashSet<String> newFilesSet = new HashSet(Math2.roundToInt(1.4 * newFiles.length));
         for (int i = 0; i < newFiles.length; i++)
             newFilesSet.add(newFiles[i].substring(newBaseDirLength));
 

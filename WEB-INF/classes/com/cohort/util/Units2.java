@@ -1937,7 +1937,7 @@ String2.log("5/9=" + (5/9.0));
      */
     public static StringArray getTestUdunits() throws Exception {
 
-        HashSet set = new HashSet();
+        HashSet<String> set = new HashSet();
         //add some additional tests
         set.add("degree_true");
         set.add("degrees_true");
@@ -1960,7 +1960,7 @@ String2.log("5/9=" + (5/9.0));
                     set.add(XML.decodeEntities(s));
             }
         }
-        StringArray sa = new StringArray(set.toArray());
+        StringArray sa = new StringArray(set.toArray(new String[0]));
         set = null;
         sa.sortIgnoreCase();
         //sa.toFile(cfUnique, File2.UTF_8, "\n");
@@ -2057,8 +2057,8 @@ String2.log("5/9=" + (5/9.0));
     public static void gatherUniqueCFUnits(String fullCFXMLFileName) throws Exception {
 
         ArrayList<String> lines = File2.readLinesFromFile(fullCFXMLFileName, File2.UTF_8, 1); //nAttempts
-        HashSet reject = new HashSet();
-        HashSet set = new HashSet();
+        HashSet<String> reject = new HashSet();
+        HashSet<String> set = new HashSet();
         set.add("degree_C");  //test it, too
         Pattern pattern = Pattern.compile("<canonical_units>(.*)</canonical_units>");
         int nLines = lines.size();
@@ -2077,12 +2077,12 @@ String2.log("5/9=" + (5/9.0));
                 set.add(s);
             }
         }
-        StringArray sa = new StringArray(set.toArray());
+        StringArray sa = new StringArray(set.toArray(new String[0]));
         set = null;
         sa.sortIgnoreCase();
         sa.toFile(cfUnique, File2.UTF_8, "\n");
         String2.log(sa.toNewlineString());
-        sa = new StringArray(reject.toArray());
+        sa = new StringArray(reject.toArray(new String[0]));
         sa.sortIgnoreCase();
         String2.log("Rejected:\n" + sa.toNewlineString());
         String2.log(

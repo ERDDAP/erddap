@@ -41,8 +41,8 @@ import java.text.SimpleDateFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpSession;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpSession;
 
 /**
  * This class holds things that there is just one of and which are shared 

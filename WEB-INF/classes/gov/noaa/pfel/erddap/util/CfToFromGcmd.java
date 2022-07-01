@@ -129,7 +129,7 @@ public class CfToFromGcmd {
                 }
                 prevCFsar.add(s);
 
-                HashSet gcmdHashSet = (HashSet)gcmdHashMap.get(s);
+                HashSet<String> gcmdHashSet = (HashSet)gcmdHashMap.get(s);
                 if (gcmdHashSet == null) {
                     gcmdHashSet = new HashSet();
                     gcmdHashMap.put(s, gcmdHashSet);
@@ -155,7 +155,7 @@ public class CfToFromGcmd {
         int nGCMD = gcmdKeywords.length;
         gcmdToCf = new String[nGCMD][];
         for (int i = 0; i < nGCMD; i++) {
-            HashSet hashSet = (HashSet)gcmdHashMap.get(gcmdKeywords[i]);
+            HashSet<String> hashSet = (HashSet)gcmdHashMap.get(gcmdKeywords[i]);
             gcmdToCf[i] = (String[])hashSet.toArray(new String[0]);
             Arrays.sort(gcmdToCf[i]);  //they are consistently capitalized, so sort works nicely
         }

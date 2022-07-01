@@ -22,7 +22,7 @@
 package dods.servlet;
 
 import java.util.Enumeration;
-import javax.servlet.ServletConfig;
+import jakarta.servlet.ServletConfig;
 
 /**
  * User requests get parsed into this immutable object.

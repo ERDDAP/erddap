@@ -255,7 +255,7 @@ public class Subscriptions {
             rowNumbers = new HashSet();
             map.put(key, rowNumbers);
         }
-        return rowNumbers.add(new Integer(row)); 
+        return rowNumbers.add(Integer.valueOf(row)); 
     }
     protected synchronized boolean addEmailSubscription(String email, int row) {
         return _addSubscription(emailSubscriptions, email, row);
@@ -276,7 +276,7 @@ public class Subscriptions {
         HashSet rowNumbers = map.get(key);
         if (rowNumbers == null) 
             return false;
-        boolean result = rowNumbers.remove(new Integer(row)); 
+        boolean result = rowNumbers.remove(Integer.valueOf(row)); 
         if (result && rowNumbers.size() == 0)
             map.remove(key);
         return result;
@@ -300,9 +300,9 @@ public class Subscriptions {
         if (hashSet == null)
             return null;
         IntArray rows = new IntArray();
-        Iterator it = hashSet.iterator();
+        Iterator<Integer> it = hashSet.iterator();
         while (it.hasNext()) 
-            rows.add(((Integer)it.next()).intValue());
+            rows.add(it.next().intValue());
         rows.sort();
         return rows;
     }
@@ -319,7 +319,7 @@ public class Subscriptions {
      * @return true if the row was already in the hashmap.
      */
     protected synchronized boolean addPVSubscription(HashMap map, String comboKey, int row) {
-        return map.put(comboKey, new Integer(row)) != null;
+        return map.put(comboKey, Integer.valueOf(row)) != null;
     }
 
     /** 
@@ -820,7 +820,7 @@ public class Subscriptions {
         //ensure hashset will work correctly
         //hashset.add is based on equals test, 
         //see https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html
-        Test.ensureTrue((new Integer(17)).equals(new Integer(17)), "");
+        Test.ensureTrue((Integer.valueOf(17)).equals(Integer.valueOf(17)), "");
 
         //test empty system
         String ffName = EDStatic.fullTestCacheDirectory + "subscriptionsV1.txt";

@@ -122,8 +122,8 @@ public class EDDGridLonPM180 extends EDDGrid {
                 } else {
                     if (tChildDataset == null) {
                         EDD edd = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
-                        if (edd instanceof EDDGrid) {
-                            tChildDataset = (EDDGrid)edd;
+                        if (edd instanceof EDDGrid eddGrid) {
+                            tChildDataset = eddGrid;
                         } else {
                             throw new RuntimeException("Datasets.xml error: " +
                                 "The dataset defined in an " +
@@ -238,8 +238,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         //is oChildDataset a fromErddap from this erddap?
         //Get childDataset or localChildDataset. Work with stable local reference.
         EDDGrid tChildDataset = null;
-        if (tErddap != null && oChildDataset instanceof EDDGridFromErddap) {
-            EDDGridFromErddap tFromErddap = (EDDGridFromErddap)oChildDataset;
+        if (tErddap != null && oChildDataset instanceof EDDGridFromErddap tFromErddap) {
             String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
             if (EDStatic.urlIsThisComputer(tSourceUrl)) { 
                 String lcdid = File2.getNameNoExtension(tSourceUrl);

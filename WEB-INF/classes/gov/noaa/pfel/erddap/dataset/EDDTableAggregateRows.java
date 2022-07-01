@@ -203,8 +203,7 @@ public class EDDTableAggregateRows extends EDDTable{
                 throw new RuntimeException(errorInMethod + 
                     "The child dataset[" + c + "] datasetID=" + datasetID + 
                     " must be different from the EDDTableAggregateRows's datasetID.");     
-            if (tErddap != null && oChildren[c] instanceof EDDTableFromErddap) {
-                EDDTableFromErddap tFromErddap = (EDDTableFromErddap)oChildren[c];
+            if (tErddap != null && oChildren[c] instanceof EDDTableFromErddap tFromErddap) {
                 String tSourceUrl = tFromErddap.getPublicSourceErddapUrl();
                 if (EDStatic.urlIsThisComputer(tSourceUrl)) {
                     String lcdid = File2.getNameNoExtension(tSourceUrl);

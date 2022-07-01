@@ -651,67 +651,54 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 "-->\n");
 */
         //get the tabledap datasets in a json table
-        String jsonUrl = tLocalSourceUrl + "/tabledap/index.json?page=1&itemsPerPage=100000";
-        String sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
-        if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
-        if (sourceInfo.indexOf("\"table\"") > 0) {
-            Table table = new Table();
-            table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
-            if (keepOriginalDatasetIDs)
-                table.ascendingSort(new String[]{"Dataset ID"});
+        String jsonUrl = tLocalSourceUrl + "/tabledap/index.json?page=1&itemsPerPage=1000000";
+        Table table = new Table();
+        table.readJson(jsonUrl, SSR.getBufferedUrlReader(jsonUrl));   //they are sorted by title
+        if (keepOriginalDatasetIDs)
+            table.ascendingSort(new String[]{"Dataset ID"});
 
-            PrimitiveArray urlCol = table.findColumn("tabledap");
-            PrimitiveArray titleCol = table.findColumn("Title");
-            PrimitiveArray datasetIdCol = table.findColumn("Dataset ID");
+        PrimitiveArray urlCol = table.findColumn("tabledap");
+        PrimitiveArray titleCol = table.findColumn("Title");
+        PrimitiveArray datasetIdCol = table.findColumn("Dataset ID");
 
-            //go through the rows of the table
-            int nRows = table.nRows();
-            for (int row = 0; row < nRows; row++) {
-                String id = datasetIdCol.getString(row);
-                if (EDDTableFromAllDatasets.DATASET_ID.equals(id))
-                    continue;
-                //localSourceUrl isn't available (and we generally don't want it)
-                String tPublicSourceUrl = urlCol.getString(row);
-                //Use unchanged tPublicSourceUrl or via suggestDatasetID?
-                //I guess suggestDatasetID because it ensures a unique name for use in local ERDDAP.
-                //?? Does it cause trouble to use a different datasetID here?
-                String newID = keepOriginalDatasetIDs? id : suggestDatasetID(tPublicSourceUrl);
-                sb.append(
+        //go through the rows of the table
+        int nRows = table.nRows();
+        for (int row = 0; row < nRows; row++) {
+            String id = datasetIdCol.getString(row);
+            if (EDDTableFromAllDatasets.DATASET_ID.equals(id))
+                continue;
+            //localSourceUrl isn't available (and we generally don't want it)
+            String tPublicSourceUrl = urlCol.getString(row);
+            //Use unchanged tPublicSourceUrl or via suggestDatasetID?
+            //I guess suggestDatasetID because it ensures a unique name for use in local ERDDAP.
+            //?? Does it cause trouble to use a different datasetID here?
+            String newID = keepOriginalDatasetIDs? id : suggestDatasetID(tPublicSourceUrl);
+            sb.append(
 "<dataset type=\"EDDTableFromErddap\" datasetID=\"" + newID + "\" active=\"true\">\n" +
 "    <!-- " + XML.encodeAsXML(String2.replaceAll(titleCol.getString(row), "--", "- - ")) + " -->\n" +
 "    <sourceUrl>" + XML.encodeAsXML(tPublicSourceUrl) + "</sourceUrl>\n" +
 "</dataset>\n");
-            }
         }
 
         //get the EDDTableFromErddap datasets 
-        jsonUrl = tLocalSourceUrl + "/search/index.json?searchFor=EDDTableFromErddap";
-        sourceInfo = "";
         try {
-            sourceInfo = SSR.getUrlResponseStringUnchanged(jsonUrl);
-        } catch (Throwable t) {
-            //error if remote erddap has no EDDTableFromErddap's
-        }
-        if (reallyVerbose) String2.log(sourceInfo.substring(0, Math.min(sourceInfo.length(), 2000)));
-        PrimitiveArray datasetIdCol;
-        if (sourceInfo.indexOf("\"table\"") > 0) {
-            if (reallyVerbose) String2.log("searchFor=eddGridFromErddap: " + sourceInfo);
-            Table table = new Table();
-            table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
-            datasetIdCol = table.findColumn("Dataset ID");
-        } else {
-            datasetIdCol = new StringArray();
-        }
+            jsonUrl = tLocalSourceUrl + "/search/index.json?searchFor=EDDTableFromErddap";
+            table = new Table();
+            table.readJson(jsonUrl, SSR.getBufferedUrlReader(jsonUrl));   //throws exception if trouble
+            datasetIdCol = table.findColumn("Dataset ID"); //throws exception if trouble
 
-        sb.append(
-            "\n<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n" +
-            "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n" +
-            "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n" +
-            "The remote EDDTableFromErddap datasets are:\n");
-        if (datasetIdCol.size() == 0)
-            sb.append("(none)");
-        else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
-        sb.append("\n-->\n");
+            sb.append(
+                "\n<!-- Of the datasets above, the following datasets are EDDTableFromErddap's at the remote ERDDAP.\n" +
+                "It would be best if you contacted the remote ERDDAP's administrator and requested the dataset XML\n" +
+                "that is being using for these datasets so your ERDDAP can access the original ERDDAP source.\n" +
+                "The remote EDDTableFromErddap datasets are:\n");
+            if (datasetIdCol.size() == 0)
+                sb.append("(none)");
+            else sb.append(String2.noLongLinesAtSpace(datasetIdCol.toString(), 80, ""));
+            sb.append("\n-->\n");
+        } catch (Throwable t) {
+            String2.log("The remote erddap has no EDDGridFromErddap's.");
+        }
 
         String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
         return sb.toString();

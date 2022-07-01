@@ -398,7 +398,7 @@ public class EDDTableCopy extends EDDTable{
                     MustBe.throwableToString(t));
             }
             if (taskNumber >= 0) {
-                EDStatic.lastAssignedTask.put(datasetID, new Integer(taskNumber));
+                EDStatic.lastAssignedTask.put(datasetID, Integer.valueOf(taskNumber));
                 EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
             }
         }

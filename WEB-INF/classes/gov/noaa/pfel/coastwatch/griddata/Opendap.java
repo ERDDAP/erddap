@@ -188,8 +188,8 @@ public class Opendap  {
                 BaseType bt = (BaseType)e.nextElement();
                 len = getDArrayLength(bt, dimensionName);
                 if (len > 0) return len;
-                if (bt instanceof DGrid) {
-                    Enumeration e2 = ((DGrid)bt).getVariables();
+                if (bt instanceof DGrid dg) {
+                    Enumeration e2 = dg.getVariables();
                     while (e2.hasMoreElements()) {
                         len = getDArrayLength((BaseType)e2.nextElement(), dimensionName);
                         if (len > 0) {
@@ -1060,9 +1060,9 @@ Dataset {
      * @return the length of the matching dimension (or -1 if not found)
      */
     private static int getDArrayLength(BaseType bt, String dimensionName) {
-        if (bt instanceof DArray) {
+        if (bt instanceof DArray da) {
             //bt is read-only so no need to use sychronized(bt)
-            Enumeration e = ((DArray)bt).getDimensions();
+            Enumeration e = da.getDimensions();
             while (e.hasMoreElements()) {
                 DArrayDimension dam = (DArrayDimension)e.nextElement();
                 if (dam.getName().equals(dimensionName)) {

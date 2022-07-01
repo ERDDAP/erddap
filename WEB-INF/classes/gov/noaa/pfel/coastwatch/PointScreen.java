@@ -27,8 +27,8 @@ import gov.noaa.pfel.coastwatch.util.IntObject;
 
 import java.awt.Color;
 import java.util.GregorianCalendar;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This handles the user interface for a Point screen (the part of the form in 

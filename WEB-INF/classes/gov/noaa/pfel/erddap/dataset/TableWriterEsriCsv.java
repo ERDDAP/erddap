@@ -60,7 +60,7 @@ public class TableWriterEsriCsv extends TableWriter {
     protected boolean isTimeStamp[];
     protected boolean isCharOrString[];
     protected boolean isFloat[];
-    protected HashSet uniqueColNames = new HashSet();
+    protected HashSet<String> uniqueColNames = new HashSet();
     protected BufferedWriter writer;
 
     public long totalNRows = 0;

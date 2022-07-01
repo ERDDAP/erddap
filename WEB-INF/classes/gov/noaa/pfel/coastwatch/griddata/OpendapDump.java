@@ -136,30 +136,29 @@ public class OpendapDump {
         String2.log(indentation(indent) + "decodeBaseType name = " + bt.getName());
         if (bt == null) {
             String2.log(indentation(indent) + "null baseType");
-        } else if (bt instanceof DBoolean) {
-            boolean b = ((DBoolean)bt).getValue();
+        } else if (bt instanceof DBoolean db) {
+            boolean b = db.getValue();
             String2.log(indentation(indent) + "boolean = " + b);
-        } else if (bt instanceof DByte) {
-            byte b = ((DByte)bt).getValue();
+        } else if (bt instanceof DByte db) {
+            byte b = db.getValue();
             String2.log(indentation(indent) + "byte = " + b);
-        } else if (bt instanceof DFloat32) {
-            float f = ((DFloat32)bt).getValue();
+        } else if (bt instanceof DFloat32 df) {
+            float f = df.getValue();
             String2.log(indentation(indent) + "float = " + f);
-        } else if (bt instanceof DFloat64) {
-            double d = ((DFloat64)bt).getValue();
+        } else if (bt instanceof DFloat64 df) {
+            double d = df.getValue();
             String2.log(indentation(indent) + "double = " + d);
-        } else if (bt instanceof DInt16) {
-            short s = ((DInt16)bt).getValue();
+        } else if (bt instanceof DInt16 di) {
+            short s = di.getValue();
             String2.log(indentation(indent) + "int16 = " + s);
-        } else if (bt instanceof DInt32) {
-            int i = ((DInt32)bt).getValue();
+        } else if (bt instanceof DInt32 di) {
+            int i = di.getValue();
             String2.log(indentation(indent) + "int32 = " + i);
-        } else if (bt instanceof DString) {
-            String s = ((DString)bt).getValue();
+        } else if (bt instanceof DString ds) {
+            String s = ds.getValue();
             String2.log(indentation(indent) + "string = " + s);
-        } else if (bt instanceof DArray) {
+        } else if (bt instanceof DArray da) {
             String2.log(indentation(indent) + "  Begin DArray");
-            DArray da = (DArray)bt;
             Enumeration e = da.getDimensions();
             while (e.hasMoreElements()) {
                 DArrayDimension dam = (DArrayDimension)e.nextElement();
@@ -170,30 +169,26 @@ public class OpendapDump {
             }             
             decodePrimitiveVector(da.getPrimitiveVector(), indent + 4);
             String2.log(indentation(indent) + "  End DArray");
-        } else if (bt instanceof DList) { 
+        } else if (bt instanceof DList dl) { 
             String2.log(indentation(indent) + "  Begin DList");
-            DList dl = (DList)bt;
             decodePrimitiveVector(dl.getPrimitiveVector(), indent + 4);
             String2.log(indentation(indent) + "  End DList");
-        } else if (bt instanceof DGrid) {
+        } else if (bt instanceof DGrid dg) {
             String2.log(indentation(indent) + "  Begin DGrid");
-            DGrid dg = (DGrid)bt;
             Enumeration e = dg.getVariables();
             while (e.hasMoreElements()) {
                 decodeBaseType((BaseType)e.nextElement(), indent + 4);
             }
             String2.log(indentation(indent) + "  End DGrid");
-        } else if (bt instanceof DStructure) {
+        } else if (bt instanceof DStructure ds) {
             String2.log(indentation(indent) + "  Begin DStructure");
-            DStructure ds = (DStructure)bt;
             Enumeration e = ds.getVariables();
             while (e.hasMoreElements()) {
                 decodeBaseType((BaseType)e.nextElement(), indent + 4);
             }
             String2.log(indentation(indent) + "  End DStructure");
-        } else if (bt instanceof DSequence) {
+        } else if (bt instanceof DSequence ds) {
             String2.log(indentation(indent) + "  Begin DSequence");
-            DSequence ds = (DSequence)bt;
             Enumeration e = ds.getVariables();
             while (e.hasMoreElements()) {
                 decodeBaseType((BaseType)e.nextElement(), indent + 4);
@@ -219,39 +214,39 @@ public class OpendapDump {
         }
         
         int length = pv.getLength();
-        if (pv instanceof BaseTypePrimitiveVector) {
+        if (pv instanceof BaseTypePrimitiveVector t) {
             String2.log(indentation(indent) + "Begin BaseTypePrimitiveVector");
             for (int i = 0; i < length; i++)
-                decodeBaseType(((BaseTypePrimitiveVector)pv).getValue(i), indent + 2);
+                decodeBaseType(t.getValue(i), indent + 2);
             String2.log(indentation(indent) + "End BaseTypePrimitiveVector");
-        } else if (pv instanceof BooleanPrimitiveVector) {
-            boolean bFirst = ((BooleanPrimitiveVector)pv).getValue(0);
-            boolean bLast  = ((BooleanPrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof BooleanPrimitiveVector t) {
+            boolean bFirst = t.getValue(0);
+            boolean bLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "BooleanPrimitiveVector[0] = " + bFirst);
             String2.log(indentation(indent) + "BooleanPrimitiveVector[" + (length-1) + "] = " + bLast);
-        } else if (pv instanceof BytePrimitiveVector) {
-            byte bFirst = ((BytePrimitiveVector)pv).getValue(0);
-            byte bLast  = ((BytePrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof BytePrimitiveVector t) {
+            byte bFirst = t.getValue(0);
+            byte bLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "BytePrimitiveVector[0] = " + bFirst);
             String2.log(indentation(indent) + "BytePrimitiveVector[" + (length-1) + "] = " + bLast);
-        } else if (pv instanceof Float32PrimitiveVector) {
-            float fFirst = ((Float32PrimitiveVector)pv).getValue(0);
-            float fLast  = ((Float32PrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof Float32PrimitiveVector t) {
+            float fFirst = t.getValue(0);
+            float fLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "Float32PrimitiveVector[0] = " + fFirst);
             String2.log(indentation(indent) + "Float32PrimitiveVector[" + (length-1) + "] = " + fLast);
-        } else if (pv instanceof Float64PrimitiveVector) {
-            double dFirst = ((Float64PrimitiveVector)pv).getValue(0);
-            double dLast  = ((Float64PrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof Float64PrimitiveVector t) {
+            double dFirst = t.getValue(0);
+            double dLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "Float64PrimitiveVector[0] = " + dFirst);
             String2.log(indentation(indent) + "Float64PrimitiveVector[" + (length-1) + "] = " + dLast);
-        } else if (pv instanceof Int16PrimitiveVector) {
-            short sFirst = ((Int16PrimitiveVector)pv).getValue(0);
-            short sLast  = ((Int16PrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof Int16PrimitiveVector t) {
+            short sFirst = t.getValue(0);
+            short sLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "Int16PrimitiveVector[0] = " + sFirst);
             String2.log(indentation(indent) + "Int16PrimitiveVector[" + (length-1) + "] = " + sLast);
-        } else if (pv instanceof Int32PrimitiveVector) {
-            int iFirst = ((Int32PrimitiveVector)pv).getValue(0);
-            int iLast  = ((Int32PrimitiveVector)pv).getValue(length-1);
+        } else if (pv instanceof Int32PrimitiveVector t) {
+            int iFirst = t.getValue(0);
+            int iLast  = t.getValue(length-1);
             String2.log(indentation(indent) + "Int32PrimitiveVector[0] = " + iFirst);
             String2.log(indentation(indent) + "Int32PrimitiveVector[" + (length-1) + "] = " + iLast);
         } else String2.log(indentation(indent) + "Unknown PrimitiveVector type = " + pv.toString());

@@ -23,8 +23,8 @@ package dods.servlet;
 
 import java.util.Enumeration;
 import java.util.StringTokenizer;
-import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * User request information gets cached here for easy access by downstream

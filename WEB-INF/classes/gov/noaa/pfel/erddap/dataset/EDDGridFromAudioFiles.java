@@ -878,7 +878,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/testGridWav.das\";\n" +
 
         String2.log("\n*** EDDGridFromAudioFiles.testBasic(" + 
             deleteCachedDatasetInfo + ") finished successfully");
-        EDDGrid.debugMode = true;
+        EDDGrid.debugMode = false;
         EDV.debugMode = false;
     }
 

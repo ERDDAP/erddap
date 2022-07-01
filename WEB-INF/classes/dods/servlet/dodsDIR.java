@@ -25,8 +25,8 @@ import java.io.*;
 //import java.net.MalformedURLException;
 //import java.util.*;
 //import java.util.zip.DeflaterOutputStream;
-//import javax.servlet.*;
-import javax.servlet.http.*;
+//import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import dods.dap.*;
 //import dods.util.*;

@@ -742,7 +742,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         ensureValid();
 
         //generate the list of unique depth levels
-        HashSet hashSet = new HashSet();
+        HashSet<String> hashSet = new HashSet();
         for (int i = 0; i < groupVariables.length; i++) {
             DoubleArray tDepthLevels = groupVariables[i].depthLevels();
             for (int level = 0; level < tDepthLevels.size(); level++) {

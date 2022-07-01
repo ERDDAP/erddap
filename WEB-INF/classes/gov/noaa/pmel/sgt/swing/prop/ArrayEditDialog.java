@@ -282,7 +282,7 @@ public class ArrayEditDialog extends JDialog implements ListSelectionListener {
     Enumeration e = model_.elements();
     int index = 0;
     while(e.hasMoreElements()) {
-      array[index] = new Float((String)e.nextElement()).floatValue();
+      array[index] = Float.valueOf((String)e.nextElement()).floatValue();
       index++;
     }
     return array;

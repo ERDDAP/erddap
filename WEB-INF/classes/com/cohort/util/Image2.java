@@ -58,6 +58,10 @@ import net.jmge.gif.Gif89Encoder;
  */
 public class Image2 {
 
+    /** Java font drawing isn't consistent in minor ways.
+     * Change this to change the sensitivity of Image2.compareImages().
+     */
+    public static int DEFAULT_ALLOW_N_PIXELS_DIFFERENT = 200;
 
     /**
      * This tries to load the specified image (gif/jpg/png).
@@ -466,8 +470,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     }
 
     /**
-     * This tests if fileName1 generates the same image as fileName2.
-     * If different, the differences are saved in diffName.
+     * This is like the other testImagesIdentical, but uses DEFAULT_ALLOW_N_PIXELS_DIFFERENT.
      *
      * @param observed the full name of the image file to be tested (.gif, .jpg, or .png)
      * @param expected the full name of the expected/standard/correct image file (.gif, .jpg, or .png)
@@ -477,6 +480,23 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      */
     public static void testImagesIdentical(String observed, String expected, 
             String diffName) throws Exception {
+        testImagesIdentical(observed, expected, diffName, DEFAULT_ALLOW_N_PIXELS_DIFFERENT);
+    }
+
+    /**
+     * This tests if fileName1 generates the same image as fileName2.
+     * If different, the differences are saved in diffName.
+     *
+     * @param observed the full name of the image file to be tested (.gif, .jpg, or .png)
+     * @param expected the full name of the expected/standard/correct image file (.gif, .jpg, or .png)
+     * @param diffName the full name of a .png image file that will be created
+     *    highlighting the differences between observed and expected.
+     * @param allowNPixelsDifferent doesn't throw an Exception if nPixelsDifferent
+     *    &lt;=allowNPixelsDifferent.  Use 0 to test for true equality.
+     * @throws Exception if the images are different or there is trouble
+     */
+    public static void testImagesIdentical(String observed, String expected, 
+            String diffName, int allowNPixelsDifferent) throws Exception {
 
         //if expected doesn't exist, save observed as expected?
         if (!File2.isFile(expected)) {
@@ -496,7 +516,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //get the images
         Image obsImg = getImage(observed, 10000, false);
         Image expImg = getImage(expected, 10000, false);
-        String error = compareImages(obsImg, expImg, diffName);  //might throw exception
+        String error = compareImages(obsImg, expImg, diffName, allowNPixelsDifferent);  //error.length>0 if > allowNPixelsDifferent
         if (error.length() == 0)
             return;
         Test.displayInBrowser("file://" + observed);
@@ -518,11 +538,14 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      * @param image2 an image
      * @param diffName the name of a .gif, .jpg, or .png image file
      *   that is sometimes created if there are differences
-     * @return a string describing the differences ("" if no differences)
-     * @throws Exception
+     * @param allowNPixelsDifferent doesn't throw an Exception if nPixelsDifferent
+     *    &lt;=allowNPixelsDifferent.  Use 0 to test for true equality.
+     * @return a string describing the differences ("" if no differences or
+        nPixelsDifferent &lt;= COMPARE_ALLOW_N_PIXELS_DIFFERENT).
+     * @throws Exception if serious trouble, e.g., images are null
      */
     public static String compareImages(Image image1, Image image2, 
-            String diffName) throws Exception {
+            String diffName, int allowNPixelsDifferent) throws Exception {
         String cmd = "Image2.compareImages: ";
 
         //are they the same size?
@@ -593,9 +616,15 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //if different, save differences as an image file 
         RenderedImage image3 = makeImageFromArray(pixels3, width1, height1, 5000);
         saveAsPng(image3, diffName);
-        return cmd + "There were " + nDifferent + " different pixels in the images.\n" +
+        String msg = cmd + "There were " + nDifferent + " different pixels in the images.\n" +
             error + "\n" +
             "See the differences in " + diffName + " .";
+        if (nDifferent <= allowNPixelsDifferent) {
+            String2.log("WARNING: " + msg);
+            return "";
+        } else {
+            return msg;
+        }
     }
 
     /**
@@ -779,7 +808,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
                 testDir + "testImagesIdentical_2.png",
                 tempDir + "testImagesIdentical_diff.png");
         } catch (Exception e) {
-            Test.knownProblem("I'm just testing that Image2.testImagesIdentical() works.");
+            Test.knownProblem("Not a problem! I'm just testing that Image2.testImagesIdentical() works.");
         }
         throw new RuntimeException("shouldn't get here");
     }

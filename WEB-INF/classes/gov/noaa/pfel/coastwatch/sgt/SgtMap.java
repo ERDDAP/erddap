@@ -440,7 +440,7 @@ public class SgtMap  {
         String contourTitle2, 
         String contourDate, 
         String contourCourtesy, 
-        ArrayList graphDataLayers,
+        ArrayList<GraphDataLayer> graphDataLayers,
         Graphics2D g2,
         int baseULXPixel, int baseULYPixel,
         int imageWidthPixels, int imageHeightPixels,
@@ -559,7 +559,7 @@ public class SgtMap  {
                 }
 
                 for (int i = 0; i < graphDataLayers.size(); i++) 
-                    legendLineCount += ((GraphDataLayer)graphDataLayers.get(i)).legendLineCount(maxCharsPerLine);
+                    legendLineCount += graphDataLayers.get(i).legendLineCount(maxCharsPerLine);
                 legendBoxWidth = imageWidthPixels;  
                 legendBoxHeight = (int)(legendLineCount * labelHeightPixels) + 
                     2 * legendInsideBorder;  
@@ -1140,7 +1140,7 @@ public class SgtMap  {
                     graph.setClipping(true);
 
                     //get the data
-                    GraphDataLayer gdl = (GraphDataLayer)graphDataLayers.get(i);
+                    GraphDataLayer gdl = graphDataLayers.get(i);
                     //String2.log("  averagedTable=" + averagedTable);
                     if (gdl.draw == GraphDataLayer.DRAW_LINES ||
                         gdl.draw == GraphDataLayer.DRAW_MARKERS ||

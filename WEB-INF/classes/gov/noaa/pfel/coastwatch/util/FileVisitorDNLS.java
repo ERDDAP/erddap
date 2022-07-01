@@ -829,7 +829,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      * @param sizeB total size of files, in bytes
      */
     public static void setPruneCacheDirSize(String dir, long sizeB) {
-        pruneCacheDirSize.put(dir, new Long(sizeB));
+        pruneCacheDirSize.put(dir, Long.valueOf(sizeB));
     }
 
     /**
@@ -842,7 +842,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public static long incrementPruneCacheDirSize(String dir, long addB) {
         Long tl = pruneCacheDirSize.get(dir);
         long tll = (tl == null? 0 : tl.longValue()) + addB;
-        pruneCacheDirSize.put(dir, new Long(tll));
+        pruneCacheDirSize.put(dir, Long.valueOf(tll));
         return tll;
     }
 

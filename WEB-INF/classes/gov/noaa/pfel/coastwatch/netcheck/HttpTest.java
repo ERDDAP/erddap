@@ -26,8 +26,8 @@ import java.util.ArrayList;
 public class HttpTest extends NetCheckTest {
 
     private String url;
-    private ArrayList responseMustInclude = new ArrayList();
-    private ArrayList responseMustNotInclude = new ArrayList();
+    private ArrayList<String> responseMustInclude    = new ArrayList();
+    private ArrayList<String> responseMustNotInclude = new ArrayList();
 
     /**
      * This constructor loads the information for a test with information from the xmlReader.
@@ -182,14 +182,14 @@ public class HttpTest extends NetCheckTest {
 
             //check for responseMustInclude
             for (int i = 0; i < responseMustInclude.size(); i++) {
-                String required = (String)responseMustInclude.get(i);
+                String required = responseMustInclude.get(i);
                 if (response.indexOf(required) < 0)
                     errorSB.append("  " + String2.ERROR + ": response must include \"" + required + "\".\n");
             }          
 
             //check for responseMustNotInclude
             for (int i = 0; i < responseMustNotInclude.size(); i++) {
-                String undesired = (String)responseMustNotInclude.get(i);
+                String undesired = responseMustNotInclude.get(i);
                 if (response.indexOf(undesired) >= 0)
                     errorSB.append("  " + String2.ERROR + ": response must not include \"" + undesired + "\".\n");
             }          

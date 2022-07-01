@@ -156,25 +156,25 @@ public class SAXHandler extends DefaultHandler implements LexicalHandler,
      */
     static {
         attrNameToTypeMap.put("CDATA",
-                              new Integer(Attribute.CDATA_TYPE));
+                              Integer.valueOf(Attribute.CDATA_TYPE));
         attrNameToTypeMap.put("ID",
-                              new Integer(Attribute.ID_TYPE));
+                              Integer.valueOf(Attribute.ID_TYPE));
         attrNameToTypeMap.put("IDREF",
-                              new Integer(Attribute.IDREF_TYPE));
+                              Integer.valueOf(Attribute.IDREF_TYPE));
         attrNameToTypeMap.put("IDREFS",
-                              new Integer(Attribute.IDREFS_TYPE));
+                              Integer.valueOf(Attribute.IDREFS_TYPE));
         attrNameToTypeMap.put("ENTITY",
-                              new Integer(Attribute.ENTITY_TYPE));
+                              Integer.valueOf(Attribute.ENTITY_TYPE));
         attrNameToTypeMap.put("ENTITIES",
-                              new Integer(Attribute.ENTITIES_TYPE));
+                              Integer.valueOf(Attribute.ENTITIES_TYPE));
         attrNameToTypeMap.put("NMTOKEN",
-                              new Integer(Attribute.NMTOKEN_TYPE));
+                              Integer.valueOf(Attribute.NMTOKEN_TYPE));
         attrNameToTypeMap.put("NMTOKENS",
-                              new Integer(Attribute.NMTOKENS_TYPE));
+                              Integer.valueOf(Attribute.NMTOKENS_TYPE));
         attrNameToTypeMap.put("NOTATION",
-                              new Integer(Attribute.NOTATION_TYPE));
+                              Integer.valueOf(Attribute.NOTATION_TYPE));
         attrNameToTypeMap.put("ENUMERATION",
-                              new Integer(Attribute.ENUMERATED_TYPE));
+                              Integer.valueOf(Attribute.ENUMERATED_TYPE));
     }
 
     /**

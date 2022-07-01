@@ -24,8 +24,8 @@ package dods.servlet;
 import java.io.*;
 import java.util.*;
 import java.util.zip.DeflaterOutputStream;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 import dods.dap.*;
 import dods.dap.Server.*;
@@ -47,7 +47,7 @@ import dods.util.*;
  * be where the server specific DODS server data types are
  * used via their associated class factory.
  * <p/>
- * This code relies on the <code>javax.servlet.ServletConfig</code>
+ * This code relies on the <code>jakarta.servlet.ServletConfig</code>
  * interface (in particular the <code>getInitParameter()</code> method)
  * to retrieve the name of a .ini file containing information
  * about where to find extensive configuration information used by

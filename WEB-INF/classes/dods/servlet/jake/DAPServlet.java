@@ -12,8 +12,8 @@
 package dods.servlet.jake;
 import dods.dap.*;
 import java.io.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 /**
  * DAP servlet.  This servlet reads binary DAP files, along with ASCII

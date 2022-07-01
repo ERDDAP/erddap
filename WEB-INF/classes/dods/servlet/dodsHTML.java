@@ -23,7 +23,7 @@ package dods.servlet;
 
 
 import java.io.*;
-import javax.servlet.http.*;
+import jakarta.servlet.http.*;
 
 import dods.servers.www.*;
 import dods.dap.*;

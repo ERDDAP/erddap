@@ -70,10 +70,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.CharArraySet;
@@ -254,7 +254,7 @@ public static boolean developmentMode = false;
     public static String datasetsThatFailedToLoad = "";
     public static String errorsDuringMajorReload = "";
     public static StringBuffer majorLoadDatasetsTimeSeriesSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
-    public static HashSet requestBlacklist = null; //is read-only. Replacement is swapped into place.
+    public static HashSet<String> requestBlacklist = null; //is read-only. Replacement is swapped into place.
     public static long startupMillis = System.currentTimeMillis();
     public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
     public static int nGridDatasets = 0;  
@@ -4405,7 +4405,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             String2.log("requestBlacklist is now null.");
         } else {
             String rb[] = String2.split(csv, ',');
-            HashSet hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
+            HashSet<String> hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
             for (int i = 0; i < rb.length; i++)
                 hs.add(rb[i]);
             requestBlacklist = hs; //set atomically
@@ -6075,7 +6075,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                     taskOA[0] = TaskThread.TASK_DOWNLOAD;  
                     taskOA[1] = remoteDirs.get(remoteI) + remoteNames.get(remoteI);
                     taskOA[2] = tLocalDir + remoteRelativeDir + remoteNames.get(remoteI);
-                    taskOA[3] = new Long(remoteLastMod.get(remoteI));  //or if unknown?
+                    taskOA[3] = Long.valueOf(remoteLastMod.get(remoteI));  //or if unknown?
                     nFilesToDownload++;
                     int tTaskNumber = nFilesToDownload <= maxTasks? 
                         (lastTask = addTask(taskOA)) : -nFilesToDownload;                        
@@ -6101,7 +6101,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 lastTask = addTask(taskOA); //TASK_SET_FLAG will always be added
                 if (reallyVerbose)
                     String2.log("% created task#" + lastTask + " TASK_SET_FLAG " + tDatasetID);
-                lastAssignedTask.put(tDatasetID, new Integer(lastTask));
+                lastAssignedTask.put(tDatasetID, Integer.valueOf(lastTask));
                 ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
             }
 

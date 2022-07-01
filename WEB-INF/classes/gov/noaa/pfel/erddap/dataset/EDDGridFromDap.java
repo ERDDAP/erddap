@@ -393,10 +393,10 @@ public class EDDGridFromDap extends EDDGrid {
             //get the variable
             BaseType bt = dds.getVariable(tDataSourceName);  //throws Throwable if not found
             DArray mainDArray;
-            if (bt instanceof DGrid) 
-                mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
-            else if (bt instanceof DArray) 
-                mainDArray = (DArray)bt;
+            if (bt instanceof DGrid dgrid) 
+                mainDArray = (DArray)dgrid.getVar(0); //first element is always main array
+            else if (bt instanceof DArray darray) 
+                mainDArray = darray;
             else throw new RuntimeException("dataVariable=" + tDataSourceName + " must be a DGrid or a DArray (" + 
                 bt.toString() + ").");
 
@@ -577,18 +577,18 @@ public class EDDGridFromDap extends EDDGrid {
 
         //has edvga[0] changed size?
         EDVGridAxis edvga = axisVariables[0];
-        EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
-            (EDVTimeStampGridAxis)edvga : null;
+        EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis t? 
+            t : null;
         PrimitiveArray oldValues = edvga.sourceValues();
         int oldSize = oldValues.size();
 
         //get mainDArray
         BaseType bt = dds.getVariable(dataVariables[0].sourceName()); //throws NoSuchVariableException
         DArray mainDArray = null;
-        if (bt instanceof DGrid) {
-            mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
-        } else if (bt instanceof DArray) {
-            mainDArray = (DArray)bt;
+        if (bt instanceof DGrid dgrid) {
+            mainDArray = (DArray)dgrid.getVar(0); //first element is always main array
+        } else if (bt instanceof DArray darray) {
+            mainDArray = darray;
         } else { 
             String2.log(msg + String2.ERROR + ": Unexpected " + dataVariables[0].destinationName() + 
                 " source type=" + bt.getTypeName() + ". So I called requestReloadASAP().");
@@ -1040,7 +1040,7 @@ public class EDDGridFromDap extends EDDGrid {
         OpendapHelper.getAttributes(das, "GLOBAL", axisSourceTable.globalAttributes());
 
         //read through the variables[]
-        HashSet dimensionNameCsvsFound = new HashSet();
+        HashSet<String> dimensionNameCsvsFound = new HashSet();
         Enumeration vars = dds.getVariables();
         StringArray varNames = new StringArray();
         StringBuilder results = new StringBuilder();
@@ -1068,10 +1068,10 @@ public class EDDGridFromDap extends EDDGrid {
 
             //ensure it is a DGrid or DArray
             DArray mainDArray;
-            if (bt instanceof DGrid) 
-                mainDArray = (DArray)((DGrid)bt).getVariables().nextElement(); //first element is always main array
-            else if (bt instanceof DArray) 
-                mainDArray = (DArray)bt;
+            if (bt instanceof DGrid dgrid) 
+                mainDArray = (DArray)dgrid.getVariables().nextElement(); //first element is always main array
+            else if (bt instanceof DArray darray) 
+                mainDArray = darray;
             else continue;
 
             //if it's a coordinate variable, skip it
@@ -4963,7 +4963,7 @@ String expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
-"        <att name=\"history\">Fri Jan 28 10:59:19 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"history\">Mon Jun 13 10:46:14 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
 "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -5207,7 +5207,7 @@ expected1 =
 "        <att name=\"Conventions\">COARDS</att>\n" +
 "        <att name=\"dataType\">Grid</att>\n" +
 "        <att name=\"documentation\">http://apdrc.soest.hawaii.edu/datadoc/soda_2.2.4.php</att>\n" +
-"        <att name=\"history\">Fri Jan 28 10:59:19 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
+"        <att name=\"history\">Mon Jun 13 10:46:14 HST 2022 : imported by GrADS Data Server 2.0</att>\n" +
 "        <att name=\"title\">SODA v2.2.4 monthly means</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +

@@ -37,13 +37,13 @@ public class das_test {
 
     try {
       Getopts opts = new Getopts("scpvd", args);
-      if(opts.getSwitch(new Character('p')).set)
+      if(opts.getSwitch(Character.valueOf('p')).set)
 	parser_test = true;
-      if(opts.getSwitch(new Character('s')).set)
+      if(opts.getSwitch(Character.valueOf('s')).set)
 	scanner_test = true;
-      if(opts.getSwitch(new Character('c')).set)
+      if(opts.getSwitch(Character.valueOf('c')).set)
 	code_test = true;
-      if(opts.getSwitch(new Character('v')).set) {
+      if(opts.getSwitch(Character.valueOf('v')).set) {
 	System.err.println("das-test: " + version);
 	System.exit(0);
       }

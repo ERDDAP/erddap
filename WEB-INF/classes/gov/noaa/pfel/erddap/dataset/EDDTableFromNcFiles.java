@@ -3619,16 +3619,16 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         expected = //since time in orderByMean"", it is the truncated time
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
-"2005-04-18T00:00:00Z,51001,97.86183928014168,24.441666666666663,23.816666666666666\n" +
+"2005-04-18T00:00:00Z,51001,97.86183928014171,24.441666666666663,23.816666666666666\n" + //Java 8 (to 17) had 97.86183928014168 (last 2 digits changed), and a several similar changes below. 
 "2005-04-18T12:00:00Z,51001,94.16803567809627,24.1,23.416666666666664\n" +
 "2005-04-19T00:00:00Z,51001,67.91263458022371,24.425000000000004,23.633333333333333\n" +
 "2005-04-19T12:00:00Z,51001,71.06387582853539,24.15,23.158333333333335\n" +
 "2005-04-18T00:00:00Z,51002,84.1769853744749,25.241666666666667,25.191666666666666\n" +
-"2005-04-18T12:00:00Z,51002,83.9178408844722,25.116666666666667,24.941666666666666\n" +
-"2005-04-19T00:00:00Z,51002,81.50000000000001,25.174999999999997,25.158333333333335\n" +
+"2005-04-18T12:00:00Z,51002,83.91784088447218,25.116666666666667,24.941666666666666\n" +
+"2005-04-19T00:00:00Z,51002,81.5,25.174999999999997,25.158333333333335\n" +
 "2005-04-19T12:00:00Z,51002,76.75426244884592,25.116666666666667,24.78333333333333\n" +
-"2005-04-18T00:00:00Z,51003,91.40518432154904,25.35833333333333,24.65833333333333\n" +
-"2005-04-18T12:00:00Z,51003,82.32152838658654,25.308333333333334,24.491666666666664\n" +
+"2005-04-18T00:00:00Z,51003,91.40518432154903,25.35833333333333,24.65833333333333\n" +
+"2005-04-18T12:00:00Z,51003,82.32152838658655,25.308333333333334,24.491666666666664\n" +
 "2005-04-19T00:00:00Z,51003,75.30158735989092,25.45833333333333,24.533333333333335\n" +
 "2005-04-19T12:00:00Z,51003,77.08087657273535,25.341666666666665,24.333333333333336\n";
 
@@ -3644,8 +3644,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "time,station,wd,wtmp,atmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
 "2005-04-18T23:30:00Z,51001,82.68984571953773,24.27916666666667,23.50625\n" +
-"2005-04-18T23:30:00Z,51002,81.58888862157632,25.162499999999998,25.018749999999997\n" +
-"2005-04-18T23:30:00Z,51003,81.53155106611143,25.366666666666664,24.50416666666667\n";
+"2005-04-18T23:30:00Z,51002,81.58888862157633,25.162499999999998,25.018749999999997\n" +  //java 8 had 81.58888862157632
+"2005-04-18T23:30:00Z,51003,81.53155106611145,25.366666666666664,24.50416666666667\n";    //java 8 had 81.53155106611143
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test orderByMean(oneVar)
@@ -3659,8 +3659,8 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
 "UTC,,degrees_true,degree_C,degree_C\n" +
 "2005-04-18T00:00:00Z,51002,82.34275443036394,25.283333333333335,25.73333333333333\n" +
 "2005-04-18T06:00:00Z,51002,85.9998989286213,25.2,24.650000000000002\n" +
-"2005-04-18T12:00:00Z,51002,83.16714540604335,25.1,24.416666666666664\n" +
-"2005-04-18T18:00:00Z,51002,84.66908038147407,25.133333333333333,25.466666666666665\n" +
+"2005-04-18T12:00:00Z,51002,83.16714540604333,25.1,24.416666666666664\n" +
+"2005-04-18T18:00:00Z,51002,84.66908038147409,25.133333333333333,25.466666666666665\n" +
 "2005-04-19T00:00:00Z,51002,81.66687377762507,25.23333333333333,25.683333333333334\n" +
 "2005-04-19T06:00:00Z,51002,81.33287154965757,25.116666666666667,24.633333333333333\n" +
 "2005-04-19T12:00:00Z,51002,75.83958417390204,25.1,24.349999999999998\n" +
@@ -3676,7 +3676,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         expected = 
 "time,station,wd,atmp,wtmp\n" +
 "UTC,,degrees_true,degree_C,degree_C\n" +
-"2012-01-01T00:00:00Z,41004,266.4249102636162,19.36,20.28\n" +
+"2012-01-01T00:00:00Z,41004,266.42491026361625,19.36,20.28\n" +
 "2012-01-01T06:00:00Z,41004,267.30712443660354,18.766666666666666,20.3\n";    
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -3689,7 +3689,7 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
-"41004,2012-01-01T00:00:00Z,258.30035578960565,17.224999999999994,20.63333333333333\n" +
+"41004,2012-01-01T00:00:00Z,258.3003557896057,17.224999999999994,20.63333333333333\n" +
 "41004,2012-01-03T00:00:00Z,305.00601205043847,5.96808510638298,19.58260869565217\n" +
 "41004,2012-01-05T00:00:00Z,258.5502684011244,14.27083333333333,18.948888888888888\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -3703,17 +3703,17 @@ Test.ensureEqual(results, expected, "\nresults=\n" + results);
         expected = 
 "station,time,wd,atmp,wtmp\n" +
 ",UTC,degrees_true,degree_C,degree_C\n" +
-"41004,2012-01-01T00:00:00Z,258.30035578960565,17.224999999999994,20.63333333333333\n" +
+"41004,2012-01-01T00:00:00Z,258.3003557896057,17.224999999999994,20.63333333333333\n" +
 "41004,2012-01-03T00:00:00Z,305.00601205043847,5.96808510638298,19.58260869565217\n" +
 "41004,2012-01-05T00:00:00Z,258.5502684011244,14.27083333333333,18.948888888888888\n" +
 "41008,2012-01-01T00:00:00Z,249.7686962028111,14.765217391304345,16.258695652173916\n" +
 "41008,2012-01-03T00:00:00Z,306.3619051114213,5.192857142857143,15.06341463414634\n" +
-"41008,2012-01-05T00:00:00Z,254.21403357945184,13.03170731707317,14.946341463414635\n" +
+"41008,2012-01-05T00:00:00Z,254.21403357945186,13.03170731707317,14.946341463414635\n" +
 "41009,2012-01-01T00:00:00Z,269.2109644956681,21.23333333333333,23.3774193548387\n" +
 "41009,2012-01-03T00:00:00Z,321.3025236731279,11.41145833333333,21.496874999999996\n" +
 "41009,2012-01-05T00:00:00Z,289.59118887311513,16.469791666666666,21.30104166666666\n" +
 "41010,2012-01-01T00:00:00Z,261.97933085465695,21.780434782608694,23.66304347826087\n" +
-"41010,2012-01-03T00:00:00Z,324.9778634562705,13.541489361702123,23.240425531914894\n" +
+"41010,2012-01-03T00:00:00Z,324.9778634562704,13.541489361702123,23.240425531914894\n" +
 "41010,2012-01-05T00:00:00Z,292.6755186451097,18.502105263157887,23.064210526315783\n" +
 "41012,2012-01-01T00:00:00Z,268.8412847483023,18.68888888888889,23.064444444444447\n" +
 "41012,2012-01-03T00:00:00Z,312.89751647620056,8.904166666666669,22.57021276595745\n" +
@@ -3896,7 +3896,7 @@ expected =
         expected = 
 "time,latitude,longitude,wd\n" +
 "UTC,degrees_north,degrees_east,degrees_true\n" +
-"2014-01-04T00:00:00Z,13.784014057024162,155.9907299240343,59.03859101760849\n";   
+"2014-01-04T00:00:00Z,13.784014057024164,155.9907299240343,59.03859101760848\n";   
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -7294,7 +7294,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 46173615;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 46520275;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7339,7 +7339,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6510572e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6536546e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7401,7 +7401,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7429,9 +7429,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-05-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-06-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-05-11 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-06-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7449,7 +7449,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7474,7 +7474,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the April 2022 data) but is a subset of the " + //month changes
+    "up to and including the May 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7487,7 +7487,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2022-04-27T11:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-05-27T12:30:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -8463,7 +8463,7 @@ float z(z) ;
     /** For WOD, get all source variable names and file they are in.
      */
     public static void getAllSourceVariableNames(String dir, String fileNameRegex) {
-        HashSet hashset = new HashSet();
+        HashSet<String> hashset = new HashSet();
         String2.log("\n*** EDDTableFromNcFiles.getAllsourceVariableNames from " + dir + " " + fileNameRegex);
         Table.verbose = false;
         Table.reallyVerbose = false;
@@ -11686,13 +11686,13 @@ String expected3 = expected2 +
             tableDataset.respondToGraphQuery(0, null, null, "", "", "", oss,
                 dir, "testSpeedMAG.txt", ".graph");
         double observe = (System.currentTimeMillis() - time2) / (float)n;
-        double expect = 8; //2014-09 java 1.7 was 4.38ms, java 1.6 10.7ms, java 1.5 55.172ms
+        double expect = 11; //but slower in TestAll.  java 8 was 8ms, 2014-09 java 1.7 was 4.38ms, java 1.6 10.7ms, java 1.5 55.172ms
         String msg = "\nEDDTableFromNcFiles.testSpeedMAG time per .graph = " +
             observe + 
             "ms (java 1.7M4700 " + expect + "ms)\n" + //slow because of info for sliders and subset variables
             "  outputFileName=" + fileName;
         String2.log(msg);
-        Test.ensureTrue(observe < 1.5 * expect, "Too slow!" + msg);
+        Test.ensureTrue(observe < 1.7 * expect, "Too slow!" + msg);
         EDD.testVerbose(true);
     }
 
@@ -14434,10 +14434,11 @@ expected =
     /**
      * This tests saving a big request in a .nc file. (Re Keven O'Brien's email 2013-11-08)
      *
+     * @param lastTest Use -1 for max available
      * @throws Throwable if trouble
      */
-    public static void testBigRequest(int firstTest) throws Throwable {
-        String2.log("\n*** EDDTableFromNcFiles.testBigRequest(" + firstTest + ")\n");
+    public static void testBigRequest(int firstTest, int lastTest) throws Throwable {
+        String2.log("\n*** EDDTableFromNcFiles.testBigRequest(" + firstTest + "," + lastTest + ")\n");
         int language = 0;
         Table.verbose = false;
         testVerboseOff();
@@ -14463,6 +14464,8 @@ expected =
             ".kml", ".smallPdf", ".pdf", ".largePdf", ".smallPng", //image file types
             ".png", ".largePng"};  
         int kmli = String2.indexOf(extensions, ".kml"); //first image fileType.  kmli+1 is first displayable image type
+        if (lastTest < 0)
+            lastTest = extensions.length - 1;
         long bytes[]    = new long[] { 
             //2020-10-02 I revamped this test to make requests smaller and faster
             //  because previous request now yielded MUCH LARGER files and MUCH SLOWER than expected
@@ -14484,58 +14487,63 @@ expected =
             13347, 15592}; 
 
         //warm up
+        String2.log("\ndoing warmup (make .nc)");
         tName = eddTable.makeNewFileForDapQuery(language, null, null, 
             "time&station=~\"4....\"&time<2000-01-01", 
             dir, baseName, ".nc");
         File2.delete(dir + tName);
 
         StringBuilder errors = new StringBuilder();
-        for (int i = firstTest; i < extensions.length; i++) {
-            if (extensions[i].equals(".ncHeader"))
+        for (int test = firstTest; test <= lastTest; test++) {
+            if (extensions[test].equals(".ncHeader"))
                 File2.delete(dir + baseName + ".nc");
 
             long time = 0;
             int nChances = 1; //was 3 when testing time
             String msg = "";
             for (int chance = 0; chance < nChances; chance++) { 
+                String2.log("\nstart test=" + test + " chance=" + chance);
                 Math2.gcAndWait();  //in a test
                 time = System.currentTimeMillis();
                 tName = eddTable.makeNewFileForDapQuery(language, null, null, 
-                    extensions[i].equals(".geoJson") || extensions[i].equals(".odvTxt")?
+                    extensions[test].equals(".geoJson") || extensions[test].equals(".odvTxt")?
                         "longitude,latitude,time,atmp&station=~\"4....\"&time<2000-01-01" :
-                    i >= kmli?
+                    test >= kmli?
                         "longitude,latitude,wd,time&station=~\"4....\"&time<2000-01-01&.draw=markers" :
                     "time&station=~\"4....\"&time<=2000-01-01", 
-                    dir, baseName + extensions[i].substring(1) + chance, 
-                    extensions[i]); 
+                    dir, baseName + extensions[test].substring(1) + chance, 
+                    extensions[test]); 
                 resultLength = File2.length(dir + tName);
                 time = System.currentTimeMillis() - time;
 
                 msg = 
-                    "ext#" + i + "=" + extensions[i] + " chance#" + chance + 
-                    ": length=" + resultLength + " expected=" + bytes[i] + ", " +
-                    "time=" + time + "ms expected=" + expectedMs[i] + "ms\n";
+                    "ext#" + test + "=" + extensions[test] + " chance#" + chance + 
+                    ": length=" + resultLength + " expected=" + bytes[test] + ", " +
+                    "time=" + time + "ms expected=" + expectedMs[test] + "ms\n";
                 String2.log(msg);
 
                 //if not too slow or too fast, break
-                if (time > expectedMs[i] / 2 && time < expectedMs[i] * 2) 
+                if (time > expectedMs[test] / 2 && time < expectedMs[test] * 2) 
                     break;
             }
             
 
-            if (i >= kmli) {
-                if (extensions[i].toLowerCase().endsWith("png")) {
+            if (test >= kmli) {
+                if (extensions[test].toLowerCase().endsWith("png")) {
                     //Test.displayInBrowser("file://" + dir + tName);
                     Image2.testImagesIdentical(
                         dir + tName,
-                        String2.unitTestImagesDir()    + baseName + extensions[i].substring(1) + ".png",
-                        File2.getSystemTempDirectory() + baseName + extensions[i].substring(1) + "_diff.png");
+                        String2.unitTestImagesDir()    + baseName + extensions[test].substring(1) + ".png",
+                        File2.getSystemTempDirectory() + baseName + extensions[test].substring(1) + "_diff.png");
                 } else { //kml pdf
                     Test.displayInBrowser("file://" + dir + tName);
+                    //Google Earth and Acrobat take long time to start up and penalize subsequent tests,
+                    //  so give them time
+                    Math2.gc(test == kmli? 60000 : 20000);
                 }
             }
-            if (resultLength < 0.9 * bytes[i] || resultLength > 1.2 * bytes[i] ||
-                time < expectedMs[i] / 2 || time > expectedMs[i] * 2) {
+            if (resultLength < 0.9 * bytes[test] || resultLength > 1.2 * bytes[test] ||
+                time < expectedMs[test] / 2 || time > expectedMs[test] * 2) {
                 msg = "Unexpected length or time: " + msg;
                 String2.log(msg); 
                 errors.append(msg);
@@ -14546,7 +14554,8 @@ expected =
         reallyVerbose = oReallyVerbose;
         if (errors.length() > 0)
             throw new RuntimeException("EDDTableFromNcFiles.testBigRequest:\n" + errors.toString() +
-                "2020-11-25 .geoJson, .pdf, .largePdf (and others) are sometimes very slow (especially during TestAll). I think my computer is just slow sometimes.");
+                "2020-11-25 .geoJson, .pdf, .largePdf (and others) are sometimes very slow (especially during TestAll).\n" +
+                "2022-07-01 Java 17 everything super slow in TestAll, but generally okay if run separately. I added some sleep().");
     }
 
 
@@ -19067,7 +19076,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 46173615;\n" + //changes
+"    Int32 actual_range 1, 46520275;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -19112,7 +19121,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6510572e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.6536546e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -19174,7 +19183,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2022-05-11 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -19832,7 +19841,14 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 63) testHardFlag();
 
                     if (test == 67) testNThreads();
-                    if (test == 68) testBigRequest(0); //usually, firstTest=0.  very slow -- just run this occasionally
+                    if (test == 68) {
+                        String2.log("Sleeping for 5 minutes to let Bob's old, tired computer catch its breath.");
+                        for (int i = 5; i > 0; i--) {
+                            String2.log("" + i);
+                            Thread.sleep(60000);
+                        }
+                        testBigRequest(0,-1); //usually, firstTest=0, lastTest -1=max.  very slow -- just run this occasionally
+                    }
 
                     if (test == 70 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads    very slow
                     if (test == 71 && doSlowTestsToo) testCacheFiles(false); //deleteDataFiles?  //requires gtsppBest, very slow, not usually run    

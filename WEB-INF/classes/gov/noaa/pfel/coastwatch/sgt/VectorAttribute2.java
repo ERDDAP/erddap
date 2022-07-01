@@ -161,11 +161,11 @@ public class VectorAttribute2
    */
   public void setVectorStyle(int style) {
     if(vectorStyle_ != style) {
-      Integer tempOld = new Integer(vectorStyle_);
+      Integer tempOld = Integer.valueOf(vectorStyle_);
       vectorStyle_ = style;
       firePropertyChange("vectorStyle",
                                   tempOld,
-                                  new Integer(vectorStyle_));
+                                  Integer.valueOf(vectorStyle_));
     }
   }
   /** Get the vector head style. */
@@ -220,11 +220,11 @@ public class VectorAttribute2
    */
   public void setVectorScale(double scale) {
     if(vectorScale_ != scale) {
-      Double tempOld = new Double(vectorScale_);
+      Double tempOld = Double.valueOf(vectorScale_);
       vectorScale_ = scale;
       firePropertyChange("vectorScale",
                                   tempOld,
-                                  new Double(vectorScale_));
+                                  Double.valueOf(vectorScale_));
     }
   }
   /** Geth the vector head scale. */
@@ -238,11 +238,11 @@ public class VectorAttribute2
    */
   public void setVectorMaxSize(double size) {
     if(vectorMaxSize_ != size) {
-      Double tempOld = new Double(vectorMaxSize_);
+      Double tempOld = Double.valueOf(vectorMaxSize_);
       vectorMaxSize_ = size;
       firePropertyChange("vectorMaxSize",
                                   tempOld,
-                                  new Double(vectorMaxSize_));
+                                  Double.valueOf(vectorMaxSize_));
     }
   }
   /** Get the maximum vector length allowed. */
@@ -256,11 +256,11 @@ public class VectorAttribute2
    */
   public void setOffsetAngle(double angle) {
     if(offsetAngle_ != angle) {
-      Double tempOld = new Double(offsetAngle_);
+      Double tempOld = Double.valueOf(offsetAngle_);
       offsetAngle_ = angle;
       firePropertyChange("offsetAngle",
                                   tempOld,
-                                  new Double(offsetAngle_));
+                                  Double.valueOf(offsetAngle_));
     }
   }
   /** Get the vector rotation angle. */
@@ -280,11 +280,11 @@ public class VectorAttribute2
    */
   public void setHeadScale(double scale) {
     if(headScale_ != scale) {
-      Double tempOld = new Double(headScale_);
+      Double tempOld = Double.valueOf(headScale_);
       headScale_ = scale;
       firePropertyChange("headScale",
                                   tempOld,
-                                  new Double(headScale_));
+                                  Double.valueOf(headScale_));
     }
   }
   /** Get the vector head scale. */
@@ -298,11 +298,11 @@ public class VectorAttribute2
    */
   public void setHeadMaxSize(double size) {
     if(headMaxSize_ != size) {
-      Double tempOld = new Double(headMaxSize_);
+      Double tempOld = Double.valueOf(headMaxSize_);
       headMaxSize_ = size;
       firePropertyChange("headMaxSize",
                                   tempOld,
-                                  new Double(headMaxSize_));
+                                  Double.valueOf(headMaxSize_));
     }
   }
   /** Get the maximum vector head size. */
@@ -316,11 +316,11 @@ public class VectorAttribute2
    */
   public void setHeadMinSize(double size) {
     if(headMinSize_ != size) {
-      Double tempOld = new Double(headMinSize_);
+      Double tempOld = Double.valueOf(headMinSize_);
       headMinSize_ = size;
       firePropertyChange("headMinSize",
                                   tempOld,
-                                  new Double(headMinSize_));
+                                  Double.valueOf(headMinSize_));
     }
   }
   /** Get the minimum vector head size. */
@@ -334,11 +334,11 @@ public class VectorAttribute2
    */
   public void setHeadFixedSize(double size) {
     if(headFixedSize_ != size) {
-      Double tempOld = new Double(headFixedSize_);
+      Double tempOld = Double.valueOf(headFixedSize_);
       headFixedSize_ = size;
       firePropertyChange("headFixedSize",
                                   tempOld,
-                                  new Double(headFixedSize_));
+                                  Double.valueOf(headFixedSize_));
     }
   }
   /** Get the fixed vector head size. */
@@ -356,11 +356,11 @@ public class VectorAttribute2
    */
   public void setOriginStyle(int style) {
     if(originStyle_ != style) {
-      Integer tempOld = new Integer(originStyle_);
+      Integer tempOld = Integer.valueOf(originStyle_);
       originStyle_ = style;
       firePropertyChange("originStyle",
                                   tempOld,
-                                  new Integer(originStyle_));
+                                  Integer.valueOf(originStyle_));
     }
   }
   /** Get vector origin style. */
@@ -393,13 +393,13 @@ public class VectorAttribute2
    */
   public void setMark(int mark) {
     if(mark_ != mark) {
-      Integer tempOld = new Integer(mark_);
+      Integer tempOld = Integer.valueOf(mark_);
       if(mark <= 0) mark = 1;
       if(mark > 51) mark = 51;
       mark_ = mark;
       firePropertyChange("mark",
                                   tempOld,
-                                  new Integer(mark_));
+                                  Integer.valueOf(mark_));
     }
   }
   /**
@@ -418,11 +418,11 @@ public class VectorAttribute2
    **/
   public void setMarkHeightP(double markh) {
     if(markHeightP_ != markh) {
-      Double tempOld = new Double(markHeightP_);
+      Double tempOld = Double.valueOf(markHeightP_);
       markHeightP_ = markh;
       firePropertyChange("markHeightP",
                                   tempOld,
-                                  new Double(markHeightP_));
+                                  Double.valueOf(markHeightP_));
     }
   }
   /**
@@ -441,11 +441,11 @@ public class VectorAttribute2
    **/
   public void setWidth(float t) {
     if(width_ != t) {
-      Float tempOld = new Float(width_);
+      Float tempOld = Float.valueOf(width_);
       width_ = t;
       firePropertyChange("width",
                                   tempOld,
-                                  new Float(width_));
+                                  Float.valueOf(width_));
     }
   }
   /**
@@ -469,11 +469,11 @@ public class VectorAttribute2
    */
   public void setCapStyle(int style) {
     if(capStyle_ != style) {
-      Integer tempOld = new Integer(capStyle_);
+      Integer tempOld = Integer.valueOf(capStyle_);
       capStyle_ = style;
       firePropertyChange("capStyle",
                                   tempOld,
-                                  new Integer(capStyle_));
+                                  Integer.valueOf(capStyle_));
     }
   }
   /** Get the line cap style. */
@@ -493,11 +493,11 @@ public class VectorAttribute2
    */
   public void setMiterStyle(int style) {
     if(miterStyle_ != style) {
-      Integer tempOld = new Integer(miterStyle_);
+      Integer tempOld = Integer.valueOf(miterStyle_);
       miterStyle_ = style;
       firePropertyChange("miterStyle",
                                   tempOld,
-                                  new Integer(miterStyle_));
+                                  Integer.valueOf(miterStyle_));
     }
 
   }
@@ -511,11 +511,11 @@ public class VectorAttribute2
    */
   public void setMiterLimit(float limit) {
     if(miterLimit_ != limit) {
-      Float tempOld = new Float(miterLimit_);
+      Float tempOld = Float.valueOf(miterLimit_);
       miterLimit_ = limit;
       firePropertyChange("miterLimit",
                                   tempOld,
-                                  new Float(miterLimit_));
+                                  Float.valueOf(miterLimit_));
     }
   }
   /** Get the line miter limit. */

@@ -2247,7 +2247,7 @@ String expected =
         time = (System.currentTimeMillis() - time) / 1000; //s
         long expTime = (bigTest? 20 : 1) * (deleteCachedInfo? 14 : 9);
         String2.log("loadDataset time=" + time + "s (expected=" + expTime + "s)");
-        Test.ensureTrue(time < expTime * 1.5, "");
+        Test.ensureTrue(time < expTime * 1.5, "too slow. time=" + time + "s > " + expTime + "s");
         Object o2[];
         Table fileTable;
         StringArray subDirs;
@@ -2814,8 +2814,10 @@ String expected =
                     if (test ==  4) testAwsS3local();
 
                     if (test ==  5) testGenerateDatasetsXmlFromFiles();
-                    if (test ==  6) testAccessibleViaFilesFileTable(true,  false);  //deleteCachedInfo, bigTest
-                    if (test ==  7) testAccessibleViaFilesFileTable(false, false);
+                    if (test ==  6) { Math2.sleep(60000);
+                                    testAccessibleViaFilesFileTable(true,  false); } //deleteCachedInfo, bigTest
+                    if (test ==  7) { Math2.sleep(60000);
+                                    testAccessibleViaFilesFileTable(false, false); }
 
                     if (test ==  8) testGenerateDatasetsXmlFromOnTheFly();
                     if (test ==  9) testOnTheFly();
