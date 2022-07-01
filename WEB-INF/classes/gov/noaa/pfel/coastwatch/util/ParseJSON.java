@@ -375,7 +375,7 @@ public class ParseJSON {
 
         while (true) {
             //read a value
-            if (chi == '-' || (chi >= '0' && chi <= '9')) al.add(new Double(readDouble(chi)));
+            if (chi == '-' || (chi >= '0' && chi <= '9')) al.add(Double.valueOf(readDouble(chi)));
             else if (chi == '"')                          al.add(readString(chi));
             else if (chi == 't')                          al.add(readTrue(chi));
             else if (chi == 'f')                          al.add(readFalse(chi));

@@ -250,8 +250,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //isDateTime?
             PrimitiveArray sourcePA = (PrimitiveArray)dataSourceTable.getColumn(col).clone();
             String timeUnits = "";
-            if (sourcePA instanceof StringArray) {
-                timeUnits = Calendar2.suggestDateTimeFormat((StringArray)sourcePA, false); //evenIfPurelyNumeric
+            if (sourcePA instanceof StringArray sa) {
+                timeUnits = Calendar2.suggestDateTimeFormat(sa, false); //evenIfPurelyNumeric
                 if (timeUnits.length() > 0) 
                     sourceAtts.set("units", timeUnits); //just temporarily to trick makeReadyToUse...
             }

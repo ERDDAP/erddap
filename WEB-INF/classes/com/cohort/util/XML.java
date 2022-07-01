@@ -90,7 +90,7 @@ public class XML {
                 continue;
             String ent = HTML_ENTITIES[i];
             if (ent.length() > 0)
-                ENTITY_TO_CHAR_HASHMAP.put(ent, new Character((char)i));
+                ENTITY_TO_CHAR_HASHMAP.put(ent, Character.valueOf((char)i));
         }
     }
 

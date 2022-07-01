@@ -45,7 +45,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the number of bytes per element for this PrimitiveArray.
      * The value for "String" isn't a constant, so this returns 20.
      */
-    public int elementSize() {
+    public final int elementSize() {
         return 4;
     }
 
@@ -53,7 +53,7 @@ public class FloatArray extends PrimitiveArray {
      * This returns for cohort missing value for this class (e.g., Integer.MAX_VALUE), 
      * expressed as a double. FloatArray and StringArray return Double.NaN. 
      */
-    public double missingValueAsDouble() {
+    public final double missingValueAsDouble() {
         return Float.NaN;
     }
 
@@ -66,7 +66,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index The index in question
      * @return true if the value is a missing value.
      */
-    public boolean isMaxValue(int index) {
+    public final boolean isMaxValue(final int index) {
         return !Float.isFinite(get(index));
     }
 
@@ -77,7 +77,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index The index in question
      * @return true if the value is a missing value.
      */
-    public boolean isMissingValue(int index) {
+    public final boolean isMissingValue(final int index) {
         return isMaxValue(index);
     }
 
@@ -94,7 +94,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param primitiveArray a primitiveArray of any type 
      */
-    public FloatArray(PrimitiveArray primitiveArray) {
+    public FloatArray(final PrimitiveArray primitiveArray) {
         array = new float[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -106,7 +106,7 @@ public class FloatArray extends PrimitiveArray {
      * @param active if true, size will be set to capacity and all elements 
      *    will equal 0; else size = 0.
      */
-    public FloatArray(int capacity, boolean active) {
+    public FloatArray(final int capacity, final boolean active) {
         Math2.ensureMemoryAvailable(4L * capacity, "FloatArray");
         array = new float[capacity];
         if (active) 
@@ -119,7 +119,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param anArray the array to be used as this object's array.
      */
-    public FloatArray(float[] anArray) {
+    public FloatArray(final float[] anArray) {
         array = anArray;
         size = anArray.length;
     }
@@ -134,7 +134,7 @@ public class FloatArray extends PrimitiveArray {
      * @param csv the comma-separated-value string
      * @return a FloatArray from the comma-separated values.
      */
-    public static FloatArray fromCSV(String csv) {
+    public final static FloatArray fromCSV(final String csv) {
         return (FloatArray)PrimitiveArray.csvFactory(PAType.FLOAT, csv);
     }
 
@@ -142,27 +142,27 @@ public class FloatArray extends PrimitiveArray {
      *
      * @return a new PAOne with the minimum value that can be held by this class, e.g., -128b for ByteArray. 
      */
-    public PAOne MINEST_VALUE() {return PAOne.fromFloat(-Float.MAX_VALUE);}
+    public final PAOne MINEST_VALUE() {return PAOne.fromFloat(-Float.MAX_VALUE);}
 
     /** This returns a new PAOne with the maximum value that can be held by this class 
      *   (not including the cohort missing value). 
      *
      * @return a new PAOne with the maximum value that can be held by this class, e.g., 126 for ByteArray. 
      */
-    public PAOne MAXEST_VALUE() {return PAOne.fromFloat(Float.MAX_VALUE);}
+    public final PAOne MAXEST_VALUE() {return PAOne.fromFloat(Float.MAX_VALUE);}
 
     /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
      * @return the current capacity (number of elements) of the internal data array.
      */
-    public int capacity() {
+    public final int capacity() {
         return array.length;
     }
 
     /** This indicates if this class' type is PAType.FLOAT or PAType.DOUBLE. 
      */
-    public boolean isFloatingPointType() {
+    public final boolean isFloatingPointType() {
         return true;
     }
 
@@ -181,6 +181,7 @@ public class FloatArray extends PrimitiveArray {
         for (int i = 0; i < size; i++)
             code = 31*code + Float.floatToIntBits(array[i]);
         return code;
+        //return HashDigest.murmur32(array, size);
     }
 
     /**
@@ -195,7 +196,7 @@ public class FloatArray extends PrimitiveArray {
      *    If new, it will have a backing array with a capacity equal to its size.
      *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
-    public PrimitiveArray subset(PrimitiveArray pa, int startIndex, int stride, int stopIndex) {
+    public PrimitiveArray subset(final PrimitiveArray pa, final int startIndex, final int stride, int stopIndex) {
         if (pa != null)
             pa.clear();
         if (startIndex < 0)
@@ -209,7 +210,7 @@ public class FloatArray extends PrimitiveArray {
         if (stopIndex < startIndex)
             return pa == null? new FloatArray(new float[0]) : pa;
 
-        int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
+        final int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         FloatArray fa = null;
         if (pa == null) {
             fa = new FloatArray(willFind, true);
@@ -218,7 +219,7 @@ public class FloatArray extends PrimitiveArray {
             fa.ensureCapacity(willFind);
             fa.size = willFind;
         }
-        float tar[] = fa.array;
+        final float tar[] = fa.array;
         if (stride == 1) {
             System.arraycopy(array, startIndex, tar, 0, willFind);
         } else {
@@ -245,21 +246,17 @@ public class FloatArray extends PrimitiveArray {
      * @return the minimum PAType needed to completely and precisely contain
      * the values in this PA's PAType and tPAType (e.g., when merging two PrimitiveArrays).
      */
-    public PAType needPAType(PAType tPAType) {
-        //if tPAType is smaller or same, return this.PAType
-        if (tPAType == PAType.BYTE ||
-            tPAType == PAType.UBYTE ||
-            tPAType == PAType.SHORT ||
-            tPAType == PAType.USHORT ||
-            tPAType == PAType.FLOAT)  return PAType.FLOAT;
+    public PAType needPAType(final PAType tPAType) {
+        return switch (tPAType) {
+            //if tPAType is smaller or same, return this.PAType
+            case BYTE, UBYTE, SHORT, USHORT, FLOAT -> PAType.FLOAT;
 
-        //if sideways
-        if (tPAType == PAType.INT ||
-            tPAType == PAType.UINT ||
-            tPAType == PAType.DOUBLE) return PAType.DOUBLE;         
+            //if sideways
+            case INT, UINT, DOUBLE -> PAType.DOUBLE;         
 
-        //LONG, ULONG, CHAR, STRING
-        return PAType.STRING;
+            //LONG, ULONG, CHAR, STRING
+            default -> PAType.STRING;
+        };
     }
 
     /**
@@ -267,7 +264,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param value the value to be added to the array
      */
-    public void add(float value) {
+    public void add(final float value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);
         array[size++] = value;
@@ -280,11 +277,11 @@ public class FloatArray extends PrimitiveArray {
      *    If value instanceof Number, this uses Number.floatValue().
      *    If null or not a Number, this adds Float.NaN.
      */
-    public void addObject(Object value) {
+    public void addObject(final Object value) {
         if (size == array.length) //if we're at capacity
             ensureCapacity(size + 1L);        
-        array[size++] = value != null && value instanceof Number?
-            ((Number)value).floatValue() :
+        array[size++] = value != null && value instanceof Number na?
+            na.floatValue() :
             Float.NaN;
     }
 
@@ -294,7 +291,7 @@ public class FloatArray extends PrimitiveArray {
      * @param sd from an .nc file
      * @param memberName
      */
-    public void add(StructureData sd, String memberName) {
+    public void add(final StructureData sd, final String memberName) {
         add(sd.getScalarFloat(memberName));
     }
 
@@ -303,8 +300,8 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param ar an array
      */
-    public void add(float ar[]) {
-        int arSize = ar.length; 
+    public void add(final float ar[]) {
+        final int arSize = ar.length; 
         ensureCapacity(size + (long)arSize);
         System.arraycopy(ar, 0, array, size, arSize);
         size += arSize;
@@ -317,7 +314,7 @@ public class FloatArray extends PrimitiveArray {
      * @param value the value to be added to the array.
      *    n &lt; 0 throws an Exception.
      */
-    public void addN(int n, float value) {
+    public void addN(final int n, final float value) {
         if (n == 0) return;
         if (n < 0)
             throw new IllegalArgumentException(MessageFormat.format(
@@ -334,7 +331,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the position where the value should be inserted.
      * @param value the value to be inserted into the array
      */
-    public void atInsert(int index, float value) {
+    public void atInsert(final int index, final float value) {
         if (index < 0 || index > size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayAtInsert, getClass().getSimpleName(), "" + index, "" + size));
@@ -352,7 +349,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index 0..
      * @param value the value, as a String.
      */
-    public void atInsertString(int index, String value) {
+    public void atInsertString(final int index, final String value) {
         atInsert(index, String2.parseFloat(value));
     }
 
@@ -363,7 +360,7 @@ public class FloatArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a PAOne (or null).
      */
-    public void addNPAOnes(int n, PAOne value) {
+    public void addNPAOnes(final int n, final PAOne value) {
         addN(n, value == null? Float.NaN : value.getFloat());
     }
 
@@ -374,7 +371,7 @@ public class FloatArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a String.
      */
-    public void addNStrings(int n, String value) {
+    public void addNStrings(final int n, final String value) {
         addN(n, String2.parseFloat(value));
     }
 
@@ -385,7 +382,7 @@ public class FloatArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a float.
      */
-    public void addNFloats(int n, float value) {
+    public void addNFloats(final int n, final float value) {
         addN(n, value);
     }
 
@@ -396,7 +393,7 @@ public class FloatArray extends PrimitiveArray {
      *    If less than 0, this throws Exception.
      * @param value the value, as a double.
      */
-    public void addNDoubles(int n, double value) {
+    public void addNDoubles(final int n, final double value) {
         addN(n, Math2.doubleToFloatNaN(value));
     }
 
@@ -406,7 +403,7 @@ public class FloatArray extends PrimitiveArray {
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
-    public void addNInts(int n, int value) {
+    public void addNInts(final int n, final int value) {
         addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
@@ -416,7 +413,7 @@ public class FloatArray extends PrimitiveArray {
      * @param n the number of times 'value' should be added
      * @param value the value, as an int.
      */
-    public void addNLongs(int n, long value) {
+    public void addNLongs(final int n, final long value) {
         addN(n, value); //! assumes value=Integer.MAX_VALUE isn't maxIsMV
     }
 
@@ -428,7 +425,7 @@ public class FloatArray extends PrimitiveArray {
      * @param nValues the number of values to be added
      * @return 'this' for convenience
      */
-    public PrimitiveArray addFromPA(PrimitiveArray otherPA, int otherIndex, int nValues) {
+    public PrimitiveArray addFromPA(final PrimitiveArray otherPA, int otherIndex, final int nValues) {
 
         //add from same type
         if (otherPA.elementType() == elementType()) {
@@ -456,7 +453,7 @@ public class FloatArray extends PrimitiveArray {
      * @param otherPA the other PrimitiveArray
      * @param otherIndex the index of the item in otherPA
      */
-    public void setFromPA(int index, PrimitiveArray otherPA, int otherIndex) {
+    public void setFromPA(final int index, final PrimitiveArray otherPA, final int otherIndex) {
         set(index, otherPA.getFloat(otherIndex));
     }
 
@@ -465,7 +462,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param index the element to be removed, 0 ... size-1
      */
-    public void remove(int index) {
+    public void remove(final int index) {
         if (index >= size)
             throw new IllegalArgumentException(MessageFormat.format(
                 ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
@@ -481,7 +478,7 @@ public class FloatArray extends PrimitiveArray {
      * @param from the first element to be removed, 0 ... size
      * @param to one after the last element to be removed, from ... size
      */
-    public void removeRange(int from, int to) {
+    public void removeRange(final int from, final int to) {
         if (to > size)
             throw new IllegalArgumentException(String2.ERROR + " in FloatArray.removeRange: to (" + 
                 to + ") > size (" + size + ").");
@@ -505,8 +502,8 @@ public class FloatArray extends PrimitiveArray {
      * @param last  (exclusive)
      * @param destination the destination, can't be in the range 'first+1..last-1'.
      */
-    public void move(int first, int last, int destination) {
-        String errorIn = String2.ERROR + " in FloatArray.move:\n";
+    public void move(final int first, final int last, final int destination) {
+        final String errorIn = String2.ERROR + " in FloatArray.move:\n";
 
         if (first < 0) 
             throw new RuntimeException(errorIn + "first (" + first + ") must be >= 0.");
@@ -528,8 +525,8 @@ public class FloatArray extends PrimitiveArray {
         //String2.log("move initial " + String2.toCSSVString(array));
 
         //store the range to be moved
-        int nToMove = last - first;
-        float[] temp = new float[nToMove];
+        final int nToMove = last - first;
+        final float[] temp = new float[nToMove];
         System.arraycopy(array, first, temp, 0, nToMove);
 
         //if moving to left...    (draw diagram to visualize this)
@@ -559,7 +556,7 @@ public class FloatArray extends PrimitiveArray {
      *
      * @param bitset The BitSet indicating which rows (indices) should be kept.
      */
-    public void justKeep(BitSet bitset) {
+    public void justKeep(final BitSet bitset) {
         int newSize = 0;
         for (int row = 0; row < size; row++) {
             if (bitset.get(row)) 
@@ -574,7 +571,7 @@ public class FloatArray extends PrimitiveArray {
      * @param minCapacity the minimum acceptable capacity.
      *    minCapacity is type long, but &gt;= Integer.MAX_VALUE will throw exception.
      */
-    public void ensureCapacity(long minCapacity) {
+    public void ensureCapacity(final long minCapacity) {
         if (array.length < minCapacity) {
             //ensure minCapacity is < Integer.MAX_VALUE
             Math2.ensureArraySizeOkay(minCapacity, "FloatArray");  
@@ -583,7 +580,7 @@ public class FloatArray extends PrimitiveArray {
             if (newCapacity < minCapacity) 
                 newCapacity = (int)minCapacity; //safe since checked above
             Math2.ensureMemoryAvailable(4L * newCapacity, "FloatArray");
-            float[] newArray = new float[newCapacity];
+            final float[] newArray = new float[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
             array = newArray; //do last to minimize concurrency problems
         }
@@ -626,7 +623,7 @@ public class FloatArray extends PrimitiveArray {
      */
     public double[] toDoubleArray() {
         Math2.ensureMemoryAvailable(8L * size, "FloatArray.toDoubleArray");
-        double dar[] = new double[size];
+        final double dar[] = new double[size];
         for (int i = 0; i < size; i++)
             dar[i] = array[i];
         return dar;
@@ -640,7 +637,7 @@ public class FloatArray extends PrimitiveArray {
      */
     public String[] toStringArray() {
         Math2.ensureMemoryAvailable(12L * size, "FloatArray.toStringArray"); //12L is feeble minimal estimate
-        String sar[] = new String[size];
+        final String sar[] = new String[size];
         for (int i = 0; i < size; i++) 
             sar[i] = getString(i);
         return sar;
@@ -652,7 +649,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index 0 ... size-1
      * @return the specified element
      */
-    public float get(int index) {
+    public float get(final int index) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in FloatArray.get: index (" + 
                 index + ") >= size (" + size + ").");
@@ -665,7 +662,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index 0 ... size-1
      * @param value the value for that element
      */
-    public void set(int index, float value) {
+    public void set(final int index, final float value) {
         if (index >= size)
             throw new IllegalArgumentException(String2.ERROR + " in FloatArray.set: index (" + 
                 index + ") >= size (" + size + ").");
@@ -680,7 +677,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as an int. This may return Integer.MAX_VALUE.
      */
-    public int getInt(int index) {
+    public int getInt(final int index) {
         return Math2.roundToInt(get(index));
     }
 
@@ -693,7 +690,7 @@ public class FloatArray extends PrimitiveArray {
      * @param i the value. Integer.MAX_VALUE is NOT converted
      *   to this type's missing value.
      */
-    public void setInt(int index, int i) {
+    public void setInt(final int index, final int i) {
         set(index, i);
     }
 
@@ -704,7 +701,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a long. 
      *   This may return Long.MAX_VALUE.
      */
-    public long getLong(int index) {
+    public long getLong(final int index) {
         return Math2.roundToLong(get(index));
     }
 
@@ -715,7 +712,7 @@ public class FloatArray extends PrimitiveArray {
      * @param i the value. Long.MAX_VALUE is NOT converted
      *   to Float.NaN.
      */
-    public void setLong(int index, long i) {
+    public void setLong(final int index, final long i) {
         set(index, i);
     }
 
@@ -726,8 +723,8 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a ulong. 
      *   NaN is returned as null.
      */
-    public BigInteger getULong(int index) {
-        float b = get(index);
+    public BigInteger getULong(final int index) {
+        final float b = get(index);
         return Float.isFinite(b)? Math2.roundToULongOrNull(b) : null;
     }
 
@@ -738,7 +735,7 @@ public class FloatArray extends PrimitiveArray {
      * @param i the value. For numeric PrimitiveArray's, it is narrowed 
      *   if needed by methods like Math2.narrowToByte(long).
      */
-    public void setULong(int index, BigInteger i) {
+    public void setULong(final int index, final BigInteger i) {
         setDouble(index, Math2.ulongToDoubleNaN(i));
     }
 
@@ -749,7 +746,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a float. String values are parsed
      *   with String2.parseFloat and so may return Float.NaN.
      */
-    public float getFloat(int index) {
+    public float getFloat(final int index) {
         return get(index);
     }
 
@@ -759,7 +756,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the index number 0 .. size-1
      * @param d the value.
      */
-    public void setFloat(int index, float d) {
+    public void setFloat(final int index, final float d) {
         set(index, d);
     }
 
@@ -771,7 +768,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getDouble(int index) {
+    public double getDouble(final int index) {
         return get(index);
     }
 
@@ -785,7 +782,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getNiceDouble(int index) {
+    public double getNiceDouble(final int index) {
         return Math2.floatToDouble(get(index));
     }
 
@@ -799,7 +796,7 @@ public class FloatArray extends PrimitiveArray {
      * @return the value as a double. String values are parsed
      *   with String2.parseDouble and so may return Double.NaN.
      */
-    public double getRawNiceDouble(int index) {
+    public double getRawNiceDouble(final int index) {
         return getNiceDouble(index);
     }
 
@@ -810,7 +807,7 @@ public class FloatArray extends PrimitiveArray {
      * @param d the value. It is narrowed by Math2.doubleToFloatNaN(d),
      *   which converts INFINITY and large values to NaN.
      */
-    public void setDouble(int index, double d) {
+    public void setDouble(final int index, final double d) {
         set(index, Math2.doubleToFloatNaN(d));
     }
 
@@ -823,7 +820,7 @@ public class FloatArray extends PrimitiveArray {
      *   or "" for NaN or infinity.
      *   If this PA is unsigned, this method returns the unsigned value.
      */
-    public String getString(int index) {
+    public String getString(final int index) {
         float b = get(index);
         return Float.isFinite(b)? String.valueOf(b) : "";
     }
@@ -836,7 +833,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1 
      * @return For numeric types, this returns ("" + ar[index]), or null for NaN or infinity.
      */
-    public String getJsonString(int index) {
+    public String getJsonString(final int index) {
         return String2.toJson(get(index));
     }
 
@@ -851,7 +848,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index the index number 0 ... size-1
      * @return the value as a String. 
      */
-    public String getRawestString(int index) {
+    public String getRawestString(final int index) {
         return String.valueOf(get(index));
     }
 
@@ -863,7 +860,7 @@ public class FloatArray extends PrimitiveArray {
      *   with String2.parse and narrowed if needed by methods like
      *   Math2.roundToFloat(d).
      */
-    public void setString(int index, String s) {
+    public void setString(final int index, final String s) {
         set(index, String2.parseFloat(s));
     }
 
@@ -874,7 +871,7 @@ public class FloatArray extends PrimitiveArray {
      *   This correctly handles NaN.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(float lookFor) {
+    public int indexOf(final float lookFor) {
         return indexOf(lookFor, 0);
     }
 
@@ -887,7 +884,7 @@ public class FloatArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(float lookFor, int startIndex) {
+    public int indexOf(final float lookFor, final int startIndex) {
         if (Float.isNaN(lookFor)) {
             for (int i = startIndex; i < size; i++) 
                 if (Float.isNaN(array[i])) 
@@ -908,7 +905,7 @@ public class FloatArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int indexOf(String lookFor, int startIndex) {
+    public int indexOf(final String lookFor, final int startIndex) {
         if (startIndex >= size)
             return -1;
         return indexOf(String2.parseFloat(lookFor), startIndex);
@@ -921,7 +918,7 @@ public class FloatArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(float lookFor, int startIndex) {
+    public int lastIndexOf(final float lookFor, final int startIndex) {
         if (startIndex >= size)
             throw new IllegalArgumentException(String2.ERROR + " in FloatArray.get: startIndex (" + 
                 startIndex + ") >= size (" + size + ").");
@@ -938,7 +935,7 @@ public class FloatArray extends PrimitiveArray {
      * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
-    public int lastIndexOf(String lookFor, int startIndex) {
+    public int lastIndexOf(final String lookFor, final int startIndex) {
         return lastIndexOf(String2.parseFloat(lookFor), startIndex);
     }
 
@@ -956,7 +953,7 @@ public class FloatArray extends PrimitiveArray {
      * @param o the object that will be compared to this FloatArray
      * @return true if equal.  o=null returns false.
      */
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         return testEquals(o).length() == 0;
     }
 
@@ -968,11 +965,11 @@ public class FloatArray extends PrimitiveArray {
      * @return a String describing the difference (or "" if equal).
      *   o=null doesn't throw an exception.
      */
-    public String testEquals(Object o) {
+    public String testEquals(final Object o) {
         if (!(o instanceof FloatArray))
             return "The two objects aren't equal: this object is a FloatArray; the other is a " + 
                 (o == null? "null" : o.getClass().getName()) + ".";
-        FloatArray other = (FloatArray)o;
+        final FloatArray other = (FloatArray)o;
         if (other.size() != size)
             return "The two FloatArrays aren't equal: one has " + size + 
                " value(s); the other has " + other.size() + " value(s).";
@@ -998,7 +995,7 @@ public class FloatArray extends PrimitiveArray {
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
-        StringBuilder sb = new StringBuilder(size * 11);
+        final StringBuilder sb = new StringBuilder(size * 11);
         for (int i = 0; i < size; i++) 
             sb.append((i == 0? "" : ",") + String.valueOf(array[i]) + "f");
         return sb.toString();
@@ -1034,7 +1031,7 @@ public class FloatArray extends PrimitiveArray {
      *   the value at index2.  
      *   Think "array[index1] - array[index2]".
      */
-    public int compare(int index1, PrimitiveArray otherPA, int index2) {
+    public int compare(final int index1, final PrimitiveArray otherPA, final int index2) {
         //this is approximate when other is bigger (int, uint, long, ulong, double)
         return Float.compare(getFloat(index1), otherPA.getFloat(index2)); 
     }
@@ -1048,7 +1045,7 @@ public class FloatArray extends PrimitiveArray {
      * @param from an index number 0 ... size-1
      * @param to an index number 0 ... size-1
      */
-    public void copy(int from, int to) {
+    public void copy(final int from, final int to) {
         array[to] = array[from];
     }
 
@@ -1061,10 +1058,10 @@ public class FloatArray extends PrimitiveArray {
      * in the sorted list, rank[1] is the row number of the
      * second item in the sorted list, ...).
      */
-    public void reorder(int rank[]) {
-        int n = rank.length;
+    public void reorder(final int rank[]) {
+        final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
-        float newArray[] = new float[array.length]; 
+        final float newArray[] = new float[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
         array = newArray;
@@ -1091,7 +1088,7 @@ public class FloatArray extends PrimitiveArray {
      *    But if size=0, this returns 0.
      * @throws Exception if trouble
      */
-    public int writeDos(DataOutputStream dos) throws Exception {
+    public int writeDos(final DataOutputStream dos) throws Exception {
         for (int i = 0; i < size; i++)
             dos.writeFloat(array[i]);
         return size == 0? 0 : 4;
@@ -1106,7 +1103,7 @@ public class FloatArray extends PrimitiveArray {
      *    (for Strings, this varies; for others it is consistent)
      * @throws Exception if trouble
      */
-    public int writeDos(DataOutputStream dos, int i) throws Exception {
+    public int writeDos(final DataOutputStream dos, final int i) throws Exception {
         dos.writeFloat(array[i]);
         return 4;
     }
@@ -1118,7 +1115,7 @@ public class FloatArray extends PrimitiveArray {
      * @param n the number of elements to be read/added
      * @throws Exception if trouble
      */
-    public void readDis(DataInputStream dis, int n) throws Exception {
+    public void readDis(final DataInputStream dis, final int n) throws Exception {
         ensureCapacity(size + (long)n);
         for (int i = 0; i < n; i++)
             array[size++] = dis.readFloat();
@@ -1131,8 +1128,8 @@ public class FloatArray extends PrimitiveArray {
      * @param dis
      * @throws IOException if trouble
      */
-    public void internalizeFromDODS(DataInputStream dis) throws java.io.IOException {
-        int nValues = dis.readInt();
+    public void internalizeFromDODS(final DataInputStream dis) throws java.io.IOException {
+        final int nValues = dis.readInt();
         dis.readInt(); //skip duplicate of nValues
         ensureCapacity(size + (long)nValues);
         for (int i = 0; i < nValues; i++) 
@@ -1146,7 +1143,7 @@ public class FloatArray extends PrimitiveArray {
      * @param index
      * @throws Exception if trouble
      */
-    public void writeToRAF(RandomAccessFile raf, int index) throws Exception {
+    public void writeToRAF(final RandomAccessFile raf, final int index) throws Exception {
         raf.writeFloat(get(index));
     }
 
@@ -1157,7 +1154,7 @@ public class FloatArray extends PrimitiveArray {
      * @param raf the RandomAccessFile
      * @throws Exception if trouble
      */
-    public void readFromRAF(RandomAccessFile raf) throws Exception {
+    public void readFromRAF(final RandomAccessFile raf) throws Exception {
         add(raf.readFloat());
     }
 
@@ -1169,11 +1166,11 @@ public class FloatArray extends PrimitiveArray {
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.doubleToFloatNaN(pa.getDouble).
      */
-    public void append(PrimitiveArray pa) {
-        int otherSize = pa.size(); 
+    public void append(final PrimitiveArray pa) {
+        final int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (pa instanceof FloatArray) {
-            System.arraycopy(((FloatArray)pa).array, 0, array, size, otherSize);
+        if (pa instanceof FloatArray fa) {
+            System.arraycopy(fa.array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.doubleToFloatNaN(pa.getDouble(i)); //this converts mv's
@@ -1191,11 +1188,11 @@ public class FloatArray extends PrimitiveArray {
      * @param pa pa must be the same or a narrower 
      *  data type, or the data will be narrowed with Math2.doubleToFloatNaN(pa.getDouble).
      */
-    public void rawAppend(PrimitiveArray pa) {
-        int otherSize = pa.size(); 
+    public void rawAppend(final PrimitiveArray pa) {
+        final int otherSize = pa.size(); 
         ensureCapacity(size + (long)otherSize);
-        if (pa instanceof FloatArray) {
-            System.arraycopy(((FloatArray)pa).array, 0, array, size, otherSize);
+        if (pa instanceof FloatArray fa) {
+            System.arraycopy(fa.array, 0, array, size, otherSize);
         } else {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.doubleToFloatNaN(pa.getRawDouble(i)); //this DOESN'T convert mv's
@@ -1212,31 +1209,31 @@ public class FloatArray extends PrimitiveArray {
      * @return a PrimitveArray (the same type as this class) with the unique values, sorted.
      *     If all the values are unique and already sorted, this returns 'this'.
      */
-    public PrimitiveArray makeIndices(IntArray indices) {
+    public PrimitiveArray makeIndices(final IntArray indices) {
         indices.clear();
         if (size == 0) {
             return new FloatArray();
         }
 
         //make a hashMap with all the unique values (associated values are initially all dummy)
-        Integer dummy = new Integer(-1);
-        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
+        final Integer dummy = Integer.valueOf(-1);
+        final HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
         float lastValue = array[0]; //since lastValue often equals currentValue, cache it
-        hashMap.put(new Float(lastValue), dummy);
+        hashMap.put(Float.valueOf(lastValue), dummy);
         boolean alreadySorted = true;
         for (int i = 1; i < size; i++) {
-            float currentValue = array[i];
+            final float currentValue = array[i];
             if (currentValue != lastValue) {
                 if (currentValue < lastValue) 
                     alreadySorted = false;
                 lastValue = currentValue;
-                hashMap.put(new Float(lastValue), dummy);
+                hashMap.put(Float.valueOf(lastValue), dummy);
             }
         }
 
         //quickly deal with: all unique and already sorted
-        Set keySet = hashMap.keySet();
-        int nUnique = keySet.size();
+        final Set keySet = hashMap.keySet();
+        final int nUnique = keySet.size();
         if (nUnique == size && alreadySorted) {
             indices.ensureCapacity(size);
             for (int i = 0; i < size; i++)
@@ -1245,8 +1242,8 @@ public class FloatArray extends PrimitiveArray {
         }
 
         //store all the elements in an array
-        Object unique[] = new Object[nUnique];
-        Iterator iterator = keySet.iterator();
+        final Object unique[] = new Object[nUnique];
+        final Iterator iterator = keySet.iterator();
         int count = 0;
         while (iterator.hasNext())
             unique[count++] = iterator.next();
@@ -1259,23 +1256,23 @@ public class FloatArray extends PrimitiveArray {
 
         //put the unique values back in the hashMap with the ranks as the associated values
         //and make tUnique 
-        float tUnique[] = new float[nUnique];
+        final float tUnique[] = new float[nUnique];
         for (int i = 0; i < count; i++) {
-            hashMap.put(unique[i], new Integer(i));
+            hashMap.put(unique[i], Integer.valueOf(i));
             tUnique[i] = ((Float)unique[i]).floatValue();
         }
 
         //convert original values to ranks
-        int ranks[] = new int[size];
+        final int ranks[] = new int[size];
         lastValue = array[0];
-        ranks[0] = ((Integer)hashMap.get(new Float(lastValue))).intValue();
+        ranks[0] = ((Integer)hashMap.get(Float.valueOf(lastValue))).intValue();
         int lastRank = ranks[0];
         for (int i = 1; i < size; i++) {
             if (array[i] == lastValue) {
                 ranks[i] = lastRank;
             } else {
                 lastValue = array[i];
-                ranks[i] = ((Integer)hashMap.get(new Float(lastValue))).intValue();
+                ranks[i] = ((Integer)hashMap.get(Float.valueOf(lastValue))).intValue();
                 lastRank = ranks[i];
             }
         }
@@ -1294,9 +1291,9 @@ public class FloatArray extends PrimitiveArray {
      * @param tTo   the new value (use "" or "NaN"  for standard missingValue)
      * @return the number of values switched
      */
-    public int switchFromTo(String tFrom, String tTo) {
-        float from = String2.parseFloat(tFrom);
-        float to   = String2.parseFloat(tTo);
+    public int switchFromTo(final String tFrom, final String tTo) {
+        final float from = String2.parseFloat(tFrom);
+        final float to   = String2.parseFloat(tTo);
         if ((Float.isNaN(from) && Float.isNaN(to)) ||
             (from == to))
             return 0;
@@ -1327,9 +1324,9 @@ public class FloatArray extends PrimitiveArray {
      * @param dar
      * @return the corresponding float[]
      */
-    public static float[] toArrayOfFloats(double dar[]) {
-        int n = dar.length;
-        float far[] = new float[n];
+    public static float[] toArrayOfFloats(final double dar[]) {
+        final int n = dar.length;
+        final float far[] = new float[n];
         for (int i = 0; i < n; i++) 
             far[i] = (float)dar[i];
         return far;
@@ -1366,7 +1363,7 @@ public class FloatArray extends PrimitiveArray {
             return "";
         //average is closer to exact than first diff
         //and usually detects not-evenly-spaced anywhere in the array on first test!
-        float average = (array[size-1] - array[0]) / (size - 1); 
+        final float average = (array[size-1] - array[0]) / (size - 1); 
         for (int i = 1; i < size; i++) {
             //This is a difficult test to do well. See tests below.
             if (Math2.almostEqual( 4, array[i] - array[i - 1], average)) { 
@@ -1396,7 +1393,7 @@ public class FloatArray extends PrimitiveArray {
     public String isCrudelyEvenlySpaced() {
         if (size <= 2)
             return "";
-        float diff = array[1] - array[0];
+        final float diff = array[1] - array[0];
         for (int i = 2; i < size; i++) {
             //This is a difficult test to do well. See tests below.
             //1e7 avoids fEps test in almostEqual

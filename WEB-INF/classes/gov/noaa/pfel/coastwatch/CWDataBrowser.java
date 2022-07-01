@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This creates an HTML page which lets users pick a CoastWatch 
@@ -571,7 +571,7 @@ public class CWDataBrowser extends EmaClass  {
 
         //update requestedFilesMap
         Integer I = (Integer)requestedFilesMap.get(gifName);
-        requestedFilesMap.put(gifName, new Integer(I == null? 1 : I.intValue() + 1)); 
+        requestedFilesMap.put(gifName, Integer.valueOf(I == null? 1 : I.intValue() + 1)); 
 
         //end of table, end of form
         sb.append(getEndOfHTMLForm(startTime, ""));

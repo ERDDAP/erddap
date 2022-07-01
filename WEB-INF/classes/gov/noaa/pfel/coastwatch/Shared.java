@@ -34,8 +34,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Vector;
-//import javax.servlet.http.HttpServletRequest;
-//import javax.servlet.http.HttpSession;
+//import jakarta.servlet.http.HttpServletRequest;
+//import jakarta.servlet.http.HttpSession;
 
 /**
  * This class holds things that are shared throughout the CWBrowser program
@@ -270,8 +270,8 @@ String2.log("!!!Category=" + category);
                     //this mirrors code for normal success below
                     tActiveVectorOptions.add(oneOf.vectorOptions()[vectorI]);
                     tActiveVector7Names.add(oneOf.vectorInfo()[vectorI][OneOf.VIInternalName]);
-                    tActiveVectorXDataSetIndexes.add(new Integer(-1)); //-1 is place holder for XDataSet
-                    tActiveVectorYDataSetIndexes.add(new Integer(-1)); 
+                    tActiveVectorXDataSetIndexes.add(Integer.valueOf(-1)); //-1 is place holder for XDataSet
+                    tActiveVectorYDataSetIndexes.add(Integer.valueOf(-1)); 
                     activeVectorContents.add(new Object[]{
                         new String[]{},   //String2.toStringArray(tActiveVectorTimePeriodOptions), 
                         new String[]{""}, //String2.toStringArray(tActiveVectorTimePeriodTitles), 0=main title
@@ -359,8 +359,8 @@ String2.log("!!!Category=" + category);
                     String tOption = oneOf.vectorOptions()[vectorI];
                     tActiveVectorOptions.add(tOption);
                     tActiveVector7Names.add(oneOf.vectorInfo()[vectorI][OneOf.VIInternalName]);
-                    tActiveVectorXDataSetIndexes.add(new Integer(xDataSetIndex));
-                    tActiveVectorYDataSetIndexes.add(new Integer(yDataSetIndex));
+                    tActiveVectorXDataSetIndexes.add(Integer.valueOf(xDataSetIndex));
+                    tActiveVectorYDataSetIndexes.add(Integer.valueOf(yDataSetIndex));
                     activeVectorContents.add(new Object[]{
                         String2.toStringArray(tActiveVectorTimePeriodOptions.toArray()), 
                         String2.toStringArray(tActiveVectorTimePeriodTitles.toArray()), 
@@ -503,8 +503,8 @@ String2.log("!!!Category=" + category);
                     //this mirrors code for normal success below
                     tActivePointVectorOptions.add(tOption);
                     tActivePointVector7Names.add(oneOf.pointVectorInfo()[pointVectorI][OneOf.PVIInternalName]);
-                    tActivePointVectorXDataSetIndexes.add(new Integer(-1)); //-1 is place holder for XDataSet
-                    tActivePointVectorYDataSetIndexes.add(new Integer(-1)); 
+                    tActivePointVectorXDataSetIndexes.add(Integer.valueOf(-1)); //-1 is place holder for XDataSet
+                    tActivePointVectorYDataSetIndexes.add(Integer.valueOf(-1)); 
                     activePointVectorOriginalIndex.add(pointVectorI);
                     continue;
                 }
@@ -547,8 +547,8 @@ String2.log("!!!Category=" + category);
                 //  -> a dataSet name 
                 tActivePointVectorOptions.add(tOption);
                 tActivePointVector7Names.add(oneOf.pointVectorInfo()[pointVectorI][OneOf.PVIInternalName]);
-                tActivePointVectorXDataSetIndexes.add(new Integer(xDataSetIndex));
-                tActivePointVectorYDataSetIndexes.add(new Integer(yDataSetIndex));
+                tActivePointVectorXDataSetIndexes.add(Integer.valueOf(xDataSetIndex));
+                tActivePointVectorYDataSetIndexes.add(Integer.valueOf(yDataSetIndex));
                 activePointVectorOriginalIndex.add(pointVectorI);
                 if (oneOf.verbose()) 
                     String2.log("pointVectorI=" + pointVectorI + " " + tOption + " is active."); 

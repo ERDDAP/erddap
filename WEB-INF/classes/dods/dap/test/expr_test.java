@@ -46,9 +46,9 @@ public class expr_test {
 
 	try {
 	    Getopts opts = new Getopts("sp", args);
-	    if(opts.getSwitch(new Character('p')).set)
+	    if(opts.getSwitch(Character.valueOf('p')).set)
 		parser_test = true;
-	    if(opts.getSwitch(new Character('s')).set)
+	    if(opts.getSwitch(Character.valueOf('s')).set)
 		scanner_test = true;
 	}
 	catch (InvalidSwitch e) {

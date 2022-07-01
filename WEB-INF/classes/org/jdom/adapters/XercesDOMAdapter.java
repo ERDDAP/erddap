@@ -100,7 +100,7 @@ public class XercesDOMAdapter extends AbstractDOMAdapter {
             // Set validation
             Method setFeature = parserClass.getMethod(
                 "setFeature",
-                new Class[] {java.lang.String.class, boolean.class});
+                new Class[] {String.class, boolean.class});
             setFeature.invoke(parser, 
                 new Object[] {"http://xml.org/sax/features/validation",
                 new Boolean(validate)});

@@ -271,21 +271,21 @@ public class HdfWriter  {
             throw new RuntimeException(errorIn + "object is null for '" + name + "'.");
 
         boolean result;
-        if (o instanceof String) {
-            byte bar[] = ((String)o).getBytes();
+        if (o instanceof String t) {
+            byte bar[] = t.getBytes();
             result = sdSetAttr(id, name, HdfConstants.DFNT_CHAR8, bar.length, bar);
-        } else if (o instanceof byte[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_INT8, ((byte[])o).length, o);
-        else if (o instanceof short[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_INT16, ((short[])o).length, o);
-        else if (o instanceof int[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_INT32, ((int[])o).length, o);
-        else if (o instanceof long[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_INT64, ((long[])o).length, o);
-        else if (o instanceof float[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_FLOAT32, ((float[])o).length, o);
-        else if (o instanceof double[])
-            result = sdSetAttr(id, name, HdfConstants.DFNT_FLOAT64, ((double[])o).length, o);
+        } else if (o instanceof byte[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_INT8, t.length, o);
+        else if (o instanceof short[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_INT16, t.length, o);
+        else if (o instanceof int[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_INT32, t.length, o);
+        else if (o instanceof long[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_INT64, t.length, o);
+        else if (o instanceof float[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_FLOAT32, t.length, o);
+        else if (o instanceof double[] t)
+            result = sdSetAttr(id, name, HdfConstants.DFNT_FLOAT64, t.length, o);
         else throw new ClassNotFoundException (errorIn + "unsupported object type for '" + name + "'.");
 
         //result = HDFLibrary.SDsetattr(fileID, name, HDFConstants.DFNT_CHAR8, data.length, data);

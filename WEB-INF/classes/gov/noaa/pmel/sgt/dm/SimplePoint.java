@@ -193,8 +193,8 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
     long old = tloc_;
     tloc_ = t;
     changes_.firePropertyChange("dataModified",
-                                new Long(old),
-                                new Long(tloc_));
+                                Long.valueOf(old),
+                                Long.valueOf(tloc_));
   }
   /**
    * Is the X coordinate Time?
@@ -260,8 +260,8 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
     double old = xloc_;
     xloc_ = xloc;
     changes_.firePropertyChange("dataModified",
-                                new Double(old),
-                                new Double(xloc_));
+                                Double.valueOf(old),
+                                Double.valueOf(xloc_));
   }
   /**
    * Set the Y coordinate.
@@ -271,8 +271,8 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
     double old = yloc_;
     yloc_ = yloc;
     changes_.firePropertyChange("dataModified",
-                                new Double(old),
-                                new Double(yloc_));
+                                Double.valueOf(old),
+                                Double.valueOf(yloc_));
   }
   /**
    * The the associated value and basic metadata.
@@ -288,8 +288,8 @@ public class SimplePoint implements SGTPoint, Cartesian, Cloneable, Serializable
     valueMetaData_ = new SGTMetaData(name, units);
     hasValue_ = true;
     changes_.firePropertyChange("associatedDataModified",
-                                new Double(old),
-                                new Double(value_));
+                                Double.valueOf(old),
+                                Double.valueOf(value_));
   }
   /**
    * Set the <code>SGTMetaData</code> associated with the x

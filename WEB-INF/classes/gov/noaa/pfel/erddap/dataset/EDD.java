@@ -73,8 +73,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -346,7 +346,7 @@ public abstract class EDD {
      */
     protected String[] accessibleTo = null; 
 
-    protected static HashSet graphsAccessibleTo_fileTypeNames;
+    protected static HashSet<String> graphsAccessibleTo_fileTypeNames;
     private boolean graphsAccessibleToPublic = false; //safe default, but it will be set explicitly in constructor.
 
     /** The localSourceUrl actually used to get data (e.g., the url which works in the DMZ, 
@@ -2110,8 +2110,8 @@ public abstract class EDD {
 
             //add the list of variables
             sb.append("VARIABLES"); 
-            if (this instanceof EDDGrid) 
-                sb.append(" (all of which use the dimensions " + ((EDDGrid)this).allDimString() + ")");
+            if (this instanceof EDDGrid eddGrid) 
+                sb.append(" (all of which use the dimensions " + eddGrid.allDimString() + ")");
             sb.append(":\n");
             nLines++;
             for (int dv = 0; dv < dataVariables.length; dv++) {
@@ -4937,7 +4937,7 @@ public abstract class EDD {
         String removePrefixes[] = {"fgdc_", "fgdc:", "HDF5_GLOBAL_", "HDF5_GLOBAL."};
         //fgdc_metadata_url is fgdc metadata, so not so useful as infoUrl
         String infoUrl = null;
-        HashSet toRemove = new HashSet(Arrays.asList( 
+        HashSet<String> toRemove = new HashSet(Arrays.asList( 
             //Enter them lowercase here. The search for them is case-insensitive.
             "_ncproperties", //If I write this, netcdf nc4 code later throws Exception when it writes its own version 
             "cols", "columns", "cpu", 
@@ -7188,8 +7188,8 @@ public abstract class EDD {
         //  and be composed of letters, digits, and underscores."
         //Technically, starting with _ is not allowed, but it is widely done: 
         //  e.g., _CoordinateAxes, _CoordSysBuilder
-        String removePrefixes[] = {"fgdc_", "fgdc:", "HDF5_", "HDF5."}; //e.g., HDF5_chunksize
-        String toRemove[] = {  //lowercase here. Removal is case-insensitive.
+        final String removePrefixes[] = {"fgdc_", "fgdc:", "HDF5_", "HDF5."}; //e.g., HDF5_chunksize
+        final String toRemove[] = {  //lowercase here. Removal is case-insensitive.
             "bounds", 
             "_chunksize", "_chunksizes", "chunksize", "chunksizes", //plural is from netcdf-java 4.6.4+
             "_coordinateaxes", "coordinates", "coordintates",//sic //coordinate info often wrong or with sourceNames
@@ -7278,8 +7278,8 @@ public abstract class EDD {
         if (!String2.isSomething2(tUnits)) {
             //rtofs grads
             //sea_water_practical_salinity units = "1" in CF std names 27; I'm sticking with PSU.
-            String from[] = {"degc",     "psu",  "m/s",   "m", "Presumed Salinity Units"};
-            String to[]   = {"degree_C", "PSU",  "m s-1", "m", "PSU"}; 
+            final String from[] = {"degc",     "psu",  "m/s",   "m", "Presumed Salinity Units"};
+            final String to[]   = {"degree_C", "PSU",  "m s-1", "m", "PSU"}; 
             for (int i = 0; i < from.length; i++) {
                 if (oLongName.endsWith(" (" + from[i] + ")")) {  //e.g. " (degc)"
                     tUnits = to[i];
@@ -10379,7 +10379,7 @@ public abstract class EDD {
                     return badFilesMap;
                 for (int row = 0; row < nRows; row++) 
                     badFilesMap.put(badTable.getStringData(0, row), 
-                        new Object[]{new Long(badTable.getLongData(1, row)),
+                        new Object[]{Long.valueOf(badTable.getLongData(1, row)),
                                      badTable.getStringData(2, row)});
             }
             return badFilesMap;
@@ -10456,7 +10456,7 @@ public abstract class EDD {
     public void addBadFile(ConcurrentHashMap badFileMap, int dirIndex, String fileName, 
             long lastMod, String reason) {
         String2.log(datasetID + " addBadFile: " + fileName + "\n  reason=" + reason);
-        badFileMap.put(dirIndex + "/" + fileName, new Object[]{new Long(lastMod), reason});
+        badFileMap.put(dirIndex + "/" + fileName, new Object[]{Long.valueOf(lastMod), reason});
     }
 
     /** 
@@ -10797,9 +10797,8 @@ public abstract class EDD {
                     "\n    infoFileName=" + infoFileName);
 
             //if the pngInfo file is at a remote ERDDAP, get it and store it as if created here
-            if (this instanceof FromErddap &&
+            if (this instanceof FromErddap fe &&
                 !File2.isFile(infoFileName)) {
-                FromErddap fe = (FromErddap)this;
                 if (fe.intSourceErddapVersion() > 122) {
                     //if this fails, the method fails since infoFile isn't in the dir anyway
                     String tUrl = fe.getLocalSourceErddapUrl() + fileTypeName + "Info" +
@@ -11180,8 +11179,7 @@ public abstract class EDD {
         results.append("**************************** The .dds for " + tDatasetID + " ****************************\n");
         results.append(File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName) + "\n");
 
-        if (edd instanceof EDDGrid) {
-            EDDGrid eddGrid = (EDDGrid)edd;
+        if (edd instanceof EDDGrid eddGrid) {
             if (eddGrid.timeIndex() >= 0) {
                 results.append("************************* The .timeGaps for " + tDatasetID + " *************************\n");
                 results.append(eddGrid.findTimeGaps());
@@ -11537,8 +11535,8 @@ if (accessibleTo != null)
         "but this dataset has accessibleTo limitions."); 
 
 String tSearchUrl = EDStatic.erddapUrl;
-if (this instanceof FromErddap) {
-    tSearchUrl = ((FromErddap)this).getPublicSourceErddapUrl();
+if (this instanceof FromErddap fromErddap) {
+    tSearchUrl = fromErddap.getPublicSourceErddapUrl();
     int tpo = tSearchUrl.indexOf(isGrid? "/griddap/" : "/tabledap/");
     tSearchUrl = tSearchUrl.substring(0, tpo);
 }
@@ -11788,7 +11786,7 @@ sb.append(
         int nLines = lines.size();
 
         //make HashSet with datasetIDs
-        HashSet hashset = new HashSet();
+        HashSet<String> hashset = new HashSet();
         for (int line = 0; line < nLines; line++) 
             hashset.add(String2.split(lines.get(line), ',')[0]);
 

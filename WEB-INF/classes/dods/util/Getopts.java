@@ -98,7 +98,7 @@ public class Getopts extends Object {
      *  @param sw	int value switch whose option is requested
      */
     public String getOption(int sw) {
-	Character  opt = new Character((char) sw);
+	Character  opt = Character.valueOf((char) sw);
 	return getOption(opt);
     }
 
@@ -149,7 +149,7 @@ public class Getopts extends Object {
 	for (int i = 0; i < flags.length(); i++) {
 	    boolean found;
 	    int  cc = flags.charAt(i);
-	    Character c = new Character((char) cc);
+	    Character c = Character.valueOf((char) cc);
 	    char alpha[] = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
 			     'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 
 			     's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
@@ -164,7 +164,7 @@ public class Getopts extends Object {
 
 	    found = false;
 	    for (int j = 0; j < alpha.length; j++) {
-		Character  ch = new Character((char) alpha[j]);
+		Character  ch = Character.valueOf((char) alpha[j]);
 		char uc = Character.toUpperCase(ch.charValue());
 		if (alpha[j] == cc || uc == cc) {
 		    found = true;
@@ -191,7 +191,7 @@ public class Getopts extends Object {
 				    		usage + "\n");
 		    }
 		    else {
-			Character cp = new Character((char) prv);
+			Character cp = Character.valueOf((char) prv);
 			OptSwitch sw = (OptSwitch) switchtab.get(cp);
 			sw.SetHasValue(OptSwitch.VAL);
 		    }
@@ -219,7 +219,7 @@ public class Getopts extends Object {
 	    // more options, iterate them
 	    for (int j = 1; j < args[i].length(); j++) {
 		cc = args[i].charAt(j);
-		Character fc = new Character(cc);
+		Character fc = Character.valueOf(cc);
 		OptSwitch cs = (OptSwitch) switchtab.get(fc);
 		if (cs == null) {
 		    // The supplied switch wasn't recognised.

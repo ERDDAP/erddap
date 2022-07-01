@@ -157,8 +157,8 @@ public class ScriptRow  {
         //numeric with integers
         jscript = jengine.createScript("x+y");
         jcontext = new MapContext();
-        jcontext.set("x", new Integer(2));
-        jcontext.set("y", new Integer(3));
+        jcontext.set("x", Integer.valueOf(2));
+        jcontext.set("y", Integer.valueOf(3));
         o = jscript.execute(jcontext);
         Test.ensureEqual(o.getClass().getSimpleName(), "Integer", "");
         Test.ensureEqual(((Integer)o).intValue(), 5, "");
@@ -166,14 +166,14 @@ public class ScriptRow  {
         //numeric with integers
         jscript = jengine.createScript("x +=1; x+y;");
         jcontext = new MapContext();
-        jcontext.set("x", new Integer(2));
-        jcontext.set("y", new Double(2.5));
+        jcontext.set("x", Integer.valueOf(2));
+        jcontext.set("y", Double.valueOf(2.5));
         o = jscript.execute(jcontext);
         Test.ensureEqual(o.getClass().getSimpleName(), "Double", "");
         Test.ensureEqual(((Double)o).doubleValue(), 5.5, "");
 
         //reuse jscript.  Set new mapContext values
-        jcontext.set("x", new Integer(20));
+        jcontext.set("x", Integer.valueOf(20));
         o = jscript.execute(jcontext);
         Test.ensureEqual(o.getClass().getSimpleName(), "Double", "");
         Test.ensureEqual(((Double)o).doubleValue(), 23.5, "");
@@ -210,7 +210,7 @@ public class ScriptRow  {
             results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results, 
-            "Caught: java.lang.NullPointerException",
+            "Caught: java.lang.NullPointerException: Cannot invoke \"Object.toString()\" because the return value of \"org.apache.commons.jexl3.JexlScript.execute(org.apache.commons.jexl3.JexlContext)\" is null",
             //2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 
@@ -268,7 +268,7 @@ public class ScriptRow  {
             results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results,
-            "Caught: java.lang.NullPointerException",
+            "Caught: java.lang.NullPointerException: Cannot invoke \"Object.getClass()\" because \"<local3>\" is null",
             //2021-07-02 was  "org.apache.commons.jexl3.JexlException$Method: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:37 unsolvable function/method 'getProperty'",
             "");
 
@@ -356,7 +356,7 @@ public class ScriptRow  {
             results = "Caught: " + e.toString();
         }
         Test.ensureEqual(results, 
-            "Caught: java.lang.NullPointerException",
+            "Caught: java.lang.NullPointerException: Cannot invoke \"Object.toString()\" because the return value of \"org.apache.commons.jexl3.JexlScript.execute(org.apache.commons.jexl3.JexlContext)\" is null",
             //2021-07-02 was "org.apache.commons.jexl3.JexlException$Variable: gov.noaa.pfel.coastwatch.pointdata.ScriptRow.basicTest@1:1 undefined variable String2", 
             "results=\n" + results);
 

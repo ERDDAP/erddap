@@ -465,8 +465,8 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
     xTime_ = false;
     xRange_ = computeSoTRange(xloc);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(xloc.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(xloc.length));
   }
   /**
    * Set the y coordinate grid centers
@@ -477,8 +477,8 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
     yTime_ = false;
     yRange_ = computeSoTRange(yloc);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(yloc.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(yloc.length));
   }
   /**
    * Set the z coordinate grid centers
@@ -489,8 +489,8 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
     zTime_ = false;
     zRange_ = computeSoTRange(zloc);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(zloc.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(zloc.length));
   }
   /**
    * Set the z grid values.
@@ -500,8 +500,8 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
     grid_ = grid;
     valRange_ = computeRange2D(grid);
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(grid.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(grid.length));
   }
   /**
    * set the temporal grid centers
@@ -519,8 +519,8 @@ public class ThreeDGrid implements SGT3DGrid, Cartesian, Cloneable, Serializable
       zRange_ = computeSoTRange(tloc);
     }
     changes_.firePropertyChange("dataModified",
-                                new Integer(0),
-                                new Integer(tloc.length));
+                                Integer.valueOf(0),
+                                Integer.valueOf(tloc.length));
   }
   public SoTRange getXRange() {
     return xRange_.copy();

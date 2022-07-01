@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.Vector;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.ServletException;
 
 /**
  * You can make subclasses of this class to store groups of attributes.
@@ -682,7 +682,7 @@ public class EmaClass extends HttpServlet {
     public EmaAttribute getAttribute(String name) {
 
         Object o = attributeMap.get(name);
-        return o instanceof EmaAttribute? (EmaAttribute)o : null;
+        return o instanceof EmaAttribute ea? ea : null;
     }
 
     /**

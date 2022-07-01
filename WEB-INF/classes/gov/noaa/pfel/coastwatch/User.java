@@ -4,8 +4,8 @@
  */
 package gov.noaa.pfel.coastwatch;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * This is a collection of the things unique to a user's CWBrowser session.

@@ -167,11 +167,11 @@ public class GridAttribute implements Attribute,
    **/
   public void setStyle(int st) {
     if(style_ != st) {
-      Integer tempOld = new Integer(style_);
+      Integer tempOld = Integer.valueOf(style_);
       style_ = st;
       firePropertyChange("style",
                                   tempOld,
-                                  new Integer(style_));
+                                  Integer.valueOf(style_));
     }
   }
   /**

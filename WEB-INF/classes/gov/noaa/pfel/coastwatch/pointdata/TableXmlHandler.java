@@ -64,7 +64,7 @@ public class TableXmlHandler extends DefaultHandler {
     private boolean inRow;
     private StringArray nameStack;
     private StringArray uniqueNameStack;
-    private ArrayList hashsetStack;
+    private ArrayList<HashSet> hashsetStack;
     private StringBuilder characters; 
     
 
@@ -189,7 +189,7 @@ public class TableXmlHandler extends DefaultHandler {
         //make the unique name for this element
         if (inRow && nameStack.size() > rowStackSize) { //a child which is inRow 
             //find countString which makes the name unique
-            HashSet parentHashset = (HashSet)hashsetStack.get(nameStack.size() - 2);
+            HashSet<String> parentHashset = hashsetStack.get(nameStack.size() - 2);
             int count = 1;
             String countString = "";
             while (!parentHashset.add(qName + countString)) { //false= not successfully added  i.e., it was already there

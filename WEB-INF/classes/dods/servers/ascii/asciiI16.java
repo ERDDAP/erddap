@@ -61,7 +61,7 @@ public class asciiI16 extends DInt16 implements toASCII {
         if(addName)
             pw.print(", ");
 	            
-        pw.print((new Short(getValue())).toString());
+        pw.print((Short.valueOf(getValue())).toString());
 
         if(newLine)
             pw.print("\n");

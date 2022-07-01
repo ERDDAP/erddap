@@ -24,8 +24,8 @@ package dods.servers.test;
 
 import java.io.*;
 import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.util.zip.DeflaterOutputStream;
 
 
@@ -49,7 +49,7 @@ import dods.servlet.ReqState;
  * types.
  * <p/>
  * <strong>Configuration:</strong><br>
- * The DODSServlet relies on the javax.servlet.ServletConfig
+ * The DODSServlet relies on the jakarta.servlet.ServletConfig
  * interface (in particular the getInitParameter() method)
  * to retrieve configuration information used by the servlet.
  * <strong>InitParameters:</strong>

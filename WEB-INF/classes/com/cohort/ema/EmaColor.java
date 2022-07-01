@@ -10,7 +10,7 @@ import com.cohort.util.String2;
 import com.cohort.util.XML;
 import java.awt.Color;
 import java.util.ArrayList;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * This class holds the properties for displaying radio buttons so the user

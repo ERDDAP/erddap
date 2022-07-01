@@ -60,7 +60,7 @@ public class asciiF64 extends DFloat64 implements toASCII {
         if(addName)
             pw.print(", ");
 	            
-       pw.print((new Double(getValue())).toString());
+       pw.print((Double.valueOf(getValue())).toString());
        
        if(newLine)
            pw.print("\n");

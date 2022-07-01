@@ -121,8 +121,8 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/u00/data/points/SanctSound/HI/SanctSound_HI05_01_GoogleAI_humpbackwhale_1h.nc"; 
-//      String2.log(NcHelper.ncdump(tFileName, "-v time_bounds"));  
+//      String tFileName = "/data/sarah/EGIM_d01_20220503_to_20220508_v001.nc"; 
+//      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
 //      DasDds.main(new String[]{"noaaSanctSound_HI05_01_GoogleAI_humpbackwhale_1hy", "-verbose"});
 
@@ -206,7 +206,6 @@ public class TestAll  {
 //    EDD.debugMode = true;
 //    String2.log(NcHelper.ncdump("/data/goes16/20190101000000-STAR-L3C_GHRSST-SSTsubskin-ABI_G16-ACSPO_V2.70-v02.0-fv01.0.nc", 
 //        "-v sea_surface_temperature(0,0:10,0:10)")); //2nd param, e.g., "LAT;LON"));
-//   EDD.debugMode=true;
 //    s = EDDGridFromDap.generateDatasetsXml(
 //      "https://thredds.jpl.nasa.gov/thredds/dodsC/SalinityDensity/OISSS_L4_multimission_monthly_v1.nc",
 //      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
@@ -528,20 +527,20 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
 /* 
       s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        "/data/fred/", ".*\\.nc", "",
-        "", //dims 
+        "/data/sarah/", ".*\\.nc", "",
+        "TIME_PRE", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
         true, //removeMVRows  //often true
         "", //sort files by    profile_time
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
-        "", //treatDimensionsAs
+        "DEPTH,TIME_PRE", //treatDimensionsAs
         "", //cacheFromUrl  /catalog.html
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
     // */
-    //Table.debugMode = true; DasDds.main(new String[]{"hsu2", "-verbose"});
+//    Table.debugMode = true; DasDds.main(new String[]{"sarah3", "-verbose"});
 
 
 //    *** To update GTSPP (~10th of every month):
@@ -570,7 +569,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2021, 12, 2022,  4, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 3, 2022,  5, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -603,7 +602,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2021, 12, 2022,  4); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 3, 2022,  5); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -868,6 +867,7 @@ GridDataSetOpendap gdso;
 GridDataSetThredds gdst;
 GridScreen gs;
 GSHHS gshhs;
+HashDigest hd;
 Image2 i2;
 IntArray inta;
 JSONObject jo;
@@ -1094,6 +1094,36 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = false;
 
+
+//TestUtil.testString2();
+//TestUtil.testString2canonical2();
+//TestUtil.testString2canonicalStringHolder();
+//PersistentTable.basicTest();
+//StringArray.basicTest();
+//Table.testReadASCIISpeed();
+//Table.testBigAscii();
+//Table.testReadJsonSpeed(); //too slow
+//Table.testJsonlCSV();
+//WatchDirectory.basicTest();
+//EDDGridFromDap.testGenerateDatasetsXml5();
+//EDDGridLonPM180.testHardFlag();
+//EDDGridLonPM180.testBadFilesFlag();
+//EDDTableFromNcFiles.testSpeedDAF();
+//EDDTableFromNcFiles.testSpeedMAG();
+//EDDTableFromNcFiles.testSpeedSubset();
+//EDDTableFromNcFiles.testBigRequest(0,-1); //super slow in TestAll
+//EDDTableFromNcFiles.testNThreads();
+//EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -3, 3);
+//EDDTableFromAsciiFiles.testGenerateDatasetsXml2();
+//EDDTableFromFileNames.testAccessibleViaFilesFileTable(false,false);
+//EDDTableFromFileNames.testOnTheFly();
+
+//        Table table = new Table();
+//        long time = System.currentTimeMillis();
+//        table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
+//        String2.log("time=" + (System.currentTimeMillis() - time));
+
+
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 
 
@@ -1204,7 +1234,7 @@ WaitThenTryAgainException wttae;
 
         //EDDGrid
         EDD.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGrid.test(					 errorSB, interactive, doSlowTestsToo, 0, -1);
+        EDDGrid.test(                    errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridFromDap.test(             errorSB, interactive, doSlowTestsToo, 0, -1);  
         //EDDGridFromBinaryFile.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  class not finished / not in use
         EDDGridFromErddap.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
@@ -1215,7 +1245,7 @@ WaitThenTryAgainException wttae;
         EDDGridFromNcFilesUnpacked.test( errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromMergeIRFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromAudioFiles.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  
-/*        EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
+        EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridCopy.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridSideBySide.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //the best grid graphics tests are here
         EDDGridLonPM180.test(            errorSB, interactive, doSlowTestsToo, 0, -1);

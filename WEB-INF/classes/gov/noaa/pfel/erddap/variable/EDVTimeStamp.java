@@ -526,8 +526,8 @@ public class EDVTimeStamp extends EDV {
 
         //this doesn't support scaleAddOffset
         int size = source.size();
-        DoubleArray destPa = source instanceof DoubleArray?
-            (DoubleArray)source :        //make changes in place
+        DoubleArray destPa = source instanceof DoubleArray da?
+            da :        //make changes in place
             new DoubleArray(size, true); //make a new array
         if (sourceTimeIsNumeric) {
             if (setSourceMaxIsMV)

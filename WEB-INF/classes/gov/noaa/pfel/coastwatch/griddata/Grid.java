@@ -2144,33 +2144,27 @@ try {
 
             //gather data in desired order
             //do directly so as not to waste memory which is precious here since array may be huge
-            if (array instanceof ArrayDouble.D2) {
-                ArrayDouble.D2 add2 = (ArrayDouble.D2)array;
+            if (array instanceof ArrayDouble.D2 add2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = add2.get(tLat, tLon);  //here and below were "nLat-1 - tLat"  when up side down in the .nc file
-            } else if (array instanceof ArrayFloat.D2) {
-                ArrayFloat.D2 afd2 = (ArrayFloat.D2)array;
+            } else if (array instanceof ArrayFloat.D2 afd2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = afd2.get(tLat, tLon);
-            } else if (array instanceof ArrayLong.D2) {
-                ArrayLong.D2 ald2 = (ArrayLong.D2)array;
+            } else if (array instanceof ArrayLong.D2 ald2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = ald2.get(tLat, tLon);
-            } else if (array instanceof ArrayInt.D2) {
-                ArrayInt.D2 aid2 = (ArrayInt.D2)array;
+            } else if (array instanceof ArrayInt.D2 aid2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = aid2.get(tLat, tLon);
-            } else if (array instanceof ArrayShort.D2) {
-                ArrayShort.D2 asd2 = (ArrayShort.D2)array;
+            } else if (array instanceof ArrayShort.D2 asd2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = asd2.get(tLat, tLon);
-            } else if (array instanceof ArrayByte.D2) {
-                ArrayByte.D2 abd2 = (ArrayByte.D2)array;
+            } else if (array instanceof ArrayByte.D2 abd2) {
                 for (int tLon = 0; tLon < nLon; tLon++)  
                     for (int tLat = 0; tLat < nLat; tLat++) 
                         data[po++] = abd2.get(tLat, tLon);
@@ -3218,9 +3212,9 @@ try {
             xRangeVar.addAttribute(new Attribute("units", "user_x_unit"));
             yRangeVar.addAttribute(new Attribute("units", "user_y_unit"));
             zRangeVar.addAttribute(new Attribute("units", "user_z_unit"));
-            zVar.addAttribute(new Attribute("scale_factor", new Double(1.0)));
-            zVar.addAttribute(new Attribute("add_offset",   new Double(0.0)));
-            zVar.addAttribute(new Attribute("node_offset",  new Integer(0)));
+            zVar.addAttribute(new Attribute("scale_factor", Double.valueOf(1.0)));
+            zVar.addAttribute(new Attribute("add_offset",   Double.valueOf(0.0)));
+            zVar.addAttribute(new Attribute("node_offset",  Integer.valueOf(0)));
 
             rootGroup.addAttribute(new Attribute("title",  "")); 
             rootGroup.addAttribute(new Attribute("source", "CoastWatch West Coast Node"));
@@ -3762,21 +3756,21 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         throws HDFException, ClassNotFoundException {
   
         boolean result;
-        if (array instanceof String) {
-            byte bar[] = ((String)array).getBytes();
+        if (array instanceof String sa) {
+            byte bar[] = sa.getBytes();
             result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_CHAR8, bar.length, bar);
-        } else if (array instanceof byte[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT8, ((byte[])array).length, array);
-        else if (array instanceof short[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT16, ((short[])array).length, array);
-        else if (array instanceof int[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT32, ((int[])array).length, array);
-        else if (array instanceof long[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT64, ((long[])array).length, array);
-        else if (array instanceof float[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_FLOAT32, ((float[])array).length, array);
-        else if (array instanceof double[])
-            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_FLOAT64, ((double[])array).length, array);
+        } else if (array instanceof byte[] ba)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT8, ba.length, array);
+        else if (array instanceof short[] sa)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT16, sa.length, array);
+        else if (array instanceof int[] ia)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT32, ia.length, array);
+        else if (array instanceof long[] la)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_INT64, la.length, array);
+        else if (array instanceof float[] fa)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_FLOAT32, fa.length, array);
+        else if (array instanceof double[] da)
+            result = HDFLibrary.SDsetattr(id, name, HDFConstants.DFNT_FLOAT64, da.length, array);
         else throw new ClassNotFoundException ("Unsupported signed type class for: " + name);
 
         if (!result)
@@ -4272,7 +4266,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             if (hasTime) 
                 timeVar.addAttribute(NcHelper.newAttribute("actual_range", 
                     NcHelper.get1DArray(new double[]{centeredTimeDouble, centeredTimeDouble}, false)));     
-            timeVar.addAttribute(new Attribute("fraction_digits",     new Integer(0)));     
+            timeVar.addAttribute(new Attribute("fraction_digits",     Integer.valueOf(0)));     
             timeVar.addAttribute(new Attribute("long_name", hasTime? "Centered Time" : "Place Holder for Time"));
             timeVar.addAttribute(new Attribute("units",               centeredTimeUnits));
             timeVar.addAttribute(new Attribute("standard_name",       "time"));
@@ -4284,7 +4278,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             //altitude attributes
             altitudeVar.addAttribute(NcHelper.newAttribute("actual_range",    
                 NcHelper.get1DArray(new double[]{0, 0}, false)));     
-            altitudeVar.addAttribute(new Attribute("fraction_digits",        new Integer(0)));     
+            altitudeVar.addAttribute(new Attribute("fraction_digits",        Integer.valueOf(0)));     
             altitudeVar.addAttribute(new Attribute("long_name",              "Altitude"));
             altitudeVar.addAttribute(new Attribute("positive",               "up"));
             altitudeVar.addAttribute(new Attribute("standard_name",          "altitude"));
@@ -5572,7 +5566,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String newline = String2.lineSeparator;
 
         //read the land mask into a hash table
-        HashSet hashSet = new HashSet();
+        HashSet<String> hashSet = new HashSet();
         BufferedReader maskFile = File2.getDecompressedBufferedFileReader88591(landMaskFileName);
         try {
             s = maskFile.readLine(); //skip col names

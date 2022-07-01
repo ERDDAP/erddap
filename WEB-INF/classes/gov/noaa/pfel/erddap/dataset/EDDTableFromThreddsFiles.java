@@ -213,7 +213,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 int n = sourceFileName.size();
                 if (n > 1) {
                     //1) sort by sourceFileName
-                    ArrayList tfTable = new ArrayList();
+                    ArrayList<PrimitiveArray> tfTable = new ArrayList();
                     tfTable.add(sourceFileDir);
                     tfTable.add(sourceFileName);
                     tfTable.add(sourceFileLastMod);
@@ -254,7 +254,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             if (completelySuccessful && sourceFileName.size() > 0) {
                 //make a hashset of theoretical local fileNames that will exist 
                 //  after copying based on getThreddsFileInfo
-                HashSet hashset = new HashSet();
+                HashSet<String> hashset = new HashSet();
                 int nFiles = sourceFileName.size();
                 for (int f = 0; f < nFiles; f++) {
                     String sourceDir = sourceFileDir.get(f);
@@ -354,7 +354,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
                 taskOA[1] = sourceDir + sourceName;
                 taskOA[2] = localFile;
-                taskOA[3] = new Long(sourceFileLastMod.get(f));
+                taskOA[3] = Long.valueOf(sourceFileLastMod.get(f));
                 int tTaskNumber = EDStatic.addTask(taskOA);
                 if (tTaskNumber >= 0) {
                     nTasksCreated++;
@@ -387,7 +387,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                     MustBe.throwableToString(t));
         }
         if (taskNumber > -1) {
-            EDStatic.lastAssignedTask.put(tDatasetID, new Integer(taskNumber));
+            EDStatic.lastAssignedTask.put(tDatasetID, Integer.valueOf(taskNumber));
             EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
         }
     }
