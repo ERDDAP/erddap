@@ -151,6 +151,8 @@ public class HtmlWidgets {
     public static String leafletHead(String tErddapUrl) {
          return
             //leaflet.css assumes related images will be in /images/... within ERDDAP's /images
+            //previously Leaflet v1.7.1?
+            //2022-07-08 Leaflet v1.8.0
             "  <link rel=\"stylesheet\" href=\"" + tErddapUrl + "/images/leaflet.css\" >\n" +
             "  <script src=\"" + tErddapUrl + "/images/leaflet.js\"" +
                 //This is disabled for now because Chrome requires CORS header in order to validate integrity.

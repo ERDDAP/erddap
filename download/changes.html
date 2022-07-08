@@ -82,6 +82,19 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
+  <li>TO DO: ERDDAP now requires Java 17 and the related Tomcat 10.
+    You must follow the ERDDAP installation instructions (or the equivalent
+    e.g., for Docker) to install Java 17 and Tomcat 10 and copy your [tomcat]/content directory
+    from your Tomcat 8 installation into the new [tomcat] directory.
+    There are no other changes that you need to make to your ERDDAP
+    installation related to this change. In other words, ERDDAP works 
+    as it did before. This transition had to be made sometime. It's better to do it
+    before Java 8's end-of-life gets close.
+    <p>My impression of Java 17 is that it works slightly slower
+    than Java 8 with low power computers (e.g., 2 cores and minimal RAM) 
+    and works slightly faster than Java 8 with higher power computers
+    (e.g., 4+ cores and plentiful RAM) for long-running, larger applications like ERDDAP. 
+    YMMV.
   <li>TO DO: Recommended: If your server's CPU has 4+ cores, consider changing to these settings in your datasets.xml file:<kbd>
       <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
       <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
@@ -116,6 +129,9 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateMaxEvents"
         >updateMaxEvents documentation</a>.
     Thanks to John Maurer.
+  <li>KNOWN BUG in netcdf-java v5.5.2 and v5.5.3: The EDDGridFromThreddsCatalog option in GenerateDatasetsXml 
+    used to work for THREDDS catalogs that include references to datasets in remote
+    THREDDS catalogs. Now it doesn't. I have reported the problem to the netcdf-java developers.
   <li>BUG FIX: For Docker users setting setup.xml parameters via ERDDAP_<i>paramName</i>: 
     for int and boolean parameters (e.g., emailSmtpPort), ERDDAP was incorrectly looking for just <i>paramName</i>.
     Now it looks for <i>ERDDAP_paramName</i>.

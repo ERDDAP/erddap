@@ -11,31 +11,32 @@ since this is impossible for AWS S3 dependencies without Maven.
   cd \programs\mavenERDDAP
   mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
 
-* Update ERDDAP version number below in ...
-   <version>2.17-SNAPSHOT</version>
+* Copy Java source files from Tomcat/webapps/cwexperimental to Maven:
+    With bash:
+      cd /c/content/bat
+      ./synchToMaven.sh
 
-* Update the version numbers starting with <dependencyManagement> section.
+* Update ERDDAP version number below in ...
+   <version>2.19-SNAPSHOT</version>
+
+* Update the version numbers starting with <plugins> section.
   Website to search for maven plugins and dependencies: https://mvnrepository.com/ 
 
 * Compile in Maven and gather dependency .jar files
   (pom.xml based on Kyle's pom from https://github.com/axiom-data-science/erddap )
 
-  Copy Java source files from Tomcat/webapps/cwexperimental to Maven:
-    With bash:
-      cd /c/content/bat
-      ./synchToMaven.sh
-
   From DOS command line (or Bash) (after synchToMaven.sh has copied source files to Maven dir):
       //mvn -help 
       //add -e for full error messages
       //add -X for debug messages
-      cd /programs/mavenERDDAP/ERDDAP   //that's where pom.xml is
-      set "JAVA_HOME=C:\programs\jdk8u312-b07"
+      cd \programs\mavenERDDAP\ERDDAP   //that's where pom.xml is
+      set "JAVA_HOME=C:\programs\jdk-17.0.3+7"      
       mvn clean               //removes previously generated .class files and ...
       mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
       mvn dependency:analyze  //Identifies excess or missing dependencies/.jars.
-                              //  Expected: WARNINGS for Cassandra dependencies:
-                              //    slf4j, guava, lz4, metrics, netty, snappy.
+                              //  Expected: 
+                              //    WARNINGS for postgresql.jar and Cassandra dependencies:
+                              //      slf4j, guava, lz4, metrics, netty, snappy.
       mvn package             //Creates a war in \programs\mavenERDDAP\ERDDAP\target
       (then copy netcdfAll-x.x.x.jar into /lib)
 
@@ -57,7 +58,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <groupId>gov.noaa.pfel.erddap</groupId>
     <artifactId>ERDDAP</artifactId>
-    <version>2.17-SNAPSHOT</version>
+    <version>2.19-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>erddap</name>
@@ -67,13 +68,30 @@ since this is impossible for AWS S3 dependencies without Maven.
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- was repositories>
+    <repositories>
+        <!-- Use this if you switch away from netcdfAll.jar to modules
+             Published advice: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
+             Repository https://artifacts.unidata.ucar.edu/repository/unidata-all      (on web page)
+                or      https://artifacts.unidata.ucar.edu/repository/unidata-releases (privately)
+              Browse either https://artifacts.unidata.ucar.edu/#browse/browse
+             - ->
         <repository>
-            <id>unidata-releases</id>
-            <name>UNIDATA Releases</name>
-            <url>https://artifacts.unidata.ucar.edu/repository/unidata-releases/</url>
-        </repository>
-    </repositories  -->
+            <id>unidata-all</id>   
+            <name>UNIDATA All</name>
+            <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
+        </repository> -->
+
+        <!-- NOT ACTIVE. Close, but couldn't get to work with mvn compile.
+          See netcdfAll.jar dependency below.
+          [This approach is from https://stackoverflow.com/questions/3765903/how-to-include-local-jar-files-in-maven-project ]
+          - ->
+        <repository>
+            <id>data-local</id>
+            <name>data</name>
+            <url>file://C/programs/mavenERDDAP/ERDDAP/repo</url>
+        </repository> -->
+
+    </repositories>
 
     <build>
         <resources>
@@ -95,11 +113,11 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <failOnError>true</failOnError>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>   <!-- java version -->
+                    <target>17</target>
                     <excludes>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/LandMask.javaINACTIVE</exclude>
                         <exclude>gov/noaa/pfel/coastwatch/sgt/MapGraph.javaINACTIVE</exclude>
@@ -137,24 +155,21 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <version>3.3.2</version>
             </plugin>
 
-            <!-- https://mvnrepository.com/artifact/org.apache.tomcat.maven/tomcat8-maven-plugin -->
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat8-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <port>8081</port>
-                    <path>/erddap</path>
-                </configuration>
-            </plugin>
-
-            <!-- https://mvnrepository.com/artifact/com.googlecode.maven-download-plugin/download-maven-plugin
-              This approach is from Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml 
-              I think this isn't needed/doesn't work(?). 
-              Instead, just download netcdfAll 
+            <!-- NOT ACTIVE. See above and below.
+              Download netcdfAll  
                 from https://artifacts.unidata.ucar.edu/#browse/browse:downloads-netcdf-java
-                to c:/programs/mavenERDDAP/ERDDAP/external_libs/
-            -->
+                then choose version number,
+                then click on file, 
+                then click on "Path" to right to actually download
+                and save to c:/programs/mavenERDDAP/ERDDAP/external_libs/
+                Update version number below.
+                Note that code below doesn't download netcdfAll (as hoped)
+                  but it does identify that the jar should be included in mvn compile.
+                  (mvn compile says "File already exist, skipping".)
+              Alternative that didn't work for me: 
+                This approach is from Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml 
+                I think this isn't needed/doesn't work(?). 
+            - ->
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
@@ -167,12 +182,12 @@ since this is impossible for AWS S3 dependencies without Maven.
                         </goals>
                         <configuration>
                             <url>https://artifacts.unidata.ucar.edu/repository/downloads-netcdf-java/5.5.2/netcdfAll-5.5.2.jar</url>
-                            <outputFileName>netcdfAll-5.5.2.jar</outputFileName>
+                            <outputFileName>netcdfAll-5.5.3.jar</outputFileName>
                             <outputDirectory>${project.basedir}/external_libs</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin> -->
         </plugins>
         <pluginManagement>
           <plugins>
@@ -186,7 +201,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
                 <plugin>
@@ -204,7 +219,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.codehaus.plexus</groupId>
                     <artifactId>plexus-utils</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.4.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -218,7 +233,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.17.130</version>
+              <version>2.17.224</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -227,6 +242,20 @@ since this is impossible for AWS S3 dependencies without Maven.
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api  -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+            <!-- Tomcat8 needed this. Tomcat10 doesn't allow it.
+            <configuration>
+                <port>8081</port>
+                <path>/erddap</path>
+            </configuration -->
+        </dependency> 
+
 
         <!-- https://mvnrepository.com/artifact/junit/junit
              There are newer versions with different domain name, but cause trouble with dependency checking. 
@@ -292,7 +321,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>8.11.1</version>
+            <version>9.2.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -300,7 +329,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>8.11.1</version>
+            <version>9.2.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -308,7 +337,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20211205</version>
+            <version>20220320</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -334,15 +363,6 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>0.4.1</version>
         </dependency-->
 
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api 
-             This is the servlet API used by ERDDAP. -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.sun.mail/jakarta.mail 
              Used to send emails. -->
         <dependency>
@@ -350,6 +370,15 @@ since this is impossible for AWS S3 dependencies without Maven.
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.1</version>
         </dependency>
+
+        <!-- versions: https://mvnrepository.com/artifact/commons-codec/commons-codec
+             dependency:analyze says it's needed if using netcdf modules
+             but it's in netcdfAll.jar - ->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency> -->
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-compress 
              File2 and EDDTableFromNcFiles use this. -->
@@ -359,6 +388,17 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>1.21</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging
+             dependency:analyze says it's needed if using netcdf modules
+             but it's in netcdfAll.jar 
+             Maven says 1.2's dependencies have 4 vulnerabilities, but all are old log4j vulnerabilities,
+               so ERDDAP admins shouldn't use old log4j (or any log4j). - ->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency> -->
+
         <!-- https://mvnrepository.com/artifact/jaxen/jaxen 
              org.jdom.xpath code uses this. -->
         <dependency>
@@ -367,35 +407,166 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>1.2.0</version>
         </dependency>
 
-        <!-- https://artifacts.unidata.ucar.edu/service/rest/repository/browse/unidata-releases/edu/ucar/netcdfAll/
-             which gets jars from repository=https://artifacts.unidata.ucar.edu/repository/unidata-releases/ as specified above.
-             From Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml
-             This is not up-to-date: https://mvnrepository.com/artifact/edu.ucar/netcdfAll 
-             This is the netcdf-java library. -->
+        <!-- To use downloaded local netcdf-all:
+            repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar 
+            [This approach is based on second answer from 
+             https://stackoverflow.com/questions/3765903/how-to-include-local-jar-files-in-maven-project ]
+         -->
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>netcdfAll</artifactId>
-            <version>5.5.2</version>
+            <version>5.5.3</version>
             <scope>system</scope>
-            <systemPath>${basedir}/external_libs/netcdfAll-5.5.2.jar</systemPath>
+            <systemPath>C:/programs/mavenERDDAP/ERDDAP/repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar</systemPath> <!-- gets WARNING about absolute path, but okay -->
         </dependency>
-        <!-- was
+
+        <!-- These will be needed if I ever switch away from netcdfAll.
+          Published advice https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html 
+            and Jan 24, 2022 email from Jennifer Oxelson Ganter
+            and a set of runtime modules from https://docs.unidata.ucar.edu/netcdf-java/current/userguide/file_types.html 
+          To figure out which module has a given class, Google, e.g.: github netcdf-java ucar nc2 geotiff GeotiffWriter 
+
+          Browse repository (probably unidata-all): https://artifacts.unidata.ucar.edu/#browse/browse
+          -->
+
+        <!-- Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fbufr - ->
         <dependency>
             <groupId>edu.ucar</groupId>
-            <artifactId>netcdfAll</artifactId>
-            <version>5.5.2</version>
-        </dependency>  -->
+            <artifactId>bufr</artifactId>
+            <version>5.5.3</version>  <!- - this number duplicated many times below - ->
+            <scope>runtime</scope>  
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-core  
+             Fundamental! 
+             Has ucar.nc2.Variable and Variable.Builder (and other builders).
+             Has ucar.nc2.ncml.NcmlReader, Aggregation, AggregationExisting, AggregationFmrc, AggregationOuterDimension, 
+               AggregationUnion, etc- ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-core</artifactId>
+            <version>5.5.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-image  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-image</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
+       <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-mcidas  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-mcidas</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-misc  
+             Has ucar.nc2.geotiff. - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-misc</artifactId> 
+            <version>5.5.3</version>
+            <scope>compile</scope>  
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-radial  
+             probably not needed- ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-radial</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-vis5d  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-vis5d</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-zarr  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>cdm-zarr</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency> 
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fclcommon 
+             Referenced in Jennifer's email. Has ucar.nc2.dt.image... and some ucar.nc2.iosp... 
+             But I distrust artifacts with version=5.1.0. - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>clcommon</artifactId>
+            <version>5.1.0</version>
+            <scope>compile</scope>
+        </dependency> - ->
+        <!- - d4* is probably dap4: not needed - ->        
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fgrib  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>grib</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fhttpservices  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>httpservices</artifactId>
+            <version>5.5.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Flegacy  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>legacy</artifactId>
+            <version>5.5.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf  doesn't have 5.x - ->
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf-java  doesn't have 5.5.3+ - ->
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fnetcdf4 
+             This is for writing netcdf4 files with linked C library. - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdf4</artifactId>
+            <version>5.5.3</version>
+            <scope>runtime</scope>
+        </dependency> 
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fopendap  - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>opendap</artifactId>
+            <version>5.5.3</version>
+            <scope>compile</scope>
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fudunits 
+             Marked as needed by dependency:analyze - ->
+        <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>udunits</artifactId>
+            <version>5.5.3</version>
+            <scope>compile</scope> 
+        </dependency>
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fwisc%2Fssec%2Fvisad  
+             Marked as needed by dependency:analyze - ->
+        <dependency>
+            <groupId>edu.wisc.ssec</groupId>
+            <artifactId>visad</artifactId>
+            <version>2.0-20191209</version>
+            <scope>runtime</scope>
+        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-             2021-12-21: I think it is needed.
-             WAS: NO LONGER NEEDED! It's in netcdf-all.jar  
-             and something else gets slf4j-api-...jar -->
+
+        <!- - https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+             It's in netcdf-all.jar  
+             and something else gets slf4j-api-...jar - ->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.35</version>
+            <version>1.7.36</version>
             <scope>runtime</scope>
         </dependency>
+        -->
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-jexl3 
              This is the expression parser/processor used by EDDTableFromFiles Derived Variables. -->
@@ -410,7 +581,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.3</version>
+            <version>42.4.0</version>
         </dependency>
 
 
@@ -421,7 +592,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
-            <version>3.11.0</version>
+            <version>3.11.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava 
@@ -429,7 +600,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/net.jpountz.lz4/lz4 
@@ -445,7 +616,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.8</version>
+            <version>4.2.10</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -453,7 +624,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.74.Final</version>
+            <version>4.1.78.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -485,7 +656,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.17.130</version>
+          <version>2.17.224</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -493,7 +664,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.17.130</version>
+            <version>2.17.224</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -501,7 +672,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.17.130-PREVIEW</version>
+            <version>2.17.224-PREVIEW</version>
         </dependency>
 
 
@@ -515,7 +686,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.1.7</version>
+            <version>2.3.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
@@ -528,19 +699,19 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.1.7</version>
+            <version>2.3.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.4.0</version>
+            <version>1.8.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.12.2</version>
+            <version>2.18.3</version>
         </dependency>
 
     </dependencies>
