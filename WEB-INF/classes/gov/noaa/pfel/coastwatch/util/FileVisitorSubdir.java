@@ -166,10 +166,10 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
         alps = oneStep(contextDir + "WEB-INF/classes/com/cohort", null);   //without trailing slash
         String results = alps.toNewlineString();
         String expected = 
-"C:/programs/_tomcat10/webapps/cwexperimental/WEB-INF/classes/com/cohort/\n" +
-"C:/programs/_tomcat10/webapps/cwexperimental/WEB-INF/classes/com/cohort/array/\n" +
-"C:/programs/_tomcat10/webapps/cwexperimental/WEB-INF/classes/com/cohort/ema/\n" +
-"C:/programs/_tomcat10/webapps/cwexperimental/WEB-INF/classes/com/cohort/util/\n";
+"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/\n" +
+"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/array/\n" +
+"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/ema/\n" +
+"C:/programs/_tomcat/webapps/cwexperimental/WEB-INF/classes/com/cohort/util/\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test backslashes 

@@ -33772,7 +33772,7 @@ expected =
                 break;
         }
         if (time > 650)
-            throw new SimpleException("readNDNc took too long.");
+            throw new SimpleException("readNDNc took too long (time=" + time + "ms)");
     }
 
 
@@ -33825,7 +33825,7 @@ expected =
                 break;
         }
         if (time > 1600)
-            throw new SimpleException("readOpendapSequence took too long.");
+            throw new SimpleException("readOpendapSequence took too long (time=" + time + "ms).");
     }
 
 
@@ -33861,7 +33861,7 @@ expected =
                 break;
         }
         if (time > 550)
-            throw new SimpleException("saveAsCsvASCII took too long. Expected=~344 for 17117 rows.");
+            throw new SimpleException("saveAsCsvASCII  (time=" + time + "ms). Expected=~344 for 17117 rows.");
 
         for (int attempt = 0; attempt < 3; attempt++) {
             //saveAsJson
@@ -33876,7 +33876,7 @@ expected =
                 break;
         }
         if (time >= 450)
-            throw new SimpleException("saveAsJson took too long (" + time + "ms). Expected=~281 for 17117 rows.");
+            throw new SimpleException("saveAsJson took too long (time=" + time + "ms). Expected=~281 for 17117 rows.");
 
         //saveAsFlatNc
         for (int attempt = 0; attempt < 3; attempt++) {
@@ -33891,7 +33891,7 @@ expected =
                 break;
         }
         if (time > 200)
-            throw new SimpleException("saveAsFlatNc took too long. Expected=~125 for 17117 rows.");
+            throw new SimpleException("saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
         
     }
 
@@ -34894,9 +34894,9 @@ readAsNcCF?
         String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 
-            "ms. file read time should be ~70 - 90s in java 17 (but I think it should be faster -- too much gc) (but longer when computer is busy) (Java 8 was 45s. was 36s before v2.10)";
+            "ms. file read time should be ~60 - 90s in java 17 (but I think it should be faster -- too much gc) (but longer when computer is busy) (Java 8 was 45s. was 36s before v2.10)";
         String2.log(msg);
-        Test.ensureTrue(time < 55000, "Too slow! " + msg); 
+        Test.ensureTrue(time < 60000, "Too slow! " + msg); 
     }
 
 

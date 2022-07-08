@@ -2245,7 +2245,7 @@ String expected =
         long time = System.currentTimeMillis();
         EDDTableFromFileNames edd = (EDDTableFromFileNames)oneFromDatasetsXml(null, id);
         time = (System.currentTimeMillis() - time) / 1000; //s
-        long expTime = (bigTest? 20 : 1) * (deleteCachedInfo? 14 : 9);
+        long expTime = (bigTest? 20 : 1) * (deleteCachedInfo? 20 : 14);
         String2.log("loadDataset time=" + time + "s (expected=" + expTime + "s)");
         Test.ensureTrue(time < expTime * 1.5, "too slow. time=" + time + "s > " + expTime + "s");
         Object o2[];
@@ -2327,7 +2327,7 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 1300; //ms
             String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 1.5, "");
+            Test.ensureTrue(time < expTime * 1.5, "time=" + time + "ms (exp=1300ms)");
         }
 
     }
