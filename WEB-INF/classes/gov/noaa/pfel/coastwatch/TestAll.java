@@ -52,6 +52,7 @@ import ucar.nc2.util.*;
 import ucar.ma2.*;
 
 
+
 /**
  * This is a very important class -- main() calls all of the unit tests relevant 
  * to CWBrowser and ERDDAP.
@@ -1092,31 +1093,36 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = false;
+        boolean doSlowTestsToo = true;
 
 
 //TestUtil.testString2();
+//TestUtil.testString2canonical();
 //TestUtil.testString2canonical2();
 //TestUtil.testString2canonicalStringHolder();
 //PersistentTable.basicTest();
 //StringArray.basicTest();
+//Table.testSaveAsSpeed();
 //Table.testReadASCIISpeed();
 //Table.testBigAscii();
 //Table.testReadJsonSpeed(); //too slow
-//Table.testJsonlCSV();
 //WatchDirectory.basicTest();
 //EDDGridFromDap.testGenerateDatasetsXml5();
+//EDDGridFromDap.testGraphics(true);
 //EDDGridLonPM180.testHardFlag();
 //EDDGridLonPM180.testBadFilesFlag();
+//EDDGridLon0360.testPM181();
 //EDDTableFromNcFiles.testSpeedDAF();
 //EDDTableFromNcFiles.testSpeedMAG();
 //EDDTableFromNcFiles.testSpeedSubset();
 //EDDTableFromNcFiles.testBigRequest(0,-1); //super slow in TestAll
 //EDDTableFromNcFiles.testNThreads();
 //EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -3, 3);
+//EDDTableFromNcFiles.testHardFlag();
 //EDDTableFromAsciiFiles.testGenerateDatasetsXml2();
 //EDDTableFromFileNames.testAccessibleViaFilesFileTable(false,false);
 //EDDTableFromFileNames.testOnTheFly();
+//Erddap.testBasic();
 
 //        Table table = new Table();
 //        long time = System.currentTimeMillis();
@@ -1329,7 +1335,8 @@ WaitThenTryAgainException wttae;
 
         //INACTIVE: a test of thredds1 THREDDS 8081
         //try {
-        //    for (int i = 0; i < 5; i++) {
+        //    int nTimes = 0; //0 to disable, 5 for a full test
+        //    for (int i = 0; i < nTimes; i++) {
         //        long time9 = System.currentTimeMillis();
         //        Opendap.doThredds1_8081SpeedTests(false, true); //dotTest, asciiTest
         //        time9 = System.currentTimeMillis() - time9;
@@ -1345,48 +1352,10 @@ WaitThenTryAgainException wttae;
         //        "\nUnexpected THREDD1 8081 ERROR."); 
         //}
 
-        //INACTIVE: a test of otter THREDDS 8081  (should run great)
-        //try {
-        //    for (int i = 0; i < 5; i++) {
-        //        long time8 = System.currentTimeMillis();
-        //        Opendap.doOtterSpeedTests(false, false, 8081); //dotTest, asciiTest
-        //        time8 = System.currentTimeMillis() - time8;
-        //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-        //            String2.pressEnterToContinue("Otter Thredds 8081 too slow: " + time8); 
-        //    }
-        //    //don't run often
-        //    Opendap.threddsTunnelTest(10,  //200 for a good test
-        //        "http://161.55.17.243:8081/thredds/dodsC/satellite/CM/usfc/hday", //otter
-        //        "CMusfc"); 
-        //} catch (Exception e) {
-        //    String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-        //        "\nUnexpected otter 8081 error."); 
-        //}
-
-        //INACTIVE:  a test of otter THREDDS 8087
-        //try {
-        //    for (int i = 0; i < 5; i++) {
-        //        long time8 = System.currentTimeMillis();
-        //        Opendap.doOtterSpeedTests(false, false, 8087);  //dotTest, asciiTest
-        //        if (true) throw new Exception("SHOULDN'T GET HERE.");
-        //        time8 = System.currentTimeMillis() - time8;
-        //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
-        //            String2.pressEnterToContinue("Otter Thredds 8087 too slow: " + time8); 
-        //    }
-        //    //don't run often
-        //    Opendap.threddsTunnelTest(200, 
-        //        "http://161.55.17.243:8087/thredds/dodsC/satellite/CM/usfc/hday", //otter
-        //        "CMusfc"); 
-        //} catch (Exception e) {
-        //    String2.pressEnterToContinue(MustBe.throwableToString(e) + 
-        //        "\nOTTER 8081 STARTED CAN'T CONNECT ERROR TO AGssta3day ON 2009-09-10" +
-        //        "\nUnexpected otter 8087 error:"); 
-        //}
-
         //a test of erddap
         try {
             int nTimes = 0; //0 to disable, 5 for a full test
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < nTimes; i++) {
                 long time9 = System.currentTimeMillis();
                 Opendap.doErddapSpeedTests(false, false); //dotTest, asciiTest 
                 time9 = System.currentTimeMillis() - time9;
