@@ -7718,7 +7718,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         EDDGrid gridDataset = (EDDGrid)oneFromDatasetsXml(null, 
             "hawaii_d90f_20ee_c4cb_LonPM180");         
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".das"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".das"); 
         results = File2.directReadFrom88591File(
             EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("depth {");
@@ -7740,7 +7740,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 
         //FGDC should deal with depth correctly
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".fgdc"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".fgdc"); 
         results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("<vertdef>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -7759,7 +7759,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 
         //ISO 19115 should deal with depth correctly
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth2", ".iso19115"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth2", ".iso19115"); 
         results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
 
         po = results.indexOf(
@@ -7831,7 +7831,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             "results=\n" + results);
 
         //WMS 1.1.0 elevation=-5
-        String baseName = gridDataset.className() + "TestGridWithDepth2110e5";
+        String baseName = "EDDGridLonPM180_TestGridWithDepth2110e5";
         tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
         SSR.downloadFile(
             "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
@@ -7847,7 +7847,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             File2.getSystemTempDirectory() + baseName + "_diff.png");
         
         //WMS 1.1.0 default elevation
-        baseName = gridDataset.className() + "TestGridWithDepth2110edef";
+        baseName = "EDDGridLonPM180_TestGridWithDepth2110edef";
         tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
         SSR.downloadFile(
             "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
@@ -7897,7 +7897,68 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             "results=\n" + results);
 
         //WMS 1.3.0 elevation=-5
-        baseName = gridDataset.className() + "TestGridWithDepth2130e5";
+        //2022-07-07 trouble with wms png request, so test underlying data request first
+        tName = gridDataset.makeNewFileForDapQuery(language, null, null, 
+            "temp%5B(2008-11-15)%5D%5B(5)%5D%5B(-75):100:(75)%5D%5B(-90):100:(63.6)%5D",
+            EDStatic.fullTestCacheDirectory, 
+            "EDDGridLonPM180_testGridWithDepthPreWMS", ".csv"); 
+        results = File2.directReadFrom88591File(
+            EDStatic.fullTestCacheDirectory + tName);
+        expected = 
+"time,depth,latitude,longitude,temp\n" +
+"UTC,m,degrees_north,degrees_east,degree_C\n" +
+"2008-11-15T00:00:00Z,5.01,-74.75,-89.75,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,-74.75,-39.75,-1.9969722\n" +
+"2008-11-15T00:00:00Z,5.01,-74.75,10.25,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,-74.75,60.25,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,-24.75,-89.75,19.052225\n" +
+"2008-11-15T00:00:00Z,5.01,-24.75,-39.75,22.358824\n" +
+"2008-11-15T00:00:00Z,5.01,-24.75,10.25,17.43544\n" +
+"2008-11-15T00:00:00Z,5.01,-24.75,60.25,23.83485\n" +
+"2008-11-15T00:00:00Z,5.01,25.25,-89.75,26.235065\n" +
+"2008-11-15T00:00:00Z,5.01,25.25,-39.75,25.840372\n" +
+"2008-11-15T00:00:00Z,5.01,25.25,10.25,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,25.25,60.25,27.425127\n" +
+"2008-11-15T00:00:00Z,5.01,75.25,-89.75,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,75.25,-39.75,NaN\n" +
+"2008-11-15T00:00:00Z,5.01,75.25,10.25,4.0587144\n" +
+"2008-11-15T00:00:00Z,5.01,75.25,60.25,-0.4989917\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //(see section above) now request troubling wms png
+        baseName = "EDDGridLonPM180_TestGridWithDepth2130e5";
+        tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
+        SSR.downloadFile(
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
+            "&TIME=2008-11-15T00%3A00%3A00Z&ELEVATION=-5.0&TRANSPARENT=true&BGCOLOR=0x808080" +
+            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
+            "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
+            tName, false);
+        //Test.displayInBrowser("file://" + tName);
+        Image2.testImagesIdentical(
+            tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+        
+        //WMS 1.1.0 default elevation
+        baseName = "EDDGridLonPM180_TestGridWithDepth2130edef";
+        tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
+        SSR.downloadFile(
+            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
+            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
+            "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
+            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
+            "&BBOX=-75,-90,75,63.6&WIDTH=256&HEIGHT=256",
+            tName, false);
+        //Test.displayInBrowser("file://" + tName);
+        Image2.testImagesIdentical(
+            tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        //test lat beyond dataset range (changed from -75:75 above to -80:80 here)
+        baseName = "EDDGridLonPM180_BeyondRange";
         tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
         SSR.downloadFile(
             "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
@@ -7911,23 +7972,6 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             tName,
             String2.unitTestImagesDir()    + baseName + ".png",
             File2.getSystemTempDirectory() + baseName + "_diff.png");
-        
-        //WMS 1.1.0 default elevation
-        baseName = gridDataset.className() + "TestGridWithDepth2130edef";
-        tName = EDStatic.fullTestCacheDirectory + baseName + ".png";
-        SSR.downloadFile(
-            "http://localhost:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb_LonPM180/request?" +
-            "EXCEPTIONS=INIMAGE&VERSION=1.3.0&SRS=EPSG%3A4326&LAYERS=hawaii_d90f_20ee_c4cb_LonPM180%3Atemp" +
-            "&TIME=2008-11-15T00%3A00%3A00Z&TRANSPARENT=true&BGCOLOR=0x808080" + 
-            "&FORMAT=image%2Fpng&SERVICE=WMS&REQUEST=GetMap&STYLES=" +
-            "&BBOX=-80,-90,80,63.6&WIDTH=256&HEIGHT=256",
-            tName, false);
-        //Test.displayInBrowser("file://" + tName);
-        Image2.testImagesIdentical(
-            tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-        
     }
 
 
@@ -7965,7 +8009,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         //Test that constructor of EDVDepthGridAxis added proper metadata for depth variable.
         EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "testGridWithDepth");         
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".das"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth", ".das"); 
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("depth {");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -7987,7 +8031,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 
         //FGDC should deal with depth correctly
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".fgdc"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth", ".fgdc"); 
         results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
         po = results.indexOf("<vertdef>");
         Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
@@ -8006,7 +8050,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 
         //ISO 19115 should deal with depth correctly
         tName = gridDataset.makeNewFileForDapQuery(language, null, null, "",
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "testGridWithDepth", ".iso19115"); 
+            EDStatic.fullTestCacheDirectory, "EDDGridLonPM180_testGridWithDepth", ".iso19115"); 
         results = File2.directReadFromUtf8File(EDStatic.fullTestCacheDirectory + tName);
 
         po = results.indexOf(
@@ -11647,7 +11691,14 @@ expected =
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
 
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); //2022-05-23 new THREDDS fail: https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PH2/sstd/1day has unsorted time dimension:  AxisVariable=time isn't sorted.  IntArray isn't sorted in ascending order: [30]=376056000 > [31]=375969600.  IntArray isn't sorted in descending order: [0]=373377600 < [1]=373464000.
+        EDDGrid eddGrid = null;
+        
+        try {
+            eddGrid = (EDDGrid)oneFromDatasetsXml(null, "testDAPnodcPH2sstd1day"); //2022-05-23 new THREDDS fail: https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PH2/sstd/1day has unsorted time dimension:  AxisVariable=time isn't sorted.  IntArray isn't sorted in ascending order: [30]=376056000 > [31]=375969600.  IntArray isn't sorted in descending order: [0]=373377600 < [1]=373464000.
+        } catch (Exception e) {
+            Test.knownProblem("https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/PH2/sstd/1day time axis isn't in sorted order. " +
+                "I've reported to Roy repeatedly. Problem solved then reoccurs.", e);
+        }
 
          //.dds -- error only occurs on .nc
         userDapQuery = ""; 
@@ -11866,6 +11917,12 @@ String expected =
         String datasetNameRegex, String pathRegex, String negativePathRegex,
         Writer writer) throws Exception{
 
+        //This isn't a good solution. see 2022-07-07 emails to netcdf-java people.
+        //String lookFor = "remoteCatalogService?catalog=";
+        //int po = catalogXmlUrl.indexOf(lookFor);
+        //if (po > 0)
+        //    catalogXmlUrl = catalogXmlUrl.substring(po + lookFor.length());
+
         catalogXmlUrl = File2.forceExtension(catalogXmlUrl, ".xml");
         String2.log("\n*** crawlThreddsCatalog(" + catalogXmlUrl + ")");
         long time = System.currentTimeMillis();
@@ -11887,7 +11944,8 @@ String expected =
         //        ": Invalid Thredds catalog at " + catalogXmlUrl + "\n" + errorSB.toString());
         //errorSB = null;
         //2020-01-17 with netcdf-java 5.2 is (thanks to Roland Schweitzer)
-        Catalog catalog = (new CatalogBuilder()).buildFromURI(new java.net.URI(catalogXmlUrl));
+        Catalog catalog = (new CatalogBuilder()).buildFromURI(new java.net.URI(catalogXmlUrl));  
+        Test.ensureTrue(catalog != null, "catalog is null!");
 
         //process the catalog's datasets
 //???getDatasets or getDatasetsLogical()?
@@ -12188,18 +12246,8 @@ String expected =
     public static void testCrawlThreddsCatalog() throws Throwable {
         String2.log("\n*** testCrawlThreddsCatalog()");
         int language = 0;
-
-        //test find several datasets
-        StringWriter writer = null;
-        String results = EDDGridFromDap.crawlThreddsCatalog(
-            "https://oceanwatch.pfeg.noaa.gov/thredds/remoteCatalogService?catalog=https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.xml",
-            //was "https://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.html",
-            null, null, null, writer).toNewlineString();
-        String expected = 
-"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/1day\n" +
-"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/8day\n" +
-"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/mday\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        StringWriter writer;
+        String results, expected;
 
         //test pathRegex -- 2017-11-30 now hard to use and hard to test
 //        writer = new StringWriter();
@@ -12209,6 +12257,29 @@ String expected =
 //        expected = 
 //"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day\n";
 //        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test find several datasets
+        try {
+        //2022-07-07 This used to succeed but now fails with netcdf-java 5.5.2 and 5.5.3 because
+        // catalogBuilder returns null for url with "remoteCatalogService?catalog=",
+        // The solution was to change the URL in crawlThreddsCatalog to be just the remote URL.
+        writer = new StringWriter();
+        results = EDDGridFromDap.crawlThreddsCatalog(
+            "https://oceanwatch.pfeg.noaa.gov/thredds/remoteCatalogService?catalog=https://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.xml",
+            //was "https://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/MPOC/catalog.html",
+            null, null, null, writer).toNewlineString();
+        expected = 
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/1day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/8day\n" +
+"https://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MPOC/mday\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        } catch (Exception e) {
+            Test.knownProblem("2022-07-07 This used to work but now fails with netcdf-java 5.5.2 and 5.5.3 " +
+                "because catalogBuilder returns null for remotCatalogService urls. " +
+                "I just reported it to netcdf-java developers.", e);
+        }
+
 
         //test negativePathRegex
         writer = new StringWriter();
@@ -12824,6 +12895,7 @@ String expected =
 "\n";
         //String2.setClipboardString(results);
         Test.ensureEqual(results, expected, "results=\n" + results);
+
     }
 
     
