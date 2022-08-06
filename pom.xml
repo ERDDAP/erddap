@@ -581,7 +581,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.4.0</version>
+            <version>42.4.1</version>
         </dependency>
 
 
