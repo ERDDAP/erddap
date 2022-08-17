@@ -68,6 +68,15 @@ public class OutputStreamSourceSimple implements OutputStreamSource {
         return outputStream;
     }
 
+    /** 
+     * This is useful for OutputStream types that support fileName
+     * if you want to change the download fileName before
+     * the call to getOutputStream().
+     */
+    public void setFileName(String tFileName) {
+        //do nothing because no fileName
+    }
+
 
 }
 

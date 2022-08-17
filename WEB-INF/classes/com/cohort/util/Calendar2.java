@@ -4241,7 +4241,7 @@ public class Calendar2 {
      *    [ ] for an optional space.
      * 5) Not supported: GLQq
      * 
-     * If you need some aspect to be more like the Java parser, email bob.simons
+     * If you need some aspect to be more like the Java parser, email erd.data
      * at noaa.gov.
      *
      * @param gc a GregorianCalendar object. The dateTime will be interpreted

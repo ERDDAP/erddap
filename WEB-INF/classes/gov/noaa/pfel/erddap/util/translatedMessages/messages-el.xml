@@ -69,7 +69,7 @@ stand-in για κάτι που θα αντικατασταθεί στη θέσ�
 <br>στη λίστα των ζητούμενων μεταβλητών.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Εάν έχετε προτάσεις για επιπλέον συνδέσμους, επικοινωνήστε με <kbd>bob dot simons at noaa dot gov</kbd> .
+Εάν έχετε προτάσεις για επιπλέον συνδέσμους, επικοινωνήστε με <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -410,7 +410,7 @@ ESPRESSO και ESPreSSO ).
 SAF, το οποίο θα μπορούσε να επεκταθεί σε Synthetic Aperture Focusing ή Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Προτάσεις;</a> Η λίστα με τα ακρωνύμια αυτής της υπηρεσίας δεν είναι πλήρης.
-Εάν θέλετε να προσθέσετε ένα κοινό ακρωνύμιο ή να κάνετε μια διόρθωση, στείλτε το με email στο <kbd>bob dot simons at noaa dot gov</kbd> .
+Εάν θέλετε να προσθέσετε ένα κοινό ακρωνύμιο ή να κάνετε μια διόρθωση, στείλτε το με email στο <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -473,7 +473,7 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
 Η υπηρεσία περιλαμβάνει μόνο το πιο κοινό πλήρες όνομα που σχετίζεται με ένα δεδομένο όνομα μεταβλητής (π.χ., το SST επεκτείνεται εδώ σε Sea Surface Temperature, όχι Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Προτάσεις;</a> Η λίστα ονομάτων μεταβλητών αυτής της υπηρεσίας δεν είναι πλήρης.
-Εάν θέλετε να προσθέσετε ένα όνομα μεταβλητής που χρησιμοποιείται συνήθως ή να κάνετε μια διόρθωση, στείλτε το με email στο <kbd>bob dot simons at noaa dot gov</kbd> .
+Εάν θέλετε να προσθέσετε ένα όνομα μεταβλητής που χρησιμοποιείται συνήθως ή να κάνετε μια διόρθωση, στείλτε το με email στο <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -634,7 +634,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Σημειώσεις:</strong></a>
 <ul>
 <li>Ελέγχετε πάντα τα αποτελέσματα από τους μετατροπείς.
-<br>Εάν πιστεύετε ότι ο μετατροπέας έδωσε εσφαλμένο αποτέλεσμα, στείλτε τα στοιχεία μέσω email στο <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Εάν πιστεύετε ότι ο μετατροπέας έδωσε εσφαλμένο αποτέλεσμα, στείλτε τα στοιχεία μέσω email στο <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ΑΠΟΠΟΙΗΣΗ ΕΥΘΥΝΗΣ
 <br>Κανένα πρόσωπο ή οργανισμός που σχετίζεται με αυτόν τον ιστότοπο δεν παρέχει καμία εγγύηση, ρητή ή σιωπηρή, συμπεριλαμβανομένων εγγυήσεων εμπορευσιμότητας και καταλληλότητας για συγκεκριμένο σκοπό, ούτε αναλαμβάνει οποιαδήποτε νομική ευθύνη για την ακρίβεια, την πληρότητα ή τη χρησιμότητα οποιασδήποτε πληροφορίας σε αυτόν τον ιστότοπο.
@@ -750,7 +750,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) έτσι ώστε να είν
 <br>Εάν οι μέθοδοι ή οι επιλογές που προσφέρει αυτός ο μετατροπέας δεν είναι κατάλληλες για τους σκοπούς σας ή διαφορετικά δεν είναι αυτό που θέλετε, μην τις χρησιμοποιήσετε.
 Αντίθετα, μπορείτε να το κάνετε μόνοι σας, με τον δικό σας τρόπο:
 κατεβάστε υποσύνολα του συνόλου δεδομένων και εφαρμόστε τον δικό σας αλγόριθμο.
-Για να ζητήσετε να προστεθούν άλλοι αλγόριθμοι παρεμβολής σε αυτόν τον μετατροπέα, στείλτε email <kbd>bob dot simons at noaa dot gov</kbd> .
+Για να ζητήσετε να προστεθούν άλλοι αλγόριθμοι παρεμβολής σε αυτόν τον μετατροπέα, στείλτε email <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP :
 <br>Μπορείτε να αλλάξετε το προεπιλεγμένο CSV αιτήματος προσθέτοντας/επεξεργαζόμενοι την ετικέτα &lt; datasets.xml &gt; στο databases.xml .
@@ -831,7 +831,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) έτσι ώστε να είν
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">ΑΠΟΠΟΙΗΣΗ ΕΥΘΥΝΗΣ</a></strong> - Κανένα πρόσωπο ή οργανισμός που σχετίζεται με αυτόν τον ιστότοπο δεν παρέχει καμία εγγύηση, ρητή ή σιωπηρή, συμπεριλαμβανομένων εγγυήσεων εμπορευσιμότητας και καταλληλότητας για συγκεκριμένο σκοπό, ή δεν αναλαμβάνει οποιαδήποτε νομική ευθύνη για την ακρίβεια, την πληρότητα ή τη χρησιμότητα οποιασδήποτε πληροφορίας σε αυτό δικτυακός τόπος.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Διορθώσεις</a></strong> - Παρακαλούμε στείλτε email τυχόν προτεινόμενες διορθώσεις στο <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Διορθώσεις</a></strong> - Παρακαλούμε στείλτε email τυχόν προτεινόμενες διορθώσεις στο <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -916,7 +916,7 @@ ERDDAP διαθέτει
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Μη έγκυρη είσοδος</a> - Το ERDDAP προσπαθεί να αντιμετωπίσει ακατάλληλα διαμορφωμένη είσοδο.
 Εάν ERDDAP δεν μπορεί να αντιμετωπίσει την είσοδο, το ERDDAP θα δημιουργήσει ένα μήνυμα σφάλματος.
-Εάν η &quot;μη έγκυρη είσοδος&quot; είναι ένας χρόνος συμβολοσειράς που πιστεύετε ότι πρέπει να υποστηρίζεται, στείλτε το με email στο <kbd>bob dot simons at noaa dot gov</kbd> .
+Εάν η &quot;μη έγκυρη είσοδος&quot; είναι ένας χρόνος συμβολοσειράς που πιστεύετε ότι πρέπει να υποστηρίζεται, στείλτε το με email στο <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Πώς ERDDAP αντιμετωπίζει τον χρόνο</strong></a>
@@ -1179,7 +1179,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 <convertTimeNumberError>Ο αριθμός που προσδιορίστηκε δεν είναι έγκυρος αριθμός.</convertTimeNumberError>
 <convertTimeNumericTimeError>Αυτός ο αριθμητικός χρόνος δεν είναι έγκυρος.</convertTimeNumericTimeError>
 <convertTimeParametersError>Αυτός ο συνδυασμός παραμέτρων δεν είναι έγκυρος. Ελέγξτε τα παραδείγματα και δοκιμάστε ξανά.</convertTimeParametersError>
-<convertTimeStringFormatError>Η μορφή του χρόνου συμβολοσειράς δεν αναγνωρίζεται. Εάν πιστεύετε ότι πρέπει να υποστηρίζεται, στείλτε το email στο bob.simons στη διεύθυνση noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Η μορφή του χρόνου συμβολοσειράς δεν αναγνωρίζεται. Εάν πιστεύετε ότι πρέπει να υποστηρίζεται, στείλτε το email στο erd.data στη διεύθυνση noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Μην προσδιορίζετε και τις δύο παραμέτρους stringTime και isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Η συμβολοσειρά μονάδων δεν είναι έγκυρη.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Ενας αριθμός. Για παράδειγμα, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1504,7 +1504,7 @@ m-2 = m^-2)</td>
 Σημειώστε ότι πρόκειται για μια απλή τυποποίηση (π.χ.
 &quot;joule&quot;, &quot;joules&quot; και &quot;J&quot; όλα επιστρέφουν &quot;J&quot; ) σε αντίθεση με την &quot;κανονική&quot; μορφή που προσφέρει το λογισμικό UDUNITS (το οποίο, για παράδειγμα, μετατρέπει όλα τα το joule &quot;kg.m2.s-2&quot; ).
 <li>Εάν πιστεύετε ότι ένας μετατροπέας έκανε λάθος μια μετατροπή, πρώτα βεβαιωθείτε ότι η συμβολοσειρά εισόδου είναι έγκυρη.
-Εάν πιστεύετε ότι η συμβολοσειρά εισόδου είναι έγκυρη, στείλτε τα στοιχεία μέσω email στο <kbd>bob dot simons at noaa dot gov</kbd> .
+Εάν πιστεύετε ότι η συμβολοσειρά εισόδου είναι έγκυρη, στείλτε τα στοιχεία μέσω email στο <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Δείτε τη λεπτομερή σύγκριση UDUNITS και UCUM
 <a rel="help" href="#syntaxComparison">σύνταξης</a> και
 <a rel="help" href="#unitsComparison">μονάδων</a> παρακάτω.
@@ -1601,10 +1601,10 @@ UDUNITS =degC%20meter-1</a>
 <li>Αυτή τη στιγμή ενημερώνει ορισμένες κοινές διευθύνσεις URL που σχετίζονται με σύνολα δεδομένων ωκεανογραφικών και ατμοσφαιρικών επιστημών.
 Είναι μια ημιτελής εργασία σε εξέλιξη και θα είναι πάντα, γιατί η εργασία είναι αδύνατη μεγάλη και συνεχώς μεταβαλλόμενη.
 Αυτό δεν είναι ένα σύστημα ενημέρωσης διευθύνσεων URL γενικού σκοπού, αν και θα μπορούσε να βελτιωθεί για να καλύψει άλλους τομείς.
-<li>Εάν πιστεύετε ότι ο μετατροπέας έκανε κάτι λάθος ή δεν ενημέρωσε μια διεύθυνση URL που θα έπρεπε να έχει, στείλτε τις λεπτομέρειες στο <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Εάν πιστεύετε ότι ο μετατροπέας έκανε κάτι λάθος ή δεν ενημέρωσε μια διεύθυνση URL που θα έπρεπε να έχει, στείλτε τις λεπτομέρειες στο <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP :
 μπορείτε να αλλάξετε τους κανόνες μετατροπής επεξεργάζοντας το &lt;updateUrls&gt; στο messages.xml.
-Εάν το κάνετε, στείλτε τα στοιχεία μέσω email στο <kbd>bob dot simons at noaa dot gov</kbd>, ώστε οι αλλαγές να μπορούν να ενσωματωθούν στην τυπική διανομή ERDDAP .
+Εάν το κάνετε, στείλτε τα στοιχεία μέσω email στο <kbd>erd dot data at noaa dot gov</kbd>, ώστε οι αλλαγές να μπορούν να ενσωματωθούν στην τυπική διανομή ERDDAP .
 <li>ΑΠΟΠΟΙΗΣΗ ΕΥΘΥΝΗΣ - Κανένα πρόσωπο ή οργανισμός που σχετίζεται με αυτόν τον ιστότοπο δεν παρέχει καμία εγγύηση, ρητή ή σιωπηρή, συμπεριλαμβανομένων εγγυήσεων εμπορευσιμότητας και καταλληλότητας για συγκεκριμένο σκοπό, ή δεν αναλαμβάνει οποιαδήποτε νομική ευθύνη για την ακρίβεια, την πληρότητα ή τη χρησιμότητα οποιασδήποτε πληροφορίας σε αυτό δικτυακός τόπος.
 </ul>
 
@@ -3365,7 +3365,7 @@ SST, Blended, West US (Πειραματικό, Σύνθετο 5 ημερών)">
 </ol>
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Επικοινωνία</a></h2>
-Ερωτήσεις, σχόλια, προτάσεις; Στείλτε ένα email στο <kbd>bob dot simons at noaa dot gov</kbd> και συμπεριλάβετε τη διεύθυνση URL του ERDDAP που σχετίζεται άμεσα με την ερώτηση ή το σχόλιό σας.
+Ερωτήσεις, σχόλια, προτάσεις; Στείλτε ένα email στο <kbd>erd dot data at noaa dot gov</kbd> και συμπεριλάβετε τη διεύθυνση URL του ERDDAP που σχετίζεται άμεσα με την ερώτηση ή το σχόλιό σας.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Εναλλακτικά, μπορείτε να εγγραφείτε στην Ομάδα / Λίστα αλληλογραφίας ERDDAP Google</a> μεταβαίνοντας στη
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">διεύθυνση https://groups.google.com/forum/#!forum/erddap <img 
@@ -5714,11 +5714,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Πώς να αναφέρετε το ERDDAP σε ένα έγγραφο</a></strong>
 <br>Εάν θέλετε να αναφέρετε το ίδιο το ERDDAP σε μια επιστημονική εργασία, χρησιμοποιήστε κάτι σαν
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Τι σημαίνει το ακρωνύμιο &quot;ERDDAP&quot;;</a></strong>
 <br>Το &quot;ERDDAP&quot; ήταν ακρωνύμιο, αλλά ξεπέρασε αυτή την αρχική περιγραφή.
 Τώρα, σκεφτείτε το απλώς ως όνομα, όχι ως ακρωνύμιο.
@@ -5739,7 +5735,7 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
   >πολλά ERDDAP που συνεργάζονται για</a> να επεκτείνονται και να καλύπτουν τις ανάγκες ενός μεγάλου κέντρου διανομής δεδομένων.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Επικοινωνήστε μαζί μας</a></h2>
-Εάν έχετε ερωτήσεις, προτάσεις ή σχόλια σχετικά με το ERDDAP γενικά (όχι αυτή τη συγκεκριμένη εγκατάσταση ERDDAP ), στείλτε ένα email στο <kbd>bob dot simons at noaa dot gov</kbd> και συμπεριλάβετε τη διεύθυνση URL ERDDAP που σχετίζεται άμεσα με την ερώτηση ή το σχόλιό σας.
+Εάν έχετε ερωτήσεις, προτάσεις ή σχόλια σχετικά με το ERDDAP γενικά (όχι αυτή τη συγκεκριμένη εγκατάσταση ERDDAP ), στείλτε ένα email στο <kbd>erd dot data at noaa dot gov</kbd> και συμπεριλάβετε τη διεύθυνση URL ERDDAP που σχετίζεται άμεσα με την ερώτηση ή το σχόλιό σας.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Εναλλακτικά, μπορείτε να εγγραφείτε στην Ομάδα / Λίστα αλληλογραφίας ERDDAP Google</a> μεταβαίνοντας στη
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">διεύθυνση https://groups.google.com/forum/#!forum/erddap <img 
@@ -5821,7 +5817,7 @@ deg{north}</udunitsToUcum>
 Οι κενές γραμμές διασφαλίζουν ότι οι υπόλοιπες γραμμές είναι γραμμές «πριν» και «μετά».
 Οι αλλαγές εφαρμόζονται με τη σειρά των γραμμών εδώ.
 !!! ΠΡΟΣΘΕΤΕ ΜΟΝΟ ΖΕΥΓΑΡΙΑ ΠΟΥ ΘΕΩΡΕΙΤΕ ΠΟΛΥ, ΠΟΛΥ ΑΞΙΟΠΙΣΤΕΣ ΑΛΛΑΓΕΣ!!! Σημειώσεις:
-* Εάν πιστεύετε ότι υπάρχουν κανόνες εδώ που είναι λανθασμένοι ή ότι πρέπει να προστεθούν νέοι κανόνες, στείλτε email <kbd>bob dot simons at noaa dot gov</kbd> .
+* Εάν πιστεύετε ότι υπάρχουν κανόνες εδώ που είναι λανθασμένοι ή ότι πρέπει να προστεθούν νέοι κανόνες, στείλτε email <kbd>erd dot data at noaa dot gov</kbd> .
 * Το πρώτο ημίχρονο έχει δραματικές αλλαγές.
 Το δεύτερο μισό έχει απλές αλλαγές από http σε https.
 Οι αλλαγές http σε https είναι σημαντικές επειδή ορισμένοι ιστότοποι δεν έχουν ανακατευθύνσεις και, ακόμα κι αν έχουν, ορισμένα συστήματα (π.χ.

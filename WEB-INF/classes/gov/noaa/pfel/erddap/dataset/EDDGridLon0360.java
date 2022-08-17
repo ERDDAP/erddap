@@ -1143,8 +1143,10 @@ expected =
 "longitude, degrees_east, 179.94374999999997, 179.98125, 180.01874999999998, 180.05624999999998, ";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
-        //entire new lon range.  beginTime was 2021-04-30. beginTime of this and other star.nesdis datasets creeps forward.
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]"; //2022-05-10: was 2021-04-27. 2022-05-10: was 2021-04-12, now that is <min
+        //entire new lon range.  beginTime of this and other star.nesdis datasets creeps forward.
+        //  I think they just keep one year's worth of data.
+        //  So now I request a recent time (without too many mv's), and just have to adjust it once per year.
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(359.98)]"; //2022=08-17 was 2021-07-14, 2022-08-17 was 2022-08-03 was 2021-07-12, 2022-07-25 was 2021-06-25. 2022-05-10: was 2021-04-27. 2022-05-10: was 2021-04-12, now that is <min
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
@@ -1152,22 +1154,22 @@ expected =
         expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,143.49374999999998,0.06919918\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,214.74374999999998,0.056112625\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,285.99375,0.04309787\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,143.49374999999998,0.07659066\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,214.74374999999998,0.054975305\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,285.99375,0.044993743\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
+"2022-07-14T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,143.49374999999998,0.059143707\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,214.74374999999998,0.044086266\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,285.99375,0.045729376\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,143.49374999999998,0.056222685\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,214.74374999999998,0.049913768\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,285.99375,0.04816767\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //0-180 subset
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(179.9)]"; //beginTime of this and other star.nesdis datasets creeps forward.
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
@@ -1176,16 +1178,16 @@ expected =
         expected =    
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,143.49374999999998,0.06919918\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,143.49374999999998,0.07659066\n";
+"2022-07-14T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,143.49374999999998,0.059143707\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,143.49374999999998,0.056222685\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //0-181 subset with not relevant spillover  //yes, it is correctly handled by "all from new left"
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(27.0188):1:(26.99)][(0.98):1900:(181)]"; //beginTime of this and other star.nesdis datasets creeps forward.
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
@@ -1194,17 +1196,17 @@ expected =
         expected =    
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,143.49374999999998,0.06919918\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,143.49374999999998,0.07659066\n";
+"2022-07-14T12:00:00Z,0.0,27.01875,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,143.49374999999998,0.059143707\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,0.9937499999999819,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,72.24374999999998,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,143.49374999999998,0.056222685\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
         //180-360 subset
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(27.0188):1:(26.99)][(214.74):1900:(359.98)]"; //beginTime of this and other star.nesdis datasets creeps forward.
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddGrid.className() + "_PM181_1", ".csv"); 
         results = File2.directReadFrom88591File(dir + tName);
@@ -1213,16 +1215,16 @@ expected =
         expected =     //corresponding PM180 lons: -145.25625, -74.00625, -2.75625
 "time,altitude,latitude,longitude,chlor_a\n" +
 "UTC,m,degrees_north,degrees_east,mg m^-3\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,214.74374999999998,0.056112625\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,285.99375,0.04309787\n" +
-"2021-06-25T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,214.74374999999998,0.054975305\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,285.99375,0.044993743\n" +
-"2021-06-25T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
+"2022-07-14T12:00:00Z,0.0,27.01875,214.74374999999998,0.044086266\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,285.99375,0.045729376\n" +
+"2022-07-14T12:00:00Z,0.0,27.01875,357.24375,NaN\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,214.74374999999998,0.049913768\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,285.99375,0.04816767\n" +
+"2022-07-14T12:00:00Z,0.0,26.98125,357.24375,NaN\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test image entire world
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][][]&.land=under";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][][]&.land=under"; //beginTime of this and other star.nesdis datasets creeps forward.
         String baseName = eddGrid.className() + "_PM181_entireWorld";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, baseName, ".png"); 
@@ -1233,7 +1235,7 @@ expected =
             File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image subset near 180
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(71):(-61)][(120):(245)]&.land=under";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(71):(-61)][(120):(245)]&.land=under"; //beginTime of this and other star.nesdis datasets creeps forward.
         baseName = eddGrid.className() + "_PM181_subsetNear180";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, baseName, ".png"); 
@@ -1244,7 +1246,7 @@ expected =
             File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image just new left
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(41):(-61)][(10):(175)]&.land=under";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(41):(-61)][(10):(175)]&.land=under"; //beginTime of this and other star.nesdis datasets creeps forward.
         baseName = eddGrid.className() + "_PM181_justNewLeft";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, baseName, ".png"); 
@@ -1255,7 +1257,7 @@ expected =
             File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //test image just new right
-        userDapQuery = "chlor_a[(2021-06-25T12:00:00Z)][][(41):(-61)][(190):(355)]&.land=under";
+        userDapQuery = "chlor_a[(2022-07-14T12:00:00Z)][][(41):(-61)][(190):(355)]&.land=under"; //beginTime of this and other star.nesdis datasets creeps forward.
         baseName = eddGrid.className() + "_PM181_justNewRight";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, userDapQuery, 
             dir, baseName, ".png"); 

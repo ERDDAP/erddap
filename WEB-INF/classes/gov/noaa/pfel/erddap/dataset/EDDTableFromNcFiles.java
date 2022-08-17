@@ -579,8 +579,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2021-12-20</att>\n" +  //changes
-"        <att name=\"date_issued\">2021-12-20</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2022-07-18</att>\n" +  //changes
+"        <att name=\"date_issued\">2022-07-18</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -661,8 +661,8 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2021-12-20T17:40:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
-"        <att name=\"time_coverage_start\">2021-11-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"time_coverage_end\">2022-07-18T18:10:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_start\">2022-07-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -715,7 +715,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.6357248E9 1.6376028E9</att>\n" + //both change
+"            <att name=\"actual_range\" type=\"doubleList\">1.6566336E9 1.6581678E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -724,8 +724,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.638E9</att>\n" + //changes
-"            <att name=\"colorBarMinimum\" type=\"double\">1.6355E9</att>\n" + //changes
+"            <att name=\"colorBarMaximum\" type=\"double\">1.6585E9</att>\n" + //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.6565E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -6791,7 +6791,7 @@ expected =
                                     ga.add("history", 
                                         tHistory + 
                                         ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (https://www.nodc.noaa.gov/GTSPP/)\n" +
-                                        today + " Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).");
+                                        today + " Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).");
                                     ga.add("infoUrl",    "https://www.nodc.noaa.gov/GTSPP/");
                                     ga.add("institution","NOAA NODC");
                                     ga.add("title",      "Global Temperature and Salinity Profile Programme (GTSPP) Data");
@@ -7294,7 +7294,7 @@ expected =
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 46520275;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 47293252;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -7339,7 +7339,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6536546e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
+"    Float64 actual_range 4.772736e+8, 1.6587489e+9;\n" + //2nd value changes   use + //first value was 4.811229e8 until 2020-07-12
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -7401,7 +7401,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2022-08-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -7429,9 +7429,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.8\";\n" +  
-"    String history \"2022-06-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
+"    String history \"2022-08-01 csun writeGTSPPnc40.f90 Version 1.8\n" +//date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/data.nodc/gtspp/bestcopy/netcdf (https://www.nodc.noaa.gov/GTSPP/)\n" +
-"2022-06-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
+"2022-08-10 Most recent ingest, clean, and reformat at ERD (erd.data at noaa.gov).\n"; //date changes
 
         po = results.indexOf("erd.data at noaa.gov).\n");
         Test.ensureTrue(po > 0, "\nresults=\n" + results);
@@ -7449,7 +7449,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2022-08-10 from https://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7474,7 +7474,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the May 2022 data) but is a subset of the " + //month changes
+    "up to and including the July 2022 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: https://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -7487,7 +7487,7 @@ expected =
 "The Quality Flag definitions are also at\n" +
 "https://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 "    String testOutOfDate \"now-45days\";\n" +
-"    String time_coverage_end \"2022-05-27T12:30:00Z\";\n" + //changes
+"    String time_coverage_end \"2022-07-25T11:35:00Z\";\n" + //changes
 "    String time_coverage_start \"1985-02-15T00:00:00Z\";\n" + //was 1985-03-31T13:15:00Z before 2020-07-12  the new time is such a round number!
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data, 1985-present\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -7627,7 +7627,7 @@ expected =
 
             //table.globalAttributes().set("history",
             //    "(From .zip files from https://www.nodc.noaa.gov/GTSPP/)\n" +
-            //    "2010-06-16 Incremental ingest, clean, and reformat at ERD (bob.simons at noaa.gov).");
+            //    "2010-06-16 Incremental ingest, clean, and reformat at ERD (erd.data at noaa.gov).");
 
             //resort
             table.sort(
@@ -7761,7 +7761,7 @@ expected =
         int language = 0;
         reallyVerbose = false;
         String dir = EDStatic.fullTestCacheDirectory;
-        String name, tName, userDapQuery, results, expected, error;
+        String name, tName, baseName, userDapQuery, results, expected, error;
         String dapQuery;
 
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet");
@@ -7771,75 +7771,145 @@ expected =
             "longitude,latitude,wtmp&time=2010-01-02T00:00:00Z" +
             "&longitude>=-140&longitude<=-110&latitude>=20&latitude<=50" +
             "&.draw=markers&.marker=5|5&.color=0xff0000&.colorBar=|||||";
+        baseName = eddTable.className() + "_markersMap";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_markersMap",  ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".png"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPmarkersMap";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_TPmarkersMap",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPmarkersMap500400";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, eddTable.className() + "_TPmarkersMap500400",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //vector map
         dapQuery = 
             "longitude,latitude,wspu,wspv&time=2010-01-02T00:00:00Z" +
             "&longitude>=-140&longitude<=-110&latitude>=20&latitude<=50" +
             "&.draw=vectors&.color=0xff0000";
+        baseName = eddTable.className() + "_vectors";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_vectors", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPvectors";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_TPvectors", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPvectors360150";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=360|150", 
-            dir, eddTable.className() + "_TPvectors360150", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //lines on a graph
         dapQuery = 
             "time,wtmp" +
             "&station=\"41009\"&time>=2000-01-01T00:00:00Z&time<=2000-01-02T00:00:00Z" +
             "&.draw=lines&.color=0xff0000&.colorBar=|||||";
+        baseName = eddTable.className() + "_lines";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_lines", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPlines";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_TPlines", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPlines500400";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, eddTable.className() + "_TPlines500400", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //markers on a graph
         dapQuery = 
             "time,wtmp" +
             "&station=\"41009\"&time>=2000-01-01T00:00:00Z&time<=2000-01-02T00:00:00Z" +
             "&.draw=markers&.marker=5|5&.color=0xff0000&.colorBar=|||||";
+        baseName = eddTable.className() + "_markers";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_markers",  ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPmarkers";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_TPmarkers",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPmarkers500400";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, eddTable.className() + "_TPmarkers500400",  ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName,  ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         //sticks on a graph
         dapQuery = 
             "time,wspu,wspv" +
             "&station=\"41009\"&time>=2000-01-01T00:00:00Z&time<=2000-01-02T00:00:00Z" +
             "&.draw=sticks&.color=0xff0000";
+        baseName = eddTable.className() + "_sticks";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_sticks", ".png"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".png"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPsticks";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-            dir, eddTable.className() + "_TPsticks", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+        baseName = eddTable.className() + "_TPsticks500400";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery + "&.size=500|400", 
-            dir, eddTable.className() + "_TPsticks500400", ".transparentPng"); 
-        Test.displayInBrowser("file://" + dir + tName);
+            dir, baseName, ".transparentPng"); 
+        Image2.testImagesIdentical(
+            dir + tName,
+            String2.unitTestImagesDir()    + baseName + ".png",
+            File2.getSystemTempDirectory() + baseName + "_diff.png");
 /* */
     }
 
@@ -7851,7 +7921,7 @@ expected =
         testVerboseOn();
         reallyVerbose = true;
         String dir = EDStatic.fullTestCacheDirectory;
-        String name, tName, userDapQuery, results, expected, error;
+        String name, tName, baseName, userDapQuery, results, expected, error;
         String dapQuery;
 
         String id = "testTimeAxis";
@@ -7893,9 +7963,13 @@ expected =
 
             for (int lowToHigh = 0; lowToHigh < 2; lowToHigh++) {
                 dapQuery = "time,irradiance&time>=" + time[i] + "&.xRange=||" + (lowToHigh == 0);
+                baseName = "EDDTableFromNcFiles_TimeAxis" + i + "_" + lowToHigh;
                 tName = eddTable.makeNewFileForDapQuery(language, null, null, dapQuery, 
-                    dir, eddTable.className() + "_TimeAxis" + i + "_" + lowToHigh,  ".png"); 
-                Test.displayInBrowser("file://" + dir + tName);
+                    dir, baseName, ".png"); 
+                Image2.testImagesIdentical(
+                    dir + tName,
+                    String2.unitTestImagesDir()    + baseName + ".png",
+                    File2.getSystemTempDirectory() + baseName + "_diff.png");
             }
         }
     }
@@ -8001,7 +8075,7 @@ expected =
             9568422, 28826, 10818144, 10818181, 10817912, 
             41180319, 
             5839, 72560, 117505, 138010, 
-            7779, 11101, 22150};
+            10529, 16301, 37397};
 
         //warm up
         boolean tryToCompress = true;
@@ -13757,7 +13831,7 @@ expected =
     public static void testGraphics(boolean doAll) throws Throwable {
         testVerboseOn();
         int language = 0;
-        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String name, tName, baseName, results, tResults, expected, userDapQuery, tQuery;
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
         String dir = EDStatic.fullTestCacheDirectory;
@@ -13776,27 +13850,45 @@ expected =
             //*** test make graphs
             //there is no .transparentPng for EDDTable
 
+            baseName = globecBottle.className() + "_GraphTiny";            
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.size=128|256&.font=.75", 
-                dir, globecBottle.className() + "_GraphTiny", 
-                ".largePng"); //to show it is irrelevant
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".largePng"); //to show it is irrelevant
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphS";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-                dir, globecBottle.className() + "_GraphS", ".smallPng"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".smallPng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphM";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-                dir, globecBottle.className() + "_GraphM", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphL";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
-                dir, globecBottle.className() + "_GraphL", ".largePng"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".largePng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphHuge";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.size=1700|1800", 
-                dir, globecBottle.className() + "_GraphHuge", 
-                ".smallPng"); //to show it is irrelevant
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".smallPng"); //to show it is irrelevant
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery, 
                 dir, globecBottle.className() + "_GraphPdfSmall2", ".smallPdf"); 
@@ -13813,17 +13905,30 @@ expected =
 
             //*** test make MAP
             String2.log("\n*** EDDTableFromNcFiles.test make MAP\n");
-            tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
-                dir, globecBottle.className() + "_MapS", ".smallPng"); 
-            Test.displayInBrowser("file://" + dir + tName);
 
+            baseName = globecBottle.className() + "_MapS";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
-                dir, globecBottle.className() + "_MapM", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".smallPng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_MapM";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
-                dir, globecBottle.className() + "_MapL", ".largePng"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+            baseName = globecBottle.className() + "_MapL";
+            tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
+                dir, baseName, ".largePng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, mapDapQuery, 
                 dir, globecBottle.className() + "_MapS", ".smallPdf"); 
@@ -13845,23 +13950,37 @@ expected =
             Test.displayInBrowser("file://" + dir + tName);
 
 
+            baseName = globecBottle.className() + "_GraphMLegendOff";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Off&.trim=10", 
-                dir, globecBottle.className() + "_GraphMLegendOff", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphSLegendOnly";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
-                dir, globecBottle.className() + "_GraphSLegendOnly", ".smallPng"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".smallPng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphMLegendOnly";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
-                dir, globecBottle.className() + "_GraphMLegendOnly", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+            baseName = globecBottle.className() + "_GraphLLegendOnly";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, userDapQuery + "&.legend=Only", 
-                dir, globecBottle.className() + "_GraphLLegendOnly", ".largePng"); 
-            Test.displayInBrowser("file://" + dir + tName);
-
-
+                dir, baseName, ".largePng"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
 
@@ -13869,66 +13988,106 @@ expected =
         //test of .graphics commands
         if (true) {
             tQuery = "NO3,NH4&altitude>-5&time>=2002-08-03&NO3>=0";
+            baseName = globecBottle.className() + "_GraphWithMarkersNoColorBar";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 //I specify colorBar, but it isn't used
                 "&.draw=markers&.marker=1|5&.color=0x0000FF&.colorBar=Rainbow|C|Linear", 
-                dir, globecBottle.className() + "_GraphWithMarkersNoColorBar", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
+            baseName = globecBottle.className() + "_GraphWithLines";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=lines&.marker=9|7", 
-                dir, globecBottle.className() + "_GraphWithLines", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
+            baseName = globecBottle.className() + "_GraphWithLinesAndMarkers";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=9|7&.colorBar=Rainbow|C|Linear", 
-                dir, globecBottle.className() + "_GraphWithLinesAndMarkers", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "NO3,NH4,sal00&altitude>-5&time>=2002-08-03&NO3>=0";
+            baseName = globecBottle.className() + "_GraphWithMarkers";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 //color and colorBar aren't specified; default is used
                 "&.draw=markers&.marker=9|7", 
-                dir, globecBottle.className() + "_GraphWithMarkers", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
+            baseName = globecBottle.className() + "_MapWithLines";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=lines&.color=0xFF8800", 
-                dir, globecBottle.className() + "_MapWithLines", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
+            baseName = globecBottle.className() + "_MapWithLinesAndMarkers";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=linesAndMarkers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
-                dir, globecBottle.className() + "_MapWithLinesAndMarkers", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "longitude,latitude,sal00&altitude>-5&time>=2002-08-03";
+            baseName = globecBottle.className() + "_MapWithMarkers";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=markers&.marker=5|5&.colorBar=Rainbow|D|Linear", 
-                dir, globecBottle.className() + "_MapWithMarkers", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "time,sal00,sal11&altitude>-5&time>=2002-08-03&NO3>=0";
+            baseName = globecBottle.className() + "_GraphWithSticks";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=sticks&.color=0xFF8800", 
-                dir, globecBottle.className() + "_GraphWithSticks", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03";
+            baseName = globecBottle.className() + "_MapWithVectors";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
-                dir, globecBottle.className() + "_MapWithVectors", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
             tQuery = "longitude,latitude,sal00,sal11&altitude>-5&time>=2002-08-03&cast>200";
+            baseName = globecBottle.className() + "_MapWithVectorsNoData";
             tName = globecBottle.makeNewFileForDapQuery(language, null, null, tQuery + 
                 "&.draw=vectors&.color=0xFF0088&.vec=30", 
-                dir, globecBottle.className() + "_MapWithVectorsNoData", ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
     }
@@ -14401,7 +14560,7 @@ expected =
         String time3 = Calendar2.epochSecondsToIsoStringTZ(time2);
         String queries[];
         String dir = EDStatic.fullTestCacheDirectory;
-        String tName, start;
+        String tName, baseName, start;
         EDDTable eddTable;
 
         //lon shouldn't appear
@@ -14410,9 +14569,13 @@ expected =
             "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
         queries = new String[]{time1, "" + time2, time3};
         for (int i = 0; i < queries.length; i++) {
+            baseName = "EDDTableFromNcFiles_testLegendA" + i;
             tName = eddTable.makeNewFileForDapQuery(language, null, null, start + queries[i], 
-                dir, eddTable.className() + "_testLegendA" + i,  ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
 
         //time_precision
@@ -14424,9 +14587,13 @@ expected =
             "2010-03",
             "1267401600"};
         for (int i = 0; i < queries.length; i++) {
+            baseName = "EDDTableFromNcFiles_testLegendB" + i;
             tName = eddTable.makeNewFileForDapQuery(language, null, null, start + queries[i], 
-                dir, eddTable.className() + "_testLegendB" + i,  ".png"); 
-            Test.displayInBrowser("file://" + dir + tName);
+                dir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                dir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
         }
         
     }
@@ -18284,7 +18451,7 @@ nThreads=4 time=26
 "  clearly, a bigger issue is OS caching of the files\n" +
 "  So slow now, so I revised test to be a much smaller test (just 410.. stations)\n" +
 "2020-10-02 hdd -3,3, now: 75,8, 7, 8, 8, 5\n" +
-"2022-05-10 after Chris' changes: 116,6,9,10,6,4\n");
+"2022-05-10 after Chris' changes: 116 (can that be reduced?!),6,9,10,6,4\n");
     }
 
     /**
@@ -19076,7 +19243,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  station_id {\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 46520275;\n" + //changes
+"    Int32 actual_range 1, 47293252;\n" + //changes
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -19121,7 +19288,7 @@ FileVisitorDNLS.debugMode = true;
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 4.772736e+8, 1.6536546e+9;\n" + //changes
+"    Float64 actual_range 4.772736e+8, 1.6587489e+9;\n" + //changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -19183,7 +19350,7 @@ FileVisitorDNLS.debugMode = true;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " +
-     "2022-06-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
+     "2022-08-10 from https://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -19369,60 +19536,100 @@ FileVisitorDNLS.debugMode = false;
         String2.log("\n*** EDDTableFromNcFiles.testLogAxis()");
         int language = 0;
         String tDir = EDStatic.fullTestCacheDirectory;
-        String tName, start, query, results, expected;
+        String tName, baseName, start, query, results, expected;
         EDDTable eddTable;
 
         //test default=linear
         eddTable = (EDDTable)oneFromDatasetsXml(null, "cwwcNDBCMet");
 
         if (whichChunk < 0 || whichChunk == 0) {
-            start = "testTableLogAxis_TimeGst_";
+            start = "testTableLogAxis_TimeGust_";
             query = "time,gst&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=|||Log",
-                tDir, start + "XLogIsIgnoredSinceTimeAxis", ".png")); 
+            baseName = start + "XLogIsIgnoredSinceTimeAxis";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=|||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
         }
 
         if (whichChunk < 0 || whichChunk == 1) {
-            start = "testTableLogAxis_TimeGst_";
+            start = "testTableLogAxis_TimeGust_";
             query = "time,gst&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
             /* */
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100||",
-                tDir, start + "0.1_100DefaultIsAscendingLinear", ".png")); 
+            baseName = start + "0.1_100DefaultIsAscendingLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100||",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|Linear",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|true|log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.1|100|false|Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
-                tDir, start + "Wide5RangeLog", ".png")); 
+            baseName = start + "Wide5RangeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
-                tDir, start + "HardIntraDecadeLog", ".png")); 
+            baseName = start + "HardIntraDecadeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
-                tDir, start + "SuperHardIntraDecadeLog", ".png")); 
+            baseName = start + "SuperHardIntraDecadeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
@@ -19431,45 +19638,81 @@ FileVisitorDNLS.debugMode = false;
         if (whichChunk < 0 || whichChunk == 2) {
 
             //swap x and y axes
-            start = "tableTestLogAxis_GstTime_";
+            start = "tableTestLogAxis_GustTime_";
             query = "gst,time&time>=2014-01-20&time<=2014-02-01&station=\"41029\"&.draw=lines";
             /* */
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLinear", ".png")); 
+            baseName = start + "DefaultIsLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100||",
-                tDir, start + "0.1_100DefaultIsAscendingLinear", ".png")); 
+            baseName = start + "0.1_100DefaultIsAscendingLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100||",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName =eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|Linear",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|true|log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=0.1|100|false|Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=1e-5|1e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
-                tDir, start + "Wide5RangeLog", ".png")); 
+            baseName = start + "Wide5RangeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=5e-6|5e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
-                tDir, start + "HardIntraDecadeLog", ".png")); 
+            baseName = start + "HardIntraDecadeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=15|35||Log", //hard intra-decade, no power of 10 in range, 2 small tics visible
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
-                tDir, start + "SuperHardIntraDecadeLog", ".png")); 
+            baseName = start + "SuperHardIntraDecadeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.xRange=10.2|19||Log", //super hard intra-decade, no power of 10 in range
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
 
@@ -19481,33 +19724,61 @@ FileVisitorDNLS.debugMode = false;
             start = "tableTestLogAxis_TimeChla_";
             query = "time,chl_a_total&time<=\"2002-06-18\"&.draw=lines";  
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query,
-                tDir, start + "DefaultIsLogButNegValues", ".png")); 
+            baseName = start + "DefaultIsLogButNegValues";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query,
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50||",
-                tDir, start + "DefaultIsAscendingLog", ".png")); 
+            baseName = start + "DefaultIsAscendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50||",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Linear",
-                tDir, start + "AscendingLinear", ".png")); 
+            baseName = start + "AscendingLinear";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Linear",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Log",
-                tDir, start + "AscendingLog", ".png")); 
+            baseName = start + "AscendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|true|Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|false|Log",
-                tDir, start + "DescendingLog", ".png")); 
+            baseName = start + "DescendingLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=0.05|50|false|Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
-                tDir, start + "WideRangeLog", ".png")); 
+            baseName = start + "WideRangeLog";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=1e-5|1e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
 
-            Test.displayInBrowser("file://" + tDir + 
-                eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
-                tDir, start + "WideRangeLog5", ".png")); 
+            baseName = start + "WideRangeLog5";
+            tName = eddTable.makeNewFileForDapQuery(language, null, null, query + "&.yRange=5e-6|5e5||Log",
+                tDir, baseName, ".png"); 
+            Image2.testImagesIdentical(
+                tDir + tName,
+                String2.unitTestImagesDir()    + baseName + ".png",
+                File2.getSystemTempDirectory() + baseName + "_diff.png");
             /* */
         }
     }
@@ -19767,8 +20038,8 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test ==  5) testLegend();
                     if (test ==  6) testTimeAxis();
                     if (test ==  7) testSpeed(0, 1000);  
-                    if (test ==  8) testGtspp15FilesExist(1990, 2020);
-                    if (test ==  9) testGtsppabFilesExist(1990, 2020);
+                    if (test ==  8) testGtspp15FilesExist(1990, 2022);
+                    if (test ==  9) testGtsppabFilesExist(1990, 2022);
                     if (test == 10) testCAMarCat();
                     if (test == 11) testNewTime();
                     if (test == 12) testMakeCopyFileTasks();           //requires fedCalLandings in localhost ERDDAP

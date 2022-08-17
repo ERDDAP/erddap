@@ -33772,7 +33772,7 @@ expected =
                 break;
         }
         if (time > 650)
-            throw new SimpleException("readNDNc took too long (time=" + time + "ms)");
+            throw new SimpleException("readNDNc took too long (time=" + time + "ms (556ms expected))");
     }
 
 

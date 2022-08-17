@@ -69,7 +69,7 @@ Dan zal ERDDAP alle toevoegen
 <br>naar de lijst met gevraagde variabelen.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Als je suggesties hebt voor extra links, neem dan contact op met <kbd>bob dot simons at noaa dot gov</kbd> .
+Als je suggesties hebt voor extra links, neem dan contact op met <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -408,7 +408,7 @@ Deze service bevat geen acroniemen die gewoonlijk worden uitgebreid tot meer dan
 SAF, die kan worden uitgebreid tot Synthetic Aperture Focusing of Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggesties?</a> De lijst met acroniemen van deze service is niet compleet.
-Als je een algemeen acroniem wilt toevoegen of een correctie wilt aanbrengen, stuur dan een e-mail naar <kbd>bob dot simons at noaa dot gov</kbd> .
+Als je een algemeen acroniem wilt toevoegen of een correctie wilt aanbrengen, stuur dan een e-mail naar <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -473,7 +473,7 @@ De service bevat alleen de meest voorkomende volledige naam gerelateerd aan een 
 SST breidt hier uit naar Sea Surface Temperature, niet Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggesties?</a> De lijst met variabelenamen van deze service is niet compleet.
-Als u een veelgebruikte variabelenaam wilt toevoegen of een correctie wilt aanbrengen, kunt u deze e-mailen naar <kbd>bob dot simons at noaa dot gov</kbd> .
+Als u een veelgebruikte variabelenaam wilt toevoegen of een correctie wilt aanbrengen, kunt u deze e-mailen naar <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -638,7 +638,7 @@ Geef een door komma&#39;s gescheiden lijst op van <kbd>datasetID /variableName/a
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Opmerkingen:</strong></a>
 <ul>
 <li>Controleer altijd de resultaten van de converters.
-<br>Als u denkt dat de converter een onjuist resultaat heeft opgeleverd, stuur dan een e-mail naar <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Als u denkt dat de converter een onjuist resultaat heeft opgeleverd, stuur dan een e-mail naar <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>DISCLAIMER VAN AANSPRAKELIJKHEID
 <br>Geen enkele persoon of organisatie die verbonden is aan deze website geeft enige garantie, expliciet of impliciet, inclusief garanties van verkoopbaarheid en geschiktheid voor een bepaald doel, of aanvaardt enige wettelijke aansprakelijkheid voor de nauwkeurigheid, volledigheid of bruikbaarheid van enige informatie op deze website.
@@ -755,7 +755,7 @@ Als dit niet de juiste benadering is voor een bepaalde dataset, kan het in sommi
 <br>Als de methoden of opties die door deze converter worden aangeboden niet geschikt zijn voor uw doeleinden of anderszins niet zijn wat u wilt, gebruik ze dan niet.
 In plaats daarvan kunt u het zelf doen, op uw eigen manier:
 download subsets van de dataset en pas uw eigen algoritme toe.
-Als u wilt dat andere interpolatie-algoritmen aan deze converter worden toegevoegd, kunt u een e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+Als u wilt dat andere interpolatie-algoritmen aan deze converter worden toegevoegd, kunt u een e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP beheerders:
 <br>U kunt de standaard Request CSV wijzigen door de tag &lt;convertInterpolateRequestCSVExample&gt; in datasets.xml toe te voegen/te bewerken.
@@ -837,7 +837,7 @@ Andere zijn alleen geschikt in bepaalde omstandigheden.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">UITSLUITING VAN AANSPRAKELIJKHEID</a></strong> - Geen enkele persoon of organisatie die verbonden is aan deze website geeft enige garantie, expliciet of impliciet, inclusief garanties van verkoopbaarheid en geschiktheid voor een bepaald doel, of aanvaardt enige wettelijke aansprakelijkheid voor de nauwkeurigheid, volledigheid of bruikbaarheid van enige informatie op dit website.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Correcties</a></strong> - Stuur een e-mail naar eventuele voorgestelde correcties naar <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Correcties</a></strong> - Stuur een e-mail naar eventuele voorgestelde correcties naar <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -924,7 +924,7 @@ Wanneer tijden worden weergegeven als tekenreeksen, formatteert deze converter t
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Ongeldige invoer</a> - ERDDAP probeert om te gaan met onjuist geformatteerde invoer.
 Als ERDDAP de invoer niet aankan, zal ERDDAP een foutmelding genereren.
-Als de &quot;ongeldige invoer&quot; een tekenreekstijd is waarvan u denkt dat deze moet worden ondersteund, e-mail deze dan naar <kbd>bob dot simons at noaa dot gov</kbd> .
+Als de &quot;ongeldige invoer&quot; een tekenreekstijd is waarvan u denkt dat deze moet worden ondersteund, e-mail deze dan naar <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Hoe ERDDAP met tijd</strong></a>
@@ -1192,7 +1192,7 @@ Er zijn
 <convertTimeNumberError>Het opgegeven nummer is geen geldig nummer.</convertTimeNumberError>
 <convertTimeNumericTimeError>Die numerieke tijd is niet geldig.</convertTimeNumericTimeError>
 <convertTimeParametersError>Die combinatie van parameters is niet geldig. Controleer de voorbeelden en probeer het opnieuw.</convertTimeParametersError>
-<convertTimeStringFormatError>Het formaat van de tekenreekstijd wordt niet herkend. Als je denkt dat het moet worden ondersteund, stuur dan een e-mail naar bob.simons op noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Het formaat van de tekenreekstijd wordt niet herkend. Als je denkt dat het moet worden ondersteund, stuur dan een e-mail naar erd.data op noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Geef niet zowel stringTime- als isoTime-parameters op.</convertTimeTwoTimeError>
 <convertTimeUnitsError>De tekenreeks voor eenheden is ongeldig.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Een getal. Bijvoorbeeld &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1520,7 +1520,7 @@ Er is niets speciaals, unieks of beters aan de specifieke aliassen of syntaxis v
 Merk op dat dit een eenvoudige standaardisatie is (bijv.
 &quot;joule&quot;, &quot;joules&quot; en &quot;J&quot; retourneren allemaal &quot;J&quot; ) in tegenstelling tot de &quot;canonieke&quot; vorm die wordt aangeboden door de UDUNITS software (die bijvoorbeeld alle de joule-aliassen naar &quot;kg.m2.s-2&quot; ).
 <li>Als je denkt dat een converter een verkeerde conversie heeft uitgevoerd, controleer dan eerst of de invoerreeks geldig is.
-Als u denkt dat de invoerreeks geldig is, stuur dan een e-mail met de details naar <kbd>bob dot simons at noaa dot gov</kbd> .
+Als u denkt dat de invoerreeks geldig is, stuur dan een e-mail met de details naar <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Zie de gedetailleerde vergelijking van de
 <a rel="help" href="#syntaxComparison">syntaxis</a> en
 <a rel="help" href="#unitsComparison">eenheden</a> van UDUNITS en UCUM hieronder.
@@ -1619,10 +1619,10 @@ De uitvoer is hetzelfde als de invoer, maar met bijgewerkte URL&#39;s.
 <li>Hiermee worden momenteel enkele veelgebruikte URL&#39;s bijgewerkt die verband houden met oceanografische en atmosferische wetenschappelijke datasets.
 Het is een incompleet work-in-progress en zal dat altijd blijven, want de taak is onmogelijk groot en steeds wisselend.
 Dit is geen systeem voor het bijwerken van URL&#39;s voor algemene doeleinden, hoewel het kan worden verbeterd om andere gebieden te dekken.
-<li>Als je denkt dat de converter iets verkeerd heeft gedaan of een URL niet heeft bijgewerkt die het zou moeten hebben, stuur dan een e-mail met de details naar <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Als je denkt dat de converter iets verkeerd heeft gedaan of een URL niet heeft bijgewerkt die het zou moeten hebben, stuur dan een e-mail met de details naar <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP beheerders:
 u kunt de conversieregels wijzigen door &lt;updateUrls&gt; in messages.xml te bewerken.
-Als dat zo is, stuur dan een e-mail met de details naar <kbd>bob dot simons at noaa dot gov</kbd>, zodat de wijzigingen kunnen worden opgenomen in de standaard ERDDAP distributie.
+Als dat zo is, stuur dan een e-mail met de details naar <kbd>erd dot data at noaa dot gov</kbd>, zodat de wijzigingen kunnen worden opgenomen in de standaard ERDDAP distributie.
 <li>UITSLUITING VAN AANSPRAKELIJKHEID - Geen enkele persoon of organisatie die verbonden is aan deze website geeft enige garantie, expliciet of impliciet, inclusief garanties van verkoopbaarheid en geschiktheid voor een bepaald doel, of aanvaardt enige wettelijke aansprakelijkheid voor de nauwkeurigheid, volledigheid of bruikbaarheid van enige informatie op dit website.
 </ul>
 
@@ -3392,7 +3392,7 @@ SST, gemengd, VS-west (experimenteel, 5 dagen composiet)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 Vragen, opmerkingen, suggesties?
-Stuur een e-mail naar <kbd>bob dot simons at noaa dot gov</kbd> en vermeld de ERDDAP URL die rechtstreeks verband houdt met uw vraag of opmerking.
+Stuur een e-mail naar <kbd>erd dot data at noaa dot gov</kbd> en vermeld de ERDDAP URL die rechtstreeks verband houdt met uw vraag of opmerking.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Of u kunt lid worden van de ERDDAP Google Group / Mailing List</a> door naar
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a> te gaan
@@ -5760,11 +5760,7 @@ Als de metadata van de dataset een
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Hoe ERDDAP in een paper te citeren?</a></strong>
 <br>Als je ERDDAP zelf in een wetenschappelijk artikel wilt citeren, gebruik dan iets als
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Waar staat de afkorting&quot; ERDDAP &quot;voor?</a></strong>
 <br>&quot; ERDDAP &quot;was vroeger een acroniem, maar het ontgroeide die oorspronkelijke beschrijving.
 Zie het alsjeblieft als een naam, niet als een acroniem.
@@ -5785,7 +5781,7 @@ Dan hebben mensen een andere manier om toegang te krijgen tot uw gegevens en kun
   >meerdere ERDDAP &#39;s installeren die samenwerken</a> om op te schalen en te voldoen aan de behoeften van een groot datadistributiecentrum.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Neem contact met ons op</a></h2>
-Als u vragen, suggesties of opmerkingen heeft over ERDDAP in het algemeen (niet deze specifieke ERDDAP installatie), stuur dan een e-mail naar <kbd>bob dot simons at noaa dot gov</kbd> en vermeld de ERDDAP URL die rechtstreeks verband houdt met uw vraag of opmerking.
+Als u vragen, suggesties of opmerkingen heeft over ERDDAP in het algemeen (niet deze specifieke ERDDAP installatie), stuur dan een e-mail naar <kbd>erd dot data at noaa dot gov</kbd> en vermeld de ERDDAP URL die rechtstreeks verband houdt met uw vraag of opmerking.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Of u kunt lid worden van de ERDDAP Google Group / Mailing List</a> door naar
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a> te gaan
@@ -5869,7 +5865,7 @@ Alle inhoud in de tekenreeks die overeenkomt met een &#39;voor&#39;-tekenreeks, 
 De witregels zorgen ervoor dat de overige regels &#39;voor&#39; en &#39;na&#39; regels zijn.
 De wijzigingen worden hier toegepast in de volgorde van de regels.
 !!! VOEG ALLEEN PAREN TOE DIE U BESCHOUWT ALS ZEER, ZEER BETROUWBARE VERANDERINGEN!!! Opmerkingen:
-* Als je denkt dat er regels zijn die verkeerd zijn of dat er nieuwe regels moeten worden toegevoegd, stuur dan een e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+* Als je denkt dat er regels zijn die verkeerd zijn of dat er nieuwe regels moeten worden toegevoegd, stuur dan een e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 * De eerste helft heeft dramatische veranderingen.
 De tweede helft heeft eenvoudige wijzigingen van http naar https.
 De wijzigingen van http naar https zijn belangrijk omdat sommige websites geen omleidingen hebben, en zelfs als dat wel het geval is, volgen sommige systemen (bijv.

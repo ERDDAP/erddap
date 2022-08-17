@@ -3171,8 +3171,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      * If a file is in the localDir but not the remoteDir, it isn't deleted.
      * If a file in the localDir is newer than in remoteDir, it isn't changed.
      *
-     * @param localDir need not currently exist. If doIt=true, it will be created,
-     *    as will all needed subdir.
+     * @param localDir need not currently exist. subdirs will also be created as needed.
      * @param tPathRegex if tRecursive=true, this restricts which remoteDir 
      *    paths will be followed.
      *    Use null, "", or ".*" to get the default ".*".
@@ -3206,6 +3205,7 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
         localDir  = File2.addSlash(String2.replaceAll(localDir,  '\\', '/'));
         int rDirLen = remoteDir.length();
         int lDirLen = localDir.length();
+        File2.makeDirectory(localDir);
 
         //get the remote and local file information
         Table rTable = oneStep(remoteDir, tFileNameRegex, tRecursive,

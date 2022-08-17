@@ -341,7 +341,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             tSortFilesBySourceNames = tColumnNameForExtract;
         sb.append(
             "<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"" + 
-                suggestDatasetID(tFileDir + suggestedRegex) +  //dirs can't be made public
+                suggestDatasetID(tFileDir + suggestedRegex + useDimensionsCSV) +  //dirs can't be made public
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
             (String2.isUrl(tCacheFromUrl)? 
@@ -401,7 +401,7 @@ public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles {
             null) + "\n";
 
 String expected = 
-"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_65cd_4c8a_93f3\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_39de_8cec_e910\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/nc/</fileDir>\n" +
@@ -1188,7 +1188,7 @@ String expected =
 "        <att name=\"cdm_data_type\">Point</att>\n");
             String2.log("post replaceAll:\n" + results);
           
-            String tDatasetID = "nc_65cd_4c8a_93f3";
+            String tDatasetID = "nc_39de_8cec_e910";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -1844,7 +1844,7 @@ expected=
         String2.setClipboardString(results);
 
 String expected = 
-"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"sdn_3be0_2b1d_fd71\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"sdn_d05a_ee0c_c6b8\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/sdn/</fileDir>\n" +
@@ -2289,7 +2289,7 @@ String expected =
             null) + "\n";
 
 String expected = 
-"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_c6c1_c6d3_fa53\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromMultidimNcFiles\" datasetID=\"nc_b3d6_c57d_005d\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/nc/</fileDir>\n" +
@@ -2674,7 +2674,7 @@ String expected =
         //it could be made into valid TimeSeries by adding a few more atts
         String2.log(results);
       
-        String tDatasetID = "nc_c6c1_c6d3_fa53";
+        String tDatasetID = "nc_b3d6_c57d_005d";
         EDD.deleteCachedDatasetInfo(tDatasetID);
         EDDTableFromMultidimNcFiles edd = (EDDTableFromMultidimNcFiles)oneFromXmlFragment(null, results);
         Test.ensureEqual(edd.datasetID(), tDatasetID, "");

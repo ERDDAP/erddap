@@ -3097,7 +3097,8 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
      * This requires pmelTaoDySst and rPmelTaoDySst in localhost erddap.
      */
     public static void testActualRange() throws Throwable {
-        String2.log("\n****************** EDDTableFromNccsv.testActualRange\n");
+        String2.log("\n****************** EDDTableFromNccsv.testActualRange\n" +
+            "!!!This test requires pmelTaoDySst and rlPmelTaoDySst in localhost ERDDAP.\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
         String error = "";

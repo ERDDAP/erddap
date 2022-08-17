@@ -114,7 +114,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     protected String   axis0TimeZoneString = null;
     protected TimeZone axis0TimeZone = null;
     protected DateTimeFormatter axis0DateTimeFormatter = null;  //java.time (was Joda)
-    protected PAType    axis0PAType = PAType.DOUBLE; //the default
+    protected PAType   axis0PAType = PAType.DOUBLE; //the default
     protected String   axis0Regex = "(.*)";       //the default
     protected Pattern  axis0RegexPattern = null;  //from regex
     protected int      axis0CaptureGroup = 1;     //the default
@@ -555,7 +555,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                         //timeFormat or element class
                         if (nParts > 1 && String2.isSomething(parts.get(1))) {
                             String tp = parts.get(1);
-String2.log(">>> tp=" + tp);
+                            //String2.log(">>> tp=" + tp);
                             if (tp.startsWith("timeFormat=")) {
                                 axis0TimeFormat = tp.substring(11);
                                 axis0TimeZoneString = "Zulu";
@@ -675,6 +675,7 @@ String2.log(">>> tp=" + tp);
                 "(dirTable=null?" + (dirTable==null) + 
                 " fileTable=null?" + (fileTable==null) + 
                 " badFileMap=null?" + (badFileMap==null) + ")");
+
             dirTable = new Table();
             dirTable.addColumn("dirName", new StringArray());
 
@@ -694,12 +695,8 @@ String2.log(">>> tp=" + tp);
 
         //skip loading until after intial loadDatasets?
         if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
-            String msg = "NOTE: For datasetID=" + datasetID + ", fileTable.nRows=0 and intialLoadDatasets=true,\n" +
-                "so I'm not loading this dataset now\n" +
-                "and I'm setting a flag for this dataset so it will be loaded after the initial loadDatasets.";
             requestReloadASAP();
-            String2.log(msg);
-            throw new RuntimeException(msg);
+            throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
         } 
 
         //get the dirTable and fileTable PrimitiveArrays

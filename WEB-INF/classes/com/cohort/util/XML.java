@@ -170,7 +170,12 @@ public class XML {
      * For security reasons, for text that will be used as an HTML or XML attribute, 
      * this replaces non-alphanumeric characters with HTML Entity &amp;#xHHHH; format.
      * See HTML Attribute Encoding at
-     * https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet#Output_Encoding_Rules_Summary
+     * https://owasp.org/www-pdf-archive/OWASP_Cheatsheets_Book.pdf
+     * pg 188, section 25.4 
+     * "Encoding Type: HTML Attribute Encoding
+     * Encoding Mechanism: 
+     * Except for alphanumeric characters, escape all characters with the HTML Entity &#xHH;
+     * format, including spaces. (HH = Hex Value)".
      * On the need to escape HTML attributes: http://wonko.com/post/html-escaping
      *
      * @param plainText the string to be encoded.
@@ -861,8 +866,8 @@ public class XML {
         //test removeHTMLTags
         String2.log("test removeHTMLTags");
         Test.ensureEqual(removeHTMLTags(
-            "Hi, <strong>bob.simons&amp;</strong>! <a href=\"http://someUrl\">Click here!</a>"), 
-            "Hi, bob.simons&! [ http://someUrl ] Click here!", "a");
+            "Hi, <strong>erd.data&amp;</strong>! <a href=\"http://someUrl\">Click here!</a>"), 
+            "Hi, erd.data&! [ http://someUrl ] Click here!", "a");
 
         //test encodeAsXML
         String2.log("test encode");

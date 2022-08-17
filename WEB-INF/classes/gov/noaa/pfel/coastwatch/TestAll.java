@@ -122,10 +122,10 @@ public class TestAll  {
 //       "/programs/_tomcat/webapps/cwexperimental/images/wz_dragdrop.js"));
 
         // "-h" (header), "-c" (coord. vars), "-vall" (default), "-v var1;var2", "-v var1(0:1,:,12)"
-//      String tFileName = "/data/sarah/EGIM_d01_20220503_to_20220508_v001.nc"; 
+//      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"noaaSanctSound_HI05_01_GoogleAI_humpbackwhale_1hy", "-verbose"});
+//      DasDds.main(new String[]{"erdMH1chla1day", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -570,7 +570,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 3, 2022,  5, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 5, 2022,  7, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -603,7 +603,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 3, 2022,  5); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 5, 2022,  7); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -1093,41 +1093,7 @@ WaitThenTryAgainException wttae;
 
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
-        boolean doSlowTestsToo = true;
-
-
-//TestUtil.testString2();
-//TestUtil.testString2canonical();
-//TestUtil.testString2canonical2();
-//TestUtil.testString2canonicalStringHolder();
-//PersistentTable.basicTest();
-//StringArray.basicTest();
-//Table.testSaveAsSpeed();
-//Table.testReadASCIISpeed();
-//Table.testBigAscii();
-//Table.testReadJsonSpeed(); //too slow
-//WatchDirectory.basicTest();
-//EDDGridFromDap.testGenerateDatasetsXml5();
-//EDDGridFromDap.testGraphics(true);
-//EDDGridLonPM180.testHardFlag();
-//EDDGridLonPM180.testBadFilesFlag();
-//EDDGridLon0360.testPM181();
-//EDDTableFromNcFiles.testSpeedDAF();
-//EDDTableFromNcFiles.testSpeedMAG();
-//EDDTableFromNcFiles.testSpeedSubset();
-//EDDTableFromNcFiles.testBigRequest(0,-1); //super slow in TestAll
-//EDDTableFromNcFiles.testNThreads();
-//EDDTableFromNcFiles.testNThreads2("cwwcNDBCMet", -3, 3);
-//EDDTableFromNcFiles.testHardFlag();
-//EDDTableFromAsciiFiles.testGenerateDatasetsXml2();
-//EDDTableFromFileNames.testAccessibleViaFilesFileTable(false,false);
-//EDDTableFromFileNames.testOnTheFly();
-//Erddap.testBasic();
-
-//        Table table = new Table();
-//        long time = System.currentTimeMillis();
-//        table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
-//        String2.log("time=" + (System.currentTimeMillis() - time));
+        boolean doSlowTestsToo = false;
 
 
 /* for releases, this line should have open/close comment */
@@ -1208,7 +1174,7 @@ WaitThenTryAgainException wttae;
         //other
         GSHHS.test(                      errorSB, interactive, doSlowTestsToo, 0, -1); 
         Boundaries.test(                 errorSB, interactive, doSlowTestsToo, 0, -1); 
-        Browser.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); 
+        //Browser.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); //INACTIVE. The cwbrowsers are no longer supported.
         DecimalDegreeFormatter.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  
         DegreeMinuteFormatter.test(      errorSB, interactive, doSlowTestsToo, 0, -1); 
         CompoundColorMap.test(           errorSB, interactive, doSlowTestsToo, 0, -1); 

@@ -69,7 +69,7 @@ x-gzip=gzip 및 x-compress=compress
 <br>요청된 변수 목록에.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-추가 링크에 대한 제안 사항이 있는 경우 <kbd>bob dot simons at noaa dot gov</kbd> 문의하십시오.
+추가 링크에 대한 제안 사항이 있는 경우 <kbd>erd dot data at noaa dot gov</kbd> 문의하십시오.
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -414,7 +414,7 @@ ESPRESSO 및 ESPreSSO ).
 SAF, Synthetic Aperture Focusing 또는 Satellite Application Facility 로 확장될 수 있음).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">제안?</a> 이 서비스의 약어 목록이 완전하지 않습니다.
-일반적인 약어를 추가하거나 수정하려면 <kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
+일반적인 약어를 추가하거나 수정하려면 <kbd>erd dot data at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
 <br>&nbsp;
 </ul>
 
@@ -483,7 +483,7 @@ A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자(초기 &#39;&amp;&#39; 및 기본
 SST는 여기서 Surface Skin Temperature Sea Surface Temperature 아니라 해수면 온도로 확장됨).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">제안?</a> 이 서비스의 변수 이름 목록이 완전하지 않습니다.
-일반적으로 사용되는 변수 이름을 추가하거나 수정하려면 <kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
+일반적으로 사용되는 변수 이름을 추가하거나 수정하려면 <kbd>erd dot data at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
 <br>&nbsp;
 </ul>
 
@@ -652,7 +652,7 @@ A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자는 %HH로 인코딩되어야 합�
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>노트:</strong></a>
 <ul>
 <li>항상 변환기의 결과를 확인하십시오.
-<br>변환기가 잘못된 결과를 제공했다고 생각되면 <kbd>bob dot simons at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
+<br>변환기가 잘못된 결과를 제공했다고 생각되면 <kbd>erd dot data at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
 <br>&nbsp;
 <li>책임의 부인
 <br>이 웹사이트와 관련된 개인이나 조직은 상품성 및 특정 목적에의 적합성에 대한 보증을 포함하여 명시적이든 묵시적이든 어떠한 보증도 하지 않으며 이 웹사이트 정보의 정확성, 완전성 또는 유용성에 대해 법적 책임을 지지 않습니다.
@@ -772,7 +772,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) 모든 유형의 데이터 �
   >당신이 원하는 것이 아니라?</a>
 <br>이 변환기에서 제공하는 방법이나 옵션이 목적에 적합하지 않거나 원하는 것이 아니면 사용하지 마십시오.
 대신 데이터 세트의 하위 집합을 다운로드하고 고유한 알고리즘을 적용하는 자신만의 방식으로 이를 수행할 수 있습니다.
-이 변환기에 다른 보간 알고리즘을 추가하도록 요청하려면 <kbd>bob dot simons at noaa dot gov</kbd> 이메일을 보내주십시오.
+이 변환기에 다른 보간 알고리즘을 추가하도록 요청하려면 <kbd>erd dot data at noaa dot gov</kbd> 이메일을 보내주십시오.
 <br>&nbsp;
 <li>ERDDAP 관리자:
 <br>datasets.xml 에서 &lt; datasets.xml &gt; 태그를 추가/편집하여 기본 요청 CSV를 변경할 수 있습니다.
@@ -863,7 +863,7 @@ GCMD 과학 키워드를 선택하십시오.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">책임의 부인</a></strong> - 이 웹사이트와 관련된 어떤 개인이나 조직도 상품성 및 특정 목적에의 적합성에 대한 보증을 포함하여 명시적이든 묵시적이든 어떠한 보증도 하지 않으며 이 웹사이트에 있는 정보의 정확성, 완전성 또는 유용성에 대해 법적 책임을 지지 않습니다.
 웹사이트.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">수정</a></strong> 사항 - <kbd>bob dot simons at noaa dot gov</kbd> 로 이메일을 보내주십시오.
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">수정</a></strong> 사항 - <kbd>erd dot data at noaa dot gov</kbd> 로 이메일을 보내주십시오.
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -958,7 +958,7 @@ ERDDAP 외부의 데이터 세트는 종종 다른 단위 문자열을 사용합
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">잘못된 입력</a> - ERDDAP 은 형식이 잘못된 입력을 처리하려고 합니다.
 ERDDAP 가 입력을 처리할 수 없으면 ERDDAP 는 오류 메시지를 생성합니다.
-&quot;잘못된 입력&quot;이 지원되어야 한다고 생각하는 문자열 시간인 경우 <kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
+&quot;잘못된 입력&quot;이 지원되어야 한다고 생각하는 문자열 시간인 경우 <kbd>erd dot data at noaa dot gov</kbd> 에게 이메일을 보내주십시오.
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAP 이 시간을 다루는 방법</strong></a>
@@ -1246,7 +1246,7 @@ A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자는 %HH로 인코딩되어야 합�
 <convertTimeNumberError>지정된 번호는 유효한 번호가 아닙니다.</convertTimeNumberError>
 <convertTimeNumericTimeError>해당 숫자 시간은 유효하지 않습니다.</convertTimeNumericTimeError>
 <convertTimeParametersError>해당 매개변수 조합이 유효하지 않습니다. 예제를 확인하고 다시 시도하십시오.</convertTimeParametersError>
-<convertTimeStringFormatError>문자열 시간 형식이 인식되지 않습니다. 지원되어야 한다고 생각되면 noaa.gov의 bob.simons로 이메일을 보내주십시오.</convertTimeStringFormatError>
+<convertTimeStringFormatError>문자열 시간 형식이 인식되지 않습니다. 지원되어야 한다고 생각되면 noaa.gov의 erd.data로 이메일을 보내주십시오.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>stringTime 및 isoTime 매개변수를 모두 지정하지 마십시오.</convertTimeTwoTimeError>
 <convertTimeUnitsError>단위 문자열이 잘못되었습니다.</convertTimeUnitsError>
 <convertTimeNumberTooltip>번호. 예: &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1579,7 +1579,7 @@ UDUNITS 소프트웨어에서 반환된 &quot;정규&quot; 형식과 유사한 �
 UDUNITS &quot;joules&quot; 에서 제공하는 &quot;joule&quot; 정규 &quot;J&quot; 형식 &quot;J&quot; 예:
 모든 줄 별칭은 &quot;kg.m2.s-2&quot; ).
 <li>변환기가 변환을 잘못했다고 생각되면 먼저 입력 문자열이 유효한지 확인하십시오.
-입력 문자열이 유효하다고 생각되면 <kbd>bob dot simons at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
+입력 문자열이 유효하다고 생각되면 <kbd>erd dot data at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
 <li>아래의 UDUNITS 및 UCUM
 <a rel="help" href="#syntaxComparison">구문</a> 및
 <a rel="help" href="#unitsComparison">단위</a> 에 대한 자세한 비교를 참조하십시오.
@@ -1684,10 +1684,10 @@ A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자는 %HH로 인코딩되어야 합�
 그것은 불완전하게 진행 중인 작업이며 항상 있을 것입니다.
 왜냐하면 그 작업은 크고 끊임없이 변화하는 것이 불가능하기 때문입니다.
 이것은 다른 영역을 포함하도록 개선될 수 있지만 범용 URL 업데이트 시스템이 아닙니다.
-<li>변환기가 잘못된 작업을 수행했거나 URL을 업데이트하지 않았다고 생각되면 <kbd>bob dot simons at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
+<li>변환기가 잘못된 작업을 수행했거나 URL을 업데이트하지 않았다고 생각되면 <kbd>erd dot data at noaa dot gov</kbd> 에게 세부 정보를 이메일로 보내주십시오.
 <li>ERDDAP 관리자:
 messages.xml에서 &lt;updateUrls&gt; 를 편집하여 변환 규칙을 변경할 수 있습니다.
-그렇다면 변경 사항을 표준 ERDDAP 배포에 통합할 수 있도록 세부 정보를 <kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일로 보내주십시오.
+그렇다면 변경 사항을 표준 ERDDAP 배포에 통합할 수 있도록 세부 정보를 <kbd>erd dot data at noaa dot gov</kbd> 에게 이메일로 보내주십시오.
 <li>책임의 부인 - 이 웹사이트와 관련된 어떤 개인이나 조직도 상품성 및 특정 목적에의 적합성에 대한 보증을 포함하여 명시적이든 묵시적이든 어떠한 보증도 하지 않으며 이 웹사이트에 있는 정보의 정확성, 완전성 또는 유용성에 대해 법적 책임을 지지 않습니다.
 웹사이트.
 </ul>
@@ -3516,7 +3516,7 @@ SST, 혼합, 미국 서부(실험, 5일 종합)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">연락하다</a></h2>
 질문, 의견, 제안?
-<kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일을 보내고 귀하의 질문이나 의견과 직접 관련된 ERDDAP URL을 포함하십시오.
+<kbd>erd dot data at noaa dot gov</kbd> 에게 이메일을 보내고 귀하의 질문이나 의견과 직접 관련된 ERDDAP URL을 포함하십시오.
 <p>또는
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a> 을 방문하여
@@ -5943,11 +5943,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">논문에서 ERDDAP 를 인용하는 방법</a></strong>
 <br>과학 논문에서 ERDDAP 자체를 인용하려면 다음과 같은 것을 사용하십시오.
-<br><kbd>시몬스, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-캘리포니아 몬테레이:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">약어 &quot;ERDDAP&quot;은 무엇을 의미합니까?</a></strong>
 <br>&quot;ERDDAP&quot;는 약어였지만 원래의 설명을 능가했습니다.
 자, 그냥 두문자어가 아닌 이름으로 생각해주세요.
@@ -5967,7 +5963,7 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
   >함께 작동하는 여러 ERDDAP</a> 를 설치하여 대규모 데이터 배포 센터의 요구 사항을 충족하고 확장할 수 있습니다.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">문의하기</a></h2>
-일반적인 ERDDAP (특정 ERDDAP 설치가 아님)에 대한 질문, 제안 또는 의견이 있는 경우 <kbd>bob dot simons at noaa dot gov</kbd> 에게 이메일을 보내고 질문이나 의견과 직접 관련된 ERDDAP URL을 포함하십시오.
+일반적인 ERDDAP (특정 ERDDAP 설치가 아님)에 대한 질문, 제안 또는 의견이 있는 경우 <kbd>erd dot data at noaa dot gov</kbd> 에게 이메일을 보내고 질문이나 의견과 직접 관련된 ERDDAP URL을 포함하십시오.
 <br>또는
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a> 을 방문하여
@@ -6051,7 +6047,7 @@ updateUrls에는 세 줄의 행(앞, 뒤, 공백)이 있습니다.
 빈 행은 다른 행이 &#39;이전&#39; 및 &#39;후&#39; 행이 되도록 합니다.
 변경 사항은 여기에서 줄 순서대로 적용됩니다.
 !!! 매우 신뢰할 수 있는 변경으로 간주되는 쌍만 추가하십시오!!! 참고:
-* 여기에 잘못된 규칙이나 추가해야 할 새로운 규칙이 있다고 생각되면 <kbd>bob dot simons at noaa dot gov</kbd> 이메일을 보내주십시오.
+* 여기에 잘못된 규칙이나 추가해야 할 새로운 규칙이 있다고 생각되면 <kbd>erd dot data at noaa dot gov</kbd> 이메일을 보내주십시오.
 * 전반전은 극적인 변화가 있습니다.
 후반부에는 간단한 http에서 https로 변경됩니다.
 http에서 https로의 변경은 일부 웹사이트에 리디렉션이 없고, 있더라도 일부 시스템(예:

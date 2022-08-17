@@ -9081,7 +9081,8 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         } catch (Throwable t) {
             String2.pressEnterToContinue(MustBe.throwableToString(t) + 
                 "\nFREQUENT ERROR. " +
-                "\nOften, the dataset doesn't load because its URL hasn't be updated recently."); 
+                "\nOften, the dataset doesn't load because its URL hasn't be updated recently." +
+                "\nOr a data request fails because GRADS is slow and times out or fails."); 
         }
     }
 
@@ -11398,7 +11399,7 @@ expected =
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
-"time,actual_range,2002-07-04T00:00:00Z\\n2021-07-20T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
+"time,actual_range,2002-07-04T00:00:00Z\\n2022-03-30T00:00:00Z\n" +  //changes, but can't use replaceAll above to avoid 
 "time,axis,T\n" +
 "time,ioos_category,Time\n" +
 "time,long_name,Time\n" +

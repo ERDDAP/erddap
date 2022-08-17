@@ -51,6 +51,15 @@ public class OutputStreamViaAwsS3 extends BufferedOutputStream {
         fullLocalFileName = tParent.localDir + tParent.fileName + tParent.extension;
     }
 
+    /** 
+     * This is useful for OutputStream types that support fileName
+     * if you want to change the download fileName before
+     * the call to getOutputStream().
+     */
+    public void setFileName(String tFileName) {
+        parent.setFileName(tFileName);  //used in fullAwsUrl below
+    }
+
        
     /**
      * This overwrites the super's close() method, closing the local buffered FileOutputStream,

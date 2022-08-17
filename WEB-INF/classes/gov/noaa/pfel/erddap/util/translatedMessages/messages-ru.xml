@@ -68,7 +68,7 @@ HTML или нет?
 <br>в список запрашиваемых переменных.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Если у вас есть предложения по дополнительным ссылкам, свяжитесь с <kbd>bob dot simons at noaa dot gov</kbd> .
+Если у вас есть предложения по дополнительным ссылкам, свяжитесь с <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -413,7 +413,7 @@ CTD, если они не связаны с <kbd>TimeSeries</kbd> или <kbd>Tr
 Эта услуга не включает аббревиатуры, которые обычно расширяются до более чем одного полного имени (например, SAF, которое может быть расширено до Synthetic Aperture Focusing или средства Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Предложения?</a> Список сокращений этой службы неполный.
-Если вы хотите добавить общий акроним или внести исправление, отправьте его по электронной почте на адрес <kbd>bob dot simons at noaa dot gov</kbd> .
+Если вы хотите добавить общий акроним или внести исправление, отправьте его по электронной почте на адрес <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -478,7 +478,7 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
 Служба включает только наиболее распространенное полное имя, относящееся к заданному имени переменной (например, SST расширяется здесь до Sea Surface Temperature, а не температуры Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Предложения?</a> Список имен переменных этой службы неполный.
-Если вы хотите добавить часто используемое имя переменной или внести исправление, отправьте его по электронной почте на адрес <kbd>bob dot simons at noaa dot gov</kbd> .
+Если вы хотите добавить часто используемое имя переменной или внести исправление, отправьте его по электронной почте на адрес <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -645,7 +645,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Примечания:</strong></a>
 <ul>
 <li>Всегда проверяйте результаты конвертеров.
-<br>Если вы считаете, что конвертер дал неверный результат, отправьте подробную информацию по электронной почте <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Если вы считаете, что конвертер дал неверный результат, отправьте подробную информацию по электронной почте <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ
 <br>Ни одно лицо или организация, связанные с этим веб-сайтом, не дают никаких гарантий, явных или подразумеваемых, включая гарантии товарной пригодности и пригодности для конкретной цели, и не принимают на себя никакой юридической ответственности за точность, полноту или полезность любой информации на этом веб-сайте.
@@ -764,7 +764,7 @@ New York, New York.
 <br>Если методы или опции, предлагаемые этим конвертером, не подходят для ваших целей или не соответствуют вашим требованиям, не используйте их.
 Вместо этого вы можете сделать это самостоятельно, по-своему:
 загрузить подмножества набора данных и применить свой собственный алгоритм.
-Чтобы запросить добавление в этот конвертер других алгоритмов интерполяции, отправьте электронное письмо <kbd>bob dot simons at noaa dot gov</kbd> .
+Чтобы запросить добавление в этот конвертер других алгоритмов интерполяции, отправьте электронное письмо <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Администраторы ERDDAP :
 <br>Вы можете изменить CSV-файл запроса по умолчанию, добавив / отредактировав тег &lt;convertInterpolateRequestCSVExample&gt; в datasets.xml .
@@ -852,7 +852,7 @@ New York, New York.
 Веб-сайт.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Исправления</a></strong> .
-Любые предлагаемые исправления отправляйте по электронной почте на адрес <kbd>bob dot simons at noaa dot gov</kbd> .
+Любые предлагаемые исправления отправляйте по электронной почте на адрес <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -946,7 +946,7 @@ ERDDAP есть
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Неверный ввод</a> - ERDDAP пытается справиться с неправильно отформатированным вводом.
 Если ERDDAP не может обработать ввод, ERDDAP выдаст сообщение об ошибке.
-Если «недопустимый ввод» - это строка времени, которая, по вашему мнению, должна поддерживаться, отправьте ее по электронной почте на адрес <kbd>bob dot simons at noaa dot gov</kbd> .
+Если «недопустимый ввод» - это строка времени, которая, по вашему мнению, должна поддерживаться, отправьте ее по электронной почте на адрес <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Как ERDDAP со временем</strong></a>
@@ -1261,7 +1261,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 <convertTimeNumberError>Указанный номер недействителен.</convertTimeNumberError>
 <convertTimeNumericTimeError>Это числовое время недействительно.</convertTimeNumericTimeError>
 <convertTimeParametersError>Эта комбинация параметров недопустима. Проверьте примеры и попробуйте еще раз.</convertTimeParametersError>
-<convertTimeStringFormatError>Формат времени строки не распознается. Если вы считаете, что его следует поддерживать, отправьте его по электронной почте на адрес bob.simons на noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Формат времени строки не распознается. Если вы считаете, что его следует поддерживать, отправьте его по электронной почте на адрес erd.data на noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Не указывайте одновременно параметры stringTime и isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Строка единиц измерения недействительна.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Число. Например, «{0}».</convertTimeNumberTooltip>
@@ -1581,7 +1581,7 @@ UDUNITS udunits2-prefixes.xml)</td>
 <li>Параметр «Стандартизировать UDUNITS » хорошо работает для действительных строк UDUNITS и достаточно хорошо для нестандартных / недопустимых строк UDUNITS .
 Обратите внимание, что это простая стандартизация (например, &quot;joule&quot;, &quot;joules&quot; и &quot;J&quot; все возвращают &quot;J&quot; ) в отличие от «канонической» формы, предлагаемой программой UDUNITS (которая, например, преобразует все псевдонимы джоуля для &quot;kg.m2.s-2&quot; ).
 <li>Если вы считаете, что конвертер выполнил преобразование неправильно, сначала убедитесь, что введенная строка действительна.
-Если вы считаете, что введенная строка действительна, отправьте подробные сведения по электронной почте <kbd>bob dot simons at noaa dot gov</kbd> .
+Если вы считаете, что введенная строка действительна, отправьте подробные сведения по электронной почте <kbd>erd dot data at noaa dot gov</kbd> .
 <li>См.
 Подробное сравнение
 <a rel="help" href="#syntaxComparison">синтаксиса</a> и
@@ -1682,10 +1682,10 @@ UDUNITS = градус% 20 метр-1</a>
 <li>В настоящее время обновляются некоторые общие URL-адреса, связанные с наборами данных океанографических и атмосферных наук.
 Это незавершенная работа, и так будет всегда, потому что задача невозможна, большая и постоянно меняющаяся.
 Это не универсальная система обновления URL-адресов, хотя ее можно улучшить, чтобы охватить другие области.
-<li>Если вы считаете, что конвертер сделал что-то неправильно или не обновил URL-адрес, который должен иметь, отправьте подробную информацию по электронной почте <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Если вы считаете, что конвертер сделал что-то неправильно или не обновил URL-адрес, который должен иметь, отправьте подробную информацию по электронной почте <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Администраторы ERDDAP :
 вы можете изменить правила преобразования, отредактировав &lt;updateUrls&gt; в messages.xml.
-Если вы это сделаете, отправьте подробную информацию по электронной почте <kbd>bob dot simons at noaa dot gov</kbd>, чтобы изменения можно было включить в стандартный дистрибутив ERDDAP .
+Если вы это сделаете, отправьте подробную информацию по электронной почте <kbd>erd dot data at noaa dot gov</kbd>, чтобы изменения можно было включить в стандартный дистрибутив ERDDAP .
 <li>ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ - Ни одно лицо или организация, связанные с этим веб-сайтом, не дают никаких гарантий, явных или подразумеваемых, включая гарантии товарной пригодности и пригодности для конкретной цели, и не принимают на себя никакой юридической ответственности за точность, полноту или полезность любой информации на этом сайте.
 Веб-сайт.
 </ul>
@@ -3461,7 +3461,7 @@ SST, смешанный, Запад США (экспериментальный, 
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Контакт</a></h2>
 Вопросы, комментарии, предложения?
-Отправьте электронное письмо на адрес <kbd>bob dot simons at noaa dot gov</kbd> и укажите URL-адрес ERDDAP непосредственно связанный с вашим вопросом или комментарием.
+Отправьте электронное письмо на адрес <kbd>erd dot data at noaa dot gov</kbd> и укажите URL-адрес ERDDAP непосредственно связанный с вашим вопросом или комментарием.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Или вы можете присоединиться к группе / списку рассылки ERDDAP Google</a>, посетив
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5858,12 +5858,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Как ERDDAP в статье</a></strong>
 <br>Если вы хотите процитировать сам ERDDAP в научной статье, используйте что-то вроде
-<br><kbd>Саймонс, Р.А.
-2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Монтерей, Калифорния:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Что означает аббревиатура « ERDDAP »?</a></strong>
 <br>« ERDDAP » раньше было аббревиатурой, но оно переросло первоначальное описание.
 Теперь, пожалуйста, просто подумайте об этом как об имени, а не как об аббревиатуре.
@@ -5884,7 +5879,7 @@ NOAA / NMFS / SWFSC / ERD .</kbd>
   >несколько ERDDAP, которые работают вместе</a>, чтобы масштабироваться и соответствовать потребностям крупного центра распределения данных.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Свяжитесь с нами</a></h2>
-Если у вас есть вопросы, предложения или комментарии о ERDDAP в целом (не об этой конкретной установке ERDDAP ), отправьте электронное письмо по <kbd>bob dot simons at noaa dot gov</kbd> и укажите URL-адрес ERDDAP непосредственно связанный с вашим вопросом или комментарием.
+Если у вас есть вопросы, предложения или комментарии о ERDDAP в целом (не об этой конкретной установке ERDDAP ), отправьте электронное письмо по <kbd>erd dot data at noaa dot gov</kbd> и укажите URL-адрес ERDDAP непосредственно связанный с вашим вопросом или комментарием.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Или вы можете присоединиться к группе Google / списку рассылки ERDDAP</a>, посетив
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a> .
@@ -5968,7 +5963,7 @@ updateUrls имеет тройку строк:
 Пустые строки гарантируют, что остальные строки будут строками «до» и «после».
 Здесь изменения применяются в порядке строк.
 !!! ДОБАВЛЯЙТЕ ТОЛЬКО ПАРЫ, КОТОРЫЕ ВЫ СЧИТАЕТЕ ОЧЕНЬ НАДЕЖНЫМИ ИЗМЕНЕНИЯМИ !!! Примечания:
-* Если вы считаете, что здесь есть неправильные правила или нужно добавить новые правила, отправьте электронное письмо <kbd>bob dot simons at noaa dot gov</kbd> .
+* Если вы считаете, что здесь есть неправильные правила или нужно добавить новые правила, отправьте электронное письмо <kbd>erd dot data at noaa dot gov</kbd> .
 * В первой половине произошли кардинальные изменения.
 Во второй половине есть простые изменения http на https.
 Изменения http на https важны, потому что некоторые веб-сайты не имеют перенаправлений, и даже если они есть, некоторые системы (например, Java ) не следуют автоматически перенаправлениям.
