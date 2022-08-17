@@ -16,6 +16,8 @@ since this is impossible for AWS S3 dependencies without Maven.
       cd /c/content/bat
       ./synchToMaven.sh
 
+* Make a backup copy of pom.xml with today's date, e.g., pom20220811.xml
+
 * Update ERDDAP version number below in ...
    <version>2.19-SNAPSHOT</version>
 
@@ -29,7 +31,7 @@ since this is impossible for AWS S3 dependencies without Maven.
       //mvn -help 
       //add -e for full error messages
       //add -X for debug messages
-      cd \programs\mavenERDDAP\ERDDAP   //that's where pom.xml is
+      cd \programs\mavenERDDAP\ERDDAP  
       set "JAVA_HOME=C:\programs\jdk-17.0.3+7"      
       mvn clean               //removes previously generated .class files and ...
       mvn compile             //uses javac.  Identifies missing dependencies/.jars.  
@@ -69,17 +71,17 @@ since this is impossible for AWS S3 dependencies without Maven.
     </properties>
 
     <repositories>
-        <!-- Use this if you switch away from netcdfAll.jar to modules
+        <!-- Use this if you switch away from netcdfAll.jar to modules - or just to get Zarr module.
              Published advice: https://docs.unidata.ucar.edu/netcdf-java/current/userguide/using_netcdf_java_artifacts.html
              Repository https://artifacts.unidata.ucar.edu/repository/unidata-all      (on web page)
                 or      https://artifacts.unidata.ucar.edu/repository/unidata-releases (privately)
               Browse either https://artifacts.unidata.ucar.edu/#browse/browse
-             - ->
+             -->
         <repository>
             <id>unidata-all</id>   
             <name>UNIDATA All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
-        </repository> -->
+        </repository>
 
         <!-- NOT ACTIVE. Close, but couldn't get to work with mvn compile.
           See netcdfAll.jar dependency below.
@@ -195,7 +197,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-dependency-plugin -->
                 <plugin>
@@ -233,7 +235,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.17.224</version> <!-- and same number several places below -->
+              <version>2.17.250</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -321,7 +323,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>9.2.0</version>
+            <version>9.3.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -329,7 +331,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>9.2.0</version>
+            <version>9.3.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -484,7 +486,10 @@ since this is impossible for AWS S3 dependencies without Maven.
             <version>5.5.3</version>
             <scope>runtime</scope>
         </dependency>
-        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-zarr  - ->
+        <!- - Version options: https://artifacts.unidata.ucar.edu/#browse/browse:unidata-all:edu%2Fucar%2Fcdm-zarr  
+             zarr isn't included in netcdfAll 
+             BUG in 5.5.3 detected at EDDGridFromNcFiles.testNcml(EDDGridFromNcFiles.java:5529)
+               so I can't include zarr module v5.5.3 with distribution - ->
         <dependency>
             <groupId>edu.ucar</groupId>
             <artifactId>cdm-zarr</artifactId>
@@ -581,7 +586,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.4.0</version>
+            <version>42.4.1</version>
         </dependency>
 
 
@@ -616,7 +621,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.10</version>
+            <version>4.2.11</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -624,7 +629,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.78.Final</version>
+            <version>4.1.79.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -656,7 +661,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.17.224</version>
+          <version>2.17.250</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -664,7 +669,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.17.224</version>
+            <version>2.17.250</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -672,7 +677,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.17.224-PREVIEW</version>
+            <version>2.17.250-PREVIEW</version>
         </dependency>
 
 
@@ -686,7 +691,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.3.0</version>
+            <version>2.3.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
@@ -699,19 +704,19 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.3.0</version>
+            <version>2.3.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.8.0</version>
+            <version>1.10.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.18.3</version>
+            <version>2.18.7</version>
         </dependency>
 
     </dependencies>

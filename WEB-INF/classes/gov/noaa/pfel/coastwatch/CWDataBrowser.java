@@ -605,7 +605,7 @@ public class CWDataBrowser extends EmaClass  {
             "of any information at this site.\n" +
             "\n" +
             "<p><small>Please email questions, comments, or\n" +
-            "suggestions regarding this web page to bob.simons at noaa.gov .</small>");
+            "suggestions regarding this web page to erd.data at noaa.gov .</small>");
 
         return sb.toString();
     }

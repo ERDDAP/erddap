@@ -5699,6 +5699,13 @@ and zoom and pan with controls in
     }
 
     /**
+     * This is like md5Hex12, but with _ and 4 random hex digits appended to the end. 
+     */
+    public static String md5Hex12PlusRandom(String password) {
+        return md5Hex(password) + "_" + String2.zeroPad(Integer.toHexString(Math2.random(0x10000)), 4);
+    }
+
+    /**
      * Given two strings with internal newlines, oldS and newS, this a message
      * indicating where they differ.
      * 

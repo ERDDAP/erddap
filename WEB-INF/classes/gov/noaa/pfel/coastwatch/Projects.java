@@ -5050,7 +5050,7 @@ String2.log("Projects.touchUrls is finished.");
         globatts.add("creator_email", "christina.show@noaa.gov"); //and kevin.hill@noaa.gov
         globatts.add("history", 
             "2010-10-25 Christina Show <christina.show at noaa.gov> saved the database data as an .mdb file.\n" +
-            today + " Bob Simons <bob.simons at noaa.gov> joined/converted/reformatted as .nc files and added metadata.");
+            today + " <erd.data at noaa.gov> joined/converted/reformatted as .nc files and added metadata.");
         globatts.add("infoUrl", "http://calcofi.net/"); 
         globatts.add("institution", "CalCOFI, NOAA SWFSC");
         globatts.add("license", "[standard]");

@@ -726,7 +726,7 @@ public class PersistentTable {
             Test.ensureTrue(modeTime < 2 * expected[mode], 
                 modes[mode] + " TOTAL time to read " + n + " items=" + 
                 modeTime + "ms  (" + expected[mode] + "ms)\n" +
-                "That is too slow!"); 
+                "That is too slow! But it is usually fast enough when I run the test by itself."); 
 
             pt.close();
         }

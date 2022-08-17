@@ -79,6 +79,15 @@ public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource 
             throw new RuntimeException("Range requests are not allowed by the outputToAwsS3 system in ERDDAP.");
     }
 
+    /** 
+     * This is useful for OutputStream types that support fileName
+     * if you want to change the download fileName before
+     * the call to getOutputStream().
+     */
+    public void setFileName(String tFileName) {
+        fileName = tFileName;
+    }
+
     public OutputStream outputStream(String characterEncoding) throws Throwable {
         return outputStream(characterEncoding, -1);
     }

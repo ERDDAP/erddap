@@ -1244,7 +1244,7 @@ public class Attributes {
      *       units strings, but can have problems with invalid or complex strings.
      *       You can deal with problems by specifying specific from-to pairs
      *       in &lt;standardizeUdunits&gt; in messages.xml.  Please email any changes
-     *       you make to bob.simons at noaa.gov so they can be incorporated
+     *       you make to erd.data at noaa.gov so they can be incorporated
      *       into the default messages.xml.
      *   <br>So a common, do-all-safe-things value is: 7 (1+2+4).
      *   <br>And if standardizeWhat == 0, this just returns dataPa.

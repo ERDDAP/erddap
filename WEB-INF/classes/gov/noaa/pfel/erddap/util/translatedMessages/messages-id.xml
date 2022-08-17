@@ -68,7 +68,7 @@ Kemudian, ERDDAP akan menambahkan semua
 <br>ke daftar variabel yang diminta.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Jika Anda memiliki saran untuk tautan tambahan, hubungi <kbd>bob dot simons at noaa dot gov</kbd> .
+Jika Anda memiliki saran untuk tautan tambahan, hubungi <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -406,7 +406,7 @@ Layanan ini mencakup akronim yang cukup andal (&gt; 95% kepercayaan?) meluas ke 
 Layanan ini tidak menyertakan akronim yang biasanya diperluas menjadi lebih dari satu nama lengkap (mis., SAF, yang dapat diperluas ke Synthetic Aperture Focusing atau Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Saran?</a> Daftar akronim layanan ini tidak lengkap.
-Jika Anda ingin menambahkan akronim umum atau membuat koreksi, silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+Jika Anda ingin menambahkan akronim umum atau membuat koreksi, silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -470,7 +470,7 @@ Layanan ini mencakup beberapa nama variabel yang umum digunakan yang cukup andal
 Layanan ini hanya menyertakan nama lengkap paling umum yang terkait dengan nama variabel yang diberikan (misalnya, SST diperluas di sini ke Sea Surface Temperature, bukan Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Saran?</a> Daftar nama variabel layanan ini tidak lengkap.
-Jika Anda ingin menambahkan nama variabel yang umum digunakan atau membuat koreksi, silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+Jika Anda ingin menambahkan nama variabel yang umum digunakan atau membuat koreksi, silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -631,7 +631,7 @@ Harap tentukan daftar <kbd>datasetID /variableName/algorithm/nearby</kbd> yang d
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Catatan:</strong></a>
 <ul>
 <li>Selalu periksa hasil dari konverter.
-<br>Jika menurut Anda konverter memberikan hasil yang salah, kirimkan detailnya melalui email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Jika menurut Anda konverter memberikan hasil yang salah, kirimkan detailnya melalui email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>PENOLAKAN TANGGUNG JAWAB
 <br>Tidak ada orang atau organisasi yang terkait dengan situs web ini yang membuat jaminan apa pun, tersurat maupun tersirat, termasuk jaminan dapat diperjualbelikan dan kesesuaian untuk tujuan tertentu, atau memikul tanggung jawab hukum apa pun atas keakuratan, kelengkapan, atau kegunaan, dari informasi apa pun di situs web ini.
@@ -746,7 +746,7 @@ Jika ini bukan pendekatan yang tepat untuk kumpulan data tertentu, dalam beberap
 <br>Jika metode atau opsi yang ditawarkan oleh konverter ini tidak sesuai untuk tujuan Anda atau tidak sesuai dengan keinginan Anda, jangan gunakan.
 Sebagai gantinya, Anda dapat melakukannya sendiri, dengan cara Anda sendiri:
 unduh subset dari kumpulan data dan terapkan algoritme Anda sendiri.
-Untuk meminta agar algoritme interpolasi lainnya ditambahkan ke konverter ini, silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+Untuk meminta agar algoritme interpolasi lainnya ditambahkan ke konverter ini, silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Administrator ERDDAP :
 <br>Anda dapat mengubah CSV Permintaan default dengan menambahkan/mengedit tag &lt;convertInterpolateRequestCSVExample&gt; di datasets.xml .
@@ -828,7 +828,7 @@ Lainnya hanya sesuai dalam keadaan tertentu.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">PENOLAKAN TANGGUNG JAWAB</a></strong> - Tidak ada orang atau organisasi yang terkait dengan situs web ini yang membuat jaminan, tersurat maupun tersirat, termasuk jaminan dapat diperjualbelikan dan kesesuaian untuk tujuan tertentu, atau menanggung kewajiban hukum apa pun atas keakuratan, kelengkapan, atau kegunaan, dari informasi apa pun di situs ini.
 situs web.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Koreksi</a></strong> - Silakan email koreksi yang disarankan ke <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Koreksi</a></strong> - Silakan email koreksi yang disarankan ke <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -914,7 +914,7 @@ Saat mewakili waktu sebagai String, konverter ini memformat waktu ke detik (terp
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Input Tidak Valid</a> - ERDDAP mencoba menangani input yang tidak diformat dengan benar.
 Jika ERDDAP tidak dapat menangani input, ERDDAP akan menghasilkan pesan kesalahan.
-Jika &quot;input tidak valid&quot; adalah waktu string yang menurut Anda harus didukung, harap kirimkan melalui email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+Jika &quot;input tidak valid&quot; adalah waktu string yang menurut Anda harus didukung, harap kirimkan melalui email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Bagaimana ERDDAP dengan Waktu</strong></a>
@@ -1167,7 +1167,7 @@ Ada
 <convertTimeNumberError>Nomor yang ditentukan bukan nomor yang valid.</convertTimeNumberError>
 <convertTimeNumericTimeError>Waktu numerik itu tidak valid.</convertTimeNumericTimeError>
 <convertTimeParametersError>Kombinasi parameter tersebut tidak valid. Periksa contoh dan coba lagi.</convertTimeParametersError>
-<convertTimeStringFormatError>Format waktu string tidak dikenali. Jika menurut Anda itu harus didukung, silakan kirim email ke bob.simons di noaa.gov .</convertTimeStringFormatError>
+<convertTimeStringFormatError>Format waktu string tidak dikenali. Jika menurut Anda itu harus didukung, silakan kirim email ke erd.data di noaa.gov .</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Jangan tentukan parameter stringTime dan isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>String unit tidak valid.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Sebuah angka. Misalnya, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1476,7 +1476,7 @@ Tidak ada yang istimewa, unik, atau lebih baik tentang alias atau sintaks terten
 <li>Opsi &quot;Standarisasi UDUNITS&quot; bekerja dengan baik untuk string UDUNITS yang valid dan cukup baik untuk string UDUNITS yang tidak standar/tidak valid.
 Perhatikan bahwa ini adalah standarisasi sederhana (misalnya, &quot;joule&quot;, &quot;joules&quot;, dan &quot;J&quot; semuanya mengembalikan &quot;J&quot; ) sebagai lawan dari bentuk &quot;kanonik&quot; yang ditawarkan oleh perangkat lunak UDUNITS (yang, misalnya, mengonversi semua alias joule untuk &quot;kg.m2.s-2&quot; ).
 <li>Jika menurut Anda konverter melakukan konversi dengan tidak benar, pertama-tama pastikan bahwa string input valid.
-Jika menurut Anda string input valid, kirimkan detailnya melalui email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+Jika menurut Anda string input valid, kirimkan detailnya melalui email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Lihat perbandingan detail
 <a rel="help" href="#syntaxComparison">sintaks</a> dan
 <a rel="help" href="#unitsComparison">unit</a> UDUNITS dan UCUM di bawah ini.
@@ -1574,10 +1574,10 @@ Outputnya akan sama dengan input, tetapi dengan URL yang diperbarui.
 <li>Ini saat ini memperbarui beberapa URL umum yang terkait dengan kumpulan data ilmu oseanografi dan atmosfer.
 Ini adalah pekerjaan yang belum selesai dan akan selalu begitu, karena tugas itu tidak mungkin besar dan selalu berubah.
 Ini bukan sistem pembaruan URL tujuan umum, meskipun dapat ditingkatkan untuk mencakup bidang lain.
-<li>Jika menurut Anda konverter melakukan sesuatu yang salah atau tidak memperbarui URL yang seharusnya, kirimkan detailnya melalui email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Jika menurut Anda konverter melakukan sesuatu yang salah atau tidak memperbarui URL yang seharusnya, kirimkan detailnya melalui email ke <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Administrator ERDDAP :
 Anda dapat mengubah aturan konversi dengan mengedit &lt;updateUrls&gt; di messages.xml.
-Jika ya, kirimkan detailnya melalui email ke <kbd>bob dot simons at noaa dot gov</kbd> sehingga perubahan dapat dimasukkan ke dalam distribusi ERDDAP standar.
+Jika ya, kirimkan detailnya melalui email ke <kbd>erd dot data at noaa dot gov</kbd> sehingga perubahan dapat dimasukkan ke dalam distribusi ERDDAP standar.
 <li>PENOLAKAN TANGGUNG JAWAB - Tidak ada orang atau organisasi yang terkait dengan situs web ini yang membuat jaminan, tersurat maupun tersirat, termasuk jaminan dapat diperjualbelikan dan kesesuaian untuk tujuan tertentu, atau menanggung kewajiban hukum apa pun atas keakuratan, kelengkapan, atau kegunaan, dari informasi apa pun di situs ini.
 situs web.
 </ul>
@@ -3330,7 +3330,7 @@ SST, Campuran, AS Barat (Eksperimental, Komposit 5 Hari)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontak</a></h2>
 Pertanyaan, komentar, saran?
-Silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
+Silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Group / Mailing List</a> dengan mengunjungi
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5670,11 +5670,7 @@ Jika metadata set data menyertakan
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cara Mengutip ERDDAP di Makalah</a></strong>
 <br>Jika Anda ingin mengutip ERDDAP itu sendiri dalam makalah ilmiah, silakan gunakan sesuatu seperti
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Apa singkatan dari&quot; ERDDAP &quot;?</a></strong>
 <br>&quot; ERDDAP &quot;dulunya adalah sebuah akronim, tetapi itu melampaui deskripsi aslinya.
 Sekarang, tolong anggap itu sebagai nama, bukan akronim.
@@ -5695,7 +5691,7 @@ Kemudian, orang akan memiliki cara lain untuk mengakses data Anda dan dapat meng
   >beberapa ERDDAP yang bekerja bersama</a> untuk meningkatkan dan memenuhi kebutuhan pusat distribusi data yang besar.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Hubungi kami</a></h2>
-Jika Anda memiliki pertanyaan, saran, atau komentar tentang ERDDAP secara umum (bukan instalasi ERDDAP khusus ini), silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
+Jika Anda memiliki pertanyaan, saran, atau komentar tentang ERDDAP secara umum (bukan instalasi ERDDAP khusus ini), silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> dan sertakan URL ERDDAP yang terkait langsung dengan pertanyaan atau komentar Anda.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Atau, Anda dapat bergabung dengan ERDDAP Google Group / Mailing List</a> dengan mengunjungi
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5777,7 +5773,7 @@ Konten apa pun dalam string yang cocok dengan string &#39;sebelum&#39; akan diko
 Baris kosong memastikan bahwa baris lainnya adalah baris &#39;sebelum&#39; dan &#39;sesudah&#39;.
 Perubahan diterapkan dalam urutan baris di sini.
 !!! HANYA TAMBAHKAN PASANGAN YANG ANDA PIKIRKAN MENJADI PERUBAHAN SANGAT TERPERCAYA!!! Catatan:
-* Jika menurut Anda ada aturan di sini yang salah atau aturan baru yang akan ditambahkan, silakan kirim email ke <kbd>bob dot simons at noaa dot gov</kbd> .
+* Jika menurut Anda ada aturan di sini yang salah atau aturan baru yang akan ditambahkan, silakan kirim email ke <kbd>erd dot data at noaa dot gov</kbd> .
 * Babak pertama memiliki perubahan dramatis.
 Paruh kedua memiliki perubahan sederhana http ke https.
 Perubahan http ke https penting karena beberapa situs web tidak memiliki pengalihan, dan, meskipun demikian, beberapa sistem (misalnya, Java ) tidak secara otomatis mengikuti pengalihan.

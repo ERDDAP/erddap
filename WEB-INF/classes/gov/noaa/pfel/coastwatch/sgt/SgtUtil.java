@@ -88,7 +88,7 @@ public class SgtUtil  {
     public static String isBufferedImageAccelerated;
 
     /**
-     * This returns the maxBoldCharsPerLine based on charsPerLine.
+     * This returns the maxCharsPerLine based on charsPerLine.
      *
      * @param legendTextWidth in pixels
      * @param fontScale 

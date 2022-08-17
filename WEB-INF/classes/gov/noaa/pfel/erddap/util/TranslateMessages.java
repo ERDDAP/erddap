@@ -484,6 +484,7 @@ public class TranslateMessages {
         "<kbd>SD</kbd>",
         "<kbd>sea_water_temperature</kbd>",
         "<kbd>short</kbd>",
+        "<kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>",
         "<kbd>spee</kbd>",
         "<kbd>speed</kbd>",
         "<kbd>Spray Gliders, Scripps Institution of Oceanography</kbd>",
@@ -767,6 +768,8 @@ public class TranslateMessages {
         "encodeURIComponent()",
         "endTime",
         "ERDDAP",  //before ERD and DAP
+        "erd dot data at noaa dot gov",
+        "erd.data at noaa.gov", 
         "ERD",
         "ESPRESSO",
         "ESPreSSO",

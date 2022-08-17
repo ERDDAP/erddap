@@ -59,7 +59,7 @@ addEntry、closeEntryに問題があるため、「compress」、「x-compress�
 <br>要求された変数のリストに。
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-追加のリンクについて提案がある場合は、 <kbd>bob dot simons at noaa dot gov</kbd>に連絡してください。
+追加のリンクについて提案がある場合は、 <kbd>erd dot data at noaa dot gov</kbd>に連絡してください。
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -367,7 +367,7 @@ Webサイト。
 <br>&nbsp;
 <li><a class="selfLink" id="notPerfect" href="#notPerfect" rel="help">完璧</a>ではない-このサービスは完璧ではありません。多くの頭字語は、2つ以上のフルネームに拡張できます。このサービスには、かなり確実に（&gt; 95％の信頼度？）特定の名前に拡張される頭字語が含まれていますが、それは頭字語の使用に適しているという意味ではありません。このサービスには、一般に複数のフルネームに拡張される頭字語は含まれていません（たとえば、SAFは、 Synthetic Aperture FocusingまたはSatellite Application Facilityに拡張できます）。
 <br>&nbsp;
-<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">提案？</a>このサービスの頭字語のリストは完全ではありません。一般的な頭字語を追加したり、修正したりする場合は、 <kbd>bob dot simons at noaa dot gov</kbd>メールで送信してください。
+<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">提案？</a>このサービスの頭字語のリストは完全ではありません。一般的な頭字語を追加したり、修正したりする場合は、 <kbd>erd dot data at noaa dot gov</kbd>メールで送信してください。
 <br>&nbsp;
 </ul>
 
@@ -416,7 +416,7 @@ Webサイト。
 <br>&nbsp;
 <li><a class="selfLink" id="notPerfect" href="#notPerfect" rel="help">完璧ではない</a>-このサービスは完璧にはほど遠い。ほとんどの変数名は、多数の異なるフルネームに拡張できます。このサービスには、かなり確実に（&gt; 60％の信頼度？）特定の名前に拡張される（マイナーなバリエーションを無視する）一般的に使用される変数名がいくつか含まれていますが、それはサービスが変数名の使用に対して正しいことを意味しません。このサービスには、特定の変数名に関連する最も一般的なフルネームのみが含まれます（たとえば、SSTはここではSurface Skin TemperatureではなくSea Surface Temperatureに展開されます）。
 <br>&nbsp;
-<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">提案？</a>このサービスの変数名のリストは完全ではありません。一般的に使用される変数名を追加したり、修正したりする場合は、 <kbd>bob dot simons at noaa dot gov</kbd>電子メールで送信してください。
+<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">提案？</a>このサービスの変数名のリストは完全ではありません。一般的に使用される変数名を追加したり、修正したりする場合は、 <kbd>erd dot data at noaa dot gov</kbd>電子メールで送信してください。
 <br>&nbsp;
 </ul>
 
@@ -556,7 +556,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>ノート：</strong></a>
 <ul>
 <li>コンバーターからの結果を常に確認してください。
-<br>コンバーターが間違った結果を出したと思われる場合は、詳細を<kbd>bob dot simons at noaa dot gov</kbd>に電子メールで送信してください。
+<br>コンバーターが間違った結果を出したと思われる場合は、詳細を<kbd>erd dot data at noaa dot gov</kbd>に電子メールで送信してください。
 <br>&nbsp;
 <li>責任の否認
 <br>このWebサイトに関連する個人または組織は、商品性および特定目的への適合性の保証を含め、明示または黙示を問わず、このWebサイトの情報の正確性、完全性、または有用性について法的責任を負わないものとします。
@@ -638,7 +638,7 @@ g、 <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd> ）であるため、すべ�
 <br>&nbsp;
 <li><a class="selfLink" id="NotWhatYouWant" href="#NotWhatYouWant" rel="help"
   >あなたが望むものではありませんか？</a>
-<br>このコンバーターによって提供される方法またはオプションが目的に適していない場合、またはその他の方法で目的に合わない場合は、それらを使用しないでください。代わりに、独自の方法でそれを行うことができます。データセットのサブセットをダウンロードして、独自のアルゴリズムを適用します。他の補間アルゴリズムをこのコンバーターに追加するように要求するには、 <kbd>bob dot simons at noaa dot gov</kbd>電子メールを送信してください。
+<br>このコンバーターによって提供される方法またはオプションが目的に適していない場合、またはその他の方法で目的に合わない場合は、それらを使用しないでください。代わりに、独自の方法でそれを行うことができます。データセットのサブセットをダウンロードして、独自のアルゴリズムを適用します。他の補間アルゴリズムをこのコンバーターに追加するように要求するには、 <kbd>erd dot data at noaa dot gov</kbd>電子メールを送信してください。
 <br>&nbsp;
 <li>ERDDAP管理者：
 <br>datasets.xmlの&lt;convertInterpolateRequestCSVExample&gt;タグを追加/編集することで、デフォルトのリクエストCSVを変更できます。同様に、 datasets.xmlの&lt;convertInterpolateDatasetIDVariableList&gt;タグを追加/編集することで、 <kbd>datasetID</kbd> / <kbd>variable</kbd>オプションのリストを変更できます。このタグには、推奨さ<kbd>datasetID</kbd> / <kbd>variable</kbd>の組み合わせのコンマ区切りリストを含めることができます。
@@ -710,7 +710,7 @@ GCMDサイエンスキーワードを選択します。
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">免責事項</a></strong>-このウェブサイトに関連する個人または組織は、商品性および特定目的への適合性の保証を含め、明示または黙示を問わず、いかなる保証も行いません。また、この情報の正確性、完全性、または有用性について法的責任を負いません。
 Webサイト。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">訂正</a></strong><kbd>bob dot simons at noaa dot gov</kbd>提案された訂正を電子メールで送信してください。
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">訂正</a></strong><kbd>erd dot data at noaa dot gov</kbd>提案された訂正を電子メールで送信してください。
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -785,7 +785,7 @@ Webサイト。
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">無効な入力</a>ERDDAPは、不適切にフォーマットされた入力を処理しようとします。
 ERDDAPが入力を処理できない場合、 ERDDAPはエラーメッセージを生成します。
-「無効な入力」がサポートされるべきだと思われる文字列時間である場合は、 <kbd>bob dot simons at noaa dot gov</kbd>電子メールで送信してください。
+「無効な入力」がサポートされるべきだと思われる文字列時間である場合は、 <kbd>erd dot data at noaa dot gov</kbd>電子メールで送信してください。
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAPが時間にどのように対処するか</strong></a>
@@ -988,7 +988,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 <convertTimeNumberError>指定された番号は有効な番号ではありません。</convertTimeNumberError>
 <convertTimeNumericTimeError>その数値の時間は無効です。</convertTimeNumericTimeError>
 <convertTimeParametersError>そのパラメータの組み合わせは無効です。例を確認して、再試行してください。</convertTimeParametersError>
-<convertTimeStringFormatError>文字列時間の形式が認識されません。サポートが必要だと思われる場合は、noaa.govのbob.simonsに電子メールで送信してください。</convertTimeStringFormatError>
+<convertTimeStringFormatError>文字列時間の形式が認識されません。サポートが必要だと思われる場合は、noaa.govのerd.dataに電子メールで送信してください。</convertTimeStringFormatError>
 <convertTimeTwoTimeError>stringTimeパラメーターとisoTimeパラメーターの両方を指定しないでください。</convertTimeTwoTimeError>
 <convertTimeUnitsError>単位文字列が無効です。</convertTimeUnitsError>
 <convertTimeNumberTooltip>数。たとえば、「{0} &quot;。</convertTimeNumberTooltip>
@@ -1261,7 +1261,7 @@ UDUNITS （またはUCUM）の単位文字列が無効な場合、コンバー�
 <li>どちらの方向への変換でも、エイリアスと入力の構文がわずかに異なると同じ出力になるという意味で、結果は標準化されます。たとえば、 UDUNITS = &quot;meter per second&quot; 、 &quot;meters/second&quot; 、 &quot;ms^-1&quot; 、および&quot;m s-1&quot;はすべてUCUM = &quot;ms-1&quot;を返します。
 UDUNITSソフトウェアによって返される「標準」形式に類似していることを除いて、標準化された出力の特定のエイリアスまたは構文について、他のエイリアスまたは構文と比較して、特別な、一意の、または優れたものはありません。
 <li>「 UDUNITSの標準化」オプションは、有効なUDUNITS文字列に対して適切に機能し、非標準/無効なUDUNITS文字列に対して適切に機能します。これは単純な標準化であることに注意してください（たとえば、 &quot;joule&quot; 、 &quot;joules&quot; 、および&quot;J&quot;はすべて&quot;J&quot;を返します）。これは、 UDUNITSソフトウェアによって提供される「canonical」形式（たとえば、すべてを変換する）とは対照的です。ジュールエイリアスは&quot;kg.m2.s-2&quot; ）。
-<li>コンバーターが誤って変換を行ったと思われる場合は、最初に入力文字列が有効であることを確認してください。入力文字列が有効であると思われる場合は、詳細を<kbd>bob dot simons at noaa dot gov</kbd>に電子メールで送信してください。
+<li>コンバーターが誤って変換を行ったと思われる場合は、最初に入力文字列が有効であることを確認してください。入力文字列が有効であると思われる場合は、詳細を<kbd>erd dot data at noaa dot gov</kbd>に電子メールで送信してください。
 <li>以下のUDUNITSとUCUMの<a rel="help" href="#syntaxComparison">構文</a>と<a rel="help" href="#unitsComparison">単位</a>の詳細な比較を参照してください。
 <li>免責事項-このウェブサイトに関連する個人または組織は、商品性および特定目的への適合性の保証を含め、明示または黙示を問わず、いかなる保証も行いません。また、この情報の正確性、完全性、または有用性について法的責任を負いません。
 Webサイト。
@@ -1343,8 +1343,8 @@ Webサイト。
 <ul>
 <li>コンバーターからの結果を常に確認してください。
 <li>これにより、現在、海洋学および大気科学のデータセットに関連するいくつかの一般的なURLが更新されます。これは不完全な進行中の作業であり、タスクが大きくなることは不可能であり、常に変化するため、常にそうなります。これは汎用のURL更新システムではありませんが、他の領域をカバーするように改善される可能性があります。
-<li>コンバーターが何か間違ったことをした、または本来あるべきURLを更新しなかったと思われる場合は、詳細を<kbd>bob dot simons at noaa dot gov</kbd>に電子メールで送信してください。
-<li>ERDDAP管理者：messages.xmlの&lt;updateUrls&gt;を編集して、変換ルールを変更できます。その場合は、詳細を<kbd>bob dot simons at noaa dot gov</kbd>に電子メールで送信して、変更を標準のERDDAPディストリビューションに組み込むことができるようにしてください。
+<li>コンバーターが何か間違ったことをした、または本来あるべきURLを更新しなかったと思われる場合は、詳細を<kbd>erd dot data at noaa dot gov</kbd>に電子メールで送信してください。
+<li>ERDDAP管理者：messages.xmlの&lt;updateUrls&gt;を編集して、変換ルールを変更できます。その場合は、詳細を<kbd>erd dot data at noaa dot gov</kbd>に電子メールで送信して、変更を標準のERDDAPディストリビューションに組み込むことができるようにしてください。
 <li>免責事項-このウェブサイトに関連する個人または組織は、商品性および特定目的への適合性の保証を含め、明示または黙示を問わず、いかなる保証も行いません。また、この情報の正確性、完全性、または有用性について法的責任を負いません。
 Webサイト。
 </ul>
@@ -2859,7 +2859,7 @@ URLのファイル拡張子は異なることに注意してください（.larg
 <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;.draw=surface&amp;.vars=longitude%7Clatitude%7Csst&amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C" alt="ERDDAP：SST、混合、米国西部（実験的、5日間の複合）">
 </ol>
 <!-- ******* -->
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">コンタクト</a></h2>質問、コメント、提案？ <kbd>bob dot simons at noaa dot gov</kbd>電子メールを送信し、質問またはコメントに直接関連するERDDAPを含めてください。
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">コンタクト</a></h2>質問、コメント、提案？ <kbd>erd dot data at noaa dot gov</kbd>電子メールを送信し、質問またはコメントに直接関連するERDDAPを含めてください。
 <p>または、
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https：</a>
@@ -4810,8 +4810,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">論文でERDDAPを引用する方法</a></strong>
 <br>科学論文でERDDAP自体を引用したい場合は、次のようなものを使用してください。
-<br><kbd>シモンズ、 ERDDAP 。
-https://coastwatch.pfeg.noaa.gov/erddap。カリフォルニア州モントレー： NOAA / NMFS / SWFSC / ERD 。</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">頭字語「 ERDDAP 」は何の略ですか？</a></strong>
 <br>「 ERDDAP 」は以前は頭字語でしたが、元の説明よりも大きくなりました。さて、頭字語ではなく名前として考えてください。
 <br>&nbsp;
@@ -4826,7 +4825,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。カリフォルニア州モントレ�
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >連携してスケールアップし、大規模なデータ配布センターのニーズを満たす複数のERDDAP</a>をインストールできます。
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">お問い合わせ</a></h2>ERDDAP全般（この特定のERDDAPインストールではない）について質問、提案、またはコメントがある場合は、noaadotgovの<kbd>bob dot simons at noaa dot gov</kbd>に電子メールを送信し、質問またはコメントに直接関連するERDDAPを含めてください。
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">お問い合わせ</a></h2>ERDDAP全般（この特定のERDDAPインストールではない）について質問、提案、またはコメントがある場合は、noaadotgovの<kbd>erd dot data at noaa dot gov</kbd>に電子メールを送信し、質問またはコメントに直接関連するERDDAPを含めてください。
 <br>または、
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https：</a>
@@ -4905,7 +4904,7 @@ deg{north}</udunitsToUcum>
 updateUrlsは、データセットが読み込まれるたびに、データセットの各Stringメタデータ属性（グローバルおよび変数）に適用されます。
 updateUrlsには、前、後、空白の3行があります。
 &#39;before&#39;文字列に一致する文字列のコンテンツは、 &#39;after&#39;に変換されます。空白行は、他の行が「前」および「後」の行であることを保証します。変更は、ここの行の順序で適用されます。
-!!!非常に信頼性の高い変更であると考えるペアのみを追加してください!!!注：*ここに間違ったルールや追加する新しいルールがあると思われる場合は、 <kbd>bob dot simons at noaa dot gov</kbd>電子メールを送信してください。
+!!!非常に信頼性の高い変更であると考えるペアのみを追加してください!!!注：*ここに間違ったルールや追加する新しいルールがあると思われる場合は、 <kbd>erd dot data at noaa dot gov</kbd>電子メールを送信してください。
 *前半は劇的な変化があります。後半には、httpからhttpsへの単純な変更があります。一部のWebサイトにはリダイレクトがなく、リダイレクトがある場合でも、一部のシステム（ Javaなど）は自動的にリダイレクトに従わないため、httpからhttpsへの変更は重要です。
 * accession.nodcは、nodcでのメタデータルックアップ用です。非常に重要です！ * marinemetadata.org/cf#は、standard_nameルックアップ用です。
 * opendap.jpl.nasa.govへのdodsは完全ではなく、ディレクトリへの他の変更* https://www.navo.navy.milからhttpsへの変更は逆に見えますが、まだ機能しないhttpsリンクがあります* http： //www.csc.noaa.govから海岸への変換は不完全です：さまざまな場所にあるドキュメント。これは、ドメイン名を大幅に変更する場合によく見られます。 -->
