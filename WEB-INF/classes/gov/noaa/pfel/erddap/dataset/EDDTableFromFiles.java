@@ -1189,6 +1189,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             }
         }
 
+
         //load badFileMap
         ConcurrentHashMap badFileMap = readBadFileMap();
         
@@ -1198,6 +1199,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 "(dirTable=null?" + (dirTable==null) + 
                 " fileTable=null?" + (fileTable==null) + 
                 " badFileMap=null?" + (badFileMap==null) + ")");
+
             dirTable = new Table();
             dirTable.addColumn("dirName", new StringArray());
 
@@ -1222,12 +1224,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //skip loading until after intial loadDatasets?
         if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
-            String msg = "NOTE: For datasetID=" + datasetID + ", fileTable.nRows=0 and intialLoadDatasets=true,\n" +
-                "so I'm not loading this dataset now\n" +
-                "and I'm setting a flag for this dataset so it will be loaded after the initial loadDatasets.";
             requestReloadASAP();
-            String2.log(msg);
-            throw new RuntimeException(msg);
+            throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
         } 
 
         //get the PrimitiveArrays from fileTable
@@ -1918,7 +1916,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //if (debugMode) String2.log(">> EDDTableFromFiles " + Calendar2.getCurrentISODateTimeStringLocalTZ() + " finished ensureValid");
 
         //if cacheFromUrl is remote ERDDAP /files/, subscribe to the dataset
-        //This is like code in EDDTableFromFiles but "/tabledap/"
+        //This is like code in EDDGridFromFiles but "/tabledap/"
         if (!doQuickRestart && EDStatic.subscribeToRemoteErddapDataset &&
             cacheFromUrl != null && 
             cacheFromUrl.startsWith("http") &&
@@ -3107,7 +3105,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * a file's global metadata to be a data column).
      * See lowGetSourceDataFromFile params.
      * 
-     * @param sourceDataTypes  e.g., "float", "String". "boolean"
+     * @param sourceDataTypes  e.g., "float", "String", "boolean"
      *   indicates the data should be interpreted as a boolean, but stored as a byte.
      * @throws an exception if too much data and other problems.
      *  This won't (shouldn't) throw an exception if no data.

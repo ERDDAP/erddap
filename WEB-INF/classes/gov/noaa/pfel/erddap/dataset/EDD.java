@@ -253,6 +253,9 @@ public abstract class EDD {
     //2018-02-21 2->3 only trouble if 1+ variables are dataType=char
     public final static int DIR_FILE_TABLE_VERSION = 3; //for EDDGridFromFiles and EDDTableFromFiles
 
+    public final static String DEFER_LOADING_DATASET_BECAUSE =
+        "ERDDAP is deferring loading this dataset until after loading other datasets because ERDDAP was just restarted and ";
+
     /** These are used by EDDGridFromFiles and EDDTableFromFiles for files in datasetDir(). */
     public final static String DIR_TABLE_FILENAME        = "dirTable.nc";
     public final static String FILE_TABLE_FILENAME       = "fileTable.nc";
@@ -318,6 +321,7 @@ public abstract class EDD {
      */
     public static boolean doNotAddStandardNames = false;
 
+
     //*********** END OF STATIC DECLARATIONS ***************************
 
     protected long creationTimeMillis = System.currentTimeMillis();
@@ -348,6 +352,11 @@ public abstract class EDD {
 
     protected static HashSet<String> graphsAccessibleTo_fileTypeNames;
     private boolean graphsAccessibleToPublic = false; //safe default, but it will be set explicitly in constructor.
+
+    /**
+     * If true, new response files (e.g., .nc and .png) will always be made (never cached).
+     */
+    private boolean realTime = true;
 
     /** The localSourceUrl actually used to get data (e.g., the url which works in the DMZ, 
      * as opposed to the publicUrl. */
@@ -813,6 +822,9 @@ public abstract class EDD {
                     combinedGlobalAttributes.set(name, tValue);
             }
         }
+
+        realTime = "true".equals(combinedGlobalAttributes.getString("real_time")); //very strict, default=false
+
         //last with combinedGlobalAttributes
         combinedGlobalAttributes.ensureNamesAreVariableNameSafe(
             "In the combined global attributes");
@@ -1961,7 +1973,12 @@ public abstract class EDD {
         return accessibleViaISO19115;
     }
 
-
+    /** 
+     * If true, new response files (e.g., .nc and .png) will always be made (never cached).
+     */
+    public boolean realTime() {
+        return realTime;
+    }
 
     /** 
      * This writes the dataset's FGDC-STD-001-1998
@@ -2915,7 +2932,7 @@ public abstract class EDD {
         //include fileTypeName in hash so, e.g., different sized .png 
         //  have different file names
         String name = datasetID + "_" + //so all files from this dataset will sort together
-            String2.md5Hex12(userDapQuery + fileTypeName); 
+            String2.md5Hex12(userDapQuery + fileTypeName);
         //String2.log("%% suggestFileName=" + name + "\n  from query=" + userDapQuery + "\n  from type=" + fileTypeName);
         return name;
     }
@@ -5474,7 +5491,7 @@ public abstract class EDD {
                     if (!String2.isSomething2(creator_name)) {
                         int po = part.indexOf('@');  //it must exist
 
-                        //creator_name e.g., Bob Simons from bob.simons, or erd.data, rsignell
+                        //creator_name e.g., Create John Smith from john.smith
                         creator_name = part.substring(0, po); 
                         creator_name = String2.replaceAll(creator_name, '.', ' '); 
                         creator_name = String2.replaceAll(creator_name, '_', ' '); 

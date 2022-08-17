@@ -68,7 +68,7 @@ Kisha, ERDDAP itaongeza zote
 <br>kwa orodha ya vigeu vilivyoombwa.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Ikiwa una mapendekezo ya viungo vya ziada, wasiliana na <kbd>bob dot simons at noaa dot gov</kbd> .
+Ikiwa una mapendekezo ya viungo vya ziada, wasiliana na <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -406,7 +406,7 @@ Huduma hii inajumuisha vifupisho ambavyo kwa uhakika (&gt; 95% ya uhakika?) hupa
 Huduma hii haijumuishi vifupisho ambavyo kwa kawaida hupanuka hadi zaidi ya jina moja kamili (kwa mfano, SAF, ambayo inaweza kupanuliwa hadi Kipengele cha Synthetic Aperture Focusing au Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Mapendekezo?</a> Orodha ya huduma hii ya vifupisho haijakamilika.
-Iwapo ungependa kuongeza kifupi cha kawaida au kufanya masahihisho, tafadhali tuma barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+Iwapo ungependa kuongeza kifupi cha kawaida au kufanya masahihisho, tafadhali tuma barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -472,7 +472,7 @@ Huduma hii inajumuisha baadhi ya majina tofauti yanayotumika ambayo kwa uhakika 
 Huduma inajumuisha tu jina kamili linalojulikana zaidi linalohusiana na jina fulani tofauti (kwa mfano, SST inapanuka hapa hadi Sea Surface Temperature, sio Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Mapendekezo?</a> Orodha ya huduma hii ya majina tofauti haijakamilika.
-Ikiwa ungependa kuongeza jina tofauti linalotumiwa sana au kufanya masahihisho, tafadhali litumie barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+Ikiwa ungependa kuongeza jina tofauti linalotumiwa sana au kufanya masahihisho, tafadhali litumie barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -635,7 +635,7 @@ Tafadhali bainisha orodha iliyotenganishwa kwa koma ya kitambulisho cha <kbd>dat
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Vidokezo:</strong></a>
 <ul>
 <li>Daima angalia matokeo kutoka kwa waongofu.
-<br>Iwapo unaona kuwa kigeuzi kilitoa tokeo lisilo sahihi, tafadhali tuma maelezo kwa barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Iwapo unaona kuwa kigeuzi kilitoa tokeo lisilo sahihi, tafadhali tuma maelezo kwa barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>KANUSHO LA DHIMA
 <br>Hakuna mtu au shirika linalohusishwa na tovuti hii linalotoa udhamini wowote, kueleza au kudokeza, ikijumuisha udhamini wa uuzaji na ufaafu kwa madhumuni fulani, au huchukua dhima yoyote ya kisheria kwa usahihi, ukamilifu, au manufaa, ya taarifa yoyote kwenye tovuti hii.
@@ -752,7 +752,7 @@ Ikiwa hii si mbinu sahihi ya seti fulani ya data, katika hali nyingine inaweza k
 <br>Ikiwa mbinu au chaguo zinazotolewa na kigeuzi hiki hazifai kwa madhumuni yako au sivyo unavyotaka, usizitumie.
 Badala yake, unaweza kuifanya mwenyewe, kwa njia yako mwenyewe:
 pakua seti ndogo za seti ya data na utumie algorithm yako mwenyewe.
-Ili kuomba kwamba algoriti zingine za ukalimani ziongezwe kwenye kigeuzi hiki, tafadhali tuma barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+Ili kuomba kwamba algoriti zingine za ukalimani ziongezwe kwenye kigeuzi hiki, tafadhali tuma barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Wasimamizi wa ERDDAP :
 <br>Unaweza kubadilisha CSV ya Ombi chaguomsingi kwa kuongeza/kuhariri lebo ya &lt;convertInterpolateRequestCSVExample&gt; katika datasets.xml .
@@ -837,7 +837,7 @@ Nyingine zinafaa tu katika hali fulani.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">KANUSHO LA DHIMA</a></strong> - Hakuna mtu au shirika linalohusishwa na tovuti hii linalotoa udhamini wowote, kueleza au kudokezwa, ikijumuisha dhamana ya uuzaji na ufaafu kwa madhumuni fulani, au kuchukua dhima yoyote ya kisheria kwa usahihi, ukamilifu, au manufaa, ya taarifa yoyote katika hili.
 tovuti.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Masahihisho</a></strong> - Tafadhali tuma barua pepe masahihisho yoyote yaliyopendekezwa kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Masahihisho</a></strong> - Tafadhali tuma barua pepe masahihisho yoyote yaliyopendekezwa kwa <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -927,7 +927,7 @@ Inapowakilisha nyakati kama Mifuatano, kigeuzi hiki hupanga nyakati hadi sekunde
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Ingizo Batili</a> - ERDDAP inajaribu kushughulikia ingizo lililoumbizwa isivyofaa.
 Ikiwa ERDDAP haiwezi kushughulikia ingizo, ERDDAP itatoa ujumbe wa hitilafu.
-Ikiwa &quot;ingizo batili&quot; ni muda wa mfuatano ambao unadhani unapaswa kutumiwa, tafadhali utumie barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+Ikiwa &quot;ingizo batili&quot; ni muda wa mfuatano ambao unadhani unapaswa kutumiwa, tafadhali utumie barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Jinsi ERDDAP Wakati</strong></a>
@@ -1191,7 +1191,7 @@ Kuna
 <convertTimeNumberError>Nambari iliyobainishwa si nambari halali.</convertTimeNumberError>
 <convertTimeNumericTimeError>Muda huo wa nambari si sahihi.</convertTimeNumericTimeError>
 <convertTimeParametersError>Mchanganyiko huo wa vigezo si sahihi. Angalia mifano na ujaribu tena.</convertTimeParametersError>
-<convertTimeStringFormatError>Umbizo la muda wa mfuatano hautambuliwi. Ikiwa unafikiri inafaa kuungwa mkono, tafadhali itumie barua pepe kwa bob.simons katika noaa.gov .</convertTimeStringFormatError>
+<convertTimeStringFormatError>Umbizo la muda wa mfuatano hautambuliwi. Ikiwa unafikiri inafaa kuungwa mkono, tafadhali itumie barua pepe kwa erd.data katika noaa.gov .</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Usibainishe vigezo vya stringTime na isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Mfuatano wa vitengo ni batili.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Nambari. Kwa mfano, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1501,7 +1501,7 @@ Hakuna chochote maalum, cha kipekee, au bora zaidi kuhusu lakabu mahususi au sin
 Kumbuka kwamba huu ni usanifishaji rahisi (kwa mfano, &quot;joule&quot;, &quot;joules&quot;, na &quot;J&quot; zote zinarudi &quot;J&quot; ) kinyume na fomu ya &quot;kanuni&quot; inayotolewa na programu ya UDUNITS (ambayo, kwa mfano, inabadilisha yote.
 jina la utani la joule kwa &quot;kg.m2.s-2&quot; ).
 <li>Ikiwa unafikiri kwamba kigeuzi kilifanya ubadilishaji kimakosa, kwanza hakikisha kwamba mfuatano wa ingizo ni halali.
-Iwapo unafikiri mfuatano wa ingizo ni halali, tafadhali tuma maelezo kwa barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+Iwapo unafikiri mfuatano wa ingizo ni halali, tafadhali tuma maelezo kwa barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Tazama ulinganisho wa kina wa UDUNITS na
 <a rel="help" href="#syntaxComparison">sintaksia</a> ya UCUM na
 <a rel="help" href="#unitsComparison">vitengo</a> hapa chini.
@@ -1601,10 +1601,10 @@ Matokeo yatakuwa sawa na ingizo, lakini kwa URL zilizosasishwa.
 <li>Hii kwa sasa inasasisha baadhi ya URL za kawaida zinazohusiana na seti za data za sayansi ya bahari na anga.
 Ni kazi isiyokamilika ambayo haijakamilika na itakuwa hivyo kila wakati, kwa sababu kazi hiyo haiwezekani kuwa kubwa na inayobadilika kila wakati.
 Huu sio mfumo wa kusasisha URL wa madhumuni ya jumla, ingawa unaweza kuboreshwa ili kujumuisha nyanja zingine.
-<li>Iwapo unaona kuwa kigeuzi kilifanya jambo vibaya au hakikusasisha URL ambayo kinapaswa kuwa nacho, tafadhali tuma maelezo kwa barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Iwapo unaona kuwa kigeuzi kilifanya jambo vibaya au hakikusasisha URL ambayo kinapaswa kuwa nacho, tafadhali tuma maelezo kwa barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Wasimamizi wa ERDDAP :
 unaweza kubadilisha sheria za ubadilishaji kwa kuhariri &lt;updateUrls&gt; katika messages.xml.
-Ukifanya hivyo, tafadhali tuma maelezo kwa barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> ili mabadiliko yaweze kujumuishwa katika usambazaji wa kawaida wa ERDDAP .
+Ukifanya hivyo, tafadhali tuma maelezo kwa barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> ili mabadiliko yaweze kujumuishwa katika usambazaji wa kawaida wa ERDDAP .
 <li>KANUSHO LA DHIMA - Hakuna mtu au shirika linalohusishwa na tovuti hii linalotoa udhamini wowote, kueleza au kudokezwa, ikijumuisha dhamana ya uuzaji na ufaafu kwa madhumuni fulani, au kuchukua dhima yoyote ya kisheria kwa usahihi, ukamilifu, au manufaa, ya taarifa yoyote katika hili.
 tovuti.
 </ul>
@@ -3365,7 +3365,7 @@ SST, Imechanganywa, Marekani Magharibi (Majaribio, Mchanganyiko wa Siku 5)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Wasiliana</a></h2>
 Maswali, maoni, mapendekezo?
-Tafadhali tuma barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> na ujumuishe URL ya ERDDAP inayohusiana moja kwa moja na swali au maoni yako.
+Tafadhali tuma barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> na ujumuishe URL ya ERDDAP inayohusiana moja kwa moja na swali au maoni yako.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Au, unaweza kujiunga na ERDDAP Google Group / Orodha ya Wanaotuma Barua</a> kwa kutembelea
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5719,11 +5719,7 @@ Ikiwa metadata ya seti ya data inajumuisha
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Jinsi ya Kutaja ERDDAP kwenye Karatasi</a></strong>
 <br>Ikiwa ungependa kutaja ERDDAP yenyewe katika karatasi ya kisayansi, tafadhali tumia kitu kama hicho
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Je, kifupi&quot; ERDDAP &quot;kinamaanisha nini?</a></strong>
 <br>&quot; ERDDAP &quot;zamani ilikuwa kifupi, lakini ilipita maelezo ya asili.
 Sasa, tafadhali lifikirie kama jina, si kifupi.
@@ -5744,7 +5740,7 @@ Kisha, watu watakuwa na njia nyingine ya kufikia data yako na wataweza kupakua d
   >ERDDAP nyingi zinazofanya kazi pamoja</a> ili kuongeza na kukidhi mahitaji ya kituo kikubwa cha usambazaji wa data.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Wasiliana nasi</a></h2>
-Ikiwa una maswali, mapendekezo, au maoni kuhusu ERDDAP kwa ujumla (sio usakinishaji huu mahususi ERDDAP ), tafadhali tuma barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> na ujumuishe URL ya ERDDAP inayohusiana moja kwa moja na swali au maoni yako.
+Ikiwa una maswali, mapendekezo, au maoni kuhusu ERDDAP kwa ujumla (sio usakinishaji huu mahususi ERDDAP ), tafadhali tuma barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> na ujumuishe URL ya ERDDAP inayohusiana moja kwa moja na swali au maoni yako.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Au, unaweza kujiunga na ERDDAP Google Group / Orodha ya Wanaotuma Barua</a> kwa kutembelea
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5826,7 +5822,7 @@ Maudhui yoyote katika mfuatano unaolingana na mfuatano wa &#39;kabla&#39; yataba
 Mistari tupu inahakikisha kwamba mistari mingine ni ya &#39;kabla&#39; na &#39;baada ya&#39;.
 Mabadiliko yanatumika kwa mpangilio wa mistari hapa.
 !!! ONGEZA TU JOZI UNAZOONA KUWA NI MABADILIKO MAKUBWA SANA, YA KUAMINIWA SANA!!! Vidokezo:
-* Ikiwa unafikiri kwamba kuna sheria hapa ambazo si sahihi au sheria mpya za kuongezwa, tafadhali tuma barua pepe kwa <kbd>bob dot simons at noaa dot gov</kbd> .
+* Ikiwa unafikiri kwamba kuna sheria hapa ambazo si sahihi au sheria mpya za kuongezwa, tafadhali tuma barua pepe kwa <kbd>erd dot data at noaa dot gov</kbd> .
 * Kipindi cha kwanza kina mabadiliko makubwa.
 Nusu ya pili ina http rahisi kwa mabadiliko ya https.
 Mabadiliko ya http hadi https ni muhimu kwa sababu tovuti zingine hazina uelekezaji kwingine, na, hata kama ziko, baadhi ya mifumo (kwa mfano, Java ) haifuati uelekezaji kwingine kiotomatiki.

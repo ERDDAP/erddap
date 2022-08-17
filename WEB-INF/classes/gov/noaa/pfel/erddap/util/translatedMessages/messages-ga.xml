@@ -68,7 +68,7 @@ Ansin, ERDDAP gach ceann de
 <br>le liosta na n-athróg iarrtha.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Má tá moltaí agat maidir le naisc bhreise, déan teagmháil le <kbd>bob dot simons at noaa dot gov</kbd> .
+Má tá moltaí agat maidir le naisc bhreise, déan teagmháil le <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -411,7 +411,7 @@ Cuimsíonn an tseirbhís seo acrainmneacha a leathnaíonn go hiontaofa iontaofa 
 Ní chuimsíonn an tseirbhís seo acrainmneacha a leathnaíonn go coitianta go dtí níos mó ná ainm iomlán amháin (m.sh., SAF, a d’fhéadfaí a leathnú go Saoráid Synthetic Aperture Focusing nó Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Moltaí?</a> Níl liosta acrainmneacha na seirbhíse seo críochnaithe.
-Más mian leat acrainm coiteann a chur leis nó ceartú a dhéanamh, seol é le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+Más mian leat acrainm coiteann a chur leis nó ceartú a dhéanamh, seol é le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -475,7 +475,7 @@ Ní chuimsíonn an tseirbhís ach an t-ainm iomlán is coitianta a bhaineann le 
 leathnaíonn SST anseo go Sea Surface Temperature, ní Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Moltaí?</a> Níl liosta ainmneacha athraitheacha na seirbhíse seo iomlán.
-Más mian leat ainm athraitheach a úsáidtear go coitianta a chur leis nó ceartú a dhéanamh, seol é le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+Más mian leat ainm athraitheach a úsáidtear go coitianta a chur leis nó ceartú a dhéanamh, seol é le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -641,7 +641,7 @@ Sonraigh le do thoil liosta scartha le camóga de <kbd>tacar sonraí / datasetID
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Nótaí:</strong></a>
 <ul>
 <li>Seiceáil i gcónaí na torthaí ó na tiontairí.
-<br>Má cheapann tú gur thug an tiontaire toradh mícheart, seol na sonraí le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Má cheapann tú gur thug an tiontaire toradh mícheart, seol na sonraí le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>SÉANADH DLITEANAS
 <br>Ní thugann aon duine nó eagraíocht a bhfuil baint acu leis an suíomh Gréasáin seo aon bharántas, sainráite nó intuigthe, lena n-áirítear barántais incheannaitheachta agus oiriúnachta chun críche áirithe, nó ní ghlacann sé le haon dliteanas dlíthiúil as cruinneas, iomláine nó úsáideacht aon fhaisnéise ar an láithreán gréasáin seo.
@@ -759,7 +759,7 @@ Murab é seo an cur chuige ceart le haghaidh tacar sonraí ar leith, i gcásanna
 <br>Mura bhfuil na modhanna nó na roghanna a thairgeann an tiontaire seo oiriúnach chun do chuspóirí nó mura bhfuil siad ag teastáil uait, ná húsáid iad.
 Ina áit sin, is féidir leat é a dhéanamh leat féin, ar do bhealach féin:
 fo-thacair an tacar sonraí a íoslódáil agus do algartam féin a chur i bhfeidhm.
-Chun a iarraidh go gcuirfí halgartaim idirshuímh eile leis an tiontaire seo, seol ríomhphost chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+Chun a iarraidh go gcuirfí halgartaim idirshuímh eile leis an tiontaire seo, seol ríomhphost chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Riarthóirí ERDDAP :
 <br>Is féidir leat an Iarratas réamhshocraithe CSV a athrú tríd an gclib &lt;convertInterpolateRequestCSVExample&gt; a chur leis / a eagarthóireacht i datasets.xml sonraí.xml.
@@ -842,7 +842,7 @@ Níl daoine eile oiriúnach ach in imthosca áirithe.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">SÉANADH DLITEANAS</a></strong> - Ní thugann aon duine nó eagraíocht a bhfuil baint aige leis an suíomh Gréasáin seo aon bharántas, sainráite nó intuigthe, lena n-áirítear barántais incheannaitheachta agus oiriúnachta chun críche áirithe, nó glacann sé le haon dliteanas dlíthiúil as cruinneas, iomláine nó úsáideacht aon fhaisnéise faoi seo suíomh Gréasáin.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Ceartuithe</a></strong> - Seol ríomhphost le do thoil aon cheartúcháin a mholtar chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Ceartuithe</a></strong> - Seol ríomhphost le do thoil aon cheartúcháin a mholtar chuig <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -936,7 +936,7 @@ Nuair a dhéantar amanna a léiriú mar Teaghráin, formáidíonn an tiontaire s
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Ionchur Neamhbhailí</a> - Déanann ERDDAP iarracht déileáil le hionchur atá formáidithe go míchuí.
 Mura féidir le ERDDAP déileáil leis an ionchur, ERDDAP teachtaireacht earráide.
-Más tréimhse sreinge é an“ionchur neamhbhailí” a shíleann tú ba cheart tacú leis, seol é le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+Más tréimhse sreinge é an“ionchur neamhbhailí” a shíleann tú ba cheart tacú leis, seol é le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Conas ERDDAP leis an Am</strong></a>
@@ -1219,7 +1219,7 @@ Tá
 <convertTimeNumberError>Ní uimhir bhailí an uimhir a shonraítear.</convertTimeNumberError>
 <convertTimeNumericTimeError>Níl an t-am uimhriúil sin bailí.</convertTimeNumericTimeError>
 <convertTimeParametersError>Níl an teaglaim sin de pharaiméadair bailí. Seiceáil na samplaí agus bain triail eile as.</convertTimeParametersError>
-<convertTimeStringFormatError>Ní aithnítear formáid an tsreangáin. Má cheapann tú gur cheart tacaíocht a thabhairt dó, seol ríomhphost chuig bob.simons ag noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Ní aithnítear formáid an tsreangáin. Má cheapann tú gur cheart tacaíocht a thabhairt dó, seol ríomhphost chuig erd.data ag noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Ná sonraigh paraiméadair sreang-ama agus isoTime araon.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Tá sreangán na n-aonad neamhbhailí.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Uimhir. Mar shampla, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1537,7 +1537,7 @@ Níl aon rud speisialta, uathúil, nó níos fearr faoi ailiasanna nó comhréir
 <li>Oibríonn an rogha &quot;Standardize UDUNITS&quot; go maith le haghaidh teaghráin bhailí UDUNITS agus réasúnta maith i gcás teaghráin neamhchaighdeánacha / neamhbhailí UDUNITS .
 Tabhair faoi deara gur caighdeánú simplí é seo (m.sh., &quot;joule&quot;, &quot;joules&quot;, agus &quot;J&quot; go léir ar ais &quot;J&quot; ) seachas an fhoirm &quot;chanónach&quot; a thairgeann na bogearraí UDUNITS (a athraíonn, mar shampla, gach ceann acu ailiasanna an joule go &quot;kg.m2.s-2&quot; ).
 <li>Má cheapann tú go ndearna tiontaire tiontú go mícheart, déan cinnte ar dtús go bhfuil an sreang ionchuir bailí.
-Má cheapann tú go bhfuil an sreang ionchuir bailí, seol na sonraí le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+Má cheapann tú go bhfuil an sreang ionchuir bailí, seol na sonraí le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Féach an chomparáid mhionsonraithe ar
 <a rel="help" href="#syntaxComparison">chomhréir</a> agus
 <a rel="help" href="#unitsComparison">aonaid</a> UDUNITS agus UCUM thíos.
@@ -1638,10 +1638,10 @@ Beidh an t-aschur mar an gcéanna leis an ionchur, ach le URLanna nuashonraithe.
 <li>Déanann sé seo nuashonrú faoi láthair ar roinnt URLanna coitianta a bhaineann le tacar sonraí eolaíochtaí aigéaneolaíochta agus atmaisféaracha.
 Is obair neamhiomlán idir lámha í agus beidh i gcónaí, toisc go bhfuil an tasc dodhéanta mór agus ag athrú i gcónaí.
 Ní córas nuashonraithe URL ilchuspóireach é seo, cé go bhféadfaí é a fheabhsú chun ríochtaí eile a chlúdach.
-<li>Má cheapann tú go ndearna an tiontaire rud éigin mícheart nó nár nuashonraigh sé URL ba cheart a bheith aige, seol na sonraí le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Má cheapann tú go ndearna an tiontaire rud éigin mícheart nó nár nuashonraigh sé URL ba cheart a bheith aige, seol na sonraí le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Riarthóirí ERDDAP :
 is féidir leat na rialacha tiontaithe a athrú trí &lt;updateUrls&gt; a chur in eagar i messages.xml.
-Má dhéanann tú, seol na sonraí le do thoil chuig <kbd>bob dot simons at noaa dot gov</kbd> ionas gur féidir na hathruithe a ionchorprú sa dáileadh caighdeánach ERDDAP .
+Má dhéanann tú, seol na sonraí le do thoil chuig <kbd>erd dot data at noaa dot gov</kbd> ionas gur féidir na hathruithe a ionchorprú sa dáileadh caighdeánach ERDDAP .
 <li>SÉANADH DLITEANAS - Ní thugann aon duine nó eagraíocht a bhfuil baint aige leis an suíomh Gréasáin seo aon bharántas, sainráite nó intuigthe, lena n-áirítear barántais incheannaitheachta agus oiriúnachta chun críche áirithe, nó glacann sé le haon dliteanas dlíthiúil as cruinneas, iomláine nó úsáideacht aon fhaisnéise faoi seo suíomh Gréasáin.
 </ul>
 
@@ -3411,7 +3411,7 @@ SST, Cumaisc, Iarthar na SA (Turgnamhach, Ilchodach 5 Lá)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Déan teagmháil</a></h2>
 Ceisteanna, tuairimí, moltaí?
-Seol r-phost chuig <kbd>bob dot simons at noaa dot gov</kbd> agus cuir URL ERDDAP a bhaineann go díreach le do cheist nó do thrácht san áireamh.
+Seol r-phost chuig <kbd>erd dot data at noaa dot gov</kbd> agus cuir URL ERDDAP a bhaineann go díreach le do cheist nó do thrácht san áireamh.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nó, is féidir leat a bheith páirteach i nGrúpa Google / Liosta Ríomhphoist ERDDAP</a> trí chuairt a thabhairt ar
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5786,11 +5786,7 @@ Má chuimsíonn meiteashonraí an
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Conas ERDDAP a lua i bPáipéar</a></strong>
 <br>Más mian leat ERDDAP é féin a lua i bpáipéar eolaíoch, bain úsáid as rud éigin cosúil le do thoil
-<br><kbd>Simons, RA, 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Cad dó a seasann an t-acrainm&quot; ERDDAP &quot;?</a></strong>
 <br>Bhíodh&quot; ERDDAP &quot;ina acrainm, ach d&#39;éirigh sé as an mbunchuntas sin.
 Anois, le do thoil, smaoinigh air mar ainm, ní mar acrainm.
@@ -5811,7 +5807,7 @@ Ansin, beidh bealach eile ag daoine rochtain a fháil ar do shonraí agus beidh 
   >ERDDAP iolracha a shuiteáil a oibríonn le chéile</a> chun scála suas agus chun freastal ar riachtanais lárionad mór dáilte sonraí.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Glaoigh orainn</a></h2>
-Má tá ceisteanna, moltaí nó tuairimí agat faoi ERDDAP go ginearálta (ní an tsuiteáil shonrach ERDDAP seo), seol ríomhphost chuig <kbd>bob dot simons at noaa dot gov</kbd> agus cuir isteach an URL ERDDAP a bhaineann go díreach le do cheist nó do thuairim.
+Má tá ceisteanna, moltaí nó tuairimí agat faoi ERDDAP go ginearálta (ní an tsuiteáil shonrach ERDDAP seo), seol ríomhphost chuig <kbd>erd dot data at noaa dot gov</kbd> agus cuir isteach an URL ERDDAP a bhaineann go díreach le do cheist nó do thuairim.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nó, is féidir leat páirt a ghlacadh sa Ghrúpa Google / Liosta Ríomhphoist ERDDAP</a> trí chuairt a thabhairt ar
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5893,7 +5889,7 @@ Déanfar aon ábhar sa téad a mheaitseálann sreang &#39;roimh&#39; a thiontú 
 Cinntíonn na línte bána go bhfuil na línte eile línte ‘roimh’ agus ‘i ndiaidh’.
 Cuirtear na hathruithe i bhfeidhm in ord na línte anseo.
 !!! CEANN AMHÁIN PÁIRTITHE GO BHFUIL SÉ GO BHFUIL SÉ ATHRÚ I ndáiríre, ATHRÚ ATHRÚ IN AISCE !!! Nótaí:
-* Má cheapann tú go bhfuil rialacha anseo atá mícheart nó rialacha nua le cur leis, seol ríomhphost chuig <kbd>bob dot simons at noaa dot gov</kbd> .
+* Má cheapann tú go bhfuil rialacha anseo atá mícheart nó rialacha nua le cur leis, seol ríomhphost chuig <kbd>erd dot data at noaa dot gov</kbd> .
 * Tá athruithe drámatúla sa chéad leath.
 Tá athruithe simplí http go https sa dara leath.
 Tá na hathruithe http go https tábhachtach toisc nach bhfuil atreoruithe ag roinnt suíomhanna Gréasáin, agus, fiú má dhéanann siad, ní leanann roinnt córais (m.sh., Java ) atreoruithe go huathoibríoch.

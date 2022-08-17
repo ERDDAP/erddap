@@ -68,7 +68,7 @@ Ardından, ERDDAP ekleyecektir.
 <br>istenen değişkenler listesine.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Ek bağlantılar için önerileriniz varsa <kbd>bob dot simons at noaa dot gov</kbd> iletişime geçin.
+Ek bağlantılar için önerileriniz varsa <kbd>erd dot data at noaa dot gov</kbd> iletişime geçin.
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -406,7 +406,7 @@ Bu hizmet, belirli bir isme genişleyen oldukça güvenilir (&gt; %95 güven?) k
 Bu hizmet, genellikle birden fazla tam isme genişleyen kısaltmaları içermez (örneğin, Synthetic Aperture Focusing veya Satellite Application Facility olarak genişletilebilen SAF).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Öneriler?</a> Bu hizmetin kısaltma listesi tam değil.
-Ortak bir kısaltma eklemek veya bir düzeltme yapmak istiyorsanız, lütfen bunu <kbd>bob dot simons at noaa dot gov</kbd> adresine e-posta ile gönderin.
+Ortak bir kısaltma eklemek veya bir düzeltme yapmak istiyorsanız, lütfen bunu <kbd>erd dot data at noaa dot gov</kbd> adresine e-posta ile gönderin.
 <br>&nbsp;
 </ul>
 
@@ -470,7 +470,7 @@ Bu hizmet, oldukça güvenilir bir şekilde (&gt; %60 güven?) belirli bir ada g
 Hizmet yalnızca belirli bir değişken adıyla ilgili en yaygın tam adı içerir (örneğin, SST burada Surface Skin Temperature değil Sea Surface Temperature olarak genişler).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Öneriler?</a> Bu hizmetin değişken adları listesi tamamlanmadı.
-Yaygın olarak kullanılan bir değişken adı eklemek veya bir düzeltme yapmak istiyorsanız, lütfen bunu <kbd>bob dot simons at noaa dot gov</kbd> e-posta ile gönderin.
+Yaygın olarak kullanılan bir değişken adı eklemek veya bir düzeltme yapmak istiyorsanız, lütfen bunu <kbd>erd dot data at noaa dot gov</kbd> e-posta ile gönderin.
 <br>&nbsp;
 </ul>
 
@@ -634,7 +634,7 @@ Lütfen <kbd>datasetID /variableName/algorithm/nearby</kbd> için virgülle ayr�
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notlar:</strong></a>
 <ul>
 <li>Her zaman dönüştürücülerin sonuçlarını kontrol edin.
-<br>Dönüştürücünün yanlış bir sonuç verdiğini düşünüyorsanız, lütfen ayrıntıları <kbd>bob dot simons at noaa dot gov</kbd> adresine e-posta ile gönderin.
+<br>Dönüştürücünün yanlış bir sonuç verdiğini düşünüyorsanız, lütfen ayrıntıları <kbd>erd dot data at noaa dot gov</kbd> adresine e-posta ile gönderin.
 <br>&nbsp;
 <li>SORUMLULUK REDDİ
 <br>Bu web sitesiyle ilişkili hiçbir kişi veya kuruluş, satılabilirlik ve belirli bir amaca uygunluk garantileri dahil olmak üzere açık veya zımni hiçbir garanti vermez veya bu web sitesindeki herhangi bir bilginin doğruluğu, eksiksizliği veya kullanışlılığı konusunda herhangi bir yasal sorumluluk kabul etmez.
@@ -750,7 +750,7 @@ Bu, belirli bir veri kümesi için doğru yaklaşım değilse, bazı durumlarda 
 <br>Bu dönüştürücünün sunduğu yöntemler veya seçenekler amaçlarınıza uygun değilse veya istediğiniz gibi değilse, kullanmayın.
 Bunun yerine, bunu kendi yönteminizle yapabilirsiniz:
 veri kümesinin alt kümelerini indirin ve kendi algoritmanızı uygulayın.
-Bu dönüştürücüye başka enterpolasyon algoritmalarının eklenmesini talep etmek için lütfen <kbd>bob dot simons at noaa dot gov</kbd> e-posta gönderin.
+Bu dönüştürücüye başka enterpolasyon algoritmalarının eklenmesini talep etmek için lütfen <kbd>erd dot data at noaa dot gov</kbd> e-posta gönderin.
 <br>&nbsp;
 <li>ERDDAP yöneticileri:
 <br>Datasets.xml içindeki &lt; datasets.xml &gt; etiketini ekleyerek/düzenleyerek varsayılan CSV İsteğini değiştirebilirsiniz.
@@ -837,7 +837,7 @@ Diğerleri sadece belirli durumlarda uygundur.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">SORUMLULUK REDDİ</a></strong> - Bu web sitesiyle ilişkili hiçbir kişi veya kuruluş, satılabilirlik ve belirli bir amaca uygunluk garantileri dahil olmak üzere, açık veya zımni hiçbir garanti vermez veya burada yer alan herhangi bir bilginin doğruluğu, eksiksizliği veya kullanışlılığı konusunda herhangi bir yasal sorumluluk kabul etmez.
 İnternet sitesi.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Düzeltmeler</a></strong> - Lütfen önerilen düzeltmeleri <kbd>bob dot simons at noaa dot gov</kbd> e-posta ile gönderin.
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Düzeltmeler</a></strong> - Lütfen önerilen düzeltmeleri <kbd>erd dot data at noaa dot gov</kbd> e-posta ile gönderin.
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -927,7 +927,7 @@ Zamanları Dizeler olarak temsil ederken, bu dönüştürücü, süreleri (kesil
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Geçersiz Giriş</a> - ERDDAP, yanlış biçimlendirilmiş girişle ilgilenmeye çalışır.
 ERDDAP giriş ile ilgilenemezse, ERDDAP bir hata mesajı üretecektir.
-&quot;Geçersiz giriş&quot; desteklenmesi gerektiğini düşündüğünüz bir dize zamanıysa, lütfen bunu <kbd>bob dot simons at noaa dot gov</kbd> e-posta ile gönderin.
+&quot;Geçersiz giriş&quot; desteklenmesi gerektiğini düşündüğünüz bir dize zamanıysa, lütfen bunu <kbd>erd dot data at noaa dot gov</kbd> e-posta ile gönderin.
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAP Zamanı Nasıl Başlar?</strong></a>
@@ -1205,7 +1205,7 @@ A-Za-z0-9_-!~&#39;()* dışındaki tüm karakterler %HH olarak kodlanmalıdır, 
 <convertTimeNumberError>Belirtilen numara geçerli bir numara değil.</convertTimeNumberError>
 <convertTimeNumericTimeError>Bu sayısal zaman geçerli değil.</convertTimeNumericTimeError>
 <convertTimeParametersError>Bu parametre kombinasyonu geçerli değil. Örnekleri kontrol edip tekrar deneyin.</convertTimeParametersError>
-<convertTimeStringFormatError>Dize zamanının biçimi tanınmıyor. Desteklenmesi gerektiğini düşünüyorsanız, lütfen noaa.gov adresinden bob.simons adresine e-posta ile gönderin.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Dize zamanının biçimi tanınmıyor. Desteklenmesi gerektiğini düşünüyorsanız, lütfen noaa.gov adresinden erd.data adresine e-posta ile gönderin.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Hem stringTime hem de isoTime parametrelerini belirtmeyin.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Birimler dizesi geçersiz.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Bir sayı. Örneğin, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1515,7 +1515,7 @@ UDUNITS yazılımı tarafından döndürülen &quot;kurallı&quot; forma benzer 
 <li>&quot;UDUNITS Standartlaştır&quot; seçeneği, geçerli UDUNITS dizeleri için iyi çalışır ve standart olmayan/geçersiz UDUNITS dizeleri için oldukça iyi çalışır.
 UDUNITS &quot;joules&quot; tarafından sunulan &quot;joule&quot; &quot;J&quot; &quot;J&quot; formun (örneğin, tüm joule takma adı &quot;kg.m2.s-2&quot; ).
 <li>Bir dönüştürücünün yanlış bir dönüştürme yaptığını düşünüyorsanız, önce giriş dizesinin geçerli olduğundan emin olun.
-Giriş dizesinin geçerli olduğunu düşünüyorsanız, lütfen ayrıntıları <kbd>bob dot simons at noaa dot gov</kbd> adresine e-posta ile gönderin.
+Giriş dizesinin geçerli olduğunu düşünüyorsanız, lütfen ayrıntıları <kbd>erd dot data at noaa dot gov</kbd> adresine e-posta ile gönderin.
 <li>Aşağıdaki UDUNITS ve UCUM
 <a rel="help" href="#syntaxComparison">sözdizimi</a> ve
 <a rel="help" href="#unitsComparison">birimlerinin</a> ayrıntılı karşılaştırmasına bakın.
@@ -1616,10 +1616,10 @@ Giriş, 1000 karaktere kadar herhangi bir metin (muhtemelen HTML veya XML etiket
 <li>Bu, şu anda oşinografik ve atmosferik bilimler veri kümeleriyle ilişkili bazı yaygın URL&#39;leri güncellemektedir.
 Bu tamamlanmamış bir devam eden çalışmadır ve her zaman olacaktır, çünkü görev büyük ve sürekli değişen imkansızdır.
 Bu, genel amaçlı bir URL güncelleme sistemi değildir, ancak diğer alanları kapsayacak şekilde geliştirilebilir.
-<li>Dönüştürücünün yanlış bir şey yaptığını veya olması gereken bir URL&#39;yi güncellemediğini düşünüyorsanız, lütfen ayrıntıları <kbd>bob dot simons at noaa dot gov</kbd> adresine e-posta ile gönderin.
+<li>Dönüştürücünün yanlış bir şey yaptığını veya olması gereken bir URL&#39;yi güncellemediğini düşünüyorsanız, lütfen ayrıntıları <kbd>erd dot data at noaa dot gov</kbd> adresine e-posta ile gönderin.
 <li>ERDDAP yöneticileri:
 &lt;updateUrls&gt; mesajlarını .xml dosyasında düzenleyerek dönüştürme kurallarını değiştirebilirsiniz.
-Bunu yaparsanız, değişikliklerin standart ERDDAP dağıtımına dahil edilebilmesi için lütfen ayrıntıları <kbd>bob dot simons at noaa dot gov</kbd> e-posta ile gönderin.
+Bunu yaparsanız, değişikliklerin standart ERDDAP dağıtımına dahil edilebilmesi için lütfen ayrıntıları <kbd>erd dot data at noaa dot gov</kbd> e-posta ile gönderin.
 <li>SORUMLULUK REDDİ - Bu web sitesiyle ilişkili hiçbir kişi veya kuruluş, satılabilirlik ve belirli bir amaca uygunluk garantileri dahil olmak üzere, açık veya zımni hiçbir garanti vermez veya burada yer alan herhangi bir bilginin doğruluğu, eksiksizliği veya kullanışlılığı konusunda herhangi bir yasal sorumluluk kabul etmez.
 İnternet sitesi.
 </ul>
@@ -3407,7 +3407,7 @@ SST, Harmanlanmış, Batı ABD (Deneysel, 5 Günlük Kompozit)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Temas</a></h2>
 Sorular, yorumlar, öneriler?
-Lütfen <kbd>bob dot simons at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
+Lütfen <kbd>erd dot data at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
 <p>Veya
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap adresini</a> ziyaret ederek
@@ -5784,11 +5784,7 @@ Veri kümesinin meta verileri bir
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Bir ERDDAP Nasıl Atıf Yapılır?</a></strong>
 <br>Bilimsel bir makalede ERDDAP kendisinden alıntı yapmak istiyorsanız, lütfen şunun gibi bir şey kullanın:
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">&quot;ERDDAP&quot; kısaltması ne anlama geliyor?</a></strong>
 <br>&quot;ERDDAP&quot; eskiden bir kısaltmaydı, ancak bu orijinal tanımın ötesine geçti.
 Şimdi, lütfen sadece bir isim olarak düşünün, kısaltma olarak değil.
@@ -5809,7 +5805,7 @@ Ardından, kişilerin verilerinize erişmenin başka bir yolu olacak ve verileri
   >birlikte çalışan birden çok ERDDAP</a> kurabilirsiniz.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Bize Ulaşın</a></h2>
-Genel olarak ERDDAP hakkında sorularınız, önerileriniz veya yorumlarınız varsa (bu belirli ERDDAP kurulumu değil), lütfen <kbd>bob dot simons at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
+Genel olarak ERDDAP hakkında sorularınız, önerileriniz veya yorumlarınız varsa (bu belirli ERDDAP kurulumu değil), lütfen <kbd>erd dot data at noaa dot gov</kbd> bir e-posta gönderin ve sorunuz veya yorumunuzla doğrudan ilgili ERDDAP URL&#39;sini ekleyin.
 <br>Veya
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap adresini</a> ziyaret ederek
@@ -5894,7 +5890,7 @@ Bir &#39;önce&#39; dizesiyle eşleşen dizedeki herhangi bir içerik, &#39;sonr
 Boş satırlar, diğer satırların &#39;önce&#39; ve &#39;sonra&#39; satır olmasını sağlar.
 Değişiklikler burada satır sırasına göre uygulanır.
 !!! YALNIZCA ÇOK, ÇOK GÜVENİLİR OLDUĞUNU DÜŞÜNDÜĞÜNÜZ ÇİFTLERİ EKLEYİN DEĞİŞİKLİKLER!!! Notlar:
-* Burada yanlış olan veya eklenecek yeni kurallar olduğunu düşünüyorsanız, lütfen <kbd>bob dot simons at noaa dot gov</kbd> e-posta gönderin.
+* Burada yanlış olan veya eklenecek yeni kurallar olduğunu düşünüyorsanız, lütfen <kbd>erd dot data at noaa dot gov</kbd> e-posta gönderin.
 * İlk yarıda dramatik değişiklikler var.
 İkinci yarıda basit http&#39;den https&#39;ye değişiklikler var.
 Http&#39;den https&#39;ye yapılan değişiklikler, bazı web sitelerinin yönlendirmeleri olmadığı için önemlidir ve olsalar bile, bazı sistemler (örn.

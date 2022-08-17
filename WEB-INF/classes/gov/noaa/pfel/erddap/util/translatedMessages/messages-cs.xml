@@ -69,7 +69,7 @@ Poté ERDDAP přidá všechny
 <br>do seznamu požadovaných proměnných.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Pokud máte návrhy na další odkazy, kontaktujte <kbd>bob dot simons at noaa dot gov</kbd> .
+Pokud máte návrhy na další odkazy, kontaktujte <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -410,7 +410,7 @@ Tato služba nezahrnuje akronymy, které se běžně rozšiřují na více než 
 SAF, které lze rozšířit na Synthetic Aperture Focusing nebo Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Návrhy?</a> Seznam zkratek této služby není úplný.
-Pokud chcete přidat běžnou zkratku nebo provést opravu, pošlete ji e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+Pokud chcete přidat běžnou zkratku nebo provést opravu, pošlete ji e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -475,7 +475,7 @@ Služba obsahuje pouze nejběžnější úplný název související s daným n�
 SST se zde rozšiřuje na Sea Surface Temperature, nikoli Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Návrhy?</a> Seznam názvů proměnných této služby není úplný.
-Pokud chcete přidat běžně používaný název proměnné nebo provést opravu, zašlete jej e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+Pokud chcete přidat běžně používaný název proměnné nebo provést opravu, zašlete jej e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -637,7 +637,7 @@ Zadejte prosím čárkami oddělený seznam <kbd>datasetID /název_proměnné/al
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Poznámky:</strong></a>
 <ul>
 <li>Vždy zkontrolujte výsledky z převodníků.
-<br>Pokud si myslíte, že převaděč poskytl nesprávný výsledek, zašlete prosím podrobnosti e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Pokud si myslíte, že převaděč poskytl nesprávný výsledek, zašlete prosím podrobnosti e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ODMÍTNUTÍ ODPOVĚDNOSTI
 <br>Žádná osoba ani organizace spojená s touto webovou stránkou neposkytuje žádnou záruku, výslovnou ani předpokládanou, včetně záruk obchodovatelnosti a vhodnosti pro konkrétní účel, ani nepřebírá žádnou právní odpovědnost za přesnost, úplnost nebo užitečnost jakýchkoli informací na této webové stránce.
@@ -755,7 +755,7 @@ Pokud to není správný přístup pro danou datovou sadu, v některých přípa
 <br>Pokud metody nebo možnosti nabízené tímto převodníkem nejsou vhodné pro vaše účely nebo z jiného důvodu nejsou to, co chcete, nepoužívejte je.
 Místo toho to můžete udělat sami, svým vlastním způsobem:
 stáhněte si podmnožiny datové sady a použijte svůj vlastní algoritmus.
-Chcete-li požádat o přidání dalších interpolačních algoritmů do tohoto převodníku, zašlete e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+Chcete-li požádat o přidání dalších interpolačních algoritmů do tohoto převodníku, zašlete e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP :
 <br>Výchozí CSV požadavku můžete změnit přidáním/úpravou tagu &lt;convertInterpolateRequestCSVExample&gt; v datasets.xml .
@@ -837,7 +837,7 @@ Jiné jsou vhodné pouze za určitých okolností.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">ODMÍTNUTÍ ODPOVĚDNOSTI</a></strong> - Žádná osoba ani organizace spojená s touto webovou stránkou neposkytuje žádnou záruku, výslovnou ani předpokládanou, včetně záruk obchodovatelnosti a vhodnosti pro konkrétní účel, ani nepřebírá žádnou právní odpovědnost za přesnost, úplnost nebo užitečnost jakýchkoli informací na této stránce.
 webová stránka.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Opravy</a></strong> – Jakékoli navrhované opravy zašlete e-mailem uživateli <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Opravy</a></strong> – Jakékoli navrhované opravy zašlete e-mailem uživateli <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -924,7 +924,7 @@ vynechává milis).
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Neplatný vstup</a> – ERDDAP se pokouší vypořádat se s nesprávně naformátovaným vstupem.
 Pokud se ERDDAP nedokáže vypořádat se vstupem, ERDDAP vygeneruje chybovou zprávu.
-Pokud je „neplatný vstup“ čas řetězce, který by podle vás měl být podporován, zašlete jej e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+Pokud je „neplatný vstup“ čas řetězce, který by podle vás měl být podporován, zašlete jej e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Jak ERDDAP s časem</strong></a>
@@ -1204,7 +1204,7 @@ Existují
 <convertTimeNumberError>Zadané číslo není platné.</convertTimeNumberError>
 <convertTimeNumericTimeError>Ten číselný čas není platný.</convertTimeNumericTimeError>
 <convertTimeParametersError>Tato kombinace parametrů není platná. Zkontrolujte příklady a zkuste to znovu.</convertTimeParametersError>
-<convertTimeStringFormatError>Formát času řetězce nebyl rozpoznán. Pokud si myslíte, že by měl být podporován, pošlete jej e-mailem na adresu bob.simons na adrese noaa.gov .</convertTimeStringFormatError>
+<convertTimeStringFormatError>Formát času řetězce nebyl rozpoznán. Pokud si myslíte, že by měl být podporován, pošlete jej e-mailem na adresu erd.data na adrese noaa.gov .</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Nezadávejte oba parametry stringTime a isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Řetězec jednotek je neplatný.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Číslo. Například „{0}“.</convertTimeNumberTooltip>
@@ -1533,7 +1533,7 @@ Na konkrétních aliasech nebo syntaxi standardizovaného výstupu není nic zvl
 Všimněte si, že se jedná o jednoduchou standardizaci (např.
 &quot;joule&quot;, &quot;joules&quot; a &quot;J&quot; všechny vrátí &quot;J&quot; ), na rozdíl od „kanonické“ formy nabízené softwarem UDUNITS (který například převádí všechny joule má přezdívku &quot;kg.m2.s-2&quot; ).
 <li>Pokud se domníváte, že převodník provedl převod nesprávně, nejprve se ujistěte, že je vstupní řetězec platný.
-Pokud si myslíte, že je vstupní řetězec platný, zašlete prosím podrobnosti e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+Pokud si myslíte, že je vstupní řetězec platný, zašlete prosím podrobnosti e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Podívejte se na podrobné srovnání
 <a rel="help" href="#syntaxComparison">syntaxe</a> a
 <a rel="help" href="#unitsComparison">jednotek</a> UDUNITS a UCUM níže.
@@ -1631,10 +1631,10 @@ Výstup bude stejný jako vstup, ale s aktualizovanými adresami URL.
 <li>To v současné době aktualizuje některé běžné adresy URL související s oceánografickými a atmosférickými vědními datovými sadami.
 Je to neúplná rozpracovaná práce a vždy bude, protože úkol není velký a neustále se mění.
 Toto není obecný systém aktualizace URL, i když by mohl být vylepšen, aby pokryl další sféry.
-<li>Pokud se domníváte, že převaděč udělal něco nesprávně nebo neaktualizoval adresu URL, kterou měl, zašlete podrobnosti e-mailem na adresu <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Pokud se domníváte, že převaděč udělal něco nesprávně nebo neaktualizoval adresu URL, kterou měl, zašlete podrobnosti e-mailem na adresu <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP :
 pravidla převodu můžete změnit úpravou &lt;updateUrls&gt; v messages.xml.
-Pokud tak učiníte, zašlete prosím podrobnosti e-mailem <kbd>bob dot simons at noaa dot gov</kbd>, aby mohly být změny začleněny do standardní distribuce ERDDAP .
+Pokud tak učiníte, zašlete prosím podrobnosti e-mailem <kbd>erd dot data at noaa dot gov</kbd>, aby mohly být změny začleněny do standardní distribuce ERDDAP .
 <li>ODMÍTNUTÍ ODPOVĚDNOSTI - Žádná osoba ani organizace spojená s touto webovou stránkou neposkytuje žádnou záruku, výslovnou ani předpokládanou, včetně záruk obchodovatelnosti a vhodnosti pro konkrétní účel, ani nepřebírá žádnou právní odpovědnost za přesnost, úplnost nebo užitečnost jakýchkoli informací na této stránce.
 webová stránka.
 </ul>
@@ -3402,7 +3402,7 @@ SST, Blended, Západ USA (experimentální, 5denní kompozitní)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakt</a></h2>
 Otázky, připomínky, návrhy?
-Pošlete prosím e-mail na adresu <kbd>bob dot simons at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
+Pošlete prosím e-mail na adresu <kbd>erd dot data at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nebo se můžete připojit ke skupině ERDDAP Google Group / Mailing List</a> na
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">adrese https://groups.google.com/forum/#!forum/erddap <img 
@@ -5772,11 +5772,7 @@ Pokud metadata datové sady obsahují identifikátor
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Jak ERDDAP v článku</a></strong>
 <br>Pokud chcete citovat samotný ERDDAP ve vědecké práci, použijte něco jako
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Co znamená zkratka „ERDDAP“?</a></strong>
 <br>„ERDDAP“ bývala zkratka, ale přerostla původní popis.
 Teď to prosím berte jako jméno, ne jako zkratku.
@@ -5797,7 +5793,7 @@ Lidé pak budou mít jiný způsob přístupu k vašim datům a budou si moci da
   >více ERDDAP, které spolupracují</a> na škálování a splňují potřeby velkého datového distribučního centra.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontaktujte nás</a></h2>
-Máte-li dotazy, návrhy nebo připomínky k ERDDAP obecně (nikoli k této konkrétní instalaci ERDDAP ), pošlete e-mail na adresu <kbd>bob dot simons at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
+Máte-li dotazy, návrhy nebo připomínky k ERDDAP obecně (nikoli k této konkrétní instalaci ERDDAP ), pošlete e-mail na adresu <kbd>erd dot data at noaa dot gov</kbd> a uveďte adresu URL ERDDAP přímo související s vaší otázkou nebo komentářem.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Nebo se můžete připojit ke skupině ERDDAP Google Group / Mailing List</a> na
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">adrese https://groups.google.com/forum/#!forum/erddap <img 
@@ -5879,7 +5875,7 @@ Jakýkoli obsah v řetězci odpovídající řetězci „před“ bude převeden
 Prázdné řádky zajišťují, že ostatní řádky jsou řádky „před“ a „za“.
 Změny se použijí v pořadí řádků zde.
 !!! PŘIDÁVEJTE POUZE PÁRY, KTERÉ POVAŽUJETE ZA VELMI, VELMI SPOLEHLIVÉ ZMĚNY!!! Poznámky:
-* Pokud se domníváte, že jsou zde pravidla, která jsou nesprávná, nebo je třeba přidat nová pravidla, zašlete e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+* Pokud se domníváte, že jsou zde pravidla, která jsou nesprávná, nebo je třeba přidat nová pravidla, zašlete e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 * První poločas přinesl dramatické změny.
 Druhá polovina má jednoduché změny http na https.
 Změny http na https jsou důležité, protože některé webové stránky nemají přesměrování, a i když ano, některé systémy (např.

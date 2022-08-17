@@ -137,6 +137,17 @@ public class TestUtil {
         Test.ensureTrue(!Math2.equalsIncludingNanOrInfinite(d3, d1), "");
         Test.ensureTrue(!Math2.equalsIncludingNanOrInfinite(d3, d2), "");
 
+        //getMemoryInUse
+        StringBuilder sb = new StringBuilder();
+        long time = System.currentTimeMillis();
+        long sum = 0;
+        for (int i = 0; i < 100000; i++) {
+            sum += Math2.getMemoryInUse();
+            sb.append("" + i);
+            if (i % 100 == 0) sb.setLength(0);
+        }
+        String2.log("getMemoryInUse is fast! It takes about " + (System.currentTimeMillis() - time)/100000.0 + "ms per call. " + sum + sb);
+
         //longToDoubleNaN
         String2.log("test longToDoubleNaN");
         Test.ensureEqual(Math.round(Math2.longToDoubleNaN(-9223372036854775808L)), 
@@ -6154,13 +6165,13 @@ expected =
         //this only works on Bob's computer
         String2.log("File2.getSystemTempDirectory()=" + File2.getSystemTempDirectory());
         String tempDir = File2.getSystemTempDirectory();
-        if (!tempDir.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
-            !tempDir.equals("C:/Users/Robert/AppData/Local/Temp/")) {
-            String2.log(
-                "getSystemTempDirectory        =" + tempDir);
-                //+ "\n" + String2.Press_CtrlC_or_Enter); 
-            Math2.gc(5000); //pause in test to display info
-        }
+        //if (!tempDir.equals("C:/Users/Bob.Simons/AppData/Local/Temp/") &&
+        //    !tempDir.equals("C:/Users/Robert/AppData/Local/Temp/")) {
+        //    String2.log(
+        //        "getSystemTempDirectory        =" + tempDir);
+        //        //+ "\n" + String2.Press_CtrlC_or_Enter); 
+        //    Math2.gc(5000); //pause in test to display info
+        //}
 
 
         //test int deleteIfOld(String dir, long time) {

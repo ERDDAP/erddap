@@ -73,6 +73,14 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         hasRangeRequest = request.getHeader("Range") != null; 
     }
 
+    /** 
+     * This is useful for OutputStream types that support fileName
+     * if you want to change the download fileName before
+     * the call to getOutputStream().
+     */
+    public void setFileName(String tFileName) {
+        fileName = tFileName;
+    }
 
     /**
      * This is like getFiletypeInfo, but just returns the contentType.

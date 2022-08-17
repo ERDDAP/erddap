@@ -69,7 +69,7 @@ Ezután az ERDDAP hozzáadja az összeset
 <br>a kért változók listájához.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Ha további linkekre vonatkozó javaslatai vannak, forduljon <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha további linkekre vonatkozó javaslatai vannak, forduljon <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -414,7 +414,7 @@ Ez a szolgáltatás nem tartalmaz olyan betűszavakat, amelyek általában egyn�
 SAF, amely kibővíthető Synthetic Aperture Focusing vagy Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Javaslatok?</a> A szolgáltatás rövidítéseinek listája nem teljes.
-Ha általános betűszót szeretne hozzáadni, vagy javítani szeretne, kérjük, küldje el e-mailben a <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha általános betűszót szeretne hozzáadni, vagy javítani szeretne, kérjük, küldje el e-mailben a <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -480,7 +480,7 @@ A szolgáltatás csak az adott változónévhez kapcsolódó legáltalánosabb t
 az SST itt a Sea Surface Temperature bővül, nem pedig a Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Javaslatok?</a> A szolgáltatás változóneveinek listája nem teljes.
-Ha egy gyakran használt változónevet szeretne hozzáadni, vagy javítani szeretne, kérjük, küldje el e-mailben a <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha egy gyakran használt változónevet szeretne hozzáadni, vagy javítani szeretne, kérjük, küldje el e-mailben a <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -648,7 +648,7 @@ Kérjük, adjon meg egy vesszővel elválasztott listát a <kbd>datasetID /vált
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Megjegyzések:</strong></a>
 <ul>
 <li>Mindig ellenőrizze a konverterek eredményeit.
-<br>Ha úgy gondolja, hogy a konverter helytelen eredményt adott, kérjük, küldje el e-mailben a részleteket a <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Ha úgy gondolja, hogy a konverter helytelen eredményt adott, kérjük, küldje el e-mailben a részleteket a <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>A FELELŐSSÉG ELLENŐRZÉSE
 <br>Egyetlen, a weboldalhoz kapcsolódó személy vagy szervezet sem vállal semmilyen kifejezett vagy hallgatólagos garanciát, beleértve az eladhatóságra és egy adott célra való alkalmasságra vonatkozó garanciákat, és nem vállal semmilyen jogi felelősséget a webhelyen található információk pontosságáért, teljességéért vagy hasznosságáért.
@@ -767,7 +767,7 @@ Ha ez nem a megfelelő megközelítés egy adott adatkészlethez, bizonyos esete
 <br>Ha az átalakító által kínált módszerek vagy lehetőségek nem alkalmasak az Ön céljaira, vagy más okból nem az Ön által kívánt módon, ne használja őket.
 Ehelyett megteheti ezt saját maga, a maga módján:
 töltse le az adatkészlet részhalmazait, és alkalmazza saját algoritmusát.
-Ha más interpolációs algoritmusokat szeretne hozzáadni ehhez a konverterhez, kérjük, küldjön e-mailt <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha más interpolációs algoritmusokat szeretne hozzáadni ehhez a konverterhez, kérjük, küldjön e-mailt <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP rendszergazdák:
 <br>Módosíthatja az alapértelmezett Request CSV-t a &lt;convertInterpolateRequestCSVExample&gt; címke hozzáadásával/szerkesztésével a datasets.xml fájlban.
@@ -856,7 +856,7 @@ Mások csak bizonyos körülmények között megfelelőek.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">A FELELŐSSÉG NYILATKOZATA</a></strong> – A weboldalhoz kapcsolódó személy vagy szervezet nem vállal semmilyen kifejezett vagy hallgatólagos garanciát, ideértve az eladhatóságra és egy adott célra való alkalmasságra vonatkozó garanciákat, és nem vállal semmilyen jogi felelősséget a jelen oldalon található információk pontosságáért, teljességéért vagy hasznosságáért.
 weboldal.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Javítások</a></strong> – Kérjük, küldje el e-mailben a javasolt javításokat a <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Javítások</a></strong> – Kérjük, küldje el e-mailben a javasolt javításokat a <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -945,7 +945,7 @@ Amikor az időket karakterláncként jeleníti meg, ez a konverter (csonka) más
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Érvénytelen bevitel</a> – Az ERDDAP megpróbálja kezelni a nem megfelelően formázott bemenetet.
 Ha az ERDDAP nem tudja kezelni a bemenetet, az ERDDAP hibaüzenetet generál.
-Ha az „érvénytelen bevitel” olyan karakterlánc-idő, amelyet támogatni kell, kérjük, küldje el e-mailben a <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha az „érvénytelen bevitel” olyan karakterlánc-idő, amelyet támogatni kell, kérjük, küldje el e-mailben a <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Hogyan bánik az ERDDAP az idővel?</strong></a>
@@ -1241,7 +1241,7 @@ Vannak olyan
 <convertTimeNumberError>A megadott szám nem érvényes szám.</convertTimeNumberError>
 <convertTimeNumericTimeError>Ez a numerikus idő nem érvényes.</convertTimeNumericTimeError>
 <convertTimeParametersError>A paraméterek kombinációja nem érvényes. Ellenőrizze a példákat, és próbálja újra.</convertTimeParametersError>
-<convertTimeStringFormatError>A karakterlánc idő formátuma nem ismerhető fel. Ha úgy gondolja, hogy támogatni kellene, kérjük, küldje el e-mailben a bob.simons címre a noaa.gov címen.</convertTimeStringFormatError>
+<convertTimeStringFormatError>A karakterlánc idő formátuma nem ismerhető fel. Ha úgy gondolja, hogy támogatni kellene, kérjük, küldje el e-mailben a erd.data címre a noaa.gov címen.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Ne adjon meg egyszerre a stringTime és az isoTime paramétereket.</convertTimeTwoTimeError>
 <convertTimeUnitsError>A mértékegység karakterlánc érvénytelen.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Egy szám. Például: &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1572,7 +1572,7 @@ A szabványos kimenet speciális álneveiben vagy szintaxisában semmi különle
 Vegye figyelembe, hogy ez egy egyszerű szabványosítás (pl.
 &quot;joule&quot;,&quot;joules&quot;és&quot;J&quot;mind&quot;J&quot;ad vissza), szemben az UDUNITS szoftver által kínált&quot;kanonikus&quot;formával (amely például az összes a joule álnevei&quot;kg.m2.s-2&quot;).
 <li>Ha úgy gondolja, hogy egy konverter hibásan hajtott végre konverziót, először ellenőrizze, hogy a bemeneti karakterlánc érvényes-e.
-Ha úgy gondolja, hogy a beviteli karakterlánc érvényes, kérjük, küldje el e-mailben a részleteket a <kbd>bob dot simons at noaa dot gov</kbd> .
+Ha úgy gondolja, hogy a beviteli karakterlánc érvényes, kérjük, küldje el e-mailben a részleteket a <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Lásd az UDUNITS és az UCUM
 <a rel="help" href="#syntaxComparison">szintaxis</a> és
 <a rel="help" href="#unitsComparison">mértékegységek</a> részletes összehasonlítását alább.
@@ -1673,10 +1673,10 @@ A kimenet ugyanaz lesz, mint a bemenet, de frissített URL-ekkel.
 <li>Ez jelenleg frissít néhány gyakori URL-címet, amelyek az oceanográfiai és légkörtudományi adatkészletekhez kapcsolódnak.
 Ez egy befejezetlen, folyamatban lévő munka, és mindig is az lesz, mert a feladat lehetetlen nagy és állandóan változó.
 Ez nem egy általános célú URL-frissítési rendszer, bár javítható lenne, hogy más területeket is lefedjen.
-<li>Ha úgy gondolja, hogy a konverter valamit rosszul csinált, vagy nem frissítette azt az URL-címet, amelyet kellett volna, kérjük, küldje el e-mailben a részleteket a <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Ha úgy gondolja, hogy a konverter valamit rosszul csinált, vagy nem frissítette azt az URL-címet, amelyet kellett volna, kérjük, küldje el e-mailben a részleteket a <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP adminisztrátorok:
 módosíthatja a konverziós szabályokat az &lt;updateUrls&gt; szerkesztésével a messages.xml fájlban.
-Ha igen, kérjük, küldje el e-mailben a részleteket a <kbd>bob dot simons at noaa dot gov</kbd> hogy a változtatások beépülhessenek a szabványos ERDDAP disztribúcióba.
+Ha igen, kérjük, küldje el e-mailben a részleteket a <kbd>erd dot data at noaa dot gov</kbd> hogy a változtatások beépülhessenek a szabványos ERDDAP disztribúcióba.
 <li>A FELELŐSSÉG NYILATKOZATA – A weboldalhoz kapcsolódó személy vagy szervezet nem vállal semmilyen kifejezett vagy hallgatólagos garanciát, ideértve az eladhatóságra és egy adott célra való alkalmasságra vonatkozó garanciákat, és nem vállal semmilyen jogi felelősséget a jelen oldalon található információk pontosságáért, teljességéért vagy hasznosságáért.
 weboldal.
 </ul>
@@ -3484,7 +3484,7 @@ SST, kevert, Nyugat-USA (kísérleti, 5 napos összetett)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kapcsolatba lépni</a></h2>
 Kérdések, észrevételek, javaslatok?
-Kérjük, küldjön egy e-mailt a <kbd>bob dot simons at noaa dot gov</kbd>, és adja meg a kérdéséhez vagy megjegyzéséhez közvetlenül kapcsolódó ERDDAP URL-címet.
+Kérjük, küldjön egy e-mailt a <kbd>erd dot data at noaa dot gov</kbd>, és adja meg a kérdéséhez vagy megjegyzéséhez közvetlenül kapcsolódó ERDDAP URL-címet.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Vagy csatlakozhat az ERDDAP Google Csoporthoz / Levelezőlistához</a> a
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap oldalon</a> .
@@ -5871,11 +5871,7 @@ Ha az adatkészlet metaadatai tartalmaznak egy
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Hogyan lehet idézni az ERDDAP -t egy tanulmányban</a></strong>
 <br>Ha magát az ERDDAP -ot szeretné idézni egy tudományos cikkben, kérjük, használjon valami hasonlót
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Mit jelent az &quot;ERDDAP&quot; mozaikszó?</a></strong>
 <br>Az &quot;ERDDAP&quot; egy mozaikszó volt, de túlnőtte az eredeti leírást.
 Nos, kérem, gondolja csak névnek, ne mozaikszónak.
@@ -5896,7 +5892,7 @@ Ezután az emberek más módon is hozzáférhetnek az Ön adataihoz, és tovább
   >több ERDDAP -t is telepíthet, amelyek együtt működnek</a> a méretezés érdekében, és megfelelnek egy nagy adatelosztó központ igényeinek.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Lépjen kapcsolatba velünk</a></h2>
-Ha kérdései, javaslatai vagy megjegyzései vannak az ERDDAP -vel kapcsolatban általában (nem ezzel a konkrét ERDDAP telepítéssel), kérjük, küldjön egy e-mailt a <kbd>bob dot simons at noaa dot gov</kbd> címen, és adja meg a kérdéséhez vagy megjegyzéséhez közvetlenül kapcsolódó ERDDAP URL-címet.
+Ha kérdései, javaslatai vagy megjegyzései vannak az ERDDAP -vel kapcsolatban általában (nem ezzel a konkrét ERDDAP telepítéssel), kérjük, küldjön egy e-mailt a <kbd>erd dot data at noaa dot gov</kbd> címen, és adja meg a kérdéséhez vagy megjegyzéséhez közvetlenül kapcsolódó ERDDAP URL-címet.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Vagy csatlakozhat az ERDDAP Google Csoporthoz / Levelezőlistához</a> a
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap oldalon</a> .
@@ -5980,7 +5976,7 @@ A karakterlánc minden olyan tartalma, amely megfelel az „előtte” karakterl
 Az üres sorok biztosítják, hogy a többi sor „előtte” és „utána” legyen.
 A változtatások a sorok sorrendjében jelennek meg.
 !!! CSAK AZ ÖN NAGYON-NAGYON MEGBÍZHATÓ VÁLTOZTATÁSOKAT HOZZÁ BE!!! Megjegyzések:
-* Ha úgy gondolja, hogy vannak itt hibás szabályok, vagy új szabályokat kell hozzáadni, kérjük, írjon e-mailt <kbd>bob dot simons at noaa dot gov</kbd> .
+* Ha úgy gondolja, hogy vannak itt hibás szabályok, vagy új szabályokat kell hozzáadni, kérjük, írjon e-mailt <kbd>erd dot data at noaa dot gov</kbd> .
 * Az első félidő drámai változásokat hozott.
 A második felében egyszerű http- https változtatások vannak.
 A http-ről https-re történő változtatások azért fontosak, mert egyes webhelyeken nincs átirányítás, és bizonyos rendszerek (pl.

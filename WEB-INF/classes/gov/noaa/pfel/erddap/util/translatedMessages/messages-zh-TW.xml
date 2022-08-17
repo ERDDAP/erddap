@@ -58,7 +58,7 @@ HTML 與否？
 <br>到請求的變量列表。
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-如果您有其他鏈接的建議，請聯繫<kbd>bob dot simons at noaa dot gov</kbd> 。
+如果您有其他鏈接的建議，請聯繫<kbd>erd dot data at noaa dot gov</kbd> 。
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -362,7 +362,7 @@ CDM 是Unidata的通用數據模型，一種對數據集進行分類的方法
 <br>&nbsp;
 <li><a class="selfLink" id="notPerfect" href="#notPerfect" rel="help">不完美</a>- 這項服務並不完美。許多首字母縮略詞可以擴展為兩個或多個全名。此服務包括相當可靠（&gt; 95% 置信度？）擴展到特定名稱的首字母縮略詞，但這並不意味著它適合您使用該首字母縮略詞。該服務不包括通常擴展為多個全名的首字母縮略詞（例如，SAF，可以擴展為Synthetic Aperture Focusing或Satellite Application Facility ）。
 <br>&nbsp;
-<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">建議？</a>此服務的首字母縮略詞列表不完整。如果您想添加常見的首字母縮略詞或進行更正，請將其通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
+<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">建議？</a>此服務的首字母縮略詞列表不完整。如果您想添加常見的首字母縮略詞或進行更正，請將其通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
 <br>&nbsp;
 </ul>
 
@@ -411,7 +411,7 @@ href="{0}/convert/oceanicAtmosphericAcronyms.txt?fullName=National%20Oceanic%20a
 <br>&nbsp;
 <li><a class="selfLink" id="notPerfect" href="#notPerfect" rel="help">不完美</a>- 這項服務遠非完美。大多數變量名可以擴展為大量不同的全名。該服務包括一些相當可靠（&gt; 60% 置信度？）擴展到特定名稱（忽略微小變化）的常用變量名稱，但這並不意味著該服務對於您使用變量名稱是正確的。該服務僅包括與給定變量名稱相關的最常見全名（例如，SST 在此處擴展為Sea Surface Temperature ，而不是Surface Skin Temperature ）。
 <br>&nbsp;
-<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">建議？</a>此服務的變量名稱列表不完整。如果您想添加常用變量名稱或進行更正，請將其通過電子郵件發送至<kbd>bob dot simons at noaa dot gov</kbd> 。
+<li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">建議？</a>此服務的變量名稱列表不完整。如果您想添加常用變量名稱或進行更正，請將其通過電子郵件發送至<kbd>erd dot data at noaa dot gov</kbd> 。
 <br>&nbsp;
 </ul>
 
@@ -548,7 +548,7 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>筆記：</strong></a>
 <ul>
 <li>始終檢查轉換器的結果。
-<br>如果您認為轉換器給出的結果不正確，請將詳細信息通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
+<br>如果您認為轉換器給出的結果不正確，請將詳細信息通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
 <br>&nbsp;
 <li>免責聲明
 <br>與本網站相關的任何個人或組織均不作任何明示或暗示的保證，包括對適銷性和特定用途適用性的保證，也不對本網站上任何信息的準確性、完整性或有用性承擔任何法律責任。
@@ -625,7 +625,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) 以便它們在所有類型�
 <br>&nbsp;
 <li><a class="selfLink" id="NotWhatYouWant" href="#NotWhatYouWant" rel="help"
   >不是你想要的？</a>
-<br>如果此轉換器提供的方法或選項不適合您的目的或不是您想要的，請不要使用它們。相反，您可以按照自己的方式自行完成：下載數據集的子集並應用您自己的算法。要請求將其他插值算法添加到此轉換器，請發送電子郵件<kbd>bob dot simons at noaa dot gov</kbd> 。
+<br>如果此轉換器提供的方法或選項不適合您的目的或不是您想要的，請不要使用它們。相反，您可以按照自己的方式自行完成：下載數據集的子集並應用您自己的算法。要請求將其他插值算法添加到此轉換器，請發送電子郵件<kbd>erd dot data at noaa dot gov</kbd> 。
 <br>&nbsp;
 <li>ERDDAP管理員：
 <br>您可以通過在datasets.xml中添加/編輯 &lt;convertInterpolateRequestCSVExample&gt; 標記來更改默認請求 CSV。同樣，您可以通過添加/編輯datasets.xml中的 &lt;convertInterpolateDatasetIDVariableList&gt; 標記來更改<kbd>datasetID</kbd> / <kbd>variable</kbd>選項列表，該標記可以具有建議的<kbd>datasetID</kbd> / <kbd>variable</kbd>組合的逗號分隔列表。
@@ -692,7 +692,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) 以便它們在所有類型�
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">免責聲明</a></strong>- 與本網站相關的任何個人或組織均不作任何明示或暗示的保證，包括對適銷性和特定用途適用性的保證，或對本網站上任何信息的準確性、完整性或有用性承擔任何法律責任網站。
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">更正</a></strong>- 請將任何建議的更正通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">更正</a></strong>- 請將任何建議的更正通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -761,7 +761,7 @@ ERDDAP之外的數據集通常使用不同的單位字符串。
 <li><a class="selfLink" id="units" href="#units" rel="help">UDUNITS時間單位</a>- {1}
 <li><a class="selfLink" id="converterPrecision" href="#converterPrecision" rel="help">轉換器精度</a>- 當將時間表示為數字時，此轉換器始終以全精度保留數字。當將時間表示為字符串時，此轉換器將時間格式化為（截斷的）秒（即，省略毫秒）。
 <br>&nbsp;
-<li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">無效輸入</a>- ERDDAP嘗試處理格式不正確的輸入。如果ERDDAP無法處理輸入， ERDDAP將生成錯誤消息。如果“無效輸入”是您認為應該支持的字符串時間，請將其通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
+<li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">無效輸入</a>- ERDDAP嘗試處理格式不正確的輸入。如果ERDDAP無法處理輸入， ERDDAP將生成錯誤消息。如果“無效輸入”是您認為應該支持的字符串時間，請將其通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>ERDDAP如何處理時間</strong></a>
@@ -943,7 +943,7 @@ href="{0}/convert/time.txt?units=SEC%20SINCE%20Jan%202%2C%201985"
 <convertTimeNumberError>指定的數字不是有效數字。</convertTimeNumberError>
 <convertTimeNumericTimeError>該數字時間無效。</convertTimeNumericTimeError>
 <convertTimeParametersError>該參數組合無效。檢查示例並重試。</convertTimeParametersError>
-<convertTimeStringFormatError>無法識別字符串時間的格式。如果您認為它應該得到支持，請將其通過電子郵件發送至 noaa.gov 上的 bob.simons。</convertTimeStringFormatError>
+<convertTimeStringFormatError>無法識別字符串時間的格式。如果您認為它應該得到支持，請將其通過電子郵件發送至 noaa.gov 上的 erd.data。</convertTimeStringFormatError>
 <convertTimeTwoTimeError>不要同時指定 stringTime 和 isoTime 參數。</convertTimeTwoTimeError>
 <convertTimeUnitsError>單位字符串無效。</convertTimeUnitsError>
 <convertTimeNumberTooltip>一個號碼。例如，“{0}”。</convertTimeNumberTooltip>
@@ -1206,7 +1206,7 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <li>UCUM 到UDUNITS轉換器可以轉換幾乎所有區分大小寫的 UCUM 單位字符串。
 <li>對於任一方向的轉換，結果將被標準化，因為別名和輸入語法的細微變化將導致相同的輸出。例如， UDUNITS = &quot;meter per second&quot; 、 &quot;meters/second&quot; 、 &quot;ms^-1&quot;和&quot;m s-1&quot;都將返回 UCUM=&quot;ms-1&quot;。與其他別名或語法相比，標準化輸出的特定別名或語法沒有什麼特別、獨特或更好的地方，除了類似於UDUNITS軟件返回的“規範”形式。
 <li>“標準化UDUNITS ”選項適用於有效的UDUNITS字符串，並且適用於非標準/無效的UDUNITS字符串。請注意，這是一個簡單的標準化（例如， &quot;joule&quot; 、 &quot;joules&quot;和&quot;J&quot;都返回&quot;J&quot; ），而不是UDUNITS軟件提供的“規範”形式（例如，轉換所有焦耳別名為&quot;kg.m2.s-2&quot; )。
-<li>如果您認為轉換器錯誤地進行了轉換，請首先確保輸入字符串有效。如果您認為輸入字符串有效，請將詳細信息通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
+<li>如果您認為轉換器錯誤地進行了轉換，請首先確保輸入字符串有效。如果您認為輸入字符串有效，請將詳細信息通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
 <li>請參閱下面的UDUNITS和 UCUM<a rel="help" href="#syntaxComparison">語法</a>和<a rel="help" href="#unitsComparison">單位</a>的詳細比較。
 <li>免責聲明 - 與本網站相關的任何個人或組織均不作任何明示或暗示的保證，包括對適銷性和特定用途適用性的保證，或對本網站上任何信息的準確性、完整性或有用性承擔任何法律責任網站。
 </ul>
@@ -1285,8 +1285,8 @@ UDUNITS =degC%20meter-1</a>
 <ul>
 <li>始終檢查轉換器的結果。
 <li>這當前更新了一些與海洋學和大氣科學數據集相關的常見 URL。這是一個不完整的正在進行的工作，而且永遠都是，因為任務不可能很大而且不斷變化。這不是一個通用的 URL 更新系統，儘管它可以改進以覆蓋其他領域。
-<li>如果您認為轉換器做錯了什麼或沒有更新它應該擁有的 URL，請將詳細信息通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd> 。
-<li>ERDDAP管理員：您可以通過編輯messages.xml 中的&lt;updateUrls&gt;來更改轉換規則。如果您這樣做，請將詳細信息通過電子郵件發送給<kbd>bob dot simons at noaa dot gov</kbd>以便可以將更改合併到標準ERDDAP分發版中。
+<li>如果您認為轉換器做錯了什麼或沒有更新它應該擁有的 URL，請將詳細信息通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd> 。
+<li>ERDDAP管理員：您可以通過編輯messages.xml 中的&lt;updateUrls&gt;來更改轉換規則。如果您這樣做，請將詳細信息通過電子郵件發送給<kbd>erd dot data at noaa dot gov</kbd>以便可以將更改合併到標準ERDDAP分發版中。
 <li>免責聲明 - 與本網站相關的任何個人或組織均不作任何明示或暗示的保證，包括對適銷性和特定用途適用性的保證，或對本網站上任何信息的準確性、完整性或有用性承擔任何法律責任網站。
 </ul>
 
@@ -2763,7 +2763,7 @@ sst %5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0 )%5D%5B(225.0):(255.0)%5D&amp;amp;.dr
 <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst%5B(last)%5D%5B(0.0)%5D%5B(22.0):(50.0)%5D%5B(225.0):(255.0)%5D&amp;.draw=surface&amp;.vars=longitude%7Clatitude%7Csst&amp;.colorBar=Rainbow%7CC%7CLinear%7C8%7C32%7C" alt="ERDDAP：SST，混合，美國西部（實驗性，5 天復合）">
 </ol>
 <!-- ******* -->
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">接觸</a></h2>問題、意見、建議？請向<kbd>bob dot simons at noaa dot gov</kbd>發送電子郵件，並附上與您的問題或評論直接相關的ERDDAP URL。
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">接觸</a></h2>問題、意見、建議？請向<kbd>erd dot data at noaa dot gov</kbd>發送電子郵件，並附上與您的問題或評論直接相關的ERDDAP URL。
 <p>或者，您可以通過訪問<a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">加入ERDDAP Google 群組/郵件列表</a><a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap"><img 
@@ -4623,8 +4623,7 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">如何在論文中引用ERDDAP</a></strong>
 <br>如果您想在科學論文中引用ERDDAP本身，請使用類似
-<br><kbd>西蒙斯，RA ERDDAP 。
-https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亞州蒙特雷： NOAA / NMFS / SWFSC / ERD 。</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">首字母縮略詞“ ERDDAP ”代表什麼？</a></strong>
 <br>“ ERDDAP ”曾經是一個首字母縮寫詞，但它超出了最初的描述。現在，請把它當作一個名字，而不是一個首字母縮略詞。
 <br>&nbsp;
@@ -4639,7 +4638,7 @@ https://coastwatch.pfeg.noaa.gov/erddap。加利福尼亞州蒙特雷： NOAA / 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
   >多個協同工作的ERDDAP</a>以擴大規模並滿足大型數據分發中心的需求。
 </ul>
-<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">聯繫我們</a></h2>如果您對ERDDAP有一般問題、建議或意見（不是這個特定ERDDAP安裝），請發送電子郵件至<kbd>bob dot simons at noaa dot gov</kbd>並附上與您的問題或意見直接相關的ERDDAP URL。
+<h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">聯繫我們</a></h2>如果您對ERDDAP有一般問題、建議或意見（不是這個特定ERDDAP安裝），請發送電子郵件至<kbd>erd dot data at noaa dot gov</kbd>並附上與您的問題或意見直接相關的ERDDAP URL。
 <br>或者，您可以通過訪問<a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap</a><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">加入ERDDAP Google 群組/郵件列表</a><a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap"><img 
@@ -4713,7 +4712,7 @@ degrees north
 deg{north}</udunitsToUcum>
 <!-- 這是嘗試處理過時的 URL 源元數據。每次加載數據集時，updateUrls 都會應用於數據集的每個字符串元數據屬性（全局和變量）。
 updateUrls 有三行：before、after 和 blank。字符串中與“before”字符串匹配的任何內容都將轉換為“after”。空行確保其他行是“之前”和“之後”行。更改按此處的行順序應用。
-！！！僅添加您認為非常非常可靠的變化！！！注意： * 如果您認為這裡有錯誤的規則或要添加的新規則，請發送電子郵件<kbd>bob dot simons at noaa dot gov</kbd> 。
+！！！僅添加您認為非常非常可靠的變化！！！注意： * 如果您認為這裡有錯誤的規則或要添加的新規則，請發送電子郵件<kbd>erd dot data at noaa dot gov</kbd> 。
 * 上半年有戲劇性的變化。後半部分有簡單的 http 到 https 更改。
 http 到 https 的更改很重要，因為有些網站沒有重定向，即使有，某些系統（例如Java ）也不會自動遵循重定向。
 * accession.nodc 用於在 nodc 上查找元數據。很重要！ * Marinemetadata.org/cf# 用於標準名稱查找。

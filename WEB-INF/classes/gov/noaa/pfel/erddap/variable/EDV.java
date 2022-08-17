@@ -1204,8 +1204,11 @@ will show NaN).
     }
 
     public void setDestinationMax(PAOne tMax) {
-        if (tMax != null)
+        if (tMax != null) {
             destinationMax = tMax;
+            //if (destinationName.equals("wmo_platform_code"))
+            //   String2.log(">> setDestinationMax " + destinationName + " " + tMax.toString() + "\n" + MustBe.getStackTrace());
+        }
     }
 
     /** 

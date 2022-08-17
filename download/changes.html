@@ -68,17 +68,29 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
 <h2><a class="selfLink" id="changes2.19" href="#changes2.19" rel="bookmark">Changes</a> 
-in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
+in ERDDAP version 2.19 (released 2022-08-17)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
-  <li>NEW: The new server-side function, orderByDescending, works like
+  <li>NEW: There is a new server-side function, orderByDescending, which works like
     orderBy, but sorts in descending order.
     Thanks to Adam Leadbetter.
+    <br>&nbsp;
+  <li>IMPROVED: Now, graphs (but not maps) will expand to fill the available space on the canvas,
+    i.e., space not used by the legend.    
+    You can get tall graphs, square graphs, or wide graphs by adding and manipulating the 
+    <kbd>&amp;.size=<i>width</i>|<i>height</i></kbd> parameter (where width and height specify the 
+    size of the canvas, in pixels) on the request URL. (This is not an option on the
+    .graph web page. You have to add it to the URL manually.)
+    If you don't specify the &amp;.size parameter, requests for .smallPng, .png, .largePng,
+    .smallPdf, .pdf, and .large.pdf have predefined canvas sizes, so your graph
+    will expand to fill the available space, but will usually be roughly square.
+    Thanks to Bob Fleming.
+    <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
@@ -88,26 +100,38 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
     from your Tomcat 8 installation into the new [tomcat] directory.
     There are no other changes that you need to make to your ERDDAP
     installation related to this change. In other words, ERDDAP works 
-    as it did before. This transition had to be made sometime. It's better to do it
-    before Java 8's end-of-life gets close.
-    <p>My impression of Java 17 is that it works slightly slower
+    as it did before. 
+    <p>My impression of Java 17 is that it prefers more processing power and memory 
+    for long-running, larger applications like ERDDAP, so it works slightly slower
     than Java 8 with low power computers (e.g., 2 cores and minimal RAM) 
     and works slightly faster than Java 8 with higher power computers
-    (e.g., 4+ cores and plentiful RAM) for long-running, larger applications like ERDDAP. 
-    YMMV.
+    (e.g., 4+ cores and plentiful RAM). 
+    So if you see poor performance, use programs like Linux's 
+    <a rel="bookmark" href="https://www.howtogeek.com/668986/how-to-use-the-linux-top-command-and-understand-its-output/">top<img 
+      src="../images/external.png" alt=" (external link)" 
+      title="This link to an external website does not constitute an endorsement."></a>     
+    to check resource usage and consider giving ERDDAP more resources.
+    Thanks to Erin Turnbull.
+    <br>&nbsp;
+  <li>TO DO: If you use ERDDAP to access Cassandra, you need to keep using the version
+    of Java that you were using for running the Cassandra. 
   <li>TO DO: Recommended: If your server's CPU has 4+ cores, consider changing to these settings in your datasets.xml file:<kbd>
       <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
       <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
     <br>The nThreads systems for EDDGridFromFiles and EDDTableFromFiles were significantly improved. 
     These changes led to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
     for the most challenging requests (when a large number of files must be processed to gather the results).
-    Some related changes will also lead to a general speedup throughout ERDDAP.
+    Some related changes from Chris John will also lead to a general speedup throughout ERDDAP.
     The code for these changes was contributed by Chris John. Thank you, Chris!
-  <li>NEW: Now, if the data in a cell is a standard base64 encoded png (which starts with "data:image/png;base64,") 
+    <br>&nbsp;
+  <li>NEW: Now, for .htmlTable data responses, 
+    if the data in a String cell contains <kbd>data:image/png;base64,</kbd> followed by a base64 encoded .png image,
+    ERDDAP will display an icon (so the user can see the image if they hover over it)
+    and buttons to save the text or the image to the clipboard.    
     Thanks to Marco Alba (who contributed the code) and Bob Simons (who modified it slightly).
     <br>&nbsp;
-  <li>NEW: -doNotAddStandardNames --
-        If you include <kbd>-doNotAddStandardNames</kbd>
+  <li>NEW: -doNotAddStandardNames 
+    <br>If you include <kbd>-doNotAddStandardNames</kbd>
         as a command line parameter when you run generateDatasetsXml, 
         generateDatasetsXml will not add <kbd>standard_name</kbd> to the <kbd>addAttributes</kbd>
         for any variables other than variables named <kbd>latitude, longitude, altitude, depth</kbd> or 
@@ -120,25 +144,49 @@ in ERDDAP version 2.19 (released 2022-0x-xx)</h2>
         is often used for other purposes, e.g., to create a new long_name,
         and to create the colorBar settings.
         Thanks to Kevin O'Brien.
+    <br>&nbsp;
   <li>NEW: You can now put <kbd>&lt;updateMaxEvents&gt;10&lt;/updateMaxEvents&gt;</kbd>
     in datasets.xml (in with the other settings near the top) to change the maximum
     number of file changes (default=10) that will be processed by the updateEveryNMillis system.
-    A larger number may be useful for dataset where it is very important that they
-    be kept always up-to-date.
+    A larger number (100?) may be useful when it is very important that the dataset be kept always up-to-date.
     See the <a rel="help" 
         href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateMaxEvents"
         >updateMaxEvents documentation</a>.
     Thanks to John Maurer.
+    <br>&nbsp;
+  <li>NEW: Added support for global "real_time=true|false" String attribute.
+    <br>If this is <kbd>false</kbd> (the default) and if the dataset doesn't use <kbd>updateEveryNMillis</kbd>,
+      ERDDAP will cache responses to requests 
+      for file types where the entire file must be created
+      before ERDDAP can begin to send the response to the user and reuse them for 
+      up to about 15 minutes (e.g., .nc, .png).
+    <br>If this is set to <kbd>true</kbd> or if the dataset does use <kbd>updateEveryNMillis</kbd>, 
+      ERDDAP will never cache the response files 
+      and will always return newly created files.
+    <br>Thanks to John Maurer.
+    <br>&nbsp;
+
+  <li>IMPROVED: Now, when ERDDAP is restarted and quickRestart=true, EDDTableFromFiles datasets will reuse
+    subset.nc and distinct.nc. For some datasets, this greatly decreases the
+    time to load the dataset (e.g., from 60 seconds to 0.3s).
+    Thanks to Ben Adams and John Kerfoot.
+    <br>&nbsp;
+
   <li>KNOWN BUG in netcdf-java v5.5.2 and v5.5.3: The EDDGridFromThreddsCatalog option in GenerateDatasetsXml 
     used to work for THREDDS catalogs that include references to datasets in remote
     THREDDS catalogs. Now it doesn't. I have reported the problem to the netcdf-java developers.
+    <br>&nbsp;
+
   <li>BUG FIX: For Docker users setting setup.xml parameters via ERDDAP_<i>paramName</i>: 
     for int and boolean parameters (e.g., emailSmtpPort), ERDDAP was incorrectly looking for just <i>paramName</i>.
     Now it looks for <i>ERDDAP_paramName</i>.
     Thanks to Alessandro De Donno.
+    <br>&nbsp;
+
   <li>CHANGE: The ERDDAP testing system now uses an automated system to check that 
     newly created test images are exactly as expected. Thanks to Chris John for the suggestion
     and Bob Simons for the implementation.
+    <br>&nbsp;
   </ul>
 </ul>
 
@@ -717,7 +765,7 @@ in ERDDAP version 2.10 (released 2020-11-05)</h2>
         <a rel="help" href="https://coastwatch.pfeg.noaa.gov/xtracto">Xtractomatic</a> 
         script originally created by Dave Foley, but offers the advantage
         of processing up to 100 points per request.
-        Thanks to Dave Foley and Jordan Watson (NFMS).
+        Thanks to Dave Foley and Jordan Watson (NMFS).
     <br>&nbsp;
 
   <li>IMPROVED: Advanced Search is now strict for non-.html requests. 
@@ -1846,7 +1894,7 @@ in ERDDAP version 2.00 (released 2019-06-26)</h2>
 
   <li>EDDTableFromThreddsFiles and EDDTableFromHyraxFiles are now deprecated.
     Please switch to EDDTableFromNcFiles (or a variant) plus &lt;cacheFromUrl&gt;.
-    If that doesn't work for some reason, email bob.simons at noaa.gov.
+    If that doesn't work for some reason, email erd.data at noaa.gov.
     If there are no complaints before 2020, these dataset types may be removed.
     <br>&nbsp;
 
@@ -2240,7 +2288,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
       into your setup.xml and modify it to customize your ERDDAP so that 
       ERDDAP's web pages reflect your organization, not NOAA ERD.
       Notably, please change the "Brought to you by" to your organization(s).
-      If you need help, please email bob.simons at noaa.gov.
+      If you need help, please email erd.data at noaa.gov.
       (If you don't want to customize your ERDDAP now, use the default &lt;startBodyHtml5&gt;.)
       <p>Then delete the 3 old tags in your setup.xml which are no longer used.
       
@@ -2453,7 +2501,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         >update out-of-date URLs</a> both in GenerateDatasetsXml and when loading datasets.
         If you have suggestions for additional URLs that should be caught and updated, 
         or if you think this should be turned into a service (like the Converters),
-        please email bob.simons at noaa.gov.    
+        please email erd.data at noaa.gov.    
       <li>NEW: Now, if GenerateDatasetsXml sees a CF standard_name (which should be 
         all lowercase) with an uppercase character,
         it adds the all lowercase version to &lt;addAttributes&gt;.
@@ -2465,7 +2513,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
         the ISO 8601 formatted time to &lt;addAttributes&gt;.
         If ERDDAP doesn't recognize the format, it leaves the time value unchanged.
         If you see a format that ERDDAP doesn't recognize and fix, 
-        please email it to bob.simons at noaa.gov.
+        please email it to erd.data at noaa.gov.
       <li>IMPROVED: The low level code for the EDDGridFromThreddsCatalog option
         in GenerateDatasetsXml now relies on the Unidata netcdf-java catalog crawler code 
         (thredds.catalog classes) so that it can handle all THREDDS catalogs
@@ -2523,7 +2571,7 @@ in ERDDAP version 1.82 (released 2018-01-26)</h2>
     ERDDAP changes it to the ISO 8601 formatted time.
     If ERDDAP doesn't recognize the format, it leaves the time value unchanged.
     If you see a format that ERDDAP doesn't recognize and fix, 
-    please email it to bob.simons at noaa.gov.
+    please email it to erd.data at noaa.gov.
   <li>IMPROVED: .dods responses from EDDGrid datasets should now be significantly faster. 
     Thanks to Rich Signell.
   <li>Changes related to ERDDAP's creation of ISO 19115 documents:
@@ -3195,7 +3243,7 @@ in ERDDAP version 1.74 (released 2016-10-07)</h2>
     >Public Access to Research Results (PARR) requirements</a>
   by making the data available via a web service.
   This is a solution that could be used right now.
-  (bob.simons at noaa.gov is happy to help.)
+  (erd.data at noaa.gov is happy to help.)
   <br>See 
   <a rel="help" 
   href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromInPort"
@@ -3369,7 +3417,7 @@ in ERDDAP version 1.72 (released 2016-05-12)</h2>
     of the deprecated NetcdfFileWriteable. There should be no discernable change
     to the resulting files. This opens up the possibility of making
     big .nc files that use the .nc3 64bit extensions. If you want/need that,
-    please send a request to bob.simons at noaa.gov .
+    please send a request to erd.data at noaa.gov .
   <li>IMPROVED: Many of the links to remote websites were out-of-date.
     Now they are up-to-date and use https: instead of http: whenever possible.
   <li>Many small changes.
@@ -3649,7 +3697,7 @@ number so that the local dataset stays reasonably up-to-date. --&gt;
     GenerateDatasetsXml for EDDTableFromCassandra no longer detects columns with indexes;
     if an index is simple, you need to specify it in datasets.xml by hand.
     If you need support for more complex indexes or other new features,
-    please email bob.simons at noaa.gov .
+    please email erd.data at noaa.gov .
     <br>!!! If you still use Cassandra 2.x, please continue to use ERDDAP v1.68
     until you upgrade to using Cassandra 3.x.
   <li>Jars and the Classpath -- 
@@ -5214,7 +5262,7 @@ in ERDDAP version 1.38 (released 2012-04-21)</h2>
     (e.g., German, French).
     The messages now often use MessageFormat for formatting, also to aid
     in making translations.  If you are interested in doing a translation,
-    please email bob dot simons at noaa dot gov .
+    please email erd dot data at noaa dot gov .
 
   <li>Sample datasets.xml -- There were several small but significant errors in the
     sample datasets.xml. If you use those datasets, please get the newer versions
@@ -5601,7 +5649,7 @@ in ERDDAP version 1.30 (released 2011-04-29)</h2>
     It will have a list of datasets that didn't load (at the top) and the reason they didn't
     load (near the bottom).  
 
-  <li>If you get stuck or have other questions, email the details to me: bob.simons at noaa.gov.
+  <li>If you get stuck or have other questions, email the details to me: erd.data at noaa.gov.
 
   <li>Programmers -- If you write Java programs that run ERDDAP code, you need to
     change some of the command line parameter references:
@@ -5944,7 +5992,7 @@ and these references to the Disclaimers and Privacy Policy. --&gt;
 ERDDAP, Version &amp;erddapVersion;
 &lt;br&gt;&lt;font class="subduedColor"&gt;Questions, comments, 
   suggestions?  Please send an email to 
-  &lt;tt&gt;bob dot simons at noaa dot gov&lt;/tt&gt;
+  &lt;tt&gt;erd dot data at noaa dot gov&lt;/tt&gt;
 &lt;br&gt;and include the ERDDAP URL directly related to your question
   or comment.
 &lt;br&gt;
@@ -6770,7 +6818,7 @@ in ERDDAP version 1.08 (released 2008-07-13)</h2>
 <hr>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 Questions, comments, suggestions?  Please send an email to 
-  <kbd>bob dot simons at noaa dot gov</kbd>
+  <kbd>erd dot data at noaa dot gov</kbd>
 and include the ERDDAP URL directly related to your question or comment.
 
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Or,
@@ -6785,7 +6833,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.17
+<p>ERDDAP, Version 2.19
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

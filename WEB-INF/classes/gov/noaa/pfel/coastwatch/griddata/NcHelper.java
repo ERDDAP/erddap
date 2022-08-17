@@ -2956,7 +2956,7 @@ String2.log(pas13.toString());
                 if (!msg.equals(
                     "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
                     "may not exceed 2147483647"))
-                    Test.knownProblem("netcdf-java 5.4.1 now allows creation of nc3 files >2GB!\n" +
+                    Test.knownProblem("netcdf-java 5.4.1+ allows creation of nc3 files >2GB!\n" +
                         "I reported this to Sean Arms 2021-01-06.", t);
             } finally {
                 File2.delete(fullName);
