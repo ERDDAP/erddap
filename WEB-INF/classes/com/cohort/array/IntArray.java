@@ -1535,6 +1535,17 @@ public class IntArray extends PrimitiveArray {
         Test.ensureEqual(anArray.toString(),         "-2147483648, -1, 0, 2147483646, 2147483647, 2147483647, 2147483647", "");
         Test.ensureEqual(anArray.toNccsvAttString(), "-2147483648i,-1i,0i,2147483646i,2147483647i,2147483647i,2147483647i", "");
 
+        //test speed
+        long time = System.currentTimeMillis();
+        for (int j = 0; j < 2; j++) {  //20 is >1 minute so good for Java Flight Recorder
+            String2.log("j=" + j);
+            anArray = new IntArray(); 
+            for (int i = 0; i < 500000000; i++) { //500*10^6 is close to max size of 2GB
+                anArray.add(i);
+            }
+        }
+        String2.log("add time=" + (System.currentTimeMillis() - time));
+
         //** test default constructor and many of the methods
         anArray = new IntArray();
         Test.ensureEqual(anArray.isIntegerType(), true, "");
@@ -1573,6 +1584,7 @@ public class IntArray extends PrimitiveArray {
         Test.ensureEqual(anArray.elementType(), PAType.INT, "");
         int tArray[] = anArray.toArray();
         Test.ensureEqual(tArray, new int[]{2000000000}, "");
+
 
         //intentional errors
         try {anArray.get(1);              throw new Throwable("It should have failed.");

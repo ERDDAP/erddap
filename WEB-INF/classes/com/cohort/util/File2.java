@@ -1921,7 +1921,7 @@ public class File2 {
     /**
      * This returns a temporary directory 
      * (with forward slashes and a trailing slash, 
-     * e.g., c:/Users/Bob.Simons/AppData/Local/Temp/).
+     * e.g., c:/Users/erd.data/AppData/Local/Temp/).
      *
      * @return the temporary directory 
      * @throws Exception if trouble

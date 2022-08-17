@@ -68,7 +68,7 @@ Então, ERDDAP irá adicionar todos os
 <br>à lista de variáveis solicitadas.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Se você tiver sugestões de links adicionais, entre em contato com <kbd>bob dot simons at noaa dot gov</kbd> .
+Se você tiver sugestões de links adicionais, entre em contato com <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -411,7 +411,7 @@ Este serviço inclui acrônimos que de forma bastante confiável (&gt; 95% de co
 Este serviço não inclui acrônimos que normalmente se expandem para mais de um nome completo (por exemplo, SAF, que pode ser expandido para Synthetic Aperture Focusing ou Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Sugestões?</a> A lista de siglas deste serviço não está completa.
-Se você quiser adicionar um acrônimo comum ou fazer uma correção, envie-o por e-mail para <kbd>bob dot simons at noaa dot gov</kbd> .
+Se você quiser adicionar um acrônimo comum ou fazer uma correção, envie-o por e-mail para <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -474,7 +474,7 @@ Este serviço inclui alguns nomes de variáveis comumente usados que de forma ba
 O serviço inclui apenas o nome completo mais comum relacionado a um determinado nome de variável (por exemplo, SST se expande aqui para Sea Surface Temperature, não para Surface Skin Temperature da superfície do mar).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Sugestões?</a> A lista de nomes de variáveis deste serviço não está completa.
-Se você deseja adicionar um nome de variável comumente usado ou fazer uma correção, envie-o por e-mail para <kbd>bob dot simons at noaa dot gov</kbd> .
+Se você deseja adicionar um nome de variável comumente usado ou fazer uma correção, envie-o por e-mail para <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -636,7 +636,7 @@ Especifique uma lista separada por vírgulas de <kbd>datasetID / variableName / 
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Notas:</strong></a>
 <ul>
 <li>Sempre verifique os resultados dos conversores.
-<br>Se você acha que o conversor deu um resultado incorreto, envie um e-mail com os detalhes para <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Se você acha que o conversor deu um resultado incorreto, envie um e-mail com os detalhes para <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ISENÇÃO DE RESPONSABILIDADE
 <br>Nenhuma pessoa ou organização associada a este site oferece qualquer garantia, expressa ou implícita, incluindo garantias de comercialização e adequação a um propósito específico, ou assume qualquer responsabilidade legal pela precisão, integridade ou utilidade de qualquer informação neste site.
@@ -751,7 +751,7 @@ Se esta não for a abordagem correta para um determinado conjunto de dados, em a
 <br>Se os métodos ou opções oferecidos por este conversor não forem adequados para seus objetivos ou não forem o que você deseja, não os use.
 Em vez disso, você pode fazer isso sozinho, do seu jeito:
 baixe subconjuntos do conjunto de dados e aplique seu próprio algoritmo.
-Para solicitar que outros algoritmos de interpolação sejam adicionados a este conversor, envie um e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+Para solicitar que outros algoritmos de interpolação sejam adicionados a este conversor, envie um e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Administradores ERDDAP :
 <br>Você pode alterar o CSV de solicitação padrão adicionando / editando a tag &lt;convertInterpolateRequestCSVExample&gt; em datasets.xml .
@@ -835,7 +835,7 @@ Outros são apropriados apenas em certas circunstâncias.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">ISENÇÃO DE RESPONSABILIDADE</a></strong> - Nenhuma pessoa ou organização associada a este site oferece qualquer garantia, expressa ou implícita, incluindo garantias de comercialização e adequação a uma finalidade específica, ou assume qualquer responsabilidade legal pela precisão, integridade ou utilidade de qualquer informação neste local na rede Internet.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Correções</a></strong> - envie por e-mail quaisquer correções sugeridas para <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Correções</a></strong> - envie por e-mail quaisquer correções sugeridas para <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -924,7 +924,7 @@ Ao representar tempos como Strings, este conversor formata tempos em segundos (t
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Entrada inválida</a> - ERDDAP tenta lidar com a entrada formatada incorretamente.
 Se ERDDAP não puder lidar com a entrada, o ERDDAP gerará uma mensagem de erro.
-Se a &quot;entrada inválida&quot; for um tempo de string que você acha que deveria ser suportado, envie por e-mail para <kbd>bob dot simons at noaa dot gov</kbd> .
+Se a &quot;entrada inválida&quot; for um tempo de string que você acha que deveria ser suportado, envie por e-mail para <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Como ERDDAP lida com o tempo</strong></a>
@@ -1203,7 +1203,7 @@ Existem
 <convertTimeNumberError>O número especificado não é um número válido.</convertTimeNumberError>
 <convertTimeNumericTimeError>Esse tempo numérico não é válido.</convertTimeNumericTimeError>
 <convertTimeParametersError>Essa combinação de parâmetros não é válida. Verifique os exemplos e tente novamente.</convertTimeParametersError>
-<convertTimeStringFormatError>O formato da hora da string não é reconhecido. Se você acha que ele deve ser suportado, envie um e-mail para bob.simons em noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>O formato da hora da string não é reconhecido. Se você acha que ele deve ser suportado, envie um e-mail para erd.data em noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Não especifique os parâmetros stringTime e isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>A sequência de unidades é inválida.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Um número. Por exemplo, &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1521,7 +1521,7 @@ Não há nada de especial, único ou melhor sobre os apelidos específicos ou si
 <li>A opção &quot;Padronizar UDUNITS&quot; funciona bem para strings UDUNITS válidas e razoavelmente bem para strings UDUNITS não padrão / inválidas.
 Observe que esta é uma padronização simples (por exemplo, &quot;joule&quot;, &quot;joules&quot; e &quot;J&quot; retornam &quot;J&quot; ) em oposição à forma &quot;canônica&quot; oferecida pelo software UDUNITS (que, por exemplo, converte todos os os aliases de joule para &quot;kg.m2.s-2&quot; ).
 <li>Se você acha que um conversor fez uma conversão incorreta, primeiro certifique-se de que a string de entrada é válida.
-Se você acha que a string de entrada é válida, envie um e-mail com os detalhes para <kbd>bob dot simons at noaa dot gov</kbd> .
+Se você acha que a string de entrada é válida, envie um e-mail com os detalhes para <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Veja a comparação detalhada de UDUNITS e
 <a rel="help" href="#syntaxComparison">sintaxe</a> e
 <a rel="help" href="#unitsComparison">unidades</a> UCUM abaixo.
@@ -1619,10 +1619,10 @@ A saída será igual à entrada, mas com URLs atualizados.
 <li>Atualmente, isso atualiza alguns URLs comuns associados a conjuntos de dados de ciências oceanográficas e atmosféricas.
 É um trabalho em andamento incompleto e sempre será, porque a tarefa é impossível grande e está sempre mudando.
 Este não é um sistema de atualização de URL de propósito geral, embora possa ser melhorado para cobrir outros domínios.
-<li>Se você acha que o conversor fez algo incorreto ou não atualizou um URL que deveria, envie um e-mail com os detalhes para <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Se você acha que o conversor fez algo incorreto ou não atualizou um URL que deveria, envie um e-mail com os detalhes para <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Administradores ERDDAP :
 você pode alterar as regras de conversão editando &lt;updateUrls&gt; em messages.xml.
-Em caso afirmativo, envie um e-mail com os detalhes para <kbd>bob dot simons at noaa dot gov</kbd> para que as alterações possam ser incorporadas à distribuição ERDDAP padrão.
+Em caso afirmativo, envie um e-mail com os detalhes para <kbd>erd dot data at noaa dot gov</kbd> para que as alterações possam ser incorporadas à distribuição ERDDAP padrão.
 <li>ISENÇÃO DE RESPONSABILIDADE - Nenhuma pessoa ou organização associada a este site oferece qualquer garantia, expressa ou implícita, incluindo garantias de comercialização e adequação a uma finalidade específica, ou assume qualquer responsabilidade legal pela precisão, integridade ou utilidade de qualquer informação neste local na rede Internet.
 </ul>
 
@@ -3379,7 +3379,7 @@ SST, Blended, West US (Experimental, 5 dias composto)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contato</a></h2>
 Dúvidas, comentários, sugestões?
-Envie um e-mail para <kbd>bob dot simons at noaa dot gov</kbd> e inclua o URL ERDDAP diretamente relacionado à sua pergunta ou comentário.
+Envie um e-mail para <kbd>erd dot data at noaa dot gov</kbd> e inclua o URL ERDDAP diretamente relacionado à sua pergunta ou comentário.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou você pode ingressar no Grupo do Google ERDDAP / Lista</a> de e-mails visitando
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5736,11 +5736,7 @@ Se os metadados do conjunto de dados incluem um
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Como ERDDAP em um artigo</a></strong>
 <br>Se você quiser citar o próprio ERDDAP em um artigo científico, use algo como
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">O que significa a sigla &quot;ERDDAP&quot;?</a></strong>
 <br>&quot;ERDDAP&quot; costumava ser um acrônimo, mas superou essa descrição original.
 Agora, por favor, pense nisso como um nome, não um acrônimo.
@@ -5761,7 +5757,7 @@ Assim, as pessoas terão outra maneira de acessar seus dados e poderão fazer o 
   >vários ERDDAP que funcionam juntos</a> para aumentar a escala e atender às necessidades de um grande centro de distribuição de dados.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contate-nos</a></h2>
-Se você tiver dúvidas, sugestões ou comentários sobre ERDDAP em geral (não esta instalação específica do ERDDAP ), envie um e-mail para <kbd>bob dot simons at noaa dot gov</kbd> e inclua o URL do ERDDAP diretamente relacionado à sua pergunta ou comentário.
+Se você tiver dúvidas, sugestões ou comentários sobre ERDDAP em geral (não esta instalação específica do ERDDAP ), envie um e-mail para <kbd>erd dot data at noaa dot gov</kbd> e inclua o URL do ERDDAP diretamente relacionado à sua pergunta ou comentário.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Ou você pode participar do Grupo/Lista de e- ERDDAP do Google</a> visitando
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5843,7 +5839,7 @@ Qualquer conteúdo na string correspondente a uma string &#39;antes&#39; será c
 As linhas em branco garantem que as outras linhas sejam &#39;antes&#39; e &#39;depois&#39;.
 As alterações são aplicadas na ordem das linhas aqui.
 !!! SÓ ADICIONE PARES QUE VOCÊ CONSIDERAR MUDANÇAS MUITO, MUITO CONFIÁVEIS !!! Notas:
-* Se você acha que há regras aqui que estão erradas ou novas regras a serem adicionadas, envie um e-mail <kbd>bob dot simons at noaa dot gov</kbd> .
+* Se você acha que há regras aqui que estão erradas ou novas regras a serem adicionadas, envie um e-mail <kbd>erd dot data at noaa dot gov</kbd> .
 * A primeira metade teve mudanças dramáticas.
 A segunda metade tem mudanças simples de http para https.
 As mudanças de http para https são importantes porque alguns sites não têm redirecionamentos e, mesmo que tenham, alguns sistemas (por exemplo, Java ) não seguem automaticamente os redirecionamentos.

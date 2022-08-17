@@ -69,7 +69,7 @@ Sau đó, ERDDAP sẽ thêm tất cả
 <br>vào danh sách các biến được yêu cầu.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Nếu bạn có đề xuất về các liên kết bổ sung, hãy liên hệ với <kbd>bob dot simons at noaa dot gov</kbd> .
+Nếu bạn có đề xuất về các liên kết bổ sung, hãy liên hệ với <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -418,7 +418,7 @@ Dịch vụ này không bao gồm các từ viết tắt thường mở rộng t
 SAF, có thể được mở rộng thành Synthetic Aperture Focusing hoặc Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Gợi ý?</a> Danh sách từ viết tắt của dịch vụ này chưa hoàn chỉnh.
-Nếu bạn muốn thêm một từ viết tắt phổ biến hoặc sửa chữa, vui lòng gửi email đó đến <kbd>bob dot simons at noaa dot gov</kbd> .
+Nếu bạn muốn thêm một từ viết tắt phổ biến hoặc sửa chữa, vui lòng gửi email đó đến <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -484,7 +484,7 @@ Dịch vụ chỉ bao gồm tên đầy đủ phổ biến nhất liên quan đ�
 SST mở rộng ở đây thành Sea Surface Temperature, không phải Nhiệt độ Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Gợi ý?</a> Danh sách tên biến của dịch vụ này chưa hoàn chỉnh.
-Nếu bạn muốn thêm tên biến thường được sử dụng hoặc sửa chữa, vui lòng gửi email đến <kbd>bob dot simons at noaa dot gov</kbd> .
+Nếu bạn muốn thêm tên biến thường được sử dụng hoặc sửa chữa, vui lòng gửi email đến <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -655,7 +655,7 @@ Vui lòng chỉ định danh sách được phân tách bằng dấu phẩy gồ
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Ghi chú:</strong></a>
 <ul>
 <li>Luôn kiểm tra kết quả từ các bộ chuyển đổi.
-<br>Nếu bạn cho rằng bộ chuyển đổi đưa ra kết quả không chính xác, vui lòng gửi email thông tin chi tiết tới <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Nếu bạn cho rằng bộ chuyển đổi đưa ra kết quả không chính xác, vui lòng gửi email thông tin chi tiết tới <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>TỪ CHỐI TRÁCH NHIỆM PHÁP LÝ
 <br>Không có cá nhân hoặc tổ chức nào liên kết với trang web này đưa ra bất kỳ bảo đảm nào, rõ ràng hay ngụ ý, bao gồm bảo đảm về khả năng bán được và tính phù hợp cho một mục đích cụ thể, hoặc chịu bất kỳ trách nhiệm pháp lý nào về tính chính xác, đầy đủ hoặc hữu ích của bất kỳ thông tin nào tại trang web này.
@@ -771,7 +771,7 @@ Nếu đây không phải là cách tiếp cận chính xác cho một tập d�
 <br>Nếu các phương pháp hoặc tùy chọn được cung cấp bởi trình chuyển đổi này không phù hợp với mục đích của bạn hoặc không phải là những gì bạn muốn, đừng sử dụng chúng.
 Thay vào đó, bạn có thể tự làm theo cách của riêng mình:
 tải xuống các tập hợp con của tập dữ liệu và áp dụng thuật toán của riêng bạn.
-Để yêu cầu thêm các thuật toán nội suy khác vào bộ chuyển đổi này, vui lòng gửi email cho <kbd>bob dot simons at noaa dot gov</kbd> .
+Để yêu cầu thêm các thuật toán nội suy khác vào bộ chuyển đổi này, vui lòng gửi email cho <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>Quản trị viên ERDDAP :
 <br>Bạn có thể thay đổi CSV Yêu cầu mặc định bằng cách thêm / chỉnh sửa thẻ &lt;convertInterpolateRequestCSVExample&gt; trong datasets.xml .
@@ -857,7 +857,7 @@ Những người khác chỉ thích hợp trong những hoàn cảnh nhất đ�
 <br>&nbsp;
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">TỪ CHỐI TRÁCH NHIỆM TRÁCH NHIỆM PHÁP LÝ</a></strong> - Không cá nhân hoặc tổ chức nào liên kết với trang web này đưa ra bất kỳ bảo đảm nào, rõ ràng hay ngụ ý, bao gồm bảo đảm về khả năng bán được và tính phù hợp cho một mục đích cụ thể, hoặc chịu bất kỳ trách nhiệm pháp lý nào về tính chính xác, đầy đủ hoặc hữu ích của bất kỳ thông tin nào tại đây trang mạng.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Sửa chữa</a></strong> - Vui lòng gửi email cho mọi sửa đổi được đề xuất tới <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Sửa chữa</a></strong> - Vui lòng gửi email cho mọi sửa đổi được đề xuất tới <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -952,7 +952,7 @@ Khi biểu diễn thời gian dưới dạng Chuỗi, trình chuyển đổi nà
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Đầu vào không hợp lệ</a> - ERDDAP cố gắng xử lý với đầu vào được định dạng không đúng.
 Nếu ERDDAP không thể xử lý đầu vào, ERDDAP sẽ tạo ra một thông báo lỗi.
-Nếu &quot;đầu vào không hợp lệ&quot; là chuỗi thời gian mà bạn nghĩ cần được hỗ trợ, vui lòng gửi email đến <kbd>bob dot simons at noaa dot gov</kbd> .
+Nếu &quot;đầu vào không hợp lệ&quot; là chuỗi thời gian mà bạn nghĩ cần được hỗ trợ, vui lòng gửi email đến <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Cách ERDDAP dịch với thời gian</strong></a>
@@ -1250,7 +1250,7 @@ Có những
 <convertTimeNumberError>Số được chỉ định không phải là số hợp lệ.</convertTimeNumberError>
 <convertTimeNumericTimeError>Giờ số đó không hợp lệ.</convertTimeNumericTimeError>
 <convertTimeParametersError>Sự kết hợp của các tham số không hợp lệ. Kiểm tra các ví dụ và thử lại.</convertTimeParametersError>
-<convertTimeStringFormatError>Định dạng của chuỗi thời gian không được nhận dạng. Nếu bạn nghĩ rằng nó cần được hỗ trợ, vui lòng gửi email cho bob.simons tại noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Định dạng của chuỗi thời gian không được nhận dạng. Nếu bạn nghĩ rằng nó cần được hỗ trợ, vui lòng gửi email cho erd.data tại noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Không chỉ định cả tham số stringTime và isoTime.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Chuỗi đơn vị không hợp lệ.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Một số. Ví dụ: &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1590,7 +1590,7 @@ Lưu ý rằng đây là dạng chuẩn hóa đơn giản (ví dụ:
 &quot;joule&quot;, &quot;joules&quot; và &quot;J&quot; đều trả về &quot;J&quot; ) trái ngược với dạng &quot;chuẩn&quot; do phần mềm UDUNITS cung cấp (ví dụ:
 chuyển đổi tất cả bí danh joule thành &quot;kg.m2.s-2&quot; ).
 <li>Nếu bạn cho rằng trình chuyển đổi đã thực hiện chuyển đổi không chính xác, trước tiên hãy đảm bảo rằng chuỗi đầu vào là hợp lệ.
-Nếu bạn cho rằng chuỗi nhập là hợp lệ, vui lòng gửi email thông tin chi tiết tới <kbd>bob dot simons at noaa dot gov</kbd> .
+Nếu bạn cho rằng chuỗi nhập là hợp lệ, vui lòng gửi email thông tin chi tiết tới <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Xem so sánh chi tiết về
 <a rel="help" href="#syntaxComparison">cú pháp</a> và
 <a rel="help" href="#unitsComparison">đơn vị</a> của UDUNITS và UCUM bên dưới.
@@ -1693,10 +1693,10 @@ Dịch vụ này là một nỗ lực để giải quyết vấn đề.
 <li>Điều này hiện cập nhật một số URL phổ biến liên quan đến bộ dữ liệu khoa học khí quyển và hải dương học.
 Đó là một công việc đang tiến hành chưa hoàn thành và sẽ luôn như vậy, bởi vì nhiệm vụ là không thể lớn và luôn thay đổi.
 Đây không phải là hệ thống cập nhật URL cho mục đích chung, mặc dù nó có thể được cải thiện để bao gồm các lĩnh vực khác.
-<li>Nếu bạn cho rằng trình chuyển đổi đã làm điều gì đó không chính xác hoặc không cập nhật URL mà nó phải có, vui lòng gửi email thông tin chi tiết đến <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Nếu bạn cho rằng trình chuyển đổi đã làm điều gì đó không chính xác hoặc không cập nhật URL mà nó phải có, vui lòng gửi email thông tin chi tiết đến <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Quản trị viên ERDDAP :
 bạn có thể thay đổi các quy tắc chuyển đổi bằng cách chỉnh sửa &lt;updateUrls&gt; trong messages.xml.
-Nếu bạn làm vậy, vui lòng gửi email thông tin chi tiết tới <kbd>bob dot simons at noaa dot gov</kbd> để các thay đổi có thể được kết hợp vào bản phân phối ERDDAP tiêu chuẩn.
+Nếu bạn làm vậy, vui lòng gửi email thông tin chi tiết tới <kbd>erd dot data at noaa dot gov</kbd> để các thay đổi có thể được kết hợp vào bản phân phối ERDDAP tiêu chuẩn.
 <li>TỪ CHỐI TRÁCH NHIỆM TRÁCH NHIỆM PHÁP LÝ - Không cá nhân hoặc tổ chức nào liên kết với trang web này đưa ra bất kỳ bảo đảm nào, rõ ràng hay ngụ ý, bao gồm bảo đảm về khả năng bán được và tính phù hợp cho một mục đích cụ thể, hoặc chịu bất kỳ trách nhiệm pháp lý nào về tính chính xác, đầy đủ hoặc hữu ích của bất kỳ thông tin nào tại đây trang mạng.
 </ul>
 
@@ -3512,7 +3512,7 @@ SST, Hỗn hợp, Tây Hoa Kỳ (Thử nghiệm, Kết hợp 5 ngày)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Tiếp xúc</a></h2>
 Câu hỏi, nhận xét, đề xuất?
-Vui lòng gửi email tới <kbd>bob dot simons at noaa dot gov</kbd> và bao gồm URL ERDDAP liên quan trực tiếp đến câu hỏi hoặc nhận xét của bạn.
+Vui lòng gửi email tới <kbd>erd dot data at noaa dot gov</kbd> và bao gồm URL ERDDAP liên quan trực tiếp đến câu hỏi hoặc nhận xét của bạn.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Hoặc, bạn có thể tham gia Nhóm ERDDAP Google / Danh sách gửi thư</a> bằng cách truy cập
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5925,11 +5925,7 @@ Nếu siêu dữ liệu của tập dữ liệu bao gồm
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Cách trích dẫn ERDDAP trên giấy</a></strong>
 <br>Nếu bạn muốn trích dẫn chính ERDDAP trong một bài báo khoa học, vui lòng sử dụng một cái gì đó như
-<br><kbd>Simons, RA năm 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Từ viết tắt&quot; ERDDAP &quot;là viết tắt của gì?</a></strong>
 <br>&quot; ERDDAP &quot;từng là một từ viết tắt, nhưng nó lớn hơn mô tả ban đầu đó.
 Bây giờ, xin vui lòng chỉ nghĩ về nó như một cái tên, không phải một từ viết tắt.
@@ -5950,7 +5946,7 @@ Sau đó, mọi người sẽ có một cách khác để truy cập dữ liệu
   >nhiều ERDDAP hoạt động cùng nhau</a> để mở rộng quy mô và đáp ứng nhu cầu của một trung tâm phân phối dữ liệu lớn.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Liên hệ chúng tôi</a></h2>
-Nếu bạn có câu hỏi, đề xuất hoặc nhận xét về ERDDAP nói chung (không phải cài đặt ERDDAP cụ thể này), vui lòng gửi email tới <kbd>bob dot simons at noaa dot gov</kbd> và bao gồm URL ERDDAP liên quan trực tiếp đến câu hỏi hoặc nhận xét của bạn.
+Nếu bạn có câu hỏi, đề xuất hoặc nhận xét về ERDDAP nói chung (không phải cài đặt ERDDAP cụ thể này), vui lòng gửi email tới <kbd>erd dot data at noaa dot gov</kbd> và bao gồm URL ERDDAP liên quan trực tiếp đến câu hỏi hoặc nhận xét của bạn.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Hoặc, bạn có thể tham gia Nhóm ERDDAP Google / Danh sách gửi thư</a> bằng cách truy cập
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -6032,7 +6028,7 @@ Bất kỳ nội dung nào trong chuỗi khớp với chuỗi &#39;trước&#39;
 Các dòng trống đảm bảo rằng các dòng khác là dòng &#39;trước&#39; và &#39;sau&#39;.
 Các thay đổi được áp dụng theo thứ tự của các dòng ở đây.
 !!! CHỈ THÊM CẶP MÀ BẠN XEM LÀ THAY ĐỔI RẤT ĐÁNG TIN CẬY !!! Lưu ý:
-* Nếu bạn cho rằng có các quy tắc ở đây là sai hoặc các quy tắc mới cần được thêm vào, vui lòng gửi email cho <kbd>bob dot simons at noaa dot gov</kbd> .
+* Nếu bạn cho rằng có các quy tắc ở đây là sai hoặc các quy tắc mới cần được thêm vào, vui lòng gửi email cho <kbd>erd dot data at noaa dot gov</kbd> .
 * Hiệp một có những chuyển biến mạnh mẽ.
 Nửa sau có những thay đổi từ http sang https đơn giản.
 Việc thay đổi http thành https rất quan trọng vì một số trang web không có chuyển hướng và ngay cả khi có, một số hệ thống (ví dụ:

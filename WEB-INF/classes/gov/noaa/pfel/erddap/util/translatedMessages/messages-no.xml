@@ -69,7 +69,7 @@ Deretter vil ERDDAP legge til alle
 <br>til listen over forespurte variabler.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Hvis du har forslag til flere linker, kontakt <kbd>bob dot simons at noaa dot gov</kbd> .
+Hvis du har forslag til flere linker, kontakt <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -410,7 +410,7 @@ Denne tjenesten inkluderer ikke akronymer som vanligvis utvides til mer enn ett 
 SAF, som kan utvides til Synthetic Aperture Focusing eller Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Forslag?</a> Denne tjenestens liste over akronymer er ikke fullstendig.
-Hvis du vil legge til et vanlig akronym eller gjøre en rettelse, vennligst send det på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+Hvis du vil legge til et vanlig akronym eller gjøre en rettelse, vennligst send det på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -475,7 +475,7 @@ Tjenesten inkluderer bare det vanligste fulle navnet relatert til et gitt variab
 utvides SST her til Sea Surface Temperature, ikke Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Forslag?</a> Denne tjenestens liste over variabelnavn er ikke fullstendig.
-Hvis du vil legge til et ofte brukt variabelnavn eller gjøre en rettelse, vennligst send det på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+Hvis du vil legge til et ofte brukt variabelnavn eller gjøre en rettelse, vennligst send det på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -637,7 +637,7 @@ Vennligst spesifiser en kommadelt liste over <kbd>datasetID /variableName/algori
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Merknader:</strong></a>
 <ul>
 <li>Sjekk alltid resultatene fra omformerne.
-<br>Hvis du mener at omformeren ga et feil resultat, vennligst send detaljene på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Hvis du mener at omformeren ga et feil resultat, vennligst send detaljene på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ANSVARSFRASKRIVELSE
 <br>Ingen person eller organisasjon knyttet til denne nettsiden gir noen garanti, uttrykt eller underforstått, inkludert garantier for salgbarhet og egnethet for et bestemt formål, eller påtar seg noe juridisk ansvar for nøyaktigheten, fullstendigheten eller nytten av informasjonen på denne nettsiden.
@@ -752,7 +752,7 @@ Hvis dette ikke er den riktige tilnærmingen for et gitt datasett, kan det i noe
 <br>Hvis metodene eller alternativene som tilbys av denne omformeren ikke er egnet for dine formål eller på annen måte ikke er det du ønsker, ikke bruk dem.
 I stedet kan du gjøre det selv, på din egen måte:
 last ned delsett av datasettet og bruk din egen algoritme.
-For å be om at andre interpolasjonsalgoritmer legges til denne omformeren, vennligst send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+For å be om at andre interpolasjonsalgoritmer legges til denne omformeren, vennligst send en e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP administratorer:
 <br>Du kan endre standard CSV-forespørsel ved å legge til/redigere &lt;convertInterpolateRequestCSVEexample&gt;-taggen i datasets.xml .
@@ -834,7 +834,7 @@ Andre er bare passende under visse omstendigheter.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">ANSVARSFRASKRIVELSE</a></strong> - Ingen personer eller organisasjoner knyttet til denne nettsiden gir noen garantier, uttrykte eller underforståtte, inkludert garantier for salgbarhet og egnethet for et bestemt formål, eller påtar seg noe juridisk ansvar for nøyaktigheten, fullstendigheten eller nytten av informasjon på denne siden.
 nettsted.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Rettelser</a></strong> - Vennligst send e-post eventuelle foreslåtte rettelser til <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Rettelser</a></strong> - Vennligst send e-post eventuelle foreslåtte rettelser til <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -921,7 +921,7 @@ utelater millis).
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Ugyldig inndata</a> - ERDDAP prøver å håndtere feil formatert inndata.
 Hvis ERDDAP ikke kan håndtere inndata, vil ERDDAP generere en feilmelding.
-Hvis &quot;ugyldig inndata&quot; er en strengtid som du mener bør støttes, vennligst send den på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+Hvis &quot;ugyldig inndata&quot; er en strengtid som du mener bør støttes, vennligst send den på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Hvordan ERDDAP tid</strong></a>
@@ -1192,7 +1192,7 @@ Det er
 <convertTimeNumberError>Nummeret som er spesifisert er ikke et gyldig nummer.</convertTimeNumberError>
 <convertTimeNumericTimeError>Den numeriske tiden er ikke gyldig.</convertTimeNumericTimeError>
 <convertTimeParametersError>Denne kombinasjonen av parametere er ikke gyldig. Sjekk eksemplene og prøv igjen.</convertTimeParametersError>
-<convertTimeStringFormatError>Formatet på strengtiden gjenkjennes ikke. Hvis du mener det bør støttes, vennligst send det til bob.simons på noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Formatet på strengtiden gjenkjennes ikke. Hvis du mener det bør støttes, vennligst send det til erd.data på noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Ikke spesifiser både stringTime og isoTime parametere.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Enhetsstrengen er ugyldig.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Et tall. For eksempel &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1519,7 +1519,7 @@ Det er ikke noe spesielt, unikt eller bedre med de spesifikke aliasene eller syn
 Merk at dette er en enkel standardisering (f.eks.
 &quot;joule&quot;, &quot;joules&quot; og &quot;J&quot; returnerer alle &quot;J&quot; ) i motsetning til den &quot;kanoniske&quot; formen som tilbys av UDUNITS programvaren (som for eksempel konverterer alle joule-aliaset til &quot;kg.m2.s-2&quot; ).
 <li>Hvis du tror at en omformer utførte en konvertering feil, må du først kontrollere at inndatastrengen er gyldig.
-Hvis du tror at inndatastrengen er gyldig, vennligst send detaljene på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+Hvis du tror at inndatastrengen er gyldig, vennligst send detaljene på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Se den detaljerte sammenligningen av UDUNITS og UCUM
 <a rel="help" href="#syntaxComparison">syntaks</a> og
 <a rel="help" href="#unitsComparison">enheter</a> nedenfor.
@@ -1617,10 +1617,10 @@ Utgangen vil være den samme som inndata, men med oppdaterte URL-er.
 <li>Dette oppdaterer for øyeblikket noen vanlige URL-er knyttet til oseanografiske og atmosfæriske vitenskapsdatasett.
 Det er et ufullstendig arbeid som pågår og vil alltid være det, fordi oppgaven er umulig stor og i stadig endring.
 Dette er ikke et generell URL-oppdateringssystem, selv om det kan forbedres for å dekke andre områder.
-<li>Hvis du tror at konverteren gjorde noe feil eller ikke oppdaterte en URL som den burde ha, vennligst send detaljene på e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Hvis du tror at konverteren gjorde noe feil eller ikke oppdaterte en URL som den burde ha, vennligst send detaljene på e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP administratorer:
 du kan endre konverteringsreglene ved å redigere &lt;updateUrls&gt; i messages.xml.
-Hvis du gjør det, vennligst send detaljene på e-post til <kbd>bob dot simons at noaa dot gov</kbd> slik at endringene kan innlemmes i standard ERDDAP distribusjonen.
+Hvis du gjør det, vennligst send detaljene på e-post til <kbd>erd dot data at noaa dot gov</kbd> slik at endringene kan innlemmes i standard ERDDAP distribusjonen.
 <li>ANSVARSFRASKRIVELSE - Ingen personer eller organisasjoner knyttet til denne nettsiden gir noen garantier, uttrykte eller underforståtte, inkludert garantier for salgbarhet og egnethet for et bestemt formål, eller påtar seg noe juridisk ansvar for nøyaktigheten, fullstendigheten eller nytten av informasjon på denne siden.
 nettsted.
 </ul>
@@ -3379,7 +3379,7 @@ SST, Blended, West US (eksperimentell, 5-dagers kompositt)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakt</a></h2>
 Spørsmål, kommentarer, forslag?
-Send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
+Send en e-post til <kbd>erd dot data at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Eller du kan bli med i ERDDAP Google Group / Mailing List</a> ved å gå til
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5738,11 +5738,7 @@ Hvis datasettets metadata inkluderer en
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Hvordan sitere ERDDAP i et papir</a></strong>
 <br>Hvis du ønsker å sitere selve ERDDAP i en vitenskapelig artikkel, vennligst bruk noe sånt som
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap .
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Hva står akronymet &quot;ERDDAP&quot; for?</a></strong>
 <br>&quot;ERDDAP&quot; pleide å være et akronym, men det vokste ut av den opprinnelige beskrivelsen.
 Bare tenk på det som et navn, ikke et akronym.
@@ -5763,7 +5759,7 @@ Deretter vil folk ha en annen måte å få tilgang til dataene dine og vil kunne
   >flere ERDDAP er som jobber sammen</a> for å skalere opp og møte behovene til et stort datadistribusjonssenter.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakt oss</a></h2>
-Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), vennligst send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
+Hvis du har spørsmål, forslag eller kommentarer om ERDDAP generelt (ikke denne spesifikke ERDDAP installasjonen), vennligst send en e-post til <kbd>erd dot data at noaa dot gov</kbd> og inkluder ERDDAP URLen som er direkte relatert til spørsmålet eller kommentaren din.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Eller du kan bli med i ERDDAP Google Group / Mailing List</a> ved å gå til
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/forum/#!forum/erddap <img 
@@ -5845,7 +5841,7 @@ Alt innhold i strengen som samsvarer med en &#39;før&#39;-streng vil bli konver
 De tomme linjene sikrer at de andre linjene er &#39;før&#39; og &#39;etter&#39; linjer.
 Endringene brukes i rekkefølgen på linjene her.
 !!! BARE LEGG TIL PAR SOM DU VURDERER SOM VÆRE VELDIG, VELDIG PÅLITELIGE ENDRINGER!!! Merknader:
-* Hvis du mener at det er regler her som er feil eller nye regler som skal legges til, vennligst send en e-post til <kbd>bob dot simons at noaa dot gov</kbd> .
+* Hvis du mener at det er regler her som er feil eller nye regler som skal legges til, vennligst send en e-post til <kbd>erd dot data at noaa dot gov</kbd> .
 * Første omgang har dramatiske endringer.
 Den andre halvdelen har enkle http til https-endringer.
 http til https-endringene er viktige fordi noen nettsteder ikke har omdirigeringer, og selv om de gjør det, følger ikke noen systemer (f.eks.

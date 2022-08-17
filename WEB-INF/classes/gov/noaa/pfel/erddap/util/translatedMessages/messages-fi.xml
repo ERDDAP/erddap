@@ -69,7 +69,7 @@ Sitten ERDDAP lisää kaikki
 <br>pyydettyjen muuttujien luetteloon.
 ]]></addVarWhere>
 <additionalLinks><![CDATA[
-Jos sinulla on ehdotuksia lisälinkkeistä, ota yhteyttä <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos sinulla on ehdotuksia lisälinkkeistä, ota yhteyttä <kbd>erd dot data at noaa dot gov</kbd> .
 ]]></additionalLinks>
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
 <admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
@@ -410,7 +410,7 @@ Tämä palvelu ei sisällä lyhenteitä, jotka yleensä laajenevat useampaan kui
 SAF, joka voitaisiin laajentaa Synthetic Aperture Focusing tai Satellite Application Facility ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Ehdotukset?</a> Tämän palvelun lyhenneluettelo ei ole täydellinen.
-Jos haluat lisätä yleisen lyhenteen tai tehdä korjauksen, lähetä se sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos haluat lisätä yleisen lyhenteen tai tehdä korjauksen, lähetä se sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -475,7 +475,7 @@ Palvelu sisältää vain yleisimmän koko nimen, joka liittyy tiettyyn muuttujan
 SST laajenee tässä Sea Surface Temperature, ei Surface Skin Temperature ).
 <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Ehdotukset?</a> Tämän palvelun muuttujien nimiluettelo ei ole täydellinen.
-Jos haluat lisätä yleisesti käytetyn muuttujan nimen tai tehdä korjauksen, lähetä se sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos haluat lisätä yleisesti käytetyn muuttujan nimen tai tehdä korjauksen, lähetä se sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 
@@ -638,7 +638,7 @@ Määritä pilkuilla eroteltu luettelo <kbd>datasetID /muuttujannimi/algoritmi/l
 <p><a class="selfLink" id="notes" href="#notes" rel="help"><strong>Huomautuksia:</strong></a>
 <ul>
 <li>Tarkista aina muuntimien tulokset.
-<br>Jos uskot, että muuntaja antoi virheellisen tuloksen, lähetä tiedot sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+<br>Jos uskot, että muuntaja antoi virheellisen tuloksen, lähetä tiedot sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>VASTUUVAPAUSLAUSEKE
 <br>Kukaan tähän verkkosivustoon liittyvä henkilö tai organisaatio ei anna mitään takuita, nimenomaisia tai oletettuja, mukaan lukien takuut kaupallisuudesta ja sopivuudesta tiettyyn tarkoitukseen, tai ota mitään laillista vastuuta minkä tahansa tällä verkkosivustolla olevien tietojen tarkkuudesta, täydellisyydestä tai hyödyllisyydestä.
@@ -754,7 +754,7 @@ Jos tämä ei ole oikea lähestymistapa tietylle tietojoukolle, joissakin tapauk
 <br>Jos tämän muuntimen tarjoamat menetelmät tai vaihtoehdot eivät sovellu käyttötarkoituksiisi tai muuten eivät ole sitä, mitä haluat, älä käytä niitä.
 Sen sijaan voit tehdä sen itse, omalla tavallasi:
 ladata tietojoukon osajoukot ja käyttää omaa algoritmiasi.
-Jos haluat pyytää muiden interpolointialgoritmien lisäämistä tähän muuntimeen, lähetä sähköpostia osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos haluat pyytää muiden interpolointialgoritmien lisäämistä tähän muuntimeen, lähetä sähköpostia osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 <li>ERDDAP järjestelmänvalvojat:
 <br>Voit muuttaa oletuspyyntö-CSV:tä lisäämällä/muokkaamalla &lt;convertInterpolateRequestCSVExample&gt;-tunnistetta datasets.xml -tiedostossa.
@@ -837,7 +837,7 @@ Muut ovat sopivia vain tietyissä olosuhteissa.
 <li><strong><a class="selfLink" id="disclaimer" href="#disclaimer" rel="help">VASTUUVAPAUSLAUSEKE</a></strong> – Kukaan tähän verkkosivustoon liittyvä henkilö tai organisaatio ei anna mitään takuita, nimenomaisia tai implisiittisiä, mukaan lukien takuut kaupallisuudesta ja sopivuudesta tiettyyn tarkoitukseen, tai ota mitään laillista vastuuta tämän sivuston tietojen tarkkuudesta, täydellisyydestä tai hyödyllisyydestä.
 verkkosivusto.
 <br>&nbsp;
-<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Korjaukset</a></strong> - Lähetä kaikki korjausehdotukset sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+<li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Korjaukset</a></strong> - Lähetä kaikki korjausehdotukset sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 
 ]]></convertKeywordsNotes>
@@ -923,7 +923,7 @@ Kun aikoja esitetään merkkijonoina, tämä muunnin muotoilee ajat (lyhennetyks
 <br>&nbsp;
 <li><a class="selfLink" id="invalidInput" href="#invalidInput" rel="help">Virheellinen syöttö</a> - ERDDAP yrittää käsitellä väärin muotoiltua syötettä.
 Jos ERDDAP ei pysty käsittelemään syötettä, ERDDAP luo virheilmoituksen.
-Jos &quot;virheellinen syöttö&quot; on merkkijonoaika, jota mielestäsi pitäisi tukea, lähetä se sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos &quot;virheellinen syöttö&quot; on merkkijonoaika, jota mielestäsi pitäisi tukea, lähetä se sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <br>&nbsp;
 </ul>
 <p><a class="selfLink" id="erddap" href="#erddap" rel="help"><strong>Kuinka ERDDAP käsittelee aikaa</strong></a>
@@ -1199,7 +1199,7 @@ On
 <convertTimeNumberError>Määritetty numero ei ole kelvollinen numero.</convertTimeNumberError>
 <convertTimeNumericTimeError>Numeerinen aika ei kelpaa.</convertTimeNumericTimeError>
 <convertTimeParametersError>Tämä parametrien yhdistelmä ei kelpaa. Tarkista esimerkit ja yritä uudelleen.</convertTimeParametersError>
-<convertTimeStringFormatError>Merkkijonon ajan muotoa ei tunnisteta. Jos sitä pitäisi mielestäsi tukea, lähetä se sähköpostitse osoitteeseen bob.simons osoitteessa noaa.gov.</convertTimeStringFormatError>
+<convertTimeStringFormatError>Merkkijonon ajan muotoa ei tunnisteta. Jos sitä pitäisi mielestäsi tukea, lähetä se sähköpostitse osoitteeseen erd.data osoitteessa noaa.gov.</convertTimeStringFormatError>
 <convertTimeTwoTimeError>Älä määritä sekä stringTime- että isoTime-parametreja.</convertTimeTwoTimeError>
 <convertTimeUnitsError>Yksikkömerkkijono on virheellinen.</convertTimeUnitsError>
 <convertTimeNumberTooltip>Numero. Esimerkiksi &quot;{0}&quot;.</convertTimeNumberTooltip>
@@ -1527,7 +1527,7 @@ Standardoidun tulosteen erityisissä aliaksissa tai syntaksissa ei ole mitään 
 Huomaa, että tämä on yksinkertainen standardisointi (esim.
 &quot;joule&quot;, &quot;joules&quot; joule&quot;ja&quot;J&quot;palauttavat kaikki&quot;J&quot;) toisin kuin UDUNITS ohjelmiston tarjoama&quot;kanoninen&quot;muoto (joka esimerkiksi muuntaa kaikki joulen aliakset ovat&quot;kg.m2.s-2&quot;).
 <li>Jos uskot, että muuntaja teki muunnoksen väärin, varmista ensin, että syötemerkkijono on kelvollinen.
-Jos syöttömerkkijono on mielestäsi kelvollinen, lähetä tiedot sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+Jos syöttömerkkijono on mielestäsi kelvollinen, lähetä tiedot sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <li>Katso alla oleva UDUNITS ja UCUM-
 <a rel="help" href="#syntaxComparison">syntaksien</a> ja
 <a rel="help" href="#unitsComparison">yksiköiden</a> yksityiskohtainen vertailu.
@@ -1625,10 +1625,10 @@ Tulos on sama kuin syöte, mutta päivitetyillä URL-osoitteilla.
 <li>Tämä päivittää tällä hetkellä joitain yleisiä URL-osoitteita, jotka liittyvät merentutkimuksen ja ilmakehätieteen tietojoukkoon.
 Se on keskeneräinen työ ja tulee aina olemaan, koska tehtävä on mahdoton suuri ja jatkuvasti muuttuva.
 Tämä ei ole yleiskäyttöinen URL-päivitysjärjestelmä, vaikka sitä voitaisiin parantaa kattamaan muita alueita.
-<li>Jos uskot, että muuntaja teki jotain väärin tai ei päivittänyt URL-osoitetta, joka sillä pitäisi olla, lähetä tiedot sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+<li>Jos uskot, että muuntaja teki jotain väärin tai ei päivittänyt URL-osoitetta, joka sillä pitäisi olla, lähetä tiedot sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP järjestelmänvalvojat:
 voit muuttaa muunnossääntöjä muokkaamalla &lt;updateUrls&gt; messages.xml.
-Jos teet niin, lähetä tiedot sähköpostitse osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd>, jotta muutokset voidaan sisällyttää ERDDAP -standardin jakeluun.
+Jos teet niin, lähetä tiedot sähköpostitse osoitteeseen <kbd>erd dot data at noaa dot gov</kbd>, jotta muutokset voidaan sisällyttää ERDDAP -standardin jakeluun.
 <li>VASTUUVAPAUSLAUSEKE – Kukaan tähän verkkosivustoon liittyvä henkilö tai organisaatio ei anna mitään takuita, nimenomaisia tai implisiittisiä, mukaan lukien takuut kaupallisuudesta ja sopivuudesta tiettyyn tarkoitukseen, tai ota mitään laillista vastuuta tämän sivuston tietojen tarkkuudesta, täydellisyydestä tai hyödyllisyydestä.
 verkkosivusto.
 </ul>
@@ -3401,7 +3401,7 @@ SST, sekoitettu, Länsi-USA (kokeellinen, 5 päivän yhdistelmä)">
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Ottaa yhteyttä</a></h2>
 Kysymyksiä, kommentteja, ehdotuksia?
-Lähetä sähköposti osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> ja liitä mukaan ERDDAP -URL-osoite, joka liittyy suoraan kysymykseesi tai kommenttiisi.
+Lähetä sähköposti osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> ja liitä mukaan ERDDAP -URL-osoite, joka liittyy suoraan kysymykseesi tai kommenttiisi.
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Tai voit liittyä ERDDAP Google -ryhmään / postituslistaan</a> käymällä
 <a class="N" rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">osoitteessa https://groups.google.com/forum/#!forum/erddap <img 
@@ -5773,11 +5773,7 @@ Jos tietojoukon metatiedot sisältävät
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">Kuinka ERDDAP :tä paperissa</a></strong>
 <br>Jos haluat lainata itse ERDDAP :tä tieteellisessä artikkelissa, käytä jotain vastaavaa
-<br><kbd>Simons, RA 2020.
-ERDDAP .
-https://coastwatch.pfeg.noaa.gov/erddap.
-Monterey, CA:
-NOAA / NMFS / SWFSC / ERD .</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">Mitä lyhenne&quot; ERDDAP &quot;tarkoittaa?</a></strong>
 <br>&quot; ERDDAP &quot;oli aiemmin lyhenne, mutta se kasvoi alkuperäisen kuvauksen ulkopuolelle.
 Ajattele sitä nyt vain nimenä, ei lyhenteenä.
@@ -5798,7 +5794,7 @@ Tämän jälkeen ihmisillä on toinen tapa päästä käsiksi tietoihisi ja he v
   >useita ERDDAP, jotka toimivat yhdessä</a> skaalautuakseen ja vastatakseen suuren tiedonjakelukeskuksen tarpeisiin.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Ota meihin yhteyttä</a></h2>
-Jos sinulla on kysymyksiä, ehdotuksia tai kommentteja ERDDAP :stä yleensä (ei tästä tietystä ERDDAP asennuksesta), lähetä sähköpostia osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> ja liitä mukaan kysymykseesi tai kommenttiisi suoraan liittyvä ERDDAP -URL-osoite.
+Jos sinulla on kysymyksiä, ehdotuksia tai kommentteja ERDDAP :stä yleensä (ei tästä tietystä ERDDAP asennuksesta), lähetä sähköpostia osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> ja liitä mukaan kysymykseesi tai kommenttiisi suoraan liittyvä ERDDAP -URL-osoite.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Tai voit liittyä ERDDAP Google -ryhmään / postituslistaan</a> käymällä
 <a rel="help"
 href="https://groups.google.com/forum/#!forum/erddap">osoitteessa https://groups.google.com/forum/#!forum/erddap <img 
@@ -5880,7 +5876,7 @@ Mikä tahansa merkkijonon sisältö, joka vastaa merkkijonoa &quot;ennen&quot;, 
 Tyhjät rivit varmistavat, että muut rivit ovat &quot;ennen&quot; ja &quot;jälkeen&quot; rivejä.
 Muutokset otetaan käyttöön tässä rivien järjestyksessä.
 !!! LISÄÄ AINOASTAAN PARIA, JOTKA PIDÄT ERITTÄIN, ERITTÄIN LUOTETTAVIINA MUUTOKSIIN!!! Huomautuksia:
-* Jos uskot, että tässä on virheellisiä sääntöjä tai uusia sääntöjä on lisättävä, lähetä sähköpostia osoitteeseen <kbd>bob dot simons at noaa dot gov</kbd> .
+* Jos uskot, että tässä on virheellisiä sääntöjä tai uusia sääntöjä on lisättävä, lähetä sähköpostia osoitteeseen <kbd>erd dot data at noaa dot gov</kbd> .
 * Ensimmäisellä puoliskolla on dramaattisia muutoksia.
 Toisella puoliskolla on yksinkertaisia muutoksia http:stä https:ään.
 Muutokset http:stä https:ään ovat tärkeitä, koska joillakin verkkosivustoilla ei ole uudelleenohjauksia, ja vaikka olisikin, jotkin järjestelmät (esim.

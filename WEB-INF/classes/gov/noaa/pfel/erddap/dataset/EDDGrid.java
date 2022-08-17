@@ -206,9 +206,9 @@ public abstract class EDDGrid extends EDD {
     public static String[] imageFileTypeInfo = {
         "https://trac.osgeo.org/geotiff/", //geotiff
         "https://developers.google.com/kml/", //kml
-        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
-        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
-        "https://acrobat.adobe.com/us/en/why-adobe/about-adobe-pdf.html", //pdf
+        "https://www.adobe.com/acrobat/about-adobe-pdf.html", //pdf
+        "https://www.adobe.com/acrobat/about-adobe-pdf.html", //pdf
+        "https://www.adobe.com/acrobat/about-adobe-pdf.html", //pdf
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
         "http://www.libpng.org/pub/png/", //png
@@ -2569,9 +2569,11 @@ public abstract class EDDGrid extends EDD {
             }
 
             //*** make a file (then copy it to outputStream)
-            //If update system active, don't cache anything.  Make all files unique.
-            if (updateEveryNMillis > 0) 
-                fileName += "U" + System.currentTimeMillis();
+            //If update system active or real_time=true, don't cache anything.  Make all files unique.
+            if (updateEveryNMillis > 0 || realTime()) {
+                fileName += "_U" + System.currentTimeMillis(); //useful because it identifies time of request
+                outputStreamSource.setFileName(fileName);
+            }
 
             //nc files are handled this way because .ncHeader needs to call
             //  NcHelper.ncdump(aRealFile, "-h"). 
@@ -2865,12 +2867,12 @@ public abstract class EDDGrid extends EDD {
                     draw = defaultDraw;
                 }
             }
-            boolean drawLines = draws[draw].equals("lines");
+            boolean drawLines           = draws[draw].equals("lines");
             boolean drawLinesAndMarkers = draws[draw].equals("linesAndMarkers");
-            boolean drawMarkers = draws[draw].equals("markers");
-            boolean drawSticks  = draws[draw].equals("sticks");
-            boolean drawSurface = draws[draw].equals("surface");
-            boolean drawVectors = draws[draw].equals("vectors");
+            boolean drawMarkers         = draws[draw].equals("markers");
+            boolean drawSticks          = draws[draw].equals("sticks");
+            boolean drawSurface         = draws[draw].equals("surface");
+            boolean drawVectors         = draws[draw].equals("vectors");
             if (reallyVerbose) String2.log("draw=" + draws[draw] + " preferDefaultVars=" + preferDefaultVars);
             //if (debugMode) String2.log("respondToGraphQuery 3");
 
@@ -5641,35 +5643,6 @@ Attributes {
             // TransparentPng repairs input ranges during parsing and stores raw input values in the inputValues array.
             parseDataDapQuery(language, userDapQuery, reqDataNames, constraints, transparentPng /* repair */, inputValues);
 
-            double inputMinX = Double.MIN_VALUE;
-            double inputMaxX = Double.MAX_VALUE;
-            double inputMinY = Double.MIN_NORMAL;
-            double inputMaxY = Double.MAX_VALUE;
-            // transparentPng supports returning requests outside of data range
-            // to enable tiles that partially contain data. This section
-            // validates there is data to return before continuing.
-            if (transparentPng) {
-                // Get the X input values.
-                inputMinX = inputValues.get(lonIndex * 2);
-                inputMaxX = inputValues.get(lonIndex * 2 + 1);
-                if (inputMinX > inputMaxX) {
-                    double d = inputMinX;
-                    inputMinX = inputMaxX;
-                    inputMaxX = d;
-                }
-                // Get the Y input values.
-                inputMinY = inputValues.get(latIndex * 2);
-                inputMaxY = inputValues.get(latIndex * 2 + 1);
-                if (inputMinY > inputMaxY) {
-                    double d = inputMinY;
-                    inputMinY = inputMaxY;
-                    inputMaxY = d;
-                }
-
-                validateLatLon(language, inputMinX, inputMaxX, inputMinY,
-                        inputMaxY);
-            }
-
             //for now, just plot first 1 or 2 data variables
             int nDv = reqDataNames.size();
             EDV reqDataVars[] = new EDV[nDv];
@@ -6689,7 +6662,36 @@ Attributes {
                 // range to enable tiles that partially contain data. This
                 // section adjusts the map output to match the requested
                 // inputs.
-                if (transparentPng) {
+
+                if (transparentPng && isMap) { //Chris didn't have &&isMap
+                    //Chris had this section much higher in method and without &&isMap
+                    double inputMinX = Double.MIN_VALUE;
+                    double inputMaxX = Double.MAX_VALUE;
+                    double inputMinY = Double.MIN_NORMAL;
+                    double inputMaxY = Double.MAX_VALUE;
+                    // transparentPng supports returning requests outside of data range
+                    // to enable tiles that partially contain data. This section
+                    // validates there is data to return before continuing.
+                    // Get the X input values.
+                    inputMinX = inputValues.get(lonIndex * 2);
+                    inputMaxX = inputValues.get(lonIndex * 2 + 1);
+                    if (inputMinX > inputMaxX) {
+                        double d = inputMinX;
+                        inputMinX = inputMaxX;
+                        inputMaxX = d;
+                    }
+                    // Get the Y input values.
+                    inputMinY = inputValues.get(latIndex * 2);
+                    inputMaxY = inputValues.get(latIndex * 2 + 1);
+                    if (inputMinY > inputMaxY) {
+                        double d = inputMinY;
+                        inputMinY = inputMaxY;
+                        inputMaxY = d;
+                    }
+                    validateLatLon(language, inputMinX, inputMaxX, inputMinY,
+                            inputMaxY);
+                    //end moved section
+
                     double diffAllowance = 1;
                     double minXDiff = Math.abs(minX - inputMinX);
                     double maxXDiff = Math.abs(inputMaxX - maxX);
@@ -6703,8 +6705,8 @@ Attributes {
                     } else {
                         double repairedWidth = maxX - minX;
                         double inputWidth = inputMaxX - inputMinX;
-                        imageWidth = (int) (imageWidth * inputWidth
-                                / repairedWidth);
+                        if (!customSize) 
+                            imageWidth = (int)(imageWidth * inputWidth / repairedWidth);
                         minX = inputMinX;
                         maxX = inputMaxX;
                     }
@@ -6713,13 +6715,13 @@ Attributes {
                     } else {
                         double repairedHeight = maxY - minY;
                         double inputHeight = inputMaxY - inputMinY;
-                        imageHeight = (int) (imageHeight * inputHeight
-                                / repairedHeight);
+                        if (!customSize) 
+                            imageHeight = (int)(imageHeight * inputHeight / repairedHeight);
                         minY = inputMinY;
                         maxY = inputMaxY;
                     }
                 }
-                
+
                 bufferedImage = SgtUtil.getBufferedImage(imageWidth, imageHeight);
                 g2 = (Graphics2D)bufferedImage.getGraphics();
             }
@@ -10456,6 +10458,12 @@ Attributes {
             "     technique to convert a stride value in parentheses into a stride index value.\n" +
             "     But dimension values often aren't evenly spaced. So for now, ERDDAP doesn't support the\n" +
             "     parentheses notation for stride values.\n" +
+            "   <li><a class=\"selfLink\" id=\"highLow\" href=\"#highLow\" rel=\"bookmark\">[high:low] or [(high):(low)]</a> -- \n" +
+            "     Starting with ERDDAP v2.17, if a user specifies the high and low values in the wrong order, e.g., [high:low] or [(high):(low)],\n" +
+            "     ERDDAP will swap the specified high and low values to make the request valid.\n" +
+            "     This is particularly useful for the few datasets where the latitude values in the dataset\n" +
+            "     are stored high to low: previously, these datasets had to be known and handled separately by users;\n" +
+            "     now, if users specify the values in the \"incorrect\" order, ERDDAP will repair the request.\n" +
             "   <li><a class=\"selfLink\" id=\"time\" href=\"#time\" rel=\"bookmark\">griddap</a> always stores date/time values as double precision floating point numbers\n" +
             "     (seconds since 1970-01-01T00:00:00Z, sometimes with some number of milliseconds).\n" +
             "     Here is an example of a query which includes date/time numbers:\n" +
@@ -10871,7 +10879,7 @@ Attributes {
 "    a steak knife (sometimes) doesn't make it a good idea -- use your chainsaw.\n" +
 "  <li>500 Internal Server Error - for errors that aren't the user's fault or responsibility.\n" +
 "    For code=500 errors that look like they should use a different code, or for\n" +
-"    errors that look like bugs in ERDDAP, please email the URL and error message to bob.simons at noaa.gov .\n" +
+"    errors that look like bugs in ERDDAP, please email the URL and error message to erd.data at noaa.gov .\n" +
 "  </ul>\n" +
 "<p>If the error response was generated by ERDDAP (not by some other part of the Internet,\n" +
 "  e.g., Tomcat, Apache, routers, or your browser),\n" +
@@ -10901,7 +10909,7 @@ Attributes {
 "  and post the URL, the error message, and your question there.\n" +
 "<li>If you see errors that have been assigned the wrong HTTP status code\n" +
 "  (especially code=500 errors that should be 4xx errors) or might be evidence of a bug in ERDDAP,\n" +
-"  please email the URL and error message to bob.simons at noaa.gov .\n" +
+"  please email the URL and error message to erd.data at noaa.gov .\n" +
 "</ul>\n" +
 "<br>&nbsp;\n" +
 
@@ -14825,6 +14833,11 @@ writer.write(
             dir + tName,
             String2.unitTestImagesDir()    + baseName + ".png",
             File2.getSystemTempDirectory() + baseName + "_diff.png");
+
+//2020-08-03 For tests below, some generated images have data, some don't,
+//  but results seem inconsistent.
+//  The images in erddapTest/images are old and I'm not sure appropriate.
+//  I'm not sure what they should be. Leave this for Chris John.
 
         // All invalid.
         baseName = "EDDGrid_testSaveAsImage_allInvalid";

@@ -13287,7 +13287,7 @@ expected =
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  latitude {\n" +
-"    Int32 _ChunkSizes 4320;\n" + 
+"    UInt32 _ChunkSizes 4320;\n" + 
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float32 actual_range -89.979, 89.979;\n" +
 "    String axis \"Y\";\n" +
@@ -13301,7 +13301,7 @@ expected =
 "    Float32 valid_min -90.0;\n" +
 "  }\n" +
 "  longitude {\n" +
-"    Int32 _ChunkSizes 8640;\n" + 
+"    UInt32 _ChunkSizes 8640;\n" + 
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float32 actual_range -179.979, 179.979;\n" +
 "    String axis \"X\";\n" +
@@ -15640,6 +15640,20 @@ expected =
         }
     }
 
+    /** 
+     * This is some experiments to see if netcdf-java can read zarr files. 
+     */
+    public static void testZarr() throws Throwable {
+        //2022-08-15 I couldn't get netcdfJava to read Zarr in S3.
+        //see https://docs.unidata.ucar.edu/netcdf-java/current/userguide/reading_zarr.html
+        //see https://docs.unidata.ucar.edu/netcdf-java/current/userguide/dataset_urls.html#object-stores
+        //local and s3 test files are described at https://mesowest.utah.edu/html/hrrr/zarr_documentation/html/zarr_HowToDownload.html
+
+        //NetcdfFiles.open("cdms3://www.s3.us-west-1.amazonaws.com/hrrrzarr?sfc/20160823/20160823_14z_anl.zarr/#delimiter=/"); 
+        //NetcdfFiles.open("cdms3://hrrrzarr.s3.us-west-1.amazonaws.com/hrrrzarr?sfc/20160823/20160823_14z_anl.zarr/#delimiter=/"); 
+        //NetcdfFiles.open("cdms3://hrrrzarr/sfc/20160823/20160823_14z_anl.zarr/#delimiter=/");
+        //NetcdfFiles.open("cdms3:hrrrzarr?sfc/20160823/20160823_14z_anl.zarr/#delimiter=/");
+    }
 
 
     /**
@@ -15754,7 +15768,7 @@ expected =
 
                     if (test == 65 && doSlowTestsToo) testBigRequestSpeed(3, ".dods", 895847390, 100); //nTimePoints (usually 3), expected bytes, expectedTimeInSeconds. Also testNThreads.
                     if (test == 66 && doSlowTestsToo) testNThreads(3);
-                    if (test == 67 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
+   // 2022-08-02 too slow: if (test == 67 && doSlowTestsToo) testGenerateDatasetsXmlAwsS3();       
    // 2022-06-16 too slow: if (test == 68 && doSlowTestsToo) testAwsS3(true);   //deleteCachedInfo //takes hours to download (but shouldn't!)  //Make the tests smaller!  Is this "making the data publicly accessible"?
    // 2022-06-16 too slow: if (test == 69 && doSlowTestsToo) testAwsS3(false);  //deleteCachedInfo 
 

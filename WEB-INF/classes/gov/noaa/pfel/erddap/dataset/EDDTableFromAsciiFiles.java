@@ -1313,7 +1313,7 @@ String expected =
      * @throws Throwable if trouble
      */
     public static void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDTableFromAsciiFiles.test() *****************\n");
+        String2.log("\n****************** EDDTableFromAsciiFiles.testBasic() *****************\n");
         testVerboseOn();
         int language = 0;
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -1454,6 +1454,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    Float64 Northernmost_Northing 37.75;\n" +
+"    String real_time \"true\";\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
@@ -1571,6 +1572,7 @@ expected =
 "-122.88,37.36,0,2005-07-01T00:00:00Z,46012,12.7,13.4\n" +
 "-122.82,37.75,0,2005-07-01T00:00:00Z,46026,12.6,14.6\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
 
     }
 

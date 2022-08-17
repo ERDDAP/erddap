@@ -11140,7 +11140,7 @@ XML.encodeAsXML(EDStatic.adminInstitution.length() <= 38? " at " + EDStatic.admi
     tImageDirUrl + EDStatic.lowResLogoImageFile)       + "</Image>\n" +
 //???need more and better examples
 "  <Query role=\"example\" searchTerms=\"" + XML.encodeAsXML(exampleSearchTerm) + "\" />\n" +
-"  <Developer>Bob Simons (bob.simons at noaa.gov)</Developer>\n" + //<=64 chars
+"  <Developer>erd.data at noaa.gov</Developer>\n" + //<=64 chars
 "  <Attribution>" +  //credit for search results    <=256 chars
 XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</Attribution>\n" +
 "  <SyndicationRight>" + (loggedInAs == null? "open" : "private") + "</SyndicationRight>\n" +

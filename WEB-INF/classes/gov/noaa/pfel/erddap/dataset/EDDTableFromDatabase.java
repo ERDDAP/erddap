@@ -1733,7 +1733,7 @@ expected =
      * @throws Throwable if trouble
      */
     public static void testBasic(String tDatasetID) throws Throwable {
-        String2.log("\n*** EDDTableFromDatabase.testBasic tDatasetID=" + tDatasetID);
+        String2.log("\n*** EDDTableFromDatabase.testBasic() tDatasetID=" + tDatasetID);
         testVerboseOn();
         int language = 0;
         long eTime;
@@ -1872,6 +1872,31 @@ expected =
 "category,first,last,height,weight_kg,weight_lb,time\n" +
 ",,,cm,kg,lb,UTC\n" +
 "B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test height=NaN
+        results = "unexpected";
+        try {
+            tName = tedd.makeNewFileForDapQuery(language, null, null, "&height=NaN",
+                dir, tedd.className() + "_htEqNaN", ".csv"); 
+            results = File2.directReadFrom88591File(dir + tName);
+        } catch (Exception e) {
+            results = e.getMessage();
+        }
+        expected = "Your query produced no matching results. (nRows = 0)"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //test height!=NaN
+        tName = tedd.makeNewFileForDapQuery(language, null, null, "&height!=NaN",
+            dir, tedd.className() + "_htNeNaN", ".csv"); 
+        results = File2.directReadFrom88591File(dir + tName);
+        expected =  
+"category,first,last,height,weight_kg,weight_lb,time\n" +
+",,,cm,kg,lb,UTC\n" +
+"A,Bob,Bucher,182,83.2,183,1966-01-31T16:16:17Z\n" +
+"A,John,Johnson,191,88.5,195,1961-03-05T04:05:06Z\n" +
+"B,Betty,Bach,161,54.2,119,1967-07-08T09:10:11Z\n" +
+"B,Stan,Smith,177,81.1,179,1971-10-12T23:24:25Z\n"; 
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //just script variable

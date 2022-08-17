@@ -25,6 +25,13 @@ public interface OutputStreamSource {
      */
     public OutputStream existingOutputStream();
 
+    /** 
+     * This is useful for OutputStream types that support fileName
+     * if you want to change the download fileName before
+     * the call to getOutputStream().
+     */
+    public void setFileName(String tFileName);
+
         
     /**
      * This returns an OutputStream.

@@ -78,7 +78,7 @@ Optional: If you specify an attribute value here,
 ]]></addVarWhere>
 
 <additionalLinks><![CDATA[
-  If you have suggestions for additional links, contact <kbd>bob dot simons at noaa dot gov</kbd>.
+  If you have suggestions for additional links, contact <kbd>erd dot data at noaa dot gov</kbd>.
   ]]></additionalLinks>
 
 <!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
@@ -409,7 +409,7 @@ For example, the acronym "NOAA" converts to the full name "National Oceanic and 
   <br>&nbsp;
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggestions?</a> 
   This service's list of acronyms is not complete. If you want to add a common 
-  acronym or make a correction, please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
+  acronym or make a correction, please email it to <kbd>erd dot data at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
 ]]></convertOAAcronymsNotes>
@@ -488,7 +488,7 @@ For example, the variable name "sst" converts to the full name "Sea Surface Temp
 <li><a class="selfLink" id="suggestions" href="#suggestions" rel="help">Suggestions?</a> 
   This service's list of variable names is not complete. If you want to add a 
   commonly used variable name or make a correction, 
-  please email it to <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email it to <kbd>erd dot data at noaa dot gov</kbd> .
   <br>&nbsp;
 </ul>
 ]]></convertOAVariableNamesNotes>
@@ -682,7 +682,7 @@ Please specify a comma separated list of <kbd>datasetID/variableName/algorithm/n
 <ul>
 <li>Always check the results from the converters. 
   <br>If you think that the converter gave an incorrect result,
-  please email the details to <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email the details to <kbd>erd dot data at noaa dot gov</kbd> .
   <br>&nbsp;
 <li>DISCLAIMER OF LIABILITY 
   <br>No person or organization associated with this website
@@ -845,7 +845,7 @@ Please specify a comma separated list of <kbd>datasetID/variableName/algorithm/n
   Instead, you can do it yourself, your own way: 
   download subsets of the dataset and apply your own algorithm.
   To request that other interpolation algorithms be added to this converter,
-  please email <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email <kbd>erd dot data at noaa dot gov</kbd> .
   <br>&nbsp;
 <li>ERDDAP administrators: 
   <br>You can change the default Request CSV by 
@@ -952,7 +952,7 @@ Select a GCMD Science Keyword.
   completeness, or usefulness, of any information at this website.
   <br>&nbsp;
 <li><strong><a class="selfLink" id="corrections" href="#corrections" rel="help">Corrections</a></strong> - 
-Please email any suggested corrections to <kbd>bob dot simons at noaa dot gov</kbd> .
+Please email any suggested corrections to <kbd>erd dot data at noaa dot gov</kbd> .
 </ul>
 ]]></convertKeywordsNotes>
 
@@ -1071,7 +1071,7 @@ These converters are imperfect. Always check the results from these converters.
   ERDDAP tries to deal with improperly formatted input.
   If ERDDAP can''t deal with the input, ERDDAP will generate an error message.
   If the "invalid input" is a string time that you think should be supported, 
-  please email it to <kbd>bob dot simons at noaa dot gov</kbd> . 
+  please email it to <kbd>erd dot data at noaa dot gov</kbd> . 
   <br>&nbsp;
 </ul>
 
@@ -1447,7 +1447,7 @@ be percent encoded (ask a programmer for help).  There are
 
 <convertTimeParametersError>That combination of parameters isn't valid. Check the examples and try again.</convertTimeParametersError>
 
-<convertTimeStringFormatError>The format of the string time isn't recognized. If you think it should be supported, please email it to bob.simons at noaa.gov .</convertTimeStringFormatError>
+<convertTimeStringFormatError>The format of the string time isn't recognized. If you think it should be supported, please email it to erd.data at noaa.gov .</convertTimeStringFormatError>
 
 <convertTimeTwoTimeError>Don't specify both stringTime and isoTime parameters.</convertTimeTwoTimeError>
 
@@ -1786,7 +1786,7 @@ On this ERDDAP, the default for most/all datasets is {1}.
 <li>If you think that a converter did a conversion incorrectly,
   first make sure that the input string is valid.
   If you think the input string is valid,
-  please email the details to <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email the details to <kbd>erd dot data at noaa dot gov</kbd> .
 <li>See the detailed comparison of UDUNITS and UCUM 
   <a rel="help" href="#syntaxComparison">syntax</a>
     and <a rel="help" href="#unitsComparison">units</a> below.
@@ -1898,10 +1898,10 @@ The output will be the same as the input, but with updated URLs.
   although it could be improved to cover other realms. 
 <li>If you think that the converter did something incorrectly 
   or didn't update a URL that it should have,
-  please email the details to <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email the details to <kbd>erd dot data at noaa dot gov</kbd> .
 <li>ERDDAP administrators: you can change the conversion rules by editing
   &lt;updateUrls&gt; in messages.xml. If you do, 
-  please email the details to <kbd>bob dot simons at noaa dot gov</kbd> 
+  please email the details to <kbd>erd dot data at noaa dot gov</kbd> 
   so the changes can be incorporated into the standard ERDDAP distribution.
 <li>DISCLAIMER OF LIABILITY - No person or organization associated with this website
   makes any warranty, express or implied, including warranties of merchantability
@@ -3924,7 +3924,7 @@ Note that the URLs have different file extensions (.largePng, .graph, and .png).
 <!-- ******* -->
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact</a></h2>
 Questions, comments, suggestions?  Please send an email to 
-  <kbd>bob dot simons at noaa dot gov</kbd>
+  <kbd>erd dot data at noaa dot gov</kbd>
 and include the ERDDAP URL directly related to your question or comment.
 
 <p><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Or,
@@ -6961,8 +6961,7 @@ please include that in the citation you create.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">How to Cite ERDDAP in a Paper</a></strong>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
-<br><kbd>
-Simons, R.A. 2020. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">What does the acronym "ERDDAP" stand for?</a></strong>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.
@@ -6994,7 +6993,7 @@ and serve your own data.
 
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contact Us</a></h2>
 If you have questions, suggestions, or comments about ERDDAP in general (not this specific
-ERDDAP installation), please send an email to <kbd>bob dot simons at noaa dot gov</kbd>
+ERDDAP installation), please send an email to <kbd>erd dot data at noaa dot gov</kbd>
 and include the ERDDAP URL directly related to your question or comment.
 <br><a class="selfLink" id="ERDDAPMailingList" href="#ERDDAPMailingList" rel="bookmark">Or,
 you can join the ERDDAP Google Group / Mailing List</a> by visiting
@@ -7103,7 +7102,7 @@ The changes are applied in the order of the lines here.
 !!! ONLY ADD PAIRS THAT YOU CONSIDER TO BE VERY, VERY RELIABLE CHANGES!!!
 Notes:
 * If you think that there are rules here which are wrong or new rules to be added,
-  please email <kbd>bob dot simons at noaa dot gov</kbd> .
+  please email <kbd>erd dot data at noaa dot gov</kbd> .
 * The first half has dramatic changes. The second half has simple http to https changes.
   The http to https changes are important because some websites don't have redirects,
   and, even if they do, some systems (e.g., Java) don't automatically follow redirects.
