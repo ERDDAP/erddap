@@ -137,7 +137,7 @@ public class XML {
      *
      * @param plainText the string to be encoded.
      *    If null, this throws exception.
-     * @return the encoded string
+     * @return the encoded, 7-bit ASCII string. SSR.sendEmail relies on result being 7-bit.
      */
     public static String encodeAsHTML(String plainText) {
 //FUTURE: should it convert pairs of spaces to sp + &nbsp;  ?

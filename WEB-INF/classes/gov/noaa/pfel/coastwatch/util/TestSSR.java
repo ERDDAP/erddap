@@ -380,8 +380,8 @@ public class TestSSR {
                 SSR.sendEmail(emailServer, String2.parseInt(emailPort), emailUser, emailPassword, 
                     "mail.smtp.starttls.enable|true",
                     emailReplyToAddress, emailToAddresses,
-                    "gmail email test", 
-                    "This is a gmail email test from TestSSR with embedded special characters < > & û.\nSecond line.");
+                    "gmail email test",                                                              //Euro
+                    "This is a gmail email test from TestSSR with embedded special characters < > & û \u20ac .\nSecond line.");
             } catch (Exception e) {
                 String2.pressEnterToContinue(MustBe.throwableToString(e)); 
             }
