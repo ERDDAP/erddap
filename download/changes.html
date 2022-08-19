@@ -72,7 +72,7 @@ those great suggestions coming!
 
 
 <h2><a class="selfLink" id="changes2.19" href="#changes2.19" rel="bookmark">Changes</a> 
-in ERDDAP version 2.19 (released 2022-08-17)</h2>
+in ERDDAP version 2.19 (released 2022-08-19)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -113,8 +113,9 @@ in ERDDAP version 2.19 (released 2022-08-17)</h2>
     to check resource usage and consider giving ERDDAP more resources.
     Thanks to Erin Turnbull.
     <br>&nbsp;
-  <li>TO DO: If you use ERDDAP to access Cassandra, you need to keep using the version
+  <li>TO DO: If you use ERDDAP to access Cassandra, for Cassandra, you need to keep using the version
     of Java that you were using for running the Cassandra. 
+    Just switch to Java 17 for running Tomcat+ERDDAP. 
   <li>TO DO: Recommended: If your server's CPU has 4+ cores, consider changing to these settings in your datasets.xml file:<kbd>
       <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
       <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
