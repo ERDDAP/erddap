@@ -181,7 +181,7 @@ public class EDStatic {
      * <br>2.16 released on 2021-12-17
      * <br>2.17 released on 2022-02-16
      * <br>2.18 released on 2022-02-23
-     * <br>2.19 released on 2022-08-17
+     * <br>2.19 released on 2022-08-19
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
