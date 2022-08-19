@@ -66,6 +66,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import com.sun.mail.smtp.SMTPTransport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
@@ -77,6 +78,7 @@ import jakarta.mail.Multipart;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
+import jakarta.mail.URLName;
 
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -1201,6 +1203,7 @@ public class SSR {
      * <br>See also http://kickjava.com/2872.htm
      * <br>2021-02-18 https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/javamail/javamail.html
      *   (Glassfish-oriented) https://docs.oracle.com/cd/E26576_01/doc.312/e24930/javamail.htm#GSDVG00204
+     * <br>2022-08-18 https://docs.cloudmailin.com/outbound/examples/send_email_with_java/
      *
      * <p>If this fails with "Connection refused" error, 
      *   make sure McAffee "Virus Scan Console :
@@ -1239,8 +1242,7 @@ public class SSR {
             //    "  properties=" + properties + "\n" +
             //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
             //    "  toAddress=" + toAddress);
-
-            
+          
             String notSendingMsg = String2.ERROR + " in SSR.sendEmail: not sending email because ";
             if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
                 String2.log(notSendingMsg + "no toAddresses.");
@@ -1252,12 +1254,8 @@ public class SSR {
                 throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
             if (!String2.isSomething(fromAddress)) 
                 throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
-            //I'm not sure if System.getProperties returns a new Properties 
-            //  or a reference to the same system properties object
-            //  so use new Properties so this is thread safe.
-            //The Oracle example uses System.getProperties, but I think it is
-            //  unnecessary and exposes email password information needlessly.
-            //Properties props = new Properties(System.getProperties()); 
+            
+            //2022-08-18 https://docs.cloudmailin.com/outbound/examples/send_email_with_java/
             Properties props = new Properties(); 
             if (properties != null && properties.trim().length() > 0) {
                 String sar[] = String2.split(properties, '|');
@@ -1271,51 +1269,49 @@ public class SSR {
 
             //get a session
             Session session;   
-            if (password == null || password.length() == 0) {
-                session = Session.getDefaultInstance(props, null);
-            } else {
-                //use non-default Session.getInstance (not shared) for password sessions
+            if (String2.isSomething(userName) && String2.isSomething(password)) {
                 props.setProperty("mail.smtp.auth", "true");
-                props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                session = Session.getDefaultInstance(props);
+                //props.setProperty("mail.smtp.starttls.enable", "true"); //ERDDAP recommends doing this as a property in setup.xml
+                //use non-default Session.getInstance (not shared) for password sessions
+                session = Session.getInstance(props,
+                    new jakarta.mail.Authenticator() { 
+                        protected PasswordAuthentication getPasswordAuthentication() { 
+                            return new PasswordAuthentication(userName, password); 
+                        }  
+                    });
+            } else {
+                session = Session.getInstance(props, null);
             }
             if (debugMode) session.setDebug(true);
 
             Transport smtpTransport = null;
-            if (password != null && password.length() > 0) {
-                smtpTransport = session.getTransport("smtp");
-                smtpTransport.connect(smtpHost, userName, password);
+            if (String2.isSomething(password)) {
+                smtpTransport = new SMTPTransport(session, new URLName(smtpHost)); 
             }
-            try {
-                // Send the message separately to each recipient (so other's email addresses aren't exposed)
-                String addresses[] = toAddresses.split(",");
-                for (int add = 0; add < addresses.length; add++) {
-                    String toAddress = addresses[add].trim();
-                    if (toAddress.length() == 0 || toAddress.equals("null"))
-                        continue;
+            // Send the message separately to each recipient (so other's email addresses aren't exposed)
+            String tAddresses[] = StringArray.arrayFromCSV(toAddresses, ",", true, false); //trim, keepNothing
+            int nAddresses = tAddresses.length;
+            if (nAddresses == 0) 
+                return;
+            for (int add = 0; add < nAddresses; add++) {
 
+                try { 
                     // Construct the message
                     MimeMessage msg = new MimeMessage(session);
                     msg.setFrom(new InternetAddress(fromAddress));
-                    msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
+                    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(tAddresses[add]));
                     msg.setSubject(subject, File2.UTF_8);
-                    msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); 
-                    msg.setHeader("X-Mailer", "msgsend");
+                    msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); //thus content is 7-bit ASCII, which avoids need for extra steps to support utf-8.
+                    msg.setHeader("X-Mailer", "msgsend"); //program that sent the email
                     msg.setSentDate(new Date());
                     msg.saveChanges();  //do last.  don't forget this
 
-                    try {
-                        if (password == null || password.length() == 0)
-                            Transport.send(msg);
-                        else 
-                            smtpTransport.sendMessage(msg, msg.getAllRecipients());
-                    } catch (Exception e) {
-                        String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
-                    }
+                    if (smtpTransport == null)
+                         Transport.send(msg);
+                    else smtpTransport.send(msg);
+                } catch (Exception e) {
+                    String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + tAddresses[add], e));
                 }
-            } finally {
-                if (smtpTransport != null)
-                    smtpTransport.close();    
             }
         } finally {
             emailLock.unlock();
