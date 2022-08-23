@@ -70,6 +70,7 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <erddapcontent.download.version>v2.23</erddapcontent.download.version>
     </properties>
 
     <repositories>
@@ -187,6 +188,54 @@ since this is impossible for AWS S3 dependencies without Maven.
                     </execution>
                 </executions>
             </plugin> -->
+
+            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>download-erddap-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="https://github.com/BobSimons/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/erddapContent.zip" skipexisting="true" verbose="true"/>
+                                <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
+                                <unzip src="${project.basedir}/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
+                                <delete file="${project.basedir}/erddapContent.zip"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-etopo</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="https://github.com/BobSimons/erddap/raw/master/WEB-INF/ref/etopo1_ice_g_i2.bin" dest="${project.basedir}/WEB-INF/ref/etopo1_ice_g_i2.bin" skipexisting="true" verbose="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-data-dir</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/data"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -252,8 +301,8 @@ since this is impossible for AWS S3 dependencies without Maven.
             <configuration>
                 <port>8081</port>
                 <path>/erddap</path>
-            </configuration -->
-        </dependency> 
+            </configuration> -->
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/junit/junit
