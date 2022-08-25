@@ -125,7 +125,7 @@ public class TestAll  {
 //      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"erdMH1chla1day", "-verbose"});
+//      DasDds.main(new String[]{"sarah3", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
