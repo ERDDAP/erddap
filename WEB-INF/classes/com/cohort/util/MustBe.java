@@ -342,8 +342,8 @@ public class MustBe {
      *
      * @param hideThisThread hides this thread
      * @param hideTomcatWaitingThreads if true, this tries to not show details of 
-     *   tomcat threads that are waiting (not really active) and just counts them
-     *   (just because there are so many of them and they aren't interesting).
+     *   tomcat threads that are waiting (not really active), including inotify threads,
+     *   and just counts them (just because there are so many of them and they aren't interesting).
      *   
      */
     public static String allStackTraces(boolean hideThisThread, boolean hideTomcatWaitingThreads) {
@@ -365,30 +365,23 @@ public class MustBe {
                         threadName = "";
                     StackTraceElement ste[] = (StackTraceElement[])me.getValue();
                     String ste0 = ste.length < 1? "" : ste[0].toString();
-                    String ste1 = ste.length < 2? "" : ste[1].toString();
-                    String ste2 = ste.length < 3? "" : ste[2].toString();
-                    if (hideThisThread && ste0.startsWith("java.lang.Thread.dumpThreads(Native Method)"))
+                    if (hideThisThread && ste0.endsWith("java.lang.Thread.dumpThreads(Native Method)")) //Java 17+
                         continue;
+                    //inotify threads 
                     if (hideTomcatWaitingThreads &&
-                        ste.length >= 3 && 
-                        (ste0.startsWith("sun.misc.Unsafe.park(Native Method)") ||
-                         ste0.startsWith("java.lang.Object.wait(Native Method)"))) {
-                        if (ste2.startsWith("org.apache.tomcat.util.threads.ThreadPool") || //linux
-                            String2.lineStartsWith(ste, "org.apache.tomcat.util.threads.TaskQueue.") >= 0 || //linux, added 2015-12-04
-                            ste2.startsWith("org.apache.tomcat.util.net.JIoEndpoint$Worker.await(JIoEndpoint.java:") ||  //Mac
-                            (threadName.startsWith("http-apr-8080-exec-") && 
-                                "WAITING".equals(t.getState().toString()))) { //windows
+                        threadName.indexOf("FileSystemWatchService") >= 0) { //Java 17
+                        inotify++;
+                        continue;
+                    }
+                    if (hideTomcatWaitingThreads &&
+                        //ste.length >= 3 && 
+                        t.getState().toString().endsWith("WAITING") &&  //WAITING and TIMED_WAITING
+                        (ste0.endsWith("jdk.internal.misc.Unsafe.park(Native Method)") || //Java 17+
+                         ste0.endsWith("java.lang.Object.wait(Native Method)"))) {        //Java 17+
+                        if (String2.lineContaining(ste, ".ThreadPoolExecutor.") >= 0) {   //Java 17+
                             tomcatWaiting++;
                             continue;
                         }
-                    }
-                    //inotify thredd 
-                    if (hideTomcatWaitingThreads &&
-                        ste.length >= 1 && 
-                        ste0.startsWith("sun.nio.fs.LinuxWatchService.poll(") || //linux
-                        ste2.startsWith("sun.nio.fs.WindowsWatchService")) { //windows
-                        inotify++;
-                        continue;
                     }
 
                     sar[count] = t.toString() + " " + t.getState().toString() + 
