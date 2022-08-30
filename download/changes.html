@@ -146,6 +146,7 @@ in ERDDAP version 2.19 (released 2022-08-25)</h2>
         and to create the colorBar settings.
         Thanks to Kevin O'Brien.
     <br>&nbsp;
+
   <li>NEW: You can now put <kbd>&lt;updateMaxEvents&gt;10&lt;/updateMaxEvents&gt;</kbd>
     in datasets.xml (in with the other settings near the top) to change the maximum
     number of file changes (default=10) that will be processed by the updateEveryNMillis system.
@@ -155,6 +156,7 @@ in ERDDAP version 2.19 (released 2022-08-25)</h2>
         >updateMaxEvents documentation</a>.
     Thanks to John Maurer.
     <br>&nbsp;
+  
   <li>NEW: Added support for global "real_time=true|false" String attribute.
     <br>If this is <kbd>false</kbd> (the default) and if the dataset doesn't use <kbd>updateEveryNMillis</kbd>,
       ERDDAP will cache responses to requests 
@@ -165,6 +167,26 @@ in ERDDAP version 2.19 (released 2022-08-25)</h2>
       ERDDAP will never cache the response files 
       and will always return newly created files.
     <br>Thanks to John Maurer.
+    <br>&nbsp;
+
+  <li>NEW: Emails are now sent in a separate emailThread. This makes loading datasets
+    and other actions that generate emails faster because loadDatasets doesn't have to
+    wait for the email to be sent, which sometimes takes a long time.
+    The new system can send multiple emails per email session, 
+    thus reducing the number of email server logins and reducing the 
+    risk of those failing because they are too frequent.
+    There are statistics for the emailThread on the status.html page 
+    and diagnostic messages in log.txt -- look for "emailThread".
+    <br>Thanks to Bob Simons.
+    <br>&nbsp;
+
+  <li>NEW: Subscription actions that 'touch' a remote URL are now handled 
+    in a separate touchThread. This makes loading datasets
+    and other actions that touch URLs faster because loadDatasets doesn't have to
+    wait for the touch to be completed, which sometimes takes a long time.
+    There are statistics for the touchThread on the status.html page 
+    and diagnostic messages in log.txt -- look for "touchThread".
+    <br>Thanks to Bob Simons.
     <br>&nbsp;
 
   <li>IMPROVED: Now, when ERDDAP is restarted and quickRestart=true, EDDTableFromFiles datasets will reuse

@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
@@ -146,7 +147,7 @@ public class SSR {
     public static String erddapVersion = "2"; //vague. will be updated by EDStatic
 
     private static String tempDirectory; //lazy creation by getTempDirectory
-    private static ReentrantLock emailLock = new ReentrantLock();
+    public static ReentrantLock emailLock = new ReentrantLock();
 
     static {
         HttpURLConnection.setFollowRedirects(true);  //it's a static method!
@@ -1181,12 +1182,121 @@ public class SSR {
     }
 
     /**
+     * This gets an email session and smtpTransport for sending emails with authentication.
+     * This should be called after emailLock.lock().
+     *
+     * @param smtpHost The domain of the email server, e.g., smtp.gmail.com .
+     * @param smtpPort The port number, e.g., 587.
+     * @param userName For authentication
+     * @param password For authentication
+     * @param properties alternating list of name|property|name|property ...
+     * @return Object[]{session, smtpTransport};
+     * @throws Exception if trouble
+     */
+    public static Object[] openEmailSession(String smtpHost, int smtpPort,
+        String userName, String password, String properties) throws Exception {
+
+        //String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
+        //    "  properties=" + properties + "\n" +
+        //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]"));
+      
+        String notSendingMsg = String2.ERROR + " in SSR.openEmailSession: not sending email because ";
+        if (!String2.isSomething(smtpHost)) 
+            throw new Exception(notSendingMsg + "smtpHost wasn't specified.");
+        if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
+            throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
+        if (!String2.isSomething(userName)) 
+            throw new Exception(notSendingMsg + "userName wasn't specified.");
+        if (!String2.isSomething(password)) 
+            throw new Exception(notSendingMsg + "password wasn't specified.");
+        
+        //make properties
+        //2022-08-18 https://docs.cloudmailin.com/outbound/examples/send_email_with_java/
+        Properties props = new Properties();
+        boolean useStartTLS = false; 
+        if (properties != null && properties.trim().length() > 0) {
+            String sar[] = String2.split(properties, '|');
+            int n = (sar.length / 2) * 2;
+            for (int i = 0; i < n; i += 2) {
+                props.setProperty(sar[i], sar[i+1]);
+
+                //props.setProperty("mail.smtp.starttls.enable", "true"); //ERDDAP recommends doing this as a property in setup.xml when using Gmail
+                if (sar[i].equals("mail.smtp.starttls.enable") &&
+                    sar[i+1].equals("true"))
+                    useStartTLS = true;
+            }
+        }
+        props.setProperty("mail.smtp.host", smtpHost);
+        props.setProperty("mail.smtp.port", "" + smtpPort);
+
+        props.setProperty("mail.smtp.auth", "true");
+
+        //make the session
+        Session session = Session.getInstance(props,
+            new jakarta.mail.Authenticator() { 
+                protected PasswordAuthentication getPasswordAuthentication() { 
+                    return new PasswordAuthentication(userName, password); 
+                }  
+            });
+        if (debugMode) session.setDebug(true);
+
+        //make the SMTPTransport
+        //2022-08-25 Now basically follow https://www.tabnine.com/code/java/classes/com.sun.mail.smtp.SMTPTransport
+        //  but use "smtp" when useStartTLS=true, not "smtps" which uses SSL (outdated predecessor to startTLS).
+        //I have only tested with useStartTLS=true.
+        SMTPTransport smtpTransport = (SMTPTransport)session.getTransport(
+            useStartTLS? "smtp" : "smtps");  
+        if (debugMode) String2.log(">> pre connect");
+        smtpTransport.connect(smtpHost, userName, password);
+        if (debugMode) String2.log(">> post connect");
+
+        return new Object[]{session, smtpTransport};
+    }
+
+    /**
+     * This handles the low level part of sending one email.
+     *
+     * @throws Exception if trouble
+     */
+    public static void lowSendEmail(Session session, SMTPTransport smtpTransport, 
+        String fromAddress, String toAddresses, String subject, String content) throws Exception {
+
+        String notSendingMsg = String2.ERROR + " in SSR.lowSendEmail: not sending email because ";
+        if (!String2.isSomething(fromAddress)) 
+            throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
+        if (!String2.isSomething(toAddresses)) 
+            throw new Exception(notSendingMsg + "toAddresses wasn't specified.");
+            
+        // Gather the 'to' addresses
+        String tAddresses[] = StringArray.arrayFromCSV(toAddresses, ",", true, false); //trim, keepNothing
+        int nAddresses = tAddresses.length;
+        if (nAddresses == 0) 
+            return;
+        InternetAddress internetAddresses[] = new InternetAddress[nAddresses];
+        for (int add = 0; add < nAddresses; add++) 
+            internetAddresses[add] = new InternetAddress(tAddresses[add]);
+
+        // Construct the message
+        MimeMessage msg = new MimeMessage(session);
+        msg.setFrom(new InternetAddress(fromAddress));
+        msg.setRecipients(Message.RecipientType.TO, internetAddresses);
+        msg.setSubject(subject, File2.UTF_8);
+        msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); //thus content is 7-bit ASCII, which avoids need for extra steps to support utf-8.
+        msg.setHeader("X-Mailer", "msgsend"); //program that sent the email
+        msg.setSentDate(new Date());
+        msg.saveChanges();  //do last.  don't forget this
+
+        smtpTransport.sendMessage(msg, internetAddresses);  //assumes session is already connected.  Old: send(...) did connect(),sendMessage(),close().
+    }
+
+
+    /**
      * This procedure sends a plain text email. For example,
      * <pre>sendEmail("mail.server.name", 25, "joe.smith", password, "joe@smith.com", "sue@smith.com",
      *           "re: dinner", "How about at 7?");
      * </pre>
      *
-     * This is thread safe..
+     * This is thread safe.
      *
      * <p>This code uses /libs/mail.jar.
      * The mail.jar files are available from Sun
@@ -1204,11 +1314,15 @@ public class SSR {
      * <br>2021-02-18 https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/javamail/javamail.html
      *   (Glassfish-oriented) https://docs.oracle.com/cd/E26576_01/doc.312/e24930/javamail.htm#GSDVG00204
      * <br>2022-08-18 https://docs.cloudmailin.com/outbound/examples/send_email_with_java/
+     * <br>2022-08-27 maintain session https://www.tabnine.com/code/java/classes/com.sun.mail.smtp.SMTPTransport
      *
      * <p>If this fails with "Connection refused" error, 
      *   make sure McAffee "Virus Scan Console :
      *   Access Protection Properties : Anti Virus Standard Protections :
      *   Prevent mass mailing worms from sending mail" is un-checked.
+     *
+     * <p>THIS CODE IS DUPLICATED IN SSR.sendEmail and EmailThread.
+     * So if change one, then change the other.
      *
      * @param smtpHost the name of the outgoing mail server
      * @param smtpPort port to be used, usually 25 or 587
@@ -1223,12 +1337,12 @@ public class SSR {
      * @param fromAddress the email address the email is coming from
      *   (usually the same as the userName)
      * @param toAddresses a comma-separated list of the email addresses the email is going to.
-     *   (They will be sent as separate emails.)
+     *    (One email with 1+ addressees.)
      *    If all or one is null or "" or "null", it's a silent error.
      * @param subject The subject is sent with UTF-8 encoding, 
      *    so any Unicode characters are (theoretically) ok.
-     * @param content This plain text content is sent with UTF-8 encoding, 
-     *    so any Unicode characters are (theoretically) ok.
+     * @param content This plain text content is sent with as 7-bit-encoded HTML &lt;pre&gt; content, 
+     *    so any Unicode characters are ok.
      * @throws Exception if trouble
      */
     public static void sendEmail(String smtpHost, int smtpPort,
@@ -1236,84 +1350,33 @@ public class SSR {
         String fromAddress, String toAddresses,
         String subject, String content) throws Exception {
 
-        emailLock.lock();
+        if (!emailLock.tryLock(10, TimeUnit.SECONDS)) {
+            String2.log("ERROR: SSR.sendEmail failed to get emailLock to send email to=" + toAddresses + " subject=" + subject);
+            return;
+        }
+        SMTPTransport smtpTransport = null;
         try {
-            //String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
-            //    "  properties=" + properties + "\n" +
-            //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
-            //    "  toAddress=" + toAddress);
+            if (debugMode) String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
+                "  properties=" + properties + "\n" +
+                "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
+                "  toAddresses=" + toAddresses);
           
-            String notSendingMsg = String2.ERROR + " in SSR.sendEmail: not sending email because ";
-            if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
-                String2.log(notSendingMsg + "no toAddresses.");
-                return;
-            }
-            if (!String2.isSomething(smtpHost)) 
-                throw new Exception(notSendingMsg + "smtpHost wasn't specified.");
-            if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
-                throw new Exception(notSendingMsg + "smtpPort=" + smtpPort + " is invalid.");
-            if (!String2.isSomething(fromAddress)) 
-                throw new Exception(notSendingMsg + "fromAddress wasn't specified.");
-            
-            //2022-08-18 https://docs.cloudmailin.com/outbound/examples/send_email_with_java/
-            Properties props = new Properties(); 
-            if (properties != null && properties.trim().length() > 0) {
-                String sar[] = String2.split(properties, '|');
-                int n = (sar.length / 2) * 2;
-                for (int i = 0; i < n; i += 2)
-                    props.setProperty(sar[i], sar[i+1]);
-            }
-            props.setProperty("mail.smtp.host", smtpHost);
-            props.setProperty("mail.smtp.port", "" + smtpPort);
+            //get a session and smtpTransport
+            Object oar[] = openEmailSession(smtpHost, smtpPort, userName, password, properties);
+            Session session = (Session)oar[0];
+            smtpTransport   = (SMTPTransport)oar[1];
 
+            //sendEmail
+            lowSendEmail(session, smtpTransport, fromAddress, toAddresses, subject, content);
 
-            //get a session
-            Session session;   
-            if (String2.isSomething(userName) && String2.isSomething(password)) {
-                props.setProperty("mail.smtp.auth", "true");
-                //props.setProperty("mail.smtp.starttls.enable", "true"); //ERDDAP recommends doing this as a property in setup.xml
-                //use non-default Session.getInstance (not shared) for password sessions
-                session = Session.getInstance(props,
-                    new jakarta.mail.Authenticator() { 
-                        protected PasswordAuthentication getPasswordAuthentication() { 
-                            return new PasswordAuthentication(userName, password); 
-                        }  
-                    });
-            } else {
-                session = Session.getInstance(props, null);
-            }
-            if (debugMode) session.setDebug(true);
-
-            Transport smtpTransport = null;
-            if (String2.isSomething(password)) {
-                smtpTransport = new SMTPTransport(session, new URLName(smtpHost)); 
-            }
-            // Send the message separately to each recipient (so other's email addresses aren't exposed)
-            String tAddresses[] = StringArray.arrayFromCSV(toAddresses, ",", true, false); //trim, keepNothing
-            int nAddresses = tAddresses.length;
-            if (nAddresses == 0) 
-                return;
-            for (int add = 0; add < nAddresses; add++) {
-
-                try { 
-                    // Construct the message
-                    MimeMessage msg = new MimeMessage(session);
-                    msg.setFrom(new InternetAddress(fromAddress));
-                    msg.setRecipient(Message.RecipientType.TO, new InternetAddress(tAddresses[add]));
-                    msg.setSubject(subject, File2.UTF_8);
-                    msg.setContent("<pre>" + XML.encodeAsHTML(content) + "</pre>", "text/html"); //thus content is 7-bit ASCII, which avoids need for extra steps to support utf-8.
-                    msg.setHeader("X-Mailer", "msgsend"); //program that sent the email
-                    msg.setSentDate(new Date());
-                    msg.saveChanges();  //do last.  don't forget this
-
-                    if (smtpTransport == null)
-                         Transport.send(msg);
-                    else smtpTransport.send(msg);
-                } catch (Exception e) {
-                    String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + tAddresses[add], e));
-                }
-            }
+        } catch (Exception e) {
+            String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddresses + " subject=" + subject, e));
         } finally {
+            try {
+                if (smtpTransport != null)
+                    smtpTransport.close();
+            } catch (Throwable t) {
+            }
             emailLock.unlock();
         }
     }

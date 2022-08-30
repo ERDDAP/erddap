@@ -234,6 +234,10 @@ public static boolean developmentMode = false;
         downloadDir          = webInfParentDirectory + DOWNLOAD_DIR, //local directory on this computer
         imageDir             = webInfParentDirectory + IMAGES_DIR;   //local directory on this computer
     public static Tally tally = new Tally();
+    public static int emailThreadFailedDistribution24[]      = new int[String2.DistributionSize];
+    public static int emailThreadFailedDistributionTotal[]   = new int[String2.DistributionSize];
+    public static int emailThreadSucceededDistribution24[]   = new int[String2.DistributionSize];
+    public static int emailThreadSucceededDistributionTotal[]= new int[String2.DistributionSize];
     public static int failureTimesDistributionLoadDatasets[] = new int[String2.DistributionSize];
     public static int failureTimesDistribution24[]           = new int[String2.DistributionSize];
     public static int failureTimesDistributionTotal[]        = new int[String2.DistributionSize];
@@ -248,6 +252,10 @@ public static boolean developmentMode = false;
     public static int taskThreadFailedDistributionTotal[]    = new int[String2.DistributionSize];
     public static int taskThreadSucceededDistribution24[]    = new int[String2.DistributionSize];
     public static int taskThreadSucceededDistributionTotal[] = new int[String2.DistributionSize];
+    public static int touchThreadFailedDistribution24[]      = new int[String2.DistributionSize];
+    public static int touchThreadFailedDistributionTotal[]   = new int[String2.DistributionSize];
+    public static int touchThreadSucceededDistribution24[]   = new int[String2.DistributionSize];
+    public static int touchThreadSucceededDistributionTotal[]= new int[String2.DistributionSize];
     public static int dangerousMemoryFailures = 0; //since last Major LoadDatasets
     public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
 
@@ -410,6 +418,26 @@ public static boolean developmentMode = false;
      */
     public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(16, 0.75f, 4); 
 
+    //emailThread variables
+    //Funnelling all emailThread emails through one emailThread ensures that
+    //  emails that timeout don't slow down other processes
+    //  and allows me to email in batches so fewer email sessions (so I won't
+    //  get Too Many Login Attempts and lost emails).
+    public static ArrayList<String[]> emailList = new ArrayList(); //keep here in case EmailThread needs to be restarted
+    private static EmailThread emailThread;
+    //no lastAssignedEmail since not needed
+    /** 
+     * This returns the index number of the email in emailList (-1,0..) of the last completed email
+     * (successful or not).
+     * nFinishedEmails = lastFinishedEmail + 1;
+     */
+    public static volatile int lastFinishedEmail = -1;
+    /** 
+     * This returns the index number of the email in emailList (0..) that will be started
+     * when the current email is finished.
+     */
+    public static volatile int nextEmail = 0;
+
     //taskThread variables
     //Funnelling all taskThread tasks through one taskThread ensures
     //  that the memory requirements, bandwidth usage, cpu usage,
@@ -434,6 +462,24 @@ public static boolean developmentMode = false;
      * when the current task is finished.
      */
     public static volatile int nextTask = 0;
+
+    //touchThread variables
+    //Funnelling all touchThread tasks through one touchThread ensures that
+    //  touches that timeout don't slow down other processes.
+    public static ArrayList<String> touchList = new ArrayList(); //keep here in case TouchThread needs to be restarted
+    private static TouchThread touchThread;
+    //no lastAssignedTouch since not needed
+    /** 
+     * This returns the index number of the touch in touchList (-1,0..) of the last completed touch
+     * (successful or not).
+     * nFinishedTouches = lastFinishedTouch + 1;
+     */
+    public static volatile int lastFinishedTouch = -1;
+    /** 
+     * This returns the index number of the touch in touchList (0..) that will be started
+     * when the current touch is finished.
+     */
+    public static volatile int nextTouch = 0;
 
 
     /** This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets 
@@ -676,11 +722,11 @@ public static boolean developmentMode = false;
     public static int variableNameCategoryAttributeIndex = -1;
     public static int logMaxSizeMB;
     
-    private static String
-        emailSmtpHost, emailUserName, emailFromAddress, emailPassword, emailProperties; 
-    private static int emailSmtpPort;
+    public static String emailSmtpHost, emailUserName, emailFromAddress, emailPassword, emailProperties; 
+    public static int emailSmtpPort = 0; //<=0 means inactive
     private static String emailLogDate = "";
     private static BufferedWriter emailLogFile;
+    private static boolean emailIsActive = false; //ie if actual emails will be sent
 
     //these are set as a consequence of setup.xml info
     public static SgtGraph sgtGraph;
@@ -1782,6 +1828,12 @@ public static boolean developmentMode = false;
         emailFromAddress       = getSetupEVString(setup, ev, "emailFromAddress", (String)null);
         emailEverythingToCsv   = getSetupEVString(setup, ev, "emailEverythingTo", "");  //won't be null
         emailDailyReportToCsv  = getSetupEVString(setup, ev, "emailDailyReportTo", ""); //won't be null
+        emailIsActive = //ie if actual emails will be sent
+            String2.isSomething(emailSmtpHost) &&
+            emailSmtpPort > 0 &&
+            String2.isEmailAddress(emailUserName) &&
+            String2.isSomething(emailPassword) &&
+            String2.isEmailAddress(emailFromAddress);
 
         String tsar[] = String2.split(emailEverythingToCsv, ',');
         if (emailEverythingToCsv.length() > 0)
@@ -1797,6 +1849,8 @@ public static boolean developmentMode = false;
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
                         " in <emailDailyReportTo>.");  
+        ensureEmailThreadIsRunningIfNeeded();
+        ensureTouchThreadIsRunningIfNeeded();
 
         //test of email
         //Test.error("This is a test of emailing an error in Erddap constructor.");
@@ -3826,6 +3880,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Calendar2.verbose = verbose;
         EDD.verbose = verbose;
         EDV.verbose = verbose;      
+        EmailThread.verbose = verbose;
         Erddap.verbose = verbose;
         File2.verbose = verbose;
         FileVisitorDNLS.reallyVerbose = reallyVerbose;
@@ -3848,6 +3903,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Subscriptions.verbose = verbose;
         Table.verbose = verbose;
         TaskThread.verbose = verbose;
+        TouchThread.verbose = verbose;
         Units2.verbose = verbose;
 
         reallyVerbose = logLevel.equals("all");
@@ -3856,6 +3912,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Calendar2.reallyVerbose = reallyVerbose;
         EDD.reallyVerbose = reallyVerbose;
         EDV.reallyVerbose = reallyVerbose;
+        EmailThread.reallyVerbose = reallyVerbose;
         Erddap.reallyVerbose = reallyVerbose;
         File2.reallyVerbose = reallyVerbose;
         FileVisitorDNLS.reallyVerbose = reallyVerbose;
@@ -3876,6 +3933,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         Table.reallyVerbose = reallyVerbose;
         //Table.debug = reallyVerbose; //for debugging
         TaskThread.reallyVerbose = reallyVerbose;
+        TouchThread.reallyVerbose = reallyVerbose;
         //Units2.reallyVerbose = reallyVerbose;  currently no such setting
 
         String2.log("logLevel=" + logLevel + ": verbose=" + verbose + " reallyVerbose=" + reallyVerbose);
@@ -4247,7 +4305,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
 
     /**
-     * This sends the specified email to the emailAddresses.
+     * This sends one email to the emailAddresses (actually, it adds it to the emailList queue).
      * <br>This won't throw an exception if trouble.
      * <br>This method always prepends the subject and content with [erddapUrl],
      *   so that it will be clear which ERDDAP this came from 
@@ -4347,48 +4405,21 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             }
         }
 
-        //done?
-        if (emailAddressesCSSV == null || emailAddressesCSSV.length() == 0 ||
-            emailSmtpHost == null || emailSmtpHost.length() == 0) 
-            return "";
+        //send it?
+        if (!String2.isSomething(emailAddressesCSSV)) { 
+            String2.log("Email not sent because no To address.");
 
-
-        //send email
-        String errors = "";
-        try {
-//??? THREAD SAFE? SYNCHRONIZED? 
-//I don't think use of this needs to be synchronized. I could be wrong. I haven't tested.
-            SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
-                subject, 
-                preferredErddapUrl + " reports:\n" + content);
-        } catch (Throwable t) {
-            String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";
-            try {String2.log(MustBe.throwable(msg, t));
-            } catch (Throwable t4) {
+        } else if (emailIsActive) {
+            //send email
+            synchronized(emailList) {
+                emailList.add(new String[] {emailAddressesCSSV, subject, 
+                     preferredErddapUrl + " reports:\n" + content});
             }
-            errors = msg + ": " + t.toString() + "\n";
+        } else {
+            String2.log("Email not sent because email system is inactive.");
         }
 
-        //write errors to email log
-        if (errors.length() > 0 && emailLogFile != null) {
-            try {
-                //do in one write encourages threads not to intermingle   (or synchronize on emailLogFile?)
-                emailLogFile.write("\n********** ERRORS **********\n" + errors);
-                emailLogFile.flush();
-
-            } catch (Throwable t) {
-                String2.log(MustBe.throwable("Error: Writing to emailLog failed.", t));
-                if (emailLogFile != null) {
-                    try {emailLogFile.close(); 
-                    } catch (Throwable t2) {
-                    }
-                    emailLogFile = null;
-                }
-            }
-        }
-
-        return errors;
+        return "";
     }
 
 
@@ -4503,6 +4534,26 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(String2.getBriefDistributionStatistics(taskThreadSucceededDistribution24) + "\n");
         sb.append("TaskThread Succeeded Time (since startup)               ");
         sb.append(String2.getBriefDistributionStatistics(taskThreadSucceededDistributionTotal) + "\n");
+
+        synchronized(emailList) {
+            ensureEmailThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            if (emailIsActive) {
+                sb.append("EmailThread Failed    Time (since last Daily Report)    ");
+                sb.append(String2.getBriefDistributionStatistics(emailThreadFailedDistribution24) + "\n");
+                sb.append("EmailThread Succeeded Time (since last Daily Report)    ");
+                sb.append(String2.getBriefDistributionStatistics(emailThreadSucceededDistribution24) + "\n");
+            } else {
+                sb.append("The email system is inactive.\n");
+            }
+        }
+
+        synchronized(touchList) {
+            ensureTouchThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            sb.append("TouchThread Failed    Time (since last Daily Report)    ");
+            sb.append(String2.getBriefDistributionStatistics(touchThreadFailedDistribution24) + "\n");
+            sb.append("TouchThread Succeeded Time (since last Daily Report)    ");
+            sb.append(String2.getBriefDistributionStatistics(touchThreadSucceededDistribution24) + "\n");
+        }
     }
 
     /**
@@ -4547,6 +4598,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(String2.getDistributionStatistics(responseTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
+        if (emailIsActive) {
+            sb.append("EmailThread Failed Time Distribution (since last Daily Report):\n");
+            sb.append(String2.getDistributionStatistics(emailThreadFailedDistribution24)); sb.append('\n');
+            sb.append("EmailThread Failed Time Distribution (since startup):\n");
+            sb.append(String2.getDistributionStatistics(emailThreadFailedDistributionTotal)); sb.append('\n');
+            sb.append("EmailThread Succeeded Time Distribution (since last Daily Report):\n");
+            sb.append(String2.getDistributionStatistics(emailThreadSucceededDistribution24)); sb.append('\n');
+            sb.append("EmailThread Succeeded Time Distribution (since startup):\n");
+            sb.append(String2.getDistributionStatistics(emailThreadSucceededDistributionTotal)); sb.append('\n');
+        }
+
         sb.append("TaskThread Failed Time Distribution (since last Daily Report):\n");
         sb.append(String2.getDistributionStatistics(taskThreadFailedDistribution24)); sb.append('\n');
         sb.append("TaskThread Failed Time Distribution (since startup):\n");
@@ -4555,6 +4617,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(String2.getDistributionStatistics(taskThreadSucceededDistribution24)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since startup):\n");
         sb.append(String2.getDistributionStatistics(taskThreadSucceededDistributionTotal)); sb.append('\n');
+
+        sb.append("TouchThread Failed Time Distribution (since last Daily Report):\n");
+        sb.append(String2.getDistributionStatistics(touchThreadFailedDistribution24)); sb.append('\n');
+        sb.append("TouchThread Failed Time Distribution (since startup):\n");
+        sb.append(String2.getDistributionStatistics(touchThreadFailedDistributionTotal)); sb.append('\n');
+        sb.append("TouchThread Succeeded Time Distribution (since last Daily Report):\n");
+        sb.append(String2.getDistributionStatistics(touchThreadSucceededDistribution24)); sb.append('\n');
+        sb.append("TouchThread Succeeded Time Distribution (since startup):\n");
+        sb.append(String2.getDistributionStatistics(touchThreadSucceededDistributionTotal)); sb.append('\n');
+
         sb.append(EDStatic.tally.toString("Language (since last daily report)", 50)); //added v2.15
         sb.append(EDStatic.tally.toString("Language (since startup)", 50));
 
@@ -5185,10 +5257,52 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     }
 
     /**
-     * This checks if the task thread is running and not stalled.
+     * This checks if the email thread is live/running and not stalled.
      * If it is stalled, this will stop it.
      *
-     * @return true if the task thread is running.
+     * @return true if the email thread is live/running.
+     *    If false, emailThread will be null.
+     */
+    public static boolean isEmailThreadRunning() {
+        synchronized(emailList) {
+            if (emailThread == null)
+                return false;
+
+            if (emailThread.isAlive()) {
+                //is it stalled?
+                long eTime = emailThread.elapsedTime();  //-1 if no session active
+                long maxTime = 5 * Calendar2.MILLIS_PER_MINUTE; //appropriate??? user settable???
+                if (eTime > maxTime) {  
+
+                    //emailThread is stalled; interrupt it
+                    String tError = "%%% EmailThread: EDStatic is interrupting a stalled emailThread (" +
+                        Calendar2.elapsedTimeString(eTime) + " > " + 
+                        Calendar2.elapsedTimeString(maxTime) + ") at " + 
+                        Calendar2.getCurrentISODateTimeStringLocalTZ();
+                        email(emailEverythingToCsv, "emailThread Stalled", tError);
+                    String2.log(tError);
+
+                    stopThread(emailThread, 10); //short time; it is already in trouble
+                    //runningThreads.remove   not necessary since new one is put() in below
+                    emailThread = null;
+                    return false;
+                }
+                return true;
+            } else {
+                //it isn't alive
+                String2.log("%%% EmailThread: EDStatic noticed that emailThread isn't alive at " + 
+                    Calendar2.getCurrentISODateTimeStringLocalTZ());
+                emailThread = null;
+                return false;
+            }
+        }
+    }
+
+    /**
+     * This checks if the task thread is live/running and not stalled.
+     * If it is stalled, this will stop it.
+     *
+     * @return true if the task thread is live/running.
      *    If false, taskThread will be null.
      */
     public static boolean isTaskThreadRunning() {
@@ -5203,12 +5317,12 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 if (eTime > maxTime) {  
 
                     //taskThread is stalled; interrupt it
-                    String tError = "\n*** Error: EDStatic is interrupting a stalled taskThread (" +
+                    String tError = "%%% TaskThread ERROR: EDStatic is interrupting a stalled taskThread (" +
                         Calendar2.elapsedTimeString(eTime) + " > " + 
                         Calendar2.elapsedTimeString(maxTime) + ") at " + 
                         Calendar2.getCurrentISODateTimeStringLocalTZ();
                     email(emailEverythingToCsv, "taskThread Stalled", tError);
-                    String2.log("\n*** " + tError);
+                    String2.log(tError);
 
                     stopThread(taskThread, 10); //short time; it is already in trouble
                     //runningThreads.remove   not necessary since new one is put() in below
@@ -5219,12 +5333,77 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 return true;
             } else {
                 //it isn't alive
-                String2.log("\n*** EDStatic noticed that taskThread is finished (" + 
-                    Calendar2.getCurrentISODateTimeStringLocalTZ() + ")\n");
+                String2.log("%%% TaskThread: EDStatic noticed that taskThread is finished at " + 
+                    Calendar2.getCurrentISODateTimeStringLocalTZ());
                 lastFinishedTask = nextTask - 1;
                 taskThread = null;
                 return false;
             }
+        }
+    }
+
+    /**
+     * This checks if the touch thread is live/running and not stalled.
+     * If it is stalled, this will stop it.
+     *
+     * @return true if the touch thread is live/running.
+     *    If false, touchThread will be null.
+     */
+    public static boolean isTouchThreadRunning() {
+        synchronized(touchList) {
+            if (touchThread == null)
+                return false;
+
+            if (touchThread.isAlive()) {
+                //is it stalled?
+                long eTime = touchThread.elapsedTime();
+                long maxTime = TouchThread.TIMEOUT_MILLIS * 2;
+                if (eTime > maxTime) {  
+
+                    //touchThread is stalled; interrupt it
+                    String tError = "%%% TouchThread ERROR: EDStatic is interrupting a stalled touchThread (" +
+                        Calendar2.elapsedTimeString(eTime) + " > " + 
+                        Calendar2.elapsedTimeString(maxTime) + ") at " + 
+                        Calendar2.getCurrentISODateTimeStringLocalTZ();
+                    email(emailEverythingToCsv, "touchThread Stalled", tError);
+                    String2.log(tError);
+
+                    stopThread(touchThread, 10); //short time; it is already in trouble
+                    //runningThreads.remove   not necessary since new one is put() in below
+                    lastFinishedTouch = nextTouch - 1;
+                    touchThread = null;
+                    return false;
+                }
+                return true;
+            } else {
+                //it isn't alive
+                String2.log("%%% TouchThread: EDStatic noticed that touchThread isn't alive at " + 
+                    Calendar2.getCurrentISODateTimeStringLocalTZ());
+                lastFinishedTouch = nextTouch - 1;
+                touchThread = null;
+                return false;
+            }
+        }
+    }
+
+    /** 
+     * This ensures the email thread is running if email system is active.
+     * This won't throw an exception.
+     */
+    public static void ensureEmailThreadIsRunningIfNeeded() {
+        synchronized(emailList) {
+            //this checks if it is running and not stalled
+            if (!emailIsActive || isEmailThreadRunning())
+                return;
+            
+            //emailIsActive && emailThread isn't running
+            //need to start a new emailThread
+            emailThread = new EmailThread(nextEmail);
+            runningThreads.put(emailThread.getName(), emailThread); 
+            String2.log("%%% EmailThread: new emailThread started at " + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ());
+            emailThread.start();
+            return;
         }
     }
 
@@ -5247,11 +5426,39 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //need to start a new taskThread
             taskThread = new TaskThread(nextTask);
             runningThreads.put(taskThread.getName(), taskThread); 
-            String2.log("\n*** new taskThread started at " + 
-                Calendar2.getCurrentISODateTimeStringLocalTZ() + " nPendingTasks=" + nPending + "\n");
+            String2.log("%%% TaskThread: new TaskThread started at " + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + " nPendingTasks=" + nPending);
             taskThread.start();
             return;            
         }
+    }
+
+    /** 
+     * This ensures the touch thread is running (always).
+     * This won't throw an exception.
+     */
+    public static void ensureTouchThreadIsRunningIfNeeded() {
+        synchronized(touchList) {
+            //this checks if it is running and not stalled
+            if (isTouchThreadRunning())
+                return;
+            
+            //touchThread isn't running
+            //always start a new touchThread
+            touchThread = new TouchThread(nextTouch);
+            runningThreads.put(touchThread.getName(), touchThread); 
+            String2.log("%%% TouchThread: new touchThread started at " + 
+                Calendar2.getCurrentISODateTimeStringLocalTZ());
+            touchThread.start();
+            return;            
+        }
+    }
+
+    /**
+     * This returns the number of unfinished emails.
+     */
+    public static int nUnfinishedEmails() {
+        return (emailList.size() - lastFinishedEmail) - 1;
     }
 
     /**
@@ -5261,7 +5468,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         return (taskList.size() - lastFinishedTask) - 1;
     }
 
-    /** This adds a task to the taskList if it (other than TASK_SET_FLAG)
+    /**
+     * This returns the number of unfinished touches.
+     */
+    public static int nUnfinishedTouches() {
+        return (touchList.size() - lastFinishedTouch) - 1;
+    }
+
+    //addEmail is inside EDStatic.sendEmail()
+
+    /** 
+     * This adds a task to the taskList if it (other than TASK_SET_FLAG)
      * isn't already on the taskList.
      * @return the task number that was assigned to the task,
      *   or -1 if it was a duplicate task.
@@ -5277,6 +5494,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //add the task to the list
             taskList.add(taskOA);
             return taskList.size() - 1;
+        }
+    }
+
+    /** 
+     * This adds a touch to the touchList.
+     * @return the touch number that was assigned to the touch.
+     */
+    public static int addTouch(String url) {
+        synchronized(touchList) {
+            touchList.add(url);
+            return touchList.size() - 1;
         }
     }
 
