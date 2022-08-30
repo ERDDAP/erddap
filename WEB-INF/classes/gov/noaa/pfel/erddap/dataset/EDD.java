@@ -1152,7 +1152,7 @@ public abstract class EDD {
                     "&email=" + SSR.minimalPercentEncode(EDStatic.emailSubscriptionsFrom) +
                     "&emailIfAlreadyValid=false" + 
                     "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
-                SSR.touchUrl(subscriptionUrl, 60000, true);  //handleS3ViaSDK=true
+                EDStatic.addTouch(subscriptionUrl); 
                 String2.log(datasetID + " sent a subscription request to the remote ERDDAP dataset.");
                 //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
             }
@@ -1216,7 +1216,7 @@ public abstract class EDD {
                     "&action=" + SSR.minimalPercentEncode(tFlagUrl); // %encode deals with & within flagUrl
                 if (verbose) String2.log("  " + datasetID + 
                     " is subscribing to underlying fromErddap dataset:\n  " + subscriptionUrl);
-                SSR.touchUrl(subscriptionUrl, 60000, true);  //may throw exception  //handleS3ViaSDK=true
+                EDStatic.addTouch(subscriptionUrl);
                 return; //success
 
             }
@@ -12238,6 +12238,8 @@ if (nSuccess >= 2)
         gov.noaa.pfel.coastwatch.pointdata.DigirHelper.reallyVerbose = on;
         EDV.verbose = on;
         EDV.reallyVerbose = on;
+        EmailThread.verbose = on;
+        EmailThread.reallyVerbose = on;
         GridDataAccessor.verbose = on;
         GridDataAccessor.reallyVerbose = on;
         GSHHS.verbose = on;
@@ -12254,6 +12256,8 @@ if (nSuccess >= 2)
         TableWriter.reallyVerbose = on;
         TaskThread.verbose = on;
         TaskThread.reallyVerbose = on;
+        TouchThread.verbose = on;
+        TouchThread.reallyVerbose = on;
     }
 
     public static void testSuggestInstitutionParts() {
