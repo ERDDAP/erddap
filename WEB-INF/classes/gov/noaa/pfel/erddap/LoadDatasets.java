@@ -1087,6 +1087,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
                     EDStatic.tally.remove("Categorize File Type (since last daily report)");
                     EDStatic.tally.remove("Convert (since last daily report)");
+                    EDStatic.tally.remove("EmailThread Failed    Time (since last daily report)");
+                    EDStatic.tally.remove("EmailThread Succeeded Time (since last daily report)");
                     EDStatic.tally.remove("files browse DatasetID (since last daily report)");
                     EDStatic.tally.remove("files download DatasetID (since last daily report)");
                     EDStatic.tally.remove("griddap DatasetID (since last daily report)");
@@ -1129,6 +1131,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("tabledap File Type (since last daily report)");
                     EDStatic.tally.remove("TaskThread Failed    Time (since last daily report)");
                     EDStatic.tally.remove("TaskThread Succeeded Time (since last daily report)");
+                    EDStatic.tally.remove("TouchThread Failed    Time (since last daily report)");
+                    EDStatic.tally.remove("TouchThread Succeeded Time (since last daily report)");
                     EDStatic.tally.remove("WCS index.html (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
@@ -1310,13 +1314,13 @@ public class LoadDatasets extends Thread {
                                 //e.g., https://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=ucsdHfrW500&flagKey=##########
                                 String trDatasetID = String2.extractCaptureGroup(tAction, "datasetID=(.+?)&", 1);
                                 if (trDatasetID == null)
-                                    SSR.touchUrl(tAction, 60000, true); //fall back; just do it  //handleS3ViaSDK=true
+                                    EDStatic.addTouch(tAction); 
                                 else EDD.requestReloadASAP(trDatasetID);
 
                             } else {
                                 //but don't get the input stream! I don't need to, 
                                 //and it is a big security risk.
-                                SSR.touchUrl(tAction, 60000, true);  //handleS3ViaSDK=true
+                                EDStatic.addTouch(tAction); 
                             }
                         } else if (tAction.startsWith("mailto:")) {
                             String tEmail = tAction.substring("mailto:".length());

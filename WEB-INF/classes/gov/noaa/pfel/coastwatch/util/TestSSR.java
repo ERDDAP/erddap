@@ -362,9 +362,10 @@ public class TestSSR {
             "gmail email user (e.g., erd.data@noaa.gov)? ");
         if (emailUser.length() == 0) emailUser = "erd.data@noaa.gov"; 
 
-        emailPassword = String2.getPasswordFromSystemIn(
-            "gmail email password\n" +
-            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
+        emailPassword = 
+"tiposqzmirehqpmr"; //String2.getPasswordFromSystemIn(
+//            "gmail email password\n" +
+//            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
         
         if (emailPassword.length() > 0) {
             emailReplyToAddress = String2.getStringFromSystemIn( 
@@ -372,7 +373,7 @@ public class TestSSR {
             if (emailReplyToAddress.length() == 0) emailReplyToAddress = "erd.data@noaa.gov";
 
             emailToAddresses = String2.getStringFromSystemIn(
-                "1+ email To addresses (e.g., bob.simons@noaa.gov,CoHortSoftware@gmail.com,null)? ");
+                "1+ email To addresses (e.g., bob.simons@noaa.gov,CoHortSoftware@gmail.com)? ");
             if (emailToAddresses.length() == 0) emailToAddresses = "bob.simons@noaa.gov,CoHortSoftware@gmail.com";
 
             try {
