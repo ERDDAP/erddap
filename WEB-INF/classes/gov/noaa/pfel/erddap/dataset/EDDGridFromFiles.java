@@ -712,10 +712,21 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         IntArray    ftStartIndex = (IntArray)   fileTable.getColumn(FT_START_INDEX_COL);
 
         //get sourceAxisValues and sourceAxisAttributes from an existing file (if any)
-        //Last one should succeed and has newest (most?) data variables.
+        //Last one should succeed and usually has newest (most?) data variables.
         for (int i = ftFileList.size() - 1; i >= 0; i--) {
             String tDir  = dirList.get(ftDirIndex.get(i));
             String tName = ftFileList.get(i);
+
+            //ensure file size and lastMod are unchanged (i.e., file is unchanged)
+            if (filesAreLocal) { //should I also do this if files are remote???
+                long lastMod = File2.getLastModified(tDir + tName);
+                if (lastMod == 0 || ftLastMod.get(i) != lastMod) //0=trouble: unavailable or changed
+                    continue;
+                long size = File2.length(tDir + tName);
+                if (size < 0 || size == Long.MAX_VALUE || 
+                    (filesAreLocal && ftSize.get(i) != size)) //-1=touble: unavailable or changed
+                    continue;
+            }
 
             Attributes tSourceGlobalAttributes = new Attributes();
             Attributes tSourceAxisAttributes[] = new Attributes[nav];

@@ -13,6 +13,7 @@ import gov.noaa.pfel.coastwatch.griddata.Matlab;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.DataStream;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
@@ -34899,6 +34900,42 @@ readAsNcCF?
         Test.ensureTrue(time < 60000, "Too slow! " + msg); 
     }
 
+    /**
+     * This tests if nc files are closed when "try with resources" approach is taken.
+     */
+    public static void testNcClose() throws Throwable {
+        String2.log("\n*** Table.testNcClose()");
+
+        long time = System.currentTimeMillis();
+        String fileName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
+        int n = 100000;
+        for (int i = 0; i < n; i++) {
+            try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
+                if (i % 10000 == 0)
+                    String2.log("" + i);
+            //} catch (Exception e) {
+            //    String2.log("i=" + i + " " + e.toString());
+            }
+        }
+        String2.log("Opened the same file " + n + " times and auto-closed them. time=" + (System.currentTimeMillis() - time) + " (exp=35534ms)"); 
+
+        //open all of the 10,000 scripps glider files in batch14 after manually: gunzip *.gz
+        time = System.currentTimeMillis();
+        Table table = FileVisitorDNLS.oneStep("/u00/data/points/scrippsGliders/batch14/",
+            ".*\\.nc", true, "", false);
+        PrimitiveArray dirs  = table.getColumn(0);
+        PrimitiveArray names = table.getColumn(1);
+        n = dirs.size();
+        String2.log("nFiles found=" + n);
+        for (int i = 0; i < n; i++) {
+            try (NetcdfFile ncfile = NcHelper.openFile(dirs.getString(i) + names.getString(i))) {
+                if (i % 1000 == 0)
+                    String2.log("" + i);
+            }
+        }
+        String2.log("Opened " + n + " files and auto-closed them. time=" + (System.currentTimeMillis() - time) + " (exp=4530ms)");
+    }
+
 
     /**
      * This runs all of the interactive or not interactive tests for this class.
@@ -34946,6 +34983,7 @@ readAsNcCF?
                     if (test == 10) testParseDapQuery();
                     if (test == 11) testSubsetViaDapQuery();
                     if (test == 12) testAddIndexColumns();
+                    if (test == 13) testNcClose();
                     
                     //readWrite tests
                     if (test == 20) testASCII();

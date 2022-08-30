@@ -1612,7 +1612,7 @@ public class EDDGridFromDap extends EDDGrid {
 
 
     /** 
-     * This tests generateDatasetsXmlFromThreddsCatalogs.
+     * This tests generateDatasetsXmlFromThreddsCatalog.
      * 
      */
     public static void testGenerateDatasetsXmlFromThreddsCatalog() 
@@ -1621,6 +1621,19 @@ public class EDDGridFromDap extends EDDGrid {
 
         runGenerateDatasetsXmlFromThreddsCatalog(null, null,
              ".*", null, null, -1);
+    }
+
+    /** 
+     * This tests generateDatasetsXmlFromThreddsCatalog.
+     * 
+     */
+    public static void testGenerateDatasetsXmlFromThreddsCatalog2() 
+        throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXmlFromThreddsCatalog()");
+
+        runGenerateDatasetsXmlFromThreddsCatalog(null, //resultsFileName
+            "http://opendap.oceanbrowser.net/thredds/catalog/data/emodnet-domains/Coastal%20areas/Northeast%20Atlantic%20Ocean%20-%20Loire%20River/catalog.xml",  
+            ".*", null, null, -1);
     }
 
 
@@ -11950,7 +11963,7 @@ String expected =
 
         //process the catalog's datasets
 //???getDatasets or getDatasetsLogical()?
-        List<Dataset> datasets = catalog.getDatasetsLogical();
+        List<Dataset> datasets = catalog.getDatasets(); //getDatasetsLogical();
         HashSet<String> set = new HashSet();
         if (datasets != null) {
             if (verbose) String2.log("crawlThreddsCatalog will process " + datasets.size() + " datasets");
