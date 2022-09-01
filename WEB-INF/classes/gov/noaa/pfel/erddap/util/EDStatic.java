@@ -181,7 +181,7 @@ public class EDStatic {
      * <br>2.16 released on 2021-12-17
      * <br>2.17 released on 2022-02-16
      * <br>2.18 released on 2022-02-23
-     * <br>2.19 released on 2022-08-25
+     * <br>2.19 released on 2022-09-01
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -234,28 +234,30 @@ public static boolean developmentMode = false;
         downloadDir          = webInfParentDirectory + DOWNLOAD_DIR, //local directory on this computer
         imageDir             = webInfParentDirectory + IMAGES_DIR;   //local directory on this computer
     public static Tally tally = new Tally();
-    public static int emailThreadFailedDistribution24[]      = new int[String2.DistributionSize];
-    public static int emailThreadFailedDistributionTotal[]   = new int[String2.DistributionSize];
-    public static int emailThreadSucceededDistribution24[]   = new int[String2.DistributionSize];
-    public static int emailThreadSucceededDistributionTotal[]= new int[String2.DistributionSize];
-    public static int failureTimesDistributionLoadDatasets[] = new int[String2.DistributionSize];
-    public static int failureTimesDistribution24[]           = new int[String2.DistributionSize];
-    public static int failureTimesDistributionTotal[]        = new int[String2.DistributionSize];
-    public static int majorLoadDatasetsDistribution24[]      = new int[String2.DistributionSize];
-    public static int majorLoadDatasetsDistributionTotal[]   = new int[String2.DistributionSize];
-    public static int minorLoadDatasetsDistribution24[]      = new int[String2.DistributionSize];
-    public static int minorLoadDatasetsDistributionTotal[]   = new int[String2.DistributionSize];
-    public static int responseTimesDistributionLoadDatasets[]= new int[String2.DistributionSize];
-    public static int responseTimesDistribution24[]          = new int[String2.DistributionSize];
-    public static int responseTimesDistributionTotal[]       = new int[String2.DistributionSize];
-    public static int taskThreadFailedDistribution24[]       = new int[String2.DistributionSize];
-    public static int taskThreadFailedDistributionTotal[]    = new int[String2.DistributionSize];
-    public static int taskThreadSucceededDistribution24[]    = new int[String2.DistributionSize];
-    public static int taskThreadSucceededDistributionTotal[] = new int[String2.DistributionSize];
-    public static int touchThreadFailedDistribution24[]      = new int[String2.DistributionSize];
-    public static int touchThreadFailedDistributionTotal[]   = new int[String2.DistributionSize];
-    public static int touchThreadSucceededDistribution24[]   = new int[String2.DistributionSize];
-    public static int touchThreadSucceededDistributionTotal[]= new int[String2.DistributionSize];
+    public static int emailThreadFailedDistribution24[]      = new int[String2.TimeDistributionSize];
+    public static int emailThreadFailedDistributionTotal[]   = new int[String2.TimeDistributionSize];
+    public static int emailThreadSucceededDistribution24[]   = new int[String2.TimeDistributionSize];
+    public static int emailThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
+    public static int emailThreadNEmailsDistribution24[]     = new int[String2.CountDistributionSize];  //count, not time
+    public static int emailThreadNEmailsDistributionTotal[]  = new int[String2.CountDistributionSize];  //count, not time
+    public static int failureTimesDistributionLoadDatasets[] = new int[String2.TimeDistributionSize];
+    public static int failureTimesDistribution24[]           = new int[String2.TimeDistributionSize];
+    public static int failureTimesDistributionTotal[]        = new int[String2.TimeDistributionSize];
+    public static int majorLoadDatasetsDistribution24[]      = new int[String2.TimeDistributionSize];
+    public static int majorLoadDatasetsDistributionTotal[]   = new int[String2.TimeDistributionSize];
+    public static int minorLoadDatasetsDistribution24[]      = new int[String2.TimeDistributionSize];
+    public static int minorLoadDatasetsDistributionTotal[]   = new int[String2.TimeDistributionSize];
+    public static int responseTimesDistributionLoadDatasets[]= new int[String2.TimeDistributionSize];
+    public static int responseTimesDistribution24[]          = new int[String2.TimeDistributionSize];
+    public static int responseTimesDistributionTotal[]       = new int[String2.TimeDistributionSize];
+    public static int taskThreadFailedDistribution24[]       = new int[String2.TimeDistributionSize];
+    public static int taskThreadFailedDistributionTotal[]    = new int[String2.TimeDistributionSize];
+    public static int taskThreadSucceededDistribution24[]    = new int[String2.TimeDistributionSize];
+    public static int taskThreadSucceededDistributionTotal[] = new int[String2.TimeDistributionSize];
+    public static int touchThreadFailedDistribution24[]      = new int[String2.TimeDistributionSize];
+    public static int touchThreadFailedDistributionTotal[]   = new int[String2.TimeDistributionSize];
+    public static int touchThreadSucceededDistribution24[]   = new int[String2.TimeDistributionSize];
+    public static int touchThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
     public static int dangerousMemoryFailures = 0; //since last Major LoadDatasets
     public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
 
@@ -4504,17 +4506,17 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(errorsDuringMajorReload);
         sb.append("Unique users (since startup)                            n = " + ipAddressQueue.size() + "\n");
         sb.append("Response Failed    Time (since last major LoadDatasets) ");
-        sb.append(String2.getBriefDistributionStatistics(failureTimesDistributionLoadDatasets) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(failureTimesDistributionLoadDatasets) + "\n");
         sb.append("Response Failed    Time (since last Daily Report)       ");
-        sb.append(String2.getBriefDistributionStatistics(failureTimesDistribution24) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(failureTimesDistribution24) + "\n");
         sb.append("Response Failed    Time (since startup)                 ");
-        sb.append(String2.getBriefDistributionStatistics(failureTimesDistributionTotal) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(failureTimesDistributionTotal) + "\n");
         sb.append("Response Succeeded Time (since last major LoadDatasets) ");
-        sb.append(String2.getBriefDistributionStatistics(responseTimesDistributionLoadDatasets) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(responseTimesDistributionLoadDatasets) + "\n");
         sb.append("Response Succeeded Time (since last Daily Report)       ");
-        sb.append(String2.getBriefDistributionStatistics(responseTimesDistribution24) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(responseTimesDistribution24) + "\n");
         sb.append("Response Succeeded Time (since startup)                 ");
-        sb.append(String2.getBriefDistributionStatistics(responseTimesDistributionTotal) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(responseTimesDistributionTotal) + "\n");
 
         synchronized(taskList) {
             ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
@@ -4527,21 +4529,27 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         }
 
         sb.append("TaskThread Failed    Time (since last Daily Report)     ");
-        sb.append(String2.getBriefDistributionStatistics(taskThreadFailedDistribution24) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(taskThreadFailedDistribution24) + "\n");
         sb.append("TaskThread Failed    Time (since startup)               ");
-        sb.append(String2.getBriefDistributionStatistics(taskThreadFailedDistributionTotal) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(taskThreadFailedDistributionTotal) + "\n");
         sb.append("TaskThread Succeeded Time (since last Daily Report)     ");
-        sb.append(String2.getBriefDistributionStatistics(taskThreadSucceededDistribution24) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(taskThreadSucceededDistribution24) + "\n");
         sb.append("TaskThread Succeeded Time (since startup)               ");
-        sb.append(String2.getBriefDistributionStatistics(taskThreadSucceededDistributionTotal) + "\n");
+        sb.append(String2.getBriefTimeDistributionStatistics(taskThreadSucceededDistributionTotal) + "\n");
 
         synchronized(emailList) {
             ensureEmailThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
             if (emailIsActive) {
+                long tElapsedTime = emailThread == null? -1 : emailThread.elapsedTime();
+                sb.append("EmailThread has sent " + (lastFinishedEmail + 1) + " out of " + 
+                    emailList.size() + " emails.  " +
+                    (tElapsedTime < 0? 
+                       "Currently, the thread is sleeping.\n" : 
+                       "The current email session has been running for " + Calendar2.elapsedTimeString(tElapsedTime) + ".\n"));
                 sb.append("EmailThread Failed    Time (since last Daily Report)    ");
-                sb.append(String2.getBriefDistributionStatistics(emailThreadFailedDistribution24) + "\n");
+                sb.append(String2.getBriefTimeDistributionStatistics(emailThreadFailedDistribution24) + "\n");
                 sb.append("EmailThread Succeeded Time (since last Daily Report)    ");
-                sb.append(String2.getBriefDistributionStatistics(emailThreadSucceededDistribution24) + "\n");
+                sb.append(String2.getBriefTimeDistributionStatistics(emailThreadSucceededDistribution24) + "\n");
             } else {
                 sb.append("The email system is inactive.\n");
             }
@@ -4549,10 +4557,16 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         synchronized(touchList) {
             ensureTouchThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            long tElapsedTime = touchThread == null? -1 : touchThread.elapsedTime();
+            sb.append("TouchThread has finished " + (lastFinishedTouch + 1) + " out of " + 
+                touchList.size() + " touches.  " +
+                (tElapsedTime < 0? 
+                   "Currently, the thread is sleeping.\n" : 
+                   "The current touch has been running for " + Calendar2.elapsedTimeString(tElapsedTime) + ".\n"));
             sb.append("TouchThread Failed    Time (since last Daily Report)    ");
-            sb.append(String2.getBriefDistributionStatistics(touchThreadFailedDistribution24) + "\n");
+            sb.append(String2.getBriefTimeDistributionStatistics(touchThreadFailedDistribution24) + "\n");
             sb.append("TouchThread Succeeded Time (since last Daily Report)    ");
-            sb.append(String2.getBriefDistributionStatistics(touchThreadSucceededDistribution24) + "\n");
+            sb.append(String2.getBriefTimeDistributionStatistics(touchThreadSucceededDistribution24) + "\n");
         }
     }
 
@@ -4571,61 +4585,68 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         }
         
         sb.append("Major LoadDatasets Times Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(majorLoadDatasetsDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(majorLoadDatasetsDistribution24)); sb.append('\n');
         sb.append("Major LoadDatasets Times Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(majorLoadDatasetsDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(majorLoadDatasetsDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append("Minor LoadDatasets Times Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(minorLoadDatasetsDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(minorLoadDatasetsDistribution24)); sb.append('\n');
         sb.append("Minor LoadDatasets Times Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(minorLoadDatasetsDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(minorLoadDatasetsDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append("Response Failed Time Distribution (since last major LoadDatasets):\n");
-        sb.append(String2.getDistributionStatistics(failureTimesDistributionLoadDatasets)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(failureTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Failed Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(failureTimesDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(failureTimesDistribution24)); sb.append('\n');
         sb.append("Response Failed Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(failureTimesDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(failureTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append("Response Succeeded Time Distribution (since last major LoadDatasets):\n");
-        sb.append(String2.getDistributionStatistics(responseTimesDistributionLoadDatasets)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(responseTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Succeeded Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(responseTimesDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(responseTimesDistribution24)); sb.append('\n');
         sb.append("Response Succeeded Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(responseTimesDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(responseTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         if (emailIsActive) {
             sb.append("EmailThread Failed Time Distribution (since last Daily Report):\n");
-            sb.append(String2.getDistributionStatistics(emailThreadFailedDistribution24)); sb.append('\n');
+            sb.append(String2.getTimeDistributionStatistics(emailThreadFailedDistribution24)); sb.append('\n');
             sb.append("EmailThread Failed Time Distribution (since startup):\n");
-            sb.append(String2.getDistributionStatistics(emailThreadFailedDistributionTotal)); sb.append('\n');
+            sb.append(String2.getTimeDistributionStatistics(emailThreadFailedDistributionTotal)); sb.append('\n');
             sb.append("EmailThread Succeeded Time Distribution (since last Daily Report):\n");
-            sb.append(String2.getDistributionStatistics(emailThreadSucceededDistribution24)); sb.append('\n');
+            sb.append(String2.getTimeDistributionStatistics(emailThreadSucceededDistribution24)); sb.append('\n');
             sb.append("EmailThread Succeeded Time Distribution (since startup):\n");
-            sb.append(String2.getDistributionStatistics(emailThreadSucceededDistributionTotal)); sb.append('\n');
+            sb.append(String2.getTimeDistributionStatistics(emailThreadSucceededDistributionTotal)); sb.append('\n');
+            sb.append("EmailThread nEmails/Session Distribution (since last Daily Report):\n");
+            sb.append(String2.getCountDistributionStatistics(emailThreadNEmailsDistribution24)); sb.append('\n');
+            sb.append("EmailThread nEmails/Session Distribution (since startup):\n");
+            sb.append(String2.getCountDistributionStatistics(emailThreadNEmailsDistributionTotal)); sb.append('\n');
+            sb.append('\n');
         }
 
         sb.append("TaskThread Failed Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(taskThreadFailedDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(taskThreadFailedDistribution24)); sb.append('\n');
         sb.append("TaskThread Failed Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(taskThreadFailedDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(taskThreadFailedDistributionTotal)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(taskThreadSucceededDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(taskThreadSucceededDistribution24)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(taskThreadSucceededDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(taskThreadSucceededDistributionTotal)); sb.append('\n');
+        sb.append('\n');
 
         sb.append("TouchThread Failed Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(touchThreadFailedDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(touchThreadFailedDistribution24)); sb.append('\n');
         sb.append("TouchThread Failed Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(touchThreadFailedDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(touchThreadFailedDistributionTotal)); sb.append('\n');
         sb.append("TouchThread Succeeded Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(touchThreadSucceededDistribution24)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(touchThreadSucceededDistribution24)); sb.append('\n');
         sb.append("TouchThread Succeeded Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(touchThreadSucceededDistributionTotal)); sb.append('\n');
+        sb.append(String2.getTimeDistributionStatistics(touchThreadSucceededDistributionTotal)); sb.append('\n');
+        sb.append('\n');
 
         sb.append(EDStatic.tally.toString("Language (since last daily report)", 50)); //added v2.15
         sb.append(EDStatic.tally.toString("Language (since startup)", 50));

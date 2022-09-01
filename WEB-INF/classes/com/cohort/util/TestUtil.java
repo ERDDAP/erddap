@@ -1237,11 +1237,12 @@ public class TestUtil {
     public static void testString2() throws Throwable {
         String2.log("\n*** TestUtil.testString2()");
         String sar[];
-        StringBuilder sb;
+        StringBuilder sb = new StringBuilder();
         double dar[];
-        int iar[];
+        int n, iar[];
         String s, results, expected;
-
+        long time;
+ /*
         //clipboard
         String2.log("Clipboard was: " + String2.getClipboardString());
         String2.setClipboardString("Test String2.setClipboardString.");
@@ -1253,13 +1254,13 @@ public class TestUtil {
         Test.ensureEqual(String2.md5Hex(null),                     null, "");
 
         //speed of parseInt success
-        long time = System.currentTimeMillis();
+        time = System.currentTimeMillis();
         long t1 = 0;
         for (int i = 0; i < 1000000; i++)
             t1 += String2.parseInt("1023456789");
         String2.log("time1 for 1000000 parseInt good=" + (System.currentTimeMillis() - time));  //119
 
-        //speed of parseInt fail
+       //speed of parseInt fail
         time = System.currentTimeMillis();
         long t2 = 0;
         for (int i = 0; i < 1000000; i++)
@@ -2577,19 +2578,25 @@ public class TestUtil {
         //tokenize
         String2.log("test tokenize");
         Test.ensureEqual(String2.tokenize(" a  bb   ccc \"d d\" eeee"), new String[]{"a", "bb", "ccc", "d d", "eeee"}, "a");
+*/
+        //distributeTime and timeDistributionStatistics
+        String2.log("test distributeTime");
+        int timeDist[] = new int[String2.TimeDistributionSize];
+        String2.distributeTime(7200000, timeDist);
+        n = String2.getTimeDistributionN(timeDist);
+        Test.ensureEqual(n, 1, "");
+        Test.ensureEqual(String2.getTimeDistributionMedian(timeDist, n), 3600000 * 2, "");
 
-        //distribute and distributionStatistics
-        String2.log("test distribute");
-        int dist[] = new int[String2.DistributionSize];
-        String2.distribute(87, dist);
-        String2.distribute(85, dist);
-        String2.distribute(0, dist);
-        String2.distribute(1234, dist);
-        String2.distribute(12345678, dist);
-        n = String2.getDistributionN(dist);
+        timeDist = new int[String2.TimeDistributionSize];
+        String2.distributeTime(87, timeDist);
+        String2.distributeTime(85, timeDist);
+        String2.distributeTime(0, timeDist);
+        String2.distributeTime(1234, timeDist);
+        String2.distributeTime(12345678, timeDist);
+        n = String2.getTimeDistributionN(timeDist);
         Test.ensureEqual(n, 5, "");
-        Test.ensureEqual(String2.getDistributionMedian(dist, n), 88, "");
-        Test.ensureEqual(String2.getDistributionStatistics(dist), 
+        Test.ensureEqual(String2.getTimeDistributionMedian(timeDist, n), 88, "");
+        Test.ensureEqual(String2.getTimeDistributionStatistics(timeDist), 
             "    n =        5,  median ~=       88 ms\n" +
             "    0 ms:               1\n" +
             "    1 ms:               0\n" +
@@ -2614,12 +2621,39 @@ public class TestUtil {
             "    <= 1 hr:            0\n" +
             "    >  1 hr:            1\n", 
             "a"); 
-        dist = new int[String2.DistributionSize];
-        String2.distribute(52, dist);
-        String2.distribute(2*Calendar2.MILLIS_PER_HOUR, dist);
-        String2.distribute(10*Calendar2.MILLIS_PER_HOUR, dist);
-        Test.ensureEqual(String2.getDistributionN(dist), 3, "");
-        Test.ensureEqual(String2.getDistributionMedian(dist, 3), 5400000, "");
+        timeDist = new int[String2.TimeDistributionSize];
+        String2.distributeTime(52, timeDist);
+        String2.distributeTime(2*Calendar2.MILLIS_PER_HOUR, timeDist);
+        String2.distributeTime(10*Calendar2.MILLIS_PER_HOUR, timeDist);
+        n = String2.getTimeDistributionN(timeDist);
+        Test.ensureEqual(n, 3, "");
+        Test.ensureEqual(String2.getTimeDistributionMedian(timeDist, n), 5400000, "");
+
+        //distributeCount and CountDistributionStatistics
+        String2.log("test distributeCount");
+        int countDist[] = new int[String2.CountDistributionSize];
+        String2.distributeCount(200, countDist);
+        n = String2.getCountDistributionN(countDist);
+        Test.ensureEqual(n, 1, "");
+        Test.ensureEqual(String2.getCountDistributionMedian(countDist, n), 200, "");
+
+        String2.distributeCount(-1, countDist);
+        String2.distributeCount(4, countDist);
+        Test.ensureEqual(String2.getCountDistributionStatistics(countDist), 
+            "    n =        3,  median ~=        4\n" +
+            "    0:               1\n" +
+            "    1:               0\n" +
+            "    2:               0\n" +
+            "    <= 5:            1\n" +
+            "    <= 10:           0\n" +
+            "    <= 20:           0\n" +
+            "    <= 50:           0\n" +
+            "    <= 100:          0\n" +
+            "    >  100:          1\n",
+            "a"); 
+        n = String2.getCountDistributionN(countDist);
+        Test.ensureEqual(n, 3, "");
+        Test.ensureEqual(String2.getCountDistributionMedian(countDist, n), 4, "");
 
         //simpleSearchAndReplace
         String2.log("test simpleSearchAndReplace");

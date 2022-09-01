@@ -485,21 +485,13 @@ public class CacheOpendapStation {
 
             //get old opendapTimeDimensionSize, if not known
             if (opendapTimeDimensionSize < 0) {
-                NetcdfFile stationNcFile = NcHelper.openFile(fullStationFileName);
-                try {
+                try (NetcdfFile stationNcFile = NcHelper.openFile(fullStationFileName)) {
                     //add the opendapTimeDimensionSize
                     Group rootGroup = stationNcFile.getRootGroup();
                     PrimitiveArray otdsPa = NcHelper.getGroupAttribute(
                         rootGroup, OPENDAP_TIME_DIMENSION_SIZE);
                     opendapTimeDimensionSize = otdsPa == null? 0 : otdsPa.getInt(0);
                     if (verbose) String2.log("  opendapTimeDimensionSize=" + opendapTimeDimensionSize);
-
-                } finally {
-                    try {
-                        stationNcFile.close(); //make sure it is explicitly closed
-                    } catch (Exception e2) {
-                        //don't care
-                    }
                 }
             }
             if (verbose) String2.log("  timeDim length old=" + opendapTimeDimensionSize + 

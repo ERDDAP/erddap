@@ -929,8 +929,8 @@ ERDDAP में विभिन्न स्थानों में, सम�
 ><img 
     src="../images/external.png" alt=" (external link)" 
     title="किसी बाहरी वेबसाइट का यह लिंक समर्थन नहीं है।"></a> समय प्रणाली। UTC GMT टाइम सिस्टम का आधुनिक संस्करण है। अंतर्राष्ट्रीय परमाणु समय (TAI) के करीब रहने के लिए UTC सामयिक लीप सेकंड का उपयोग करता है। GPS उपकरण आंतरिक रूप से GPS समय (जो लीप सेकंड का उपयोग नहीं करते) का उपयोग करते हैं, लेकिन उपयोगकर्ताओं को UTC समय प्रदर्शित करते हैं। (देखें
-<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
-    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="किसी बाहरी वेबसाइट का यह लिंक समर्थन नहीं है।"></a> या सिस्टम्स ऑफ़ टाइम की अन्य चर्चाएँ।) कड़ाई से बोलते हुए, UTC का उपयोग कुछ स्थितियों में दूर के भविष्य के समय (जैसे, मॉडल में) के लिए नहीं किया जा सकता है, क्योंकि लीप सेकंड की घटना की भविष्यवाणी नहीं की जा सकती है।
 <br>&nbsp;
@@ -5439,10 +5439,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

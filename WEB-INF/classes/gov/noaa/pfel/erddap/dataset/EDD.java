@@ -10998,8 +10998,7 @@ public abstract class EDD {
                 String featureType = null;
                 try {
                     //does it have featureType metadata?
-                    NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
-                    try {
+                    try (NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName)) {
                         Attributes gAtts = new Attributes();
                         NcHelper.getGroupAttributes(ncFile.getRootGroup(), gAtts);
                         featureType = gAtts.getString("featureType"); 
@@ -11007,8 +11006,6 @@ public abstract class EDD {
                             featureType = gAtts.getString("CF:featureType");
                         if (featureType == null)
                             featureType = gAtts.getString("CF:feature_type");
-                    } finally {
-                        ncFile.close();
                     }
                     if (featureType == null)
                         throw new RuntimeException("No featureType, so it isn't an .ncCF file.");

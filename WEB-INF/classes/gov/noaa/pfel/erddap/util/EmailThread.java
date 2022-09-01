@@ -95,6 +95,7 @@ public class EmailThread extends Thread {
 
             Session session = null;
             SMTPTransport smtpTransport = null;
+            int nEmailsPerSession = 0;
             try {   //with SSR.emailLock         
 
                 lastStartTime = System.currentTimeMillis();  
@@ -114,6 +115,7 @@ public class EmailThread extends Thread {
                     //Do these things quickly to keep internal consistency
                     String emailOA[] = null;
                     synchronized(EDStatic.emailList) {
+                        nEmailsPerSession++;
                         EDStatic.nextEmail++;
                         emailOA = EDStatic.emailList.get(EDStatic.nextEmail - 1);
 
@@ -130,8 +132,8 @@ public class EmailThread extends Thread {
 
                         //email sent successfully
                         oneEmailTime = System.currentTimeMillis() - oneEmailTime;
-                        String2.distribute(oneEmailTime, EDStatic.emailThreadSucceededDistribution24);   
-                        String2.distribute(oneEmailTime, EDStatic.emailThreadSucceededDistributionTotal);
+                        String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistribution24);   
+                        String2.distributeTime(oneEmailTime, EDStatic.emailThreadSucceededDistributionTotal);
                         String2.log("%%% EmailThread successfully sent email #" + (EDStatic.nextEmail - 1) + 
                             " to " + emailOA[0] + ". elapsedTime=" + oneEmailTime + "ms" +
                             (oneEmailTime > 10000? " (>10s!)" : ""));
@@ -143,8 +145,8 @@ public class EmailThread extends Thread {
                     } catch (Exception e) {
                         //sending email failed
                         oneEmailTime = System.currentTimeMillis() - oneEmailTime;
-                        String2.distribute(oneEmailTime, EDStatic.emailThreadFailedDistribution24);      
-                        String2.distribute(oneEmailTime, EDStatic.emailThreadFailedDistributionTotal);
+                        String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistribution24);      
+                        String2.distributeTime(oneEmailTime, EDStatic.emailThreadFailedDistributionTotal);
                         String2.log("%%% EmailThread ERROR sending email #" + (EDStatic.nextEmail - 1) + 
                             " to " + emailOA[0] + ". elapsedTime=" + oneEmailTime + "ms" +
                             (oneEmailTime > 10000? " (>10s!)" : "") + "\n" + 
@@ -176,6 +178,8 @@ public class EmailThread extends Thread {
                     SSR.emailLock.unlock();
                 } catch (Throwable t) {
                 }
+                String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistribution24);      
+                String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistributionTotal);
             }
 
         } //while (true)
