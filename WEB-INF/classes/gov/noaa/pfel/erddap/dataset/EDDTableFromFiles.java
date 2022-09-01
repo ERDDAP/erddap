@@ -1668,7 +1668,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         int tFileI = metadataFrom.equals(MF_FIRST)? nMinMaxIndex[1] : nMinMaxIndex[2];
         String mdFromDir  = dirList.get(ftDirIndex.get(tFileI));
         String mdFromName = ftFileList.get(tFileI);
-        if (verbose) String2.log("getting metadata from " + mdFromDir + mdFromName + 
+        if (verbose) String2.log("getting dataset metadata from " + mdFromDir + mdFromName + 
             "\n  ftLastMod" + 
             " first=" + Calendar2.millisToIsoStringTZ(ftLastMod.get(nMinMaxIndex[1])) + 
              " last=" + Calendar2.millisToIsoStringTZ(ftLastMod.get(nMinMaxIndex[2])));
@@ -2030,7 +2030,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //Try to fill expected arrays with info for first file in fileTable.
         //All files should have same info (unless var is missing).
         for (int f = 0; f < ftDirIndex.size(); f++) {
-            //find a file that exists
+            //find a file that exists and is unchanged and dir and name match current settings
             String dir = dirList.get(ftDirIndex.get(f));
             String name = ftFileList.get(f);
             if (filesAreLocal) {
@@ -2041,11 +2041,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (size < 0 || size == Long.MAX_VALUE || 
                     (filesAreLocal && ftSize.get(f) != size)) //-1=touble: unavailable or changed
                     continue;
+                if (!dir.startsWith(fileDir))
+                    continue;
+                if (!name.matches(fileNameRegex))
+                    continue;
             }
 
             try {
                 //get the metadata
-                //String2.log("here 1");
                 Table table = getSourceDataFromFile(dir, name,
                     sourceDataNames, sourceDataTypes, 
                     -1, Double.NaN, Double.NaN, 
@@ -2063,13 +2066,15 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     expectedScaleFactor[dvNec]  = dvAtts.getDouble("scale_factor");
                     expectedUnits[dvNec]        = dvAtts.getString("units");
                 }
+
+                //we got what we needed, no need to look at other files
+                if (verbose)  
+                    String2.log("got expected metadata from previously good file #" + f + 
+                        " of " + ftDirIndex.size() + ": " + dir + name);
+                return true;
             } catch (Throwable t) {
                 throw new RuntimeException("Unexpected error when getting expected attributes from " + dir + name, t);
             }
-
-            //we got what we needed, no need to look at other files
-            if (verbose) String2.log("expected attributes were read from " + dir + name);
-            return true;
         }
         if (verbose) String2.log(
             "Didn't get expected attributes because there were no previously valid files,\n" +

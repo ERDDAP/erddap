@@ -6352,9 +6352,8 @@ Dataset {
         //get information
         String msg = "  Table.readFlatNc " + fullName; 
         long time = System.currentTimeMillis();
-        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
             //fill the table
@@ -6383,18 +6382,10 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
-            netcdfFile.close(); 
-            netcdfFile = null;
             if (reallyVerbose) 
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (netcdfFile != null) {
-                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
-            }
         }
-
     }
 
     /**
@@ -6413,9 +6404,8 @@ Dataset {
         //get information
         String msg = "  Table.readNcMetadata " + fullName; 
         long time = System.currentTimeMillis();
-        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
             //fill the table
             clear();
             NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
@@ -6448,15 +6438,9 @@ Dataset {
                 convertToUnsignedPAs();
                 standardize(standardizeWhat);
             }
-            netcdfFile.close(); 
-            netcdfFile = null;
             if (reallyVerbose) 
                 msg += " finished. nColumns=" + nColumns() +  
                     " TIME=" + (System.currentTimeMillis() - time) + "ms";
-
-        } finally {
-            if (netcdfFile != null)
-                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -6542,10 +6526,9 @@ Dataset {
         String msg = "  Table.readFlat0Nc " + fullName;
 
         //read the scalar variables
-        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
         //getGridMappingAtts() handled by lowReadFlatNc above
         int insertAt = 0;
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
             Group rootGroup = netcdfFile.getRootGroup();
             List rootGroupVariables = rootGroup.getVariables(); 
             int nv = rootGroupVariables.size();
@@ -6582,15 +6565,9 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
-            netcdfFile.close();
-            netcdfFile = null;
             if (reallyVerbose) 
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (netcdfFile != null)
-                try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
     
@@ -6630,9 +6607,8 @@ Dataset {
         String msg = "  Table.read4DNc " + fullName;
         String errorInMethod = String2.ERROR + " in" + msg;
         //get information
-        NetcdfFile ncFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
             Variable loadVariables[] = NcHelper.find4DVariables(ncFile, loadColumns);
 
             //clear the table
@@ -6761,17 +6737,10 @@ Dataset {
                 convertToStandardMissingValues();
             }
 
-            ncFile.close();
-            ncFile = null;
             if (reallyVerbose) String2.log(
                 msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
-
     }
 
     /**
@@ -6818,10 +6787,9 @@ Dataset {
         long time = System.currentTimeMillis();
         String errorInMethod = String2.ERROR + " in Table.readNDNc " + fullName + ":\n";
         //get information
-        NetcdfFile ncFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
         StringArray varsNotFound = new StringArray();
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
             //load the global metadata
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
 
@@ -7157,17 +7125,11 @@ Dataset {
             }
             decodeCharsAndStrings();
             convertToUnsignedPAs();
-            ncFile.close();
-            ncFile = null;
             if (verbose && varsNotFound.size() > 0) 
                 String2.log("  vars not found: " + varsNotFound.toString());
             if (reallyVerbose) 
                 String2.log(msg + " finished. nRows=" + nRows() + 
                     " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -7274,9 +7236,8 @@ Dataset {
         }
 
         //read the file
-        NetcdfFile ncFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
 
             //load the global metadata
             if (getMetadata) 
@@ -8012,16 +7973,10 @@ Dataset {
             decodeCharsAndStrings();
             convertToUnsignedPAs();
 
-            ncFile.close();
-            ncFile = null;
             if (reallyVerbose)
                 String2.log(msg + 
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 
@@ -8821,9 +8776,8 @@ Dataset {
             conVals != null && conVals.size() == conVars.size();
 
         //read the file
-        NetcdfFile ncFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
 
             //load the global metadata
             if (getMetadata) 
@@ -8979,15 +8933,10 @@ Dataset {
                 String2.log(toString());
             }
 
-            ncFile.close();
-            ncFile = null;
             if (reallyVerbose) 
                 String2.log(msg +  
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
-        } finally {
-            if (ncFile != null)
-                try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));}
         }
     }
 */
@@ -10051,10 +10000,9 @@ Dataset {
             }
         }
 
-        NetcdfFile ncFile = NcHelper.openFile(fullName); 
         Attributes gridMappingAtts = null;
         String readAs = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
             /* 
             //2012-07 CURRENTLY THE NETCDF-JAVA featureDataset APPROACH ISN'T WORKING. 
             //I EMAILED JOHN CARON.
@@ -10119,7 +10067,6 @@ Dataset {
             if (pointType) {
                 if (ncCFcc != null) ncCFcc.set(1);
                 ncFile.close();
-                ncFile = null;
                 if (debugMode) msg += "PointType.  loadVars=" + loadVariableNames + "\n";
                 StringArray loadCon = new StringArray(loadVariableNames);
                 if (loadCon.size() > 0) //if loadVars specified, then add conNames
@@ -10431,7 +10378,6 @@ Dataset {
                     if (debugMode) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
                     if (ncCFcc != null) ncCFcc.set(20);
                     ncFile.close();
-                    ncFile = null;
                     StringArray loadCon = new StringArray(loadVariableNames);
                     if (loadCon.size() > 0) //if loadVars specified, then add conNames
                         loadCon.append(conNames);
@@ -11789,15 +11735,10 @@ Dataset {
             decodeCharsAndStrings();
             convertToUnsignedPAs();
 
-            ncFile.close();
-            ncFile = null;
             if (ncCFcc != null) ncCFcc.set(99);
             if (reallyVerbose) String2.log(msg + " finished (nLevels=2, readAs=" + readAs + 
                 "). nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (ncFile != null) try {ncFile.close(); } catch (Throwable t2) {String2.log("Caught: " + MustBe.throwableToString(t2));}
         }
     }
 
@@ -20414,9 +20355,8 @@ String2.log(table.dataToString());
         if (colNames == null) 
             colNames = new StringArray(1, false);
         //String2.log(NcHelper.ncdump(fullName, "-h"));  
-        NetcdfFile ncFile = NcHelper.openFile(fullName); 
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
 
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
             Attributes gatts = globalAttributes();
@@ -20660,7 +20600,6 @@ String2.log(table.dataToString());
 
                 if (done) {
                     ncFile.close();
-                    ncFile = null;
                     outerTable.justKeep(keepOuter);
                     outerTable.reorderColumns(colNames, true);
                     outerTable.decodeCharsAndStrings();
@@ -20808,9 +20747,6 @@ String2.log(table.dataToString());
             }             
 
             //finish up 
-            ncFile.close();
-            ncFile = null;
-
             //apply all constraints
             tryToApplyConstraintsAndKeep(findColumnNumber(profileIDVarName),  //may be -1
                 conNames, conOps, conVals); //may be 0 rows left
@@ -20823,9 +20759,6 @@ String2.log(table.dataToString());
             if (reallyVerbose) String2.log(msg + 
                 " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (ncFile != null) try {ncFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
     }
 
@@ -24939,9 +24872,8 @@ String2.log(table.dataToString());
         //get information
         String msg = "  Table.readOpendap " + fullName;
         long time = System.currentTimeMillis();
-        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
             //fill the table
@@ -24960,14 +24892,9 @@ String2.log(table.dataToString());
                 }
             }
 
-            netcdfFile.close(); 
-            netcdfFile = null;
             if (reallyVerbose) String2.log(msg +  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
-
-        } finally {
-            if (netcdfFile != null) try {netcdfFile.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
     }
     
@@ -31970,10 +31897,9 @@ String2.log(table.dataToString());
     public void readArgoProfile(String fileName, int standardizeWhat) throws Exception {
 
         String msg = "  Table.readArgoProfile " + fileName;
-        long tTime = System.currentTimeMillis();
-        NetcdfFile nc = NcHelper.openFile(fileName);
+        long tTime = System.currentTimeMillis();        
         //Attributes gridMappingAtts = null; //method is unfinished
-        try {
+        try (NetcdfFile nc = NcHelper.openFile(fileName)) {
 //   DATE_TIME = 14;
 //   N_PROF = 632;
 //   N_PARAM = 3;
@@ -32231,14 +32157,8 @@ String2.log(table.dataToString());
      :FORTRAN_format = "F9.3";
      :resolution = 0.001f; // float
      */
-
-            nc.close();
-            nc = null;
             if (reallyVerbose) String2.log(msg + " finished. nColumns=" + nColumns() +
                 " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - tTime) + "ms");
-
-        } finally {
-            if (nc != null) try {nc.close(); } catch (Throwable t9) {String2.log("Caught: " + MustBe.throwableToString(t9));};
         }
     }
 
@@ -32729,19 +32649,12 @@ String2.log(table.dataToString());
         //********** test reading subset of data  via bitset (which uses read via firstrow/lastrow)
         String2.log("\n*** Table.testFlatNc read subset");
         table.clear();
-        NetcdfFile netcdfFile = NcHelper.openFile(testDir + "41015.nc");
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(testDir + "41015.nc")) {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, new String[]{"time", "BAR"});
             Variable testVariables[] = NcHelper.findVariables(netcdfFile, new String[]{"time"});
             BitSet okRows = NcHelper.testRows(testVariables, testMin, testMax); 
             table.appendNcRows(loadVariables, okRows);
             Test.ensureEqual(okRows.cardinality(), 1, "");
-        } finally {
-            try {
-                netcdfFile.close(); //make sure it is explicitly closed
-            } catch (Exception e) {
-                String2.log("Caught: " + MustBe.throwableToString(e));
-            }
         }
 
         Test.ensureEqual(table.nColumns(), 2, "");

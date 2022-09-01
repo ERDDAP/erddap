@@ -133,10 +133,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         Attributes sourceDataAttributes[]) throws Throwable {
 
         String getWhat = "globalAttributes";
-        NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
         String group = "";
         int groupSlashCount = 0;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
 
             //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
@@ -202,15 +201,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             //get group atts and all higher groups (up to root)            
             NcHelper.getGroupAttributes(ncFile.findGroup(group), sourceGlobalAttributes);
 
-            //I care about this exception
-            ncFile.close();
-
         } catch (Throwable t) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
             throw new RuntimeException("Error in " + subClassName() + ".getSourceMetadata" +
                 "\nwhile getting " + getWhat + 
                 "\nfrom " + tFullName + 
@@ -239,8 +230,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
         String getWhat = "?";
-        NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
             //try to find 1 dataVariable in case needed below
@@ -277,16 +267,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 }
             }
 
-            //I care about this exception
-            ncFile.close();
             return avPa;
 
         } catch (Throwable t) {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
             throw new RuntimeException("Error in " + subClassName() + ".getSourceAxisValues" +
                 "\nwhile getting " + getWhat + 
                 "\nfrom " + tFullName + 
@@ -331,8 +314,7 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         int nValues = -1; //not yet calculated
         EDV edv = null;
 
-        NetcdfFile ncFile = NcHelper.openFile(tFullName); //may throw exception
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
 
             for (int dvi = 0; dvi < ndv; dvi++) {
                 edv = tDataVariables[dvi];
@@ -410,18 +392,9 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
             }
 
             //I care about this exception
-            ncFile.close();
             return paa;
 
         } catch (Throwable t) {
-            //make sure it is explicitly closed
-            try {   
-                ncFile.close();    
-            } catch (Throwable t2) {
-                String2.log("Error while trying to close " + tFullName +
-                    "\n" + MustBe.throwableToShortString(t2));
-            }  
-
             String2.log("ERROR: while reading sourceName=" +
                 (edv == null? "null" : edv.sourceName()) + 
                 "[" + selection + "] (start:STOP:stride).");                
@@ -499,9 +472,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         String2.log(NcHelper.ncdump(decomSampleFileName, "-h"));
 
         StringBuilder sb = new StringBuilder();
-        NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
         Attributes gridMappingAtts = null;
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName)) {
 
             //make table to hold info
             Table axisSourceTable = new Table();  
@@ -859,23 +831,10 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 "</dataset>\n" +
                 "\n");
 
-            //I care about this exception
-            ncFile.close();
-            ncFile = null;
-
             String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
-
-        } finally {
-            try {
-                if (ncFile != null)
-                    ncFile.close(); //make sure it is explicitly closed
-            } catch (Throwable t2) {
-                //don't care
-            }
         }
         return sb.toString();        
     }
-
 
 }
 

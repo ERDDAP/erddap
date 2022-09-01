@@ -54,12 +54,11 @@ public class FindDuplicateTime {
         results.append("*** FindDuplicateTime directory=" + directory + " fileNameRegex=" + fileNameRegex + 
             " timeVarName=" + timeVarName + " nFilesFound=" + n + "\n");           
         for (int i = 0; i < n; i++) {
-            NetcdfFile ncf = null;
             String fileName = fileNames.get(i);
-            try {
+            try (NetcdfFile ncf = NcHelper.openFile(fileName)) {
                 if ((i < 1000 && i % 100 == 0) || i % 1000 == 0) 
                     String2.log("file #" + i + "=" + fileName);
-                ncf = NcHelper.openFile(fileName);
+                
                 Variable var = ncf.findVariable(timeVarName);
                 double rawTime = NcHelper.getPrimitiveArray(var).getDouble(0);
                 String units = NcHelper.getVariableAttribute(var, "units").getString(0);
@@ -79,10 +78,6 @@ public class FindDuplicateTime {
             } catch (Throwable t) {
                 nErrors++;
                 results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t.toString() + "\n");
-            } finally {
-                if (ncf != null) {
-                    try {ncf.close();} catch (Throwable t2) {}
-                }
             }
         }
 

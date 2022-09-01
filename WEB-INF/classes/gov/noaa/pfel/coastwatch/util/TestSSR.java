@@ -362,10 +362,9 @@ public class TestSSR {
             "gmail email user (e.g., erd.data@noaa.gov)? ");
         if (emailUser.length() == 0) emailUser = "erd.data@noaa.gov"; 
 
-        emailPassword = 
-"***REMOVED***"; //String2.getPasswordFromSystemIn(
-//            "gmail email password\n" +
-//            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
+        emailPassword = String2.getPasswordFromSystemIn(
+            "gmail email password\n" +
+            "(e.g., password (or \"\" to skip this test. Bob: use 'application specific password')? ");
         
         if (emailPassword.length() > 0) {
             emailReplyToAddress = String2.getStringFromSystemIn( 

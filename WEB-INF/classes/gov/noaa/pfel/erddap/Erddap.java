@@ -725,9 +725,9 @@ public class Erddap extends HttpServlet {
             EDStatic.tally.add("Protocol (since last daily report)", protocol);
 
             long responseTime = System.currentTimeMillis() - doGetTime;
-            String2.distribute(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
-            String2.distribute(responseTime, EDStatic.responseTimesDistribution24);
-            String2.distribute(responseTime, EDStatic.responseTimesDistributionTotal);
+            String2.distributeTime(responseTime, EDStatic.responseTimesDistributionLoadDatasets);
+            String2.distributeTime(responseTime, EDStatic.responseTimesDistribution24);
+            String2.distributeTime(responseTime, EDStatic.responseTimesDistributionTotal);
             if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " SUCCESS. TIME=" + responseTime + "ms" + 
                 (responseTime >= 600000? "  (>10m!)" : responseTime >= 10000? "  (>10s!)" : "") + "\n");
 
@@ -745,9 +745,9 @@ public class Erddap extends HttpServlet {
                 EDStatic.tally.add("Requester's IP Address (Failed) (since last Major LoadDatasets)", ipAddress);
                 EDStatic.tally.add("Requester's IP Address (Failed) (since last daily report)",       ipAddress);
                 EDStatic.tally.add("Requester's IP Address (Failed) (since startup)",                 ipAddress);
-                String2.distribute(responseTime, EDStatic.failureTimesDistributionLoadDatasets);
-                String2.distribute(responseTime, EDStatic.failureTimesDistribution24);
-                String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
+                String2.distributeTime(responseTime, EDStatic.failureTimesDistributionLoadDatasets);
+                String2.distributeTime(responseTime, EDStatic.failureTimesDistribution24);
+                String2.distributeTime(responseTime, EDStatic.failureTimesDistributionTotal);
                 if (slowdown > 0) //before log FAILURE, so sendErrorCode logged info is close by
                     Math2.sleep(slowdown);
                 if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime + "ms" + 

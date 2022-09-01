@@ -875,12 +875,21 @@ public class LoadDatasets extends Thread {
                 String2.ERROR + ": Duplicate datasetIDs in datasets.xml:\n    " +
                     String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ") + "\n" :
                 "";
-            if (majorLoad && orphanIDSet.size() > 0) 
-                errorsDuringMajorReload +=
-                    String2.ERROR + ": n Orphan Datasets (datasets in ERDDAP but not in datasets.xml) = " + orphanIDSet.size() + "\n" +
+            if (majorLoad && orphanIDSet.size() > 0) {
+                //unload them
+                Iterator it = orphanIDSet.iterator();
+                while (it.hasNext()) 
+                    tryToUnload(erddap, (String)it.next(), changedDatasetIDs, false);  //needToUpdateLucene
+                updateLucene(erddap, changedDatasetIDs);
+
+                String msg = String2.ERROR + ": n Orphan Datasets removed (datasets in ERDDAP but not in datasets.xml) = " + orphanIDSet.size() + "\n" +
                     "    " + 
                     String2.noLongLinesAtSpace(String2.toCSSVString(orphanIDSet), 100, "    ") + 
                     "(end)\n";
+                errorsDuringMajorReload += msg;
+                String2.log(msg);
+                EDStatic.email(EDStatic.emailEverythingToCsv, "Orphan Datasets Removed", msg);
+            }
 
             EDStatic.nGridDatasets = erddap.gridDatasetHashMap.size();
             EDStatic.nTableDatasets = erddap.tableDatasetHashMap.size();
@@ -900,15 +909,15 @@ public class LoadDatasets extends Thread {
 
             //minorLoad?
             if (!majorLoad) {
-                String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistribution24);
-                String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistributionTotal);
+                String2.distributeTime(loadDatasetsTime, EDStatic.minorLoadDatasetsDistribution24);
+                String2.distributeTime(loadDatasetsTime, EDStatic.minorLoadDatasetsDistributionTotal);
                 String2.log(datasetsThatFailedToLoad);
             }
 
             //majorLoad?
             if (majorLoad) {
-                String2.distribute(loadDatasetsTime, EDStatic.majorLoadDatasetsDistribution24);
-                String2.distribute(loadDatasetsTime, EDStatic.majorLoadDatasetsDistributionTotal);
+                String2.distributeTime(loadDatasetsTime, EDStatic.majorLoadDatasetsDistribution24);
+                String2.distributeTime(loadDatasetsTime, EDStatic.majorLoadDatasetsDistributionTotal);
                 //gc so getMemoryInUse more accurate
                 //don't use Math2.sleep which catches/ignores interrupt
                 System.gc();  Thread.sleep(Math2.shortSleep); //aggressive, before get memoryString()
@@ -917,14 +926,14 @@ public class LoadDatasets extends Thread {
                 long using = Math2.getMemoryInUse();
                 long maxUsingMemory = Math.max(Math2.maxUsingMemory, using); 
 
-                int nResponseSucceeded      = String2.getDistributionN(
+                int nResponseSucceeded      = String2.getTimeDistributionN(
                     EDStatic.responseTimesDistributionLoadDatasets);
-                int medianResponseSucceeded = Math.max(0, String2.getDistributionMedian(
+                int medianResponseSucceeded = Math.max(0, String2.getTimeDistributionMedian(
                     EDStatic.responseTimesDistributionLoadDatasets, nResponseSucceeded));
 
-                int nResponseFailed      = String2.getDistributionN(
+                int nResponseFailed      = String2.getTimeDistributionN(
                     EDStatic.failureTimesDistributionLoadDatasets);
-                int medianResponseFailed = Math.max(0, String2.getDistributionMedian(
+                int medianResponseFailed = Math.max(0, String2.getTimeDistributionMedian(
                     EDStatic.failureTimesDistributionLoadDatasets, nResponseFailed));
 
                 //get thread info
@@ -1087,8 +1096,6 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
                     EDStatic.tally.remove("Categorize File Type (since last daily report)");
                     EDStatic.tally.remove("Convert (since last daily report)");
-                    EDStatic.tally.remove("EmailThread Failed    Time (since last daily report)");
-                    EDStatic.tally.remove("EmailThread Succeeded Time (since last daily report)");
                     EDStatic.tally.remove("files browse DatasetID (since last daily report)");
                     EDStatic.tally.remove("files download DatasetID (since last daily report)");
                     EDStatic.tally.remove("griddap DatasetID (since last daily report)");
@@ -1129,20 +1136,24 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Subscriptions (since last daily report)");
                     EDStatic.tally.remove("tabledap DatasetID (since last daily report)");
                     EDStatic.tally.remove("tabledap File Type (since last daily report)");
-                    EDStatic.tally.remove("TaskThread Failed    Time (since last daily report)");
-                    EDStatic.tally.remove("TaskThread Succeeded Time (since last daily report)");
-                    EDStatic.tally.remove("TouchThread Failed    Time (since last daily report)");
-                    EDStatic.tally.remove("TouchThread Succeeded Time (since last daily report)");
                     EDStatic.tally.remove("WCS index.html (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetMap (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsGetCapabilities (since last daily report)");
                     EDStatic.tally.remove("WMS doWmsDemo (since last daily report)");
                     EDStatic.tally.remove("WMS index.html (since last daily report)");
 
-                    EDStatic.failureTimesDistribution24      = new int[String2.DistributionSize];
-                    EDStatic.majorLoadDatasetsDistribution24 = new int[String2.DistributionSize];
-                    EDStatic.minorLoadDatasetsDistribution24 = new int[String2.DistributionSize];
-                    EDStatic.responseTimesDistribution24     = new int[String2.DistributionSize];
+                    //reset these "since last daily report" time distributions
+                    EDStatic.emailThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+                    EDStatic.emailThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
+                    EDStatic.emailThreadNEmailsDistribution24   = new int[String2.CountDistributionSize]; //count, not time
+                    EDStatic.failureTimesDistribution24         = new int[String2.TimeDistributionSize];
+                    EDStatic.majorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+                    EDStatic.minorLoadDatasetsDistribution24    = new int[String2.TimeDistributionSize];
+                    EDStatic.responseTimesDistribution24        = new int[String2.TimeDistributionSize];
+                    EDStatic.taskThreadFailedDistribution24     = new int[String2.TimeDistributionSize];
+                    EDStatic.taskThreadSucceededDistribution24  = new int[String2.TimeDistributionSize];
+                    EDStatic.touchThreadFailedDistribution24    = new int[String2.TimeDistributionSize];
+                    EDStatic.touchThreadSucceededDistribution24 = new int[String2.TimeDistributionSize];
 
                     String2.log("\n" + stars);
                     String2.log(contentSB.toString());
@@ -1210,8 +1221,8 @@ public class LoadDatasets extends Thread {
                     String2.log(sb.toString());
 
                     //email if some threshold is surpassed???
-                    int nFailed    = String2.getDistributionN(EDStatic.failureTimesDistributionLoadDatasets);
-                    int nSucceeded = String2.getDistributionN(EDStatic.responseTimesDistributionLoadDatasets);
+                    int nFailed    = String2.getTimeDistributionN(EDStatic.failureTimesDistributionLoadDatasets);
+                    int nSucceeded = String2.getTimeDistributionN(EDStatic.responseTimesDistributionLoadDatasets);
                     if (nFailed + nSucceeded > EDStatic.unusualActivity) //high activity level
                         EDStatic.email(EDStatic.emailEverythingToCsv, 
                             "Unusual Activity: lots of requests", sb.toString());
@@ -1231,8 +1242,8 @@ public class LoadDatasets extends Thread {
                 EDStatic.tally.remove("Requester's IP Address (Failed) (since last Major LoadDatasets)");
                 EDStatic.tally.remove("Requester's IP Address (Too Many Requests) (since last Major LoadDatasets)");
 
-                EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.DistributionSize];
-                EDStatic.responseTimesDistributionLoadDatasets = new int[String2.DistributionSize];
+                EDStatic.failureTimesDistributionLoadDatasets  = new int[String2.TimeDistributionSize];
+                EDStatic.responseTimesDistributionLoadDatasets = new int[String2.TimeDistributionSize];
                 int tpo = 13200; //132 char/line * 100 lines 
                 if (EDStatic.majorLoadDatasetsTimeSeriesSB.length() > tpo) {
                     //hopefully, start looking at exact desired \n location

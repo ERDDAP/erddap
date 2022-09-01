@@ -131,9 +131,9 @@ public abstract class Browser extends HttpServlet {
          timeStartedGetHTMLForm,
          timeFinishedGetHTMLForm; 
     public volatile int resetCount;
-    public int resetTimesDistribution[]  = new int[String2.DistributionSize];
-    public int activeTimesDistribution[] = new int[String2.DistributionSize];
-    public int idleTimesDistribution[]   = new int[String2.DistributionSize];
+    public int resetTimesDistribution[]  = new int[String2.TimeDistributionSize];
+    public int activeTimesDistribution[] = new int[String2.TimeDistributionSize];
+    public int idleTimesDistribution[]   = new int[String2.TimeDistributionSize];
 
     public String javaScript;
 
@@ -508,7 +508,7 @@ public abstract class Browser extends HttpServlet {
             }
 
             //log this resetTime
-            String2.distribute(nextShared.resetTime(), resetTimesDistribution);
+            String2.distributeTime(nextShared.resetTime(), resetTimesDistribution);
             cumulativeResetTime += nextShared.resetTime();
 
             String2.log(methodName + "finished successfully.\n");
@@ -568,7 +568,7 @@ public abstract class Browser extends HttpServlet {
         //calculate idleTime (if not first time this is called)
         if (timeFinishedGetHTMLForm > 0) {
             idleTime = System.currentTimeMillis() - timeFinishedGetHTMLForm; 
-            String2.distribute(idleTime, idleTimesDistribution);
+            String2.distributeTime(idleTime, idleTimesDistribution);
             cumulativeIdleTime += idleTime;      
         }
 
@@ -772,7 +772,7 @@ public abstract class Browser extends HttpServlet {
         //calculate activeTime
         timeFinishedGetHTMLForm = System.currentTimeMillis();
         activeTime = timeFinishedGetHTMLForm - timeStartedGetHTMLForm; 
-        String2.distribute(activeTime, activeTimesDistribution);
+        String2.distributeTime(activeTime, activeTimesDistribution);
         cumulativeActiveTime += activeTime;      
 
         if (oneOf.verbose()) 
@@ -800,16 +800,16 @@ public abstract class Browser extends HttpServlet {
             "Cumulative Reset Time  = " + Calendar2.elapsedTimeString(cumulativeResetTime) + "\n" +
             "  Reset Count: " + resetCount + "\n" +
             "  Reset Times Distribution:\n" +
-            String2.getDistributionStatistics(resetTimesDistribution) + "\n" +
+            String2.getTimeDistributionStatistics(resetTimesDistribution) + "\n" +
             "Cumulative Idle Time   = " + Calendar2.elapsedTimeString(cumulativeIdleTime) + "\n" +
             "  Idle Times Distribution:\n" +
-            String2.getDistributionStatistics(idleTimesDistribution) + "\n" +
+            String2.getTimeDistributionStatistics(idleTimesDistribution) + "\n" +
             "Cumulative Active Time = " + Calendar2.elapsedTimeString(cumulativeActiveTime) + "\n" +
             "  Number of page requests initiated since instantiation: " + nRequestsInitiated + "\n" +
             "  Number of page requests completed since instantiation: " + nRequestsCompleted + "\n" +
             "    (" + nRequestsFailed + " threw an exception)\n" +
             "  Active Times Distribution:\n" +
-            String2.getDistributionStatistics(activeTimesDistribution) + "\n";
+            String2.getTimeDistributionStatistics(activeTimesDistribution) + "\n";
     }
 
 
