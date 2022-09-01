@@ -224,13 +224,13 @@ public class TaskThread extends Thread {
                 String2.log("%%% TaskThread task #" + (EDStatic.nextTask - 1) + 
                     " of " + (EDStatic.taskList.size() - 1) +
                     " succeeded.  elapsedTime = " + Calendar2.elapsedTimeString(tElapsedTime));
-                String2.distribute(tElapsedTime, EDStatic.taskThreadSucceededDistribution24);
-                String2.distribute(tElapsedTime, EDStatic.taskThreadSucceededDistributionTotal);
+                String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistribution24);
+                String2.distributeTime(tElapsedTime, EDStatic.taskThreadSucceededDistributionTotal);
 
             } catch (Throwable t) {
                 long tElapsedTime = elapsedTime();
-                String2.distribute(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
-                String2.distribute(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
+                String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistribution24);
+                String2.distributeTime(tElapsedTime, EDStatic.taskThreadFailedDistributionTotal);
                 String subject = "TaskThread error: task #" + (EDStatic.nextTask - 1) + 
                     " failed after " + Calendar2.elapsedTimeString(tElapsedTime);
                 String content = "" + taskSummary + "\n" +

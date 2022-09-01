@@ -12752,7 +12752,7 @@ expected =
 "    String standard_name_vocabulary \"CF Standard Name Table v70\";\n" +
 "    String summary \"This dataset has Level 3, Standard Mapped Image, 4km, chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.  This is Science Quality data.  This is the August 2015 version of this dataset.\";\n" +
 "    String temporal_range \"month\";\n" +
-"    String testOutOfDate \"now-70days\";\n" +
+"    String testOutOfDate \"now-90days\";\n" +
 "    String time_coverage_end \"2003-02-16T00:00:00Z\";\n" +
 "    String time_coverage_start \"2003-01-16T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, L3SMI, Global, 4km, Science Quality, 2003-present (Monthly Composite)\";\n" +

@@ -1038,8 +1038,8 @@ UTC adalah versi modern dari sistem waktu GMT.
 UTC menggunakan detik kabisat sesekali untuk tetap dekat dengan Waktu Atom Internasional (TAI).
 Perangkat GPS menggunakan waktu GPS (yang tidak menggunakan detik kabisat) secara internal, tetapi menampilkan waktu UTC kepada pengguna.
 (Lihat
-<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
-    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> atau diskusi lain tentang Sistem Waktu.) Sebenarnya, UTC tidak dapat digunakan dalam beberapa situasi untuk waktu yang jauh di masa depan (misalnya, dalam model), karena kemunculan detik kabisat tidak dapat diprediksi.
 <br>&nbsp;
@@ -6051,10 +6051,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

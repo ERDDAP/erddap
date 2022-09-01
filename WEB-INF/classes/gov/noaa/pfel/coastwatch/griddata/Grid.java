@@ -964,8 +964,7 @@ switch to finally clause
         maxData = Double.NaN; 
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFile grdFile = NcHelper.openFile(fullFileName);
-        try {
+        try (NetcdfFile grdFile = NcHelper.openFile(fullFileName)) {
             //if (verbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
             //get lon and lat
@@ -1258,13 +1257,6 @@ switch to finally clause
                         " readTime=" + readTime + 
                         " TOTAL TIME=" + (System.currentTimeMillis() - time) + "\n");
 
-        } finally {
-            //close grdFile 
-            try {
-                grdFile.close();
-            } catch (Exception e2) {
-                //don't care
-            }
         }
      
     }
@@ -1311,8 +1303,7 @@ switch to finally clause
         maxData = Double.NaN; 
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFile grdFile = NcHelper.openFile(fullFileName);
-        try {
+        try (NetcdfFile grdFile = NcHelper.openFile(fullFileName)) {
             //if (verbose) String2.log(NcHelper.ncdump(fullFileName, "-h"));
 
             //get fileLonSpacing and fileLatSpacing
@@ -1366,16 +1357,7 @@ switch to finally clause
                 "\n  Grid.readGrdInfo done. TIME=" + 
                     (System.currentTimeMillis() - time) + "\n");
 
-
-        } finally {
-            //close grdFile 
-            try {
-                grdFile.close();
-            } catch (Exception e2) {
-                //don't care
-            }
-        }
-     
+        }     
     }
 
     /**
@@ -1941,8 +1923,7 @@ switch to finally clause
         String errorInMethod = String2.ERROR + " in Grid.readNetCDF(" + fullFileName + "): "; 
 
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFile ncFile = NcHelper.openFile(fullFileName);
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(fullFileName)) {
             
             //*** ncdump
             //if (verbose) NcHelper.ncdump("Start of Grid.readNetCDF", fullFileName, "-h");
@@ -2236,15 +2217,7 @@ try {
                   "\n  Grid.readNetCDF done. readTime=" + readTime + 
                       ", Total TIME=" + (System.currentTimeMillis() - time) + "\n");
 
-
-        } finally {
-            try {
-                ncFile.close(); //make sure it is explicitly closed
-            } catch (Exception e2) {
-                //don't care
-            }
-        }
-     
+        }    
     }
 
     /**
@@ -4480,14 +4453,11 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.dataAttributes().get("fraction_digits"),              new IntArray(new int[]{1}), "fraction_digits"); //int32
 
         //test that it has correct centeredTime value
-        NetcdfFile netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc");     
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc")) {
             Variable timeVariable = NcHelper.findVariable(netcdfFile, "time");
             PrimitiveArray pa = NcHelper.getPrimitiveArray(timeVariable);
             Test.ensureEqual(pa.size(), 1, "");
             Test.ensureEqual(pa.getDouble(0), Calendar2.isoStringToEpochSeconds("2003-03-04T12:00:00"), ""); 
-        } finally {
-            netcdfFile.close();
         }
 
         //delete the file  
@@ -4521,14 +4491,11 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.globalAttributes().get("start_time"),                 new DoubleArray(new double[]{17 * Calendar2.SECONDS_PER_HOUR}), "start_time"); //float64[nDays] 
 
         //test that it has correct centeredTime value
-        netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc");     
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc")) {
             Variable timeVariable = NcHelper.findVariable(netcdfFile, "time");
             PrimitiveArray pa = NcHelper.getPrimitiveArray(timeVariable);
             Test.ensureEqual(pa.size(), 1, "");
             Test.ensureEqual(pa.getDouble(0), Calendar2.isoStringToEpochSeconds("2003-03-04T17:00:00"), ""); 
-        } finally {
-            netcdfFile.close();
         }
 
         //delete the file  
@@ -4562,19 +4529,11 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         Test.ensureEqual(grid2.globalAttributes().get("start_time"),                 new DoubleArray(new double[]{0}), "start_time"); //float64[nDays] 
 
         //test that it has correct centeredTime value
-        netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc");     
-        try {
+        try (NetcdfFile netcdfFile = NcHelper.openFile(dir + fileName + "Test.nc")) {
             Variable timeVariable = NcHelper.findVariable(netcdfFile, "time");
             PrimitiveArray pa = NcHelper.getPrimitiveArray(timeVariable);
             Test.ensureEqual(pa.size(), 1, "");
             Test.ensureEqual(pa.getDouble(0), Calendar2.isoStringToEpochSeconds("0001-03-04T12:00:00"), ""); 
-
-        } finally {
-            try {
-                netcdfFile.close(); //make sure it is explicitly closed
-            } catch (Exception e2) {
-                //don't care
-            }
         }
 
         //delete the file  
@@ -5475,9 +5434,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //open the netcdf file
         String2.log("ncXYTtoAsciiXYT: " + inName + " to " + outName);
-        NetcdfFile ncFile = NcHelper.openFile(inName);
         
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile(inName)) {
             //read the dimensions
             double[] xArray = NcHelper.getNiceDoubleArray(ncFile.findVariable(xName), 0, -1).toArray(); 
             double[] yArray = NcHelper.getNiceDoubleArray(ncFile.findVariable(yName), 0, -1).toArray(); 
@@ -5542,9 +5500,6 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 } catch (Exception e) {
                 }
             }
-            
-        } finally {
-            ncFile.close(); //make sure it is explicitly closed
         }
     }
 

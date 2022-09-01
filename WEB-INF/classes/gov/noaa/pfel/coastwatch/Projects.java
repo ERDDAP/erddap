@@ -2832,9 +2832,8 @@ variables:
 
             //open the old file
             String newName = cdfName.substring(0, cdfName.length() - 3) + "nc";
-            NetcdfFile oldFile = NcHelper.openFile(cdfDir + cdfName);
             NetcdfFormatWriter ncWriter = null;
-            try {
+            try (NetcdfFile oldFile = NcHelper.openFile(cdfDir + cdfName)) {
 
                 Group inRootGroup = oldFile.getRootGroup();
 
@@ -3213,9 +3212,6 @@ variables:
                 throw e9;
 
             } finally {
-                try {oldFile.close(); } catch (Exception e9) {}
-                oldFile = null;
-
                 if (ncWriter != null) {
                     try {ncWriter.abort(); } catch (Exception e9) {}
                     File2.delete(newDir + newName); 
@@ -3500,7 +3496,7 @@ public static void testJanino() throws Exception {
         int nFailures = 0;
         long cumTime = 0;
         long clockTime = System.currentTimeMillis();
-        int distribution[] = new int[String2.DistributionSize];
+        int distribution[] = new int[String2.TimeDistributionSize];
 
         for (int i = 0; i < nIterations; i++) {
             //get dataset info
@@ -3537,7 +3533,7 @@ public static void testJanino() throws Exception {
 
                 time = System.currentTimeMillis() - time;
                 cumTime += time;
-                String2.distribute(time, distribution);
+                String2.distributeTime(time, distribution);
             } catch (Exception e) {
                 time = -1;
                 nFailures++;
@@ -3569,7 +3565,7 @@ public static void testJanino() throws Exception {
             "\nclockTime=" + Calendar2.elapsedTimeString(System.currentTimeMillis() - clockTime) +
             "\ncumulativeTime=" + (cumTime/1000) + "sec, nFailures=" + nFailures + 
             "\nresponseMsDistribution:\n" +
-            String2.getDistributionStatistics(distribution));
+            String2.getTimeDistributionStatistics(distribution));
     }
 
 
@@ -8210,8 +8206,7 @@ towTypesDescription);
         }
 
         //read the file
-        NetcdfFile nc = NcHelper.openFile(dir + fileName);
-        try {
+        try (NetcdfFile nc = NcHelper.openFile(dir + fileName)) {
             Variable v = nc.findVariable(latName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
             String2.log(latName + 
@@ -8229,8 +8224,6 @@ towTypesDescription);
 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
-        } finally {
-            nc.close();
         }
 
     }
@@ -8242,8 +8235,7 @@ towTypesDescription);
         String lonName = "longitude";  
         StringBuilder sb = new StringBuilder();
         sb.append("ncmlName=" + ncmlName + "\n"); 
-        NetcdfFile nc = NcHelper.openFile(ncmlName);
-        try {
+        try (NetcdfFile nc = NcHelper.openFile(ncmlName)) {
             Variable v = nc.findVariable(latName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
             sb.append(latName + 
@@ -8268,8 +8260,6 @@ towTypesDescription);
         } catch (Throwable t) {
             String2.log(sb.toString());
             String2.log(MustBe.throwableToString(t));
-        } finally {
-            nc.close();
         }
         return sb.toString();
     }
@@ -9604,8 +9594,7 @@ towTypesDescription);
         String2.log("\n*** Projects.tallyGridValues(\n" + 
             fileName + "\n" + 
             varName + " scale=" + scale);
-        NetcdfFile file = NcHelper.openFile(fileName);
-        try {
+        try (NetcdfFile file = NcHelper.openFile(fileName)) {
             Variable var = file.findVariable(varName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
             int n = pa.size();
@@ -9613,8 +9602,6 @@ towTypesDescription);
             for (int i = 0; i < n; i++)
                 tally.add("value", "" + Math2.roundToInt(pa.getDouble(i) * scale));
             String2.log(tally.toString());
-        } finally {
-            file.close();
         }
     }
 

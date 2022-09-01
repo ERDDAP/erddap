@@ -1103,8 +1103,8 @@ Astronomical Year Numbering의 장점은 모든 윤년이 4로 나눌 수 있다
 UTC는 GMT 시간 시스템의 최신 버전입니다.
 UTC는 국제 원자시(TAI)에 가깝게 유지하기 위해 가끔 윤초를 사용합니다.
 GPS 장치는 내부적으로 GPS 시간(윤초를 사용하지 않음)을 사용하지만 사용자에게 UTC 시간을 표시합니다.
-(<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
-    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ 참조 <img 
+(<a rel="help" href="https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ 참조 <img 
     src="../images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> 또는 시간 시스템에 대한 다른 토론) 엄밀히 말하면 UTC는 윤초의 발생을 예측할 수 없기 때문에 먼 미래의 시간(예:
 모델)에 대한 일부 상황에서는 사용할 수 없습니다.
@@ -6327,10 +6327,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

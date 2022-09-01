@@ -4617,29 +4617,35 @@ and zoom and pan with controls in
         return arrayList.toArray(new String[0]);
     }
 
-    /** The size of the int[] needed for distribute() and getDistributionStatistics(). */
-    public static int DistributionSize = 22;
-
-    private static int BinMax[] = new int[]{0, 1, 2, 5, 10, 20, 50, 100, 200, 500,
+    private final static int TimeBinMax[] = new int[]{0, 1, 2, 5, 10, 20, 50, 100, 200, 500,
         1000, 2000, 5000, 10000, 20000, //1,2,5,10,20 seconds
         60000, 120000, 300000, 600000, 1200000, 3600000, //1,2,5,10,20,60 minutes
         Integer.MAX_VALUE};
 
+    private final static int CountBinMax[] = new int[]{0, 1, 2, 5, 10, 20, 50, 100,
+        Integer.MAX_VALUE};
+
+    /** The size of the int[] needed for distributeTime() and getTimeDistributionStatistics(). */
+    public final static int TimeDistributionSize = TimeBinMax.length;
+
+    /** The size of the int[] needed for distributeCount() and getCountDistributionStatistics(). */
+    public final static int CountDistributionSize = CountBinMax.length;
+
     /**
      * Put aTime into one of the distribution bins.
      * @param aTime 
-     * @param distribution an int[DistributionSize] holding the counts of aTimes in 
+     * @param distribution an int[TimeDistributionSize] holding the counts of aTimes in 
      *   different categories
      */
-    public static void distribute(long aTime, int[] distribution) {
+    public static void distributeTime(long aTime, int[] distribution) {
         //catch really long times (greater than Integer.MAX_VALUE)
         if (aTime < 0)
             aTime = 0;
-        if (aTime > 3600000) { distribution[21]++; return; }   //1hr   
+        if (aTime > TimeBinMax[TimeDistributionSize - 2]) { distribution[TimeDistributionSize - 1]++; return; }   //1hr   
         
         int iTime = (int)aTime; //safe since extreme values caught above
-        for (int bin = 0; bin < DistributionSize; bin++) {
-            if (iTime <= BinMax[bin]) {
+        for (int bin = 0; bin < TimeDistributionSize; bin++) {
+            if (iTime <= TimeBinMax[bin]) {
                 distribution[bin]++;
                 return;
             }
@@ -4647,31 +4653,66 @@ and zoom and pan with controls in
     }
 
     /**
-     * Get the number of values in the distribution.
+     * Put aCount into one of the distribution bins.
+     * @param aCount 
+     * @param distribution an int[CountDistributionSize] holding the counts of aCounts in 
+     *   different categories
+     */
+    public static void distributeCount(int aCount, int[] distribution) {
+        //catch really long times (greater than Integer.MAX_VALUE)
+        if (aCount < 0)
+            aCount = 0;
+        if (aCount > CountBinMax[CountDistributionSize - 2]) { distribution[CountDistributionSize - 1]++; return; }  
+        
+        for (int bin = 0; bin < CountDistributionSize; bin++) {
+            if (aCount <= CountBinMax[bin]) {
+                distribution[bin]++;
+                return;
+            }
+        }
+    }
+
+    /**
+     * Get the number of values in the TimeDistribution.
      *
-     * @param distribution an int[DistributionSize] holding the counts of aTimes in 
+     * @param distribution an int[TimeDistributionSize] holding the counts of aTimes in 
      *   different categories
      * @return the number of values in the distribution.
      */
-    public static int getDistributionN(int[] distribution) {
+    public static int getTimeDistributionN(int[] distribution) {
         //calculate n
         int n = 0;
-        for (int bin = 0; bin < DistributionSize; bin++)
+        for (int bin = 0; bin < TimeDistributionSize; bin++)
             n += distribution[bin];
         return n;
     }
 
     /**
-     * Get the approximate median of the distribution.
+     * Get the number of values in the CountDistribution.
+     *
+     * @param distribution an int[CountDistributionSize] holding the counts of aCounts in 
+     *   different categories
+     * @return the number of values in the distribution.
+     */
+    public static int getCountDistributionN(int[] distribution) {
+        //calculate n
+        int n = 0;
+        for (int bin = 0; bin < CountDistributionSize; bin++)
+            n += distribution[bin];
+        return n;
+    }
+
+    /**
+     * Get the approximate median of the TimeDistribution.
      * See Sokal and Rohlf, Biometry, Box 4.1, pg 45.
      *
-     * @param distribution an int[DistributionSize] holding the counts of aTimes in 
+     * @param distribution an int[TimeDistributionSize] holding the counts of aTimes in 
      *   different categories
      * @param n from getDistributionN
      * @return the approximate median of the distribution.
      *    If trouble or n&lt;=0, this returns -1.
      */
-    public static int getDistributionMedian(int[] distribution, int n) {
+    public static int getTimeDistributionMedian(int[] distribution, int n) {
         double n2 = n / 2.0;
 
         if (n > 0) {
@@ -4680,13 +4721,13 @@ and zoom and pan with controls in
             if (cum >= n2)
                 return 0;
 
-            for (int bin = 1; bin < DistributionSize; bin++) {  //bin 0 handled above
+            for (int bin = 1; bin < TimeDistributionSize; bin++) {  //bin 0 handled above
                 if (distribution[bin] > 0) {
                     int tCum = cum + distribution[bin];
                     if (cum <= n2 && tCum >= n2) {
-                        int tBinMax = bin == DistributionSize - 1? BinMax[bin-1] * 3 : BinMax[bin];
+                        int tTimeBinMax = bin == TimeDistributionSize - 1? TimeBinMax[bin-1] * 3 : TimeBinMax[bin];
                         return Math2.roundToInt(
-                            BinMax[bin-1] + ((n2-cum+0.0)/distribution[bin]) * (tBinMax - BinMax[bin-1]));
+                            TimeBinMax[bin-1] + ((n2-cum+0.0)/distribution[bin]) * (tTimeBinMax - TimeBinMax[bin-1]));
                     }
                     cum = tCum;
                 }
@@ -4696,30 +4737,79 @@ and zoom and pan with controls in
     }
 
     /**
-     * Generate brief statistics for a distribution.
-     * @param distribution an int[DistributionSize] holding the counts of aTimes in 
+     * Get the approximate median of the Countistribution.
+     * See Sokal and Rohlf, Biometry, Box 4.1, pg 45.
+     *
+     * @param distribution an int[CountDistributionSize] holding the counts of aCounts in 
+     *   different categories
+     * @param n from getDistributionN
+     * @return the approximate median of the distribution.
+     *    If trouble or n&lt;=0, this returns -1.
+     */
+    public static int getCountDistributionMedian(int[] distribution, int n) {
+        double n2 = n / 2.0;
+
+        if (n > 0) {
+            //handle bin 0
+            int cum = distribution[0];
+            if (cum >= n2)
+                return 0;
+
+            for (int bin = 1; bin < CountDistributionSize; bin++) {  //bin 0 handled above
+                if (distribution[bin] > 0) {
+                    int tCum = cum + distribution[bin];
+                    if (cum <= n2 && tCum >= n2) {
+                        int tCountBinMax = bin == CountDistributionSize - 1? CountBinMax[bin-1] * 3 : CountBinMax[bin];
+                        return Math2.roundToInt(
+                            CountBinMax[bin-1] + ((n2-cum+0.0)/distribution[bin]) * (tCountBinMax - CountBinMax[bin-1]));
+                    }
+                    cum = tCum;
+                }
+            }
+        }
+        return -1; //trouble
+    }
+
+    /**
+     * Generate brief statistics for a TimeDistribution.
+     * @param distribution an int[TimeDistributionSize] holding the counts of aTimes in 
      *   different categories
      * @return the statistics
      */
-    public static String getBriefDistributionStatistics(int[] distribution) {
-        int n = getDistributionN(distribution);
+    public static String getBriefTimeDistributionStatistics(int[] distribution) {
+        int n = getTimeDistributionN(distribution);
         String s = "n =" + right("" + n, 9);
         if (n == 0) 
             return s;
-        int median = getDistributionMedian(distribution, n);
+        int median = getTimeDistributionMedian(distribution, n);
         return s + ",  median ~=" + right("" + median, 9) + " ms";
     }
 
     /**
-     * Generate statistics for a distribution.
-     * @param distribution an int[DistributionSize] holding the counts of aTimes in 
+     * Generate brief statistics for a CountDistribution.
+     * @param distribution an int[CountDistributionSize] holding the counts of aCounts in 
      *   different categories
      * @return the statistics
      */
-    public static String getDistributionStatistics(int[] distribution) {
-        int n = getDistributionN(distribution);
+    public static String getBriefCountDistributionStatistics(int[] distribution) {
+        int n = getCountDistributionN(distribution);
+        String s = "n =" + right("" + n, 9);
+        if (n == 0) 
+            return s;
+        int median = getCountDistributionMedian(distribution, n);
+        return s + ",  median ~=" + right("" + median, 9);
+    }
+
+    /**
+     * Generate statistics for a TimeDistribution.
+     * @param distribution an int[TimeDistributionSize] holding the counts of aTimes in 
+     *   different categories
+     * @return the statistics
+     */
+    public static String getTimeDistributionStatistics(int[] distribution) {
+        int n = getTimeDistributionN(distribution);
         String s = 
-            "    " + getBriefDistributionStatistics(distribution) + "\n";
+            "    " + getBriefTimeDistributionStatistics(distribution) + "\n";
 
         if (n == 0)
             return s;
@@ -4748,6 +4838,33 @@ and zoom and pan with controls in
             "    <= 20 min: " + right("" + distribution[19], 10) + "\n" +
             "    <= 1 hr:   " + right("" + distribution[20], 10) + "\n" +
             "    >  1 hr:   " + right("" + distribution[21], 10) + "\n";
+    }
+
+    /**
+     * Generate statistics for a CountDistribution.
+     * @param distribution an int[CountDistributionSize] holding the counts of aCounts in 
+     *   different categories
+     * @return the statistics
+     */
+    public static String getCountDistributionStatistics(int[] distribution) {
+        int n = getCountDistributionN(distribution);
+        String s = 
+            "    " + getBriefCountDistributionStatistics(distribution) + "\n";
+
+        if (n == 0)
+            return s;
+
+        return 
+            s + 
+            "    0:      " + right("" + distribution[0], 10) + "\n" +
+            "    1:      " + right("" + distribution[1], 10) + "\n" +
+            "    2:      " + right("" + distribution[2], 10) + "\n" +
+            "    <= 5:   " + right("" + distribution[3], 10) + "\n" +
+            "    <= 10:  " + right("" + distribution[4], 10) + "\n" +
+            "    <= 20:  " + right("" + distribution[5], 10) + "\n" +
+            "    <= 50:  " + right("" + distribution[6], 10) + "\n" +
+            "    <= 100: " + right("" + distribution[7], 10) + "\n" +
+            "    >  100: " + right("" + distribution[8], 10) + "\n";
     }
 
 

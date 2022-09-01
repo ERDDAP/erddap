@@ -1272,8 +1272,8 @@ As much as is practical, ERDDAP, like Unix time and UDUNITS, uses the
 time system.  UTC uses occasional leap seconds to stay close to the International Atomic
 Time (TAI). GPS devices use GPS time (which doesn''t use leap seconds) internally,
 but display UTC time to users. (See 
-    <a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
-    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/<img 
+    <a rel="help" href="https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
     or other 
@@ -7383,10 +7383,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

@@ -1061,8 +1061,8 @@ UTC è la versione moderna del sistema orario GMT.
 L&#39;UTC utilizza occasionalmente secondi intercalari per rimanere vicino all&#39;ora atomica internazionale (TAI).
 I dispositivi GPS utilizzano internamente l&#39;ora GPS (che non utilizza i secondi intercalari), ma visualizzano l&#39;ora UTC agli utenti.
 (Vedi
-<a rel="help" href="https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
-    >https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
+<a rel="help" href="https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/"
+    >https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/ <img 
     src="../images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a> o altre discussioni sui Sistemi di Tempo.) A rigor di termini, l&#39;UTC non può essere utilizzato in alcune situazioni per tempi lontani (ad esempio, nei modelli), poiché il verificarsi di secondi intercalari non può essere previsto.
 <br>&nbsp;
@@ -6129,10 +6129,10 @@ https://swfsc.noaa.gov/GroundfishAnalysis/
 https://www.fisheries.noaa.gov/west-coast/science-data/molecular-ecology-and-genetic-analysis-california-salmon-and-groundfish
 
 https://tycho.usno.navy.mil/systime.html
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 https://www.usno.navy.mil/USNO/time/master-clock/systems-of-time
-https://www.cnmoc.usff.navy.mil/Organization/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
+https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/The-USNO-Master-Clock/Definitions-of-Systems-of-Time/
 
 http://www.tc211.org
 https://data.noaa.gov

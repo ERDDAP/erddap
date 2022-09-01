@@ -392,8 +392,7 @@ public class EDDGridCopy extends EDDGrid {
             String2.log("!!! sourceEDD is unavailable, so getting info from youngest file\n" + getFromName);
             StringArray ncDataVarNames = new StringArray();
             StringArray ncDataVarTypes = new StringArray();
-            NetcdfFile ncFile = NcHelper.openFile(getFromName); //may throw exception
-            try {
+            try (NetcdfFile ncFile = NcHelper.openFile(getFromName)) {
                 //list all variables with dimensions
                 List allVariables = ncFile.getVariables(); 
                 for (int v = 0; v < allVariables.size(); v++) {
@@ -416,8 +415,6 @@ public class EDDGridCopy extends EDDGrid {
                         ncDataVarTypes.add(PAType.toCohortString(tPAType));
                     }
                 }
-                ncFile.close();
-                ncFile = null;
 
                 //gather tDataVariables
                 if (ncDataVarNames.size() == 0 || tAxisVariables == null)
@@ -427,12 +424,6 @@ public class EDDGridCopy extends EDDGrid {
                 for (int dv = 0; dv < ncDataVarNames.size(); dv++) {
                     tDataVariables[dv] = new Object[]{ncDataVarNames.get(dv), ncDataVarNames.get(dv), 
                         new Attributes(), ncDataVarTypes.get(dv)};
-                }
-            //don't catch exception, but do close the ncFile.
-            } finally {
-                try {
-                    if (ncFile != null) ncFile.close();
-                } catch (Throwable t2) {
                 }
             }
         } else {

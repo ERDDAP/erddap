@@ -1500,9 +1500,9 @@ public class EDDGridFromDap extends EDDGrid {
      * @param results to capture the results
      * @param summary captures the summary of what was done.
      * @param indent a string of spaces to be used to indent info added to summary
-     * @param datasetSuccessTimes an int[String2.DistributionSize] to capture successful
+     * @param datasetSuccessTimes an int[String2.TimeDistributionSize] to capture successful
      *    generateDatasetXml times
-     * @param datasetFailureTimes an int[String2.DistributionSize] to capture unsuccessful
+     * @param datasetFailureTimes an int[String2.TimeDistributionSize] to capture unsuccessful
      *    generateDatasetXml times
      */
     public static void safelyGenerateDatasetsXml(String tLocalSourceUrl, 
@@ -1518,7 +1518,7 @@ public class EDDGridFromDap extends EDDGrid {
                 null, null, null,
                 tReloadEveryNMinutes, externalAddGlobalAttributes));
             time = System.currentTimeMillis() - time;
-            String2.distribute(time, datasetSuccessTimes);
+            String2.distributeTime(time, datasetSuccessTimes);
             String ts = indent + tLocalSourceUrl + "  (" + time + " ms)\n";
             summary.append(ts);
             String2.log(ts);
@@ -1528,7 +1528,7 @@ public class EDDGridFromDap extends EDDGrid {
                 "  for tLocalSourceUrl=" + tLocalSourceUrl + "\n" +
                 MustBe.throwableToString(t));
             time = System.currentTimeMillis() - time;
-            String2.distribute(time, datasetFailureTimes);
+            String2.distributeTime(time, datasetFailureTimes);
             String ts = indent + tLocalSourceUrl + "  (" + time + " ms)\n" +
                  indent + "  " + String2.ERROR + ": " + 
                     String2.replaceAll(MustBe.getShortErrorMessage(t), "\n", "\n  " + indent) + 
@@ -1634,6 +1634,24 @@ public class EDDGridFromDap extends EDDGrid {
         runGenerateDatasetsXmlFromThreddsCatalog(null, //resultsFileName
             "http://opendap.oceanbrowser.net/thredds/catalog/data/emodnet-domains/Coastal%20areas/Northeast%20Atlantic%20Ocean%20-%20Loire%20River/catalog.xml",  
             ".*", null, null, -1);
+
+/*thredds.client.catalog.Catalog catalog = (new thredds.client.catalog.builder.CatalogBuilder()).buildFromURI(new java.net.URI(
+    "http://opendap.oceanbrowser.net/thredds/catalog/data/emodnet-domains/Coastal%20areas/Northeast%20Atlantic%20Ocean%20-%20Loire%20River/catalog.xml"));  
+List<thredds.client.catalog.Dataset> datasets = catalog.getDatasets(); //getDatasetsLogical();
+if (datasets != null) {
+    for (int i = 0; i < datasets.size(); i++) { //usually just 1
+        String catUrl = datasets.get(i).getCatalogUrl();
+        if (catUrl != null) { 
+            //has opendap service?
+            thredds.client.catalog.Access access = datasets.get(i).getAccess(thredds.client.catalog.ServiceType.OPENDAP);
+            if (access != null) {
+                String baseUrl = access.getStandardUrlName(); //Error parsing URL=/thredds/dodsC/data/emodnet-domains/Coastal areas/Northeast Atlantic Ocean - Loire River/Water_body_silicate.nc
+            }
+        }
+    }
+}
+*/
+
     }
 
 
@@ -1667,6 +1685,7 @@ public class EDDGridFromDap extends EDDGrid {
         String2.setupLog(true, false, logFileName, false, 1000000000);
         String2.log("*** Starting runGenerateDatasetsXmlFromThreddsCatalog " + 
             Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
+            "oLocalSourceUrl=" + oLocalSourceUrl + "\n" +
             "logFile=" + String2.logFileName() + "\n" +
             String2.standardHelpAboutMessage()); 
         
@@ -8426,18 +8445,16 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
             "\n nTimePoints=" + nTimePoints +
             " estimated nPartialRequests=" + 
             Math2.hiDiv(nTimePoints * 22000000, EDStatic.partialRequestMaxBytes));
-        NetcdfFile ncFile = null; 
         int language = 0;
-        try {
-            EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
-            String dir = EDStatic.fullTestCacheDirectory;
-            String tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-                "sst[0:" + (nTimePoints - 1) + "][][][]", 
-                dir, eddGrid.className() + "_testBigRequest", ".nc"); 
-            String2.log("done. size=" + File2.length(dir + tName));
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
+        String dir = EDStatic.fullTestCacheDirectory;
+        String tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
+            "sst[0:" + (nTimePoints - 1) + "][][][]", 
+            dir, eddGrid.className() + "_testBigRequest", ".nc"); 
+        String2.log("done. size=" + File2.length(dir + tName));
 
-            //for each time point, test that values are same from erddap tiny request or .nc file
-            ncFile = NcHelper.openFile(dir + tName);
+        //for each time point, test that values are same from erddap tiny request or .nc file
+        try (NetcdfFile ncFile = NcHelper.openFile(dir + tName)) {
             Variable ncVariable = ncFile.findVariable("sst");
             if (ncVariable == null)
                 throw new RuntimeException("sst not found in " + dir + tName);
@@ -8469,12 +8486,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
                 String2.log(msg);
                 Test.ensureEqual(ncTest, dapTest, "sst values don't match!\n" + msg);
             }
- 
-        } finally {
-            if (ncFile != null)
-                ncFile.close();
         } 
-
     }
 
     /** 
@@ -10644,7 +10656,7 @@ expected =
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
 "    <reloadEveryNMinutes>[RELOAD]</reloadEveryNMinutes>\n" + //changes
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!  2021-11-16 was 2020-09-21! We're going backwards!
+"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!  2021-11-16 was 2020-09-21! We're going backwards! //2022-08-31 now 2020-01-06, then 2019-12-17
 "        <att name=\"cdm_data_type\">grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6 ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" +
@@ -10778,7 +10790,7 @@ expected =
 "        <att name=\"sw_point_latitude\">null</att>\n" +
 "        <att name=\"sw_point_longitude\">null</att>\n" +
 //"        <att name=\"testOutOfDate\">now-[N_DAYS]days</att>\n" +  //2020-10-21 comes and goes
-"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
+"        <att name=\"title\">MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2022</att>\n" + //2021-05-03 changes: -present or current year depending on when they last updated
 "        <att name=\"westernmost_longitude\">null</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -11058,7 +11070,7 @@ expected =
 //"    String testOutOfDate \"now-[N_DAYS]days\";\n" +  //2020-10-21 comes and goes
 "    String time_coverage_end \"2022-03-30T00:00:00Z\";\n" +  //2020-10-02 varies      2022-02-18 was wrong: I reported to podaac@... Subject="Incorrect time values and _FillValue"
 "    String time_coverage_start \"2002-07-04T00:00:00Z\";\n" +
-"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-present\";\n" + //2021-05-03 changes between -present and current year
+"    String title \"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668°, 2002-2022\";\n" + //2021-05-03 changes between -present and current year
 "    Float64 Westernmost_Easting -179.979166667;\n" +
 "  }\n" +
 "}\n";
@@ -11945,8 +11957,8 @@ String expected =
         if (!String2.isSomething(pathRegex))
             pathRegex = ".*";       
         StringBuilder summary = new StringBuilder();
-        int datasetSuccessTimes[] = new int[String2.DistributionSize];
-        int datasetFailureTimes[] = new int[String2.DistributionSize]; 
+        int datasetSuccessTimes[] = new int[String2.TimeDistributionSize];
+        int datasetFailureTimes[] = new int[String2.TimeDistributionSize]; 
 
         //read the catalog
         //2020-01-17 in netcdf-java 4.6 was
@@ -11981,9 +11993,9 @@ String expected =
         if (writer != null)
             String2.log("\n" + 
                 "* datasetSuccessTimes:\n" +
-                String2.getDistributionStatistics(datasetSuccessTimes) + "\n" +
+                String2.getTimeDistributionStatistics(datasetSuccessTimes) + "\n" +
                 "* datasetFailureTimes:\n" +
-                String2.getDistributionStatistics(datasetFailureTimes));
+                String2.getTimeDistributionStatistics(datasetFailureTimes));
 
         //done
         String2.log("\n*** crawlThreddsCatalog finished successfully. time=" +
@@ -12004,9 +12016,9 @@ String expected =
      *   then if a path matches this regex, the catalog will be ignored. 
      * @param writer if not null, this calls generateDatasetsXml and writes results to writer.
      * @param summary a summary of what was done
-     * @param datasetSuccessTimes an int[String2.DistributionSize] to capture successful
+     * @param datasetSuccessTimes an int[String2.TimeDistributionSize] to capture successful
      *    generateDatasetXml times
-     * @param datasetFailureTimes an int[String2.DistributionSize] to capture unsuccessful
+     * @param datasetFailureTimes an int[String2.TimeDistributionSize] to capture unsuccessful
      *    generateDatasetXml times
      */
     public static void processThreddsDataset(Dataset dataset, HashSet<String> set,

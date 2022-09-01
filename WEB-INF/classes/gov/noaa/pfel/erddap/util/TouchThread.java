@@ -99,8 +99,8 @@ public class TouchThread extends Thread {
                     String2.log("%%% TouchThread touch #" + (EDStatic.nextTouch - 1) + 
                         " of " + (EDStatic.touchList.size() - 1) +
                         " succeeded.  elapsedTime=" + tElapsedTime + "ms" + (tElapsedTime > 10000? " (>10s!)" : ""));
-                    String2.distribute(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
-                    String2.distribute(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
+                    String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistribution24);
+                    String2.distributeTime(tElapsedTime, EDStatic.touchThreadSucceededDistributionTotal);
 
                 } catch (InterruptedException e) {
                     String2.log("%%% TouchThread was interrupted.");
@@ -112,8 +112,8 @@ public class TouchThread extends Thread {
                         " failed after " + tElapsedTime + "ms" + (tElapsedTime > 10000? " (>10s!)" : "") +
                         " url=" + url + "\n" +
                         MustBe.throwableToString(e));
-                    String2.distribute(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
-                    String2.distribute(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
+                    String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistribution24);
+                    String2.distributeTime(tElapsedTime, EDStatic.touchThreadFailedDistributionTotal);
 
                 } finally {
                     //whether succeeded or failed
