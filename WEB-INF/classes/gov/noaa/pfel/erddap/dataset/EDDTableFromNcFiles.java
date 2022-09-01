@@ -314,8 +314,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         double maxTimeES = Double.NaN;
         if (useDimensions.length > 0) {
             //find the varNames
-            NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
-            try {
+            try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
 
                 Group rootGroup = ncFile.getRootGroup();
                 List rootGroupVariables = rootGroup.getVariables(); 
@@ -334,15 +333,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                             varNames.add(var.getFullName());
                     }
                 }
-                ncFile.close(); 
 
             } catch (Exception e) {
-                //make sure ncFile is explicitly closed
-                try {
-                    ncFile.close(); 
-                } catch (Exception e2) {
-                    //don't care
-                }
                 String2.log(MustBe.throwableToString(e)); 
             }
             Test.ensureTrue(varNames.size() > 0, 
@@ -579,8 +571,8 @@ String expected =
 "        <att name=\"creator_name\">NOAA NMFS SWFSC ERD</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2022-07-18</att>\n" +  //changes
-"        <att name=\"date_issued\">2022-07-18</att>\n" +   //changes     and see other changes below
+"        <att name=\"date_created\">2022-08-23</att>\n" +  //changes
+"        <att name=\"date_issued\">2022-08-23</att>\n" +   //changes     and see other changes below
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -661,8 +653,8 @@ String expected =
 "This dataset has both historical data (quality controlled) and near real time\n" +
 "data (less quality controlled).</att>\n" +
 "        <att name=\"testOutOfDate\">now-25minutes</att>\n" +
-"        <att name=\"time_coverage_end\">2022-07-18T18:10:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
-"        <att name=\"time_coverage_start\">2022-07-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
+"        <att name=\"time_coverage_end\">2022-08-23T17:20:00Z</att>\n" + //changes. Don't regex it -- I want to see it change.
+"        <att name=\"time_coverage_start\">2022-08-01T00:00:00Z</att>\n" +  //changes since it is from an nrt file
 "        <att name=\"title\">NDBC Standard Meteorological Buoy Data, 1970-present</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"float\">-79.099</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -715,7 +707,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.6566336E9 1.6581678E9</att>\n" + //both change
+"            <att name=\"actual_range\" type=\"doubleList\">1.659312E9 1.6612752E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -724,8 +716,8 @@ cdmSuggestion() +
 "            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.6585E9</att>\n" + //changes
-"            <att name=\"colorBarMinimum\" type=\"double\">1.6565E9</att>\n" + //changes
+"            <att name=\"colorBarMaximum\" type=\"double\">1.6615E9</att>\n" + //changes
+"            <att name=\"colorBarMinimum\" type=\"double\">1.659E9</att>\n" + //changes
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -14110,9 +14102,8 @@ expected =
         {
             String2.log("\n*** EDDTableFromNcFiles.testNctcdf do netcdf-java opendap test");
             //!!!THIS READS DATA FROM LOCAL ERDDAP SERVER RUNNING ON EDStatic.erddapUrl!!! //in tests, always use non-https url                
-            //!!!THIS IS NOT JUST A READ-FROM-FILE TEST!!!
-            NetcdfFile nc = NetcdfDatasets.openFile(tUrl, null);
-            try {
+            //!!!THIS IS NOT JUST A READ-FROM-FILE TEST!!!            
+            try (NetcdfFile nc = NetcdfDatasets.openFile(tUrl, null)) {
                 results = NcHelper.ncdump(nc, "-h");
                 //2016-05-10 lots of little formatting changes
                 //including nc.toString now adds cr at end of line (at least on Windows):
@@ -14197,9 +14188,6 @@ expected =
                 //get sequence data
                 //it's awkward. Do later if needed.
                 //???How specify constraint expression?
-
-            } finally {
-                nc.close();
             }
         }
 
@@ -14211,14 +14199,10 @@ expected =
                 String2.log("\n*** do netcdf-java .nc test");
                 //!!!THIS READS DATA FROM ERDDAP SERVER RUNNING ON COASTWATCH CWEXPERIMENTAL!!!
                 //!!!THIS IS NOT JUST A LOCAL TEST!!!
-                NetcdfFile nc = NetcdfDatasets.openFile(tUrl + ".nc?" + mapDapQuery, null);
-                try {
+                try (NetcdfFile nc = NetcdfDatasets.openFile(tUrl + ".nc?" + mapDapQuery, null)) {
                     results = nc.toString();
                     expected = "zz";
                     Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
-
-                } finally {
-                    nc.close();
                 }
 
             } catch (Throwable t) {
@@ -18223,9 +18207,7 @@ expected =
             "!!! THIS REQURIES cwwcNDBCMet IN THE LOCALHOST ERDDAP!!!\n");
         int language = 0;
         
-        NetcdfFile ncFile = NcHelper.openFile(
-            "http://localhost:8080/cwexperimental/files/cwwcNDBCMet/NDBC_46088_met.nc");
-        try {
+        try (NetcdfFile ncFile = NcHelper.openFile("http://localhost:8080/cwexperimental/files/cwwcNDBCMet/NDBC_46088_met.nc")) {
 
             //get a list of variables
             Group rootGroup = ncFile.getRootGroup();
@@ -18243,10 +18225,6 @@ expected =
   That throws exception: Exception in thread "main" java.io.IOException: java.io.IOException: 
     File is truncated calculated size= 7319444 actual = 1859776
 */
-        } catch (Exception e) {
-            String2.pressEnterToContinue(MustBe.throwableToString(e));
-        } finally {
-            try{ ncFile.close(); } catch (Exception e2) {}
         }
     }
 

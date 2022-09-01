@@ -1242,7 +1242,7 @@ public class SSR {
 
         //make the SMTPTransport
         //2022-08-25 Now basically follow https://www.tabnine.com/code/java/classes/com.sun.mail.smtp.SMTPTransport
-        //  but use "smtp" when useStartTLS=true, not "smtps" which uses SSL (outdated predecessor to startTLS).
+        //  but use "smtp" when useStartTLS=true, not "smtps" which uses SSL (outdated predecessor to startTLS). https://mailtrap.io/blog/starttls-ssl-tls/
         //I have only tested with useStartTLS=true.
         SMTPTransport smtpTransport = (SMTPTransport)session.getTransport(
             useStartTLS? "smtp" : "smtps");  

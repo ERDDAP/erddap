@@ -1512,7 +1512,6 @@ expected =
         String fileDir = EDStatic.unitTestDataDir + "unpacked/";
         String fileName1 = "A2003001.L3m_DAY_POC_poc_4km.nc";
         String fileName2 = "A2016241.L3m_DAY_POC_poc_4km.nc";
-        NetcdfFile ncFile;
         Variable var;
         Attributes atts;
         Array array;
@@ -1565,8 +1564,8 @@ NcHelper.debugMode = true;
 "      :valid_max = 90.0f; // float\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        ncFile = NcHelper.openFile(fileDir + fileName1);
-        try {
+        
+        try (NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName1)) {
 
             //lon
             var = ncFile.findVariable("lon");
@@ -1689,8 +1688,6 @@ NcHelper.debugMode = true;
     "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 29.476826, NaN, NaN, NaN, " +
     "431.7499, NaN, 36.19993, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
             Test.ensureEqual(results, expected, "results=\n" + results);
-        } finally {
-            ncFile.close();
         }
 
         
@@ -1740,8 +1737,7 @@ NcHelper.debugMode = true;
 "      :valid_max = 180.0f; // float\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        try {
-            ncFile = NcHelper.openFile(fileDir + fileName2);
+        try (NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName2)) {
 
             //lon
             var = ncFile.findVariable("lon");
@@ -1859,8 +1855,6 @@ NcHelper.debugMode = true;
     "NaN, NaN, 78.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 26.6, NaN, NaN, NaN, " +
     "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
             Test.ensureEqual(results, expected, "results=\n" + results);
-        } finally {
-            try {ncFile.close();} catch (Throwable t9) {}
         }
 
         

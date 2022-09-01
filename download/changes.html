@@ -72,7 +72,7 @@ those great suggestions coming!
 
 
 <h2><a class="selfLink" id="changes2.19" href="#changes2.19" rel="bookmark">Changes</a> 
-in ERDDAP version 2.19 (released 2022-08-25)</h2>
+in ERDDAP version 2.19 (released 2022-09-01)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -180,7 +180,12 @@ in ERDDAP version 2.19 (released 2022-08-25)</h2>
     <br>Thanks to Bob Simons.
     <br>&nbsp;
 
-  <li>NEW: Subscription actions that 'touch' a remote URL are now handled 
+  <li>CHANGED: Emails are now sent with slightly different code (because of Java 17
+    and the change to emailThread). If you have trouble sending emails,
+    please email erd.data at noaa.gov .
+    <br>&nbsp; 
+
+  <li>NEW: Subscription actions that "touch" a remote URL are now handled 
     in a separate touchThread. This makes loading datasets
     and other actions that touch URLs faster because loadDatasets doesn't have to
     wait for the touch to be completed, which sometimes takes a long time.
@@ -193,6 +198,14 @@ in ERDDAP version 2.19 (released 2022-08-25)</h2>
     subset.nc and distinct.nc. For some datasets, this greatly decreases the
     time to load the dataset (e.g., from 60 seconds to 0.3s).
     Thanks to Ben Adams and John Kerfoot.
+    <br>&nbsp;
+
+  <li>CHANGED:  Previously, orphan datasets (datasets that are live in ERDDAP but are not in datasets.xml)
+    were simply noted on status.html and in log.txt after each major loadDatasets. Now, they are automatically removed
+    from ERDDAP and noted on status.html and in log.txt, and emailed to emailEverythingTo.
+    So if you want to remove a dataset from ERDDAP, now all you have to do is remove
+    its chunk of xml in datasets.xml and it will be removed in the next major loadDatasets. 
+    Thanks to Bob Simons.
     <br>&nbsp;
 
   <li>KNOWN BUG in netcdf-java v5.5.2 and v5.5.3: The EDDGridFromThreddsCatalog option in GenerateDatasetsXml 

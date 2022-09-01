@@ -309,8 +309,7 @@ public class EDDTableFromNcSequenceFiles extends EDDTableFromFiles {
         double maxTimeES = Double.NaN;
         if (useDimensions.length > 0) {
             //find the varNames
-            NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
-            try {
+            try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
 
                 Group rootGroup = ncFile.getRootGroup();
                 List rootGroupVariables = rootGroup.getVariables(); 
@@ -329,15 +328,8 @@ public class EDDTableFromNcSequenceFiles extends EDDTableFromFiles {
                             varNames.add(var.getFullName());
                     }
                 }
-                ncFile.close(); 
 
             } catch (Exception e) {
-                //make sure ncFile is explicitly closed
-                try {
-                    ncFile.close(); 
-                } catch (Exception e2) {
-                    //don't care
-                }
                 String2.log(MustBe.throwableToString(e)); 
             }
             Test.ensureTrue(varNames.size() > 0, 

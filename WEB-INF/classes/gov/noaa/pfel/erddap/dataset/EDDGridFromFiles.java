@@ -718,6 +718,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             String tName = ftFileList.get(i);
 
             //ensure file size and lastMod are unchanged (i.e., file is unchanged)
+            //and fileDir and fileName match the current settings.
             if (filesAreLocal) { //should I also do this if files are remote???
                 long lastMod = File2.getLastModified(tDir + tName);
                 if (lastMod == 0 || ftLastMod.get(i) != lastMod) //0=trouble: unavailable or changed
@@ -725,6 +726,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 long size = File2.length(tDir + tName);
                 if (size < 0 || size == Long.MAX_VALUE || 
                     (filesAreLocal && ftSize.get(i) != size)) //-1=touble: unavailable or changed
+                    continue;
+                if (!tDir.startsWith(fileDir))
+                    continue;
+                if (!tName.matches(fileNameRegex))
                     continue;
             }
 
@@ -746,7 +751,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     tSourceGlobalAttributes, 
                     tSourceAxisAttributes, tSourceAxisValues,
                     tSourceDataAttributes); 
-                if (verbose) String2.log("got sample metadata from " + tDir + tName);
+                if (verbose) String2.log("got metadata from previously good file #" + 
+                    (ftFileList.size() - 1 - i) + " of " + ftDirIndex.size() + 
+                    ": " + tDir + tName);
                 break; //successful, no need to continue
             } catch (Throwable t) {
                 String reason = MustBe.throwableToShortString(t); 

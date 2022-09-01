@@ -2327,7 +2327,7 @@ String expected =
             Test.ensureEqual(results, expected, "");
             expTime = 1300; //ms
             String2.log("get ABI-L1b-RadC/2018/360/10/ dir time=" + time + "ms (expected=" + expTime + "ms)");
-            Test.ensureTrue(time < expTime * 1.5, "time=" + time + "ms (exp=1300ms)");
+            Test.ensureTrue(time < expTime * 1.5, "TOO SLOW!!! time=" + time + "ms (exp=1300ms)");
         }
 
     }

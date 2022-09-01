@@ -113,8 +113,7 @@ public class TableDataSet4DNc extends TableDataSet {
             //try to reject bad files and just keep good files
             try {
                 //open the file
-                NetcdfFile ncFile = NcHelper.openFile(directory + tFileNames[f]);
-                try { //simple error messages within this try/catch
+                try (NetcdfFile ncFile = NcHelper.openFile(directory + tFileNames[f])) { //simple error messages within this try/catch
 
                     //get each variable's information
                     //Try to reject bad variables and just keep good ones.
@@ -279,10 +278,6 @@ public class TableDataSet4DNc extends TableDataSet {
                         dataElementType.add(NcHelper.getElementPAType(variable));
                     }
 
-                    //close the file  (do care if exception)
-                    ncFile.close();
-                    ncFile = null;
-
                     //ok, save this fileName
                     //if (verbose) String2.log("accept " + tFileNames[f]);                                       
                     tActiveFileNames.add(tFileNames[f]);
@@ -291,12 +286,6 @@ public class TableDataSet4DNc extends TableDataSet {
                 } catch (Exception e) {
                     if (verbose) String2.log("  rejecting " + tFileNames[f] + 
                         ": " + e.toString()); //no need for stack trace
-                    try {
-                        if (ncFile != null)
-                            ncFile.close();
-                    } catch (Exception e2) {
-                        //I don't care
-                    }
                 }
             } catch (Exception e) {
                 if (verbose) String2.log("  rejecting " + tFileNames[f] + ": " + e.toString()); //no need for stack trace
@@ -348,8 +337,7 @@ public class TableDataSet4DNc extends TableDataSet {
             int whichIndividual = whichIndividual(desiredIndividuals[indi]); //throws Exception if not found
 
             //open the file
-            NetcdfFile ncFile = NcHelper.openFile(directory + fileNames[whichIndividual]);
-            try {
+            try (NetcdfFile ncFile = NcHelper.openFile(directory + fileNames[whichIndividual])) {
 
                 //find valid time indices  (the time variable must exist)
                 Variable timeVariable = ncFile.findVariable(timeNameInFile);
@@ -426,8 +414,6 @@ public class TableDataSet4DNc extends TableDataSet {
                             0, nx, 0, ny, 0, nz, startTimeIndex, nt));
                     }
                 }
-            } finally {
-                ncFile.close();
             }
         }
 
