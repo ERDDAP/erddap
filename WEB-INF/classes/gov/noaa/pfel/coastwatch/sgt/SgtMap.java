@@ -2961,7 +2961,7 @@ String2.log("err: " + errCatcher.getString());
             }
 
             //look for memory leak
-            Math2.gcAndWait(); Math2.gcAndWait(); //Part of test. Ensure all garbage collected.
+            Math2.gcAndWait(); Math2.gcAndWait(); //in a test. Ensure all garbage collected.
             long using = Math2.getMemoryInUse();
             if (baseMemory == 0) 
                 baseMemory = using;

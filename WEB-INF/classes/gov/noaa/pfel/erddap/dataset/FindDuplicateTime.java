@@ -55,7 +55,9 @@ public class FindDuplicateTime {
             " timeVarName=" + timeVarName + " nFilesFound=" + n + "\n");           
         for (int i = 0; i < n; i++) {
             String fileName = fileNames.get(i);
-            try (NetcdfFile ncf = NcHelper.openFile(fileName)) {
+            NetcdfFile ncf = null;
+            try {
+                ncf = NcHelper.openFile(fileName);  //needs to be inside try/catch, so loop continues if error
                 if ((i < 1000 && i % 100 == 0) || i % 1000 == 0) 
                     String2.log("file #" + i + "=" + fileName);
                 
@@ -78,6 +80,8 @@ public class FindDuplicateTime {
             } catch (Throwable t) {
                 nErrors++;
                 results.append("\nerror #" + nErrors + "=" + fileName + "\n    " + t.toString() + "\n");
+            } finally {
+                try {if (ncf != null) ncf.close(); } catch (Exception e9) {}
             }
         }
 

@@ -23,6 +23,8 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
+import com.sun.management.UnixOperatingSystemMXBean;
+
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
@@ -54,6 +56,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -258,7 +262,8 @@ public static boolean developmentMode = false;
     public static int touchThreadFailedDistributionTotal[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistribution24[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
-    public static int dangerousMemoryFailures = 0; //since last Major LoadDatasets
+    public static volatile int requestsShed = 0;            //since last Major LoadDatasets
+    public static volatile int dangerousMemoryFailures = 0; //since last Major LoadDatasets
     public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
 
     public static String datasetsThatFailedToLoad = "";
@@ -4568,6 +4573,19 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             sb.append("TouchThread Succeeded Time (since last Daily Report)    ");
             sb.append(String2.getBriefTimeDistributionStatistics(touchThreadSucceededDistribution24) + "\n");
         }
+
+        try {
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            if (osBean instanceof UnixOperatingSystemMXBean uBean) {
+                sb.append("OS info: totalCPULoad=" + Math2.doubleToFloatNaN(uBean.getCpuLoad()) + 
+                    " processCPULoad=" +  Math2.doubleToFloatNaN(uBean.getProcessCpuLoad()) + 
+                    " totalMemory="    + (uBean.getTotalMemorySize()    / Math2.BytesPerMB) + "MB" +
+                    " freeMemory="     + (uBean.getFreeMemorySize()     / Math2.BytesPerMB) + "MB" +
+                    " totalSwapSpace=" + (uBean.getTotalSwapSpaceSize() / Math2.BytesPerMB) + "MB" +
+                    " freeSwapSpace="  + (uBean.getFreeSwapSpaceSize()  / Math2.BytesPerMB) + "MB\n");
+            }
+        } catch (Exception e) {
+        }
     }
 
     /**
@@ -4576,9 +4594,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void addCommonStatistics(StringBuilder sb) {
         if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
             sb.append(
-"Major LoadDatasets Time Series: MLD    Datasets Loaded            Requests (median times in ms)              Number of Threads      MB    Open\n" +
-"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) memFail tooMany  tomWait inotify other  inUse  Files\n" +
-"----------------------------  -----   -----------------  ------------------------------------------------  ---------------------  -----  -----\n"
+"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    Open\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse  Files\n" +
+"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  -----  -----\n"
 );
             sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
@@ -5291,7 +5309,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             if (emailThread.isAlive()) {
                 //is it stalled?
-                long eTime = emailThread.elapsedTime();  //-1 if no session active
+                long eTime = emailThread.elapsedTime();  //elapsed time is the session time, not 1 email.  -1 if no session active
                 long maxTime = 5 * Calendar2.MILLIS_PER_MINUTE; //appropriate??? user settable???
                 if (eTime > maxTime) {  
 
@@ -5377,7 +5395,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             if (touchThread.isAlive()) {
                 //is it stalled?
-                long eTime = touchThread.elapsedTime();
+                long eTime = touchThread.elapsedTime(); //for the current touch
                 long maxTime = TouchThread.TIMEOUT_MILLIS * 2;
                 if (eTime > maxTime) {  
 
@@ -6586,6 +6604,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 msg = "Too Many Requests: " + msg;
             else if (errorNo == HttpServletResponse.SC_INTERNAL_SERVER_ERROR) //http error 500
                 msg = "Internal Server Error: " + msg;
+            else if (errorNo == HttpServletResponse.SC_SERVICE_UNAVAILABLE) //http error 503
+                msg = "Service Unavailable: " + msg;
 
             //always log the error
             String fullMsg = 

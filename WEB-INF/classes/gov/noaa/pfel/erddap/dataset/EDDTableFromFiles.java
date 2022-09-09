@@ -3693,8 +3693,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
         long nNotRead = 0;  //either don't have matching data or do ('distinct' and 1 value matches)
         ResultStatisticsAccumulator accumulator = new ResultStatisticsAccumulator();
         int tnThreads = nThreads >= 1 && nThreads < Integer.MAX_VALUE? nThreads : EDStatic.nTableThreads; 
-
-
+        //reduce tnThreads based on memory available
+        tnThreads = adjustNThreads(tnThreads);
         ThreadedWorkManager<Table> workManager = new ThreadedWorkManager<>(
                 tnThreads,
                 result -> {

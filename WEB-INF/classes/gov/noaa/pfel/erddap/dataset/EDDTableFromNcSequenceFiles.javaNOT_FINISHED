@@ -309,7 +309,8 @@ public class EDDTableFromNcSequenceFiles extends EDDTableFromFiles {
         double maxTimeES = Double.NaN;
         if (useDimensions.length > 0) {
             //find the varNames
-            try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
+            NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
+            try {
 
                 Group rootGroup = ncFile.getRootGroup();
                 List rootGroupVariables = rootGroup.getVariables(); 
@@ -331,6 +332,8 @@ public class EDDTableFromNcSequenceFiles extends EDDTableFromFiles {
 
             } catch (Exception e) {
                 String2.log(MustBe.throwableToString(e)); 
+            } finally {
+                try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
             }
             Test.ensureTrue(varNames.size() > 0, 
                 "The file has no variables with dimensions: " + useDimensionsCSV);

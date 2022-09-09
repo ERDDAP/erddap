@@ -342,7 +342,7 @@ public class GridDataAccessor {
 
 
         //finish up
-        Math2.ensureMemoryAvailable(nBytesPerPartialRequest, "GridDataAccessor");
+        Math2.testMemoryAvailable(nBytesPerPartialRequest, "GridDataAccessor");
         driverIndex = new NDimensionalIndex(driverShape);
         partialIndex = new NDimensionalIndex(partialShape);
         Math2.ensureArraySizeOkay(driverIndex.size(), "GridDataAccessor");  //ensure not >Integer.MAX_VALUE chunks (will never finish!)

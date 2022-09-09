@@ -163,6 +163,9 @@ public class EmailThread extends Thread {
 
             } catch (Exception e) { 
                 //email session failed  //normally only if failed to start the session
+                //tally as failure with time=0 (also shows up as nEmails/session = 0)
+                String2.distributeTime(0, EDStatic.emailThreadFailedDistribution24);      
+                String2.distributeTime(0, EDStatic.emailThreadFailedDistributionTotal);
                 String2.log("%%% EmailThread session ERROR at email #" + (EDStatic.nextEmail - 1) + 
                     " at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                     MustBe.throwableToString(e));
@@ -175,11 +178,29 @@ public class EmailThread extends Thread {
                 } catch (Throwable t) {
                 }
                 try {
-                    SSR.emailLock.unlock();
+                    SSR.emailLock.unlock(); //This should be locked.  If not, this throws an IllegaMonitorStateException.
                 } catch (Throwable t) {
                 }
+
+                //note: failed session shows up as 0 emailsPerSession
                 String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistribution24);      
                 String2.distributeCount(nEmailsPerSession, EDStatic.emailThreadNEmailsDistributionTotal);
+
+                //if >=200 pending emails, dump the first 100 of them
+                try {
+                    synchronized(EDStatic.emailList) {
+                        if (EDStatic.emailList.size() - EDStatic.nextEmail >= 200) {
+                            int oNextEmail = EDStatic.nextEmail;
+                            while (EDStatic.emailList.size() - EDStatic.nextEmail > 100) {
+                                EDStatic.emailList.set(EDStatic.nextEmail++, null);
+                            }
+                            EDStatic.lastFinishedEmail = EDStatic.nextEmail - 1;
+                            String2.log("%%% EmailThread ERROR: I'm having trouble sending emails, so I dumped emails #" + 
+                                oNextEmail + " through " + (EDStatic.nextEmail - 2) + ".");
+                        }
+                    }
+                } catch (Throwable t) {
+                } 
             }
 
         } //while (true)

@@ -102,7 +102,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 /*      REMEMBER to deal with special axis0 
 
         String getWhat = "globalAttributes";
-        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(tFullName);
+        try {
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), sourceGlobalAttributes);
 
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
@@ -131,6 +132,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 "\nfrom " + tFullName + 
                 "\nCause: " + MustBe.throwableToShortString(t),
                 t);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
         */
     }
@@ -154,7 +157,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 /*
         String getWhat = "globalAttributes";
-        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(tFullName);
+        try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
@@ -181,6 +185,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 "\nfrom " + tFullName + 
                 "\nCause: " + MustBe.throwableToShortString(t),
                 t);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
         */
         return null;
@@ -220,7 +226,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         }
         String selection = selectionSB.toString();
         
-        try (NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName);
+        try {
 
             for (int dvi = 0; dvi < ndv; dvi++) {
                 Variable var = ncFile.findVariable(tDataVariables[dvi].sourceName());  
@@ -237,6 +244,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             //I care about this exception
             return paa;
 
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         } */
         return null;
     }
@@ -302,7 +311,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             tFileDir, EDStatic.fullDecompressedGenerateDatasetsXmlDirectory, 
             EDStatic.decompressedCacheMaxGB, false); //reuseExisting
         
-        try (NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName)) {
+        NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
+        try {
             Table axisSourceTable = new Table();  
             Table dataSourceTable = new Table();  
             Table axisAddTable = new Table();
@@ -436,6 +446,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
             String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
 
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
         return sb.toString();        
 

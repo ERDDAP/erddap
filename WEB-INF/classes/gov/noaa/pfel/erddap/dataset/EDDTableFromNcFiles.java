@@ -314,7 +314,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         double maxTimeES = Double.NaN;
         if (useDimensions.length > 0) {
             //find the varNames
-            try (NetcdfFile ncFile = NcHelper.openFile(sampleFileName)) {
+            NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
+            try {
 
                 Group rootGroup = ncFile.getRootGroup();
                 List rootGroupVariables = rootGroup.getVariables(); 
@@ -336,6 +337,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
 
             } catch (Exception e) {
                 String2.log(MustBe.throwableToString(e)); 
+            } finally {
+                try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
             }
             Test.ensureTrue(varNames.size() > 0, 
                 "The file has no variables with dimensions: " + useDimensionsCSV);
@@ -18207,7 +18210,8 @@ expected =
             "!!! THIS REQURIES cwwcNDBCMet IN THE LOCALHOST ERDDAP!!!\n");
         int language = 0;
         
-        try (NetcdfFile ncFile = NcHelper.openFile("http://localhost:8080/cwexperimental/files/cwwcNDBCMet/NDBC_46088_met.nc")) {
+        NetcdfFile ncFile = NcHelper.openFile("http://localhost:8080/cwexperimental/files/cwwcNDBCMet/NDBC_46088_met.nc");
+        try {
 
             //get a list of variables
             Group rootGroup = ncFile.getRootGroup();
@@ -18225,6 +18229,8 @@ expected =
   That throws exception: Exception in thread "main" java.io.IOException: java.io.IOException: 
     File is truncated calculated size= 7319444 actual = 1859776
 */
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 

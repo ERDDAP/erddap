@@ -960,8 +960,8 @@ public class LoadDatasets extends Thread {
                 //get OpenFiles
                 String openFiles = "      ?";
                 try {
-                    OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-                    if (os instanceof UnixOperatingSystemMXBean uBean) {
+                    OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+                    if (osBean instanceof UnixOperatingSystemMXBean uBean) {
                         long nF = uBean.getOpenFileDescriptorCount();
                         long maxF = uBean.getMaxFileDescriptorCount();
                         int percent = Math2.narrowToInt((nF * 100) / maxF);
@@ -979,6 +979,7 @@ public class LoadDatasets extends Thread {
                                 "In any case, you should increase the maximum number of open files allowed\n" +
                                 "and restart ERDDAP. See\n" +
                                 "https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#TooManyOpenFiles\n");
+
                     }
                 } catch (Throwable t) {
                     String2.log("Caught: " + MustBe.throwableToString(t));
@@ -1030,9 +1031,9 @@ public class LoadDatasets extends Thread {
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
-//"Major LoadDatasets Time Series: MLD    Datasets Loaded            Requests (median times in ms)              Number of Threads      MB    Open\n" +
-//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) memFail tooMany  tomWait inotify other  inUse  Files\n" +
-//"----------------------------  -----   -----------------  ------------------------------------------------  ---------------------  -----  -----\n"
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    Open\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse  Files\n" +
+//"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  -----  -----\n"
                     "  " + cDateTimeLocal +  
                     String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
                     String2.right("" + nTry, 7) + 
@@ -1042,6 +1043,7 @@ public class LoadDatasets extends Thread {
                     String2.right("" + Math.min(999999, medianResponseSucceeded), 6) + ")" +
                     String2.right("" + Math.min(999999, nResponseFailed), 6) + " (" +
                     String2.right("" + Math.min(999999, medianResponseFailed), 6) + ")" +
+                    String2.right("" + Math.min(99999,  EDStatic.requestsShed), 5) + 
                     String2.right("" + Math.min(9999999, EDStatic.dangerousMemoryFailures), 8) + 
                     String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8) + 
                     threadCounts + 
@@ -1050,6 +1052,7 @@ public class LoadDatasets extends Thread {
                     "\n");
                 
                 //reset
+                EDStatic.requestsShed = 0;
                 EDStatic.dangerousMemoryFailures = 0;
                 EDStatic.tooManyRequests = 0;
 

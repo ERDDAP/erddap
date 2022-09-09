@@ -323,7 +323,7 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
                 column = table.getColumn(5); column.append(data);
             }
         } finally {
-            ncFile.close();
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 

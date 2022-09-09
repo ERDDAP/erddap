@@ -10998,7 +10998,8 @@ public abstract class EDD {
                 String featureType = null;
                 try {
                     //does it have featureType metadata?
-                    try (NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName)) {
+                    NetcdfFile ncFile = NcHelper.openFile(tDir + sampleName);
+                    try {
                         Attributes gAtts = new Attributes();
                         NcHelper.getGroupAttributes(ncFile.getRootGroup(), gAtts);
                         featureType = gAtts.getString("featureType"); 
@@ -11006,6 +11007,8 @@ public abstract class EDD {
                             featureType = gAtts.getString("CF:featureType");
                         if (featureType == null)
                             featureType = gAtts.getString("CF:feature_type");
+                    } finally {
+                        try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
                     }
                     if (featureType == null)
                         throw new RuntimeException("No featureType, so it isn't an .ncCF file.");
@@ -11201,7 +11204,7 @@ public abstract class EDD {
         }
 
         //memory
-        if (false) {
+        if (false) {  //enabled when testing
             Math2.gcAndWait(); Math2.gcAndWait(); //Used in development.  Before getMemoryInUse().
             memory = Math2.getMemoryInUse() - memory;
             String2.log("\n*** DasDds: memoryUse=" + (memory/1024) + 
@@ -13155,6 +13158,96 @@ if ((lineNumber % 1000) == 0) break;
         Test.ensureEqual(addAtts.get("missing_value"), new DoubleArray(new double[]{-99.9}), "");
     }
 
+    /** 
+     * This is used by EDDGridFromFiles and EDDTableFromFiles to adjust nThreads 
+     * based on currently available memory.
+     *
+     * @param tnThreads the number of threads to use if there is tons of memory available.
+     *   It should initially be 1..someReasonableNumber (e.g., 5).
+     * @return a more limited tnThreads based on currently available memory.
+     */
+    public static int adjustNThreads(int tnThreads) {
+        return adjustNThreads(tnThreads, Math2.getMemoryInUse(), Math2.maxMemory);
+    }
+
+    /**
+     * This is a version of adjustNThreads designed to make testing easy.
+
+     * @param tnThreads the number of threads to use if there is tons of memory available.
+     *   It should initially be 1..someReasonableNumber (e.g., 5).
+     * @param memoryInUse from Math2.getMemoryInUse()
+     * @param maxMemory from Math2.maxMemory
+     * @return a more limited tnThreads based on currently available memory.
+     */
+    private static int adjustNThreads(int tnThreads, long memoryInUse, long maxMemory) {
+        if (tnThreads <= 1)
+            return 1;
+
+        int otnThreads = tnThreads;
+        long maxMemory2 = maxMemory / 2;
+        if (memoryInUse >= maxMemory2) {
+            tnThreads = 1;
+        } else {
+            tnThreads = Math2.roundToInt(1 + (tnThreads - 1.0) * (maxMemory2 - (double)memoryInUse) / maxMemory2);   //  1 + (tnThreads-1) * [0..1]
+        }
+        String2.log("adjustNThreads otnThreads=" + otnThreads + 
+            " memoryInUse=" + (memoryInUse/Math2.BytesPerMB) +
+            "MB maxMemory/2=" + (maxMemory2/Math2.BytesPerMB) + "MB -> tnThreads=" + tnThreads);
+        return tnThreads;
+    }
+
+
+    /**
+     * This tests adjustNThreads.
+     * @throws a RuntimeException if trouble
+     */
+    public static void testAdjustNThreads() {
+        //                       tnThreads  inUse                     max                     expected
+        Test.ensureEqual(adjustNThreads( 0,    0L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "a");
+
+        Test.ensureEqual(adjustNThreads( 1,    0L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "b");
+        Test.ensureEqual(adjustNThreads( 1, 5000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "c");  
+
+        Test.ensureEqual(adjustNThreads(10,    0L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB), 10, "f");  //  0% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10,  100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB), 10, "g");  //  2% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10,  600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  9, "h");  // 12% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 1100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  8, "h1"); // 22% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 1900L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  7, "h2"); // 38% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 2100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  6, "i");  // 42% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 3100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  4, "i2"); // 62% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 4000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "j");  // 80% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 4400L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "j");  // 88% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 4600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "k");  // 92% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 5000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "l");  //100% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads(10, 6000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "m");  //120% of maxMemory/2 is inUse 
+
+        Test.ensureEqual(adjustNThreads( 5,    0L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  5, "f");  //  0% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5,  100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  5, "g");  //  2% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5,  600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  5, "h");  // 12% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 1100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  4, "h1"); // 22% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 1900L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "h2"); // 38% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 2100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "i");  // 42% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 3100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "i2"); // 62% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 4000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "j");  // 88% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 4400L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "j2"); // 80% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 4600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "k");  // 92% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 5000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "l");  //100% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 5, 6000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "m");  //120% of maxMemory/2 is inUse 
+
+        Test.ensureEqual(adjustNThreads( 3,    0L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "f");  //  0% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3,  100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "g");  //  2% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3,  600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "h");  // 12% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 1100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  3, "h1"); // 22% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 1900L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "h2"); // 38% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 2100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "i");  // 42% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 3100L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  2, "i2"); // 62% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 4000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "j");  // 80% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 4400L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "j2"); // 88% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 4600L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "k");  // 92% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 5000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "l");  //100% of maxMemory/2 is inUse 
+        Test.ensureEqual(adjustNThreads( 3, 6000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB),  1, "m");  //120% of maxMemory/2 is inUse 
+    }
+
     /**
      * This runs all of the interactive or not interactive tests for this class.
      *
@@ -13169,7 +13262,7 @@ if ((lineNumber % 1000) == 0) break;
     public static void test(StringBuilder errorSB, boolean interactive, 
         boolean doSlowTestsToo, int firstTest, int lastTest) {
         if (lastTest < 0)
-            lastTest = interactive? -1 : 3;
+            lastTest = interactive? -1 : 4;
         String msg = "\n^^^ EDD.test(" + interactive + ") test=";
 
         for (int test = firstTest; test <= lastTest; test++) {
@@ -13185,6 +13278,7 @@ if ((lineNumber % 1000) == 0) break;
                     if (test ==  1) testSparqlP01toP02();
                     if (test ==  2) testAddMvFvAttsIfNeeded();
                     if (test ==  3) testAddFillValueAttributes();
+                    if (test ==  4) testAdjustNThreads();
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
