@@ -325,16 +325,8 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
                         NcHelper.getVariableAttributes(variable, dataAttributes);
                         //if (verbose) String2.log(dataAttributes.toNcString("GridDataSetThredds attributes: " + tName + ":", " ;"));
 
-                        //always close the file 
-                        //I care about this exception
-                        netcdfFile.close();
-                    } catch (Exception e) {
-                        try {
-                            netcdfFile.close(); //make sure it is explicitly closed
-                        } catch (Exception e2) {
-                            //don't care
-                        }
-                        throw e;
+                    } finally {
+                        try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
                     }
 
 

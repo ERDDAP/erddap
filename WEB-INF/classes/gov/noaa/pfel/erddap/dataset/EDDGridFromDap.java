@@ -8454,7 +8454,8 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
         String2.log("done. size=" + File2.length(dir + tName));
 
         //for each time point, test that values are same from erddap tiny request or .nc file
-        try (NetcdfFile ncFile = NcHelper.openFile(dir + tName)) {
+        NetcdfFile ncFile = NcHelper.openFile(dir + tName);
+        try {
             Variable ncVariable = ncFile.findVariable("sst");
             if (ncVariable == null)
                 throw new RuntimeException("sst not found in " + dir + tName);
@@ -8486,6 +8487,8 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
                 String2.log(msg);
                 Test.ensureEqual(ncTest, dapTest, "sst values don't match!\n" + msg);
             }
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         } 
     }
 

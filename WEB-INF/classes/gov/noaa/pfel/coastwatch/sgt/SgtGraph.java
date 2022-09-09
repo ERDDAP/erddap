@@ -2130,7 +2130,7 @@ public class SgtGraph  {
         }
 
         //done
-        Math2.gcAndWait(); Math2.gcAndWait(); //part of a test.  Ensure all are garbage collected.
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test.  Ensure all are garbage collected.
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms\n" +
             Math2.memoryString());
     } 

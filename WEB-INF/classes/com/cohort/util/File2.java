@@ -417,6 +417,7 @@ public class File2 {
                         //+ "\n" + MustBe.stackTrace()
                         );
                     if (attempt % 4 == 1)
+                        //The problem might be that something needs to be gc'd.
                         Math2.gcAndWait(); //wait before retry delete. By experiment, gc works better than sleep.
                     else Math2.sleep(1000);
                 }
@@ -637,6 +638,7 @@ public class File2 {
             return;
 
         //failed? give it a second try. This fixed a problem in a test on Windows.
+        //The problem might be that something needs to be gc'd.
         Math2.gcAndWait();  //wait before giving it a second try      
         if (oldFile.renameTo(newFile))
             return;
@@ -794,6 +796,7 @@ public class File2 {
         } catch (Exception e) {
             //pause and try again
             try {
+                //The problem might be that something needs to be gc'd.
                 Math2.gcAndWait(); //if trouble getting lastModified: gc encourages success
                 File file = new File(fullName);
                 return file.lastModified();

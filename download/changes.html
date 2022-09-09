@@ -177,6 +177,8 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
     risk of those failing because they are too frequent.
     There are statistics for the emailThread on the status.html page 
     and diagnostic messages in log.txt -- look for "emailThread".
+    Note that a tally of nEmailsPerSession=0, indicates trouble,
+    i.e., an email session was unable to send any emails.
     <br>Thanks to Bob Simons.
     <br>&nbsp;
 
@@ -194,9 +196,23 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
     <br>Thanks to Bob Simons.
     <br>&nbsp;
 
+  <li>NEW: On the status.html page, in the "Major LoadDatasets Time Series",
+    there is a new "shed" column which indicates the number of requests
+    which were shed because current ERDDAP memory use was too high.
+    Requests which are shed will return HTTP status code 503 "Service Available".
+    Those requests weren't necessarily a problem. They just arrived at a busy time.
+    This was part of a revamp of how ERDDAP deals with high memory usage.
+    <br>&nbsp;
+
+  <li>NEW: On Unix/Linux computers, there is now an "OS Info" line on the status.html web page with
+    current operating system information including CPU load and memory use.
+    <br>&nbsp;
+
   <li>IMPROVED: Now, when ERDDAP is restarted and quickRestart=true, EDDTableFromFiles datasets will reuse
     subset.nc and distinct.nc. For some datasets, this greatly decreases the
     time to load the dataset (e.g., from 60 seconds to 0.3s).
+    Along with the new emailThread and taskThread (see above), this should
+    greatly speed up restarting ERDDAP for many ERDDAP installations.
     Thanks to Ben Adams and John Kerfoot.
     <br>&nbsp;
 

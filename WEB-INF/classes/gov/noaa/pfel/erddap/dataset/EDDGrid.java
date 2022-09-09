@@ -6263,7 +6263,7 @@ Attributes {
                 true); //convertToNaN
             long requestNL = gda.totalIndex().size();
             Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage"); 
-            Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage"); 
+            Math2.testMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage"); 
             int requestN = (int)requestNL; //safe since checked above
             Grid grid = null;
             Table table = null;
@@ -14824,20 +14824,20 @@ writer.write(
             String2.unitTestImagesDir()    + baseName + ".png",
             File2.getSystemTempDirectory() + baseName + "_diff.png");
 
+//2020-08-03 For tests below, some generated images have data, some don't,
+//  but results seem inconsistent.
+//  The images in erddapTest/images are old and I'm not sure appropriate.
+//  I'm not sure what they should be. Leave this for Chris John.
+
         // Invalid max y.
         baseName = "EDDGrid_testSaveAsImage_invalidMaxY";
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
             MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
             dir, baseName, ".transparentPng"); 
         Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
+            dir + tName,                                      
+            String2.unitTestImagesDir()    + baseName + ".png",       
             File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-//2020-08-03 For tests below, some generated images have data, some don't,
-//  but results seem inconsistent.
-//  The images in erddapTest/images are old and I'm not sure appropriate.
-//  I'm not sure what they should be. Leave this for Chris John.
 
         // All invalid.
         baseName = "EDDGrid_testSaveAsImage_allInvalid";

@@ -6353,7 +6353,8 @@ Dataset {
         String msg = "  Table.readFlatNc " + fullName; 
         long time = System.currentTimeMillis();
         Attributes gridMappingAtts = null;
-        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
+        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        try {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
             //fill the table
@@ -6385,6 +6386,8 @@ Dataset {
             if (reallyVerbose) 
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -6405,7 +6408,8 @@ Dataset {
         String msg = "  Table.readNcMetadata " + fullName; 
         long time = System.currentTimeMillis();
         Attributes gridMappingAtts = null;
-        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
+        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        try {
             //fill the table
             clear();
             NcHelper.getGroupAttributes(netcdfFile.getRootGroup(), globalAttributes());
@@ -6441,6 +6445,8 @@ Dataset {
             if (reallyVerbose) 
                 msg += " finished. nColumns=" + nColumns() +  
                     " TIME=" + (System.currentTimeMillis() - time) + "ms";
+        } finally {
+            try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -6528,7 +6534,8 @@ Dataset {
         //read the scalar variables
         //getGridMappingAtts() handled by lowReadFlatNc above
         int insertAt = 0;
-        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
+        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        try {
             Group rootGroup = netcdfFile.getRootGroup();
             List rootGroupVariables = rootGroup.getVariables(); 
             int nv = rootGroupVariables.size();
@@ -6568,6 +6575,8 @@ Dataset {
             if (reallyVerbose) 
                 String2.log(msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                     " TIME=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
         }
     }
     
@@ -6608,7 +6617,8 @@ Dataset {
         String errorInMethod = String2.ERROR + " in" + msg;
         //get information
         Attributes gridMappingAtts = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
             Variable loadVariables[] = NcHelper.find4DVariables(ncFile, loadColumns);
 
             //clear the table
@@ -6740,6 +6750,8 @@ Dataset {
             if (reallyVerbose) String2.log(
                 msg + " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -6789,7 +6801,8 @@ Dataset {
         //get information
         Attributes gridMappingAtts = null;
         StringArray varsNotFound = new StringArray();
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
             //load the global metadata
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
 
@@ -7130,6 +7143,8 @@ Dataset {
             if (reallyVerbose) 
                 String2.log(msg + " finished. nRows=" + nRows() + 
                     " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -7237,7 +7252,8 @@ Dataset {
 
         //read the file
         Attributes gridMappingAtts = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
 
             //load the global metadata
             if (getMetadata) 
@@ -7977,6 +7993,8 @@ Dataset {
                 String2.log(msg + 
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -8777,7 +8795,8 @@ Dataset {
 
         //read the file
         Attributes gridMappingAtts = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
 
             //load the global metadata
             if (getMetadata) 
@@ -8937,6 +8956,8 @@ Dataset {
                 String2.log(msg +  
                     " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 */
@@ -10002,7 +10023,8 @@ Dataset {
 
         Attributes gridMappingAtts = null;
         String readAs = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
             /* 
             //2012-07 CURRENTLY THE NETCDF-JAVA featureDataset APPROACH ISN'T WORKING. 
             //I EMAILED JOHN CARON.
@@ -11739,6 +11761,8 @@ Dataset {
             if (reallyVerbose) String2.log(msg + " finished (nLevels=2, readAs=" + readAs + 
                 "). nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -20356,7 +20380,8 @@ String2.log(table.dataToString());
             colNames = new StringArray(1, false);
         //String2.log(NcHelper.ncdump(fullName, "-h"));  
         Attributes gridMappingAtts = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(fullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(fullName);
+        try {
 
             NcHelper.getGroupAttributes(ncFile.getRootGroup(), globalAttributes());
             Attributes gatts = globalAttributes();
@@ -20759,6 +20784,8 @@ String2.log(table.dataToString());
             if (reallyVerbose) String2.log(msg + 
                 " finished. nRows=" + nRows() + " nCols=" + nColumns() + 
                 " time=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -24873,7 +24900,8 @@ String2.log(table.dataToString());
         String msg = "  Table.readOpendap " + fullName;
         long time = System.currentTimeMillis();
         Attributes gridMappingAtts = null;
-        try (NetcdfFile netcdfFile = NcHelper.openFile(fullName)) {
+        NetcdfFile netcdfFile = NcHelper.openFile(fullName);
+        try {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, loadColumns);
 
             //fill the table
@@ -24895,6 +24923,8 @@ String2.log(table.dataToString());
             if (reallyVerbose) String2.log(msg +  
                 " finished. nColumns=" + nColumns() + " nRows=" + nRows() + 
                 " TIME=" + (System.currentTimeMillis() - time) + "ms");
+        } finally {
+            try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
         }
     }
     
@@ -31899,7 +31929,8 @@ String2.log(table.dataToString());
         String msg = "  Table.readArgoProfile " + fileName;
         long tTime = System.currentTimeMillis();        
         //Attributes gridMappingAtts = null; //method is unfinished
-        try (NetcdfFile nc = NcHelper.openFile(fileName)) {
+        NetcdfFile nc = NcHelper.openFile(fileName);
+        try {
 //   DATE_TIME = 14;
 //   N_PROF = 632;
 //   N_PARAM = 3;
@@ -32159,6 +32190,8 @@ String2.log(table.dataToString());
      */
             if (reallyVerbose) String2.log(msg + " finished. nColumns=" + nColumns() +
                 " nRows=" + nRows() + " TIME=" + (System.currentTimeMillis() - tTime) + "ms");
+        } finally {
+            try {if (nc != null) nc.close(); } catch (Exception e9) {}
         }
     }
 
@@ -32649,12 +32682,15 @@ String2.log(table.dataToString());
         //********** test reading subset of data  via bitset (which uses read via firstrow/lastrow)
         String2.log("\n*** Table.testFlatNc read subset");
         table.clear();
-        try (NetcdfFile netcdfFile = NcHelper.openFile(testDir + "41015.nc")) {
+        NetcdfFile netcdfFile = NcHelper.openFile(testDir + "41015.nc");
+        try {
             Variable loadVariables[] = NcHelper.findVariables(netcdfFile, new String[]{"time", "BAR"});
             Variable testVariables[] = NcHelper.findVariables(netcdfFile, new String[]{"time"});
             BitSet okRows = NcHelper.testRows(testVariables, testMin, testMax); 
             table.appendNcRows(loadVariables, okRows);
             Test.ensureEqual(okRows.cardinality(), 1, "");
+        } finally {
+            try {if (netcdfFile != null) netcdfFile.close(); } catch (Exception e9) {}
         }
 
         Test.ensureEqual(table.nColumns(), 2, "");
@@ -34728,14 +34764,15 @@ readAsNcCF?
      */
     public static void testBigAscii() throws Exception {
         PrimitiveArray.reallyVerbose = true;
-        Math2.gcAndWait(); Math2.gcAndWait(); 
+        Math2.gcAndWait(); Math2.gcAndWait();   //in a test
         String2.log("\n*** Table.testBigAscii(): " + Math2.memoryString());
 
         Table table = new Table();
         long time = System.currentTimeMillis();
         table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
         time = System.currentTimeMillis() - time;
-        Math2.gcAndWait(); Math2.gcAndWait(); String2.log(" done. " + Math2.memoryString() + "\n" +
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test
+        String2.log(" done. " + Math2.memoryString() + "\n" +
             String2.canonicalStatistics());  //in a test
         String results = table.dataToString(4);
         String2.log(results);
@@ -34804,7 +34841,7 @@ readAsNcCF?
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
-        Math2.gcAndWait(); 
+        Math2.gcAndWait(); //in a test
         String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 
@@ -34815,9 +34852,10 @@ readAsNcCF?
 
     /**
      * This tests if nc files are closed when "try with resources" approach is taken.
+     * 2022-09-09 With tryWithResources, ERDDAP crashes every 2 days (like THREDDS)! So go back to: finally {nc.close()}
      */
-    public static void testNcClose() throws Throwable {
-        String2.log("\n*** Table.testNcClose()");
+    public static void testNcCloseTryWithResources() throws Throwable {
+        String2.log("\n*** Table.testNcCloseTryWithResources()");
 
         long time = System.currentTimeMillis();
         String fileName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
@@ -34896,7 +34934,6 @@ readAsNcCF?
                     if (test == 10) testParseDapQuery();
                     if (test == 11) testSubsetViaDapQuery();
                     if (test == 12) testAddIndexColumns();
-                    if (test == 13) testNcClose();
                     
                     //readWrite tests
                     if (test == 20) testASCII();
@@ -34955,6 +34992,7 @@ readAsNcCF?
                     //if (test == 1001) testSql();     //Needs work. Not active.
                     //if (test == 1002) testIobis();   // Needs work. Not active. It needs work to deal with sessions.
                     //if (test == 1003) testOpendap(); //not done yet, see opendapSequence
+                    //if (test == 1004) testNcCloseTryWithResources(); //2022-09-09 With tryWithResources, ERDDAP crashes every 2 days (like THREDDS)! So go back to: finally {nc.close()}
                 }
 
                 String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");

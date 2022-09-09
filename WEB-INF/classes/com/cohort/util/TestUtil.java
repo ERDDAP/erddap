@@ -6577,7 +6577,7 @@ expected =
             } else {
                 //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));  too inaccurate to be useful
                 Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                Test.ensureTrue(memoryInUse < 40 * Math2.BytesPerMB, //2021-11-16 increased because of translated messages.xml
+                Test.ensureTrue(memoryInUse < 40L * Math2.BytesPerMB, //2021-11-16 increased because of translated messages.xml
                     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
             }
             Test.ensureEqual(String2.canonicalSize(),             canSize,            
@@ -6653,7 +6653,7 @@ expected =
             } else {
                 //String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));   too inaccurate to be useful
                 Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
-                Test.ensureTrue(memoryInUse < 50 * Math2.BytesPerMB, 
+                Test.ensureTrue(memoryInUse < 50L * Math2.BytesPerMB, 
                     "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB));
             }
             Test.ensureEqual(String2.canonicalSize(),             canSize, 

@@ -125,7 +125,7 @@ public class TestAll  {
 //      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"noaaSanctSound_FK01_01_PSD_1h", "-verbose"});
+//      DasDds.main(new String[]{"ecocast", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -1096,7 +1096,6 @@ WaitThenTryAgainException wttae;
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
         boolean doSlowTestsToo = true;
-
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

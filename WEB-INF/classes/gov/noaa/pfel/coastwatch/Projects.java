@@ -2833,7 +2833,8 @@ variables:
             //open the old file
             String newName = cdfName.substring(0, cdfName.length() - 3) + "nc";
             NetcdfFormatWriter ncWriter = null;
-            try (NetcdfFile oldFile = NcHelper.openFile(cdfDir + cdfName)) {
+            NetcdfFile oldFile = NcHelper.openFile(cdfDir + cdfName);
+            try {
 
                 Group inRootGroup = oldFile.getRootGroup();
 
@@ -3212,6 +3213,7 @@ variables:
                 throw e9;
 
             } finally {
+                try {if (oldFile != null) oldFile.close(); } catch (Exception e9) {}
                 if (ncWriter != null) {
                     try {ncWriter.abort(); } catch (Exception e9) {}
                     File2.delete(newDir + newName); 
@@ -8206,7 +8208,8 @@ towTypesDescription);
         }
 
         //read the file
-        try (NetcdfFile nc = NcHelper.openFile(dir + fileName)) {
+        NetcdfFile nc = NcHelper.openFile(dir + fileName);
+        try {
             Variable v = nc.findVariable(latName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
             String2.log(latName + 
@@ -8224,8 +8227,9 @@ towTypesDescription);
 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
+        } finally {
+            try {if (nc != null) nc.close(); } catch (Exception e9) {}
         }
-
     }
 
     /** This prints time, lat, and lon values from an .ncml dataset. */
@@ -8235,7 +8239,8 @@ towTypesDescription);
         String lonName = "longitude";  
         StringBuilder sb = new StringBuilder();
         sb.append("ncmlName=" + ncmlName + "\n"); 
-        try (NetcdfFile nc = NcHelper.openFile(ncmlName)) {
+        NetcdfFile nc = NcHelper.openFile(ncmlName);
+        try {
             Variable v = nc.findVariable(latName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
             sb.append(latName + 
@@ -8260,7 +8265,10 @@ towTypesDescription);
         } catch (Throwable t) {
             String2.log(sb.toString());
             String2.log(MustBe.throwableToString(t));
+        } finally {
+            try {if (nc != null) nc.close(); } catch (Exception e9) {}
         }
+
         return sb.toString();
     }
 
@@ -9594,7 +9602,8 @@ towTypesDescription);
         String2.log("\n*** Projects.tallyGridValues(\n" + 
             fileName + "\n" + 
             varName + " scale=" + scale);
-        try (NetcdfFile file = NcHelper.openFile(fileName)) {
+        NetcdfFile file = NcHelper.openFile(fileName);
+        try {
             Variable var = file.findVariable(varName);
             PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
             int n = pa.size();
@@ -9602,6 +9611,8 @@ towTypesDescription);
             for (int i = 0; i < n; i++)
                 tally.add("value", "" + Math2.roundToInt(pa.getDouble(i) * scale));
             String2.log(tally.toString());
+        } finally {
+            try {if (file != null) file.close(); } catch (Exception e9) {}
         }
     }
 
