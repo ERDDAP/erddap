@@ -259,7 +259,8 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                 //tTime = System.currentTimeMillis();
                 //time ~150ms first time; 0 if in cache  if (reallyVerbose) String2.log("    get dGrid time=" + (System.currentTimeMillis() - tTime) + "ms");  
 
-                try (NetcdfFile ncFile = NcHelper.openFile(stationFileNames[station])) {
+                NetcdfFile ncFile = NcHelper.openFile(stationFileNames[station]);
+                try {
 
                     //*** get the first dataVariable  and its dimensions
                     //(other variables use this info and must match this info)
@@ -531,6 +532,8 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                             " x=" + stationX[station] + " y=" + stationY[station] + 
                             "\n    zLevels=" + stationDepthLevels[station] +
                             "\n    totalTime=" + (System.currentTimeMillis() - stationTime));  
+                } finally {
+                    try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
                 }
 
             } catch (Exception e) {

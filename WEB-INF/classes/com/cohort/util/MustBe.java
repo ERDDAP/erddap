@@ -122,13 +122,14 @@ public class MustBe {
      *     (like MustBe.between -&lt; stackTrace()), 3 is recommended.
      *   For any routine handling a real Thrown exception
      *     (e.g., MustBe.throwable), 0 is recommended.
-     * @param removeAtJava removes all lines starting with "at java".
-     * @param removeAtSun removes all lines starting with "at sun".
-     * @param removeAtOrgApache removes all lines starting with "at org.apache".
+     * @param removeAtJava removes all lines starting with "java".
+     * @param removeAtSun removes all lines starting with "sun".   (none with Java 17?)
+     * @param removeAtOrgApache removes all lines starting with "org.apache".
      */
     public static String throwableStackTrace(Throwable throwable,
-            int nRemoveLines, boolean removeAtJava, boolean removeAtSun,
-            boolean removeAtOrgApache) {
+            int nRemoveLines
+            //, boolean removeAtJava, boolean removeAtSun, boolean removeAtOrgApache
+            ) {
         if (throwable == null) 
             return "";
 
@@ -167,10 +168,11 @@ public class MustBe {
           if (i == 0 && s.startsWith(seBase + seName))
               s = s.substring(seBase.length());
           String trims = s.trim();
-          if (removeAtJava && trims.startsWith("at java")) {}
-          else if (removeAtSun && trims.startsWith("at sun")) {}
-          else if (removeAtOrgApache && trims.startsWith("at org.apache")) {}
-          else sb.append(s + lineSeparator);
+          //if (removeAtJava && trims.startsWith("at java")) {}       //with Java 17, there is no "at "!!! Comment out because I like seeing the java, sun, apache lines.
+          //else if (removeAtSun && trims.startsWith("at sun")) {}
+          //else if (removeAtOrgApache && trims.startsWith("at org.apache")) {}
+          //else 
+              sb.append(s + lineSeparator);
           }
         //String2.noLongLines(sb, 80, "    ");
      
@@ -182,14 +184,18 @@ public class MustBe {
      * removed.
      */
     public static String throwableToString(Throwable t) {
-        return throwableStackTrace(t, 0, true, true, true);
+        return throwableStackTrace(t, 0
+            //, true, true, true
+            );
     }
 
     /**
      * Like throwableToString, but with first "at" line only.
      */
     public static String throwableToShortString(Throwable t) {
-        String s = throwableStackTrace(t, 0, true, true, true);
+        String s = throwableStackTrace(t, 0
+            //, true, true, true
+            );
         int atPo = s.indexOf("\n at ");
         if (atPo > 0) {
             int nPo = s.indexOf("\n", atPo + 6);
@@ -208,12 +214,14 @@ public class MustBe {
      *   throwableStackTrace().
      * </UL>
      */
-    public static String stackTrace(int nRemoveLines, boolean removeAtJava,
-        boolean removeAtSun, boolean removeAtOrgApache) {
+    public static String stackTrace(int nRemoveLines
+        //, boolean removeAtJava, boolean removeAtSun, boolean removeAtOrgApache
+        ) {
         //generate the Exception 
         Exception e = new Exception();
-        return throwableStackTrace(e, nRemoveLines, removeAtJava,
-            removeAtSun, removeAtOrgApache);
+        return throwableStackTrace(e, nRemoveLines
+            //, removeAtJava, removeAtSun, removeAtOrgApache
+            );
     }
 
     /**
@@ -225,7 +233,9 @@ public class MustBe {
      * </UL>
      */
     public static String stackTrace() {
-        return stackTrace(3, true, true, true);
+        return stackTrace(3
+            //, true, true, true
+            );
     }
 
     /**
@@ -328,13 +338,17 @@ public class MustBe {
             return classAndMethodName + ":" + lineSeparator + 
                 message + lineSeparator +
                 MustBe.OutOfMemoryError + lineSeparator +
-                throwableStackTrace(throwable, 0, true, true, true) +
+                throwableStackTrace(throwable, 0
+                    //, true, true, true
+                    ) +
                 "\nMustBe.throwableWithMessage detected OutOfMemoryError at\n" +
                 getStackTrace();  
 
         return classAndMethodName + ":" + lineSeparator + 
             message + lineSeparator + 
-            throwableStackTrace(throwable, 0, true, true, true);
+            throwableStackTrace(throwable, 0
+                //, true, true, true
+                );
     }
 
     /**

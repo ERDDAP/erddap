@@ -59,13 +59,11 @@ public class Math2 {
     public volatile static long lastUsingMemory = 0; //volatile: used by all threads
     public volatile static long maxUsingMemory = 0; //volatile: used by all threads
     public static long maxMemory = Runtime.getRuntime().maxMemory(); 
-    /** This is the most memory any method should consider using
+    /** This is the most total-memory-in-use any method should consider
      * (and anything remotely close to this is considered dangerous
      * and should be avoided).
      */
-    public static long maxSafeMemory = Math.max(
-        maxMemory - 500L * BytesPerMB,  //if maxMemory>2GB, just keep 500MB aside for safety
-        (maxMemory / 4) * 3); //operator order avoids numeric overflow 
+    public static long maxSafeMemory = maxMemory * 3L / 4; 
     public static long alwaysOkayMemoryRequest = maxSafeMemory / 16;
 
     /** 
@@ -456,14 +454,37 @@ public class Math2 {
      * This isn't perfect, but is better than nothing. 
      * Future: locks? synchronization? ...?
      *
-     * <p>This is almost identical to EDStatic.ensureMemoryAvailable, but lacks tallying.
-     *
      * @param nBytes  size of data structure that caller plans to create
      * @param attributeTo for a WARNING or ERROR message, this is the string 
      *   to which this not-enough-memory issue should be attributed.
      * @throws RuntimeException if the requested nBytes are unlikely to be available.
      */
     public static void ensureMemoryAvailable(final long nBytes, final String attributeTo) {
+        //2022-09-08 Previously, this used the code now in testMemoryAvailable.
+        //Now this does nothing.
+        //Some methods previously used ensureMemoryAvailable, but now use testMemoryAvaible.
+        //Previously, this method could reject any request for lots of memory,
+        //  even if it was for ERDDAP management (i.e., shooting myself in the foot). 
+    }
+
+
+    /**
+     * This throws an exception if the requested nBytes are unlikely to be
+     * available.
+     * This isn't perfect, but is better than nothing. 
+     * Future: locks? synchronization? ...?
+     *
+     * @param nBytes  size of data structure that caller plans to create
+     * @param attributeTo for a WARNING or ERROR message, this is the string 
+     *   to which this not-enough-memory issue should be attributed.
+     * @throws RuntimeException if the requested nBytes are unlikely to be available.
+     */
+    public static void testMemoryAvailable(final long nBytes, final String attributeTo) {
+
+        //2022-09-08 The new system for memory protection in ERDDAP is to shed user requests
+        //coming into ERDDAP when current memory usage is high (see ERDDAP.shedThisRequest()).
+        //But some places call this new method (like old ensureMemoryAvailable, but new name).
+        //Now, I really avoid calling gc -- let memory use appear to be hight so user requests are rejected.
 
         //this is a little risky, but avoids frequent calls to calculate memoryInUse
         if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
@@ -471,39 +492,33 @@ public class Math2 {
        
         //is this single request by itself too big under any circumstances?
         if (nBytes > maxSafeMemory) {
-            throw new RuntimeException(memoryTooMuchData + "  " +
+            String msg = memoryTooMuchData + "  " +
                 MessageFormat.format(memoryThanSafe, "" + (nBytes / BytesPerMB),  
                     "" + (maxSafeMemory / BytesPerMB)) +
-                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")")); 
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")");
+            String2.log("ERROR: " + msg + "\n" +
+                MustBe.stackTrace());
+            String2.flushLog();
+            throw new RuntimeException(msg); 
         }
 
-        //request is fine without gc?
+        //request is fine
         long memoryInUse = getMemoryInUse();
         if (memoryInUse + nBytes <= maxSafeMemory)  //it'll work
             return;
 
-        //lots of memory is in use
-        //is the request is too big for right now?
-        gcAndWait();
-        memoryInUse = getMemoryInUse();
+        //I used to gcAndWait() and call getMemoryInUse() again if memory use was high.
+        //Now I think: if memory use is high, just ditch the user request.
+
         if (memoryInUse + nBytes > maxSafeMemory) {
-            //eek! not enough memory! 
-            //Wait, then try gc again and hope that some other thread requiring lots of memory will finish.
-            //If nothing else, this 1 second delay will delay another request by same user (e.g., programmatic re-request)
-            sleep(1000);
-            gcAndWait(); 
-            memoryInUse = getMemoryInUse();
-        }
-        if (memoryInUse > maxSafeMemory) {
-            String2.log("WARNING: memoryInUse > maxSafeMemory" + 
-                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")") +
-                ".");
-        }
-        if (memoryInUse + nBytes > maxSafeMemory) {
-            throw new RuntimeException(memoryTooMuchData + "  " +
+            String msg = memoryTooMuchData + "  " +
                 MessageFormat.format(memoryThanCurrentlySafe,
                     "" + (nBytes / BytesPerMB), "" + ((maxSafeMemory - memoryInUse) / BytesPerMB)) +
-                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")")); 
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")");
+            String2.log("ERROR: " + msg + "\n" +
+                MustBe.stackTrace());
+            String2.flushLog();
+            throw new RuntimeException(msg); 
         }
     }
 

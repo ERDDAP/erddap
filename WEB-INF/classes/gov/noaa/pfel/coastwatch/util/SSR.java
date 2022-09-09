@@ -2659,8 +2659,29 @@ public class SSR {
         int errorCount = 0;
         HashSet<String> tried = new HashSet();
         String skip[] = new String[]{
-            "https://192.168.31.18/",
-            "https://127.0.0.1:8443/cwexperimental/login.html"};  //the links to log in (upper right of most web pages) will fail on my test computer
+"https://192.168.31.18/",
+"https://127.0.0.1:8443/cwexperimental/login.html",  //the links to log in (upper right of most web pages) will fail on my test computer
+"https://myhsts.org",                             //javax.net.ssl.SSLHandshakeException: No subject alternative DNS name matching myhsts.org found.
+"https://gcoos5.geos.tamu.edu/erddap/index.html", //javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+"https://gcoos4.tamu.edu/erddap/index.html",      //javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+"https://basin.ceoe.udel.edu/erddap/index.html",  //javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+"http://coastwatch.pfeg.noaa.gov:8080/",          //java.net.SocketTimeoutException: Connect timed out
+"https://whatismyipaddress.com/ip-lookup",        //it's clever: no follow
+"http://127.0.0.1:8080/manager/html/",            //will always fail this test
+"http://localhost:8080/manager/html/",            //will always fail this test
+"http://127.0.0.1:8080/erddap/status.html",       //will always fail this test
+"http://localhost:8080/erddap/status.html",       //will always fail this test
+"https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core", //it's clever: no follow
+"https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2",      //it's clever: no follow
+"https://mvnrepository.com/artifact/org.postgresql/postgresql",                    //it's clever: no follow
+"https://mvnrepository.com/",                                                      //it's clever: no follow
+"https://noaa-goes17.s3.us-east-1.amazonaws.com",                                  //will always fail
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/",                                 //will always fail
+"https://noaa-goes17.s3.us-east-1.amazonaws.com/ABI-L1b-RadC/2019/235/22/OR_ABI-L1b-RadC-M6C01_G17_s20192352201196_e20192352203569_c20192352204013.nc", //always fails
+"https://coastwatch.pfeg.noaa.gov/erddap/tabledap/pmelTaoDySst.csv?longitude,latitude,time,station,wmo_platform_code,T_25&time>=2015-05-23T12:00:00Z&time<=2015-05-31T12:00:00Z", //always fails because of invalid character
+"http://",
+"https://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/nrt/NDBC_{41008,41009,41010}_met.nc" //intended for curl (globbing)
+};
             //https://unitsofmeasure.org/ucum.html fails in tests because of certificate, but succeeds in my browser. Others are like this, too.
         for (int linei = 0; linei < lines.length; linei++) {
             String urls[] = String2.extractAllCaptureGroupsAsHashSet(lines[linei], pattern, 1).toArray(new String[0]);

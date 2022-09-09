@@ -2377,6 +2377,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         int ftRow = 0;
         
         int tnThreads = nThreads >= 1 && nThreads < Integer.MAX_VALUE? nThreads : EDStatic.nGridThreads; 
+        //reduce tnThreads based on memory available
+        tnThreads = adjustNThreads(tnThreads);
         ThreadedWorkManager<PrimitiveArray[]> workManager = new ThreadedWorkManager<>(
                 tnThreads,
                 result -> {
