@@ -2445,9 +2445,8 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
 //        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
         } catch (Throwable t) {
-            throw new Exception(
-                "\nUnexpected error." +
-                "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is common)." + 
+            Test.knownProblem(
+                "\nOutOfMememoryError from TDS bug was expected (but 404 Not Found/ 'Connection cannont be read' is also common)." + 
                 "\n(server timed out 2013-10-24)", t); 
         }
 

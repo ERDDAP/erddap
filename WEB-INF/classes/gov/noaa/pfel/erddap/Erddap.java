@@ -255,7 +255,7 @@ public class Erddap extends HttpServlet {
 
         //open String2 log system and log to BPD/logs/log.txt
         String2.setupLog(false, false, //tLogToSystemOut, tLogToSystemErr,
-            newLogTxt, true, EDStatic.logMaxSizeMB * Math2.BytesPerMB); //fileName, append, maxSize
+            newLogTxt, true, EDStatic.logMaxSizeMB * Math2.BytesPerMB); //fileName, append, maxSize (will be 1 .. 2000, so no int overflow)
         String2.log("\n\\\\\\\\**** Start Erddap v" + EDStatic.erddapVersion + 
             " constructor at " + timeStamp + "\n" +
             "logFile=" + String2.logFileName() + " logMaxSizeMB=" + EDStatic.logMaxSizeMB + "\n" +
@@ -612,17 +612,20 @@ public class Erddap extends HttpServlet {
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
             if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
+                //shedThisRequest is halfway in doDap()
                 doDap(language, requestNumber, request, response, ipAddress, loggedInAs, 
                     protocol, protocolEnd + 1, endOfRequest, queryString);
             } else if (protocol.equals("files")) {
                 doFiles(language, requestNumber, request, response, loggedInAs, 
                     protocolEnd + 1, endOfRequest, queryString);
             } else if (protocol.equals("sos")) {
+                if (shedThisRequest(language, requestNumber, response)) return;
                 doSos(language, requestNumber, request, response, ipAddress, loggedInAs, 
                     protocolEnd + 1, endOfRequest, queryString); 
             //} else if (protocol.equals("wcs")) {
             //    doWcs(request, response, ipAddress, loggedInAs, protocolEnd + 1, endOfRequest, queryString); 
             } else if (protocol.equals("wms")) {
+                if (shedThisRequest(language, requestNumber, response)) return;
                 doWms(language, requestNumber, request, response, loggedInAs, protocolEnd + 1, endOfRequest, queryString);
             } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
                 sendRedirect(response, tErddapUrl + "/index.html");
@@ -674,6 +677,7 @@ public class Erddap extends HttpServlet {
             } else if (endOfRequest.equals("rest.html")) {
                 doRestHtml(language, request, response, loggedInAs, endOfRequest, queryString);
             } else if (protocol.equals("rest")) {  
+                if (shedThisRequest(language, requestNumber, response)) return;
                 doGeoServicesRest(language, requestNumber, request, response, loggedInAs, endOfRequest, queryString);
             } else if (endOfRequest.equals("setDatasetFlag.txt")) {
                 doSetDatasetFlag(ipAddress, request, response, queryString);
@@ -783,6 +787,31 @@ public class Erddap extends HttpServlet {
             }
         }
     }
+
+
+    /**
+     * This checks if this request should be shed because too much memory in use.
+     * This is called before methods (e.g., doDap()) that often require a lot of memory.
+     * Thus low-memory-use requests never trigger this.
+     * 
+     * @return true if this send an error message to user
+     */
+    public boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response) {
+        long inUse = Math2.getMemoryInUse();
+        if (inUse + 2*Math2.alwaysOkayMemoryRequest > Math2.maxSafeMemory) {
+            //I could Math2.gcAndWait() and try again, but that could call lots of gc's 
+            //(and clearly, memory use is high), so just reject it.
+            String2.log("shedThisRequest=true request #" + requestNumber + 
+                " memoryInUse=" + (inUse/Math2.BytesPerMB) + 
+                "MB maxSafeMemory=" + (Math2.maxSafeMemory/Math2.BytesPerMB) + "MB");
+            EDStatic.requestsShed++; //since last Major LoadDatasets
+            EDStatic.lowSendError(requestNumber, response, 503, //Service Unavailable
+                EDStatic.waitThenTryAgainAr[language]);
+            return true;
+        }
+        return false;
+    }
+
 
     /** 
      * This responds to an /erddap/index.xxx request
@@ -4636,19 +4665,24 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         if (dataset instanceof FromErddap fromErddap) {
             int sourceVersion = fromErddap.intSourceErddapVersion();
             //some requests are handled locally...
-            //more complicated test for new v184/200 orderBy features
             boolean newOrderBy = false;
-            if (sourceVersion < 184 && queryString.indexOf("orderBy") >= 0) {
+            if (sourceVersion < 180 && queryString.indexOf("orderByCount(") >= 0) 
+                newOrderBy = true;
+            if (sourceVersion < 200 && queryString.indexOf("orderBy") >= 0) {
+                //more complicated test for new v2.00 orderBy features
                 String parts[] = String2.splitNoTrim(queryString, '&');
                 for (int p = 1; p < parts.length; p++) { //1 because 0 is varList
-                    if (queryString.indexOf("orderByMean") >= 0 ||
-                        queryString.indexOf("orderBySum") >= 0 ||                        
-                        (parts[p].startsWith("orderBy") && parts[p].indexOf('/') > 0)) {
+                    if ((parts[p].startsWith("orderByMean(")) ||                     //new in v2.00
+                        (parts[p].startsWith("orderBy") && parts[p].indexOf('/') > 0)) {  //new system in v2.00 
                         newOrderBy = true;
                         break;
                     }
                 }
             }
+            if (sourceVersion < 216 && queryString.indexOf("orderBySum(") >= 0) 
+                newOrderBy = true;
+            if (sourceVersion < 219 && queryString.indexOf("orderByDescending(") >= 0) 
+                newOrderBy = true;
             if (newOrderBy ||
                 fromErddap.redirect() == false ||
                 fileTypeName.equals(".das") || 
@@ -4674,6 +4708,11 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             }
         }
 
+        //shedThisRequest?  (before making the outputStream)
+        if (shedThisRequest(language, requestNumber, response)) 
+            return;
+
+        //make the outputStream for the response
         String cacheDir = dataset.cacheDirectory(); //it is created by EDD.ensureValid
         OutputStreamSource outputStreamSource;
         if (EDStatic.awsS3OutputBucketUrl == null) {
@@ -7360,7 +7399,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
                 int nBytesPerElement = 8;
                 int requestN = (int)requestNL; //safe since checked by ensureArraySizeOkay above
-                Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap"); 
+                Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap"); 
                 Grid grid = new Grid();
                 grid.data = new double[requestN];
                 int po = 0;
@@ -18322,6 +18361,7 @@ UTC                  m   deg_n    deg_east m s-1
         String2.log("\n*** Erddap.testBasic");
         int po;
         int language = 0;
+        EDStatic.sosActive = false; //currently, never true because sos is unfinished  //some other tests may have left this as true
 
         //home page
         results = SSR.getUrlResponseStringUnchanged(EDStatic.erddapUrl); //redirects to index.html

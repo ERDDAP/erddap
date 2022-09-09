@@ -1565,7 +1565,8 @@ NcHelper.debugMode = true;
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         
-        try (NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName1)) {
+        NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName1);
+        try {
 
             //lon
             var = ncFile.findVariable("lon");
@@ -1688,6 +1689,8 @@ NcHelper.debugMode = true;
     "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 29.476826, NaN, NaN, NaN, " +
     "431.7499, NaN, 36.19993, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
             Test.ensureEqual(results, expected, "results=\n" + results);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
 
         
@@ -1737,7 +1740,8 @@ NcHelper.debugMode = true;
 "      :valid_max = 180.0f; // float\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
-        try (NetcdfFile ncFile = NcHelper.openFile(fileDir + fileName2)) {
+        ncFile = NcHelper.openFile(fileDir + fileName2);
+        try {
 
             //lon
             var = ncFile.findVariable("lon");
@@ -1855,6 +1859,8 @@ NcHelper.debugMode = true;
     "NaN, NaN, 78.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 26.6, NaN, NaN, NaN, " +
     "NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN";
             Test.ensureEqual(results, expected, "results=\n" + results);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
 
         

@@ -135,7 +135,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         String getWhat = "globalAttributes";
         String group = "";
         int groupSlashCount = 0;
-        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(tFullName);
+        try {
 
             //This is cognizant of special axis0         
             for (int avi = 0; avi < sourceAxisNames.size(); avi++) {
@@ -207,6 +208,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 "\nfrom " + tFullName + 
                 "\nCause: " + MustBe.throwableToShortString(t),
                 t);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -230,7 +233,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         StringArray sourceAxisNames, StringArray sourceDataNames) throws Throwable {
 
         String getWhat = "?";
-        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(tFullName);
+        try {
             PrimitiveArray[] avPa = new PrimitiveArray[sourceAxisNames.size()];
 
             //try to find 1 dataVariable in case needed below
@@ -275,6 +279,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 "\nfrom " + tFullName + 
                 "\nCause: " + MustBe.throwableToShortString(t),
                 t);
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -314,7 +320,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
         int nValues = -1; //not yet calculated
         EDV edv = null;
 
-        try (NetcdfFile ncFile = NcHelper.openFile(tFullName)) {
+        NetcdfFile ncFile = NcHelper.openFile(tFullName);
+        try {
 
             for (int dvi = 0; dvi < ndv; dvi++) {
                 edv = tDataVariables[dvi];
@@ -399,6 +406,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 (edv == null? "null" : edv.sourceName()) + 
                 "[" + selection + "] (start:STOP:stride).");                
             throw t;
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
     }
 
@@ -473,7 +482,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
 
         StringBuilder sb = new StringBuilder();
         Attributes gridMappingAtts = null;
-        try (NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName)) {
+        NetcdfFile ncFile = NcHelper.openFile(decomSampleFileName);
+        try {
 
             //make table to hold info
             Table axisSourceTable = new Table();  
@@ -832,6 +842,8 @@ public abstract class EDDGridFromNcLow extends EDDGridFromFiles {
                 "\n");
 
             String2.log("\n\n*** generateDatasetsXml finished successfully.\n\n");
+        } finally {
+            try {if (ncFile != null) ncFile.close(); } catch (Exception e9) {}
         }
         return sb.toString();        
     }

@@ -9141,6 +9141,10 @@ expected =
                 if (interactive) 
                     String2.pressEnterToContinue("");
             }
+
+            //until SOS is finished, it is always inactive
+            //some tests seem to leave this as true, so set it to false
+            EDStatic.sosActive = false;
         }
     }
 
