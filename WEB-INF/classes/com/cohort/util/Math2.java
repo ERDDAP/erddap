@@ -88,13 +88,13 @@ public class Math2 {
      * 2013-12-06 If I use -verbose:gc with my localhost ERDDAP 
      * and hammer it with WMS requests, I can get memory use up to 500 MB (1.5 GB allocated).
      * GC (&lt; 0.02 s) runs often by itself and Full GC (&lt; 0.06 s) runs fairly often.
-     * So I'm guessing delay of 0.25 s is sufficient even for coastwatch ERDDAP
+     * So I'm guessing delay of 0.4 s is sufficient even for coastwatch ERDDAP
      * with high memory use and heavy usage.
      * This is one value (not adjusted by total memory or ...), on the theory that 
      * bigger tasks are usually given to computers with more, faster cores and more memory,
      * and smaller tasks are usually given to computers with fewer, slower cores and less memory.
      */
-    public static int shortSleep = 250; 
+    public static int shortSleep = 400; 
 
 
     /** If memory use jumps by this amount, a call to incgc will trigger a call

@@ -199,7 +199,7 @@ public class Erddap extends HttpServlet {
     public ConcurrentHashMap<String,int[]> failedLogins = new ConcurrentHashMap(16, 0.75f, 4); 
     public ConcurrentHashMap<String,ConcurrentHashMap> categoryInfo = new ConcurrentHashMap(16, 0.75f, 4);  
     public long lastClearedFailedLogins = System.currentTimeMillis();
-
+    private volatile long timeShedCalledGc = 0;
 
     /**
      * The constructor.
@@ -795,21 +795,42 @@ public class Erddap extends HttpServlet {
      * Thus low-memory-use requests never trigger this.
      * 
      * @return true if this send an error message to user
+     * throws InterruptedException
      */
-    public boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response) {
-        long inUse = Math2.getMemoryInUse();
-        if (inUse + 2*Math2.alwaysOkayMemoryRequest > Math2.maxSafeMemory) {
-            //I could Math2.gcAndWait() and try again, but that could call lots of gc's 
-            //(and clearly, memory use is high), so just reject it.
-            String2.log("shedThisRequest=true request #" + requestNumber + 
-                " memoryInUse=" + (inUse/Math2.BytesPerMB) + 
-                "MB maxSafeMemory=" + (Math2.maxSafeMemory/Math2.BytesPerMB) + "MB");
-            EDStatic.requestsShed++; //since last Major LoadDatasets
-            EDStatic.lowSendError(requestNumber, response, 503, //Service Unavailable
-                EDStatic.waitThenTryAgainAr[language]);
-            return true;
+    public boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response) throws InterruptedException {
+        //If shed just called gc, memory use was recently high. Wait till shortSleep is finished.
+        long timeSinceGc = System.currentTimeMillis() - timeShedCalledGc;
+        if (timeSinceGc < Math2.shortSleep) {
+            Thread.sleep(Math2.shortSleep - timeSinceGc);
+            timeSinceGc += Math2.shortSleep - timeSinceGc;
         }
-        return false;
+
+        //if memory use is low, return false
+        long inUse = Math2.getMemoryInUse();
+        if (inUse < Math2.maxSafeMemory)
+            return false;
+
+        //memory use is too high
+        //if long time since gc, call gc
+        if (timeSinceGc > 3000) {  //arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
+            //call gc
+            timeShedCalledGc = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
+            Math2.gcAndWait();
+            inUse = Math2.getMemoryInUse();
+            //if memory use is now low, return false
+            if (inUse < Math2.maxSafeMemory)
+                return false;
+        }
+
+        //memory use is too high, so shed this request
+        String2.log("shedThisRequest #" + EDStatic.requestsShed++ +  //since last Major LoadDatasets
+            " request #" + requestNumber + 
+            " memoryInUse=" + (inUse/Math2.BytesPerMB) + 
+            "MB maxSafeMemory=" + (Math2.maxSafeMemory/Math2.BytesPerMB) + "MB");
+        EDStatic.lowSendError(  //it sleeps for EDStatic.slowDownTroubleMillis
+            requestNumber, response, 503, //Service Unavailable  
+            EDStatic.waitThenTryAgainAr[language]);
+        return true;
     }
 
 
@@ -7399,7 +7420,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
                 int nBytesPerElement = 8;
                 int requestN = (int)requestNL; //safe since checked by ensureArraySizeOkay above
-                Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap"); 
+                //Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");  //now rely on Erddap.shedThisRequest to avoid trouble
                 Grid grid = new Grid();
                 grid.data = new double[requestN];
                 int po = 0;
