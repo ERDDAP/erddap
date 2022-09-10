@@ -6263,7 +6263,7 @@ Attributes {
                 true); //convertToNaN
             long requestNL = gda.totalIndex().size();
             Math2.ensureArraySizeOkay(requestNL, "EDDGrid.saveAsImage"); 
-            Math2.testMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage"); 
+            //Math2.testMemoryAvailable(requestNL * nBytesPerElement, "EDDGrid.saveAsImage");  //now rely on Erddap.shedThisRequest to avoid trouble
             int requestN = (int)requestNL; //safe since checked above
             Grid grid = null;
             Table table = null;
