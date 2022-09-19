@@ -111,12 +111,16 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>     
     to check resource usage and consider giving ERDDAP more resources.
+    Memory is cheap! Most phones have more processors and memory than 
+    the servers that some of you are using to run ERDDAP!
     Thanks to Erin Turnbull.
     <br>&nbsp;
   <li>TO DO: If you use ERDDAP to access Cassandra, for Cassandra, you need to keep using the version
     of Java that you were using for running the Cassandra. 
     Just switch to Java 17 for running Tomcat+ERDDAP. 
-  <li>TO DO: Recommended: If your server's CPU has 4+ cores, consider changing to these settings in your datasets.xml file:<kbd>
+    <br>&nbsp;
+  <li>TO DO: Recommended: If your server's CPU has 4+ cores and 8+ GB of RAM, 
+     consider changing to these settings in your datasets.xml file:<kbd>
       <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
       <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
     <br>The nThreads systems for EDDGridFromFiles and EDDTableFromFiles were significantly improved. 
@@ -124,6 +128,10 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
     for the most challenging requests (when a large number of files must be processed to gather the results).
     Some related changes from Chris John will also lead to a general speedup throughout ERDDAP.
     The code for these changes was contributed by Chris John. Thank you, Chris!
+    <br>&nbsp;
+  <li>WARNING: hyphens in datasetID's are deprecated and no longer supported (although technically still allowed).
+    They will probably be disallowed in the next release. 
+    If you use hyphens, switch to underscores now to avoid trouble.
     <br>&nbsp;
   <li>NEW: Now, for .htmlTable data responses, 
     if the data in a String cell contains <kbd>data:image/png;base64,</kbd> followed by a base64 encoded .png image,
