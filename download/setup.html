@@ -434,30 +434,25 @@ or Mac server instead.
 
 <p><strong>The standard ERDDAP installation instructions for Linux, Macs, and Windows computers are:</strong>
 <ol>
-<li><a class="selfLink" id="java" href="#java" rel="bookmark">Set up Java 8 (also known as 1.8).</a>  
-    <br>For security reasons, it is almost always best to use the latest version of Java 8.
+<li><a class="selfLink" id="java" href="#java" rel="bookmark">For ERDDAP v2.19+, set up Java 17.</a>   <!-- javaVersion -->
+    <br>For security reasons, it is almost always best to use the latest version of Java 17.
     <br>Please download and install the latest version of 
-    <br><a rel="bookmark" href="https://adoptium.net/?variant=openjdk8">Adoptium's OpenJDK (Temurin) 8 (LTS)<img 
+    <br><a rel="bookmark" href="https://adoptium.net/temurin/releases/?version=17">Adoptium's OpenJDK (Temurin) 17 (LTS)<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
     To verify the installation, type "/<i>javaJreBinDirectory</i>/java -version", for example
-    <br><kbd>/usr/local/jdk8u312-b07/jre/bin/java -version</kbd> <!-- javaVersion -->
+    <br><kbd>/usr/local/jdk-17.0.4+8/jre/bin/java -version</kbd> <!-- javaVersion -->
+
+    <p>[For ERDDAP versions before v2.19, use Java 8.]
 
     <p>ERDDAP works with Java from other sources, but we recommend Adoptium because it is the 
-    main, community-supported, free (as in beer and speech) version of Java 8 <!-- javaVersion -->
-    that offers Long Term Support (free upgrades until at least September 2023).
+    main, community-supported, free (as in beer and speech) version of Java 17 <!-- javaVersion -->
+    that offers Long Term Support (free upgrades for many years past the initial release).
     For security reasons, please update your ERDDAP's version of Java periodically 
-    as new versions of Java 8 become available from Adoptium. <!-- javaVersion -->
+    as new versions of Java 17 become available from Adoptium. <!-- javaVersion -->
 
-    <p>ERDDAP has been tested and used extensively with Java 8 (also known as 1.8), 
-    not other versions.
-    For various reasons, we have not tested ERDDAP with Java 9, 10, or 11, 
-    and thus don't support them yet.
-    Java 7 (1.7) is no longer supported because it reached its 
-    <a rel="help" href="https://www.oracle.com/technetwork/java/eol-135779.html">end of life<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>
-    and so is no longer supported by Oracle or Adoptium. 
+    <p>ERDDAP has been tested and used extensively with Java 17, not other versions.
+    For various reasons, we don't test with nor support other versions of Java.
 
     <br>&nbsp;
 
@@ -475,8 +470,8 @@ or Mac server instead.
 
     <li>Download Tomcat and unpack it on your server or PC.
       <br>For security reasons, it is almost always best to use the latest version of 
-      Tomcat 9 (8.5+ is fine too, but 10+ is not) <!-- tomcatVersion -->
-      which is designed to work with Java 8 (1.8). <!-- javaVersion -->
+      Tomcat 10 (version 9 and below are not acceptable) <!-- tomcatVersion -->
+      which is designed to work with Java 17. <!-- javaVersion -->
       Below, the Tomcat directory will be referred to as <i>tomcat</i>.
       <p>Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
       we recommend that you install ERDDAP in 
@@ -485,19 +480,19 @@ or Mac server instead.
       and shouldn't have to contend with other applications for memory.
       <ul>
       <li>On Linux,                                     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-10.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a> 
         and unpack it. We recommend unpacking it in /usr/local.
       <li>On a Mac, Tomcat is probably already installed in /Library/Tomcat,
-        but you may want to update it to the latest version of Tomcat 9 (not 10+). <!-- tomcatVersion -->
+        but should update it to the latest version of Tomcat 10. <!-- tomcatVersion -->
         <br>If you download it,     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-10.cgi">download the "Core" "tar.gz" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>         
         and unpack it in /Library/Tomcat. 
       <li>On Windows, you can                     <!-- tomcatVersion below -->
-        <a rel="help" href="https://tomcat.apache.org/download-90.cgi">download the "Core" "zip" Tomcat distribution<img 
+        <a rel="help" href="https://tomcat.apache.org/download-10.cgi">download the "Core" "zip" Tomcat distribution<img 
           src="../images/external.png" alt=" (external link)" 
           title="This link to an external website does not constitute an endorsement."></a>
         (which doesn't mess with the Windows registry and which you control from a DOS command line)
@@ -506,7 +501,7 @@ or Mac server instead.
         We make a <kbd>/programs</kbd> directory and unpack it there.)
         Or you can download the "Core" "64-bit Windows zip" distribution, which includes more features.
         If the distribution is a Windows installer, it will probably put Tomcat 
-        in, for example, <kbd>/Program Files/apache-tomcat-9.0.56</kbd> . <!-- tomcatVersion -->
+        in, for example, <kbd>/Program Files/apache-tomcat-10.0.23</kbd> . <!-- tomcatVersion -->
         <br>&nbsp;
       </ul>
 
@@ -563,7 +558,7 @@ or Mac server instead.
       </ol>
 
     <li>Security recommendation: See   <!-- tomcatVersion -->
-      <a rel="help" href="https://tomcat.apache.org/tomcat-9.0-doc/security-howto.html" 
+      <a rel="help" href="https://tomcat.apache.org/tomcat-10.0-doc/security-howto.html" 
       >these&nbsp;instructions<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a> 
@@ -595,17 +590,17 @@ or Mac server instead.
       <li>After unpacking Tomcat, from the parent of the apache-tomcat directory:
         <ul>
         <li>Change ownership of the apache-tomcat directory tree to the tomcat user.
-          <br><kbd>chown -R tomcat apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chown -R tomcat apache-tomcat-<i>10.0.23</i></kbd>  <!-- tomcatVersion -->
           <br>(but substitute the actual name of your tomcat directory). 
         <li>Change the "group" to be tomcat, your username, 
           or the name of a small group that includes tomcat and 
           all the administrators of Tomcat/ERDDAP, e.g., 
-          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chgrp -R <i>yourUserName</i> apache-tomcat-<i>10.0.23</i></kbd>  <!-- tomcatVersion -->
         <li>Change permissions so that tomcat and the group have 
           read, write, execute privileges, e.g,. 
-          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R ug+rwx apache-tomcat-<i>10.0.23</i></kbd>  <!-- tomcatVersion -->
         <li>Remove "other" user's permissions to read, write, or execute:
-          <br><kbd>chmod -R o-rwx apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
+          <br><kbd>chmod -R o-rwx apache-tomcat-<i>10.0.23</i></kbd>  <!-- tomcatVersion -->
           <br>This is important, because it prevents other users from
             reading possibly sensitive information in ERDDAP setup files.
         </ul>
@@ -619,14 +614,14 @@ or Mac server instead.
       
       <p>On Linux and Macs:
       <br>Create a file <i>tomcat</i>/bin/setenv.sh
-      (or in Red Hat Enterprise Linux [RHEL], edit ~tomcat/conf/tomcat9.conf) <!-- tomcatVersion -->
+      (or in Red Hat Enterprise Linux [RHEL], edit ~tomcat/conf/tomcat10.conf) <!-- tomcatVersion -->
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain something like:<kbd>
-      <br>export JAVA_HOME=/usr/local/jdk8u312-b07/jre  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk-17.0.4+8  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>9.0.56</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>9.0.56</i></kbd>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>10.0.23</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>10.0.23</i></kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -636,20 +631,21 @@ or Mac server instead.
       to set Tomcat's environment variables.
       This file will be used by <i>tomcat</i>\bin\startup.bat and shutdown.bat.
       The file should contain something like:<kbd>
-      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk8u312-b07\jre"  <!-- javaVersion -->
+      <br>SET "JAVA_HOME=\<i>someDirectory</i>\jdk-17.0.4+8"  <!-- javaVersion -->
       <br>SET "JAVA_OPTS=-server -Xmx1500M -Xms1500M"
-      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>9.0.56</i>"         <!-- tomcatVersion -->
-      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>9.0.56</i>"</kbd>  <!-- tomcatVersion -->
+      <br>SET "TOMCAT_HOME=\Program Files\apache-tomcat-<i>10.0.23</i>"         <!-- tomcatVersion -->
+      <br>SET "CATALINA_HOME=\Program Files\apache-tomcat-<i>10.0.23</i>"</kbd>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).
       <br>If this is just for local testing, remove "-server".      
       <br>(If you previously set JRE_HOME, you can remove that.)
 
-      <p>The -Xmx and -Xms memory settings are important 
-      <br>because ERDDAP works better with more 
+      <p>The -Xmx and -Xms memory settings are important because ERDDAP works better with more 
       memory. Always set -Xms to the same value as -Xmx.
       <ul>
         <li>For 32 bit Operating Systems and 32 bit Java:
-        <br>The more physical memory in the server the better: 4+ GB is really good, 2 GB is okay, 
+        <br>64 bit Java is much better than 32 bit Java, but 32 bit Java will work
+        as long as the server isn't really busy.
+        The more physical memory in the server the better: 4+ GB is really good, 2 GB is okay, 
         less is not recommended.  With 32 bit Java, even with abundant physical memory, 
         Tomcat and Java won't run if you try to set -Xmx much above 1500M (1200M on some computers).
         If your server has less than 2GB of memory, reduce the -Xmx value (in 'M'egaBytes) 
@@ -820,10 +816,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.18.zip -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.19.zip -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddapContent.zip">erddapContent.zip</a>
-    (version 2.18, 19792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddapContent.zip">erddapContent.zip</a>
+    (version 2.19, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-09-01)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -858,8 +854,11 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.16/erddapContent.zip">2.16</a>
     (19,792 bytes, MD5=2DC26FB4464516B08DDA628E7F27F821, dated 2021-12-17)
-    <a rel="bookmark"
+    <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.17/erddapContent.zip">2.17</a>
+    (19,792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddapContent.zip">2.18</a>
     (19,792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)
     ]
 
@@ -937,13 +936,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.18.war  
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.19.war  
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.18, 551,069,844 bytes, MD5=461325E97E7577EC671DD50246CCFB8B, dated
-    <span class="N">2022-02-23</span>)
+    <br>(version 2.19, 568,636,772 bytes, MD5=729C3AF96BCECE39E7D360B4B77E8442, dated
+    <span class="N">2022-09-01</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -972,6 +971,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.17/erddap.war">2.17</a>
     (551,068,245 bytes, MD5=5FEA912B5D42E50EAB9591F773EA848D, dated 2022-02-16)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddap.war">2.18</a>
+    (551,069,844 bytes, MD5=461325E97E7577EC671DD50246CCFB8B, dated 2022-02-23)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1158,10 +1160,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download 
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.18, 551,069,844 bytes, MD5=461325E97E7577EC671DD50246CCFB8B, dated
-    <span class="N">2022-02-23</span>)
+    <br>(version 2.19, 568,636,772 bytes, MD5=729C3AF96BCECE39E7D360B4B77E8442, dated
+    <span class="N">2022-09-01</span>)
 
   <br>&nbsp;
 
@@ -4591,12 +4593,12 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     The ERDDAP pom.xml file for Maven is included in the GitHub ERDDAP distribution.
   <li>We use a batch file which deletes all of the .class files in the source tree
     to ensure that we have a clean compile (with javac).
-  <li>We currently use Adoptium's javac jdk8u312-b07 <!-- javaVersion --> 
+  <li>We currently use Adoptium's javac jdk-17.0.4+8 <!-- javaVersion --> 
      to compile gov.noaa.pfeg.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
      and run the tests.       
      For security reasons, it is almost always best to use the latest versions of 
-     Java 8 and Tomcat 9. <!-- javaVersion   tomcatVersion -->
+     Java 17 and Tomcat 10. <!-- javaVersion   tomcatVersion -->
      <ul>
      <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
      <li><a class="selfLink" id="classpath" href="#classpath" rel="bookmark">Our javac and java classpath</a> is 
@@ -4614,7 +4616,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
        (There are some unfinished/unused classes.)
      </ul>
   <li>In a few cases, we use 3rd party source code instead of .jar files (notably for DODS)
-     and have modified them slightly to avoid problems compiling with Java 8 (1.8). <!-- javaVersion -->
+     and have modified them slightly to avoid problems compiling with Java 17. <!-- javaVersion -->
      We have often made other slight modifications (notably to DODS) for other reasons.
   <li>Most classes have test methods. We run lots of tests via TestAll. 
      Unfortunately, many of the tests are specific to our set up.  

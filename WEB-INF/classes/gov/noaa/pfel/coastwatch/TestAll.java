@@ -570,7 +570,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 5, 2022,  7, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 1, 2022,  8, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -603,7 +603,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 5, 2022,  7); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 1, 2022,  8); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -1097,7 +1097,7 @@ WaitThenTryAgainException wttae;
         boolean interactive = false;
         boolean doSlowTestsToo = true;
 
-/* for releases, this line should have open/close comment */
+/* for releases, this line should have open/close comment 
 // and all tests should be "0, -1" 
 
         //*** All of the unit tests for CWBrowsers and ERDDAP. 

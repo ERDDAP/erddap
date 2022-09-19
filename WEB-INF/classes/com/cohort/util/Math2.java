@@ -93,6 +93,7 @@ public class Math2 {
      * This is one value (not adjusted by total memory or ...), on the theory that 
      * bigger tasks are usually given to computers with more, faster cores and more memory,
      * and smaller tasks are usually given to computers with fewer, slower cores and less memory.
+     * 2022-09-12 On CoastWatch ERDDAP, about 85% of "Pause Full (System.gc())" complete in <=400ms.
      */
     public static int shortSleep = 400; 
 
@@ -410,8 +411,8 @@ public class Math2 {
     }
 
     /** 
-     * This calls gc(standardWaitTime).
-     * standardWaitTime is intended to give gc sufficient time to do its job, even under heavy use.
+     * This calls gc(shortSleep).
+     * shortSleep is intended to give gc sufficient time to do its job, even under heavy use.
      */
     public static void gcAndWait() {
         gc(shortSleep);
