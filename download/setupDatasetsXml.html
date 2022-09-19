@@ -11316,7 +11316,7 @@ is a REQUIRED attribute within a
   <kbd>&lt;dataset&gt;</kbd> tag which assigns a short
   (usually &lt;15 characters), unique, identifying name to a dataset.
     <ul>
-    <li>The datasetIDs should be a letter (A-Z, a-z) followed by any number of 
+    <li>The datasetIDs MUST be a letter (A-Z, a-z) followed by any number of 
       A-Z, a-z, 0-9, and _ (but best if &lt;32 characters total).  
       <!-- Technically, valid characters are A-Z, a-z, 0-9, _, and -. -->
     <li>DatasetIDs are case sensitive, but DON'T create two datasetIDs that
@@ -11332,17 +11332,20 @@ is a REQUIRED attribute within a
       For example, we used <kbd>datasetID="erdPHssta8day"</kbd> for a dataset from the 
       NOAA NMFS SWFSC Environmental Research Division (ERD) which is designated by the source
       to be satellite/PH/ssta/8day.
-    <li>If you want to change a dataset's name, you need to do something 
-      to kill off (err, retire) the dataset with the existing name. 
-      The two solutions are:
-      <ul>
-      <li>Shutdown Tomcat/ERDDAP. Change the name. Restart ERDDAP.
-      <li>Change the name of the dataset and make a dummy, active="false" dataset
-        to kill off (err, retire) the old dataset:
-        <br><kbd>&lt;dataset type="EDDTableFromNcFiles" datasetID="<i>theOldName</i>" active="false" /&gt;</kbd>
-        <br>You can remove that tag after the old dataset is inactive.
-        <br>&nbsp;
-      </ul>
+    <li>If you change a dataset's name, the old dataset (with the old name) will still
+      be live in ERDDAP. This is an "orphan" dataset, because the specification for it
+      in datasets.xml is now gone. This must be dealt with:
+      <ol>
+      <li>For ERDDAP v2.19 and later, you don't need to do anything. 
+         ERDDAP will automatically remove these orphan datasets.
+      <li>For ERDDAP v2.18 and earlier, you need to do something 
+            to remove the orphan datasets: 
+            Make a active="false" dataset, e.g.,
+            <br><kbd>&lt;dataset type="EDDTableFromNcFiles" datasetID="<i>theOldName</i>" active="false" /&gt;</kbd>
+            <br>After the next major loadDatasets, You can remove that tag after the old dataset is inactive.
+            <br>&nbsp;
+          </ul>
+      </ol>
     </ul>
 
 <li><a class="selfLink" id="active" href="#active" rel="bookmark"><kbd><strong>active="<i>boolean</i>"</strong></kbd></a> 
