@@ -186,6 +186,7 @@ public class EDStatic {
      * <br>2.17 released on 2022-02-16
      * <br>2.18 released on 2022-02-23
      * <br>2.19 released on 2022-09-10
+     * <br>2.20 released on 2022-09-??
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -199,7 +200,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.19"; //see comment above
+    public static String erddapVersion = "2.20"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -262,6 +263,7 @@ public static boolean developmentMode = false;
     public static int touchThreadFailedDistributionTotal[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistribution24[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
+    public static volatile int gcCalled = 0;                //since last Major LoadDatasets
     public static volatile int requestsShed = 0;            //since last Major LoadDatasets
     public static volatile int dangerousMemoryFailures = 0; //since last Major LoadDatasets
     public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
@@ -424,6 +426,12 @@ public static boolean developmentMode = false;
      * The key make it easy to get a specific thread (e.g., to remove it).
      */
     public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(16, 0.75f, 4); 
+ 
+    /** 
+     * This is the time that shedThisRequest last called gc.
+     */
+    private volatile static long timeShedCalledGc = 0;
+
 
     //emailThread variables
     //Funnelling all emailThread emails through one emailThread ensures that
@@ -4594,9 +4602,9 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static void addCommonStatistics(StringBuilder sb) {
         if (majorLoadDatasetsTimeSeriesSB.length() > 0) {
             sb.append(
-"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    Open\n" +
-"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse  Files\n" +
-"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  -----  -----\n"
+"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open\n" +
+"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n" +
+"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----\n"
 );
             sb.append(majorLoadDatasetsTimeSeriesSB);
             sb.append("\n\n");
@@ -6389,6 +6397,52 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
 
     /**
+     * This checks if this request should be shed because too much memory is in use.
+     * 
+     * @param lotsMemoryNeeded Use true if this request may require lots of memory.
+     *   Use false if this request probably doesn't need much memory.
+     *   If memory use is super high, all requests will be shed.
+     * @return true if this send an error message to user
+     * throws InterruptedException
+     */
+    public static boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response,
+        boolean lotsMemoryNeeded) throws InterruptedException {
+        //If shed (maybe in another thread) just called gc, memory use was recently high. Wait until shortSleep is finished.
+        long timeSinceGc = System.currentTimeMillis() - timeShedCalledGc;
+        if (timeSinceGc < Math2.shortSleep) {
+            //A problem with this is that multiple threads may wait for gc to finish, 
+            //  see enough memory, then all start and each use lots of memory.
+            Thread.sleep(Math2.shortSleep - timeSinceGc);
+            timeSinceGc += Math2.shortSleep - timeSinceGc;
+        }
+
+        //always: if >=2000ms since gc and memory use is high, call gc
+        long inUse = Math2.getMemoryInUse();
+        if (timeSinceGc >= 2000 && inUse >= Math2.halfMemory) {  //This is arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
+            timeShedCalledGc = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
+            inUse = Math2.gcAndWait();  //in shedThisRequest   //a diagnostic is always logged
+            gcCalled++;
+        }
+
+        //if memory use is now low enough, return false
+        long tLimit = lotsMemoryNeeded? Math2.halfMemory : Math2.maxSafeMemory; // 0.5*max : .75*max
+        if (inUse <= tLimit)
+            return false;
+
+        //memory use is too high, so shed this request
+        String2.log("shedThisRequest #" + requestsShed++ +  //since last Major LoadDatasets
+            " request #" + requestNumber + 
+            ", lotsOfMemoryNeeded=" + lotsMemoryNeeded + 
+            ", memoryInUse=" + (inUse/Math2.BytesPerMB) + 
+            "MB > tLimit=" + (tLimit/Math2.BytesPerMB) + "MB");
+        lowSendError(  //it sleeps for slowDownTroubleMillis
+            requestNumber, response, 503, //Service Unavailable  
+            waitThenTryAgainAr[language]);
+        return true;
+    }
+
+
+    /**
      * This indicates if t is a ClientAbortException.
      *
      * @param t the exception
@@ -6616,8 +6670,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             if (msg.indexOf(blacklistMsgAr[0]) < 0)
                 String2.log("*** lowSendError for request #" + requestNumber + 
                     ": isCommitted=" + (response == null || response.isCommitted()) + 
-                    " fullMessage=\n" +
-                    fullMsg); // + MustBe.getStackTrace());
+                    (errorNo == 503? " error #503 Service Unavailable (shedThisRequest)" :
+                         " fullMessage=\n" + fullMsg)); // + MustBe.getStackTrace());
 
             //if response isCommitted, nothing more can be done
             if (response == null) {
