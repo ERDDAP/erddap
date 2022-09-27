@@ -7865,7 +7865,7 @@ So requests to datasets that use standardizeWhat take longer to be processed.
 <br><kbd>&lt;standardizeWhat&gt;<i>standardizeWhat</i>&lt;/standardizeWhat&gt;</kbd>
 <br>in the  
 <a href="#EDDTableFromFilesSkeletonXML" rel="bookmark">datasets.xml for the EDDTableFrom...Files dataset</a>
-(within the &lt;dataset&gt; tag).
+(within the <kbd>&lt;dataset&gt;</kbd> tag).
 
 <p>The <i>standardizeWhat</i> value specifies which changes EDDTableFromFiles should
 try to apply. The changes are the sum of some combination of:
@@ -10693,6 +10693,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
 <li><a class="selfLink" id="ipAddressMaxRequests" href="#ipAddressMaxRequests" rel="bookmark"
   ><kbd><strong>&lt;ipAddressMaxRequests&gt;</strong></kbd></a>
   is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml
   that is part of a system to limit the ability of 
   overly aggressive legitimate users and malicious users to make a 
   large number of simultaneous requests which would degrade system performance for other users.
@@ -10701,7 +10702,8 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
         requests will receive an HTTP 429 error: Too Many Requests.
         The small, static files in erddap/download/ and erddap/images/
         are NOT exempt from this count.
-        The default is 7. ERDDAP won't accept a number less than 6 because
+        The default is 7. The maximum allowed is 1000, which crazy high -- don't do it!
+        ERDDAP won't accept a number less than 6 because
         many legitimate users (notably web browsers and WMS clients) make
         up to 6 requests at a time. The ERDDAP Daily Report and the
         similar information written to the log.txt file with each Major Dataset Reload,
@@ -10728,6 +10730,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
 <li><a class="selfLink" id="ipAddressMaxRequestsActive" href="#ipAddressMaxRequestsActive" rel="bookmark"
   ><kbd><strong>&lt;ipAddressMaxRequestsActive&gt;</strong></kbd></a>
   is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml
   that is part of a system to limit the ability of 
   overly aggressive legitimate users and malicious users to make a 
   large number of simultaneous requests which would degrade system performance for other users.
@@ -10737,7 +10740,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
        have been processed.
        The small, static files in erddap/download/ and erddap/images/
        ARE exempt from this count and the related throttling.
-       The default is 2. 
+       The default is 2. The maximum allowed is 100, which crazy high -- don't do it!
        You can set this to 1 to be strict, especially if you have problems
        with overly aggressive or malicious users.
        Users will still quickly get all the data they request (up to ipAddressMaxRequests),
@@ -10754,6 +10757,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
 <li><a class="selfLink" id="ipAddressUnlimited" href="#ipAddressUnlimited" rel="bookmark"
   ><kbd><strong>&lt;ipAddressUnlimited&gt;</strong></kbd></a>
   is a rarely used optional tag (first supported with ERDDAP v2.12) 
+  within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml
   that is part of a system to limit the ability of 
   overly aggressive legitimate users and malicious users to make a 
   large number of simultaneous requests which would degrade system performance for other users.
@@ -11306,7 +11310,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
 
 <ul>
 <li><kbd><strong>type="<i>aType</i>"</strong></kbd> is a REQUIRED attribute within a 
-  <kbd>&lt;dataset&gt;</kbd> tag which identifies the dataset type (for example,
+  <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml which identifies the dataset type (for example,
   whether it is an EDDGrid/gridded or EDDTable/tabular dataset) and the source of the data 
   (for example, a database, files, or a remote OPeNDAP server).
   See the <a rel="help" href="#datasetTypes"><strong>List of Dataset Types</strong></a>.
@@ -11349,7 +11353,7 @@ is a REQUIRED attribute within a
     </ul>
 
 <li><a class="selfLink" id="active" href="#active" rel="bookmark"><kbd><strong>active="<i>boolean</i>"</strong></kbd></a> 
-  is an OPTIONAL attribute within the <kbd>&lt;dataset&gt;</kbd> tag
+  is an OPTIONAL attribute within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml
   which indicates if a dataset is active (eligible for use in ERDDAP) or not.
   <ul>
   <li>Valid values are <kbd>true</kbd> (the default) and <kbd>false</kbd>.
@@ -11405,7 +11409,7 @@ for details.
   </ul> 
 
 <li><a class="selfLink" id="graphsAccessibleTo" href="#graphsAccessibleTo" rel="bookmark"><kbd><strong>&lt;graphsAccessibleTo&gt;</strong></kbd></a>
-    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag which
+    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml which
     determines whether graphics and metadata for the dataset are available to the public.
     It offers a way to partially override the dataset's
     <a rel="help" href="#accessibleTo"><kbd>&lt;accessibleTo&gt;</kbd></a> setting.
@@ -11425,7 +11429,7 @@ for details.
     </ul>
 
 <li><a class="selfLink" id="accessibleViaFiles" href="#accessibleViaFiles" rel="bookmark"><kbd><strong>&lt;accessibleViaFiles&gt;</strong></kbd></a>
-    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag for 
+    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml for 
     <a rel="help" href="#EDDGridAggregateExistingDimension">EDDGridAggregateExistingDimension</a>,
     <a rel="help" href="#EDDGridCopy">EDDGridCopy</a>, 
     <a rel="help" href="#EDDGridFromEDDTable">EDDGridFromEDDTable</a>,
@@ -11471,7 +11475,7 @@ for more information.
   <br>&nbsp;
 
 <li><a class="selfLink" id="accessibleViaWMS" href="#accessibleViaWMS" rel="bookmark"><kbd><strong>&lt;accessibleViaWMS&gt;</strong></kbd></a>
-    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag for all
+    is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml for all
     <a rel="help" href="#EDDGrid">EDDGrid</a> subclasses.
     It can have a value of <kbd>true</kbd> (the default) or <kbd>false</kbd>.
     For example,
@@ -11489,7 +11493,7 @@ for more information.
   <br>&nbsp;
 
 <li><a class="selfLink" id="addVariablesWhere" href="#addVariablesWhere" rel="bookmark">&lt;addVariablesWhere&gt;</a> 
-is an OPTIONAL tag within the &lt;dataset&gt; tag for all EDDTable datasets.
+is an OPTIONAL tag within the <kbd>&lt;dataset&gt;</kbd> tag for all EDDTable datasets.
 
 <p>Requests to any EDDTable dataset can include 
 <kbd>&amp;addVariablesWhere("<i>attributeName</i>","<i>attributeValue</i>")</kbd>,
@@ -11517,7 +11521,8 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
 
 
 <li><a class="selfLink" id="altitudeMetersPerSourceUnit" href="#altitudeMetersPerSourceUnit" rel="bookmark"><kbd><strong>&lt;altitudeMetersPerSourceUnit&gt;</strong></kbd></a>
-  is an OPTIONAL tag within the <kbd>&lt;dataset&gt;</kbd> tag for EDDTableFromSOS datasets (only!) that specifies a 
+  is an OPTIONAL tag within the <kbd>&lt;dataset&gt;</kbd> tag in datasets.xxml 
+  for EDDTableFromSOS datasets (only!) that specifies a 
   number which is multiplied by the source altitude or depth values 
   to convert them into altitude values (in meters above sea level).   For example,
   <br><kbd>&lt;altitudeMetersPerSourceUnit&gt;-1&lt;/altitudeMetersPerSourceUnit&gt;</kbd>
@@ -11534,7 +11539,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
   </ul>
 
 <li><a class="selfLink" id="defaultDataQuery" href="#defaultDataQuery" rel="bookmark"><kbd><strong>&lt;defaultDataQuery&gt;</strong></kbd></a> is an OPTIONAL tag
-  within a <kbd>&lt;dataset&gt;</kbd> tag that tells ERDDAP to use the specified
+  within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that tells ERDDAP to use the specified
   query (the part of the URL after the "?") 
   if the .html fileType (the Data Access Form) is requested with no query.
   <ul>
@@ -11560,7 +11565,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
   </ul>
 
 <li><a class="selfLink" id="defaultGraphQuery" href="#defaultGraphQuery" rel="bookmark"><kbd><strong>&lt;defaultGraphQuery&gt;</strong></kbd></a> is an OPTIONAL tag
-  within a <kbd>&lt;dataset&gt;</kbd> tag that tells ERDDAP to use the specified
+  within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that tells ERDDAP to use the specified
   query (the part of the URL after the "?") 
   if the .graph fileType (the Make A Graph Form) is requested with no query.
   <ul>
@@ -11591,7 +11596,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
 <li><a class="selfLink" id="dimensionValuesInMemory" href="#dimensionValuesInMemory" rel="bookmark"
 ><kbd><strong>&lt;dimensionValuesInMemory&gt;</strong></kbd></a> 
   (<kbd>true</kbd> (the default) or <kbd>false</kbd>)
-  is an OPTIONAL and rarely used tag for all EDDGrid datasets 
+  is an OPTIONAL and rarely used tag within the <kbd>&lt;dataset&gt;</kbd> tag for any EDDGrid dataset 
   that tells ERDDAP where to keep 
   the source values of the dimensions (also known as the axisVariables): 
   <ul>
@@ -11611,8 +11616,8 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
 
 <li><a class="selfLink" id="fileTableInMemory" href="#fileTableInMemory" rel="bookmark"><kbd><strong>&lt;fileTableInMemory&gt;</strong></kbd></a> 
   (<kbd>true</kbd> or <kbd>false</kbd> (the default))
-  is an OPTIONAL tag for all EDDGridFromFiles and EDDTableFromFiles
-  datasets that tells ERDDAP where to keep the fileTable 
+  is an OPTIONAL tag within the <kbd>&lt;dataset&gt;</kbd> tag for any EDDGridFromFiles and EDDTableFromFiles
+  dataset that tells ERDDAP where to keep the fileTable 
   (which has information about each source data file): 
   <ul>
   <li><kbd>true</kbd> = in memory (which is faster but uses more memory) 
@@ -11626,7 +11631,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
   <br>&nbsp;
 
 <li><a class="selfLink" id="fgdcFile" href="#fgdcFile" rel="bookmark"><kbd><strong>&lt;fgdcFile&gt;</strong></kbd></a> is an OPTIONAL tag
-  within a <kbd>&lt;dataset&gt;</kbd> tag that tells ERDDAP to use a pre-made FGDC file
+  within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that tells ERDDAP to use a pre-made FGDC file
   instead of having ERDDAP try to generate the file.  Usage:
   <br><kbd>&lt;fgdcFile&gt;<i>fullFileName</i>&lt;/fgdcFile&gt;</kbd>
   <br><i>fullFileName</i> can refer to a local file 
@@ -11642,7 +11647,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
 
 <li><a class="selfLink" id="iso19115File" href="#iso19115File" rel="bookmark"
   ><kbd><strong>&lt;iso19115File&gt;</strong></kbd></a> is an OPTIONAL tag
-  within a <kbd>&lt;dataset&gt;</kbd> tag that tells ERDDAP to use a pre-made ISO 19115 file
+  within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that tells ERDDAP to use a pre-made ISO 19115 file
   instead of having ERDDAP try to generate the file.  Usage:
   <br><kbd>&lt;iso19115File&gt;<i>fullFileName</i>&lt;/iso19115File&gt;</kbd>
   <br><i>fullFileName</i> can refer to a local file 
@@ -11658,7 +11663,7 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
 
 <li><a class="selfLink" id="matchAxisNDigits" href="#matchAxisNDigits" rel="bookmark"
   ><kbd><strong>&lt;matchAxisNDigits&gt;</strong></kbd></a>
-  is an OPTIONAL tag within an <kbd>&lt;EDDGrid dataset&gt;</kbd> tag 
+  is an OPTIONAL tag within an EDDGrid <kbd>&lt;dataset&gt;</kbd> tag 
   for EDDGrid datasets that are aggregations, e.g., aggregations of files.
   Each time the dataset is reloaded, ERDDAP checks that the axis values of 
   each component of the aggregation are the same.
@@ -11946,7 +11951,8 @@ while processing each request.
 
 <li><a class="selfLink" id="palettes" href="#palettes" rel="bookmark"
       ><kbd><strong>&lt;palettes&gt;</strong></kbd></a> -- 
-      Starting with ERDDAP version 2.12, datasets.xml can include a &lt;palettes&gt; tag which overrides 
+      Starting with ERDDAP version 2.12, datasets.xml can include a &lt;palettes&gt; tag 
+      (within <kbd>&lt;erddapDatasets&gt;</kbd>) which overrides 
       the &lt;palettes&gt; tag value from messages.xml (or reverts to the messages.xml
       value if the tag in datasets.xml is empty). 
       This lets you change the list of available palettes while ERDDAP is running. 
@@ -11978,7 +11984,7 @@ while processing each request.
 
 
 <li><a class="selfLink" id="onChange" href="#onChange" rel="bookmark"><kbd><strong>&lt;onChange&gt;</strong></kbd></a>
-  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag that specifies an action which 
+  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that specifies an action which 
   will be done when this dataset is created (when ERDDAP is restarted) and whenever 
   this dataset changes in any way. 
   <ul>
@@ -12047,7 +12053,7 @@ while processing each request.
   </ul>
 
 <li><a class="selfLink" id="reloadEveryNMinutes" href="#reloadEveryNMinutes" rel="bookmark"><kbd><strong>&lt;reloadEveryNMinutes&gt;</strong></kbd></a>
-  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag of almost all dataset types
+  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml of almost all dataset types
   that specifies how often the dataset should be reloaded.   For example,
   <br><kbd>&lt;reloadEveryNMinutes&gt;60&lt;/reloadEveryNMinutes&gt;</kbd>
   <ul>
@@ -12124,7 +12130,7 @@ while processing each request.
   </ul>
 
 <li><a class="selfLink" id="updateEveryNMillis" href="#updateEveryNMillis" rel="bookmark"><kbd><strong>&lt;updateEveryNMillis&gt;</strong></kbd></a>
-  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag of some dataset types
+  is an OPTIONAL tag within a <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml of some dataset types
   that helps ERDDAP work with datasets that change very frequently 
   (as often as roughly every second). 
   Unlike ERDDAP's regular, proactive, 
@@ -12251,7 +12257,7 @@ while processing each request.
   </ul>
 
 <li><a class="selfLink" id="sourceCanConstrainStringEQNE" href="#sourceCanConstrainStringEQNE" rel="bookmark"><kbd><strong>&lt;sourceCanConstrainStringEQNE&gt;</strong></kbd></a>
-  is an OPTIONAL tag within an EDDTable <kbd>&lt;dataset&gt;</kbd> tag that 
+  is an OPTIONAL tag within an EDDTable <kbd>&lt;dataset&gt;</kbd> tag in datasets.xml that 
   specifies if the source can constrain String variables with the = and != operators.
   <ul>
   <li>For EDDTableFromDapSequence, this applies to the outer sequence String variables only.
@@ -15762,7 +15768,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.19
+<p>ERDDAP, Version 2.20
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

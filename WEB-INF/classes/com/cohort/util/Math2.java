@@ -59,11 +59,10 @@ public class Math2 {
     public volatile static long lastUsingMemory = 0; //volatile: used by all threads
     public volatile static long maxUsingMemory = 0; //volatile: used by all threads
     public static long maxMemory = Runtime.getRuntime().maxMemory(); 
-    /** This is the most total-memory-in-use any method should consider
-     * (and anything remotely close to this is considered dangerous
-     * and should be avoided).
-     */
-    public static long maxSafeMemory = maxMemory * 3L / 4; 
+
+    public static long halfMemory    = maxMemory / 2;      //time for shedThisRequest to call gc and reject highMemory requests
+    public static long maxSafeMemory = maxMemory * 3L / 4; //the max any method should consider getting to
+
     public static long alwaysOkayMemoryRequest = maxSafeMemory / 16;
 
     /** 
@@ -413,9 +412,11 @@ public class Math2 {
     /** 
      * This calls gc(shortSleep).
      * shortSleep is intended to give gc sufficient time to do its job, even under heavy use.
+     *
+     * @return getMemoryInUse()     
      */
-    public static void gcAndWait() {
-        gc(shortSleep);
+    public static long gcAndWait() {
+        return gc(shortSleep);
     }
 
     /**
@@ -429,9 +430,10 @@ public class Math2 {
      *   a while, independently. 
      * 
      * @param millis the number of milliseconds to sleep
+     * @return getMemoryInUse()
      * @see Math2#incgc
      */
-    public static void gc(final long millis) {
+    public static long gc(final long millis) {
         final long time = System.currentTimeMillis();
 
         //System.err.println("********** Math2.gc"); //diagnostic
@@ -445,7 +447,7 @@ public class Math2 {
         //sleep - subtract time already used by gc
         //always call sleep, even if <0, since it yields, too.
         sleep(millis - (System.currentTimeMillis() - time));
-        lastUsingMemory = getMemoryInUse();
+        return lastUsingMemory = getMemoryInUse();
     }
 
 

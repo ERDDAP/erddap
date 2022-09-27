@@ -199,7 +199,6 @@ public class Erddap extends HttpServlet {
     public ConcurrentHashMap<String,int[]> failedLogins = new ConcurrentHashMap(16, 0.75f, 4); 
     public ConcurrentHashMap<String,ConcurrentHashMap> categoryInfo = new ConcurrentHashMap(16, 0.75f, 4);  
     public long lastClearedFailedLogins = System.currentTimeMillis();
-    private volatile long timeShedCalledGc = 0;
 
     /**
      * The constructor.
@@ -610,22 +609,26 @@ public class Erddap extends HttpServlet {
             //System.out.println("protocol: " + protocol);
             //Pass the query to the requested protocol or web page.
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
-            if (protocol.equals("griddap") ||
+
+            //shedThisRequest?  
+            if (EDStatic.shedThisRequest(language, requestNumber, response, false)) { //do the lowMemoryUse test for all requests
+                //
+            } else if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
-                //shedThisRequest is halfway in doDap()
+                //EDStatic.shedThisRequest is halfway in doDap()
                 doDap(language, requestNumber, request, response, ipAddress, loggedInAs, 
                     protocol, protocolEnd + 1, endOfRequest, queryString);
             } else if (protocol.equals("files")) {
                 doFiles(language, requestNumber, request, response, loggedInAs, 
                     protocolEnd + 1, endOfRequest, queryString);
             } else if (protocol.equals("sos")) {
-                if (shedThisRequest(language, requestNumber, response)) return;
+                if (EDStatic.shedThisRequest(language, requestNumber, response, true)) return;
                 doSos(language, requestNumber, request, response, ipAddress, loggedInAs, 
                     protocolEnd + 1, endOfRequest, queryString); 
             //} else if (protocol.equals("wcs")) {
             //    doWcs(request, response, ipAddress, loggedInAs, protocolEnd + 1, endOfRequest, queryString); 
             } else if (protocol.equals("wms")) {
-                if (shedThisRequest(language, requestNumber, response)) return;
+                if (EDStatic.shedThisRequest(language, requestNumber, response, true)) return;
                 doWms(language, requestNumber, request, response, loggedInAs, protocolEnd + 1, endOfRequest, queryString);
             } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
                 sendRedirect(response, tErddapUrl + "/index.html");
@@ -677,7 +680,7 @@ public class Erddap extends HttpServlet {
             } else if (endOfRequest.equals("rest.html")) {
                 doRestHtml(language, request, response, loggedInAs, endOfRequest, queryString);
             } else if (protocol.equals("rest")) {  
-                if (shedThisRequest(language, requestNumber, response)) return;
+                if (EDStatic.shedThisRequest(language, requestNumber, response, true)) return;
                 doGeoServicesRest(language, requestNumber, request, response, loggedInAs, endOfRequest, queryString);
             } else if (endOfRequest.equals("setDatasetFlag.txt")) {
                 doSetDatasetFlag(ipAddress, request, response, queryString);
@@ -757,16 +760,18 @@ public class Erddap extends HttpServlet {
                 if (verbose) String2.log("#" + requestNumber + " FAILURE. TIME=" + responseTime + "ms" + 
                     (responseTime >= 600000? "  (>10m!)" : responseTime >= 10000? "  (>10s!)" : "") + "");
 
+                //if sendErrorCode fails because response.isCommitted(), it throws ServletException
+                try {
+                    EDStatic.sendError(requestNumber, request, response, t); 
+                } catch (Throwable t3) {
+                }
+
+                long tTime = System.currentTimeMillis() - doGetTime;
+                if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " sendErrorCode done. Total TIME=" + 
+                    tTime + "ms" + (tTime >= 600000? "  (>10m!)" : tTime >= 10000? "  (>10s!)" : "") + "\n");
             } catch (Throwable t2) {
                 String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
             }
-
-            //if sendErrorCode fails because response.isCommitted(), it throws ServletException
-            EDStatic.sendError(requestNumber, request, response, t); 
-
-            long tTime = System.currentTimeMillis() - doGetTime;
-            if (verbose) String2.log("}}}}#" + requestNumber + " " + ipAddress + " sendErrorCode done. Total TIME=" + 
-                tTime + "ms" + (tTime >= 600000? "  (>10m!)" : tTime >= 10000? "  (>10s!)" : "") + "\n");
 
         } finally {
 
@@ -786,51 +791,6 @@ public class Erddap extends HttpServlet {
                 String2.log("Caught: " + MustBe.throwableToString(t2));
             }
         }
-    }
-
-
-    /**
-     * This checks if this request should be shed because too much memory in use.
-     * This is called before methods (e.g., doDap()) that often require a lot of memory.
-     * Thus low-memory-use requests never trigger this.
-     * 
-     * @return true if this send an error message to user
-     * throws InterruptedException
-     */
-    public boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response) throws InterruptedException {
-        //If shed just called gc, memory use was recently high. Wait till shortSleep is finished.
-        long timeSinceGc = System.currentTimeMillis() - timeShedCalledGc;
-        if (timeSinceGc < Math2.shortSleep) {
-            Thread.sleep(Math2.shortSleep - timeSinceGc);
-            timeSinceGc += Math2.shortSleep - timeSinceGc;
-        }
-
-        //if memory use is low, return false
-        long inUse = Math2.getMemoryInUse();
-        if (inUse < Math2.maxSafeMemory)
-            return false;
-
-        //memory use is too high
-        //if long time since gc, call gc
-        if (timeSinceGc > 3000) {  //arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
-            //call gc
-            timeShedCalledGc = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
-            Math2.gcAndWait();
-            inUse = Math2.getMemoryInUse();
-            //if memory use is now low, return false
-            if (inUse < Math2.maxSafeMemory)
-                return false;
-        }
-
-        //memory use is too high, so shed this request
-        String2.log("shedThisRequest #" + EDStatic.requestsShed++ +  //since last Major LoadDatasets
-            " request #" + requestNumber + 
-            " memoryInUse=" + (inUse/Math2.BytesPerMB) + 
-            "MB maxSafeMemory=" + (Math2.maxSafeMemory/Math2.BytesPerMB) + "MB");
-        EDStatic.lowSendError(  //it sleeps for EDStatic.slowDownTroubleMillis
-            requestNumber, response, 503, //Service Unavailable  
-            EDStatic.waitThenTryAgainAr[language]);
-        return true;
     }
 
 
@@ -3642,8 +3602,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             int po = traces.indexOf('\n');
             if (po > 0)
                 sb.append(traces.substring(0, po + 1));
-
+            sb.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
             sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
+
             EDStatic.addCommonStatistics(sb);
             sb.append(traces);
             writer.write(XML.encodeAsHTML(sb.toString()));
@@ -4729,8 +4690,8 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             }
         }
 
-        //shedThisRequest?  (before making the outputStream)
-        if (shedThisRequest(language, requestNumber, response)) 
+        //shedThisRequest?  (before making the outputStream in doDap())
+        if (EDStatic.shedThisRequest(language, requestNumber, response, true)) 
             return;
 
         //make the outputStream for the response
@@ -4807,18 +4768,19 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 if (sec == waitSeconds - 1)
                     throw wttae;
             }
-        }
+        } finally {
 
-        //2018-05-23 now this is to make doubly sure the outputStream is closed.
-        try {
-            OutputStream out = outputStreamSource.existingOutputStream();
-            if (out != null) {
-                if (out instanceof ZipOutputStream zos) zos.closeEntry();
-                out.close();  //often already closed; closing again does nothing
-            }
-        } catch (Exception e2) {
-            String2.log(MustBe.throwableToString(e2));
-        } //essential, to end compression  //hard to put in finally {}
+            //2018-05-23 now this is to make doubly sure the outputStream is closed.
+            try {
+                OutputStream out = outputStreamSource.existingOutputStream();
+                if (out != null) {
+                    if (out instanceof ZipOutputStream zos) zos.closeEntry();
+                    out.close();  //often already closed; closing again does nothing
+                }
+            } catch (Exception e2) {
+                String2.log(MustBe.throwableToString(e2));
+            } //essential, to end compression  //hard to put in finally {}
+        }
     }
 
     /**
@@ -7420,7 +7382,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
                 int nBytesPerElement = 8;
                 int requestN = (int)requestNL; //safe since checked by ensureArraySizeOkay above
-                //Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");  //now rely on Erddap.shedThisRequest to avoid trouble
+                Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");  
                 Grid grid = new Grid();
                 grid.data = new double[requestN];
                 int po = 0;
