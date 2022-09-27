@@ -958,14 +958,14 @@ public class LoadDatasets extends Thread {
                 }
 
                 //get OpenFiles
-                String openFiles = "      ?";
+                String openFiles = "     ?";
                 try {
                     OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
                     if (osBean instanceof UnixOperatingSystemMXBean uBean) {
                         long nF = uBean.getOpenFileDescriptorCount();
                         long maxF = uBean.getMaxFileDescriptorCount();
                         int percent = Math2.narrowToInt((nF * 100) / maxF);
-                        openFiles = String2.right(percent + "%", 7);
+                        openFiles = String2.right(percent + "%", 6);
                         String msg ="openFileCount=" + nF + " of max=" + maxF + " %=" + percent;
                         String2.log(msg); 
                         if (percent > 50) 
@@ -1031,9 +1031,9 @@ public class LoadDatasets extends Thread {
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
                 EDStatic.errorsDuringMajorReload  = errorsDuringMajorReload;  //swap into place
                 EDStatic.majorLoadDatasetsTimeSeriesSB.insert(0,   //header in EDStatic
-//"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    Open\n" +
-//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse  Files\n" +
-//"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  -----  -----\n"
+//"Major LoadDatasets Time Series: MLD    Datasets Loaded               Requests (median times in ms)                Number of Threads      MB    gc   Open\n" +
+//"  timestamp                    time   nTry nFail nTotal  nSuccess (median) nFail (median) shed memFail tooMany  tomWait inotify other  inUse Calls Files\n" +
+//"----------------------------  -----   -----------------  -----------------------------------------------------  ---------------------  ----- ----- -----\n"
                     "  " + cDateTimeLocal +  
                     String2.right("" + (loadDatasetsTime/1000 + 1), 7) + "s" + //time
                     String2.right("" + nTry, 7) + 
@@ -1048,10 +1048,12 @@ public class LoadDatasets extends Thread {
                     String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8) + 
                     threadCounts + 
                     String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
+                    String2.right("" + EDStatic.gcCalled, 6) +
                     openFiles +
                     "\n");
                 
-                //reset
+                //reset  since last majorReload
+                EDStatic.gcCalled = 0;
                 EDStatic.requestsShed = 0;
                 EDStatic.dangerousMemoryFailures = 0;
                 EDStatic.tooManyRequests = 0;
@@ -1075,6 +1077,7 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         contentSB.append(threadSummary + "\n");
 
+                    contentSB.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
                     contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     contentSB.append(stars + "\nTallied Usage Information\n\n");
                     contentSB.append(EDStatic.tally.toString(50)); 
@@ -1208,6 +1211,7 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         sb.append(threadSummary + "\n");
 
+                    sb.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
                     sb.append(EDStatic.tally.toString("Large Request, IP address (since last Major LoadDatasets)", 50));
