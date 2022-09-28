@@ -484,7 +484,7 @@ public class Erddap extends HttpServlet {
             ipAddress = EDStatic.getIPAddress(request); 
 
             //always log request as soon as all info known (even if request will soon be rejected)
-            String2.log("{{{{#" + requestNumber + " " +
+            String summary = "{{{{#" + requestNumber + " " +
                 Calendar2.getCurrentISODateTimeStringLocalTZ() + " " + 
                 (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
                 ipAddress + " " +
@@ -492,7 +492,8 @@ public class Erddap extends HttpServlet {
                 requestUrl + 
                 (requestUrl.endsWith("login.html") && queryString.indexOf("nonce=") >= 0?
                     "?[CONFIDENTIAL]" : 
-                    EDStatic.questionQuery(queryString)));
+                    EDStatic.questionQuery(queryString));
+            String2.log(summary);
 
             //then immediately test ipAddress (so little possible error in between)
             if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
@@ -562,6 +563,10 @@ public class Erddap extends HttpServlet {
                 }
             }
 
+            //add to EDStatic.activeRequests
+            EDStatic.activeRequests.put(requestNumber + "", summary); 
+            summary = null;
+
             //tally ipAddress                                    //odd capitilization sorts better
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last Major LoadDatasets)", ipAddress);
             EDStatic.tally.add("Requester's IP Address (Allowed) (since last daily report)", ipAddress);
@@ -611,7 +616,7 @@ public class Erddap extends HttpServlet {
             //Be as restrictive as possible (so resourceNotFound can be caught below, if possible).
 
             //shedThisRequest?  
-            if (EDStatic.shedThisRequest(language, requestNumber, response, false)) { //do the lowMemoryUse test for all requests
+            if (EDStatic.shedThisRequest(language, requestNumber, response, false)) { //do the lowMemoryUse test for all requests 
                 //
             } else if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
@@ -775,8 +780,11 @@ public class Erddap extends HttpServlet {
 
         } finally {
 
-            //remove requestNumber from ipAddressQueue for this ipAddress
             try {
+                //remove requestNumber from activeRequests
+                EDStatic.activeRequests.remove(requestNumber + "");  //shouldn't ever fail
+
+                //remove requestNumber from ipAddressQueue for this ipAddress
                 if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
                     IntArray iaq = EDStatic.ipAddressQueue.get(ipAddress);
                     if (iaq != null) { //will be null if just added to ipAddressUnlimited
@@ -7382,7 +7390,7 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
                 Math2.ensureArraySizeOkay(requestNL, "doWmsGetMap");
                 int nBytesPerElement = 8;
                 int requestN = (int)requestNL; //safe since checked by ensureArraySizeOkay above
-                Math2.testMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");  
+                Math2.ensureMemoryAvailable(requestNL * nBytesPerElement, "doWmsGetMap");  
                 Grid grid = new Grid();
                 grid.data = new double[requestN];
                 int po = 0;
