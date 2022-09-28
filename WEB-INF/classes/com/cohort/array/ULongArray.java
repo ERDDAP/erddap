@@ -212,6 +212,7 @@ public class ULongArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public ULongArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(8L * primitiveArray.size(), "ULongArray");
         array = new long[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -1304,6 +1305,7 @@ public class ULongArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(8L * array.length, "ULongArray");
         final long newArray[] = new long[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

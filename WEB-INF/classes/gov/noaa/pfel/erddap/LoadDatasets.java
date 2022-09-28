@@ -1203,6 +1203,10 @@ public class LoadDatasets extends Thread {
                     EDStatic.email(
                         String2.ifSomethingConcat(EDStatic.emailEverythingToCsv, ",", EDStatic.emailDailyReportToCsv), 
                         subject, content);
+
+                    //once a day, at daily report, empty activeRequests in case some weren't properly removed
+                    EDStatic.activeRequests.clear(); 
+
                 } else {
                     //major load, but not daily report
                     StringBuilder sb = new StringBuilder();

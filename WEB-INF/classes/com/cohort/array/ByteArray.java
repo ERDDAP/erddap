@@ -104,6 +104,7 @@ public class ByteArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public ByteArray(PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(1L * primitiveArray.size(), "ByteArray");
         array = new byte[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -157,6 +158,7 @@ public class ByteArray extends PrimitiveArray {
      */
     public ByteArray(int first, int last) {
         size = last - first + 1;
+        Math2.ensureMemoryAvailable(1L * size, "ByteArray");
         array = new byte[size];
         for (int i = 0; i < size; i++) 
             array[i] = (byte)(first + i);
@@ -1280,6 +1282,7 @@ public class ByteArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(1L * array.length, "ByteArray");
         final byte newArray[] = new byte[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
