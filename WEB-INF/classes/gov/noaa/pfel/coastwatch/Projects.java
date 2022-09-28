@@ -10379,5 +10379,35 @@ f1e4b862-ba8f-4aad-89cc-3cb647c527c9,a9a3bdc6-209f-4c66-aafd-ce5271cb63b3,0.5938
         }
     }
 
+    /** 
+     * Given an ERDDAP log file, this finds all of the requests which haven't finished.
+     *
+     */
+    public static void findUnfinishedRequests(String logFileName) throws Exception {
+        String2.log("* Projects.findUnfinishedRequests(" + logFileName + ")");
+        ArrayList<String> al = File2.readLinesFromFile(logFileName, "UTF-8", 1);
+        String lines[] = al.toArray(new String[0]);
+        al = null;
+        int nLines = lines.length;
+        StringBuilder sb = new StringBuilder();
+
+        for (int outer = 0; outer < nLines; outer++) {
+            //is this a startLine?
+            String line = lines[outer];
+            if (!line.startsWith("{{{{#"))
+                continue;
+
+            //find the stopLine
+            int spacePo = line.indexOf(" ", 5);
+            int number = String2.parseInt(line.substring(5, spacePo));
+            String stopLine = String2.stringStartsWith(lines, "}}}}#" + number + " ");
+            if (stopLine == null) 
+                sb.append(line + "\n");
+        }
+
+        String2.log(sb.toString());
+    }
+
+
 }
 

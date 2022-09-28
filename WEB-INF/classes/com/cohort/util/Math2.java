@@ -60,10 +60,12 @@ public class Math2 {
     public volatile static long maxUsingMemory = 0; //volatile: used by all threads
     public static long maxMemory = Runtime.getRuntime().maxMemory(); 
 
-    public static long halfMemory    = maxMemory / 2;      //time for shedThisRequest to call gc and reject highMemory requests
-    public static long maxSafeMemory = maxMemory * 3L / 4; //the max any method should consider getting to
+    public static long halfMemory      = maxMemory / 2;       //50%   time for shedThisRequest to call gc and reject highMemory requests
+    public static long highMemory      = maxMemory * 65L/100; //65%   time for shedThisRequest to call gc and reject lowMemory requests
+    public static long maxSafeMemory   = maxMemory * 3L / 4;  //75%   the max we should consider getting to
+    public static long dangerousMemory = maxMemory * 9L / 10; //90%   this is really bad
 
-    public static long alwaysOkayMemoryRequest = maxSafeMemory / 16;
+    public static long alwaysOkayMemoryRequest = maxSafeMemory / 20;
 
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
@@ -452,8 +454,7 @@ public class Math2 {
 
 
     /**
-     * This throws an exception if the requested nBytes are unlikely to be
-     * available.
+     * This throws an exception if the requested nBytes leads to memoryInUse&gt;dangerousMemory.
      * This isn't perfect, but is better than nothing. 
      * Future: locks? synchronization? ...?
      *
@@ -463,34 +464,11 @@ public class Math2 {
      * @throws RuntimeException if the requested nBytes are unlikely to be available.
      */
     public static void ensureMemoryAvailable(final long nBytes, final String attributeTo) {
-        //2022-09-08 Previously, this used the code now in testMemoryAvailable.
-        //Now this does nothing.
-        //Some methods previously used ensureMemoryAvailable, but now use testMemoryAvaible.
-        //Previously, this method could reject any request for lots of memory,
+        //Danger: this method can reject any request for lots of memory,
         //  even if it was for ERDDAP management (i.e., shooting myself in the foot). 
-    }
-
-
-    /**
-     * This throws an exception if the requested nBytes are unlikely to be
-     * available.
-     * This isn't perfect, but is better than nothing. 
-     * Future: locks? synchronization? ...?
-     *
-     * @param nBytes  size of data structure that caller plans to create
-     * @param attributeTo for a WARNING or ERROR message, this is the string 
-     *   to which this not-enough-memory issue should be attributed.
-     * @throws RuntimeException if the requested nBytes are unlikely to be available.
-     */
-    public static void testMemoryAvailable(final long nBytes, final String attributeTo) {
-
-        //2022-09-08 The new system for memory protection in ERDDAP is to shed user requests
-        //coming into ERDDAP when current memory usage is high (see ERDDAP.shedThisRequest()).
-        //But some places call this new method (like old ensureMemoryAvailable, but new name).
-        //Now, I really avoid calling gc -- let memory use appear to be hight so user requests are rejected.
 
         //this is a little risky, but avoids frequent calls to calculate memoryInUse
-        if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
+        if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /20=300MB    
             return;
        
         //is this single request by itself too big under any circumstances?

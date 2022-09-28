@@ -144,6 +144,7 @@ public class UShortArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public UShortArray(PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(2L * primitiveArray.size(), "UShortArray");
         array = new short[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -170,6 +171,7 @@ public class UShortArray extends PrimitiveArray {
      */
     public UShortArray(final int first, final int last) {
         size = last - first + 1;
+        Math2.ensureMemoryAvailable(2L * size, "UShortArray");
         array = new short[size];
         for (int i = 0; i < size; i++) 
             array[i] = pack(first + i);
@@ -211,6 +213,7 @@ public class UShortArray extends PrimitiveArray {
      */
     public UShortArray(final char[] charArray) {
         size = charArray.length;
+        Math2.ensureMemoryAvailable(2L * size, "UShortArray");
         array = new short[size];
         for (int i = 0; i < size; i++)
             array[i] = (short)charArray[i];
@@ -1286,6 +1289,7 @@ public class UShortArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(2L * array.length, "UShortArray");
         final short newArray[] = new short[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

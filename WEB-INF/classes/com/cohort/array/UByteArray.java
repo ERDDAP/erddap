@@ -148,6 +148,7 @@ public class UByteArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public UByteArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(1L * primitiveArray.size(), "UByteArray");
         array = new byte[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -199,6 +200,7 @@ public class UByteArray extends PrimitiveArray {
      */
     public UByteArray(final int first, final int last) {
         size = last - first + 1;
+        Math2.ensureMemoryAvailable(1L * size, "UByteArray");
         array = new byte[size];
         for (int i = 0; i < size; i++) 
             array[i] = pack(first + i);
@@ -1379,6 +1381,7 @@ public class UByteArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(1L * array.length, "UByteArray");
         final byte newArray[] = new byte[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

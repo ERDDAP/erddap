@@ -281,6 +281,9 @@ public static boolean developmentMode = false;
     private static ConcurrentHashMap<String,String> sessionNonce = 
         new ConcurrentHashMap(16, 0.75f, 4); //for a session: loggedInAs -> nonce
 
+    public final static ConcurrentHashMap<String,String> activeRequests = new ConcurrentHashMap();  //request# -> 1 line info about request
+    public static volatile long lastActiveRequestReportTime = 0; //0 means not currently in dangerousMemory inUse event
+
     public final static String ipAddressNotSetYet = "NotSetYet"; 
     public final static String ipAddressUnknown   = "(unknownIPAddress)";
     public final static ConcurrentHashMap<String,IntArray> ipAddressQueue = new ConcurrentHashMap();  //ipAddress -> list of request#
@@ -6397,7 +6400,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
 
     /**
-     * This checks if this request should be shed because too much memory is in use.
+     * This checks if this request should be shed because not much free memory available.
      * 
      * @param lotsMemoryNeeded Use true if this request may require lots of memory.
      *   Use false if this request probably doesn't need much memory.
@@ -6418,20 +6421,40 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
         //always: if >=2000ms since gc and memory use is high, call gc
         long inUse = Math2.getMemoryInUse();
-        if (timeSinceGc >= 2000 && inUse >= Math2.halfMemory) {  //This is arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
+        if (timeSinceGc >= 3*Math2.shortSleep && inUse >= Math2.halfMemory) {  //This is arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
             timeShedCalledGc = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
-            inUse = Math2.gcAndWait();  //in shedThisRequest   //a diagnostic is always logged
             gcCalled++;
+            inUse = Math2.gcAndWait();  //waits Math2.shortSleep   //in shedThisRequest   //a diagnostic is always logged
         }
 
-        //if memory use is now low enough, return false
-        long tLimit = lotsMemoryNeeded? Math2.halfMemory : Math2.maxSafeMemory; // 0.5*max : .75*max
-        if (inUse <= tLimit)
+        //if memory use is now low enough for this request, return false
+        long tLimit = lotsMemoryNeeded? Math2.halfMemory : Math2.highMemory; // 0.5*max : .65*max
+        if (inUse <= tLimit) {
+            if (inUse <= Math2.maxMemory / 4)
+                lastActiveRequestReportTime = 0; //the previous dangerousMemory inUse has been solved
             return false;
+        }
+
+        //if memory use is dangerously high and I haven't reported this incident, report it
+        if (inUse >= Math2.dangerousMemory && lastActiveRequestReportTime == 0) {
+            lastActiveRequestReportTime = System.currentTimeMillis(); //do first so other threads don't also report this
+            activeRequests.remove(requestNumber + ""); //don't blame this request
+            String activeRequestLines[] = activeRequests.values().toArray(new String[0]);
+            Arrays.sort(activeRequestLines);
+            String report = "Dangerously high memory use!!! inUse=" + 
+                (inUse/Math2.BytesPerMB) + "MB > dangerousMemory=" + (Math2.dangerousMemory/Math2.BytesPerMB) + "MB.\n" +
+                Calendar2.getCurrentISODateTimeStringLocalTZ() + ", ERDDAP version=" + erddapVersion + ", url=" + preferredErddapUrl + "\n" +
+                "Please forward this email (after removing private information) to erd.data@noaa.gov,\n" +
+                "so we can minimize this problem in future versions of ERDDAP.\n\n" +
+                "Active requests:\n" +
+                String2.toNewlineString(activeRequestLines);
+            String2.log(report);
+            email(EDStatic.emailEverythingToCsv, "Dangerously High Memory Use!!!", report);           
+        }
 
         //memory use is too high, so shed this request
         String2.log("shedThisRequest #" + requestsShed++ +  //since last Major LoadDatasets
-            " request #" + requestNumber + 
+            ", request #" + requestNumber + 
             ", lotsOfMemoryNeeded=" + lotsMemoryNeeded + 
             ", memoryInUse=" + (inUse/Math2.BytesPerMB) + 
             "MB > tLimit=" + (tLimit/Math2.BytesPerMB) + "MB");

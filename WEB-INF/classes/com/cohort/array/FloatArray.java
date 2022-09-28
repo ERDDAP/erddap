@@ -95,6 +95,7 @@ public class FloatArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public FloatArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(4L * primitiveArray.size(), "FloatArray");
         array = new float[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -1061,6 +1062,7 @@ public class FloatArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(4L * array.length, "FloatArray");
         final float newArray[] = new float[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

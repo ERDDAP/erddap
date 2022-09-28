@@ -125,6 +125,7 @@ public class StringArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public StringArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(16L * primitiveArray.size(), "StringArray");
         array = new StringHolder[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -1539,6 +1540,7 @@ public class StringArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(16L * array.length, "StringArray");
         StringHolder[] newArray = new StringHolder[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

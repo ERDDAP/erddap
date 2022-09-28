@@ -344,6 +344,7 @@ public class TestAll  {
 //        "/u00/satellite/PH53/1981/data/" +
 //        "19810826023552-NCEI-L3C_GHRSST-SSTskin-AVHRR_Pathfinder-PFV5.3_NOAA07_G_1981238_night-v02.0-fv01.0.nc", 
 //        "sea_surface_temperature", 0.01);
+//    Projects.findUnfinishedRequests("I:/logArchivedAt2022-09-27T12.52.00_shed0.txt");
 
 //    *** Daily
 //    Projects.viirsLatLon(true); //create

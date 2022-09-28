@@ -2333,7 +2333,7 @@ try {
         //the tData object below can be huge, ensure there is enough memory
         Math2.ensureArraySizeOkay(newNLon * (long)nLat, "Grid.makeLonPM180");
         long tDataNBytes = newNLon * 8L * nLat;  //calculation is done as longs
-        Math2.testMemoryAvailable(tDataNBytes, "Grid.makeLonPM180"); //throws Exception if trouble
+        Math2.ensureMemoryAvailable(tDataNBytes, "Grid.makeLonPM180"); //throws Exception if trouble
 
         //for each new tLon value, find which lon value matches it, and move that column's data to tData
         double tData[] = new double[newNLon * nLat];
