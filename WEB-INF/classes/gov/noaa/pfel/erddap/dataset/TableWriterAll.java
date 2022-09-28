@@ -128,7 +128,7 @@ public class TableWriterAll extends TableWriter {
         //(although in some cases, perhaps more could be handled)
         long newTotalNRows = totalNRows + table.nRows();
         Math2.ensureArraySizeOkay(newTotalNRows, attributeTo);
-        Math2.testMemoryAvailable(newTotalNRows * 8, attributeTo); 
+        Math2.ensureMemoryAvailable(newTotalNRows * 8, attributeTo); 
 
         //do everyTime stuff
         //write the data
@@ -288,7 +288,7 @@ public class TableWriterAll extends TableWriter {
 
         //ensure memory available    too bad this is after all data is gathered
         int nColumns = nColumns();
-        Math2.testMemoryAvailable(nColumns * nRows() * table.estimatedBytesPerRow(), //nRows() is a long 
+        Math2.ensureMemoryAvailable(nColumns * nRows() * table.estimatedBytesPerRow(), //nRows() is a long 
             "TableWriterAll.cumulativeTable");
 
         //actually get the data

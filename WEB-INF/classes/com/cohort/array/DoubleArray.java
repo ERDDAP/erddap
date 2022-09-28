@@ -97,6 +97,7 @@ public class DoubleArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public DoubleArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(8L * primitiveArray.size(), "DoubleArray");
         array = new double[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -1030,6 +1031,7 @@ public class DoubleArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(8L * array.length, "DoubleArray");
         final double newArray[] = new double[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];

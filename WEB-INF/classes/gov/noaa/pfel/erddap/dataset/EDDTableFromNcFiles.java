@@ -19992,6 +19992,49 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
     }
 
     /**
+     * This tests making a too-big request from localhost ERDDAP to ensure
+     * it throws error and doesn't crash.
+     */
+    public static void testTooBigLocalhostRequest() throws Exception {
+        String toName = File2.getSystemTempDirectory() + "testTooBigLocalhostRequest";
+        String2.log("\n* EDDTableFromNcFiles.testTooBigLocalhostRequest()\n" +
+            "!!!This requires cwwcNDBCMet and pmelTaoDySst in localhost ERDDAP.\n" +
+            "tempFileBaseName=" + toName);
+        String result;
+        long time = System.currentTimeMillis();
+        String queries[] = {                                               //      <  "   "                     ,
+            "http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?&station%3c%22a%22&distinct()",
+            "http://localhost:8080/cwexperimental/tabledap/cwwcNDBCMet.csv?&station%3c%22a%22&orderBy(%22station,time%22)",
+        };
+
+        for (int i = 0; i < queries.length; i++) {
+            result = "shouldn't happen";
+            try {   
+                SSR.downloadFile(queries[i], toName, true);  //tryToUseCompression
+                String2.log("fileLength=" + File2.length(toName)/Math2.BytesPerGB + "GB");
+                result = 
+                    //This is what I see in a browser:
+                    "Error {\n" +
+                    "    code=413;\n" +
+                    "    message=\"Payload Too Large: Your query produced too much data.  Try to request less data. [memory]  The request needs more memory (233 MB) than is currently available in this Java setup (-110 MB). (gathering data in TableWriterAll)\n" +
+                    "}";
+            } catch (Exception e) {
+                String2.log("caught exception"); //this is what should happen
+                result = e.toString();
+            }
+            File2.delete(toName);
+            long seconds = (System.currentTimeMillis() - time) / 1000;
+            String2.log("test #" + i + " finished in " + seconds + "s");  //611s for query 0
+            Test.ensureEqual(result, 
+                //from e.toString.  SSR.downloadFile just returns a generic error message.
+                "java.io.IOException: ERROR in downloadFile while downloading from " + queries[i], 
+                "test #" + i);
+            Test.ensureTrue(seconds > 500, "test #" + i + " that time=" + seconds + " > 500s");
+        }
+    }
+
+
+    /**
      * This runs all of the interactive or not interactive tests for this class.
      *
      * @param errorSB all caught exceptions are logged to this.
@@ -20108,6 +20151,7 @@ expected = "java.io.IOException: HTTP status code=404 java.io.FileNotFoundExcept
                     if (test == 70 && doSlowTestsToo) testNThreads2("cwwcNDBCMet", -3, 3);  //nThreads    very slow
                     if (test == 71 && doSlowTestsToo) testCacheFiles(false); //deleteDataFiles?  //requires gtsppBest, very slow, not usually run    
                     if (test == 72 && doSlowTestsToo) testCacheFiles(true);  //deleteCachedInfo? //requires gtsppBest, very slow, not usually run
+                    if (test == 73 && doSlowTestsToo) testTooBigLocalhostRequest();
                    
                     /* */
 

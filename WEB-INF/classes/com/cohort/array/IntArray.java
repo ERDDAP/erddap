@@ -103,6 +103,7 @@ public class IntArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public IntArray(final PrimitiveArray primitiveArray) {
+        Math2.ensureMemoryAvailable(4L * primitiveArray.size(), "IntArray");
         array = new int[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
@@ -129,6 +130,7 @@ public class IntArray extends PrimitiveArray {
      */
     public IntArray(final int first, final int last) {
         size = last - first + 1;
+        Math2.ensureMemoryAvailable(4L * size, "IntArray");
         array = new int[size];
         for (int i = 0; i < size; i++) 
             array[i] = first + i;
@@ -1159,6 +1161,7 @@ public class IntArray extends PrimitiveArray {
     public void reorder(final int rank[]) {
         final int n = rank.length;
         //new length could be n, but I'll keep it the same array.length as before
+        Math2.ensureMemoryAvailable(4L * array.length, "IntArray");
         final int newArray[] = new int[array.length]; 
         for (int i = 0; i < n; i++)
             newArray[i] = array[rank[i]];
