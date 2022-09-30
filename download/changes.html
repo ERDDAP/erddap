@@ -68,11 +68,11 @@ those great suggestions coming!
 
 -->
 
-<!-- ****************************************************************************** 
+<!-- ****************************************************************************** -->
 
 
-<h2><a class="selfLink" id="changes2.19" href="#changes2.19" rel="bookmark">Changes</a> 
-in ERDDAP version 2.20 (released 2022-09-01)</h2>
+<h2><a class="selfLink" id="changes2.20" href="#changes2.20" rel="bookmark">Changes</a> 
+in ERDDAP version 2.20 (released 2022-09-30)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -81,8 +81,45 @@ in ERDDAP version 2.20 (released 2022-09-01)</h2>
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul>
-  <li>IMPROVED: More improvements to the memory management system. 
-    <br>&nbsp;
+  <li>TO DO: In [tomcat]/conf/context.xml, right before <kbd>&lt;/Context&gt;</kbd>, 
+    change the <kbd>Resources</kbd> tag (or add it if it isn't already there) to 
+    increase the <kbd>cacheMaxSize</kbd> setting from 80000 (or whatever it was) to 200000:
+     <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="200000" /&gt;</kbd>
+     <br>This avoids numerous warnings in catalina.out that all start with 
+     <br><kbd>"WARNING [main] org.apache.catalina.webresources.Cache.getResource Unable to add the resource at [/WEB-INF/classes/..."</kbd>
+     <br>&nbsp;
+  
+  <li>IMPROVED: We re-enabled the old memory management system (Math2.ensureMemoryAvailable) and modified
+    the new memory management system (EDStatic.shedThisRequest) to work better with it. 
+    <p>ERDDAP shouldn't ever crash or freeze up. If it does, one of the 
+    most likely causes is insufficient memory. You can monitor memory usage
+    by looking at the status.html web page, which now includes a line like
+    <br><kbd>0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets</kbd>
+    <br>(those are progressively more serious events)
+    <br>and a <kbd>gc Calls</kbd> column in the table of statistics.
+    You can tell how memory-stressed your ERDDAP is by watching these numbers
+    in addition to the <kbd>MB inUse</kbd> columns.
+    Higher numbers indicate more stress. 
+    <ul>
+    <li><kbd>MB inUse</kbd> should always be less than half of your Xmx memory setting.
+       Larger numbers are serious trouble.
+    <li><kbd>gc calls</kbd> indicates the number of times ERDDAP called the 
+      garbage collector to try to alleviate high memory usage.
+    <li><kbd>shed</kbd> indicates the number of incoming requests that 
+      were shed (with HTTP error number 503, Service Unavailable) because
+      memory use was already too high.  Ideally, no requests should be shed.
+    <li><kbd>dangerousMemoryEmails</kbd> - 
+      If memory use becomes dangerously high, ERDDAP sends an email to the email addresses listed in 
+      emailEverythingToCSV (in setup.xml) with a list of the active user requests. As the email says,
+      please forward these emails to erd.data at noaa.gov so we can use the information
+      to improve future versions of ERDDAP.
+     <br>&nbsp;
+    </ul>
+
+  <li>CHANGED: The default for &lt;ipAddressMaxRequests&gt; in datasets.xml
+    was increased from 7 to 15. It's clear that some legitimate WMS clients 
+    can generate more than 7 simultaneous requests. 
+     <br>&nbsp;
   </ul>
 </ul>
 
@@ -92,6 +129,9 @@ in ERDDAP version 2.20 (released 2022-09-01)</h2>
 <h2><a class="selfLink" id="changes2.19" href="#changes2.19" rel="bookmark">Changes</a> 
 in ERDDAP version 2.19 (released 2022-09-01)</h2>
 <ul>
+<li><b>Don't use v2.19. It is flawed.</b> But administrators still need to do the TO DO
+  items listed below when upgrading to v2.20+.
+    <br>&nbsp;
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
   <li>NEW: There is a new server-side function, orderByDescending, which works like
