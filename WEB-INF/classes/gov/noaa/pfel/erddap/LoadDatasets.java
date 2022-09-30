@@ -1055,6 +1055,7 @@ public class LoadDatasets extends Thread {
                 //reset  since last majorReload
                 EDStatic.gcCalled = 0;
                 EDStatic.requestsShed = 0;
+                EDStatic.dangerousMemoryEmails = 0;
                 EDStatic.dangerousMemoryFailures = 0;
                 EDStatic.tooManyRequests = 0;
 
@@ -1077,7 +1078,9 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         contentSB.append(threadSummary + "\n");
 
-                    contentSB.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
+                    contentSB.append(EDStatic.gcCalled + " gc calls, " + 
+                        EDStatic.requestsShed + " requests shed, and " +  
+                        EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
                     contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     contentSB.append(stars + "\nTallied Usage Information\n\n");
                     contentSB.append(EDStatic.tally.toString(50)); 
@@ -1215,7 +1218,9 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         sb.append(threadSummary + "\n");
 
-                    sb.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
+                    sb.append(EDStatic.gcCalled + " gc calls, " + 
+                        EDStatic.requestsShed + " requests shed, and " +  
+                        EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
                     EDStatic.addCommonStatistics(sb);
                     sb.append(EDStatic.tally.toString("Large Request, IP address (since last Major LoadDatasets)", 50));

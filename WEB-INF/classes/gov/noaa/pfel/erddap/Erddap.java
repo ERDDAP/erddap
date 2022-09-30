@@ -3610,7 +3610,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             int po = traces.indexOf('\n');
             if (po > 0)
                 sb.append(traces.substring(0, po + 1));
-            sb.append(EDStatic.gcCalled + " gc calls and " + EDStatic.requestsShed + " requests shed since last major LoadDatasets\n");
+            sb.append(EDStatic.gcCalled + " gc calls, " + 
+                EDStatic.requestsShed + " requests shed, and " +  
+                EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
             sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
 
             EDStatic.addCommonStatistics(sb);
