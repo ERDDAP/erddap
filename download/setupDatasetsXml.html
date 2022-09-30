@@ -10702,7 +10702,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
         requests will receive an HTTP 429 error: Too Many Requests.
         The small, static files in erddap/download/ and erddap/images/
         are NOT exempt from this count.
-        The default is 7. The maximum allowed is 1000, which crazy high -- don't do it!
+        The default is 15. The maximum allowed is 1000, which is crazy high -- don't do it!
         ERDDAP won't accept a number less than 6 because
         many legitimate users (notably web browsers and WMS clients) make
         up to 6 requests at a time. The ERDDAP Daily Report and the
@@ -10740,7 +10740,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
        have been processed.
        The small, static files in erddap/download/ and erddap/images/
        ARE exempt from this count and the related throttling.
-       The default is 2. The maximum allowed is 100, which crazy high -- don't do it!
+       The default is 2. The maximum allowed is 100, which is crazy high -- don't do it!
        You can set this to 1 to be strict, especially if you have problems
        with overly aggressive or malicious users.
        Users will still quickly get all the data they request (up to ipAddressMaxRequests),

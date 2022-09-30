@@ -65,7 +65,7 @@ public class Math2 {
     public static long maxSafeMemory   = maxMemory * 3L / 4;  //75%   the max we should consider getting to
     public static long dangerousMemory = maxMemory * 9L / 10; //90%   this is really bad
 
-    public static long alwaysOkayMemoryRequest = maxSafeMemory / 20;
+    public static long alwaysOkayMemoryRequest = maxSafeMemory / 40;
 
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
@@ -468,7 +468,7 @@ public class Math2 {
         //  even if it was for ERDDAP management (i.e., shooting myself in the foot). 
 
         //this is a little risky, but avoids frequent calls to calculate memoryInUse
-        if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /20=300MB    
+        if (nBytes < alwaysOkayMemoryRequest) //e.g., 8GB -&gt; maxSafe=6GB  /40=150MB    
             return;
        
         //is this single request by itself too big under any circumstances?

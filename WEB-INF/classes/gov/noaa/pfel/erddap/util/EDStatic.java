@@ -186,7 +186,7 @@ public class EDStatic {
      * <br>2.17 released on 2022-02-16
      * <br>2.18 released on 2022-02-23
      * <br>2.19 released on 2022-09-10
-     * <br>2.20 released on 2022-09-??
+     * <br>2.20 released on 2022-09-30
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -265,6 +265,7 @@ public static boolean developmentMode = false;
     public static int touchThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
     public static volatile int gcCalled = 0;                //since last Major LoadDatasets
     public static volatile int requestsShed = 0;            //since last Major LoadDatasets
+    public static volatile int dangerousMemoryEmails = 0;   //since last Major LoadDatasets
     public static volatile int dangerousMemoryFailures = 0; //since last Major LoadDatasets
     public static StringBuffer suggestAddFillValueCSV = new StringBuffer(); //EDV constructors append message here   //thread-safe but probably doesn't need to be
 
@@ -288,12 +289,12 @@ public static boolean developmentMode = false;
     public final static String ipAddressUnknown   = "(unknownIPAddress)";
     public final static ConcurrentHashMap<String,IntArray> ipAddressQueue = new ConcurrentHashMap();  //ipAddress -> list of request#
     public final static int    DEFAULT_ipAddressMaxRequestsActive = 2; //in datasets.xml
-    public final static int    DEFAULT_ipAddressMaxRequests = 7; //in datasets.xml //more requests will see Too Many Requests error. This must be at least 6 because browsers make up to 6 simultaneous requests. This can't be >1000.
+    public final static int    DEFAULT_ipAddressMaxRequests = 15; //in datasets.xml //more requests will see Too Many Requests error. This must be at least 6 because browsers make up to 6 simultaneous requests. This can't be >1000.
     public final static String DEFAULT_ipAddressUnlimited = ", " + ipAddressUnknown;
     public static int ipAddressMaxRequestsActive = DEFAULT_ipAddressMaxRequestsActive; //in datasets.xml
     public static int ipAddressMaxRequests = DEFAULT_ipAddressMaxRequests; //in datasets.xml //more requests will see Too Many Requests error. This must be at least 6 because browsers make up to 6 simultaneous requests.
     public static HashSet<String> ipAddressUnlimited =  //in datasets.xml  //read only. New one is swapped into place. You can add and remove addresses as needed.
-        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(EDStatic.DEFAULT_ipAddressUnlimited).toArray())); 
+        new HashSet<String>(String2.toArrayList(StringArray.fromCSVNoBlanks(DEFAULT_ipAddressUnlimited).toArray())); 
     public static int tooManyRequests = 0; //nRequests exceeding ipAddressMaxRequests, since last major datasets reload
     public final static String translationDisclaimer = 
         //from https://cloud.google.com/translate/attribution
@@ -2514,7 +2515,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         convertUnitsNotesAr          = getNotNothingString(messagesAr, "convertUnitsNotes",          errorInMethod);
         for (int tl = 0; tl < nLanguages; tl++) 
             convertUnitsNotesAr[tl] = convertUnitsNotesAr[tl]
-                .replace("&unitsStandard;", EDStatic.units_standard);
+                .replace("&unitsStandard;", units_standard);
         convertUnitsServiceAr        = getNotNothingString(messagesAr, "convertUnitsService",        errorInMethod);
         convertURLsAr                = getNotNothingString(messagesAr, "convertURLs",                errorInMethod);
         convertURLsIntroAr           = getNotNothingString(messagesAr, "convertURLsIntro",           errorInMethod);
@@ -3497,7 +3498,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
 
         WMSNotesAr                   = getNotNothingString(messagesAr, "WMSNotes",                   errorInMethod);
         for (int tl = 0; tl < nLanguages; tl++) 
-            EDStatic.WMSNotesAr[tl] = EDStatic.WMSNotesAr[tl].replace( "&WMSSEPARATOR;", Character.toString(EDD.WMS_SEPARATOR));
+            WMSNotesAr[tl] = WMSNotesAr[tl].replace( "&WMSSEPARATOR;", Character.toString(EDD.WMS_SEPARATOR));
 
         yourEmailAddressAr           = getNotNothingString(messagesAr, "yourEmailAddress",           errorInMethod); 
         zoomInAr                     = getNotNothingString(messagesAr, "zoomIn",                     errorInMethod); 
@@ -4677,8 +4678,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         sb.append(String2.getTimeDistributionStatistics(touchThreadSucceededDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
-        sb.append(EDStatic.tally.toString("Language (since last daily report)", 50)); //added v2.15
-        sb.append(EDStatic.tally.toString("Language (since startup)", 50));
+        sb.append(tally.toString("Language (since last daily report)", 50)); //added v2.15
+        sb.append(tally.toString("Language (since startup)", 50));
 
         sb.append(SgtMap.topographyStats() + "\n");
         sb.append(GSHHS.statsString() + "\n");
@@ -4956,15 +4957,15 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             if (datasetID != null && datasetID.length() > 0) 
                 message = MessageFormat.format(
                     graphsAccessibleToPublic?
-                        EDStatic.notAuthorizedForDataAr[language] :
-                        EDStatic.notAuthorizedAr[language], 
+                        notAuthorizedForDataAr[language] :
+                        notAuthorizedAr[language], 
                     loggedInAsHttps.equals(loggedInAs)? "" : loggedInAs, 
                     datasetID);
 
             lowSendError(requestNumber, response, HttpServletResponse.SC_UNAUTHORIZED, message);
 
         } catch (Throwable t2) {
-            EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
+            rethrowClientAbortException(t2);  //first thing in catch{}
             String2.log("Error in sendHttpUnauthorizedError for request #" + requestNumber + ":\n" + 
                 (message == null? "" : message + "\n") +
                 MustBe.throwableToString(t2));
@@ -5984,7 +5985,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 return "";
             String functionName = jsonp.substring(7); //it will be because it starts with .jsonp=
             if (!String2.isJsonpNameSafe(functionName))
-                throw new SimpleException(EDStatic.bilingual(language,
+                throw new SimpleException(bilingual(language,
                     errorJsonpFunctionNameAr[0], 
                     errorJsonpFunctionNameAr[language])); 
             return ".jsonp=" + SSR.minimalPercentEncode(functionName) + "&";
@@ -6152,7 +6153,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "...\n");
             if (page >= 3)            sb.append(
                 url0 + (page>2? prev : bmrk) +           url1 + (page - 1) + url2 + (page - 1) + url3);
-            sb.append("&nbsp;" + page + "&nbsp;(" + EDStatic.nMatchingCurrentAr[language] + ")&nbsp;\n"); //always show current page
+            sb.append("&nbsp;" + page + "&nbsp;(" + nMatchingCurrentAr[language] + ")&nbsp;\n"); //always show current page
             if (page <= lastPage - 2) sb.append(
                 url0 + (page<lastPage-1? next : bmrk) +  url1 + (page + 1) + url2 + (page + 1) + url3);
             if (page <= lastPage - 3) sb.append(
@@ -6438,6 +6439,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         //if memory use is dangerously high and I haven't reported this incident, report it
         if (inUse >= Math2.dangerousMemory && lastActiveRequestReportTime == 0) {
             lastActiveRequestReportTime = System.currentTimeMillis(); //do first so other threads don't also report this
+            dangerousMemoryEmails++;
             activeRequests.remove(requestNumber + ""); //don't blame this request
             String activeRequestLines[] = activeRequests.values().toArray(new String[0]);
             Arrays.sort(activeRequestLines);
@@ -6449,7 +6451,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 "Active requests:\n" +
                 String2.toNewlineString(activeRequestLines);
             String2.log(report);
-            email(EDStatic.emailEverythingToCsv, "Dangerously High Memory Use!!!", report);           
+            email(emailEverythingToCsv, "Dangerously High Memory Use!!!", report);           
         }
 
         //memory use is too high, so shed this request
@@ -6577,7 +6579,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
             } else if (tError.indexOf(Math2.memoryArraySize.substring(0, 25)) >= 0) {
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
-                String ipAddress = EDStatic.getIPAddress(request);
+                String ipAddress = getIPAddress(request);
                 tally.add("OutOfMemory (Array Size), IP Address (since last Major LoadDatasets)",  ipAddress);
                 tally.add("OutOfMemory (Array Size), IP Address (since last daily report)",        ipAddress);
                 tally.add("OutOfMemory (Array Size), IP Address (since startup)",                  ipAddress);
@@ -6586,7 +6588,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                        tError.indexOf(Math2.memoryThanCurrentlySafe.substring(0, 25)) >= 0) { //!!! TROUBLE: but that matches memoryThanSafe (in English) too!
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large), although it could be other user's requests that are too large
                 dangerousMemoryFailures++;
-                String ipAddress = EDStatic.getIPAddress(request);
+                String ipAddress = getIPAddress(request);
                 tally.add("OutOfMemory (Too Big), IP Address (since last Major LoadDatasets)",     ipAddress);
                 tally.add("OutOfMemory (Too Big), IP Address (since last daily report)",           ipAddress);
                 tally.add("OutOfMemory (Too Big), IP Address (since startup)",                     ipAddress);
@@ -6594,7 +6596,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             } else if (tErrorLC.indexOf(Math2.memory) >= 0) {
                 //catchall for remaining memory problems
                 errorNo = HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE; //http error 413 (the old name for Payload Too Large)
-                String ipAddress = EDStatic.getIPAddress(request);
+                String ipAddress = getIPAddress(request);
                 tally.add("OutOfMemory (Way Too Big), IP Address (since last Major LoadDatasets)", ipAddress);
                 tally.add("OutOfMemory (Way Too Big), IP Address (since last daily report)",       ipAddress);
                 tally.add("OutOfMemory (Way Too Big), IP Address (since startup)",                 ipAddress);
@@ -6658,8 +6660,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //because any of these errors could be in a script
             //and it's good to slow the script down (prevent 100 bad requests/second)
             //and if it's a human they won't even notice a short delay
-            if (EDStatic.slowDownTroubleMillis > 0)
-                Math2.sleep(EDStatic.slowDownTroubleMillis);
+            if (slowDownTroubleMillis > 0)
+                Math2.sleep(slowDownTroubleMillis);
 
             //put the HTTP status code name at the start of the message (from Wikipedia list
             // https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -6743,7 +6745,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         add.set(   "b", "http://www.whoi.edu"); //purposely out-of-date
         add.set(   "ten", 10.0);
         add.set(   "sourceUrl", "http://coastwatch.pfel.noaa.gov"); //purposely out-of-date
-        EDStatic.updateUrls(source, add);
+        updateUrls(source, add);
         String results = add.toString();
         String expected = 
 "    a=https://coastwatch.pfeg.noaa.gov\n" +
@@ -6758,7 +6760,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         add.set("b", "http://www.whoi.edu");
         add.set("nine", 9.0);
         add.set("sourceUrl", "http://coastwatch.pfel.noaa.gov");
-        EDStatic.updateUrls(null, add);
+        updateUrls(null, add);
         results = add.toString();
         expected = 
 "    a=https://coastwatch.pfeg.noaa.gov\n" +
