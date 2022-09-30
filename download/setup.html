@@ -521,24 +521,17 @@ or Mac server instead.
         they occur in the parameters of a user's request URL. 
         <br>&nbsp;
       </ol>
-     
-    <li><a class="selfLink" id="ResourcesCache" href="#ResourcesCache" rel="bookmark">Resources Cache</a>
-      <br>To avoid Tomcat throwing warnings during startup about 
-          "org.apache.catalina.webresources.Cache.getResource Unable to add the resource 
-          at <i>someFile</i> to the cache because there was insufficient free space 
-          available after evicting expired cache entries -- consider increasing the 
-          maximum size of the cache:
-      <br>In your [tomcat]/conf/context.xml, add this tag right before &lt;/Context&gt; :
-      <!-- 2019-05-22 On Bob's PC 50000 KB was sufficient. Add extra to be safe. -->
-      <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="80000" /&gt;</kbd>
-      <br>(or some other number, in KB.) For more information see
-      <br><a rel="help"
-            href="https://tomcat.apache.org/tomcat-8.0-doc/config/resources.html"
-                 >https://tomcat.apache.org/tomcat-8.0-doc/config/resources.html<img 
-            src="../images/external.png" alt=" (external link)" 
-            title="This link to an external website does not constitute an endorsement."></a>.
-      <br>&nbsp;
 
+    <li><a class="selfLink" id="ResourcesCache" href="#ResourcesCache" rel="bookmark"
+      >Resources Cache</a> -
+      In <i>tomcat</i>/conf/context.xml, right before the <kbd>&lt;/Context&gt;</kbd> tag, 
+      change the <kbd>Resources</kbd> tag (or add it if it isn't already there) to 
+      increase the <kbd>cacheMaxSize</kbd> setting from 80000 (or whatever it was) to 200000:
+       <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="200000" /&gt;</kbd>
+       <br>This avoids numerous warnings in catalina.out that all start with 
+       <br><kbd>"WARNING [main] org.apache.catalina.webresources.Cache.getResource Unable to add the resource at [/WEB-INF/classes/..."</kbd>
+       <br>&nbsp;
+            
     <li><a class="selfLink" id="ApacheTimeout" href="#ApacheTimeout" rel="bookmark"
     >On Linux computers, change the Apache timeout settings</a>
     so that time-consuming user requests don't timeout 
@@ -2435,6 +2428,32 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
     <br>&nbsp;
   </ul>
 
+<li><strong><a class="selfLink" id="MemoryStatus" href="#MemoryStatus" rel="bookmark"
+>Memory Status</a></strong>  
+<br>ERDDAP shouldn't ever crash or freeze up. If it does, one of the 
+    most likely causes is insufficient memory. You can monitor memory usage
+    by looking at the status.html web page, which includes a line like
+    <br><kbd>0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets</kbd>
+    <br>(those are progressively more serious events)
+    <br>and <kbd>MB inUse</kbd> and <kbd>gc Calls</kbd> columns in the table of statistics.
+    You can tell how memory-stressed your ERDDAP is by watching these numbers.
+    Higher numbers indicate more stress. 
+    <ul>
+    <li><kbd>MB inUse</kbd> should always be less than half of the 
+       <a rel="bookmark" href="#memory">-Xmx memory setting</a>.
+       Larger numbers are serious trouble.
+    <li><kbd>gc calls</kbd> indicates the number of times ERDDAP called the 
+      garbage collector to try to alleviate high memory usage.
+    <li><kbd>shed</kbd> indicates the number of incoming requests that 
+      were shed (with HTTP error number 503, Service Unavailable) because
+      memory use was already too high. Ideally, no requests should be shed.
+    <li><kbd>dangerousMemoryEmails</kbd> - 
+      If memory use becomes dangerously high, ERDDAP sends an email to the email addresses listed in 
+      emailEverythingToCSV (in setup.xml) with a list of the active user requests. As the email says,
+      please forward these emails to erd.data at noaa.gov so we can use the information
+      to improve future versions of ERDDAP.
+    </ul>
+
 <li><strong><a class="selfLink" id="OutOfMemoryError" href="#OutOfMemoryError" rel="bookmark"
 >OutOfMemoryError</a></strong>  
 <br>When you set up ERDDAP, you specify the maximum amount of memory that Java
@@ -2530,7 +2549,7 @@ If you look at the
 file to see what ERDDAP was doing when the error arose, 
 you can usually get a good clue as to the cause. 
 In most cases, there is a way to minimize that problem (see above), 
-but sometimes you just need more memory.
+but sometimes you just need more memory and a higher -Xmx setting.
 <br>&nbsp;
 </ul>
 
