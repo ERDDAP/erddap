@@ -125,7 +125,7 @@ public class TestAll  {
 //      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"nesdisVHNnoaaSNPPnoaa20chlaDaily", "-verbose"});
+//      DasDds.main(new String[]{"esrlNcepRe", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -529,15 +529,15 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/u00/data/points/caricoos/181p1_historic.nc", "-v metaStationLatitude;metaStationLongitude"));
 /* 
       s = EDDTableFromMultidimNcFiles.generateDatasetsXml(
-        "/data/sarah/", ".*\\.nc", "",
-        "TIME_PRE", //dims 
+        "/data/bodc/", "Cabot.*\\.nc", "",
+        "", //dims 
         1440,
         "", "", "", "", //pre, post, extract, varname
         true, //removeMVRows  //often true
         "", //sort files by    profile_time
         "", "", "", "", 
         0, //standardizeWhat 1+2(numericTime)+256(catch numeric mv)+4096(units)
-        "DEPTH,TIME_PRE", //treatDimensionsAs
+        "", //treatDimensionsAs
         "", //cacheFromUrl  /catalog.html
         null) + "\n"; 
     String2.setClipboardString(s);  String2.log(s);
