@@ -72,6 +72,26 @@ those great suggestions coming!
 
 
 <h2><a class="selfLink" id="changes2.20" href="#changes2.20" rel="bookmark">Changes</a> 
+in ERDDAP version 2.21 (released 2022-10-09)</h2>
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>(None)
+    <br>&nbsp;
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul> 
+  <li>BUG FIX: Sometimes, the new email system attempted to log in too often, 
+    which caused Google Email servers to reject all future log in attempts. Now,
+    the email system avoids this and related problems.
+     <br>&nbsp;
+  </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
+
+
+<h2><a class="selfLink" id="changes2.20" href="#changes2.20" rel="bookmark">Changes</a> 
 in ERDDAP version 2.20 (released 2022-09-30)</h2>
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
@@ -80,41 +100,13 @@ in ERDDAP version 2.20 (released 2022-09-30)</h2>
     <br>&nbsp;
   </ul>
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
-  <ul>
-  <li>TO DO: In [tomcat]/conf/context.xml, right before <kbd>&lt;/Context&gt;</kbd>, 
-    change the <kbd>Resources</kbd> tag (or add it if it isn't already there) to 
-    increase the <kbd>cacheMaxSize</kbd> setting from 80000 (or whatever it was) to 200000:
-     <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="200000" /&gt;</kbd>
-     <br>This avoids numerous warnings in catalina.out that all start with 
-     <br><kbd>"WARNING [main] org.apache.catalina.webresources.Cache.getResource Unable to add the resource at [/WEB-INF/classes/..."</kbd>
-     <br>&nbsp;
-  
+  <ul> 
   <li>IMPROVED: We re-enabled the old memory management system (Math2.ensureMemoryAvailable) and modified
     the new memory management system (EDStatic.shedThisRequest) to work better with it. 
-    <p>ERDDAP shouldn't ever crash or freeze up. If it does, one of the 
-    most likely causes is insufficient memory. You can monitor memory usage
-    by looking at the status.html web page, which now includes a line like
-    <br><kbd>0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets</kbd>
-    <br>(those are progressively more serious events)
-    <br>and a <kbd>gc Calls</kbd> column in the table of statistics.
-    You can tell how memory-stressed your ERDDAP is by watching these numbers
-    in addition to the <kbd>MB inUse</kbd> columns.
-    Higher numbers indicate more stress. 
-    <ul>
-    <li><kbd>MB inUse</kbd> should always be less than half of your Xmx memory setting.
-       Larger numbers are serious trouble.
-    <li><kbd>gc calls</kbd> indicates the number of times ERDDAP called the 
-      garbage collector to try to alleviate high memory usage.
-    <li><kbd>shed</kbd> indicates the number of incoming requests that 
-      were shed (with HTTP error number 503, Service Unavailable) because
-      memory use was already too high.  Ideally, no requests should be shed.
-    <li><kbd>dangerousMemoryEmails</kbd> - 
-      If memory use becomes dangerously high, ERDDAP sends an email to the email addresses listed in 
-      emailEverythingToCSV (in setup.xml) with a list of the active user requests. As the email says,
-      please forward these emails to erd.data at noaa.gov so we can use the information
-      to improve future versions of ERDDAP.
+    See <a rel="help"
+        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#MemoryStatus"
+        >Memory Status</a> for details.
      <br>&nbsp;
-    </ul>
 
   <li>CHANGED: The default for &lt;ipAddressMaxRequests&gt; in datasets.xml
     was increased from 7 to 15. It's clear that some legitimate WMS clients 
@@ -159,6 +151,12 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
     There are no other changes that you need to make to your ERDDAP
     installation related to this change. In other words, ERDDAP works 
     as it did before. 
+
+    <p>Don't forget to make the ERDDAP-related changes to Tomcat's server.xml and context.xml 
+    when you upgrade Tomcat. See ERDDAP's 
+    <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#tomcat"
+        >Tomcat installation instructions</a>.    
+
     <p>My impression of Java 17 is that it prefers more processing power and memory 
     for long-running, larger applications like ERDDAP, so it works slightly slower
     than Java 8 with low power computers (e.g., 2 cores and minimal RAM) 
@@ -168,10 +166,10 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
     <a rel="bookmark" href="https://www.howtogeek.com/668986/how-to-use-the-linux-top-command-and-understand-its-output/">top<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>     
-    to check resource usage and consider giving ERDDAP more resources.
+    to check resource usage and consider giving ERDDAP more resources, notably more memory.
     Memory is cheap! Most phones have more processors and memory than 
     the servers that some of you are using to run ERDDAP!
-    Thanks to Erin Turnbull.
+    <br>Thanks to Erin Turnbull.
     <br>&nbsp;
   <li>TO DO: If you use ERDDAP to access Cassandra, for Cassandra, you need to keep using the version
     of Java that you were using for running the Cassandra. 
@@ -181,6 +179,7 @@ in ERDDAP version 2.19 (released 2022-09-01)</h2>
      consider changing to these settings in your datasets.xml file:<kbd>
       <br>&nbsp;&nbsp;&lt;nGridThreads&gt;3&lt;/nGridThreads&gt;     
       <br>&nbsp;&nbsp;&lt;nTableThreads&gt;3&lt;/nTableThreads&gt;   </kbd>
+    <br>If your server has fewer resources, stick to "1" for both of those settings.
     <br>The nThreads systems for EDDGridFromFiles and EDDTableFromFiles were significantly improved. 
     These changes led to a huge speed improvement (e.g., 2X speedup when nThreads is set to 2 or more)
     for the most challenging requests (when a large number of files must be processed to gather the results).
@@ -6953,7 +6952,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.20
+<p>ERDDAP, Version 2.21
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

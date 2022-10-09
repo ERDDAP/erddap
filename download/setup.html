@@ -523,11 +523,11 @@ or Mac server instead.
       </ol>
 
     <li><a class="selfLink" id="ResourcesCache" href="#ResourcesCache" rel="bookmark"
-      >Resources Cache</a> -
+      >context.xml -- Resources Cache</a> -
       In <i>tomcat</i>/conf/context.xml, right before the <kbd>&lt;/Context&gt;</kbd> tag, 
       change the <kbd>Resources</kbd> tag (or add it if it isn't already there) to 
-      increase the <kbd>cacheMaxSize</kbd> setting from 80000 (or whatever it was) to 200000:
-       <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="200000" /&gt;</kbd>
+      set the <kbd>cacheMaxSize</kbd> parameter to 80000:
+       <br><kbd>&lt;Resources cachingAllowed="true" cacheMaxSize="80000" /&gt;</kbd>
        <br>This avoids numerous warnings in catalina.out that all start with 
        <br><kbd>"WARNING [main] org.apache.catalina.webresources.Cache.getResource Unable to add the resource at [/WEB-INF/classes/..."</kbd>
        <br>&nbsp;
@@ -809,10 +809,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.19.zip -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.20.zip -->  <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddapContent.zip">erddapContent.zip</a>
-    (version 2.19, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-09-01)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddapContent.zip">erddapContent.zip</a>
+    (version 2.20, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-09-30)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -930,13 +930,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.19.war  
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.20.war        // erddapVersion 
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.19, 568,636,772 bytes, MD5=729C3AF96BCECE39E7D360B4B77E8442, dated
-    <span class="N">2022-09-01</span>)
+    <br>(version 2.20, 568,643,863 bytes, MD5=A1051FA08147C0185873BB5EAE067059, dated
+    <span class="N">2022-09-30</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -1154,13 +1154,21 @@ And in the nginx config file, you need to set these headers:
   for all of the ERDDAP versions since the version you were using.
   <br>&nbsp;
 
-<li>Download 
-    <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.19/erddap.war">erddap.war</a>
-    into <i>tomcat</i>/webapps .  
-    <br>(version 2.19, 568,636,772 bytes, MD5=729C3AF96BCECE39E7D360B4B77E8442, dated
-    <span class="N">2022-09-01</span>)
+<li>If you are upgrading from ERDDAP version 2.18 or below, you need to switch to Java 17
+  and the related Tomcat 10.
+  See the regular ERDDAP installation instructions for 
+  <a href="#java" rel="bookmark">Java</a> and
+  <a href="#tomcat" rel="bookmark">Tomcat</a>.
+  You'll also have to copy your <i>tomcat</i>/content/erddap directory from your
+  old Tomcat installation to your new Tomcat installation.
+  <br>&nbsp;
 
+<li>Download            <!-- erddapVersion -->
+    <a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddap.war">erddap.war</a>
+    into <i>tomcat</i>/webapps .  
+    <br>(version 2.20, 568,643,863 bytes, MD5=A1051FA08147C0185873BB5EAE067059, dated
+    <span class="N">2022-09-30</span>)
   <br>&nbsp;
 
 <li><a class="selfLink" id="messages.xml" href="#messages.xml" rel="bookmark">messages.xml</a>
@@ -2433,25 +2441,60 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
 <br>ERDDAP shouldn't ever crash or freeze up. If it does, one of the 
     most likely causes is insufficient memory. You can monitor memory usage
     by looking at the status.html web page, which includes a line like
-    <br><kbd>0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets</kbd>
-    <br>(those are progressively more serious events)
+    <pre>0 gc calls, 0 requests shed, and 0 dangerousMemoryEmails since last major LoadDatasets</pre>
+    (those are progressively more serious events)
     <br>and <kbd>MB inUse</kbd> and <kbd>gc Calls</kbd> columns in the table of statistics.
     You can tell how memory-stressed your ERDDAP is by watching these numbers.
     Higher numbers indicate more stress. 
     <ul>
     <li><kbd>MB inUse</kbd> should always be less than half of the 
        <a rel="bookmark" href="#memory">-Xmx memory setting</a>.
-       Larger numbers are serious trouble.
+       Larger numbers are a bad sign.
     <li><kbd>gc calls</kbd> indicates the number of times ERDDAP called the 
       garbage collector to try to alleviate high memory usage.
+      If this gets to be &gt;100, that's a sign of serious trouble.
     <li><kbd>shed</kbd> indicates the number of incoming requests that 
       were shed (with HTTP error number 503, Service Unavailable) because
       memory use was already too high. Ideally, no requests should be shed.
+      It's okay if a few requests are shed, but a sign of serious trouble if many are shed.
     <li><kbd>dangerousMemoryEmails</kbd> - 
       If memory use becomes dangerously high, ERDDAP sends an email to the email addresses listed in 
-      emailEverythingToCSV (in setup.xml) with a list of the active user requests. As the email says,
+      <kbd>&lt;emailEverythingTo&gt;</kbd> (in setup.xml) with a list of the active user requests. 
+      As the email says,
       please forward these emails to erd.data at noaa.gov so we can use the information
       to improve future versions of ERDDAP.
+    <br>&nbsp;
+    </ul>
+    If your ERDDAP is memory-stressed:
+    <ul>
+    <li>Consider allocating more of your server's memory to ERDDAP by changing
+      the Tomcat <a rel="bookmark" href="#memory">&#8209;Xmx memory setting</a>.
+    <li>If you've already allocated as much memory as you can to ERDDAP via -Xmx,
+      consider buying more memory for your server. Memory is cheap (compared
+      to the price of a new server or your time)! Then increase -Xmx.
+    <li>In datasets.xml, set <kbd>&lt;nGridThreads&gt;</kbd> to 1, 
+      set <kbd>&lt;nTableThreads&gt;</kbd> to 1, and 
+      set <kbd>&lt;ipAddressMaxRequestsActive&gt;</kbd> to 1. 
+    <li>Look at the requests in log.txt for inefficient or troublesome (but legitimate) requests. 
+      Add their IP addresses to <kbd>&lt;requestBlacklist&gt;</kbd> in datasets.xml.
+      The blacklist error message includes the ERDDAP administrator's email address
+      with the hope that those users will contact you so that you can work with 
+      them to use ERDDAP more efficiently.
+      It's good to keep a list of IP addresses you blacklist and why, 
+      so that you can work with the users if they contact you.
+    <li>Look at the requests in log.txt for requests from malicious users. 
+      Add their IP addresses to <kbd>&lt;requestBlacklist&gt;</kbd> in datasets.xml.
+      If similar requests are coming from multiple similar IP address, 
+      you can use some who-is services (e.g., 
+      <a rel="help" href="https://www.whois.com/whois/"
+        >https://www.whois.com/whois/<img 
+        src="../images/external.png" alt=" (external link)" 
+        title="This link to an external website does not constitute an endorsement."></a>)
+      to find out the range of IP addresses from that source and blacklist the
+      entire range. See the
+      <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+        ><kbd>&lt;requestBlacklist&gt;</kbd> documentation</a>.
+      <br>&nbsp;
     </ul>
 
 <li><strong><a class="selfLink" id="OutOfMemoryError" href="#OutOfMemoryError" rel="bookmark"
@@ -5559,7 +5602,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.20
+<p>ERDDAP, Version 2.21
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
