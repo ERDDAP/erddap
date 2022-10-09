@@ -187,6 +187,7 @@ public class EDStatic {
      * <br>2.18 released on 2022-02-23
      * <br>2.19 released on 2022-09-10
      * <br>2.20 released on 2022-09-30
+     * <br>2.21 released on 2022-10-09
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -200,7 +201,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.20"; //see comment above
+    public static String erddapVersion = "2.21"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -4598,6 +4599,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             }
         } catch (Exception e) {
         }
+        sb.append("Number of active requests=" + activeRequests.size() + "\n");
     }
 
     /**

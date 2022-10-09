@@ -11555,11 +11555,20 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
       always use the same dimension values for all variables,
       and almost always use [0], [last], or [0:last] for the dimension values.
     <br>For example:        <br><kbd>&lt;defaultDataQuery&gt;u[last][0][0:last][0:last],<wbr>v[last][0][0:last][0:last]<wbr>&lt;/defaultDataQuery&gt;</kbd>
+  <li>For tabledap datasets, if you don't specify any constraint, the request will return the entire dataset, 
+       which may be impractically large, depending on the dataset.
+     If you don't want to specify any constraints, rather than have an empty <kbd>&lt;defaultDataQuery&gt;</kbd>
+     (which is the same as not specifying a defaultDataQuery),
+     you need to explicitly list all of the variables you want to include in the defaultDataQuery.
   <li>For tabledap datasets, the most common use of this is to specify a different default 
-    time range (relative to <kbd>now</kbd>, for example, <kbd>&amp;time&gt;=now-1day</kbd>).
+    time range 
+    (relative to <kbd>max(time)</kbd>, for example, <kbd>&amp;time&gt;=max(time)-1day</kbd>,
+    or relative to <kbd>now</kbd>, for example, <kbd>&amp;time&gt;=now-1day</kbd> ).
     <br>Remember that requesting no data variables is the same as specifying all data variables, 
       so usually you can just specify the new time constraint.
     <br>For example:        
+    <br><kbd>&lt;defaultDataQuery&gt;&amp;amp;time<wbr>&amp;gt;=max(time)-1day<wbr>&lt;/defaultDataQuery&gt;</kbd>
+    <br>or 
     <br><kbd>&lt;defaultDataQuery&gt;&amp;amp;time<wbr>&amp;gt;=now-1day<wbr>&lt;/defaultDataQuery&gt;</kbd>
     <br>&nbsp;
   </ul>
@@ -11582,13 +11591,18 @@ The <i>attributeNamesCSV</i> list is case-sensitive.
     <br>For example:                
     <br><kbd>&lt;defaultGraphQuery&gt;temp[last][0][0:last][0:last]&amp;amp;.draw=surface<wbr>&amp;amp;.vars=longitude|latitude|temp<wbr>&lt;/defaultGraphQuery&gt;</kbd>
     <br>(but put it all on one line)
-  <li>For tabledap datasets, the most common uses of this are to specify 
-    different variables to be graphed, a different default time range 
-    (relative to <kbd>now</kbd>, for example, <kbd>&amp;time&gt;=now-1day</kbd>) 
-    and/or different default graphics settings (for example, marker type).
+  <li>For tabledap datasets, if you don't specify any constraint, the request will graph the entire dataset, 
+       which may take a long time, depending on the dataset.
+  <li>For tabledap datasets, the most common use of this is to specify a different default 
+    time range 
+    (relative to <kbd>max(time)</kbd>, for example, <kbd>&amp;time&gt;=max(time)-1day</kbd>,
+    or relative to <kbd>now</kbd>, for example, <kbd>&amp;time&gt;=now-1day</kbd> ).
+    <br>Remember that requesting no data variables is the same as specifying all data variables, 
+      so usually you can just specify the new time constraint.
     <br>For example:        
-    <br><kbd>&lt;defaultGraphQuery&gt;longitude,latitude,seaTemperature&amp;amp;time&amp;gt;=now-1day<wbr>&amp;amp;.marker=1|5<wbr>&lt;/defaultGraphQuery&gt;</kbd>
-    <br>(but put it all on one line)
+    <br><kbd>&lt;defaultGraphQuery&gt;&amp;amp;time<wbr>&amp;gt;=max(time)-1day<wbr>&lt;/defaultGraphQuery&gt;</kbd>
+    <br>or 
+    <br><kbd>&lt;defaultGraphQuery&gt;&amp;amp;time<wbr>&amp;gt;=now-1day<wbr>&lt;/defaultGraphQuery&gt;</kbd>
     <br>&nbsp;
   </ul>
 
@@ -15768,7 +15782,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.20
+<p>ERDDAP, Version 2.21
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

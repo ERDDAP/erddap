@@ -36,7 +36,8 @@ public class EmailThread extends Thread {
     private long lastStartTime = -1;    //-1 if session not active
     public long lastSessionMillis = -1; //duration
 
-    public static int sleepMillis = 5000;
+    public static long defaultSleepMillis = 15000;
+    public static long sleepMillis = defaultSleepMillis;
 
 
     /**
@@ -59,7 +60,7 @@ public class EmailThread extends Thread {
 
 
     /**
-     * This repeatedly: sleeps for 5 seconds, then sends all pending emails.
+     * This repeatedly: sleeps for sleepMillis, then sends all pending emails.
      */
     public void run() {
 
@@ -154,6 +155,9 @@ public class EmailThread extends Thread {
                     }
                 }
 
+                //reset sleepMillis because openEmailSession succeeded
+                sleepMillis = defaultSleepMillis;
+
                 String2.log("%%% EmailThread session finished after email #" + (EDStatic.nextEmail - 1) + 
                     " at " + Calendar2.getCurrentISODateTimeStringLocalTZ());
 
@@ -169,6 +173,11 @@ public class EmailThread extends Thread {
                 String2.log("%%% EmailThread session ERROR at email #" + (EDStatic.nextEmail - 1) + 
                     " at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                     MustBe.throwableToString(e));
+
+                //openEmailSession and other failures: wait longer before try again to avoid e.g., 
+                //  "jakarta.mail.AuthenticationFailedException: 454 4.7.0 Too many login attempts, please try again later."
+                if (sleepMillis * 2 < 5 * Calendar2.MILLIS_PER_MINUTE)
+                    sleepMillis *= 2;
 
             } finally {
                 lastStartTime = -1;
