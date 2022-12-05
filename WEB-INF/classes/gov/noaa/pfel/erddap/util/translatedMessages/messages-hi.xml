@@ -712,8 +712,8 @@ A-Za-z0-9_-!.~&#39;()* के अलावा सभी वर्णों क�
 <!--  उदाहरणों को न बदलें (डिफ़ॉल्टएन से...)। -->
 <convertKeywordsIntro><![CDATA[
 यह वेब पेज आपको
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF मानक नाम</a> बदलने देता है
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF मानक नाम</a> बदलने देता है
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="किसी बाहरी वेबसाइट का यह लिंक एक समर्थन नहीं है।"></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

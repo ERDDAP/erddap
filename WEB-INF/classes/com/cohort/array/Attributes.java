@@ -1140,7 +1140,7 @@ public class Attributes {
     /**
      * This writes the attributes for a variable (or *GLOBAL*) to a String using
      * NCO JSON lvl=2 pedantic style.
-     * See http://nco.sourceforge.net/nco.html#json
+     * See https://nco.sourceforge.net/nco.html#json
      * This doesn't change any of the attributes.
      * See issues in javadoc for EDDTable.saveAsNcoJson().
      *

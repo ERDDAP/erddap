@@ -243,7 +243,11 @@ public class TableWriterHtmlTable extends TableWriter {
                 else {
                     writer.write(EDStatic.startHeadHtml(language, tErddapUrl, fileNameNoExt));
                     writer.write("\n</head>\n");
-                    writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString));
+                    writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                        edd == null? 
+                            "index.html" : //this happens when .htmlTable is used for non-dataset data. Fall back to index.html
+                            edd.dapProtocol() + "/" + edd.datasetID() + ".html", //was endOfRequest. Now should be .htmlTable, but since no params that would request entire dataset, so go back to .html form
+                        queryString));
                     //writer.write(HtmlWidgets.BACK_BUTTON);
                     writer.write("&nbsp;<br>");
                 }

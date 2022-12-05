@@ -823,8 +823,8 @@ A-Za-z0-9_-!.~&#39;()* 이외의 모든 문자는 %HH로 인코딩되어야 합�
 <!--  예제를 변경하지 마십시오(defaultN...에서). -->
 <convertKeywordsIntro><![CDATA[
 이 웹 페이지에서
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF 표준 이름</a> 을 변환할 수 있습니다.
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF 표준 이름</a> 을 변환할 수 있습니다.
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

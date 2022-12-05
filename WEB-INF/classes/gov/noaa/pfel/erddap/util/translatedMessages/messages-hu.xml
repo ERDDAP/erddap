@@ -816,8 +816,8 @@ Vannak olyan
 <!--  Ne változtassa meg a példákat (az alapértelmezett N...-től). -->
 <convertKeywordsIntro><![CDATA[
 Ez a weboldal lehetővé teszi a
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF szabványos név</a> konvertálását
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF szabványos név</a> konvertálását
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

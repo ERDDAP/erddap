@@ -66,6 +66,7 @@ public class Math2 {
     public static long dangerousMemory = maxMemory * 9L / 10; //90%   this is really bad
 
     public static long alwaysOkayMemoryRequest = maxSafeMemory / 40;
+    public volatile static long timeGCLastCalled = 0;
 
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
@@ -431,24 +432,25 @@ public class Math2 {
      *   will mind, since it is static) and to sleep for
      *   a while, independently. 
      * 
-     * @param millis the number of milliseconds to sleep
+     * @param millis the number of milliseconds to sleep.
+     *    This will always sleep at least shortSleep millis.
      * @return getMemoryInUse()
      * @see Math2#incgc
      */
     public static long gc(final long millis) {
         final long time = System.currentTimeMillis();
 
-        //System.err.println("********** Math2.gc"); //diagnostic
-        String2.log("[Math2.gc is calling System.gc]");
-            //+ "\n" + MustBe.getStackTrace());   
-        System.gc();
-
-        //Second call to gc is usually very fast and more effective.
-        //System.gc();
+        //if >shortSleep since last time gc was called (by any thread), call gc (otherwise don't!)
+        if (time - timeGCLastCalled >= shortSleep) {
+            String2.log("[Math2.gc is calling System.gc]");
+                //+ "\n" + MustBe.getStackTrace());           
+            timeGCLastCalled = time;
+            System.gc();
+        }
 
         //sleep - subtract time already used by gc
         //always call sleep, even if <0, since it yields, too.
-        sleep(millis - (System.currentTimeMillis() - time));
+        sleep(Math.max(shortSleep, millis) - (System.currentTimeMillis() - time));
         return lastUsingMemory = getMemoryInUse();
     }
 
@@ -488,19 +490,22 @@ public class Math2 {
         if (memoryInUse + nBytes <= maxSafeMemory)  //it'll work
             return;
 
-        //I used to gcAndWait() and call getMemoryInUse() again if memory use was high.
-        //Now I think: if memory use is high, just ditch the user request.
+        //Not enough memory. Try to free up memory 
+        memoryInUse = Math2.gcAndWait(); //if gc just called by other thread, this just waits and returns
 
-        if (memoryInUse + nBytes > maxSafeMemory) {
-            String msg = memoryTooMuchData + "  " +
-                MessageFormat.format(memoryThanCurrentlySafe,
-                    "" + (nBytes / BytesPerMB), "" + ((maxSafeMemory - memoryInUse) / BytesPerMB)) +
-                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")");
-            String2.log("ERROR: " + msg + "\n" +
-                MustBe.stackTrace());
-            String2.flushLog();
-            throw new RuntimeException(msg); 
-        }
+        //now enough memory?
+        if (memoryInUse + nBytes <= maxSafeMemory)  //it'll work
+            return;
+
+        //not currently enough memory
+        String msg = memoryTooMuchData + "  " +
+            MessageFormat.format(memoryThanCurrentlySafe,
+                "" + (nBytes / BytesPerMB), "" + ((maxSafeMemory - memoryInUse) / BytesPerMB)) +
+            (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")");
+        String2.log("ERROR: " + msg + "\n" +
+            MustBe.stackTrace());
+        String2.flushLog();
+        throw new RuntimeException(msg); 
     }
 
     /** 

@@ -184,7 +184,7 @@ public abstract class EDDGrid extends EDD {
 //        "https://linux.die.net/man/1/ncdump", //nc4Header
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
-        "http://nco.sourceforge.net/nco.html#json",
+        "https://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#timeGaps",  //.timeGaps
         "https://jkorpela.fi/TSV.html",  //tsv
@@ -2380,7 +2380,9 @@ public abstract class EDDGrid extends EDD {
                         title() + " - " + EDStatic.dafAr[language]));
                     writer.write("\n" + rssHeadLink());
                     writer.write("\n</head>\n");
-                    writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
+                    writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                        "griddap/" + datasetID + ".html", //was endOfRequest, 
+                        userDapQuery));
                     writer.write("\n");
                     writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language))); //this is a link to a script
                     writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));    //this is a link to a script
@@ -2763,7 +2765,9 @@ public abstract class EDDGrid extends EDD {
                 title() + " - " + EDStatic.magAr[language]));
             writer.write("\n" + rssHeadLink());
             writer.write("\n</head>\n");
-            writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
+            writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                "griddap/" + datasetID + ".graph", //was endOfRequest, 
+                userDapQuery));
             writer.write("\n");
             writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language))); //this is a link to a script
             writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));    //this is a link to a script
@@ -8607,7 +8611,7 @@ Attributes {
  
     /**
      * Save the grid data in an NCO JSON .ncoJson file.
-     * See http://nco.sourceforge.net/nco.html#json
+     * See https://nco.sourceforge.net/nco.html#json
      * See issues in JavaDocs for EDDTable.saveAsNcoJson().
      * 
      * <p>This gives up a few things (e.g., actual_range) 
@@ -10330,7 +10334,7 @@ Attributes {
             "  In some situations, you need to percent encode all characters other than\n" +
             "  A-Za-z0-9_-!.~'()* .\n" +
             "  Programming languages have tools to do this (for example, see Java's\n" +
-            "  <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+            "  <a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
             "     and JavaScript's\n" +
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
@@ -12049,7 +12053,9 @@ Attributes {
         //writer.write(EDStatic.startHeadHtml(language, tErddapUrl, title() + " - WCS"));
         //writer.write("\n" + rssHeadLink());
         //writer.write("</head>\n");
-        //writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString) + "\n");
+        //writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+        //    "wcs/" + datasetID + "/index.html", //was endOfRequest, 
+        //    queryString) + "\n");
         //writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
         //writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 

@@ -858,7 +858,9 @@ public class Erddap extends HttpServlet {
         EDStatic.tally.add("Home Page (since startup)", ".html");
         EDStatic.tally.add("Home Page (since last daily report)", ".html");
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, "Home Page", out); 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "index.html", //was endOfRequest, 
+            queryString, "Home Page", out); 
         try {
             //set up the table
             writer.write(
@@ -1162,7 +1164,9 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);        
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, "Embed Images", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "images/embed.html", //was endOfRequest, 
+            queryString, "Embed Images", out);
         try {
             writer.write(EDStatic.imagesEmbedAr[language]);
         } catch (Throwable t) {
@@ -1175,7 +1179,7 @@ public class Erddap extends HttpServlet {
     }
 
     /**
-     * This responds by sending out the "Information" Html page (EDStatic.theLongDescriptionHtml).
+     * This responds by sending out the "Information" Html page (information.html, EDStatic.theLongDescriptionHtml).
      *
      * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
@@ -1185,7 +1189,9 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);        
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, "Information", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "information.html", //was endOfRequest, 
+            queryString, "Information", out);
         try {
             writer.write("<div class=\"standard_width\">\n");
             writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.informationAr[language]));
@@ -1212,7 +1218,9 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);        
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, "Legal Notices", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "legal.html", //was endOfRequest, 
+            queryString, "Legal Notices", out);
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -1583,7 +1591,9 @@ public class Erddap extends HttpServlet {
 
             //custom login.html
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, EDStatic.LogInAr[language], out);
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "login.html", //was endOfRequest, 
+                queryString, EDStatic.LogInAr[language], out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
                 writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language]));
@@ -1772,7 +1782,9 @@ public class Erddap extends HttpServlet {
 
             //email login.html
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, EDStatic.LogInAr[language], out);
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "login.html", //was endOfRequest, 
+                queryString, EDStatic.LogInAr[language], out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
                 writer.write(EDStatic.youAreHere(language, loggedInAs, EDStatic.LogInAr[language]));
@@ -1846,7 +1858,9 @@ public class Erddap extends HttpServlet {
             //  https://members.orcid.org/api/oauth/presenting-oauth
             //  https://members.orcid.org/sites/default/files/connect-button.txt
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "login.html", //was endOfRequest, 
+                queryString, 
                 EDStatic.LogInAr[language], 
                 (isGoogle || isOauth2? 
                     "<meta name=\"google-signin-client_id\" " + 
@@ -1955,7 +1969,9 @@ public class Erddap extends HttpServlet {
         //alternative: lowSendError(requestNumber, response, HttpServletResponse.SC_UNAUTHORIZED, 
         //    EDStatic.loginCanNotAr[language]);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, EDStatic.LogInAr[language], out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "login.html", //was endOfRequest, 
+            queryString, EDStatic.LogInAr[language], out);
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -2035,7 +2051,9 @@ public class Erddap extends HttpServlet {
                 //send user to web page that signs out then redirects to login.html
                 //see https://developers.google.com/identity/sign-in/web/
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "logout.html", //was endOfRequest, 
+                    queryString, 
                     EDStatic.LogOutAr[language], 
                     "<meta name=\"google-signin-client_id\" content=\"" + EDStatic.googleClientID + "\">\n",
                     out);
@@ -2117,7 +2135,9 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs, language);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+            "dataProviderForm.html", //was endOfRequest, 
+            queryString, 
             EDStatic.dataProviderFormAr[language], out);
         String dataProviderFormLongDescriptionHTML = EDStatic.dataProviderFormLongDescriptionHTMLAr[language]
             .replaceAll("&safeEmail;", XML.encodeAsHTML(SSR.getSafeEmailAddress(EDStatic.adminEmail)))
@@ -2318,7 +2338,9 @@ writer.write(dataProviderFormLongDescriptionHTML
 
             //write the HTML
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, 
+            writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+                "dataProviderForm1.html", //was endOfRequest, 
+                queryString, 
                 EDStatic.dataProviderFormP1Ar[language], out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -2671,7 +2693,9 @@ writer.write(widgets.endForm());
 
             //write the HTML
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, 
+            writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+                "dataProviderForm2.html", //was endOfRequest, 
+                queryString, 
                 EDStatic.dataProviderFormP2Ar[language], out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -3138,7 +3162,9 @@ dataTypeOptions[tDataType[var]] + "\">"   + XML.encodeAsXML(tFillValue[var])   +
 
             //write the HTML
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, 
+            writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+                "dataProviderForm3.html", //was endOfRequest, 
+                queryString, 
                 EDStatic.dataProviderFormP3Ar[language], out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -3431,7 +3457,9 @@ writer.write(widgets.endForm());
 
             //write the HTML
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, 
+            writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+                "dataProviderForm4.html", //was endOfRequest, 
+                queryString, 
                 EDStatic.dataProviderFormP4Ar[language], out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -3542,7 +3570,9 @@ writer.write(widgets.endForm());
 
             //write the HTML
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, tLoggedInAs, endOfRequest, queryString, EDStatic.dataProviderFormDoneAr[language], out);
+            writer = getHtmlWriterUtf8(language, tLoggedInAs, 
+                "dataProviderFormDone.html", //was endOfRequest, 
+                queryString, EDStatic.dataProviderFormDoneAr[language], out);
             writer.write(
                 "<div class=\"standard_width\">\n" +
                 EDStatic.youAreHere(language, tLoggedInAs, EDStatic.dataProviderFormDoneAr[language]));
@@ -3593,7 +3623,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "status.html", //was endOfRequest, 
+            queryString, 
             "Status", out);
         try {
             int nGridDatasets = gridDatasetHashMap.size();
@@ -3638,7 +3670,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
     }
 
     /**
-     * This responds by sending out the "RESTful Web Services" information Html page.
+     * This responds by sending out the "RESTful Web Services" information Html page, rest.html.
      *
      * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
@@ -3649,8 +3681,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "RESTful Web Services", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "rest.html", //was endOfRequest, 
+            queryString, "RESTful Web Services", out);
         try {
             String htmlQueryUrl = tErddapUrl + "/search/index.html?" +
                 EDStatic.encodedDefaultPIppQuery + "&#x26;searchFor=temperature";
@@ -3786,7 +3819,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
                 "as %HH, where HH is the 2 digit hexadecimal value of the character, for example, space becomes %20.\n" +
                 "Characters above #127 must be converted to UTF-8 bytes, then each UTF-8 byte must be percent encoded\n" +
                 "(ask a programmer for help). Programming languages have tools to do this (for example, see Java's\n" +
-                "<a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                "<a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URLEncoder.html\">java.net.URLEncoder" +
                     EDStatic.externalLinkHtml(language, tErddapUrl) + "</a> and JavaScript's\n" +
                 "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\">encodeURIComponent()" +
                     EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>) and there are\n" +
@@ -4406,6 +4439,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
      * @param response The response to be written to.
      * @param ipAddress The ipAddress of the user (for statistics).
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param protocol "griddap" or "tabledap"
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("griddap" or "tabledap") in the requestUrl
      * @param queryString  post "?".  Still percentEncoded.  May be "".  May not be null.
@@ -4418,14 +4452,15 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String fileTypeName = "";
         boolean hasDatasetID = datasetIDStartsAt < requestUrl.length();
-        String endOfRequestUrl = hasDatasetID? requestUrl.substring(datasetIDStartsAt) : "";
+        String endOfRequestUrl = hasDatasetID? requestUrl.substring(datasetIDStartsAt) : ""; //datasetID or something else in that position
 
         //respond to a documentation.html request
         if (endOfRequestUrl.equals("documentation.html")) {
 
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                protocol + " Documentation", out); 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                protocol + "/documentation.html", //was endOfRequest, 
+                queryString, protocol + " Documentation", out); 
             try {
                 writer.write("<div class=\"standard_width\">\n" +
                     EDStatic.youAreHere(language, loggedInAs, protocol, EDStatic.documentationAr[language]));
@@ -4502,7 +4537,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             Writer writer = File2.getBufferedWriter88591(out);
             writer.write(EDStatic.startHeadHtml(language, tErddapUrl, protocol + " Help"));
             writer.write("\n</head>\n");
-            writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString));
+            writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                protocol + "/help.html",   //was endOfRequest, 
+                queryString));
             writer.write("\n");
             writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));     
             writer.write("<div class=\"standard_width\">\n");
@@ -4832,7 +4869,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
         //is request for documentation.html? 
         if (endOfRequestUrl.equals("documentation.html")) {
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString,  
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "files/documentation.html", //was endOfRequest, 
+                queryString,  
                 "ERDDAP " + EDStatic.EDDFilesAr[language] + " " + EDStatic.documentationAr[language], out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
@@ -4966,8 +5005,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             }
             
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                "Browse Source Files", out);
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "files/", //was endOfRequest, 
+                queryString, "Browse Source Files", out);
             try {
 
                 writer.write(
@@ -5089,7 +5129,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
 
             //show web page
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "files/" + id + "/" + nextPath, //was endOfRequest, 
+                queryString, 
                 "files/" + id + "/" + nextPath, out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
@@ -5405,7 +5447,9 @@ writer.write(EDStatic.dpf_congratulationAr[language]
 
         //display start of web page
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            protocol + "/index.html", //was endOfRequest, 
+            queryString, 
             MessageFormat.format(EDStatic.listOfDatasetsAr[language], uProtocol),
             out); 
         try {
@@ -5580,7 +5624,9 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             EDStatic.tally.add("SOS index.html (since last daily report)", tDatasetID);
             EDStatic.tally.add("SOS index.html (since startup)", tDatasetID);
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "sos/" + tDatasetID + "/index.html", //was endOfRequest, 
+                queryString, 
                 XML.encodeAsHTML(eddTable.title()) + " - SOS", out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
@@ -5862,8 +5908,9 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "SOS Documentation", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "sos/documentation.html", //was endOfRequest, 
+            queryString, "SOS Documentation", out);
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -6005,8 +6052,9 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
             EDStatic.tally.add("WCS index.html (since last daily report)", tDatasetID);
             EDStatic.tally.add("WCS index.html (since startup)", tDatasetID);
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                XML.encodeAsHTML(eddGrid.title()) + " - WCS", out);
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "wcs/" + tDatasetID + "/index.html", //was endOfRequest, 
+                queryString, XML.encodeAsHTML(eddGrid.title()) + " - WCS", out);
             try {
                 writer.write("<div class=\"standard_width\">\n");
                 eddGrid.wcsDatasetHtml(language, loggedInAs, writer);
@@ -6190,8 +6238,9 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "WCS Documentation", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "wcs/documentation.html", //was endOfRequest, 
+            queryString, "WCS Documentation", out);
         try {
             writer.write(
                 "<div class=\"standard_width\">\n" +
@@ -6525,8 +6574,9 @@ Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
 
         //What is WMS?   (generic) 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "WMS Documentation", out);
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "wms/documentation.html", //was endOfRequest, 
+            queryString, "WMS Documentation", out);
         try {
             String likeThis = "<a href=\"" + tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + 
                      "/index.html\">" + EDStatic.likeThisAr[language] + "</a>";
@@ -8317,7 +8367,10 @@ scripts.append(
             String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">" +
                 EDStatic.magAr[language] + "</a>";
             writer.write(
-                EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString) + "\n" +
+                EDStatic.startBodyHtml(language, loggedInAs, 
+                    "wms/" + tDatasetID + "/index.html", //was endOfRequest, 
+                     queryString) + 
+                "\n" +
                 HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)) +
                 "<div class=\"standard_width\">\n" +
                 EDStatic.youAreHere(language, loggedInAs, "wms", tDatasetID));
@@ -8595,7 +8648,9 @@ scripts.append(
 
             String title = "Index of " + tErddapUrl + "/" + endOfRequest;
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "metadata/", //was endOfRequest, 
+                queryString, 
                 title, out); 
             try {
                 writer.write(
@@ -8633,6 +8688,7 @@ scripts.append(
         boolean isFgdc = urlParts[1].equals("fgdc");
         String suffix  = isFgdc? EDD.fgdcSuffix : 
                                  EDD.iso19115Suffix;
+        String part1 = isFgdc? "fgdc" : "iso19115";
 
         if (nUrlParts == 2) {
             if (!endOfRequest.endsWith("/")) {
@@ -8648,8 +8704,9 @@ scripts.append(
 
             String title = "Index of " + tErddapUrl + "/" + endOfRequest;
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                title, out); 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "metadata/" + part1 + "/", //was endOfRequest, 
+                queryString, title, out); 
             try {
                 writer.write(
                     "<div class=\"standard_width\">\n" +
@@ -8718,8 +8775,9 @@ scripts.append(
 
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
             String title = "Index of " + tErddapUrl + "/" + endOfRequest;
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                title, out); 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "metadata/" + part1 + "/xml/", //was endOfRequest, 
+                queryString, title, out); 
             writer.write(
                 "<div class=\"standard_width\">\n" +
                 "<h1>" + title + "</h1>\n");
@@ -8986,8 +9044,9 @@ scripts.append(
 
             } else if (fParamIsHtml) {  
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                    "Folder: /", out); 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "rest/services/", //was endOfRequest, 
+                    queryString, "Folder: /", out); 
                 try {
                 writer.write(
 //?? "<div class=\"standard_width\">\n" +
@@ -9094,7 +9153,9 @@ breadCrumbs + endBreadCrumbs +
 
             } else if (fParamIsHtml) {  
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "rest/services/" + tDatasetID + "/", //was endOfRequest, 
+                    queryString, 
                     //"Folder: " + 
                     tDatasetID, out); 
                 try {
@@ -9322,7 +9383,9 @@ breadCrumbs + endBreadCrumbs +
             } else if (fParamIsHtml) {  
 
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "rest/services/" + tDatasetID + "/ImageServer/", //was endOfRequest, 
+                    queryString, 
                     //"Folder: " + 
                     tDatasetID + "/" + tDestName, out); 
                 try {
@@ -10230,8 +10293,9 @@ breadCrumbs + endBreadCrumbs +
         //generate html response
         String shortTitle = EDStatic.outOfDateDatasetsAr[language];
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            shortTitle, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "outOfDateDatasets.html", //was endOfRequest, 
+            queryString, shortTitle, 
             "<meta http-equiv=\"refresh\" content=\"" + (refreshEveryNMinutes * 60) + "\" >", 
             out); 
         try {
@@ -10380,8 +10444,9 @@ breadCrumbs + endBreadCrumbs +
 
         //generate html response
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            EDStatic.slideSorterAr[language], out); 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "slidesorter.html", //was endOfRequest, 
+            queryString, EDStatic.slideSorterAr[language], out); 
         try {
             writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));
             writer.write(EDStatic.youAreHereWithHelp(language, loggedInAs, EDStatic.slideSorterAr[language], 
@@ -10888,7 +10953,9 @@ breadCrumbs + endBreadCrumbs +
             if (fileTypeName.equals(".html")) { 
                 //display start of web page
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "search/index.html", //was endOfRequest, 
+                    queryString, 
                     EDStatic.searchTitleAr[language], out); 
                 try {
                     //you are here    Search
@@ -10982,8 +11049,9 @@ breadCrumbs + endBreadCrumbs +
             //make html page with [error message and] search form
             String error = MustBe.getShortErrorMessage(t);
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                EDStatic.searchTitleAr[language], out);
+            writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "search/index.html", //was endOfRequest, 
+                queryString, EDStatic.searchTitleAr[language], out);
             try {
                 //you are here      Search
                 writer.write(
@@ -11070,8 +11138,9 @@ breadCrumbs + endBreadCrumbs +
         if (endOfRequestUrl.equals("index.html")) {
             //display start of web page
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                niceProtocol, out); 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "opensearch1.1/index.html", //was endOfRequest, 
+                queryString, niceProtocol, out); 
             String openSearchDescription = EDStatic.openSearchDescriptionAr[language]
                 .replaceAll("&externalLinkHtml;", EDStatic.externalLinkHtml(language, tErddapUrl))
                 .replaceAll("&niceProtocol;", niceProtocol)
@@ -11655,8 +11724,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
         if (toHtml) { 
             //display start of web page
             out = getHtmlOutputStreamUtf8(request, response);
-            writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                EDStatic.advancedSearchAr[language], out); 
+            writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "search/advanced.html", //was endOfRequest, 
+                queryString, EDStatic.advancedSearchAr[language], out); 
             try {
                 HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
                 widgets.htmlTooltips = true;
@@ -12622,8 +12692,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             } else { 
                 //respond to categorize/index.html or errors: unknown attribute, unknown fileTypeName 
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                    "Categorize", out); 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "categorize/index.html", //was endOfRequest, 
+                    queryString, "Categorize", out); 
                 try {
                     //you are here  Categorize    
                     writer.write(
@@ -12701,8 +12772,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
                 //respond to categorize/index.html or errors: 
                 //  unknown attribute, unknown fileTypeName 
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                    "Categorize", out); 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "categorize/index.html", //was endOfRequest, 
+                    queryString, "Categorize", out); 
                 try {
                     writer.write(
                         "<div class=\"standard_width\">\n" +
@@ -12808,8 +12880,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
             //display start of web page
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-                "Categorize", out); 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "categorize/" + attributeInURL + "/" + categoryName + "/index.html", //was endOfRequest, 
+                queryString, "Categorize", out); 
             try {
                 writer.write(
                     "<div class=\"standard_width\">\n" +
@@ -12994,7 +13067,9 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
 
                 //display start of web page
                 OutputStream out = getHtmlOutputStreamUtf8(request, response);
-                Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+                Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                    "info/index.html", //was endOfRequest, 
+                    queryString, 
                     MessageFormat.format(EDStatic.listOfDatasetsAr[language], EDStatic.listAllAr[language]),
                     out); 
                 try {
@@ -13234,11 +13309,13 @@ XML.encodeAsXML(String2.noLongerThanDots(EDStatic.adminInstitution, 256)) + "</A
             return;
         }
 
-        //respond to index.html request
+        //respond to info/tID/index.html request
         if (parts[1].equals("index.html")) {
             //display start of web page
             OutputStream out = getHtmlOutputStreamUtf8(request, response);
-            Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+            Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+                "info/" + tID + "/index.html", //was endOfRequest, 
+                queryString, 
                 MessageFormat.format(EDStatic.infoAboutFromAr[language], edd.title(), edd.institution()), 
                 out); 
             try {
@@ -13771,7 +13848,9 @@ writer.write(
         //display start of web page
         if (reallyVerbose) String2.log("doSubscriptions");
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "subscriptions/index.html", //was endOfRequest, 
+            queryString, 
             EDStatic.subscriptionsTitleAr[language], out); 
         try {
             writer.write(
@@ -13933,7 +14012,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "subscriptions/add.html", //was endOfRequest, 
+            queryString, 
             EDStatic.subscriptionAddAr[language], out); 
         try {
             writer.write(
@@ -14084,7 +14165,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "subscriptions/list.html", //was endOfRequest, 
+            queryString, 
             EDStatic.subscriptionListAr[language], out); 
         try {
             writer.write(
@@ -14216,7 +14299,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "subscriptions/validate.html", //was endOfRequest, 
+            queryString, 
             EDStatic.subscriptionValidateAr[language], out); 
         try {
             writer.write(
@@ -14356,7 +14441,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "subscriptions/remove.html", //was endOfRequest, 
+            queryString, 
             EDStatic.subscriptionRemoveAr[language], out); 
         try {
             writer.write(
@@ -14587,8 +14674,9 @@ writer.write(
         //display start of web page
         if (reallyVerbose) String2.log("doConvert");
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "Convert", out); 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/index.html", //was endOfRequest, 
+            queryString, "Convert", out); 
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
@@ -14750,8 +14838,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "Convert FIPS County", out); 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/fipscounty.html", //was endOfRequest, 
+            queryString, "Convert FIPS County", out); 
         try {
             writer.write(
                 "<div class=\"standard_width\">" +
@@ -14977,7 +15066,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/oceanicAtmosphericAcronyms.html", //was endOfRequest, 
+            queryString, 
             "Convert Oceanic/Atmospheric Acronyms", out); 
         try {
             writer.write(
@@ -15201,7 +15292,9 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/oceanicAtmosphericVariableNames.html", //was endOfRequest, 
+            queryString, 
             "Convert Oceanic/Atmospheric Variable Names", out); 
         try {
             writer.write(
@@ -15414,7 +15507,9 @@ writer.write(
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs, language);
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/keywords.html", //was endOfRequest, 
+            queryString, 
             "Convert Keywords", out); 
         try {
             writer.write(
@@ -15603,8 +15698,10 @@ writer.write(
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
-            "Convert Nearest Data", out); 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/interpolate.html", //was endOfRequest, 
+            queryString, 
+            "Convert Interpolate", out); 
         try {
             String defaultIDVarExample = "jplMURSST41/analysed_sst/Bilinear/4";
             String idVarExample = String2.isSomething(EDStatic.convertInterpolateRequestCSVExample)?
@@ -16902,7 +16999,9 @@ UTC                  m   deg_n    deg_east m s-1
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/time.html", //was endOfRequest, 
+            queryString, 
             "Convert Time", out); 
         try {
             writer.write(
@@ -17158,7 +17257,9 @@ UTC                  m   deg_n    deg_east m s-1
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/units.html", //was endOfRequest, 
+            queryString, 
             "Convert Units", out); 
         try {
             writer.write(
@@ -17360,7 +17461,9 @@ UTC                  m   deg_n    deg_east m s-1
         HtmlWidgets widgets = new HtmlWidgets(true, EDStatic.imageDirUrl(loggedInAs, language)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true; 
         OutputStream out = getHtmlOutputStreamUtf8(request, response);
-        Writer writer = getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
+        Writer writer = getHtmlWriterUtf8(language, loggedInAs, 
+            "convert/urls.html", //was endOfRequest, 
+            queryString, 
             "Convert URLs", out); 
         try {
             writer.write(
@@ -17476,15 +17579,17 @@ UTC                  m   deg_n    deg_east m s-1
      *
      * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param endOfRequest 
+     * @param endOfRequest   The part after https://..../erddap/
+     *    2022-11-22 AVOID XSS ERROR: THIS MUST BE VALID!
      * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
+     *    2022-11-22 This is not used for security reasons (and it is not practical to ensure it's valid and not malicious).
      * @param addToTitle   a string, not yet XML encoded
      * @param out
      * @return writer
      * @throws Throwable if trouble
      */
-    Writer getHtmlWriterUtf8(int language, String loggedInAs, String endOfRequest, String queryString, 
-        String addToTitle, OutputStream out) throws Throwable {
+    Writer getHtmlWriterUtf8(int language, String loggedInAs, String endOfRequest, 
+        String queryString, String addToTitle, OutputStream out) throws Throwable {
         return getHtmlWriterUtf8(language, loggedInAs, endOfRequest, queryString, 
             addToTitle, "", out);
     }
@@ -17494,16 +17599,18 @@ UTC                  m   deg_n    deg_east m s-1
      *
      * @param language the index of the selected language
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param endOfRequest 
+     * @param endOfRequest  The part after https://..../erddap/
+     *    2022-11-22 AVOID XSS ERROR: THIS MUST BE VALID!
      * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
+     *    2022-11-22 This is not used for security reasons (and it is not practical to ensure it's valid and not malicious).
      * @param addToTitle   a string, not yet XML encoded
      * @param addToHead  additional info for the &lt;head&gt;
      * @param out
      * @return writer
      * @throws Throwable if trouble
      */
-    Writer getHtmlWriterUtf8(int language, String loggedInAs, String endOfRequest, String queryString,
-        String addToTitle, String addToHead, OutputStream out) throws Throwable {
+    Writer getHtmlWriterUtf8(int language, String loggedInAs, String endOfRequest, 
+        String queryString, String addToTitle, String addToHead, OutputStream out) throws Throwable {
 
         Writer writer = File2.getBufferedWriterUtf8(out);
 
@@ -19094,7 +19201,7 @@ expected =
         expected = 
 EDStatic.startHeadHtml(0, EDStatic.erddapUrl((String)null, language), "Resources") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(0, null, "index.htmlTable", EDStatic.defaultPIppQuery) + 
+EDStatic.startBodyHtml(0, null, "index.html", EDStatic.defaultPIppQuery) +  //2022-11-22 .htmlTable converted to .html to avoid user requesting all data in a dataset if they change language
 "&nbsp;<br>\n" +
 "&nbsp;\n" +
 "<table class=\"erd commonBGColor nowrap\">\n" +
@@ -19267,7 +19374,7 @@ EDStatic.endBodyHtml(0, EDStatic.erddapUrl((String)null, language), (String)null
 "      \"postalCode\": \"93940\"\n" +
 "    },\n" +
 "    \"telephone\": \"+1 831-420-3666\",\n" +
-"    \"email\": \"bob.simons@noaa.gov\",\n" +
+"    \"email\": \"BobSimons2.00@gmail.com\",\n" +
 "    \"sameAs\": \"https://www.fisheries.noaa.gov/about/environmental-research-division-southwest-fisheries-science-center\"\n" +
 "  },\n" +
 "  \"fileFormat\": [\n" +

@@ -178,7 +178,7 @@ public class LongArray extends PrimitiveArray {
      * not capacity)
      */
     public int hashCode() {
-        //see https://docs.oracle.com/javase/8/docs/api/java/util/List.html#hashCode()
+        //see https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html#hashCode()
         //and https://stackoverflow.com/questions/299304/why-does-javas-hashcode-in-string-use-31-as-a-multiplier
         //and java docs for Long.hashCode()
         int code = 0;

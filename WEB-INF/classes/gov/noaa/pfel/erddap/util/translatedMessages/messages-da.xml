@@ -804,7 +804,7 @@ Der er
 <!--  Ændre ikke eksemplerne (fra defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Denne webside giver dig mulighed for at konvertere et
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-standardnavn <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-standardnavn <img 
     src="../images/external.png" alt=" (external link)" 
     title="Dette link til en ekstern hjemmeside udgør ikke en godkendelse."></a> til/fra et
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

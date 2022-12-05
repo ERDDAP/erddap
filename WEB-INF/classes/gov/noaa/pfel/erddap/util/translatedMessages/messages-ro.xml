@@ -795,7 +795,7 @@ Există
 <!--  Nu modificați exemplele (din defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Această pagină web vă permite să convertiți un
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">nume standard CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">nume standard CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> către/de la un
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

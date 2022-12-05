@@ -188,6 +188,7 @@ public class EDStatic {
      * <br>2.19 released on 2022-09-10
      * <br>2.20 released on 2022-09-30
      * <br>2.21 released on 2022-10-09
+     * <br>2.22 released on 2022-12-05
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -201,7 +202,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.21"; //see comment above
+    public static String erddapVersion = "2.22"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -432,11 +433,6 @@ public static boolean developmentMode = false;
      */
     public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(16, 0.75f, 4); 
  
-    /** 
-     * This is the time that shedThisRequest last called gc.
-     */
-    private volatile static long timeShedCalledGc = 0;
-
 
     //emailThread variables
     //Funnelling all emailThread emails through one emailThread ensures that
@@ -5013,11 +5009,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
-     * @param endOfRequest  The part after "http.../erddap/".
+     * @param endOfRequest  The part after "http.../erddap/". 
+     *    2022-11-22 AVOID XSS ERROR: THIS MUST BE VALID!
      * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
+     *    2022-11-22 This is not used for security reasons (and it is not practical to ensure it's valid and not malicious).
      */
     public static String startBodyHtml(int language, String loggedInAs,  
-        String endOfRequest, String queryString) {
+        String endOfRequest, String queryString) {   
         return startBodyHtml(language, loggedInAs, endOfRequest, queryString, "");
     }
 
@@ -5032,13 +5030,21 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Special case: "loggedInAsHttps" is for using https without being logged in, 
      *   but &amp;loginInfo; indicates user isn't logged in.
-     * @param endOfRequest The part after "http.../erddap/".
+     * @param endOfRequest The part after "http.../erddap/". 
+     *    2022-11-22 AVOID XSS ERROR: THIS MUST BE VALID!
+     *    Solution options:
+     *    1) percent encode endOfRequest (but I've lost confidence that I can encode my way out of trouble)
+     *    2) ensure endOfRequest and queryString are valid (the code's logic is not that strict and often goes with "I think the user wants ...")
+     *    3) provice a simple fixed endOfRequest and don't use queryString (since almost always not validated).
+     *    I chose #3, so I changed all calls of this method (and getHtmlWriterUtf8() in Erddap).
      * @param queryString from request.queryString(). May be null here. Must be percent-encoded.
+     *    2022-11-22 This is not used for security reasons (and it is not practical to ensure it's valid and not malicious).
      * @param otherBody other content for the &lt;body&gt; tag, e.g., " onload=\"myFunction()\"".
      *   
      */
-    public static String startBodyHtml(int language, String loggedInAs,
-        String endOfRequest, String queryString, String otherBody) {
+    public static String startBodyHtml(int language, String loggedInAs, String endOfRequest, 
+        String queryString, String otherBody) {
+
         String tErddapUrl = erddapUrl(loggedInAs, language);
         String s = startBodyHtmlAr[0];  //It's hard for admins to customized this for all languages. So for now, just use language=0.
         s = String2.replaceAll(s, "&EasierAccessToScientificData;", EasierAccessToScientificDataAr[language]);
@@ -5052,7 +5058,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
                 1, TranslateMessages.languageList, TranslateMessages.languageCodeList, language, 
                 "onchange=\"window.location.href='" + baseUrl(loggedInAs) + "/" + warName + "/' + " +
                     "(this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + '" +  //e.g., de
-                    XML.encodeAsHTMLAttribute(endOfRequest + questionQuery(queryString)) + "';\"",  //query string is already percent encoded. 
+                    XML.encodeAsHTMLAttribute(endOfRequest /* + questionQuery(queryString) */ ) + "';\"",  //query string is already percent encoded. 
                 false, "") +
             htmlTooltipImage(language, loggedInAs, 
                 "<img src=\"" + tErddapUrl + "/images/TranslatedByGoogle.png\" alt=\"Translated by Google\">" +
@@ -5528,7 +5534,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         return (touchList.size() - lastFinishedTouch) - 1;
     }
 
-    //addEmail is inside EDStatic.sendEmail()
+    //addEmail is inside EDStatic.email()
 
     /** 
      * This adds a task to the taskList if it (other than TASK_SET_FLAG)
@@ -6414,7 +6420,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static boolean shedThisRequest(int language, int requestNumber, HttpServletResponse response,
         boolean lotsMemoryNeeded) throws InterruptedException {
         //If shed (maybe in another thread) just called gc, memory use was recently high. Wait until shortSleep is finished.
-        long timeSinceGc = System.currentTimeMillis() - timeShedCalledGc;
+        long timeSinceGc = System.currentTimeMillis() - Math2.timeGCLastCalled;
         if (timeSinceGc < Math2.shortSleep) {
             //A problem with this is that multiple threads may wait for gc to finish, 
             //  see enough memory, then all start and each use lots of memory.
@@ -6425,7 +6431,7 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         //always: if >=2000ms since gc and memory use is high, call gc
         long inUse = Math2.getMemoryInUse();
         if (timeSinceGc >= 3*Math2.shortSleep && inUse >= Math2.halfMemory) {  //This is arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
-            timeShedCalledGc = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
+            Math2.timeGCLastCalled = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
             gcCalled++;
             inUse = Math2.gcAndWait();  //waits Math2.shortSleep   //in shedThisRequest   //a diagnostic is always logged
         }
