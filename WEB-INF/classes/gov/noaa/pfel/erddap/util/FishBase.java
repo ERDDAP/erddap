@@ -82,7 +82,7 @@ public class FishBase  {
             gatts.set("cdm_data_type", "Other");
             gatts.set("Conventions", "COARDS, CF-1.6, ACDD-1.3");
             gatts.set("history", "The FishBase 2004 DVD\n" +
-                today + " Reformatted for ERDDAP at NOAA SWFSC ERD by bob.simons@noaa.gov");
+                today + " Reformatted for ERDDAP at NOAA SWFSC ERD by erd.data@noaa.gov");
             gatts.set("infoUrl", "http://www.fishbase.org");
             gatts.set("institution", "FishBase");
             gatts.set("license", "This work is licensed under a Creative Commons Attribution-Noncommercial 3.0 Unported License. (CC-BY-NC) You are welcome to include text, numbers and maps from FishBase in your own websites for non-commercial use, given that such inserts are clearly identified as coming from FishBase, with a backward link to the respective source page. Photos and drawings belong to the indicated persons or organizations and have their own copyright statements. Photos and drawings with CC-BY or CC-BY-NC copyrights can be used without further permission, with full attribution to the person or organization and the indication 'from FishBase'.\n" +

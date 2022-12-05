@@ -388,7 +388,7 @@ public class EDDTableFromSOS extends EDDTable{
      *      describing how to interpret numbers 
      *      (e.g., "seconds since 1970-01-01T00:00:00Z"),
      *    <li> a java.text.SimpleDateFormat string describing how to interpret string times  
-     *      (see https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *      (see https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
      *    </ul>
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the field name of the data variable in the tabular results,

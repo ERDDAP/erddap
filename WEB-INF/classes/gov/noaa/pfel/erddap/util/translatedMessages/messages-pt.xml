@@ -799,7 +799,7 @@ Existem
 <!--  Não mude os exemplos (de defaultN ...). -->
 <convertKeywordsIntro><![CDATA[
 Esta página da web permite que você converta um
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">nome padrão de CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">nome padrão de CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Este link para um site externo não constitui um endosso."></a> de / para uma palavra-
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

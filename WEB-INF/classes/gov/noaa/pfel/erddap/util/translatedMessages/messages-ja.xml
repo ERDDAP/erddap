@@ -676,7 +676,7 @@ TomcatにはリクエストURLごとに4096文字のデフォルト制限があ�
 <!--  例を変更しないでください（defaultN ...から）。 -->
 <convertKeywordsIntro><![CDATA[
 このWebページでは、
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF標準名</a>を変換できます<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF標準名</a>を変換できます<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

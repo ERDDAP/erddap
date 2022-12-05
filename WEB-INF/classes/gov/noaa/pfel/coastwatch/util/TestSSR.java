@@ -65,7 +65,7 @@ public class TestSSR {
             "%7E%60%21%40%23%24%25%5E%26*%28%29_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01",
             ""); //It encodes ~!*()' 
         Test.ensureEqual(SSR.minimalPercentEncode(s),//                                        
-            "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22'%3C%2C%3E.%3F%2F%20a%0AA%C2%B01", "");
+            "~%60!%40%23%24%25%5E%26*()_-%2B%3D%7C%5C%7B%5B%7D%5D%3A%3B%22%27%3C%2C%3E.%3F%2F%20a%0AA%C2%B01", "");
         Test.ensureEqual(SSR.percentDecode("%2B%20%3Aq*~%3F%3D%26%25"), "+ :q*~?=&%", "");
 
         s = "AZaz09 \t\r\n`";
@@ -91,7 +91,7 @@ public class TestSSR {
 
         s = ":'\",<.>/?";
         Test.ensureEqual(SSR.minimalPercentEncode(s), 
-            "%3A'%22%2C%3C.%3E%2F%3F", "");
+            "%3A%27%22%2C%3C.%3E%2F%3F", "");
         Test.ensureEqual(SSR.percentEncode(s), 
             "%3A%27%22%2C%3C.%3E%2F%3F", "");
         Test.ensureEqual(SSR.percentDecode("%3A%27%22%2C%3C.%3E%2F%3F"), s, "");
@@ -372,8 +372,8 @@ public class TestSSR {
             if (emailReplyToAddress.length() == 0) emailReplyToAddress = "erd.data@noaa.gov";
 
             emailToAddresses = String2.getStringFromSystemIn(
-                "1+ email To addresses (e.g., bob.simons@noaa.gov,CoHortSoftware@gmail.com)? ");
-            if (emailToAddresses.length() == 0) emailToAddresses = "bob.simons@noaa.gov,CoHortSoftware@gmail.com";
+                "1+ email To addresses (e.g., BobSimons2.00@gmail.com,CoHortSoftware@gmail.com)? ");
+            if (emailToAddresses.length() == 0) emailToAddresses = "BobSimons2.00@gmail.com,CoHortSoftware@gmail.com";
 
             try {
                 String2.log("test gmail email " + emailToAddresses); 

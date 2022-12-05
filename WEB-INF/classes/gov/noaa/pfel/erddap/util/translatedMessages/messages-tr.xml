@@ -797,8 +797,8 @@ A-Za-z0-9_-!~&#39;()* dışındaki tüm karakterler %HH olarak kodlanmalıdır, 
 <!--  Örnekleri değiştirmeyin (varsayılanN...&#39;den). -->
 <convertKeywordsIntro><![CDATA[
 Bu web sayfası, bir
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF Standart Adını</a> dönüştürmenize olanak tanır
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF Standart Adını</a> dönüştürmenize olanak tanır
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> bir
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

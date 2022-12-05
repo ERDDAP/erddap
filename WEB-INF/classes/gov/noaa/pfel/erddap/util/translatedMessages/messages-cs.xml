@@ -800,7 +800,7 @@ Existují
 <!--  Neměňte příklady (z výchozíN...). -->
 <convertKeywordsIntro><![CDATA[
 Tato webová stránka vám umožňuje převést
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">standardní název CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">standardní název CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> do/z
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

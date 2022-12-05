@@ -791,7 +791,7 @@ May mga
 <!--  Huwag baguhin ang mga halimbawa (mula sa defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Hinahayaan ka ng web page na ito na mag-convert ng
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF Standard Name <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF Standard Name <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a> papunta/mula sa isang
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

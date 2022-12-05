@@ -1409,7 +1409,7 @@ public class SSR {
     
     
     /**
-     * This encodes all characters except A-Za-z0-9_-!.~'()* .
+     * This encodes all characters except A-Za-z0-9_-!.~()*. (2022-11-22 ' now percent encoded)
      * Originally, this did a more minimal encoding. Now it does proper encoding.
      * 
      * @param nameOrValue   not yet percentEncoded
@@ -1428,13 +1428,13 @@ public class SSR {
             //  "URI producers are discouraged from percent-encoding unreserved characters."
             //   A-Za-z0-9_-.~   (unreserved characters)   different from java:
             //See javadocs for URI. It says
-            //  encode everything but A-Za-z0-9_-!.~'()*   (unreserved characters)
+            //  encode everything but A-Za-z0-9_-!.~()*   (unreserved characters)
             //  and for details see appendix A of https://www.ietf.org/rfc/rfc2396.txt
             //    It says agree with unreserved character list in URI javadocs 
             //    (unreserved = alphanum | mark)
             //JavaScript docs support that interpretation
             //  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
-            if (Character.isLetterOrDigit(ch) || "_-!.~'()*".indexOf(ch) >= 0) 
+            if (Character.isLetterOrDigit(ch) || "_-!.~()*".indexOf(ch) >= 0) 
                 sb.append(ch);
             else if (ch < 16)  sb.append("%0" + Integer.toHexString(ch).toUpperCase());
             else if (ch < 127) sb.append("%"  + Integer.toHexString(ch).toUpperCase());

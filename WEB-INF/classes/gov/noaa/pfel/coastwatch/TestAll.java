@@ -125,7 +125,7 @@ public class TestAll  {
 //      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"esrlNcepRe", "-verbose"});
+//      DasDds.main(new String[]{"testTableNoIoosCat", "-verbose"});
 
 //      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
@@ -208,7 +208,7 @@ public class TestAll  {
 //    String2.log(NcHelper.ncdump("/data/goes16/20190101000000-STAR-L3C_GHRSST-SSTsubskin-ABI_G16-ACSPO_V2.70-v02.0-fv01.0.nc", 
 //        "-v sea_surface_temperature(0,0:10,0:10)")); //2nd param, e.g., "LAT;LON"));
 //    s = EDDGridFromDap.generateDatasetsXml(
-//      "https://thredds.jpl.nasa.gov/thredds/dodsC/SalinityDensity/OISSS_L4_multimission_monthly_v1.nc",
+//      "http://opendap.oceanbrowser.net/thredds/dodsC/data/emodnet-domains/Coastal_areas/Northeast_Atlantic_Ocean_-_Loire_River/Water_body_silicate.nc",
 //      null, null, null, //new String[]{"time","altitude","lat","lon"}, //dimensions (or null)
 //      -1, null);
 //      String2.setClipboardString(s); String2.log(s); 
@@ -571,7 +571,7 @@ public class TestAll  {
 //       !!! CLOSE all other windows, even EditPlus.
 //       !!! EMPTY Recycle Bin 
 //       !!! CHANGE "Run TestAll" MEMORY SETTING to 7GB
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 1, 2022,  8, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2022, 3, 2022,  9, false);  //first/last year(1985..)/month(1..), testMode  1985,02 is first time
 //       log file is c:/data/gtspp/logYYYYMMDD.txt 
 //      2b) Email the "good" but "impossible" stations to Tim Boyer <tim.boyer@noaa.gov>,
 //         and "Christopher Paver - NOAA Federal (christopher.paver@noaa.gov)" <christopher.paver@noaa.gov>
@@ -604,7 +604,7 @@ public class TestAll  {
 //       It takes ~20 seconds per month processed.
 //       It uses a local version of the dataset, not the one in localhost erddap.
 //       !!! CHANGE TestAll MEMORY SETTING to 7GB   //2016-10 is huge//       
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 1, 2022,  8); //e.g., first/last year(1985..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2022, 3, 2022,  9); //e.g., first/last year(1985..)/month(1..)
 //       String2.log(NcHelper.ncdump("/u00/data/points/gtsppNcCF/201406a.nc", "-h"));
 //    8) Run:  (should fail at current calendar month)
 //       EDDTableFromNcFiles.testGtsppabFilesExist(1990, 2022);
@@ -1097,7 +1097,6 @@ WaitThenTryAgainException wttae;
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
         boolean doSlowTestsToo = false;
-
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

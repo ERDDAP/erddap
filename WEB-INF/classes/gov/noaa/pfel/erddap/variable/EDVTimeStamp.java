@@ -73,8 +73,8 @@ public class EDVTimeStamp extends EDV {
      *      Calendar2.ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ",
      *      will be parsed with Calendar2.parseISODateTimeZulu().
      *      See
-     *        https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
-     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *        https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html or 
+     *      https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
      *    </ul>
      * This constructor gets/sets actual_range from actual_range, actual_min, actual_max,
      *  data_min, or data_max metadata.
@@ -395,8 +395,8 @@ public class EDVTimeStamp extends EDV {
      *    <li> a java.time.format.DateTimeFormatter string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/time/format/DateTimeFomatter.html or 
-     *      https://docs.oracle.com/javase/8/docs/api/index.html?java/text/SimpleDateFormat.html)).
+     *      https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html or 
+     *      https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html)).
      *    <li> null if this can be procured from the "units" source metadata.
      *    </ul>
      * Examples: 
