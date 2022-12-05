@@ -805,8 +805,8 @@ Tá
 <!--  Ná hathraigh na samplaí (ó defaultN ...). -->
 <convertKeywordsIntro><![CDATA[
 Ligeann an leathanach gréasáin seo duit
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">Ainm Caighdeánach CF</a> a thiontú
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">Ainm Caighdeánach CF</a> a thiontú
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> chuig / ó
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

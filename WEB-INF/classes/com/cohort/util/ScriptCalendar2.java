@@ -152,7 +152,7 @@ public class ScriptCalendar2  {
      *
      * @param epochSeconds
      * @param pattern see
-     *   https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     *   https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
      *   If pattern is null or "", this uses the ISO TZ format with seconds precision.
      * @param zone if null or "", Zulu is used
      * @return the formatted time string (or "" if trouble)

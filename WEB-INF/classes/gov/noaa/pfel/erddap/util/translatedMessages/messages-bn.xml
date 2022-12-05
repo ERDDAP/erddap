@@ -719,8 +719,8 @@ A-Za-z0-9_-!.~&#39;()* ব্যতীত অন্য সমস্ত অক্
 <!--  উদাহরণ পরিবর্তন করবেন না (defaultN... থেকে)। -->
 <convertKeywordsIntro><![CDATA[
 এই ওয়েব পৃষ্ঠাটি আপনাকে একটি
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF স্ট্যান্ডার্ড নাম</a> রূপান্তর করতে দেয়
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF স্ট্যান্ডার্ড নাম</a> রূপান্তর করতে দেয়
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="একটি বহিরাগত ওয়েবসাইটের এই লিঙ্ক একটি অনুমোদন গঠন করে না."></a> একটি
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

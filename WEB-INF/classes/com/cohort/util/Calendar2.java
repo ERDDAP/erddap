@@ -4225,7 +4225,7 @@ public class Calendar2 {
     /**
      * This is an alternative to java.DateTimeFormatter.parse() which 
      * has bugs (e.g., with year 0000 results off by a few days).
-     * See file:///C:/programs/java8docs/docs/api/java/time/format/DateTimeFormatter.html
+     * See https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
      * See tests in TestUtil.testCalendar2. Ones marked with open/close comment 
      *   at start of line had problems with Java parsing.
      * This is a little more forgiving than DateTimeFormatter: 
@@ -5989,7 +5989,7 @@ public class Calendar2 {
      *
      * @param epochSeconds
      * @param pattern see
-     *   https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     *   https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
      * @param zone if "" or null, Zulu is used
      * @return the formatted time string (or "" if trouble)
      */
@@ -6024,12 +6024,12 @@ public class Calendar2 {
      * with -01-01T00:00:00.000 defaults.
      *
      * @param pattern see
-     *   https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     *   https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
      * @param zone if not specified, Zulu is used
      */
     public static DateTimeFormatter makeDateTimeFormatter(String pattern, String zone) {
         //always deal with proleptic YEAR (-1=2 BCE, 0=1 BCE, 1=1 CE), not YEAR_OF_ERA
-        //https://docs.oracle.com/javase/8/docs/api/java/time/temporal/ChronoField.html#YEAR_OF_ERA
+        //https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/temporal/ChronoField.html#YEAR_OF_ERA
         //??? Are there cases where y is used not as year?  eg as literal?
         String yy = "yy";
         int po = pattern.indexOf(yy);
@@ -6233,7 +6233,7 @@ public class Calendar2 {
     /**
      * If s is a crude String date time format, this converts it to the 
      * proper Java Date Time Format, e.g., yyyy-MM-dd'T'HH:mm:ssZ
-     * https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html
+     * https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/time/format/DateTimeFormatter.html
      * was http://www.joda.org/joda-time/apidocs/org/joda/time/format/DateTimeFormat.html
      * This does the best it can but it is an impossible task without seeing
      * all the actual String date time data values.

@@ -796,7 +796,7 @@ Są
 <!--  Nie zmieniaj przykładów (z defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Ta strona internetowa umożliwia konwersję
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">standardowej nazwy CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">standardowej nazwy CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ten link do zewnętrznej strony internetowej nie stanowi aprobaty."></a> do/z
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

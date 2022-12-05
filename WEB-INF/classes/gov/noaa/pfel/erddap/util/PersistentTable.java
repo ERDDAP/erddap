@@ -96,7 +96,7 @@ public class PersistentTable {
      *     underlying storage device. 
      *   </ul>
      *   See info about mode at
-     *     https://docs.oracle.com/javase/8/docs/api/index.html?java/io/RandomAccessFile.html
+     *     https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/RandomAccessFile.html
      *   <br> Reading data is equally fast in all modes.
      *   <br> Writing data in "rw" is 10X to 40X faster than "rws" and "rwd" modes.
      *   <br> For writing data in "rw" mode, text and binary methods are equally fast 

@@ -3025,7 +3025,7 @@ expected =
         history.append( 
             Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10) +
             " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + 
-            " (contact: bob.simons@noaa.gov) converted " +
+            " (contact: erd.data@noaa.gov) converted " +
             "inport-xml metadata from " + inportXmlUrl + " into an ERDDAP dataset description.\n");
         gAddAtts.add("history", history.toString().trim());
 
@@ -3830,7 +3830,7 @@ String expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" + //typos: Surveyes, trackliens
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +   //ERDDAP version changes in next line
-today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +                         //typo in source below
@@ -3996,7 +3996,7 @@ expected =
 "There are combined 18.6 billions points of data in the full dataset.  This includes data from Trackline GeoPhysics, Hydro Surveyes, Lidar, and Multibeam trackliens.\n" +
 "2015-09-22T22:56:00Z Steve Lewis originally created InPort catalog-item-id #27377.\n" +
 "2017-07-06T21:18:53Z Steve Lewis last modified InPort catalog-item-id #27377.\n" +  // ERDDAP version in next line changes periodically
-today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AKRO/inport-xml/xml/27377.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">1/4 degree grids multibean at a resolution of 40m\n" +
 "\n" +
@@ -4402,7 +4402,7 @@ String expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" + //ERDDAP version on next line changes periodically
-today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_child_item_1_catalog_id\">26939</att>\n" +
 "        <att name=\"InPort_child_item_1_item_type\">Entity</att>\n" +
@@ -4530,7 +4530,7 @@ expected =
 "Lineage Step #4: Analysis of distribution\n" +
 "2015-09-10T12:44:50Z Nancy Roberson originally created InPort catalog-item-id #26938.\n" +
 "2017-03-01T12:53:25Z Jeremy Mays last modified InPort catalog-item-id #26938.\n" + //ERDDAP version on next line changes periodically
-today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: bob.simons@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
+today + " GenerateDatasetsXml in ERDDAP v" + EDStatic.erddapVersion + " (contact: erd.data@noaa.gov) converted inport-xml metadata from https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml into an ERDDAP dataset description.</att>\n" +
 "        <att name=\"infoUrl\">https://inport.nmfs.noaa.gov/inport-metadata/NOAA/NMFS/AFSC/inport-xml/xml/26938.xml</att>\n" +
 "        <att name=\"InPort_data_quality_accuracy\">See Hurst, T.P., Moss, J.H., Miller, J.A., 2012. Distributional patterns of 0-group Pacific cod (Gadus macrocephalus) in the eastern Bering Sea under variable recruitment and thermal conditions. ICES Journal of Marine Science, 69: 163-174</att>\n" +
 "        <att name=\"InPort_data_quality_control_procedures\">Data was checked for outliers.</att>\n" +

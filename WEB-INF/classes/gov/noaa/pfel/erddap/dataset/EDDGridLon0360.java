@@ -300,7 +300,7 @@ public class EDDGridLon0360 extends EDDGrid {
         if (lonIndex < nAv - 1)
             throw new RuntimeException(errorInMethod + 
                 "The longitude dimension isn't the rightmost dimension. This is untested. " +
-                "Please send a sample file to bob.simons@noaa.gov .");
+                "Please send a sample file to erd.data@noaa.gov .");
 
         //make/copy the local dataVariables
         int nDv = tChildDataset.dataVariables.length;
@@ -367,7 +367,7 @@ public class EDDGridLon0360 extends EDDGrid {
 
                 //throw new RuntimeException(
                 //    "This dataset needs to have missing values inserted near lon=180, but the code to do that is untested.\n" +
-                //    "Please email a sample file from this dataset to bob.simons@noaa.gov so he run the tests.");
+                //    "Please email a sample file from this dataset to erd.data@noaa.gov so we run the tests.");
 
                 insert179i = newLonValues.size();
                 for (int i = 1; i <= insertN; i++) {

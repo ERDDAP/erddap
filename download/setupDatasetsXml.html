@@ -427,7 +427,7 @@ please fill out the form at https://<i>yourUrl</i>/erddap/dataProviderForm.html 
           <li>Check the fileNameRegex. It's really, really easy to make mistakes with regexes.
             For test purposes, try the regex .* which should match all filenames.
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -854,7 +854,7 @@ href="https://www.ngdc.noaa.gov/wiki/index.php/Data_Access_Technical_Recommendat
         <li>ERDDAP is a product of NMFS/NOAA, so using it within NMFS and NOAA 
           should be a point of pride for NMFS and NOAA.
         </ul>
-        Please give ERDDAP a try. If you need help, please email erd.data at noaa.gov .
+        Please give ERDDAP a try. If you need help, please post a message in the ERDDAP Google group.
         <br>&nbsp;
 
       <li>addFillValueAttributes
@@ -1120,7 +1120,7 @@ Usually this works fine. Some exceptions are:
       If they are logically organized (each with data for a chunk of space and time), 
       ERDDAP can extract data from them very quickly.
     <li>You can request that support for that data source be added to ERDDAP by 
-      emailing erd.data at noaa.gov.
+      emailing BobSimons2.00 at gmail.com.
     <li>You can add support for that data source by writing the code to handle
       it yourself. See 
       <a rel="help" 
@@ -1377,7 +1377,7 @@ by pasting the XML text into an XML checker like
   cylindrical projection and serve that form of the data in ERDDAP as a different dataset. 
   This is similar to what people do when they convert satellite level 2 data into level 3 data.
 One such tool is 
-<a rel="help" href="http://nco.sourceforge.net/nco.html#Regridding">NCO<img 
+<a rel="help" href="https://nco.sourceforge.net/nco.html#Regridding">NCO<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
 which offers extension options for regridding data.
@@ -1417,7 +1417,7 @@ projection which, fortunately, is accepted by most mapping programs.
   cylindrical projection and serve that form of the data in ERDDAP as a different dataset. 
   This is similar to what people do when they convert satellite level 2 data into level 3 data.
 One such tool is 
-<a rel="help" href="http://nco.sourceforge.net/nco.html#Regridding">NCO<img 
+<a rel="help" href="https://nco.sourceforge.net/nco.html#Regridding">NCO<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>
 which offers extension options for regridding data.
@@ -1429,7 +1429,7 @@ It is terrible that in this "modern" world, the links between the CF/DAP world
 and the GIS world are still so weak.
 Both of those things are on the To Do list.
 (If you want to help, notably with connecting ERDDAP to MapServer, 
-please email erd.data at noaa.gov .)
+please email BobSimons2.00 at gmail.com .)
 
 
 <li><strong><a class="selfLink" id="dataTypes" href="#dataTypes" rel="bookmark">Data Types</a></strong>
@@ -2011,7 +2011,7 @@ it will return an XML document which has (partial) listing of the contents of th
 Unfortunately, the full URL (i.e., bucket URL plus prefix) 
 that ERDDAP wants for a given dataset doesn't work in a browser.
 AWS doesn't offer a system to browse the hierarchy of a bucket easily in your browser.
-(If that is incorrect, please email erd.data @ noaa.gov. 
+(If that is incorrect, please email BobSimons2.00 at gmail.com. 
 Otherwise, Amazon, please add support for this!)
 
 <p><a class="selfLink" id="AwsS3ViewBucketContents" href="#AwsS3ViewBucketContents" rel="bookmark"><strong>Viewing the Contents of a Bucket</strong></a>
@@ -2255,7 +2255,7 @@ NCO aids analysis of gridded scientific data. The shell-command style of NCO
 allows users to manipulate and analyze files interactively, or with expressive 
 scripts that avoid some overhead of higher-level programming environments." 
 (from the
-<a rel="help" href="http://nco.sourceforge.net/">NCO<img 
+<a rel="help" href="https://nco.sourceforge.net/">NCO<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
 homepage).
@@ -2297,7 +2297,7 @@ different from others (e.g., time units of
 <br>"seconds since 1970-01-01T00:00:00Z",
 you could use NCO's 
 <a rel="help"
-href="http://nco.sourceforge.net/nco.html#ncatted-netCDF-Attribute-Editor">ncatted<img 
+href="https://nco.sourceforge.net/nco.html#ncatted-netCDF-Attribute-Editor">ncatted<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
 to change the units in all of the files to be identical with 
@@ -2466,7 +2466,7 @@ currently recommend
     please change the format of the value to, for example, 
     <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v65&lt;/att&gt;</kbd>
     <br>If the reference is to an older version of the 
-    <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard name table<img 
+    <a rel="help" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF standard name table<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
     it is probably a good idea to switch to the current version (65, as we write this),
@@ -3527,7 +3527,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
 
     <li><i>extractRegex</i> -- This is the 
       <a rel="help"
-      href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+      href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
       >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -3998,7 +3998,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
   <li>Check the fileNameRegex. It's really, really easy to make mistakes with regexes.
     For test purposes, try the regex .* which should match all filenames.
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -4041,7 +4041,7 @@ The following information applies to all of the subclasses of EDDGridFromFiles.
   <a rel="help" href="#pathRegex">&lt;pathRegex&gt;</a>...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. Only directory names which 
     match the pathRegex (default=".*") will be accepted. --&gt;
   &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A 
-    <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    <a rel="help" href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
   >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> (<a rel="help"
@@ -4102,7 +4102,7 @@ for general information on how this class works and how to use it.
   Currently, ERDDAP can read data from most .wav and .au files. 
   It currently can't read other types of audio files, e.g., .aiff or .mp3.
   If you need support for other audio file formats or other variants of .wav and .au, 
-  please email your request to erd.data at noaa.gov .
+  please email your request to BobSimons2.00 at gmail.com .
   Or, as a workaround you can use right now, you can convert your audio
   files into PCM_SIGNED (for integer data) or PCM_FLOAT (for floating point data) 
   .wav files so that ERDDAP can work with them.
@@ -4740,7 +4740,7 @@ dimension and another child might have 365 values (for 2005) for the time dimens
     the dataset is reloaded. The serverType must be "thredds", 
     "hyrax", or "dodsindex".  
     An example of a <a rel="help" 
-    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
     >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> (regex) (<a rel="help" href="https://www.vogella.com/tutorials/JavaRegularExpressions/article.html">tutorial<img 
@@ -5800,10 +5800,7 @@ EDDTableFromCassandra dataset is:</a>
 <a rel="help" href="https://www.opendap.org/">DAP<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
-    servers such as 
-<a rel="help" href="https://www.pmel.noaa.gov/epic/software/dapper/">DAPPER<img 
-        src="../images/external.png" alt=" (external link)" 
-        title="This link to an external website does not constitute an endorsement."></a>.
+    servers such as DAPPER (was at https://www.pmel.noaa.gov/epic/software/dapper/, now discontinued).
 <ul>
 <li><p>We strongly recommend using the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
@@ -6002,7 +5999,7 @@ handles data from one relational database table or
   <p>If you need help making the denormalized table or view, please 
     contact your database administrator.
   <br>If you want to talk about this whole approach or strategize how best to do it, 
-    please email erd.data at noaa.gov .
+    please email BobSimons2.00 at gmail.com .
 
 <li><a class="selfLink" id="databaseDatasetsXml" href="#databaseDatasetsXml" rel="bookmark">datasets.xml</a> -- 
   It is difficult to create the correct 
@@ -6071,7 +6068,7 @@ handles data from one relational database table or
         title="This link to an external website does not constitute an endorsement."></a>
     <br>The <kbd>&lt;driverName&gt;</kbd> to use in datasets.xml (see below) is probably <kbd>org.postgresql.Driver</kbd> .
   <li>For SQL Server, you can get the JTDS JDBC driver from 
-    <a rel="help" href="http://jtds.sourceforge.net">http://jtds.sourceforge.net<img 
+    <a rel="help" href="https://jtds.sourceforge.net">https://jtds.sourceforge.net<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
     <br>The <kbd>&lt;driverName&gt;</kbd> to use in datasets.xml (see below) is probably <kbd>net.sourceforge.jtds.jdbc.Driver</kbd> .
@@ -6664,7 +6661,7 @@ subclasses, this dataset type does not serve data from within the files.
       If recursive=false, this is ignored.
       This is rarely used, but can be very useful in unusual circumstances.
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -6677,7 +6674,7 @@ subclasses, this dataset type does not serve data from within the files.
       (not including the directory name) match the &lt;fileRegex&gt;
       will be included in this dataset. For example, <kbd>jplMURSST.{14}\.png</kbd> .
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -6711,7 +6708,7 @@ subclasses, this dataset type does not serve data from within the files.
     column/dataVariable: 
     <ul>
     <li>extractRegex -- This is a <a rel="help" 
-    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
     >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -7253,7 +7250,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
 
       <p>ERDDAP will copy or cache these files in the dataset's &lt;fileDir&gt; directory. 
       If you need support for another type of remote file list (e.g., FTP),
-      please email your request to erd.data at noaa.gov .
+      please email your request to BobSimons2.00 at gmail.com .
       <ul>
       <li>The default value for the &lt;cacheFromUrl&gt; tag is null.
         If you don't specify a value for the &lt;cacheFromUrl&gt; tag, 
@@ -7373,7 +7370,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
           If this ever occurs, use a larger cacheSizeGB setting for that dataset.
         <li>Currently, ERDDAP never checks if the remote server has a newer
           version of a file that is in the local cache. If you need this feature,
-          please email erd.data @ noaa.gov .
+          please email BobSimons2.00 at gmail.com .
         </ul>
       <li>Although the use of the same tag names might imply that the copy system
         and the cache system use the same underlying system, that is not correct.
@@ -7432,7 +7429,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
         <br>https://data.nodc.noaa.gov/ghrsst/GDS2/L4/GLOB/JPL/MUR/v4.1/2018/010/ [2020-10-21 This server is no longer reliably available.]
         <br>and day 011, 012, ..., 019.
         <br>(See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -7442,7 +7439,7 @@ The following information applies to all of the subclasses of EDDTableFromFiles.
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a>.)
         <br>If you need help creating &lt;cachePartialPathRegex&gt;, please 
-          email the &lt;cacheFromUrl&gt; to erd.data at noaa.gov .
+          email the &lt;cacheFromUrl&gt; to BobSimons2.00 at gmail.com .
       <li>A common approach: If you want to use &lt;cachePartialPathRegex&gt;, don't use it initially,
         because you want ERDDAP to download all of the files initially.
         After ERDDAP has downloaded all of the files, add it to the dataset's
@@ -7604,7 +7601,7 @@ and you only need to modify one, small, new file to add the next month's worth o
   <ul>
   <li><kbd>preExtractRegex</kbd> is a 
       <a rel="help" 
-      href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+      href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
       >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>
@@ -7740,7 +7737,7 @@ and you only need to modify one, small, new file to add the next month's worth o
   capture group (which is a part surrounded by parentheses),
   for example, "201807041442".
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -7775,7 +7772,7 @@ and you only need to modify one, small, new file to add the next month's worth o
   and extract the specified (in this case, the first) 
   capture group (which is a part surrounded by parentheses), for example, "BAY17".
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -7809,7 +7806,7 @@ and you only need to modify one, small, new file to add the next month's worth o
   <li>Check the fileNameRegex. It's really, really easy to make mistakes with regexes.
     For test purposes, try the regex .* which should match all filenames.
           (See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -7948,7 +7945,7 @@ try to apply. The changes are the sum of some combination of:
      in &lt;standardizeUdunits&gt; in ERDDAP's
      <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml file. 
      Please email any changes
-     you make to erd.data at noaa.gov so they can be incorporated
+     you make to BobSimons2.00 at gmail.com so they can be incorporated
      into the default messages.xml. 
      <br><strong>This option has a risk:</strong> This may mangle some 
      complex or invalid units; however, you can use the work-around
@@ -8006,7 +8003,7 @@ it after you make the change.
 <li>Heuristics -
 <br>Options #256 and above use heuristics to make their changes. If you come 
 across a situation where the heuristics make a bad decision, please email
-a description of the problem to erd.data at noaa.gov so we can 
+a description of the problem to BobSimons2.00 at gmail.com so we can 
 improve the heuristics.
 <br>&nbsp;
 
@@ -8111,7 +8108,7 @@ for example, "#" at the start of the file.
     subdirectories of fileDir have data files, too. --&gt;
   <a rel="help" href="#pathRegex">&lt;pathRegex&gt;</a>...&lt;/pathRegex&gt;  &lt;!-- 0 or 1. Only directory names which 
     match the pathRegex (default=".*") will be accepted. --&gt;
-  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+  &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- 0 or 1. A <a rel="help" href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
   >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
@@ -9383,7 +9380,7 @@ cumbersome approach given the way the tools have evolved.
 >Notes</a>
 <ul>
 <li>No dataVariable may have dataType=char. Use dataType=String instead.
-  If you really need dataType=char, email erd.data at noaa.gov.
+  If you really need dataType=char, email BobSimons2.00 at gmail.com .
   <br>&nbsp;
 </ul>
 
@@ -9439,7 +9436,7 @@ UCAR/NCAR -- Earth Observing Laboratory.
    <a rel="help" href="#cacheFromUrl">cacheFromUrl option for EDDTableFromFiles</a> (or a variant),
    which makes a local copy of the remote files and serves the data from the local files.
    The &lt;cacheFromUrl&gt; option can be used with any type of tabular data file.
-   <strong><br>If you can't make that work for some reason, email erd.data at noaa.gov.
+   <strong><br>If you can't make that work for some reason, email BobSimons2.00 at gmail.com .
    <br>If there are no complaints before 2020, this dataset type may be removed.</strong>
 <li>We strongly recommend using the
   <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
@@ -9835,7 +9832,7 @@ variables:
   <p>The CF DSG conventions defines dozens of file formats and includes numerous
   minor variations. This class deals with all of the variations we are aware of, but
   we may have missed one (or more). So if this class can't read data from your CF DSG files,
-  please email erd.data at noaa.gov and include a sample file.
+  please email BobSimons2.00 at gmail.com and include a sample file.
     <br>Or, you can join the <a rel="help"
         href="#ERDDAPMailingList">ERDDAP Google Group / Mailing List</a> 
         and post your question there.
@@ -10069,7 +10066,7 @@ Sensor Observation Service
   &lt;observationOfferingIdRegex&gt;...&lt;/observationOfferingIdRegex&gt;
     &lt;!-- Only observationOfferings with IDs (usually the station names) 
     which match this <a rel="help" 
-    href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+    href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
     >regular expression<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> (<a rel="help" href="https://www.vogella.com/tutorials/JavaRegularExpressions/article.html">tutorial<img 
@@ -10107,7 +10104,7 @@ Sensor Observation Service
    which makes a local copy of the remote files and serves the data from the local files.
    The &lt;cacheFromUrl&gt; option can be used with any type of tabular data file from
    any web-based source that publishes a directory-like list of files.
-   <strong><br>If you can't make that work for some reason, email erd.data at noaa.gov.
+   <strong><br>If you can't make that work for some reason, email BobSimons2.00 at gmail.com .
    <br>If there are no complaints before 2020, this dataset type may be removed.</strong>
 
 <li>We strongly recommend using the
@@ -10520,7 +10517,7 @@ Here are detailed descriptions of common tags and attributes.
   ><kbd><strong>&lt;commonStandardNames&gt;</strong></kbd></a>
   is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml to specify
   a comma-separated list of common 
-  <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard names<img 
+  <a rel="help" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF standard names<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>.
   E.g.,
@@ -10661,7 +10658,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   ><kbd><strong>&lt;emailDiagnosticsToErdData&gt;</strong></kbd></a>
   is a rarely used OPTIONAL tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml. 
   The tag's value can be <kbd>true</kbd> (the default) or <kbd>false</kbd>.
-  If <kbd>true</kbd>, ERDDAP will email the stack trace to erd.data@noaa.gov (the ERDDAP development team).
+  If <kbd>true</kbd>, ERDDAP will email the stack trace to BobSimons2.00 at gmail.com (the ERDDAP development team).
   This should be safe and secure since no confidential information (e.g., the requestUrl) is included in the email.
   This should make it possible to catch any obscure, totally unexpected bugs that lead to NullPointerExceptions.
   Otherwise, the user sees the exceptions, but the ERDDAP development team doesn't 
@@ -11251,7 +11248,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
 
   <p>To make this work, you need to be really good with regular expressions. 
    See this <a rel="help"
-          href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"
+          href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html"
           >regex documentation<img 
             src="../images/external.png" alt=" (external link)" 
             title="This link to an external website does not constitute an endorsement."></a> 
@@ -11295,7 +11292,7 @@ rel="bookmark"><kbd><strong>&lt;convertToPublicSourceUrl&gt;</strong></kbd></a>
   <p>Yes, pathRegex's can be incredibly difficult to formulate.
   If you get stuck, ask a computer programmer (the closest thing in the real 
   world to a wizard spouting incantations?) or send an email to 
-  erd.data at noaa.gov.
+  BobSimons2.00 at gmail.com.
 
 <li><a class="selfLink" id="dataset" href="#dataset" rel="bookmark"><kbd><strong>&lt;dataset&gt;</strong></kbd></a>
   is an OPTIONAL (but always used) tag within an <kbd>&lt;erddapDatasets&gt;</kbd> tag in datasets.xml that 
@@ -11993,7 +11990,7 @@ while processing each request.
       palette. This is because the image is made by the remote ERDDAP which 
       doesn't have the custom palette. The only solutions now are to 
       email the remote ERDDAP administrator to add your custom palettes to his/her ERDDAP
-      or email erd.data at noaa.gov to ask that the palettes be added to the standard
+      or email BobSimons2.00 at gmail.com to ask that the palettes be added to the standard
       ERDDAP distribution.
 
 
@@ -12454,7 +12451,7 @@ while processing each request.
  
     <p>In other cases, the domain name on the certificate may be for a 
     group of names. If this occurs or the problem is otherwise unsolvable, 
-    please email erd.data at noaa.gov to report the problem.
+    please email BobSimons2.00 at gmail.com to report the problem.
 
     <br>&nbsp;
   </ul>
@@ -13506,7 +13503,7 @@ while processing each request.
         For example,
         <br><kbd>&lt;att name="standard_name_vocabulary"&gt;CF Standard Name Table v77&lt;/att&gt;</kbd>
         <br>for version 77 of the 
-        <a rel="help" href="https://cfconventions.org/standard-names.html">CF standard name table<img 
+        <a rel="help" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF standard name table<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.
         <br>&nbsp;
@@ -13891,7 +13888,7 @@ while processing each request.
         mimicking the underlying group. 
         [If ERDDAP, notably GenerateDatasetsXml, doesn't perform as well as it could
         with source files that have groups, please email a sample file
-        to erd.data at noaa.gov .]
+        to BobSimons2.00 at gmail.com .]
 
         <p>EDDTableFromFiles datasets can use some specially-encoded, pseudo sourceNames
         to define new data variables, e.g., to promote a global attribute to be a data variable.
@@ -14020,7 +14017,7 @@ while processing each request.
         blacklist (which blacklists all classes) and then a whitelist
         (which specifically allows the 6 classes described above).
         If you need other methods and/or other classes to do your work,
-        please email your requests to erd.data at noaa.gov. 
+        please email your requests to BobSimons2.00 at gmail.com . 
 
         <p>Efficiency 
         <br>For EDDTableFromFiles datasets, there is only a very, very minimal
@@ -14784,7 +14781,7 @@ while processing each request.
         title="This link to an external website does not constitute an endorsement."></a> 
           (page 1-5).
         <li>It is likely that this list will be revised in the future.
-          If you have requests, please email <kbd>erd.data at noaa.gov</kbd>.
+          If you have requests, please email <kbd>BobSimons2.00 at gmail.com</kbd>.
         <li>ERDDAP supports a larger list of categories than IOOS does because
           Bob Simons added additional names (mostly based on the names of scientific fields,
           for example, Biology, Ecology, Meteorology, Statistics, Taxonomy)
@@ -15082,7 +15079,7 @@ href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
         metadata standard) 
         is a RECOMMENDED variable attribute in ERDDAP.
         CF maintains the list of allowed
-          <a rel="help" href="https://cfconventions.org/standard-names.html"
+          <a rel="help" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"
           >CF standard names<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a>.  
@@ -15214,7 +15211,7 @@ href="https://groups.google.com/forum/#!topic/erddap/TnwbgzpSS0w"
           US/Hawaii, US/Alaska, US/Pacific, US/Mountain, US/Arizona, US/Central, US/Eastern.
         <li>For timestamp variables with numeric source data, you can specify the
           "time_zone" attribute, but the value must be "Zulu" or "UTC". If you 
-          need support for other time zones, please email erd.data at noaa.gov .
+          need support for other time zones, please email BobSimons2.00 at gmail.com .
           <br>&nbsp;
         </ul>
 
@@ -15644,7 +15641,7 @@ of the format string.</td>
 <td></td>
 <td>These formatting characters are supported by Java's DateTimeFormatter,
 but currently not supported by ERDDAP. If you need support for them,
-email erd.data at noaa.gov.</td>
+email BobSimons2.00 at gmail.com .</td>
 </tr>
 </table>
 
@@ -15662,7 +15659,7 @@ email erd.data at noaa.gov.</td>
   Always check that the format you specify is working as expected in ERDDAP
   for all of a variable's time strings.
 <li>When possible, GenerateDatasetXml will suggest time format strings.
-<li>If you need help generating a format string, please email erd.data at noaa.gov.  
+<li>If you need help generating a format string, please email BobSimons2.00 at gmail.com .  
 </ul>
 
 </ul>
@@ -15782,7 +15779,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.21
+<p>ERDDAP, Version 2.22
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy"
     >Privacy Policy</a>

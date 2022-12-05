@@ -299,7 +299,7 @@ public class EDDGridLonPM180 extends EDDGrid {
         if (lonIndex < nAv - 1)
             throw new RuntimeException(errorInMethod + 
                 "The longitude dimension isn't the rightmost dimension. This is untested. " +
-                "Please send a sample file to bob.simons@noaa.gov .");
+                "Please send a sample file to erd.data@noaa.gov .");
 
         //make/copy the local dataVariables
         int nDv = tChildDataset.dataVariables.length;

@@ -793,7 +793,7 @@ Det finns
 <!--  Ändra inte exemplen (från defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Den här webbsidan låter dig konvertera ett
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-standardnamn <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-standardnamn <img 
     src="../images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> till/från ett
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

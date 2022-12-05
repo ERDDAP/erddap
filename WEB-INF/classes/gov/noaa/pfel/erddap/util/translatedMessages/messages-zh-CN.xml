@@ -661,7 +661,7 @@ g, <kbd>jplMURSST41_analysed_sst_Bilinear_4</kbd>) 以便它们在所有类型�
 <convertKeywords>将 CF 标准名称转换为/从 GCMD 科学关键字</convertKeywords>
 <!--  不要更改示例（从 defaultN...）。 -->
 <convertKeywordsIntro><![CDATA[
-此网页可让您转换<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF 标准名称<img 
+此网页可让您转换<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF 标准名称<img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a>到/从<a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"
   >GCMD 科学关键字<img 

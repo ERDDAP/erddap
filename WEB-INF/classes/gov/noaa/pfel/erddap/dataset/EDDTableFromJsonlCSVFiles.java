@@ -837,7 +837,7 @@ expected =
 "      </td> \n" +
 "    <td style=\"text-align:right; font-size:small;\"> \n" +
 "      <a href=\"https://127.0.0.1:8443/cwexperimental/login.html\">log in</a> | <select name=\"language\" size=\"1\"\n" +
-"  title=\"Select&#x20;the&#x20;language&#x20;for&#x20;all&#x20;web&#x20;pages&#x20;in&#x20;ERDDAP&#x2e;\"  onchange=\"window.location.href='https://coastwatch.pfeg.noaa.gov/erddap/' + (this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + 'tabledap&#x2f;testBase64Image&#x2e;htmlTable';\" >\n" +
+"  title=\"Select&#x20;the&#x20;language&#x20;for&#x20;all&#x20;web&#x20;pages&#x20;in&#x20;ERDDAP&#x2e;\"  onchange=\"window.location.href='https://coastwatch.pfeg.noaa.gov/erddap/' + (this.selectedIndex == 0? '' : this[this.selectedIndex].value + '/') + 'tabledap&#x2f;testBase64Image&#x2e;html';\" >\n" + //2022-11-22 .htmlTable becomes .html to avoid naive requests for entire dataset
 "<option value=\"en\" selected=\"selected\">English\n" +
 "<option value=\"bn\">Bengali\n" +
 "<option value=\"zh-CN\">Chinese-CN\n" +

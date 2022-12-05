@@ -789,7 +789,7 @@ Il existe des
 <!--  Ne changez pas les exemples (de defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Cette page Web vous permet de convertir un
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">nom standard CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">nom standard CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Ce lien vers un site Web externe ne constitue pas une approbation."></a> vers/depuis un
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

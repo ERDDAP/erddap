@@ -797,7 +797,7 @@ Det finnes
 <!--  Ikke endre eksemplene (fra defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Denne nettsiden lar deg konvertere et
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-standardnavn <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-standardnavn <img 
     src="../images/external.png" alt=" (external link)" 
     title="Denne lenken til et eksternt nettsted utgjør ikke en godkjenning."></a> til/fra et
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

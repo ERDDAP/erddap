@@ -814,7 +814,7 @@ New York, New York.
 <!--  Не меняйте примеры (по умолчанию N ...). -->
 <convertKeywordsIntro><![CDATA[
 Эта веб-страница позволяет преобразовать
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">стандартное имя CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">стандартное имя CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Эта ссылка на внешний веб-сайт не означает одобрения."></a> в / из
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

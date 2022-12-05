@@ -791,7 +791,7 @@ Ada
 <!--  Jangan ubah contoh (dari defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Halaman web ini memungkinkan Anda mengonversi
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">Nama Standar CF <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">Nama Standar CF <img 
     src="../images/external.png" alt=" (external link)" 
     title="Tautan ke situs web eksternal ini bukan merupakan dukungan."></a> ke/dari
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

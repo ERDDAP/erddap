@@ -577,7 +577,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray sqlFactory(int sqlType) {
 
         //see recommended types in table at
-        //  https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html
+        //  https://docs.oracle.com/en/java/javase/17/docs/api/java.sql/java/sql/ResultSet.html
         //see JDBC API Tutorial book, pg 1087
         if (sqlType == Types.BIT ||      //PrimitiveArray doesn't have a separate BooleanArray
             sqlType == Types.BOOLEAN ||  //PrimitiveArray doesn't have a separate BooleanArray

@@ -661,7 +661,7 @@ public class XML {
 
     /**
      * This gets a nodeList for an XPath query.
-     * <br>See https://docs.oracle.com/javase/8/docs/api/javax/xml/xpath/package-summary.html 
+     * <br>See https://docs.oracle.com/en/java/javase/17/docs/api/java.xml/javax/xml/xpath/package-summary.html
      * <br>See javadoc for xpath
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetElemByAttr.html?l=rel
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetAbsElem.html?l=rel
