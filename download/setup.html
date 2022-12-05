@@ -93,7 +93,7 @@ You can <a rel="help" href="#customize">customize</a> your ERDDAP's appearance
 so ERDDAP reflects your organization and fits in with the rest of your website.
 
 <h2><a class="selfLink" id="organizations" href="#organizations" rel="bookmark">ERDDAP 
- has been installed by over 95 organizations in at least 16 countries</a></h2>
+ has been installed by approximately 100 organizations in at least 16 countries</a></h2>
  (Australia, Belgium, Canada, China, France, India, Ireland, 
  Italy, New Zealand, Russia, South Africa, Spain, Sri Lanka, Thailand, UK, USA),
  including:
@@ -646,9 +646,11 @@ or Mac server instead.
 
         <li>For 64 bit Operating Systems and 64 bit Java:
         <br>64 bit Java will only work on a 64 bit operating system.
-        To enable 64 bit Java, add -d64 to the list of JAVA_OPTS in startup.sh and shutdown.sh, for example, 
-        <br><kbd>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx8000M -Xms8000M -d64'</kbd>
-        <br>With 64 bit Java, Tomcat and Java can use very high -Xmx and -Xms settings.
+        <ul>
+        <li>With Java 8, you need to add <kbd>-d64</kbd> to the Tomcat CATALINA_OPTS parameter in setenv.bat
+        <li>With Java 17, you choose 64 bit Java when you download a version of Java marked "64 bit".
+        </ul>
+        With 64 bit Java, Tomcat and Java can use very high -Xmx and -Xms settings.
         The more physical memory in the server the better. As a simplistic suggestion: 
         we recommend you set -Xmx and -Xms to (in 'M'egaBytes) to 1/2 (or less) of the computer's
         physical memory.
@@ -809,10 +811,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.20.zip -->  <!-- erddapVersion -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.21.zip -->  <!-- erddapVersion -->
     <a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddapContent.zip">erddapContent.zip</a>
-    (version 2.20, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-09-30)
+    (version 2.21, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-10-09)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -930,13 +932,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.20.war        // erddapVersion 
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.21.war        // erddapVersion 
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.20, 568,643,863 bytes, MD5=A1051FA08147C0185873BB5EAE067059, dated
-    <span class="N">2022-09-30</span>)
+    <br>(version 2.21, 568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated
+    <span class="N">2022-10-09</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -1165,10 +1167,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download            <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.20, 568,643,863 bytes, MD5=A1051FA08147C0185873BB5EAE067059, dated
-    <span class="N">2022-09-30</span>)
+    <br>(version 2.21, 568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated
+    <span class="N">2022-10-09</span>)
   <br>&nbsp;
 
 <li><a class="selfLink" id="messages.xml" href="#messages.xml" rel="bookmark">messages.xml</a>
@@ -2461,7 +2463,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       If memory use becomes dangerously high, ERDDAP sends an email to the email addresses listed in 
       <kbd>&lt;emailEverythingTo&gt;</kbd> (in setup.xml) with a list of the active user requests. 
       As the email says,
-      please forward these emails to erd.data at noaa.gov so we can use the information
+      please forward these emails to BobSimons2.00 at gmail.com so we can use the information
       to improve future versions of ERDDAP.
     <br>&nbsp;
     </ul>
@@ -3860,7 +3862,7 @@ to signal that the dataset should be reloaded ASAP.
   In a few cases, many of these files have accumulated and taken up a significant
   amount of disk space. 
   <p>Hopefully, these problems are fixed (as of ERDDAP v2.00). If you see this problem,
-  please email the directory+names of the offending files to erd.data at noaa.gov.
+  please email the directory+names of the offending files to BobSimons2.00 at gmail.com.
   You have a few options for dealing with the problem:
   <ul>
   <li>If the files aren't big and aren't causing you to run out of disk space, you can ignore the problem. 
@@ -3940,7 +3942,7 @@ to signal that the dataset should be reloaded ASAP.
   You can make changes there.
   If you have suggestions for changes,  
   or if you think this should be turned into a service (like the Converters),
-  please email erd.data at noaa.gov.
+  please email BobSimons2.00 at gmail.com.
   <br>&nbsp;
 
 <li><strong><a class="selfLink" id="CORS" href="#CORS" rel="bookmark">CORS</a></strong>
@@ -4072,7 +4074,7 @@ N  128  128  128
   They are a standard feature of all ERDDAP installations.
   If you think a palette or collection of palettes should be included in the 
   standard ERDDAP distribution because it/they would be of general use, 
-  please email them to erd.data at noaa.gov.
+  please email them to BobSimons2.00 at gmail.com.
   <br>&nbsp;
 
 <li><strong><a class="selfLink" id="colorbars" href="#colorbars" rel="bookmark">How does ERDDAP generate the colors in a colorbar?</a></strong>
@@ -4944,8 +4946,7 @@ that has made this project possible and enabled its growth.
 <br>ERDDAP does not require any GPL code or commercial programs.
 
 <p>The bulk of the funding for work on ERDDAP has come from NOAA,
-in that it pays Bob Simons' salary (he is a full time government employee with 
-"hard"-money/full funding).
+in that it paid Bob Simons' salary.
 For the first year of ERDDAP, when he was a government contractor, 
 funding came from the
 <a rel="bookmark" href="https://coastwatch.noaa.gov/">NOAA CoastWatch<img 
@@ -5140,17 +5141,12 @@ add the project below and give credit where credit is due.]
 
 <li>SGT
   <br>The graphs and maps are created on-the-fly with a modified version of NOAA's 
-    <a rel="help" href="https://www.pmel.noaa.gov/epic/java/sgt/">SGT<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a> version 3
+    SGT (was at https://www.pmel.noaa.gov/epic/java/sgt/, now discontinued) version 3
   (a Java-based Scientific Graphics Toolkit written by Donald Denbo at
     <a rel="help" href="https://www.pmel.noaa.gov/">NOAA PMEL<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>)
-  (license: <a rel="bookmark" href="https://www.pmel.noaa.gov/epic/java/license.html"
-  >copyrighted open source<img 
-      src="../images/external.png" alt=" (external link)" 
-      title="This link to an external website does not constitute an endorsement."></a>).
+  (license: copyrighted open source (was at https://www.pmel.noaa.gov/epic/java/license.html)).
   <br>&nbsp;
 
 <li>Walter Zorn
@@ -5602,7 +5598,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.21
+<p>ERDDAP, Version 2.22
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

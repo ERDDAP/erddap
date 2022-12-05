@@ -61,7 +61,7 @@ public class Image2 {
     /** Java font drawing isn't consistent in minor ways.
      * Change this to change the sensitivity of Image2.compareImages().
      */
-    public static int DEFAULT_ALLOW_N_PIXELS_DIFFERENT = 200;
+    public static int DEFAULT_ALLOW_N_PIXELS_DIFFERENT = 250;
 
     /**
      * This tries to load the specified image (gif/jpg/png).

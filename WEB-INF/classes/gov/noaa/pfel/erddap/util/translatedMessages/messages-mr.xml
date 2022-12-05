@@ -805,8 +805,8 @@ A-Za-z0-9_-!.~&#39;()* व्यतिरिक्त इतर सर्व व
 <!--  उदाहरणे बदलू नका (defaultN... वरून). -->
 <convertKeywordsIntro><![CDATA[
 हे वेब पृष्ठ तुम्हाला
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF मानक नाव</a> रूपांतरित करू देते
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF मानक नाव</a> रूपांतरित करू देते
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="बाह्य वेबसाइटचा हा दुवा समर्थन तयार करत नाही."></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

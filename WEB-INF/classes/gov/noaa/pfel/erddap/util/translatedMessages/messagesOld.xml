@@ -24,6 +24,10 @@ See https://docs.oracle.com/javase/8/docs/api/java/text/MessageFormat.html
 &pseudoEntity; is used when the term shouldn't be translated, often because it is a 
 stand-in for something that will be swapped into place.
 The translation system REQUIRES that "pseudoEntity" only use [a-zA-Z0-9].
+
+!!! MACHINE TRANSLATION BUG??? messages-bn.xml has all of the <a> links duplicated.
+  messages-de.xml and -ga has many links duplicated. I suspect many more are like this.
+
 -->
 <erddapMessages>
 
@@ -906,7 +910,7 @@ from the source dataset much more efficiently (often almost 100 times more effic
 <!-- Don't change the examples (from defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 This web page lets you convert a 
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF Standard Name<img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF Standard Name<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a>
 to/from a 
@@ -7141,6 +7145,9 @@ https://unitsofmeasure.org/ucum.html
 
 http://www.cdc.noaa.gov
 https://www.esrl.noaa.gov/psd
+
+https://cfconventions.org/standard-names.html 
+https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 
 https://www.eol.ucar.edu/content/chords-cloud-hosted-real-time-data-services
 http://portal.chordsrt.com/about

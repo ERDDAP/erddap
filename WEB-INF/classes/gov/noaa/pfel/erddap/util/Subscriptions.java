@@ -819,7 +819,7 @@ public class Subscriptions {
 
         //ensure hashset will work correctly
         //hashset.add is based on equals test, 
-        //see https://docs.oracle.com/javase/8/docs/api/java/util/Collection.html
+        //see https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Collection.html
         Test.ensureTrue((Integer.valueOf(17)).equals(Integer.valueOf(17)), "");
 
         //test empty system

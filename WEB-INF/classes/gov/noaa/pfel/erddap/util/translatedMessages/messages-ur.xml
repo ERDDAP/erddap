@@ -629,8 +629,8 @@ A-Za-z0-9_-!.~&#39;()* کے علاوہ تمام حروف کو %HH کے بطور 
 <!--  مثالوں کو تبدیل نہ کریں (defaultN... سے)۔ -->
 <convertKeywordsIntro><![CDATA[
 یہ ویب صفحہ آپ کو
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF معیاری نام</a> تبدیل کرنے دیتا ہے۔
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF معیاری نام</a> تبدیل کرنے دیتا ہے۔
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

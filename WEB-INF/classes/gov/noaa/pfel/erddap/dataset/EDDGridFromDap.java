@@ -3292,7 +3292,8 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?t
         expected = 
 EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String)null, language), "EDDGridFromDap_LatAxis") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(language, null, "griddap/erdMHchla8day.htmlTable", tQuery) + "&nbsp;<br>\n" +
+EDStatic.startBodyHtml(language, null, "griddap/erdMHchla8day.html", tQuery) + //2022-11-22 .html because language selector system here changes .htmlTable to .html to avoid 
+"&nbsp;<br>\n" +
 "&nbsp;\n" +
 "<table class=\"erd commonBGColor nowrap\">\n" +
 "<tr>\n" +
@@ -6993,7 +6994,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         String expected = 
 EDStatic.startHeadHtml(language, EDStatic.erddapUrl((String)null, language), "EDDGridFromDap_soda224") + "\n" +
 "</head>\n" +
-EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable", query) + "&nbsp;<br>\n" +
+EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.html", query) + //2022-11-22 .htmlTable converted to .html to avoid user requesting all data in a dataset if they change language
+"&nbsp;<br>\n" +
 //HtmlWidgets.BACK_BUTTON +
 "&nbsp;\n" +
 "<table class=\"erd commonBGColor nowrap\">\n" +
@@ -10315,6 +10317,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.htmlTable"
 //"        <att name=\"date_created\">20171220T023739Z</att>\n" +
         Test.ensureEqual(results.substring(0, expected.length()), expected, "");
 
+boolean withGCOM = true; //This changes periodically
 expected = 
         "<att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
 "        <att name=\"file_quality_level\" type=\"int\">3</att>\n" +  //this may change depending on source file (eg, 1 or 3)
@@ -10334,7 +10337,7 @@ expected =
 "        <att name=\"naming_authority\">org.ghrsst</att>\n" +
 "        <att name=\"netcdf_version_id\">4.1</att>\n" +
 "        <att name=\"northernmost_latitude\" type=\"float\">90.0</att>\n" +
-"        <att name=\"platform\">Terra, Aqua, GCOM-W, MetOp-B, Buoys/Ships</att>\n" +
+"        <att name=\"platform\">Terra, Aqua, " + (withGCOM? "GCOM-W, " : "") + "MetOp-B, Buoys/Ships</att>\n" + //changes periodically
 "        <att name=\"processing_level\">L4</att>\n" +
 "        <att name=\"product_version\">04.1nrt</att>\n" +
 "        <att name=\"project\">NASA Making Earth Science Data Records for Use in Research Environments (MEaSUREs) Program</att>\n" +
@@ -10342,8 +10345,8 @@ expected =
 "        <att name=\"publisher_name\">GHRSST Project Office</att>\n" +
 "        <att name=\"publisher_url\">http://www.ghrsst.org</att>\n" +
 "        <att name=\"references\">http://podaac.jpl.nasa.gov/Multi-scale_Ultra-high_Resolution_MUR-SST</att>\n" +
-"        <att name=\"sensor\">MODIS, AMSR2, AVHRR, in-situ</att>\n" +
-"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
+"        <att name=\"sensor\">MODIS, " + (withGCOM? "AMSR2, " : "") + "AVHRR, in-situ</att>\n" + //changes periodically
+"        <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, " + (withGCOM? "AMSR2-REMSS, " : "") + "AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" + //changes periodically
 "        <att name=\"southernmost_latitude\" type=\"float\">-90.0</att>\n" +
 "        <att name=\"spatial_resolution\">0.01 degrees</att>\n" +
 "        <att name=\"standard_name_vocabulary\">NetCDF Climate and Forecast (CF) Metadata Convention</att>\n";
@@ -10474,7 +10477,7 @@ expected =
 "            <att name=\"coordinates\">lon lat</att>\n" +
 "            <att name=\"long_name\">analysed sea surface temperature</att>\n" +
 "            <att name=\"scale_factor\" type=\"double\">0.001</att>\n" +
-"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, AMSR2-REMSS, AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
+"            <att name=\"source\">MODIS_T-JPL, MODIS_A-JPL, " + (withGCOM? "AMSR2-REMSS, " : "") + "AVHRRMTB_G-NAVO, iQUAM-NOAA/NESDIS, Ice_Conc-OSISAF</att>\n" +
 "            <att name=\"standard_name\">sea_surface_foundation_temperature</att>\n" +
 "            <att name=\"units\">kelvin</att>\n" +
 "            <att name=\"valid_max\" type=\"short\">32767</att>\n" +

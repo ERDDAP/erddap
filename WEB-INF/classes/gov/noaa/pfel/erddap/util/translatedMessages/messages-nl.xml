@@ -800,8 +800,8 @@ Er zijn
 <!--  Verander de voorbeelden niet (van standaardN...). -->
 <convertKeywordsIntro><![CDATA[
 Op deze webpagina kunt u een
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-standaardnaam</a> converteren
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-standaardnaam</a> converteren
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> naar/van een
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

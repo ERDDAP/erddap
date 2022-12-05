@@ -806,8 +806,8 @@ Es gibt
 <!--  Ändern Sie nicht die Beispiele (von defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 Auf dieser Webseite können Sie einen
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-Standardnamen</a> konvertieren
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html"><img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-Standardnamen</a> konvertieren
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html"><img 
     src="../images/external.png" alt=" (external link)" 
     title="Dieser Link zu einer externen Website stellt keine Billigung dar."></a> zu/von einem
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

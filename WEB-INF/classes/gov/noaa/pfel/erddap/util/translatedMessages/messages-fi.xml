@@ -800,7 +800,7 @@ On
 <!--  Älä muuta esimerkkejä (oletusarvostaN...). -->
 <convertKeywordsIntro><![CDATA[
 Tällä verkkosivulla voit muuntaa
-<a rel="bookmark" href="https://cfconventions.org/standard-names.html">CF-standardinimen <img 
+<a rel="bookmark" href="https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html">CF-standardinimen <img 
     src="../images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>
 <a rel="bookmark" href="https://wiki.earthdata.nasa.gov/display/CMR/GCMD+Keyword+Access"

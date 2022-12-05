@@ -223,7 +223,7 @@ public abstract class EDDTable extends EDD {
 //        "https://linux.die.net/man/1/ncdump", //nc4Header
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
         "https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html",
-        "http://nco.sourceforge.net/nco.html#json",
+        "https://nco.sourceforge.net/nco.html#json",
         "https://odv.awi.de/en/documentation/", //odv
         "https://en.wikipedia.org/wiki/Faceted_search",  //subset
         "https://jkorpela.fi/TSV.html",  //tsv
@@ -2893,7 +2893,9 @@ public abstract class EDDTable extends EDD {
                     title() + " - " + EDStatic.dafAr[language]));
                 writer.write("\n" + rssHeadLink());
                 writer.write("\n</head>\n");
-                writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
+                writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                    "tabledap/" + datasetID + ".html", //was endOfRequest,
+                    userDapQuery));
                 writer.write("\n");
                 writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));   //this is a link to a script
                 writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs, language)));      //this is a link to a script
@@ -5024,7 +5026,7 @@ public abstract class EDDTable extends EDD {
 
     /**
      * Save the TableWriterAllWithMetadata data as an NCO .json lvl=2 pedantic file.
-     * http://nco.sourceforge.net/nco.html#json
+     * https://nco.sourceforge.net/nco.html#json
      *
      * <p>Issues (that I have raised with Charlie Zender): 
      * <ul>
@@ -8174,7 +8176,7 @@ public abstract class EDDTable extends EDD {
             "  In some situations, you need to percent encode all characters other than\n" +
             "  A-Za-z0-9_-!.~'()* .\n" +
             "  Programming languages have tools to do this (for example, see Java's\n" +
-            "  <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\"\n" +
+            "  <a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URLEncoder.html\"\n" +
             "      >java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
             "     and JavaScript's\n" +
@@ -8302,7 +8304,7 @@ public abstract class EDDTable extends EDD {
             "        But if your computer program or script generates the URLs, it probably needs to do the\n" +
             "        percent encoding itself.  If so, you need to encode all characters other than A-Za-z0-9_-!.~'()*\n" +
             "        in all query values. Programming languages have tools to do this (for example, see Java's\n" +
-                    "<a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/index.html?java/net/URLEncoder.html\">java.net.URLEncoder" +
+                    "<a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URLEncoder.html\">java.net.URLEncoder" +
                      EDStatic.externalLinkHtml(language, tErddapUrl) + "</a> and JavaScript's\n" +
                      "<a rel=\"help\" href=\"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent\"\n" +
             "        >encodeURIComponent()" +
@@ -8346,13 +8348,13 @@ public abstract class EDDTable extends EDD {
             "      <li><a class=\"selfLink\" id=\"regularExpression\" href=\"#regularExpression\" rel=\"bookmark\"\n" +
             "          ><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
-            "          <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\"\n" +
+            "          <a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html\"\n" +
             "          >regular expression" +
                     EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
             "         on the right.\n" +
             "        <ul>\n" +
             "        <li>tabledap uses the same \n" +
-            "          <a rel=\"help\" href=\"https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html\"\n" +
+            "          <a rel=\"help\" href=\"https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/regex/Pattern.html\"\n" +
             "          >regular expression syntax" +
                     EDStatic.externalLinkHtml(language, tErddapUrl) + "</a>\n" +
             "             (<a rel=\"help\" href=\"https://www.vogella.com/tutorials/JavaRegularExpressions/article.html\">tutorial" +
@@ -9255,7 +9257,9 @@ public abstract class EDDTable extends EDD {
                 title() + " - " + EDStatic.magAr[language]));
             writer.write("\n" + rssHeadLink());
             writer.write("\n</head>\n");
-            writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userDapQuery));
+            writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                "tabledap/" + datasetID + ".graph", //was endOfRequest, 
+                userDapQuery));
             writer.write("\n");
             writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language))); //this is a link to a script
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
@@ -11594,7 +11598,9 @@ public abstract class EDDTable extends EDD {
                 title() + " - " + EDStatic.subsetAr[language]));
             writer.write("\n" + rssHeadLink());
             writer.write("\n</head>\n");
-            writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, userQuery));
+            writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+                "tabledap/" + datasetID + ".subset", //was endOfRequest, 
+                userQuery));
             writer.write("\n");
             writer.write("<div class=\"standard_width\">\n");
             writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));   //this is a link to a script
@@ -16200,7 +16206,7 @@ public abstract class EDDTable extends EDD {
         writer.flush();
     }
     
-/**
+    /**
      * This writes the /sos/[datasetID]/index.html page to the writer.
      * <br>Currently, this just works as a SOS 1.0.0 server.
      * <br>The caller should have already checked loggedInAs and accessibleViaSOS().
@@ -16413,7 +16419,9 @@ public abstract class EDDTable extends EDD {
         //writer.write(EDStatic.startHeadHtml(language, tErddapUrl, title() + " - SOS"));
         //writer.write("\n" + rssHeadLink());
         //writer.write("</head>\n");
-        //writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString) + "\n");
+        //writer.write(EDStatic.startBodyHtml(language, loggedInAs, 
+        //    "/sos/" + datasetID + "/index.html", //was endOfRequest, 
+        //    queryString) + "\n");
         //writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
         //writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 

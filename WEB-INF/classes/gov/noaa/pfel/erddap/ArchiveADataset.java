@@ -793,7 +793,7 @@ public class ArchiveADataset {
             "-verbose",
             "original",
             "tar.gz",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "cwwcNDBCMet", 
             "default", //all data vars
             "&station=~\"3.*\"", // &station=~"3.*"
@@ -841,7 +841,7 @@ public class ArchiveADataset {
             "-verbose",
             "BagIt",
             "default", //tar.gz
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "cwwcNDBCMet", 
             "default", //all data vars
             "&station=~\"3.*\"", // &station=~"3.*"
@@ -895,11 +895,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
 "ArchiveADataset_compression: tar.gz\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_extra_constraints: &station=~\"3.*\"\n" +
@@ -940,7 +940,7 @@ public class ArchiveADataset {
             "-verbose",
             "BagIt",
             "tar.gz", 
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "cwwcNDBCMet", 
             "default", //all data vars
             "&station=~\"3.*\"", // &station=~"3.*"
@@ -994,11 +994,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
 "ArchiveADataset_compression: tar.gz\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: cwwcNDBCMet\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_extra_constraints: &station=~\"3.*\"\n" +
@@ -1038,7 +1038,7 @@ public class ArchiveADataset {
             //"-verbose",  //verbose is really verbose for this test
             "original", 
             "tar.gz",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "scrippsGliders", 
             "default", //all data vars
             // &trajectory=~"sp05.*"&time>=2015-01-01&time<=2015-01-05
@@ -1087,7 +1087,7 @@ public class ArchiveADataset {
             //"-verbose",  //verbose is really verbose for this test
             "bagit", 
             "zip",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "scrippsGliders", 
             "default", //all data vars
             // &trajectory=~"sp05.*"&time>=2015-01-01&time<=2015-01-05
@@ -1143,11 +1143,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: bagit\n" +
 "ArchiveADataset_compression: zip\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: scrippsGliders\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_extra_constraints: &trajectory=~\"sp05.*\"&time>=2015-01-01&time<=2015-01-05\n" +
@@ -1187,7 +1187,7 @@ public class ArchiveADataset {
             "-verbose",
             "original", 
             "tar.gz",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "default",  //constraintsString
@@ -1234,7 +1234,7 @@ public class ArchiveADataset {
             "-verbose",
             "BagIt", 
             "ZIP",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "default",  //constraintsString
@@ -1257,7 +1257,7 @@ public class ArchiveADataset {
         String results = table.dataToString();
         String expected = 
 "url,size\n" +
-"bag-info.txt,40.\n" +
+"bag-info.txt,(39.|40.)\n" +
 "bagit.txt,55\n" +
 "manifest-sha256.txt,180\n" +
 "tagmanifest-sha256.txt,241\n" +
@@ -1288,11 +1288,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
 "ArchiveADataset_compression: zip\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
@@ -1330,7 +1330,7 @@ public class ArchiveADataset {
             "-verbose",
             "original", 
             "tar.gz",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "[(2015-03-02T00:00:00Z)][][][]",  //constraintsString
@@ -1375,7 +1375,7 @@ public class ArchiveADataset {
             "-verbose",
             "BagIt", 
             "zip",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "[(2015-03-02T00:00:00Z)][][][]",  //constraintsString
@@ -1427,11 +1427,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
 "ArchiveADataset_compression: zip\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
@@ -1469,7 +1469,7 @@ public class ArchiveADataset {
             "-verbose",
             "BagIt", 
             "tar.gz",
-            "bob.simons@noaa.gov",
+            "erd.data@noaa.gov",
             "erdVHNchla8day", //datasetID
             "default",  //dataVarsCSV
             "[(2015-03-01T00:00:00Z):(2015-03-02T00:00:00Z)][][][]",  //constraintsString
@@ -1523,11 +1523,11 @@ public class ArchiveADataset {
         Test.ensureEqual(ra[0], "", "ra[0]=" + ra[0]);
         results = ra[1];
         expected = 
-"Contact-Email: bob.simons@noaa.gov\n" +
+"Contact-Email: erd.data@noaa.gov\n" +
 "Created_By: ArchiveADataset in ERDDAP v" + EDStatic.erddapVersion + "\n" +
 "ArchiveADataset_container_type: BagIt\n" +
 "ArchiveADataset_compression: tar.gz\n" +
-"ArchiveADataset_contact_email: bob.simons@noaa.gov\n" +
+"ArchiveADataset_contact_email: erd.data@noaa.gov\n" +
 "ArchiveADataset_ERDDAP_datasetID: erdVHNchla8day\n" +
 "ArchiveADataset_data_variables: \n" +
 "ArchiveADataset_constraints: \\[\\(2015-03-01T00:00:00Z\\):\\(2015-03-02T00:00:00Z\\)\\]\\[\\]\\[\\]\\[\\]\n" +
@@ -1589,7 +1589,7 @@ public class ArchiveADataset {
 
                     if (test ==  4 && doSlowTestsToo) testBagItNcCF();
                     if (test ==  5 && doSlowTestsToo) testBagItTrajectoryProfile();
-                    if (test ==  6 && doSlowTestsToo) testBagItGridAll();
+                    if (test ==  6 && doSlowTestsToo) testBagItGridAll();  
                     if (test ==  7 && doSlowTestsToo) testBagItGridSubset(); 
                     if (test ==  8 && doSlowTestsToo) testBagItNcCFMA();       //w NCEI preferences
                     if (test ==  9 && doSlowTestsToo) testBagItGridSubset2();  //w NCEI preferences
