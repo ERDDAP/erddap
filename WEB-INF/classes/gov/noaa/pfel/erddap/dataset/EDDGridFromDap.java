@@ -2681,7 +2681,7 @@ String expected2 =
             "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".das"); 
         results = String2.annotatedString(new String((
-            new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+            ByteArray.fromFile(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         expected =  //see OpendapHelper.EOL definition for comments
 //"Attributes {[10]\n" + 
 //"  time {[10]\n" +

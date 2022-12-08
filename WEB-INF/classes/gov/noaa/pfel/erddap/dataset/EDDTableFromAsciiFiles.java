@@ -6992,7 +6992,7 @@ String expected =
             if (i == 0)
                 continue;
             eddTable.nThreads = Math.abs(i);
-            Math2.gc(5000);
+            Math2.gc("EDDTableFromAsciiFiles (between tests)", 5000);
 
             long startTime = System.currentTimeMillis();
             tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 

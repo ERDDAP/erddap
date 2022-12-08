@@ -608,7 +608,7 @@ public class DataHelper  {
 
         //done
         String2.log("\n***** DataHelper.test finished successfully");
-        Math2.incgc(2000); //in a test
+        Math2.incgc("DataHelper (between tests)", 2000); //in a test
     } 
 
     /**

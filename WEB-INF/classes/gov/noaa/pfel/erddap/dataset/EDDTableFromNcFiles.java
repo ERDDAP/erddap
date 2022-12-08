@@ -6102,7 +6102,7 @@ expected =
                     SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
                     //File2.deleteAllFiles(tempDir);  //previous method
                 }
-                Math2.gc(waitSeconds * 1000); //gtspp: give OS time to settle
+                Math2.gc("bobConsolidateGtsppTgz (between attempts)", waitSeconds * 1000); //gtspp: give OS time to settle
                 File destDirFile = new File(tDestDir);
                 File files[] = destDirFile.listFiles();
                 String2.log("  nRemainingFiles=" + files.length);
@@ -8095,7 +8095,7 @@ expected =
                     dotExt + " speed\n");
                 long time = 0, cLength = 0;
                 for (int chance = 0; chance < 3; chance++) {
-                    Math2.gcAndWait(); //in a test
+                    Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); //in a test
                     time = System.currentTimeMillis();
                     outName = baseOut + chance + dotExt;
                     SSR.downloadFile(baseRequest + dotExt + userDapQuery + Math2.random(10000), outName, tryToCompress);
@@ -8122,7 +8122,7 @@ expected =
                 //display?
                 if (false && String2.indexOf(imageFileTypeNames, dotExt) >= 0) {
                     Test.displayInBrowser("file://" + outName);
-                    Math2.gc(5000); //in a test, pause for image display
+                    Math2.gc("EDDTableFromNcFiles (between tests)", 5000); //in a test, pause for image display
                 }
 
                 //size test
@@ -14658,7 +14658,7 @@ expected =
             String msg = "";
             for (int chance = 0; chance < nChances; chance++) { 
                 String2.log("\nstart test=" + test + " chance=" + chance);
-                Math2.gcAndWait();  //in a test
+                Math2.gcAndWait("EDDGridFromNcFiles (between tests)");  //in a test
                 time = System.currentTimeMillis();
                 tName = eddTable.makeNewFileForDapQuery(language, null, null, 
                     extensions[test].equals(".geoJson") || extensions[test].equals(".odvTxt")?
@@ -14694,7 +14694,7 @@ expected =
                     Test.displayInBrowser("file://" + dir + tName);
                     //Google Earth and Acrobat take long time to start up and penalize subsequent tests,
                     //  so give them time
-                    Math2.gc(test == kmli? 60000 : 20000);
+                    Math2.gc("EDDTableFromNcFiles (between tests)", test == kmli? 60000 : 20000);
                 }
             }
             if (resultLength < 0.9 * bytes[test] || resultLength > 1.2 * bytes[test] ||
@@ -19397,7 +19397,7 @@ FileVisitorDNLS.debugMode = true;
         String2.log("\n****************** EDDTableCopyFiles make DATA FILES\n");       
 
         //.csv   
-        Math2.gc(10000);
+        Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
         resultsSB.setLength(0);
         for (int thread = 1; thread <= 1; thread++) { //or -3 to 3
             if (thread == 0) continue;
@@ -19417,8 +19417,8 @@ FileVisitorDNLS.debugMode = true;
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             resultsSB.append("finished query #1 nThreads=" + eddTable.nThreads + 
                 " time=" + (System.currentTimeMillis()-time) + " ms\n");
-            Math2.gc(10000);
-            Math2.gc(10000);
+            Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
+            Math2.gc("EDDTableFromNcFiles (between tests)", 10000);
         }
         String2.log(resultsSB.toString());
 //With AV software on, Progressively slower! 110 -> 330 s !

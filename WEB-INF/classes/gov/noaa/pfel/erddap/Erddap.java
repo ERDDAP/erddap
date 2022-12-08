@@ -3642,7 +3642,7 @@ writer.write(EDStatic.dpf_congratulationAr[language]
             int po = traces.indexOf('\n');
             if (po > 0)
                 sb.append(traces.substring(0, po + 1));
-            sb.append(EDStatic.gcCalled + " gc calls, " + 
+            sb.append(Math2.gcCallCount + " gc calls, " + 
                 EDStatic.requestsShed + " requests shed, and " +  
                 EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
             sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
@@ -17620,7 +17620,7 @@ UTC                  m   deg_n    deg_east m s-1
         if (String2.isSomething(addToHead))
             writer.write("\n" + addToHead);
         writer.write("\n</head>\n");
-        writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString));
+        writer.write(EDStatic.startBodyHtml(language, loggedInAs, endOfRequest, queryString)); 
         writer.write("\n");
         writer.write(HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs, language)));
         writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better

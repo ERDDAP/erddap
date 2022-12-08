@@ -264,11 +264,16 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //source https://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
         //json   https://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
         String jsonUrl = String2.replaceAll(localSourceUrl, "/griddap/", "/info/") + "/index.json";
-        String sourceInfoBytes = quickRestartAttributes == null?
-            SSR.getUrlResponseStringNewline(jsonUrl) :
-            new String(((ByteArray)quickRestartAttributes.get("sourceInfoBytes")).toArray(), File2.UTF_8);
+        String sourceInfoString = null;  
+        if (quickRestartAttributes != null) {
+            PrimitiveArray sourceInfoBytes = quickRestartAttributes.get("sourceInfoBytes");
+            if (sourceInfoBytes != null && sourceInfoBytes instanceof ByteArray)
+                sourceInfoString = new String(((ByteArray)sourceInfoBytes).toArray(), File2.UTF_8);
+        }
+        if (sourceInfoString == null)
+            sourceInfoString = SSR.getUrlResponseStringNewline(jsonUrl);
         Table table = new Table();        
-        table.readJson("sourceInfoBytes", new BufferedReader(new StringReader(sourceInfoBytes)) ); //att is a UTF-8 ByteArray
+        table.readJson("sourceInfoString", new BufferedReader(new StringReader(sourceInfoString)) ); 
 
         //go through the rows of table from bottom to top
         int nRows = table.nRows();
@@ -424,7 +429,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             try {
                 quickRestartAttributes = new Attributes();
                 quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
-                quickRestartAttributes.set("sourceInfoBytes", new ByteArray(sourceInfoBytes));
+                quickRestartAttributes.set("sourceInfoBytes", ByteArray.fromString(sourceInfoString)); //String -> UTF-8 bytes
                 for (int av = 0; av < axisVariables.length; av++) {
                     quickRestartAttributes.set(
                         "sourceValues_" + 

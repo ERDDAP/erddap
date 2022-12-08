@@ -212,19 +212,20 @@ public class UByteArray extends PrimitiveArray {
      * @param fileName is the (usually canonical) path (dir+name) for the file
      * @throws Exception if trouble
      */
-    public UByteArray(final String fileName) throws Exception {
-        this();
+    public static UByteArray fromFile(final String fileName) throws Exception {
+        UByteArray uba = new UByteArray();
         final InputStream stream = File2.getDecompressedBufferedInputStream(fileName);
         try {
             int available = stream.available();
             while (available > 0) {
-                ensureCapacity(size + (long)available);
-                size += stream.read(array, size, available);
+                uba.ensureCapacity(uba.size + (long)available);
+                uba.size += stream.read(uba.array, uba.size, available);
                 available = stream.available();
             }
         } finally {
             stream.close();
         }
+        return uba;
     }
 
     

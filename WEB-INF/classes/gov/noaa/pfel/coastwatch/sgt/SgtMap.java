@@ -1537,7 +1537,7 @@ public class SgtMap  {
                 if (reallyVerbose && colorMap != null) String2.log(colorMap.getStats());
                 if (reallyVerbose) String2.log("  SgtMap.makeMap draw the graph time=" + 
                     (System.currentTimeMillis() - time) + "ms");
-                //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
+                //Math2.gcAndWait("SgtGraph (debugMode)"); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeMap after gc: " + Math2.memoryString());
             }
@@ -1923,7 +1923,7 @@ public class SgtMap  {
                 if (colorMap != null) String2.log(colorMap.getStats());
                 String2.log("  SgtMap.makeCleanMap draw graph time=" + 
                     (System.currentTimeMillis() - time) + "ms");
-                //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
+                //Math2.gcAndWait("SgtGraph (debugMode)"); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeCleanMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeCleanMap after gc: " + Math2.memoryString());
             }
@@ -2961,7 +2961,7 @@ String2.log("err: " + errCatcher.getString());
             }
 
             //look for memory leak
-            Math2.gcAndWait(); Math2.gcAndWait(); //in a test. Ensure all garbage collected.
+            Math2.gcAndWait("SgtGraph (between tests)"); Math2.gcAndWait("SgtGraph (between tests)"); //in a test. Ensure all garbage collected.
             long using = Math2.getMemoryInUse();
             if (baseMemory == 0) 
                 baseMemory = using;

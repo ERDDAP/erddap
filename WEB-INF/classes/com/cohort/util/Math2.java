@@ -66,6 +66,7 @@ public class Math2 {
     public static long dangerousMemory = maxMemory * 9L / 10; //90%   this is really bad
 
     public static long alwaysOkayMemoryRequest = maxSafeMemory / 40;
+    public volatile static int  gcCallCount = 0;               //since last Major LoadDatasets
     public volatile static long timeGCLastCalled = 0;
 
     /** 
@@ -381,9 +382,10 @@ public class Math2 {
      * It will call gc() (not incgc) if memory use is creeping up.
      * 2013-12-05 Years ago, I called this often. But now Java recommends letting Java handle memory/gc.
      * 
+     * @param caller for diagnostics, the name of the caller
      * @param millis the number of millis to sleep
      */
-    public static void incgc(final long millis) {
+    public static void incgc(final String caller, final long millis) {
         //long time = System.currentTimeMillis(); //diagnostic
 
         //get usingMemory 
@@ -400,7 +402,7 @@ public class Math2 {
         //  how tight I want it to be
         //smaller numbers will cause more gc's
         } else if ((using - lastUsingMemory) > gcTrigger) {
-            gc(millis); //this will also sleep or yield
+            gc(caller, millis); //this will also sleep or yield
         
         //intermediate, just sleep  
         } else {
@@ -416,10 +418,11 @@ public class Math2 {
      * This calls gc(shortSleep).
      * shortSleep is intended to give gc sufficient time to do its job, even under heavy use.
      *
+     * @param caller for diagnostics, the name of the caller
      * @return getMemoryInUse()     
      */
-    public static long gcAndWait() {
-        return gc(shortSleep);
+    public static long gcAndWait(final String caller) {
+        return gc(caller, shortSleep);
     }
 
     /**
@@ -432,24 +435,29 @@ public class Math2 {
      *   will mind, since it is static) and to sleep for
      *   a while, independently. 
      * 
+     * @param caller for diagnostics, the name of the caller.
+     *   The 2 important callers are shedThisRequest (before an ERDDAP request is processed) 
+     *   and ensureMemoryAvailable (can occur anytime).
      * @param millis the number of milliseconds to sleep.
      *    This will always sleep at least shortSleep millis.
      * @return getMemoryInUse()
      * @see Math2#incgc
      */
-    public static long gc(final long millis) {
+    public static long gc(final String caller, final long millis) {
         final long time = System.currentTimeMillis();
 
         //if >shortSleep since last time gc was called (by any thread), call gc (otherwise don't!)
         if (time - timeGCLastCalled >= shortSleep) {
-            String2.log("[Math2.gc is calling System.gc]");
+            String2.log("[Math2.gc called by " + caller + 
+                " at " + Calendar2.getCurrentISODateTimeStringLocalTZ() + 
+                " (call #" + ++gcCallCount + " since last major loadDatasets)]");
                 //+ "\n" + MustBe.getStackTrace());           
             timeGCLastCalled = time;
             System.gc();
         }
 
         //sleep - subtract time already used by gc
-        //always call sleep, even if <0, since it yields, too.
+        //always wait at least shortSleep so we can see the effects of the gc
         sleep(Math.max(shortSleep, millis) - (System.currentTimeMillis() - time));
         return lastUsingMemory = getMemoryInUse();
     }
@@ -491,7 +499,7 @@ public class Math2 {
             return;
 
         //Not enough memory. Try to free up memory 
-        memoryInUse = Math2.gcAndWait(); //if gc just called by other thread, this just waits and returns
+        memoryInUse = Math2.gcAndWait("ensureMemoryAvailable (" + attributeTo + ")"); //if gc just called by other thread, this just waits and returns
 
         //now enough memory?
         if (memoryInUse + nBytes <= maxSafeMemory)  //it'll work

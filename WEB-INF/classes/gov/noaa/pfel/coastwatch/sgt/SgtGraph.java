@@ -1309,7 +1309,7 @@ public class SgtGraph  {
                 String2.log("  draw the graph time=" + 
                     (System.currentTimeMillis() - drawGraphTime) + "ms");
                 //String2.log("SgtGraph.makeGraph after jPane.draw: " + Math2.memoryString());
-                //Math2.gcAndWait(); //a diagnostic in development.  outside of timing system.
+                //Math2.gcAndWait("SgtGraph (debugMode)"); //a diagnostic in development.  outside of timing system.
                 //String2.log("SgtGraph.makeGraph after gc: " + Math2.memoryString());
             }
 
@@ -2130,7 +2130,7 @@ public class SgtGraph  {
         }
 
         //done
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test.  Ensure all are garbage collected.
+        Math2.gcAndWait("SgtGraph (between tests)"); Math2.gcAndWait("SgtGraph (between tests)"); //in a test.  Ensure all are garbage collected.
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms\n" +
             Math2.memoryString());
     } 
@@ -2249,7 +2249,7 @@ public class SgtGraph  {
         //check memory usage
         for (int rep = 0; rep < nReps; rep++)
             File2.delete(tempDir + "SgtGraphMemoryTest" + rep + ".png");
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
+        Math2.gcAndWait("SgtGraph (between tests)"); Math2.gcAndWait("SgtGraph (between tests)"); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         long using = Math2.getMemoryInUse();
         if (baseMemory == 0) baseMemory = using;
         long lpr = (using - baseMemory)/nReps;
@@ -2266,7 +2266,7 @@ public class SgtGraph  {
         PathCartesianRenderer.verbose = true;
         PathCartesianRenderer.reallyVerbose = true;
         //AttributedString2.verbose = true;
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
+        Math2.gcAndWait("SgtGraph (between tests)"); Math2.gcAndWait("SgtGraph (between tests)"); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         long time = System.currentTimeMillis();
         long memoryInUse = Math2.getMemoryInUse();
 
@@ -2371,14 +2371,14 @@ public class SgtGraph  {
             String2.unitTestImagesDir()    + fileName + ".png",
             File2.getSystemTempDirectory() + fileName + "_diff.png");
 
-        Math2.gc(2000);
+        Math2.gc("SgtGraph.testSurface (between tests)", 2000);
         //String2.pressEnterToContinue(); 
         
         //delete files        
         File2.delete(fileName);
 
         //done
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
+        Math2.gcAndWait("SgtGraph (between tests)"); Math2.gcAndWait("SgtGraph (between tests)"); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         String2.log("time=" + (System.currentTimeMillis() - time) + "ms " +
             "changeInMemoryInUse=" + (Math2.getMemoryInUse() - memoryInUse));
     } 
