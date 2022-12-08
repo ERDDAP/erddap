@@ -1293,7 +1293,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             String2.log(valuesUrl + "\n" +
                 MustBe.throwableToString(t) +
                 "Trying again...");
-            Math2.gc(1000); //generateDatasetsXml: if trouble, pause, then try again.
+            Math2.gc("EDDTableFromNWISDV.generateDatasetsXml (before retry)", 1000); //generateDatasetsXml: if trouble, pause, then try again.
             valuesTable = getValuesTable(SSR.getUncompressedUrlBufferedInputStream(valuesUrl));
         }
 
@@ -2627,7 +2627,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                     String2.log("  ERROR getting data for site=" + site + "\n" + 
                         MustBe.throwableToString(t) +
                         "Trying again...");
-                    Math2.gc(1000); //generateDatasetsXml: if trouble, pause, then try again.
+                    Math2.gc("EDDTableFromNWISDV.bobMakeNWISDatasets (before retry)", 1000); //if trouble, pause, then try again.
                     data = getValuesTable(
                         SSR.getUncompressedUrlBufferedInputStream(getDataUrl));
                 }

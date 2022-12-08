@@ -452,8 +452,8 @@ public class PointIndex  {
         //*** test lots of data
         results = null;
         index = null;
-        Math2.incgc(500); //in a test
-        Math2.incgc(500); //in a test
+        Math2.incgc("PointIndex (between tests)", 500); //in a test
+        Math2.incgc("PointIndex (between tests)", 500); //in a test
         long memoryInUse = Math2.getMemoryInUse();
         int nGroups = 100;
         int nPerGroup = 10000;
@@ -535,8 +535,8 @@ public class PointIndex  {
         t2=null;
         results = null;
         index = null;
-        Math2.incgc(500); //in a test
-        Math2.incgc(500); //in a test
+        Math2.incgc("PointIndex (between tests)", 500); //in a test
+        Math2.incgc("PointIndex (between tests)", 500); //in a test
         memoryInUse = Math2.getMemoryInUse() - memoryInUse;
         String2.log("\n***** PointIndex.main finished successfully; memory not freed = " + memoryInUse);
 

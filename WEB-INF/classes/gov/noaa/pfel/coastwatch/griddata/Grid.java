@@ -1448,7 +1448,7 @@ switch to finally clause
         Test.ensureEqual(grid.nValidPoints,        6043, "subset nValid 2");
 
         time = System.currentTimeMillis() - time;
-        Math2.gcAndWait(); //before get memoryString() in a test
+        Math2.gcAndWait("Grid (between tests)"); //before get memoryString() in a test
         String2.log("Grid.testGrd time=" + time + " " + Math2.memoryString());
 
         //test saveAsGrd;
@@ -5415,21 +5415,21 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //test for memory leak in readGrd
         dir = "c:\\programs\\GrdFiles\\";
         String[] grdFiles = RegexFilenameFilter.list(dir, ".*\\.grd");
-        Math2.gcAndWait(); Math2.gcAndWait(); //before get memoryString() in a test
+        Math2.gcAndWait("Grid (between tests)"); Math2.gcAndWait("Grid (between tests)"); //before get memoryString() in a test
         long um = Math2.getMemoryInUse();
         String2.log("\n***** Grid.testForMemoryLeak; at start: " + Math2.memoryString());
         for (int i = 0; i < Math.min(50, grdFiles.length); i++) {
             grid.readGrd(dir + grdFiles[i], true);
-            //Math2.gcAndWait(); //2013-12-05 Commented out. In a test, let Java handle memory. 
+            //Math2.gcAndWait("Grid (between tests)"); //2013-12-05 Commented out. In a test, let Java handle memory. 
         }
         grid = null;
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse()
+        Math2.gcAndWait("Grid (between tests)"); Math2.gcAndWait("Grid (between tests)"); //in a test, before getMemoryInUse()
         grid = new Grid();
         long increase = Math2.getMemoryInUse() - um;
         String2.log("Memory used change after MemoryLeak test: " + increase);
         if (increase > 50000) 
             String2.pressEnterToContinue(); 
-        else Math2.gc(5000); //in a test, a pause after message displayed
+        else Math2.gc("Grid (between tests)", 5000); //in a test, a pause after message displayed
     }
 
     /**

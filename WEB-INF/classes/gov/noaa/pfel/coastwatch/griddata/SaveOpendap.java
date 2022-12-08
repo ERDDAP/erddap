@@ -473,7 +473,7 @@ String shouldBe =
         
         //done
         String2.log("\n***** SaveOpendap.main finished successfully");
-        Math2.incgc(2000); //in a test
+        Math2.incgc("SaveOpendap.main (between tests)", 2000); //in a test
 
     }
 

@@ -1133,7 +1133,7 @@ WaitThenTryAgainException wttae;
         PersistentTable.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll
+        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
 
         //data
@@ -1188,7 +1188,7 @@ WaitThenTryAgainException wttae;
         ScriptRow.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
         
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll
+        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
         //ERDDAP
         HtmlWidgets.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -1204,7 +1204,7 @@ WaitThenTryAgainException wttae;
         FindDuplicateTime.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll
+        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
         //EDDGrid
         EDD.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);  
@@ -1226,7 +1226,7 @@ WaitThenTryAgainException wttae;
         EDDGridLon0360.test(             errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll
+        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
 
         //EDDTable
@@ -1272,7 +1272,7 @@ WaitThenTryAgainException wttae;
         ArchiveADataset.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc(20000); //in TestAll
+        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
 
         //NetCheckTests

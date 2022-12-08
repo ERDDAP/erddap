@@ -3763,7 +3763,7 @@ and zoom and pan with controls in
                             logFile = File2.getBufferedFileWriterUtf8(logFileName);
                         } catch (Throwable t) {
                             //try again: really bad if unable to create a new logFile
-                            Math2.gc(1000);
+                            Math2.gc("String2.lowLog", 1000);
                             try {
                                 logFile = File2.getBufferedFileWriterUtf8(logFileName);
                             } catch (Throwable t2) {

@@ -199,7 +199,7 @@ public class DoubleCenterGrids {
                     if (cumSleep >= 60000) {
                         String2.log("Sleeping for 1 minute...");
                         cumSleep -= 60000;
-                        Math2.gc(60000); //sleep for 1 minute
+                        Math2.gc("DoubleCenterGrids", 60000); //sleep for 1 minute
                     }
                 }
 
