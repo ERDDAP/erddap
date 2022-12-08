@@ -418,7 +418,7 @@ public class File2 {
                         );
                     if (attempt % 4 == 1)
                         //The problem might be that something needs to be gc'd.
-                        Math2.gcAndWait(); //wait before retry delete. By experiment, gc works better than sleep.
+                        Math2.gcAndWait("File2.delete (before retry)"); //By experiment, gc works better than sleep.
                     else Math2.sleep(1000);
                 }
 
@@ -639,7 +639,7 @@ public class File2 {
 
         //failed? give it a second try. This fixed a problem in a test on Windows.
         //The problem might be that something needs to be gc'd.
-        Math2.gcAndWait();  //wait before giving it a second try      
+        Math2.gcAndWait("File2.rename (before retry)");  
         if (oldFile.renameTo(newFile))
             return;
         throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
@@ -797,7 +797,7 @@ public class File2 {
             //pause and try again
             try {
                 //The problem might be that something needs to be gc'd.
-                Math2.gcAndWait(); //if trouble getting lastModified: gc encourages success
+                Math2.gcAndWait("File2.getLastModified (before retry)"); //if trouble getting lastModified: gc encourages success
                 File file = new File(fullName);
                 return file.lastModified();
             } catch (Exception e2) {
@@ -1319,7 +1319,7 @@ public class File2 {
                         String2.log("WARNING #" + attempt + 
                             ": File2.readFromFile is having trouble. It will try again to read " + 
                             fileName);
-                        if (attempt == 1) Math2.gcAndWait(); //trouble! Give OS/Java a time and gc to deal with trouble
+                        if (attempt == 1) Math2.gcAndWait("File2.readFromFile (before retry)"); //trouble! Give OS/Java a time and gc to deal with trouble
                         else Math2.sleep(1000);
                     }
                 }

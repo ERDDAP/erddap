@@ -188,7 +188,7 @@ public class EDStatic {
      * <br>2.19 released on 2022-09-10
      * <br>2.20 released on 2022-09-30
      * <br>2.21 released on 2022-10-09
-     * <br>2.22 released on 2022-12-05
+     * <br>2.22 released on 2022-12-08
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -265,7 +265,6 @@ public static boolean developmentMode = false;
     public static int touchThreadFailedDistributionTotal[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistribution24[]   = new int[String2.TimeDistributionSize];
     public static int touchThreadSucceededDistributionTotal[]= new int[String2.TimeDistributionSize];
-    public static volatile int gcCalled = 0;                //since last Major LoadDatasets
     public static volatile int requestsShed = 0;            //since last Major LoadDatasets
     public static volatile int dangerousMemoryEmails = 0;   //since last Major LoadDatasets
     public static volatile int dangerousMemoryFailures = 0; //since last Major LoadDatasets
@@ -6410,6 +6409,8 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
 
     /**
      * This checks if this request should be shed because not much free memory available.
+     * Note that shedThisRequest is more eager to reject a request, 
+     * than Math2.ensureMemoryAvailable is to cause an in-process request to be stopped.
      * 
      * @param lotsMemoryNeeded Use true if this request may require lots of memory.
      *   Use false if this request probably doesn't need much memory.
@@ -6425,15 +6426,13 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             //A problem with this is that multiple threads may wait for gc to finish, 
             //  see enough memory, then all start and each use lots of memory.
             Thread.sleep(Math2.shortSleep - timeSinceGc);
-            timeSinceGc += Math2.shortSleep - timeSinceGc;
+            timeSinceGc = Math2.shortSleep;
         }
 
         //always: if >=2000ms since gc and memory use is high, call gc
         long inUse = Math2.getMemoryInUse();
         if (timeSinceGc >= 3*Math2.shortSleep && inUse >= Math2.halfMemory) {  //This is arbitrary. I don't want to call gc too often but I don't want to shed needlessly.
-            Math2.timeGCLastCalled = System.currentTimeMillis(); //set this first to avoid other threads also calling gc
-            gcCalled++;
-            inUse = Math2.gcAndWait();  //waits Math2.shortSleep   //in shedThisRequest   //a diagnostic is always logged
+            inUse = Math2.gcAndWait("shedThisRequest");  //waits Math2.shortSleep   //in shedThisRequest   //a diagnostic is always logged
         }
 
         //if memory use is now low enough for this request, return false

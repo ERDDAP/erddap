@@ -384,7 +384,7 @@ public abstract class Browser extends HttpServlet {
             entrySetIterator = null;
 
             //generate report of active datasets in nextShared 
-            Math2.gcAndWait(); Math2.gcAndWait(); //for more accurate memoryString in report below
+            Math2.gcAndWait("Browser"); Math2.gcAndWait("Browser"); //for more accurate memoryString in report below
             StringBuilder activeDataSets = new StringBuilder();
             activeDataSets.append(
                 "Report from " + oneOf.shortClassName() + " at " + 

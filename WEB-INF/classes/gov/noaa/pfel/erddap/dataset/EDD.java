@@ -10640,7 +10640,7 @@ public abstract class EDD {
             if (badFileMap != null && !badFileMap.isEmpty()) //only create badMapFile if there are some bad files
                 writeBadFileMap(badFilesFileName + random, badFileMap);
             //if Windows, give OS file system time to settle
-            //if (String2.OSIsWindows) Math2.gc(1000); //so things below go quickly
+            //if (String2.OSIsWindows) Math2.gc("EDD.saveDirTableFileTableBadFiles (in Windows)", 1000); //so things below go quickly
             
             //Integrity of these files is important. Rename is less likely to have error.
             if (badFileMap == null) {} //do nothing
@@ -11178,7 +11178,7 @@ public abstract class EDD {
         String2.log("\n*** DasDds " + tDatasetID);
         String tName;
         StringBuilder results = new StringBuilder();
-        //Math2.gcAndWait(); Math2.gcAndWait(); //used in development, before getMemoryInUse
+        //Math2.gcAndWait("EDD (between tests)"); Math2.gcAndWait("EDD (between tests)"); //used in development, before getMemoryInUse
         long memory = Math2.getMemoryInUse();
 
         if (clearCache)
@@ -11205,7 +11205,7 @@ public abstract class EDD {
 
         //memory
         if (false) {  //enabled when testing
-            Math2.gcAndWait(); Math2.gcAndWait(); //Used in development.  Before getMemoryInUse().
+            Math2.gcAndWait("EDD (between tests)"); Math2.gcAndWait("EDD (between tests)"); //Used in development.  Before getMemoryInUse().
             memory = Math2.getMemoryInUse() - memory;
             String2.log("\n*** DasDds: memoryUse=" + (memory/1024) + 
                 " KB\nPress CtrlBreak in console window to generate hprof heap info.");

@@ -170,19 +170,32 @@ public class ByteArray extends PrimitiveArray {
      * @param fileName is the (usually canonical) path (dir+name) for the file
      * @throws Exception if trouble
      */
-    public ByteArray(final String fileName) throws Exception {
-        this();
+    public static ByteArray fromFile(final String fileName) throws Exception {
+        ByteArray ba = new ByteArray();
         final InputStream stream = File2.getDecompressedBufferedInputStream(fileName);
         try {
             int available = stream.available();
             while (available > 0) {
-                ensureCapacity(size + (long)available);
-                size += stream.read(array, size, available);
+                ba.ensureCapacity(ba.size + (long)available);
+                ba.size += stream.read(ba.array, ba.size, available);
                 available = stream.available();
             }
         } finally {
             stream.close();
         }
+        return ba;
+    }
+
+    /**
+     * A constructor which makes a ByteArray from the UTF-8 bytes of the string.
+     * 
+     * @param s a string.  If null or 0-length, this returns a ByteArray with size=0.
+     * @throws Exception if trouble
+     */
+    public static ByteArray fromString(final String s) throws Exception {
+        if (s == null || s.length() == 0)
+            return new ByteArray();
+        return new ByteArray(String2.stringToUtf8Bytes(s));
     }
 
     /** This constructs a ByteArray from the values of another PrimitiveArray by

@@ -1531,7 +1531,7 @@ String2.log("inventoryTable:\n" + table.toString());
             String2.log(
                 "THIS STOPPED WORKING ~JAN 2009: " + MustBe.throwableToString(e) + 
                 "\nI think Digir is dead."); 
-            Math2.gc(5000);  //in a test, after displaying a message
+            Math2.gc("DigirHelper (between tests)", 5000);  //in a test, after displaying a message
         }
 
     }

@@ -287,7 +287,7 @@ public class TestUtil {
         //incgc
         String2.log("test incgc(3000)");
         da = null; //free the memory
-        Math2.incgc(3000);
+        Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
         String2.log("after incgc: " + Math2.memoryString());
 
         //gc
@@ -295,7 +295,7 @@ public class TestUtil {
         da = new double[1000000];
         String2.log("after allocate = " + Math2.memoryString());
         da = null;
-        Math2.gcAndWait(); //in test
+        Math2.gcAndWait("TestUtil (between tests)"); //in test
         String2.log("after gc = " + Math2.memoryString());
 
         //odd
@@ -1242,7 +1242,7 @@ public class TestUtil {
         int n, iar[];
         String s, results, expected;
         long time;
- /*
+ /* */
         //clipboard
         String2.log("Clipboard was: " + String2.getClipboardString());
         String2.setClipboardString("Test String2.setClipboardString.");
@@ -1260,7 +1260,7 @@ public class TestUtil {
             t1 += String2.parseInt("1023456789");
         String2.log("time1 for 1000000 parseInt good=" + (System.currentTimeMillis() - time));  //119
 
-       //speed of parseInt fail
+        //speed of parseInt fail
         time = System.currentTimeMillis();
         long t2 = 0;
         for (int i = 0; i < 1000000; i++)
@@ -1512,7 +1512,7 @@ public class TestUtil {
             //if (test == 10) System.exit(0);
         }
 
-        Math2.incgc(3000);
+        Math2.incgc("EDDTableFromNcFiles (between tests)", 3000);
 
         //binaryFindLastLE
         String tsar[] = {"abc", "bcd", "bcj"};
@@ -2544,11 +2544,11 @@ public class TestUtil {
         Test.ensureEqual(String2.parseLong("0xFFFFFFFFFF"), 0xFFFFFFFFFFL, "g");
 
         //test speed of native parseLong vs String2.parseLong (now using parseBigDecimal)
-        int n = 10000000;
+        n = 10000000;
         long speedResults[] = new long[2];
         for (int test = 0; test < 2; test++) {
-            Math2.gc(2000);
-            Math2.gc(2000);
+            Math2.gc("TestUtil (between tests)", 2000);
+            Math2.gc("TestUtil (between tests)", 2000);
             long testSum = 0;
             time = System.currentTimeMillis();
             for (i = 0; i < n; i++) {
@@ -2564,8 +2564,8 @@ public class TestUtil {
             String2.toCSSVString(speedResults));
         Test.ensureTrue(speedResults[1] < speedResults[0] * 2, 
             "String2.parseLong is too slow! " + speedResults[1] + " vs " + speedResults[0] + " (Java 17 typical: 1900ms vs 1300ms");
-        Math2.gc(2000);
-        Math2.gc(2000);
+        Math2.gc("TestUtil (between tests)", 2000);
+        Math2.gc("TestUtil (between tests)", 2000);
 
         //parseFloat
         String2.log("test parseFloat");
@@ -2578,7 +2578,7 @@ public class TestUtil {
         //tokenize
         String2.log("test tokenize");
         Test.ensureEqual(String2.tokenize(" a  bb   ccc \"d d\" eeee"), new String[]{"a", "bb", "ccc", "d d", "eeee"}, "a");
-*/
+
         //distributeTime and timeDistributionStatistics
         String2.log("test distributeTime");
         int timeDist[] = new int[String2.TimeDistributionSize];
@@ -6015,7 +6015,7 @@ expected =
         Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT(
             "1970-01-01T00:00:00.000Z", d, "."), "-0005-08-31T16:01:02.123Z", "");
        
-        Math2.gcAndWait(); //in test
+        Math2.gcAndWait("TestUtil (between tests)"); //in test
     }
 
     /**
@@ -6163,8 +6163,8 @@ expected =
 
         //test boolean touch(String dirName)  and getLastModified
         String2.log("test touch and getLastModified");
-        Math2.gc(1000);
-        Math2.gc(1000);
+        Math2.gc("TestUtil (between tests)", 1000);
+        Math2.gc("TestUtil (between tests)", 1000);
         File2.writeToFile88591(utilDir + "temp.txt", "This\nis a\n\ntest.\n");
         Math2.sleep(20); //make the file a little older
         long fileTime = File2.getLastModified(utilDir + "temp.txt");     
@@ -6463,14 +6463,14 @@ expected =
 
         for (int loop = 0; loop < 3; loop++) {
             //test Strings
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive   //in a test
             memoryInUse = Math2.getMemoryInUse();
             time = System.currentTimeMillis();
             String sa[] = new String[n];
             for (int i = 0; i < n; i++)
                 sa[i] = "testABCD" + i;
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive   //in a test
             String2.log("String memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) +   //68.1 bytes
                 " time=" + time + "ms"); // ~562  (after first time)
@@ -6482,7 +6482,7 @@ expected =
             for (int i = 0; i < n; i++)
                 ba[i] = String2.stringToUtf8Bytes("testABCD" + i);  //usually 14 characters +4length +4pointer
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive   //in a test
             String2.log("utf8 memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //36.0 bytes; why so many?
                 " time=" + time + "ms"); // ~1094
@@ -6494,7 +6494,7 @@ expected =
             for (int i = 0; i < n; i++)
                 da[i] = i;  
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive   //in a test
             String2.log("double memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //8 bytes
                 " time=" + time + "ms"); // ~6
@@ -6529,7 +6529,7 @@ expected =
         int n = 1000;
         String sa[] = new String[95*95];
         long oMemoryInUse = -1;
-        Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+        Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive preparation //in a test
         String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
             String2.canonicalStatistics());
         int canSize = -1;
@@ -6561,7 +6561,7 @@ expected =
 
             //ensure that memory use and nStrings in maps don't grow unexpectedly
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive //in a test
             long memoryInUse = Math2.getMemoryInUse();
             int shouldBe = outer == 0? 415 : 260;
             String2.log(String2.canonicalStatistics() + 
@@ -6606,7 +6606,7 @@ expected =
         int n = 1000;
         StringHolder sa[] = new StringHolder[95*95];
         long oMemoryInUse = -1;
-        Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
+        Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive preparation //in a test
         String2.log("initialMemoryUse=" + Math2.memoryString() + "\n" + 
             String2.canonicalStatistics());
         int canSize = -1;
@@ -6638,7 +6638,7 @@ expected =
 
             //ensure that memory use and nStrings in maps don't grow unexpectedly
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
+            Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)");  //aggressive //in a test
             long memoryInUse = Math2.getMemoryInUse();
             int shouldBe = outer == 0? 415 : 260; //ms
             String2.log(String2.canonicalStatistics() + 
@@ -6678,7 +6678,7 @@ expected =
         String sar[] = new String[127];
 
         //what is initial memory level?
-        Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
+        Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)"); //aggressive //in a test
         long oMem = Math2.getMemoryInUse();
 
         //just store first 5 chars large strings
@@ -6688,7 +6688,7 @@ expected =
         }            
 
         //what is final memory level?
-        Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
+        Math2.gcAndWait("TestUtil (between tests)"); Math2.gcAndWait("TestUtil (between tests)"); //aggressive //in a test
         long cMem = Math2.getMemoryInUse();
         String2.log("oMem=" + oMem + "\n" +
                     "cMem=" + cMem + "\n");
