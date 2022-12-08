@@ -149,7 +149,7 @@ public class NetCheck  {
         while (true) {
             long time = System.currentTimeMillis();
             test(pass % passesPerStatusReport == 0, pass == 0);
-            Math2.gcAndWait(); Math2.gcAndWait(); //NetCheck before get memoryString
+            Math2.gcAndWait("NetCheck (between tests)"); Math2.gcAndWait("NetCheck (between tests)"); //NetCheck before get memoryString
             String2.log(Math2.memoryString());
             time = System.currentTimeMillis() - time;
             String2.log("Sleeping...\n");

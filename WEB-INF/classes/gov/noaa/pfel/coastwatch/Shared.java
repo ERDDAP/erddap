@@ -97,7 +97,7 @@ public class Shared extends Thread {
      */
     public void run() {
         ResourceBundle2 classRB2 = oneOf.classRB2();
-        Math2.gcAndWait(); Math2.gcAndWait(); //before getMemoryInUse() in run()  //so getMemoryInUse more accurate
+        Math2.gcAndWait("Shared.run"); Math2.gcAndWait("Shared.run"); //before getMemoryInUse() in run()  //so getMemoryInUse more accurate
         long memoryInUse = Math2.getMemoryInUse();
         try {
             long startTime = System.currentTimeMillis();
@@ -614,7 +614,7 @@ String2.log("!!!Category=" + category);
 
             //*** print lots of useful information
             resetTime = System.currentTimeMillis() - startTime;
-            Math2.gcAndWait(); Math2.gcAndWait(); //before getMemoryInUse() in run()   //so getMemoryInUse more accurate
+            Math2.gcAndWait("Shared.run"); Math2.gcAndWait("Shared.run"); //before getMemoryInUse() in run()   //so getMemoryInUse more accurate
             String2.log( 
                 "Shared.run ending stats:\n" +
                 "  Memory used (KB) = " + ((Math2.getMemoryInUse() - memoryInUse) / 1024) + "\n" +
@@ -1027,7 +1027,7 @@ String2.log("!!!Category=" + category);
         String[] name7s  = shared.activeGridDataSet7Names();
         for (int i = 0; i < options.length; i++)
             String2.log(name7s[i] + " = " + String2.noLongerThanDots(options[i], 68));
-        Math2.gcAndWait(); Math2.gcAndWait(); //part of a test 
+        Math2.gcAndWait("Shared (between tests)"); Math2.gcAndWait("Shared (between tests)"); //part of a test 
         String2.log(Math2.memoryString() +  //~45 MB for CWBrowser
             "\nShared.test done. TIME=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - time));

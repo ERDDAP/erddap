@@ -2576,8 +2576,8 @@ String expected =
         String results, expected, tName;
 
         //sleep before these timing tests
-        Math2.gc(5000);
-        Math2.gc(5000);
+        Math2.gc("EDDTableFromFileNames (between tests)", 5000);
+        Math2.gc("EDDTableFromFileNames (between tests)", 5000);
 
         if (true) {
             //root dir  

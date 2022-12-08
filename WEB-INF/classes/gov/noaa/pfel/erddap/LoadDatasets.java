@@ -1048,12 +1048,12 @@ public class LoadDatasets extends Thread {
                     String2.right("" + Math.min(9999999, EDStatic.tooManyRequests), 8) + 
                     threadCounts + 
                     String2.right("" + using/Math2.BytesPerMB, 7) + //memory using
-                    String2.right("" + EDStatic.gcCalled, 6) +
+                    String2.right("" + Math2.gcCallCount, 6) +
                     openFiles +
                     "\n");
                 
                 //reset  since last majorReload
-                EDStatic.gcCalled = 0;
+                Math2.gcCallCount = 0;
                 EDStatic.requestsShed = 0;
                 EDStatic.dangerousMemoryEmails = 0;
                 EDStatic.dangerousMemoryFailures = 0;
@@ -1078,7 +1078,7 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         contentSB.append(threadSummary + "\n");
 
-                    contentSB.append(EDStatic.gcCalled + " gc calls, " + 
+                    contentSB.append(Math2.gcCallCount + " gc calls, " + 
                         EDStatic.requestsShed + " requests shed, and " +  
                         EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
                     contentSB.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
@@ -1218,7 +1218,7 @@ public class LoadDatasets extends Thread {
                     if (threadSummary != null)
                         sb.append(threadSummary + "\n");
 
-                    sb.append(EDStatic.gcCalled + " gc calls, " + 
+                    sb.append(Math2.gcCallCount + " gc calls, " + 
                         EDStatic.requestsShed + " requests shed, and " +  
                         EDStatic.dangerousMemoryEmails + " dangerousMemoryEmails since last major LoadDatasets\n");
                     sb.append(Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n\n");
@@ -1405,7 +1405,7 @@ public class LoadDatasets extends Thread {
 
             try {
                 //gc to avoid out-of-memory
-                Math2.gcAndWait(); //avoid trouble in updateLucene()
+                Math2.gcAndWait("LoadDatasets.updateLucene"); //avoid trouble in updateLucene()
 
                 String2.log("start updateLucene()"); 
                 if (EDStatic.luceneIndexWriter == null) //if trouble last time
@@ -1460,7 +1460,7 @@ public class LoadDatasets extends Thread {
                     try {
                         //abandon pending changes
                         EDStatic.luceneIndexWriter.close();
-                        Math2.gcAndWait(); //part of dealing with lucene trouble
+                        Math2.gcAndWait("LoadDatasets.updateLucene (handle trouble)"); //part of dealing with lucene trouble
                     } catch (Throwable t2) {
                         String2.log(MustBe.throwableToString(t2));
                     }

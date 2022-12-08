@@ -5316,7 +5316,7 @@ expected =
         int language = 0; 
         //gc and sleep to give computer time to catch up from previous tests
         for (int i = 0; i < 4; i++) 
-            Math2.gc(5000);
+            Math2.gc("EDDGridFromNcFiles.testSpeed (between tests)", 5000);
         boolean oReallyVerbose = reallyVerbose;
         reallyVerbose = false;
         String outName;
@@ -5405,7 +5405,7 @@ expected =
                     dotExt + " speed\n");
                 long time = 0, cLength = 0;
                 for (int chance = 0; chance < 3; chance++) {
-                    Math2.gcAndWait(); //in a test
+                    Math2.gcAndWait("EDDGridFromNcFiles (between tests)"); //in a test
                     time = System.currentTimeMillis();
                     outName = baseOut + chance + dotExt;
                     SSR.downloadFile(baseRequest + dotExt + userDapQuery + Math2.random(1000), outName, tryToCompress);
@@ -11738,8 +11738,8 @@ expected =
         int expectedBytes, int expectedTimeS) throws Throwable {
         int language = 0; 
         testVerboseOn();
-        Math2.gcAndWait();  //in a test
-        Math2.gcAndWait();  //in a test
+        Math2.gcAndWait("EDDGridFromNcFiles (between tests)");  //in a test
+        Math2.gcAndWait("EDDGridFromNcFiles (between tests)");  //in a test
         String msg ="\n*** EDDGridFromDap.testBigRequestSpeed(nTimePoints=" + nTimePoints + ", " + fileType + ")" +
             "\n  partialRequestMaxBytes=" + EDStatic.partialRequestMaxBytes + 
                 " estimated nPartialRequests=" + 
@@ -15028,7 +15028,7 @@ expected =
                 continue;
             //delete all files in .gz cache dir
             File2.deleteAllFiles(eddGrid.decompressedDirectory());
-            Math2.gc(30000); //let system settle
+            Math2.gc("EDDGridFromNcFiles (between tests)", 30000); //let system settle
 
             long tTime = System.currentTimeMillis();
             eddGrid.nThreads = Math.abs(nt);
@@ -15056,7 +15056,7 @@ expected =
         }
         String2.log(bigResults.toString());
         String2.log("  (Lenovo: 2 cores: nThreads/s 3/4,2/3,1/3,1/4,2/3,3/3");
-        Math2.gc(10000);
+        Math2.gc("EDDGridFromNcFiles (between tests)", 10000);
     }
 
     /**

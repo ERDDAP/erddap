@@ -2499,7 +2499,7 @@ public class Table  {
                 continue;
               
             //if (debugMode && row % 1000000 == 0) {
-            //    Math2.gcAndWait(); 
+            //    Math2.gcAndWait("Table.readAscii (debugMode)"); 
             //    String2.log(Math2.memoryString() + "\n" + String2.canonicalStatistics());
             //}
 
@@ -32580,7 +32580,7 @@ String2.log(table.dataToString());
         Test.ensureEqual(table2.columnAttributes(9).getString("units"), "Strings", "");
 
         //** finally 
-        Math2.gc(10000); //in a test.  Do something useful while browser gets going to display the file.
+        Math2.gc("Table (between tests)", 10000); //in a test.  Do something useful while browser gets going to display the file.
         File2.delete(fileName);
     }
 
@@ -33607,7 +33607,7 @@ expected =
 
         for (int attempt = 0; attempt < 4; attempt++) {
             String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
-            Math2.gcAndWait(); //in a test
+            Math2.gcAndWait("Table (between tests)"); //in a test
             Math2.sleep(5000);
             //time it
             long fileLength = File2.length(fileName); //was 1335204
@@ -33694,7 +33694,7 @@ expected =
 
         for (int attempt = 0; attempt < 3; attempt++) {
             String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
-            Math2.gcAndWait(); //in a test
+            Math2.gcAndWait("Table (between tests)"); //in a test
 
             //time it
             time = System.currentTimeMillis();
@@ -33736,7 +33736,7 @@ expected =
 
         for (int attempt = 0; attempt < 3; attempt++) {
             String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
-            Math2.gcAndWait(); //in a test
+            Math2.gcAndWait("Table (between tests)"); //in a test
 
             //time it
             time = System.currentTimeMillis();
@@ -34764,14 +34764,14 @@ readAsNcCF?
      */
     public static void testBigAscii() throws Exception {
         PrimitiveArray.reallyVerbose = true;
-        Math2.gcAndWait(); Math2.gcAndWait();   //in a test
+        Math2.gcAndWait("Table (between tests)"); Math2.gcAndWait("Table (between tests)");   //in a test
         String2.log("\n*** Table.testBigAscii(): " + Math2.memoryString());
 
         Table table = new Table();
         long time = System.currentTimeMillis();
         table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
         time = System.currentTimeMillis() - time;
-        Math2.gcAndWait(); Math2.gcAndWait(); //in a test
+        Math2.gcAndWait("Table (between tests)"); Math2.gcAndWait("Table (between tests)"); //in a test
         String2.log(" done. " + Math2.memoryString() + "\n" +
             String2.canonicalStatistics());  //in a test
         String results = table.dataToString(4);
@@ -34841,7 +34841,7 @@ readAsNcCF?
 "*END_DATA*\n";
         Test.ensureEqual(results, expected, "results=\n" + results);        
 
-        Math2.gcAndWait(); //in a test
+        Math2.gcAndWait("Table (between tests)"); //in a test
         String msg = Math2.memoryString() + "\n" + 
             String2.canonicalStatistics() + "\n" +
             "testBigAscii time=" + time + 

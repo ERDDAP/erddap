@@ -274,7 +274,7 @@ public class OneOf {
             String2.setupLog(false, false, 
                 bigParentDirectory + "log.txt",
                 true, String2.logFileDefaultMaxSize); //append?
-            Math2.gcAndWait();  //before get memoryString() in OneOf constructor
+            Math2.gcAndWait("OneOf constructor");  //before get memoryString() in OneOf constructor
             String2.log("*** Constructing OneOf for " + shortClassName + " at " + 
                 Calendar2.getCurrentISODateTimeStringLocalTZ() + "\n" +
                 "logFile=" + String2.logFileName() + "\n" +
