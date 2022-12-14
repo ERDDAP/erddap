@@ -813,8 +813,8 @@ or Mac server instead.
   <br>On Linux, Mac, and Windows, download
      <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.21.zip -->  <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.20/erddapContent.zip">erddapContent.zip</a>
-    (version 2.21, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-10-09)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddapContent.zip">erddapContent.zip</a>
+    (version 2.22, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-12-08)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -856,6 +856,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddapContent.zip">2.18</a>
     (19,792 bytes, MD5=8F892616BAEEF2DF0F4BB036DCB4AD7C, dated 2022-02-16)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddapContent.zip">2.21</a>
+    (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-10-09)
     ]
 
   <p>Then,
@@ -932,13 +935,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.21.war        // erddapVersion 
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.22.war        // erddapVersion 
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.21, 568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated
-    <span class="N">2022-10-09</span>)
+    <br>(version 2.22, 567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated
+    <span class="N">2022-12-08</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -972,6 +975,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.18/erddap.war">2.18</a>
     (551,069,844 bytes, MD5=461325E97E7577EC671DD50246CCFB8B, dated 2022-02-23)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">2.21</a>
+    (568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated 2022-10-09)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1167,10 +1173,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download            <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.21, 568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated
-    <span class="N">2022-10-09</span>)
+    <br>(version 2.22, 567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated
+    <span class="N">2022-12-08</span>)
   <br>&nbsp;
 
 <li><a class="selfLink" id="messages.xml" href="#messages.xml" rel="bookmark">messages.xml</a>
@@ -1892,7 +1898,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
   The solution is to periodically (or every time?) 
   <a rel="help" href="#restart">shut down and restart tomcat and ERDDAP</a>,
   instead of just reloading ERDDAP.
-  <br>[Update: This problem should be greatly minimized or fixed in ERDDAP version 1.24.]
+  <br>[Update: This problem was greatly minimized or fixed in ERDDAP version 1.24.]
   <br>&nbsp;
 
 <li><strong><a class="selfLink" id="log" href="#log" rel="bookmark">log.txt</a></strong> 
