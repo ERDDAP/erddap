@@ -1863,9 +1863,7 @@ public class Erddap extends HttpServlet {
                 queryString, 
                 EDStatic.LogInAr[language], 
                 (isGoogle || isOauth2? 
-                    "<meta name=\"google-signin-client_id\" " + 
-                    "content=\"" + EDStatic.googleClientID + "\">\n" + 
-                    "<script src=\"https://apis.google.com/js/platform.js\" async defer></script>\n" : ""), 
+                    "<script src=\"https://accounts.google.com/gsi/client\" async defer></script>\n" : ""), 
                 out);
 
             try {
@@ -1897,16 +1895,16 @@ public class Erddap extends HttpServlet {
                     (isGoogle || isOauth2? 
                         "<script>\n" +
                         "  function onSignIn(googleUser) {\n" +
-                        "    var id_token = googleUser.getAuthResponse().id_token;\n" +
                         "    var xhr = new XMLHttpRequest();\n" +
                         //loginGoogle.html just handles setting session info.
                         //It isn't a web page and the user isn't redirected there.
                         "    xhr.open('POST', '" + EDStatic.erddapHttpsUrl(language) + "/loginGoogle.html');\n" +
                         "    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');\n" +
                         "    xhr.onload = function() {\n" +
-                        "      console.log('Signed in as: ' + xhr.responseText);\n" +                    
+                        "      console.log('Signed in as: ' + xhr.responseText);\n" +  
+                        "      window.location.assign(\"" + loginUrl + "\");\n" +                  
                         "    };\n" +
-                        "    xhr.send('idtoken=' + id_token);\n" +
+                        "    xhr.send('idtoken=' + googleUser.credential);\n" +
                         "  }\n" +
                         "</script>\n" : "") +
                     "\n" +
@@ -1916,12 +1914,8 @@ public class Erddap extends HttpServlet {
                     "<ul>\n" +
                     (isGoogle || isOauth2?
                         "<li>" + EDStatic.loginGoogleSignInAr[language] + "\n" +
-                        "  <div id=\"gSignInButton\" class=\"g-signin2\" data-onsuccess=\"onSignIn\"></div>\n" +
-                        "  <br>" + EDStatic.loginGoogleSignIn2Ar[language] + "\n" +
-                            widgets.htmlButton("button", "loginToERDDAP", "", "", 
-                                EDStatic.loginErddapAr[language], 
-                                "onclick='window.location.assign(\"" + 
-                                loginUrl + "\")'") +
+                        "  <div id=\"g_id_onload\" data-client_id=\"" + EDStatic.googleClientID + "\"  data-callback=\"onSignIn\"></div>" +
+                        "  <div class=\"g_id_signin\" data-type=\"standard\"></div>" +
                             "\n<br>&nbsp;\n" : "") + //don't say succeeded. It only succeeds if user successfully signed into Google.
                     (isOrcid || isOauth2?
                         //link to orcid web page to enter user's orcid and request authorization
@@ -2069,24 +2063,10 @@ public class Erddap extends HttpServlet {
                         //Javascript scripts are executed in order of appearance.
                         //solution to gapi.auth2 is undefined:
                         //https://stackoverflow.com/questions/29815870/typeerror-gapi-auth2-undefined
-                        "<script>\n" +
-                        "  function initAuth2() {\n" +
-                        "    console.log('in initAuth2()');\n" +
-                        "    gapi.load('auth2', function() {\n" +
-                        "      gapi.auth2.init();\n" +
-                        "    });\n" +
-                        "  }\n" +
-                        "</script>\n" +
-                        "<script src=\"https://apis.google.com/js/platform.js?onload=initAuth2\"></script>\n" + //I removed async and defer so fetched and run immediately
+                        "<script src=\"https://accounts.google.com/gsi/client\"></script>\n" + //I removed async and defer so fetched and run immediately
                         "<script>\n" +
                         "  function signOut() {\n" +       
                         "    console.log('in mySignOff()');\n" +
-                        "    try {\n" +
-                        "      var auth2 = gapi.auth2.getAuthInstance();\n" +
-                        "      auth2.signOut().then(function () {\n" +
-                        "        console.log('User signed out.');\n" +
-                        "        });\n" +
-                        "    } catch (soError) {}\n" +
                         "    window.location.assign(\"" + 
                             loginUrl + encodedSuccessMessage + "\");\n" +
                         "  }\n" +
