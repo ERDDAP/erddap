@@ -3596,10 +3596,6 @@ Nur Personen, die Vereinbarungen mit dem Administrator dieses ERDDAP haben, dür
 <loginPassword>Passwort</loginPassword>
 <loginUserNameAndPassword>Benutzername und Passwort</loginUserNameAndPassword>
 <loginGoogleSignIn>Authentifizieren Sie sich mit Ihrem Google-Konto.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Nachdem sich die Beschriftung der Schaltfläche von &quot;Anmelden&quot; zu &quot;Angemeldet&quot; geändert hat, warten Sie 5 Sekunden.
-<br>Dann
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Authentifizieren Sie sich mit Ihrer ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Melden Sie sich mit Ihrer OpenID-URL an</loginOpenID>
 <loginOpenIDOr>Oder melden Sie sich bei Ihrem bestehenden (Nicht-OpenID)-Konto an unter</loginOpenIDOr>

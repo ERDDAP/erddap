@@ -3179,10 +3179,6 @@ ERDDAP के क्षैतिज लेजेंड के लिए, LegendT
 <loginPassword>पासवर्ड</loginPassword>
 <loginUserNameAndPassword>उपयोगकर्ता नाम और पासवर्ड</loginUserNameAndPassword>
 <loginGoogleSignIn>अपने Google खाते से प्रमाणित करें।</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-बटन का लेबल &quot;साइन इन&quot; से &quot;साइन इन&quot; में बदलने के बाद, 5 सेकंड प्रतीक्षा करें।
-<br>फिर
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>अपने ORCID आईडी से प्रमाणित करें।</loginOrcidSignIn>
 <loginOpenID>अपने ओपनआईडी यूआरएल के साथ लॉग इन करें</loginOpenID>
 <loginOpenIDOr>या अपने मौजूदा (गैर-ओपनआईडी) खाते में लॉग इन करें</loginOpenIDOr>

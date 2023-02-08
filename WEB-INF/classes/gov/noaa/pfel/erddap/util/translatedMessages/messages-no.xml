@@ -3562,10 +3562,6 @@ Kun personer som har avtalt med administratoren av denne ERDDAP kan logge inn.
 <loginPassword>Passord</loginPassword>
 <loginUserNameAndPassword>Brukernavn og passord</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentiser med Google-kontoen din.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Etter at knappens etikett endres fra &quot;Logg på&quot; til &quot;Pålogget&quot;, vent 5 sekunder.
-<br>Deretter
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autentiser med din ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Logg på med din OpenID URL</loginOpenID>
 <loginOpenIDOr>Eller logg inn på din eksisterende (ikke-OpenID) konto på</loginOpenIDOr>

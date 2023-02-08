@@ -4166,9 +4166,6 @@ Only people who have made arrangements with the administrator of this ERDDAP may
 <loginUserNameAndPassword>User Name and Password</loginUserNameAndPassword>
 
 <loginGoogleSignIn>Authenticate with your Google account.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-After the button's label changes from "Sign in" to "Signed in", wait 5 seconds.<br>Then
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Authenticate with your ORCID iD.</loginOrcidSignIn>
 
 <loginOpenID>Log in with your OpenID URL</loginOpenID>

@@ -3560,10 +3560,6 @@ Logować mogą tylko osoby, które dokonały ustaleń z administratorem tego ERD
 <loginPassword>Hasło</loginPassword>
 <loginUserNameAndPassword>Nazwa użytkownika i hasło</loginUserNameAndPassword>
 <loginGoogleSignIn>Uwierzytelnij się za pomocą swojego konta Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Gdy etykieta przycisku zmieni się z „Zaloguj się” na „Zalogowano”, odczekaj 5 sekund.
-<br>Następnie
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Uwierzytelnij się za pomocą swojego identyfikatora ORCID.</loginOrcidSignIn>
 <loginOpenID>Zaloguj się za pomocą swojego adresu URL OpenID</loginOpenID>
 <loginOpenIDOr>Lub zaloguj się na swoje istniejące konto (inne niż OpenID) pod adresem</loginOpenIDOr>

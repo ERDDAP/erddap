@@ -3163,10 +3163,6 @@ href="https://groups.google.com/forum/#!forum/erddap">https://groups.google.com/
 <loginPassword>รหัสผ่าน</loginPassword>
 <loginUserNameAndPassword>ชื่อผู้ใช้และรหัสผ่าน</loginUserNameAndPassword>
 <loginGoogleSignIn>ตรวจสอบสิทธิ์ด้วยบัญชี Google ของคุณ</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-หลังจากที่ป้ายกำกับของปุ่มเปลี่ยนจาก &quot;ลงชื่อเข้าใช้&quot; เป็น &quot;ลงชื่อเข้าใช้&quot; แล้ว ให้รอ 5 วินาที
-<br>แล้ว
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>ตรวจสอบสิทธิ์ด้วย ORCID iD ของคุณ</loginOrcidSignIn>
 <loginOpenID>เข้าสู่ระบบด้วย OpenID URL ของคุณ</loginOpenID>
 <loginOpenIDOr>หรือเข้าสู่ระบบบัญชีที่มีอยู่ (ไม่ใช่ OpenID) ที่</loginOpenIDOr>
