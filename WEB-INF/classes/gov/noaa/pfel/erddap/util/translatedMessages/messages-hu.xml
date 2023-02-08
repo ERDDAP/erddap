@@ -3669,10 +3669,6 @@ Csak azok jelentkezhetnek be, akik megegyeztek az ERDDAP rendszergazdájával.
 <loginPassword>Jelszó</loginPassword>
 <loginUserNameAndPassword>Felhasználónév és jelszó</loginUserNameAndPassword>
 <loginGoogleSignIn>Hitelesítés a Google-fiókjával.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Miután a gomb címkéje „Bejelentkezés”-ről „Bejelentkezett”-re változik, várjon 5 másodpercet.
-<br>Azután
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Hitelesítés az ORCID iD segítségével.</loginOrcidSignIn>
 <loginOpenID>Jelentkezzen be OpenID URL-jével</loginOpenID>
 <loginOpenIDOr>Vagy jelentkezzen be meglévő (nem OpenID) fiókjába a címen</loginOpenIDOr>

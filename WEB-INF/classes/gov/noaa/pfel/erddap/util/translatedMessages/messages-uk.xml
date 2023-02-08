@@ -3536,10 +3536,6 @@ URL-адреса, яку ви бачите тут, — це URL-адреса, с
 <loginPassword>Пароль</loginPassword>
 <loginUserNameAndPassword>Ім&#39;я користувача та пароль</loginUserNameAndPassword>
 <loginGoogleSignIn>Пройдіть автентифікацію за допомогою облікового запису Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Після того, як позначка кнопки зміниться з &quot;Увійти&quot; на &quot;Увійшов&quot;, зачекайте 5 секунд.
-<br>Тоді
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Пройдіть автентифікацію за допомогою ідентифікатора ORCID.</loginOrcidSignIn>
 <loginOpenID>Увійдіть, використовуючи свою URL-адресу OpenID</loginOpenID>
 <loginOpenIDOr>Або увійдіть у свій існуючий обліковий запис (не OpenID) за адресою</loginOpenIDOr>

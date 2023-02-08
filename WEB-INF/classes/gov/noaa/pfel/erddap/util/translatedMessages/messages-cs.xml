@@ -3585,10 +3585,6 @@ Přihlásit se mohou pouze lidé, kteří se dohodli se správcem tohoto ERDDAP 
 <loginPassword>Heslo</loginPassword>
 <loginUserNameAndPassword>Uživatelské jméno a heslo</loginUserNameAndPassword>
 <loginGoogleSignIn>Proveďte ověření pomocí účtu Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Poté, co se označení tlačítka změní z „Přihlásit se“ na „Přihlášeno“, počkejte 5 sekund.
-<br>Pak
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Ověřte se svým ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Přihlaste se pomocí adresy URL OpenID</loginOpenID>
 <loginOpenIDOr>Nebo se přihlaste ke svému stávajícímu účtu (bez OpenID) na adrese</loginOpenIDOr>
