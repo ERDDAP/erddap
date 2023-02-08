@@ -3697,10 +3697,6 @@ Chỉ những người đã sắp xếp với quản trị viên của ERDDAP n�
 <loginPassword>Mật khẩu</loginPassword>
 <loginUserNameAndPassword>Tên người dùng và mật khẩu</loginUserNameAndPassword>
 <loginGoogleSignIn>Xác thực bằng tài khoản Google của bạn.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Sau khi nhãn của nút thay đổi từ &quot;Đăng nhập&quot; thành &quot;Đã đăng nhập&quot;, hãy đợi 5 giây.
-<br>sau đó
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Xác thực bằng ORCID iD của bạn.</loginOrcidSignIn>
 <loginOpenID>Đăng nhập bằng URL OpenID của bạn</loginOpenID>
 <loginOpenIDOr>Hoặc đăng nhập vào tài khoản (không phải OpenID) hiện có của bạn tại</loginOpenIDOr>

@@ -3595,10 +3595,6 @@ Sadece bu ERDDAP yöneticisi ile anlaşma yapmış kişiler giriş yapabilir.
 <loginPassword>Parola</loginPassword>
 <loginUserNameAndPassword>Kullanıcı adı ve şifre</loginUserNameAndPassword>
 <loginGoogleSignIn>Google hesabınızla kimlik doğrulaması yapın.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Düğmenin etiketi &quot;Oturum aç&quot;dan &quot;Oturum açıldı&quot; olarak değiştikten sonra 5 saniye bekleyin.
-<br>Sonra
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>ORCID kimliğinizle kimlik doğrulaması yapın.</loginOrcidSignIn>
 <loginOpenID>OpenID URL&#39;nizle giriş yapın</loginOpenID>
 <loginOpenIDOr>Veya adresindeki mevcut (OpenID olmayan) hesabınıza giriş yapın.</loginOpenIDOr>

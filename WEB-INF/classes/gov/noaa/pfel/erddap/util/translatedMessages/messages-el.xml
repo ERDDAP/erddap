@@ -3548,10 +3548,6 @@ href="https://groups.google.com/forum/#!forum/erddap">διεύθυνση https:/
 <loginPassword>Κωδικός πρόσβασης</loginPassword>
 <loginUserNameAndPassword>Ονομα χρήστη και κωδικός</loginUserNameAndPassword>
 <loginGoogleSignIn>Πραγματοποιήστε έλεγχο ταυτότητας με τον λογαριασμό σας Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Αφού αλλάξει η ετικέτα του κουμπιού από &quot;Σύνδεση&quot; σε &quot;Σύνδεση&quot;, περιμένετε 5 δευτερόλεπτα.
-<br>Τότε
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Πραγματοποιήστε έλεγχο ταυτότητας με το αναγνωριστικό ORCID.</loginOrcidSignIn>
 <loginOpenID>Συνδεθείτε με το OpenID URL σας</loginOpenID>
 <loginOpenIDOr>Ή συνδεθείτε στον υπάρχοντα (μη OpenID) λογαριασμό σας στο</loginOpenIDOr>
