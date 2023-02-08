@@ -3668,10 +3668,6 @@ Solo las personas que hayan hecho arreglos con el administrador de este ERDDAP p
 <loginPassword>Contraseña</loginPassword>
 <loginUserNameAndPassword>Nombre de usuario y contraseña</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentíquese con su cuenta de Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Después de que la etiqueta del botón cambie de &quot;Iniciar sesión&quot; a &quot;Iniciar sesión&quot;, espere 5 segundos.
-<br>Luego
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autentíquese con su ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Inicie sesión con su URL de OpenID</loginOpenID>
 <loginOpenIDOr>O inicie sesión en su cuenta existente (no OpenID) en</loginOpenIDOr>

@@ -3548,10 +3548,6 @@ Watu ambao wamefanya mipango na msimamizi wa ERDDAP hii pekee ndio wanaweza kuin
 <loginPassword>Nenosiri</loginPassword>
 <loginUserNameAndPassword>Jina la mtumiaji na Nenosiri</loginUserNameAndPassword>
 <loginGoogleSignIn>Thibitisha kwa akaunti yako ya Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Baada ya lebo ya kitufe kubadilika kutoka &quot;Ingia&quot; hadi &quot;Imeingia&quot;, subiri sekunde 5.
-<br>Kisha
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Thibitisha kwa kutumia kitambulisho chako cha ORCID.</loginOrcidSignIn>
 <loginOpenID>Ingia kwa OpenID URL yako</loginOpenID>
 <loginOpenIDOr>Au ingia kwenye akaunti yako iliyopo (isiyo ya OpenID) kwa</loginOpenIDOr>

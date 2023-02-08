@@ -2915,10 +2915,6 @@ URL 标识数据集、响应所需的文件类型、要查看的数据子集以�
 <loginPassword>密码</loginPassword>
 <loginUserNameAndPassword>用户名和密码</loginUserNameAndPassword>
 <loginGoogleSignIn>使用您的 Google 帐户进行身份验证。</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-按钮的标签从“登录”变为“已登录”后，等待 5 秒钟。
-<br>然后
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>使用您的 ORCID iD 进行身份验证。</loginOrcidSignIn>
 <loginOpenID>使用您的 OpenID URL 登录</loginOpenID>
 <loginOpenIDOr>或登录您现有的（非 OpenID）帐户，网址为</loginOpenIDOr>

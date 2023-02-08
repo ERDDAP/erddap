@@ -1342,7 +1342,6 @@ public static boolean developmentMode = false;
         loginPasswordAr,
         loginUserNameAndPasswordAr,
         loginGoogleSignInAr,
-        loginGoogleSignIn2Ar,
         loginOrcidSignInAr,
         loginOpenIDAr,
         loginOpenIDOrAr,
@@ -3002,7 +3001,6 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         loginPasswordAr              = getNotNothingString(messagesAr, "loginPassword",              errorInMethod);
         loginUserNameAndPasswordAr   = getNotNothingString(messagesAr, "loginUserNameAndPassword",   errorInMethod);
         loginGoogleSignInAr          = getNotNothingString(messagesAr, "loginGoogleSignIn",          errorInMethod);
-        loginGoogleSignIn2Ar         = getNotNothingString(messagesAr, "loginGoogleSignIn2",         errorInMethod);
         loginOrcidSignInAr           = getNotNothingString(messagesAr, "loginOrcidSignIn",           errorInMethod);
         loginErddapAr                = getNotNothingString(messagesAr, "loginErddap",                errorInMethod);
         loginOpenIDAr                = getNotNothingString(messagesAr, "loginOpenID",                errorInMethod);

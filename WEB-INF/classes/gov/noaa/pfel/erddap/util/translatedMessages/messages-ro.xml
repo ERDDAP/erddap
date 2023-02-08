@@ -3549,10 +3549,6 @@ Numai persoanele care au făcut aranjamente cu administratorul acestui ERDDAP se
 <loginPassword>Parola</loginPassword>
 <loginUserNameAndPassword>Nume de utilizator și parolă</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentificați-vă cu contul dvs. Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-După ce eticheta butonului se schimbă din „Conectare” în „Conectat”, așteptați 5 secunde.
-<br>Atunci
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autentificați-vă cu ID-ul dvs. ORCID.</loginOrcidSignIn>
 <loginOpenID>Conectați-vă cu adresa URL OpenID</loginOpenID>
 <loginOpenIDOr>Sau conectați-vă la contul dvs. existent (non-OpenID) la</loginOpenIDOr>

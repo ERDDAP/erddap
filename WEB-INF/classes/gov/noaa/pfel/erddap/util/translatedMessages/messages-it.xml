@@ -3569,10 +3569,6 @@ Possono accedere solo le persone che hanno preso accordi con l&#39;amministrator
 <loginPassword>Parola d&#39;ordine</loginPassword>
 <loginUserNameAndPassword>Nome utente e password</loginUserNameAndPassword>
 <loginGoogleSignIn>Autenticati con il tuo account Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Dopo che l&#39;etichetta del pulsante cambia da &quot;Accedi&quot; a &quot;Accesso effettuato&quot;, attendi 5 secondi.
-<br>Quindi
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autenticati con il tuo ID ORCID.</loginOrcidSignIn>
 <loginOpenID>Accedi con il tuo URL OpenID</loginOpenID>
 <loginOpenIDOr>Oppure accedi al tuo account esistente (non OpenID) su</loginOpenIDOr>
