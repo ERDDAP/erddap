@@ -1590,7 +1590,7 @@ public class Table  {
         for (int col = 0; col < nColumns; col++) {
             PrimitiveArray pa = columns.get(col);
             if (pa instanceof StringArray sa) {
-                //String2.log(">>getNcHeader sa=" + sa.toNccsvAttString());
+                //String2.log(">>getNcHeader sa=" + sa.toNccsv255AttString());
                 sb.append("\t" + getColumnName(col) + NcHelper.StringLengthSuffix + 
                     " = " + sa.maxStringLength() + " ;\n");
             }
@@ -1672,7 +1672,7 @@ public class Table  {
         sb.append(getColumnNamesCSVString() + "\n");
         for (int row = start; row < stop; row++) {
             for (int col = 0; col < nCols; col++) {
-                sb.append(columns.get(col).getNccsvDataString(row));
+                sb.append(columns.get(col).getNccsv127DataString(row));
                 if (col == nCols - 1)
                     sb.append('\n');
                 else 
@@ -3280,8 +3280,8 @@ public class Table  {
      */
     public void readNccsv(String fullName, boolean readData) throws Exception {
         BufferedReader bufferedReader = String2.isRemote(fullName)?
-            SSR.getBufferedUrlReader(fullName) : //handles AWS S3
-            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), File2.ISO_8859_1));      
+            SSR.getBufferedUrlReader(fullName) : //handles AWS S3.  It assumes UTF-8.
+            new BufferedReader(new InputStreamReader(new FileInputStream(fullName), File2.UTF_8));      
         try {
             lowReadNccsv(fullName, readData, bufferedReader);
         } finally {
@@ -3535,7 +3535,7 @@ public class Table  {
         long time = System.currentTimeMillis();
 
         try {
-            bw = File2.getBufferedFileWriter88591(fullFileName + randomInt);
+            bw = File2.getBufferedFileWriterUtf8(fullFileName + randomInt);
             saveAsNccsv(catchScalars, writeMetadata, firstDataRow, lastDataRow, bw);
             bw.close(); 
             bw = null;
@@ -3568,7 +3568,7 @@ public class Table  {
      *    This adds a *DATA_TYPE* or *SCALAR* attribute to each column.
      * @param firstDataRow 0..
      * @param lastDataRow exclusive.  Use Integer.MAX_VALUE to write all.
-     * @param writer   At the end it is flushed, not closed.
+     * @param writer A UTF-8 writer.  At the end it is flushed, not closed.
      * @throws Exception if trouble. No_data is not an error.
      */
     public void saveAsNccsv(boolean catchScalars, boolean writeMetadata, 
@@ -3595,7 +3595,7 @@ public class Table  {
             }
         }
 
-        //write metadata       
+        //write metadata
         if (writeMetadata) {
             writer.write(globalAttributes.toNccsvString(String2.NCCSV_GLOBAL));
 
@@ -3665,7 +3665,7 @@ public class Table  {
         String dir = String2.unitTestDataDir + "nccsv/";
 
         //read/write scalar
-        String fileName = dir + "testScalar.csv";
+        String fileName = dir + "testScalar_1.1.csv";
         Table table = new Table();
         table.readNccsv(fileName); 
         for (int c = 0; c < table.nColumns(); c++) {
@@ -3673,8 +3673,8 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
         String results = table.saveAsNccsv(); 
-        String expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+        String expected1 = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3689,7 +3689,7 @@ public class Table  {
 "*GLOBAL*,subsetVariables,ship\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
-"ship,*SCALAR*,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"ship,*SCALAR*,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
@@ -3713,13 +3713,13 @@ public class Table  {
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -3729,17 +3729,17 @@ public class Table  {
 "*END_METADATA*\n" +
 "time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
 "2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
-"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
 "2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
 "2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
-"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
 "2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected1, "results=\n" + results);
 
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //don't catch scalar
-        expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+        String expected2 = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3778,13 +3778,13 @@ public class Table  {
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -3793,28 +3793,30 @@ public class Table  {
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected2, "results=\n" + results);
 
 
         //non scalar  
-        fileName = dir + "sample.csv";
+        fileName = dir + "sample_1.1.csv";
         table.readNccsv(fileName); 
         for (int c = 0; c < table.nColumns(); c++) {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
         //String2.log(table.toString());
-
+Attributes atts = table.columnAttributes("sst");
+PrimitiveArray pa = atts.get("testChars");
+String2.log(">> sample_1.1.csv testChars isCharArray?" + (pa instanceof CharArray) + " isStringArray?" + (pa instanceof StringArray));
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //don't catch scalars
-        expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+        expected1 = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3853,13 +3855,13 @@ public class Table  {
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -3869,16 +3871,32 @@ public class Table  {
 "*END_METADATA*\n" +
 "ship,time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
 "Bell M. Shimada,2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
-"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
 "Bell M. Shimada,2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
 "Bell M. Shimada,2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
-"Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+"Bell M. Shimada,2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
 "Bell M. Shimada,2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected1, "results=\n" + results);
+
+        //non scalar  
+        fileName = dir + "sample_1.2.csv";
+        table.readNccsv(fileName); 
+        for (int c = 0; c < table.nColumns(); c++) {
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
+        }
+        //String2.log(table.toString());
+atts = table.columnAttributes("sst");
+pa = atts.get("testChars");
+String2.log(">> sample_1.2.csv testChars isCharArray?" + (pa instanceof CharArray) + " isStringArray?" + (pa instanceof StringArray));
+        results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //don't catch scalars
+        //we expect the same results
+        Test.ensureEqual(results, expected1, "results=\n" + results);
+
         
         //just metadata
-        fileName = dir + "sampleMetadata.csv";
+        fileName = dir + "sampleMetadata_1.1.csv";
         table = new Table();
         table.readNccsv(fileName, false); //readData?
         for (int c = 0; c < table.nColumns(); c++) {
@@ -3886,8 +3904,8 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
         results = table.saveAsNccsv(true, true, 0, 0);  //catch scalar, writeMetadata, don't write data
-        expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+        String expected3 = 
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3920,13 +3938,13 @@ public class Table  {
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,0L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -3934,20 +3952,37 @@ public class Table  {
 "sst,units,degree_C\n" +
 "\n" +
 "*END_METADATA*\n";
-        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(results, expected3, "results=\n" + results);
+
+        //just metadata
+        fileName = dir + "sampleMetadata_1.2.csv";
+        table = new Table();
+        table.readNccsv(fileName, false); //readData?
+        for (int c = 0; c < table.nColumns(); c++) {
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
+        }
+        results = table.saveAsNccsv(true, true, 0, 0);  //catch scalar, writeMetadata, don't write data
+        Test.ensureEqual(results, expected3, "results=\n" + results);
+
     }
 
     public static void testNccsvInteractive() throws Exception {
 
         String dir = String2.unitTestDataDir + "nccsv/";
+boolean haveExcel = false; //as of ~2020, I no longer have excel
 
+        //*** test 1.1 file
         //test round trip to spreadsheet and back
         //make a copy of sampleScalar
-        String fileName = dir + "sampleExcel.csv";
+        String fileName = dir + "sampleExcel_1.1.csv";
         File2.writeToFile88591(fileName, 
-            File2.directReadFrom88591File(dir + "testScalar.csv"));
+            File2.directReadFrom88591File(dir + "testScalar_1.1.csv"));
+
+if (haveExcel) {
         Test.displayInBrowser("file://" + fileName); //.csv
-        String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel.csv : yes : yes.");
+        String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel_1.1.csv : yes : yes.");
+}
         Table table = new Table();
         table.readNccsv(fileName); 
         for (int c = 0; c < table.nColumns(); c++) {
@@ -3955,8 +3990,8 @@ public class Table  {
             Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
         }
         String results = table.saveAsNccsv(); 
-        String expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+        String expected = //it gets converted to nccsv 1.2
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
 "*GLOBAL*,creator_name,Bob Simons\n" +
@@ -3971,7 +4006,7 @@ public class Table  {
 "*GLOBAL*,subsetVariables,ship\n" +
 "*GLOBAL*,summary,This is a paragraph or two describing the dataset.\n" +
 "*GLOBAL*,title,NCCSV Demonstration\n" +
-"ship,*SCALAR*,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"ship,*SCALAR*,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "ship,cf_role,trajectory_id\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,standard_name,time\n" +
@@ -3995,13 +4030,13 @@ public class Table  {
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -4011,20 +4046,47 @@ public class Table  {
 "*END_METADATA*\n" +
 "time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
 "2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
-"2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
 "2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
 "2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
-"BAD ROW: TOO FEW ITEMS,,,?,,\n" + //this disappears if I don't actually do Excel Save As
-"2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
+(haveExcel? "BAD ROW: TOO FEW ITEMS,,,?,,\n" : "") + //this disappears if I don't actually do Excel Save As
+"2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
 "2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         try {
             Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Exception e) {
             Test.knownProblem(
-                "How to keep integer in string att as a string?!", 
+                "1.1: How to keep integer in string att as a string?!", 
                 "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
         }
+
+        //*** test 1.2 file
+        //test round trip to spreadsheet and back
+        //make a copy of sampleScalar
+        fileName = dir + "sampleExcel_1.2.csv";
+        File2.writeToFileUtf8(fileName, 
+            File2.directReadFromUtf8File(dir + "testScalar_1.2.csv"));
+if (haveExcel) {
+        Test.displayInBrowser("file://" + fileName); //.csv
+        String2.pressEnterToContinue("\nIn Excel, use File : Save As : CSV : as sampleExcel_1.2.csv : yes : yes.");
+}
+        table = new Table();
+        table.readNccsv(fileName); 
+        for (int c = 0; c < table.nColumns(); c++) {
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_SCALAR)  ==null, "col=" + c);
+            Test.ensureTrue(table.columnAttributes(c).get(String2.NCCSV_DATATYPE)==null, "col=" + c);
+        }
+        results = table.saveAsNccsv(); 
+
+        try {
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        } catch (Exception e) {
+            Test.knownProblem(
+                "1.2: How to keep integer in string att as a string?!", 
+                "If I don't actually do Excel 'Save As', the BAD ROW disappears.", e);
+        }
+
     }
 
     /**
@@ -4040,7 +4102,7 @@ public class Table  {
      * @throws Exception if trouble. No_data is not an error.
      */
 /* project not finished or tested
-    public void writeNccsvDos(DataOutputStream dos,   //should be Writer to 8859-1 file
+    public void writeNccsvDos(DataOutputStream dos,   //should be Writer to a UTF-8 file
         boolean catchScalars, 
         boolean writeMetadata, int writeDataRows) throws Exception {
 
@@ -34796,7 +34858,7 @@ readAsNcCF?
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //catchScalars, writeMetadata, firstDataRow, lastDataRow
 
         expected = //many vars are scalar because they're constant in last 6 rows
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "cruise_name,*DATA_TYPE*,String\n" +
 "station,*DATA_TYPE*,byte\n" +
 "cast,*DATA_TYPE*,byte\n" +

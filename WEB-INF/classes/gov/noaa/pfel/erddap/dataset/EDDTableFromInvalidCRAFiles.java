@@ -481,7 +481,7 @@ String expected =
 "        <att name=\"title\">World Ocean Database - Multi-cast file</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"history\">World Ocean Database</att>\n" +

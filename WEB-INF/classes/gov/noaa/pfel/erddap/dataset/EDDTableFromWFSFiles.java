@@ -385,7 +385,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Kentucky Geological Survey</att>\n" +
 "        <att name=\"creator_url\">https://www.uky.edu/KGS/</att>\n" +
 "        <att name=\"infoUrl\">https://www.uky.edu/KGS/</att>\n" +

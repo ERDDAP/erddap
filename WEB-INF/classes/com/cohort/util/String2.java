@@ -144,8 +144,8 @@ public class String2 {
     public final static String ACDD_PERSON_REGEX2 = 
         "(Dr\\.? |Prof\\.? |)[A-Z](\\.|[a-z]*) ([A-Z]\\.? |)(Ma?c|)[A-Z][a-z]+(, .+|)"; 
 
-    public final static String NCCSV_VERSION        = "NCCSV-1.1";
-    public final static String NCCSV_BINARY_VERSION = "NCCSV_BINARY-1.0";
+    public final static String NCCSV_VERSION        = "NCCSV-1.2";
+    public final static String NCCSV_BINARY_VERSION = "NCCSV_BINARY-1.2"; //not used yet
     public final static String NCCSV_GLOBAL         = "*GLOBAL*";
     public final static String NCCSV_DATATYPE       = "*DATA_TYPE*";
     public final static String NCCSV_SCALAR         = "*SCALAR*";
@@ -163,8 +163,8 @@ public class String2 {
         // -(    1      .? 1?      |  .1        )  e   +-      100   |NaN  d  
         "(-?(\\d{1,25}\\.?\\d{0,25}|\\.\\d{1,25})([eE][+-]?\\d{1,3})?|NaN)d");
     public final static Pattern NCCSV_CHAR_ATT_PATTERN   = Pattern.compile(
-        //  ' char    |  \special              | "" | \uffff             '
-        "\"?'([ -~^\"]|\\\\[bfnrt/\\\'\\\"\\\\]|\"\"|\\\\u[0-9a-fA-F]{4})'\"?"); 
+        //  ' char         |  \special              | "" | \uffff             '
+        "\"?'([ -\uffff^\"]|\\\\[bfnrt/\\\'\\\"\\\\]|\"\"|\\\\u[0-9a-fA-F]{4})'\"?"); 
     public final static Pattern NCCSV_UBYTE_ATT_PATTERN   = Pattern.compile("-?\\d{1,3}ub");
     public final static Pattern NCCSV_USHORT_ATT_PATTERN  = Pattern.compile("-?\\d{1,5}us");
     public final static Pattern NCCSV_UINT_ATT_PATTERN    = Pattern.compile("-?\\d{1,10}ui");
@@ -2371,7 +2371,9 @@ public class String2 {
     }
 
     /**
-     * This encodes one char for an NCCSV char or String (7-bit ASCII), without surrounding quotes.
+     * This encodes one char for an NCCSV char or String, without surrounding quotes.
+     * " returns ""!
+     * See tests in PrimitiveArray.testNccsv().
      */
     public static String toNccsvChar(final char ch) {
         if (ch == '\\') return "\\\\";
@@ -2381,13 +2383,28 @@ public class String2 {
         if (ch == '\r') return "\\r";
         if (ch == '\t') return "\\t";
         if (ch == '\"') return "\"\"";
-        if (ch < ' ' || ch > '~') return "\\u" + zeroPad(Integer.toHexString(ch), 4); 
+        if (ch < ' ') 
+            return "\\u" + zeroPad(Integer.toHexString(ch), 4); 
         return "" + ch;
     }
 
     /**
-     * This encodes one String as an NCCSV data String (7-bit ASCII), with surrounding double quotes
+     * This is like toNccsvChar, but chars &gt;127 are \\uhhhh encoded.
+     * " returns ""!
+     * This was the original toNccsvChar, but now nccsv allows Unicode chars.
+     * This is still useful for diagnostic messages because a DOS window doesn't support unicode.
+     * See tests in PrimitiveArray.testNccsv().
+     */
+    public static String toNccsv127Char(final char ch) {
+        return ch > 127? 
+            "\\u" + zeroPad(Integer.toHexString(ch), 4) :
+            toNccsvChar(ch); 
+    }
+
+    /**
+     * This encodes one String as an NCCSV data String, with surrounding double quotes
      * only if necessary.
+     * See tests in PrimitiveArray.testNccsv().
      */
     public static String toNccsvDataString(final String s) {
         //encode the string
@@ -2395,38 +2412,105 @@ public class String2 {
             return "";
         final int n = s.length();
         final StringBuilder sb = new StringBuilder(n * 2);
-        for (int i = 0; i < n; i++)
-            sb.append(toNccsvChar(s.charAt(i)));
+        boolean hasSpecialChar = false;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            sb.append(toNccsvChar(c));
+            if (c == ',' || c == '"') 
+                hasSpecialChar = true;
+        }
 
         //surround in "'s?
-        if (s.startsWith(" ") ||
+        if (hasSpecialChar ||
+            s.startsWith(" ") ||
             s.endsWith(" ") ||
-            s.indexOf(',') >= 0 || 
-            s.indexOf('"') >= 0 ||
             s.equals("null"))
             return "\"" + sb.toString() + "\"";
         return sb.toString();
     }
 
     /**
-     * This encodes one String as an NCCSV att String (7-bit ASCII), with surrounding double quotes
+     * This is like toNccsvDataString, but chars &gt;127 are \\uhhhh encoded.
+     * This was the original toNccsvDataString, but now nccsv allows Unicode chars.
+     * This is still useful for diagnostic messages because a DOS window doesn't support unicode.
+     * See tests in PrimitiveArray.testNccsv().
+     */
+    public static String toNccsv127DataString(final String s) {
+        //encode the string
+        if (s == null || s.length() == 0)
+            return "";
+        final int n = s.length();
+        final StringBuilder sb = new StringBuilder(n * 2);
+        boolean hasSpecialChar = false;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            sb.append(toNccsv127Char(c));
+            if (c == ',' || c == '"') 
+                hasSpecialChar = true;
+        }
+
+        //surround in "'s?
+        if (hasSpecialChar ||
+            s.startsWith(" ") ||
+            s.endsWith(" ") ||
+            s.equals("null"))
+            return "\"" + sb.toString() + "\"";
+        return sb.toString();
+    }
+
+    /**
+     * This encodes one String as an NCCSV att String, with surrounding double quotes
      * only if necessary.
+     * See tests in PrimitiveArray.testNccsv().
      */
     public static String toNccsvAttString(final String s) {
         //encode the string
         final int n = s.length();
         final StringBuilder sb = new StringBuilder(n * 2);
-        for (int i = 0; i < n; i++)
-            sb.append(toNccsvChar(s.charAt(i)));
+        boolean hasSpecialChar = false;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            sb.append(toNccsvChar(c));
+            if (c == ',' || c == '"') 
+                hasSpecialChar = true;
+        }
 
         //surround in "'s?
-        if (s.startsWith(" ") ||
+        if (hasSpecialChar ||
+            s.startsWith(" ") ||
             s.endsWith(" ") ||
-            s.indexOf(',') >= 0 || 
-            s.indexOf('"') >= 0 ||
             s.equals("null") ||
             NCCSV_CHAR_ATT_PATTERN.matcher(s).matches() ||  //Looks Like A char
-            NCCSV_LLA_NUMBER_PATTERN.matcher(s).matches())  //Looks Like A number
+            NCCSV_LLA_NUMBER_PATTERN.matcher(s).matches())  //Looks Like A Number (It looks like a number so it needs "'s to force it to be seen as a String.)
+            return "\"" + sb.toString() + "\"";
+        return sb.toString();
+    }
+
+    /**
+     * This is like toNccsvAttString, but chars &gt;127 are \\uhhhh encoded.
+     * This was the original toNccsvAttString, but now nccsv allows Unicode chars.
+     * This is still useful for diagnostic messages because a DOS window doesn't support unicode.
+     * See tests in PrimitiveArray.testNccsv().
+     */
+    public static String toNccsv127AttString(final String s) {
+        //encode the string
+        final int n = s.length();
+        final StringBuilder sb = new StringBuilder(n * 2);
+        boolean hasSpecialChar = false;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            sb.append(toNccsv127Char(c));
+            if (c == ',' || c == '"') 
+                hasSpecialChar = true;
+        }
+
+        //surround in "'s?
+        if (hasSpecialChar ||
+            s.startsWith(" ") ||
+            s.endsWith(" ") ||
+            s.equals("null") ||
+            NCCSV_CHAR_ATT_PATTERN.matcher(s).matches() ||  //Looks Like A char
+            NCCSV_LLA_NUMBER_PATTERN.matcher(s).matches())  //Looks Like A number (It looks like a number so it needs "'s to force it to be seen as a String.)
             return "\"" + sb.toString() + "\"";
         return sb.toString();
     }
@@ -2636,6 +2720,7 @@ public class String2 {
      *    null elements are represented as "[null]".
      */
     public static String toCSSVString(final Object ar[]) {
+        //String2.log(">> toCSSVString size=" + ar.length);
         return toSVString(ar, ", ", false);
     }
 
@@ -2703,6 +2788,7 @@ public class String2 {
      *    null elements are represented as "[null]".
      */
     public static String toSVString(final Object ar[], final String separator, final boolean finalSeparator) {
+        //String2.log(">> toSVString size=" + ar.length + " \"" + separator + "\"");
         if (ar == null) 
             return null;
         final int n = ar.length;
@@ -2720,7 +2806,7 @@ public class String2 {
                 String s = o.toString();
                 int slen = s.length();
                 if (csv) 
-                    s = s.indexOf(',') >= 0? toJson(s) : toJsonIfNeeded(s, 65536);
+                    s = s.indexOf(',') >= 0? toJson(s) : toJsonIfNeeded(s, 128);  //2023-02-14 128 was 65536
                 else if (tsv && s.indexOf('\t') >= 0) 
                     s = toJson(s);
                 sb.append(s);
@@ -2791,7 +2877,7 @@ public class String2 {
         for (int i = 0; i < n; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(toNccsvDataString("" + ar[i]));  //safe char to int type conversion
+            sb.append(toNccsv127DataString("" + ar[i]));  //safe char to int type conversion
         }
         return sb.toString();
     }

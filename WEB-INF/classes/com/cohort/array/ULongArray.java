@@ -1643,10 +1643,11 @@ public class ULongArray extends PrimitiveArray {
         anArray = ULongArray.fromCSV("NaN");                        Test.ensureEqual(anArray.get(0), null,                                  "");
 
         anArray = new ULongArray(new long[]{-9223372036854775808L,              -1,     0, 1, 9223372036854775807L}); //packed values
-        Test.ensureEqual(anArray.toString(),           "9223372036854775808, 18446744073709551615, 0, 1, 9223372036854775807", "");
-        anArray = ULongArray.fromCSV(             " 0,  1,9223372036854775807, 18446744073709551615, -1, 18446744073709551616");
-        Test.ensureEqual(anArray.toString(),       "0, 1, 9223372036854775807, 18446744073709551615, 18446744073709551615, 18446744073709551615", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "0uL,1uL,9223372036854775807uL,18446744073709551615uL,18446744073709551615uL,18446744073709551615uL", "");
+        Test.ensureEqual(anArray.toString(),            "9223372036854775808, 18446744073709551615, 0, 1, 9223372036854775807", "");
+        anArray = ULongArray.fromCSV(                   " 0,  1,9223372036854775807, 18446744073709551615, -1, 18446744073709551616");
+        Test.ensureEqual(anArray.toString(),            "0, 1, 9223372036854775807, 18446744073709551615, 18446744073709551615, 18446744073709551615", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "0uL,1uL,9223372036854775807uL,18446744073709551615uL,18446744073709551615uL,18446744073709551615uL", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "0uL,1uL,9223372036854775807uL,18446744073709551615uL,18446744073709551615uL,18446744073709551615uL", "");
 
         //** test default constructor and many of the methods
         anArray = new ULongArray();

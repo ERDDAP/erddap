@@ -1543,15 +1543,16 @@ public class OpendapHelper  {
         //tests from nodc template examples https://www.ncei.noaa.gov/netcdf-templates
         String2.log("\n*** OpendapHelper.testAllDapToNc(" + whichTests + ")");
         String dir = "c:/data/nodcTemplates/";
+        //2023-02-15 This method hadn't been run since 2020 because tdsUrl often stalled, so I had commented it out.
+        //tdsUrl was "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/"; //+e.g., point/KachemakBay.nc";
+        String tdsUrl = "https://www.ncei.noaa.gov/thredds-ocean/dodsC/example/v1.0/";            //+e.g., point/KachemakBay.nc";
         String fileName;
         String url, results, expected;
-
-        if (true) Test.knownProblem("2020-10-22 OpendapHelper.allDapToNc is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
 
         if (whichTests == -1 || whichTests == 0) {
             //this tests numeric scalars, and  numeric and String 1D arrays
             fileName = "pointKachemakBay.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/point/KachemakBay.nc";
+            url = tdsUrl + "point/KachemakBay.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
@@ -1562,7 +1563,7 @@ public class OpendapHelper  {
         if (whichTests == -1 || whichTests == 1) {
             //this tests numeric and String scalars, and  numeric 1D arrays
             fileName = "timeSeriesBodegaMarineLabBuoy.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoy.nc";
+            url = tdsUrl + "timeSeries/BodegaMarineLabBuoy.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             expected = 
@@ -1599,7 +1600,7 @@ public class OpendapHelper  {
         if (whichTests == -1 || whichTests == 2) {
             //this tests numeric scalars, and    grids
             fileName = "trajectoryAoml_tsg.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/aoml_tsg.nc";
+            url = tdsUrl + "trajectory/aoml_tsg.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
@@ -1644,7 +1645,7 @@ public class OpendapHelper  {
         if (whichTests == -1 || whichTests == 3) {
             //this tests numeric scalars, and   byte/numeric arrays
             fileName = "trajectoryJason2_satelliteAltimeter.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/trajectory/jason2_satelliteAltimeter.nc";
+            url = tdsUrl + "trajectory/jason2_satelliteAltimeter.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
@@ -1688,7 +1689,7 @@ public class OpendapHelper  {
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:741)
             //this tests numeric scalars, and  numeric and string arrays
             fileName = "profileWodObservedLevels.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/profile/wodObservedLevels.nc";
+            url = tdsUrl + "profile/wodObservedLevels.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.ncdump(dir + fileName, "-h");
             String2.log(results);
@@ -1699,7 +1700,7 @@ public class OpendapHelper  {
         if (whichTests == -1 || whichTests == 5) {
             //this tests numeric scalars, and numeric arrays
             fileName = "timeSeriesProfileUsgs_internal_wave_timeSeries.nc";
-            url = "https://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
+            url = tdsUrl + "timeSeriesProfile/usgs_internal_wave_timeSeries.nc";
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             String2.log(results);

@@ -70,6 +70,45 @@ those great suggestions coming!
 
 <!-- ****************************************************************************** -->
 
+<h2><a class="selfLink" id="changes2.23" href="#changes2.23" rel="bookmark">Changes</a> 
+in ERDDAP version 2.23 (released 2023-02-??)</h2>
+Note that this release was done by Bob Simons, thereby showing that he
+is still around and active during the transition to Chris John, his successor.
+Stating with this release, all code changes were done by Chis John, unless specified otherwise.
+<ul>
+<li><strong>New Features and Changes (for users):</strong> 
+  <ul>
+  <li>(None)
+    <br>&nbsp;
+  </ul>
+<li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
+  <ul> 
+  <li>TO DO: SECURITY CHANGE: Google Authentication is now accomplished via the new 
+    Google Identity Services library. Google's support for the old OAuth2 system
+    will be discontinued 2023-03-15 ("Beware the Ide's of March"?!)
+    So if you use Google Authentication you MUST update to ERDDAP v2.23 
+    before then.
+    <br>&nbsp;
+
+  <li>IMPROVED: NCCSV is now v1.2. The change is that the files are now UTF-8-encoded files (was ASCII)
+    and so can now include any Unicode character 
+    (as is, without encoding as \u<i>hhhh</i>, although that is still allowed).    
+    <br>When writing NCCSV files, ERDDAP now writes v1.2 files.
+    <br>ERDDAP will still read NCCSV files that follow the v1.0 and v1.1 specification.
+    <br>Thanks to Pauline-Chauvet, n-a-t-e, and thogar-computer for suggesting this
+    and doing the tests to ensure various spreadsheet programs can import UTF-8 files. 
+    Thanks to Bob Simons for this code change.
+    <br>&nbsp;
+  <li>IMPROVED: GenerateDatasetsXml now changes to CF-10 (was CF-1.6) in the "Conventions" attributes.
+    <br>Thanks to Bob Simons for this code change.
+    <br>&nbsp;
+  <li>Some small changes and bug fixes.
+    <br>&nbsp;
+  </ul>
+</ul>
+
+<!-- ****************************************************************************** -->
+
 <h2><a class="selfLink" id="changes2.22" href="#changes2.22" rel="bookmark">Changes</a> 
 in ERDDAP version 2.22 (released 2022-12-08)</h2>
 Note that this release was done by Bob Simons, thereby showing that he

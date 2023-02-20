@@ -1288,6 +1288,7 @@ public class EDDTableFromFileNames extends EDDTable{
         Table addTable = new Table();
         addTable.globalAttributes()
             .add("cdm_data_type", "Other")
+            .add("Conventions",   "COARDS, CF-1.10, ACDD-1.3")
             .add("creator_name",  "null")
             .add("creator_email", "null")
             .add("creator_url",   "null")
@@ -1404,6 +1405,7 @@ String expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">null</att>\n" +
 "        <att name=\"creator_name\">null</att>\n" +
 "        <att name=\"creator_url\">null</att>\n" +
@@ -1560,6 +1562,7 @@ String expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">null</att>\n" +
 "        <att name=\"creator_name\">null</att>\n" +
 "        <att name=\"creator_url\">null</att>\n" +
@@ -1717,6 +1720,7 @@ String expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">null</att>\n" +
 "        <att name=\"creator_name\">null</att>\n" +
 "        <att name=\"creator_url\">null</att>\n" +
@@ -2362,6 +2366,7 @@ String expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">null</att>\n" +
 "        <att name=\"creator_name\">null</att>\n" +
 "        <att name=\"creator_url\">null</att>\n" +
@@ -2618,7 +2623,7 @@ String expected =
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = subDirs.toString();
             expected =
-"2018, 2019, 2020, 2021, 2022";  
+"2018, 2019, 2020, 2021, 2022, 2023";  
             Test.ensureEqual(results, expected, "");
             expTime = 549; //ms
             msg = "get ABI-L1b-RadC/ dir time=" + time + "ms (expected=" + expTime + "ms)";

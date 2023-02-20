@@ -9699,39 +9699,38 @@ public abstract class EDD {
         if (con == null) 
             con = "";
         con = String2.replaceAll(con, "/",", ");
+
+        //many source have space separated conventions, so insert commas 
+        for (int po = con.length() - 2; po >= 0; po--) {
+            if (String2.isDigit(con.charAt(po)) && con.charAt(po+1) == ' ')
+                con = con.substring(0, po+1) + "," + con.substring(po+1); //inefficient but rare
+        }
+
         if (con.indexOf("COARDS") < 0) 
             con += ", COARDS";
-        if (con.indexOf("CF") < 0) 
-            con += ", CF-1.6";
-        else {
-            con = String2.replaceAll(con, "CF 1.00","CF-1.6");
-            con = String2.replaceAll(con, "CF 1.0", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.1", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.2", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.3", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.4", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.5", "CF-1.6");
-            con = String2.replaceAll(con, "CF 1.6", "CF-1.6");
 
-            con = String2.replaceAll(con, "CF-1.00","CF-1.6");
-            con = String2.replaceAll(con, "CF-1.0", "CF-1.6");
-            con = String2.replaceAll(con, "CF-1.1", "CF-1.6");
-            con = String2.replaceAll(con, "CF-1.2", "CF-1.6");
-            con = String2.replaceAll(con, "CF-1.3", "CF-1.6");
-            con = String2.replaceAll(con, "CF-1.4", "CF-1.6");
-            con = String2.replaceAll(con, "CF-1.5", "CF-1.6");
+        if (con.indexOf("CF") < 0) {
+             con += ", CF-1.10";
+        } else if (String2.extractRegex(con, "CF[ \\-]\\d\\.\\d\\d", 0) == null) {  //doesn't already have CF-1.xx
+            con = con.replace("CF[ \\-]\\d\\.\\d", "CF-1.10");  //replace 1.x with 1.10
         }
+
         con = String2.replaceAll(con, "Unidata Dataset Discovery v1.0", "ACDD-1.3");
         if (con.indexOf("ACDD") < 0) 
-            con += ", ACDD-1.3";
+             con += ", ACDD-1.3";
         else {
             con = String2.replaceAll(con, "ACDD-1.0", "ACDD-1.3");
             con = String2.replaceAll(con, "ACDD-1.1", "ACDD-1.3");
             con = String2.replaceAll(con, "ACDD-1.2", "ACDD-1.3");
         }
-        con = String2.replaceAll(con, "SeaDataNet_1.0 CF-1.6", "SeaDataNet_1.0, CF-1.6");
+
         con = String2.replaceAll(con, "CWHDF, ","");
         con = String2.replaceAll(con, ", CWHDF","");
+
+        //remove NCCSV-x.x from Conventions
+        con = con.replaceAll("NCCSV-\\d\\.\\d", ""); //searchFor is a regex
+
+        //clean up
         if (con.startsWith(", "))
             con = con.substring(2);
         if (con.endsWith(", "))

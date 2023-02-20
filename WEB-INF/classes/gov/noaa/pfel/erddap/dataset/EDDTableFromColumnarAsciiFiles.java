@@ -2343,7 +2343,7 @@ String expected =
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgement\">Funding: NSF Awards OCE-9982105, OCE-0620276, OCE-1232779</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_address\">Department of Ecology, Evolution and Marine Biology, University of California, Santa Barbara, CA, 93106-9620, US</att>\n" +
 "        <att name=\"creator_email\">john.melack@lifesci.ucsb.edu</att>\n" +
 "        <att name=\"creator_name\">John M Melack</att>\n" +
@@ -2722,7 +2722,7 @@ String expected =
 "    <addAttributes>\n" +
 "        <att name=\"acknowledgement\">Funding: NSF Awards OCE-9982105, OCE-0620276, OCE-1232779</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_address\">Department of Ecology, Evolution and Marine Biology, University of California, Santa Barbara, CA, 93106-9620, US</att>\n" +
 "        <att name=\"creator_email\">john.melack@lifesci.ucsb.edu</att>\n" +
 "        <att name=\"creator_name\">John M Melack</att>\n" +
@@ -3163,7 +3163,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +

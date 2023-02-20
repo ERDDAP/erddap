@@ -84,8 +84,8 @@ public class TableWriterNccsv extends TableWriter {
         if (firstTime) {
 
             //write the header
-            writer = File2.getBufferedWriter88591(
-                outputStreamSource.outputStream(File2.ISO_8859_1));
+            writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8));
 
             //write the global attributes   (ensureCompatibly added newHistory)
             writer.write(globalAttributes.toNccsvString(String2.NCCSV_GLOBAL));

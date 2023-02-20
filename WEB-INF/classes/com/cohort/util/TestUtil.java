@@ -1671,11 +1671,7 @@ public class TestUtil {
         Test.ensureEqual("" + String2.fromNccsvChar(null),           "?", "");
 
 
-        //toNccsvString
-        String2.log("test toNccsvString");
-        a = "\\ \f\n\r\t\"' z\u0000\uffffÿ";
-        b = "\"\\\\ \\f\\n\\r\\t\"\"' z\\u0000\\uffff\\u00ff\"";
-        Test.ensureEqual(String2.toNccsvDataString(a),   b, "");
+        //toNccsvString etc.: see PrimitiveArray.testToNccsv();   
 
 
         //PERSON_REGEX

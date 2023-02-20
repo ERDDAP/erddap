@@ -177,7 +177,7 @@ public class TableWriterEsriCsv extends TableWriter {
                         writer.write(separator); //mv on either side
                     }
                 } else if (isCharOrString[col]) {
-                    writer.write(String2.toNccsvDataString(pas[col].getString(row)));
+                    writer.write(String2.toNccsv127DataString(pas[col].getString(row)));
                 } else {
                     //numeric
                     String s = pas[col].getString(row);

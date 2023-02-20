@@ -484,7 +484,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedtime, local, source, time</att>\n" +
@@ -613,7 +613,7 @@ public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">channel, channel_1, data, elapsedtime, local, source, time</att>\n" +

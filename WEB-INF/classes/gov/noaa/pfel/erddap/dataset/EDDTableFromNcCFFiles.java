@@ -462,7 +462,7 @@ String expected =
 "        <att name=\"Westernmost_Easting\" type=\"float\">-124.32333</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">CalCOFI</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
@@ -714,7 +714,7 @@ String expected =
 "        <att name=\"title\">World Ocean Database - Multi-cast file</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.nodc.noaa.gov</att>\n" +
 "        <att name=\"history\">World Ocean Database</att>\n" +

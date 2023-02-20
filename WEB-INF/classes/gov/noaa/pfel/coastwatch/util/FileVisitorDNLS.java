@@ -2541,7 +2541,8 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
 
         if (true) Test.knownProblem("2020-10-22 FileVisitorDNLS.testThredds is not run now because the sourceUrl often stalls: https://data.nodc.noaa.gov/thredds");
 
-        String url = "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/monthly/"; //catalog.html
+        //String url = "https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/monthly/"; //catalog.html  //was
+        String url = "https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/"; //catalog.html  //doesn't exist. Where is this dataset now?
         String fileNameRegex = "sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc";
         boolean recursive = true;
         String pathRegex = null;
@@ -2561,7 +2562,7 @@ https://data.nodc.noaa.gov/thredds/catalog/pathfinder/Version5.1_CloudScreened/5
         String results = addToThreddsUrlList(url + "testInvalidUrl", fileNameRegex,  
             recursive, pathRegex, dirsToo, childUrls, lastModified, fSize);
         String expected = //fails very slowly!
-            "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://data.nodc.noaa.gov/thredds/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
+            "java.io.IOException: HTTP status code=404 java.io.FileNotFoundException: https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/testInvalidUrl/catalog.html\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
         //test addToThreddsUrlList
@@ -3403,11 +3404,17 @@ String2.unitTestDataDir + "fileNames/sub/,jplMURSST20150105090000.png,1.42066570
      * This looks in all the specified files until a file with a line that
      * matches lineRegex is found.
      *
-     * @param tallyWhich if &gt;= 0, this tabulates the values of the
+     * @param tDir The starting directory.
+     * @param tFileNameRegex The regex to specify which file names to include.
+     * @param tRecursive If true, subdirectories are also searched.
+     * @param tPathRegex If tRecursive, this specifies which subdirs should be searched.
+     * @param lineRegex This is the main regex. We seek lines that match this regex.
+     * @param tallyWhich If &gt;= 0, this tabulates the values of the
      *   tallyWhich-th capture group in the lineRegex.
      * @param interactiveNLines if &gt;0, this shows the file, 
      *   the matching line and nLines thereafter, and calls pressEnterToContinue().
      *   If false, this returns the name of the first file matching lineRegex.
+     * @param showTopN If tallyWhich &gt;=0, the results will show the topN matched values. 
      * @return this returns the first matching fileName, or null if none
      */
     public static String findFileWith(String tDir, String tFileNameRegex, 

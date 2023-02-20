@@ -11,8 +11,8 @@
 
 <div class="standard_width"> 
 <h1 style="text-align:center">NCCSV -
-<br>A NetCDF-Compatible, UTF-8, CSV File Specification,
-<br>Version 1.20</h1>
+<br>A NetCDF-Compatible ASCII CSV File Specification,
+<br>Version 1.10</h1>
 
 <span style="text-align:center;">Bob Simons &lt;erd.data at noaa.gov&gt; and Steve Hankin
 <br>"NCCSV" by Bob Simons and Steve Hankin is licensed under 
@@ -37,10 +37,10 @@
 
 <h2><a class="selfLink" id="Introduction" href="#Introduction" rel="bookmark">Introduction</a></h2>
 
-This document specifies a UTF-8 CSV text file format that can contain 
+This document specifies an ASCII CSV text file format that can contain 
 all of the information (metadata and data) that can be found in a NetCDF .nc
-file that contains a CSV-file-like table of data. The file extension for a
-UTF-8 CSV text file following this specification must be .csv so that 
+file that contains a CSV-file-like table of data. The file extension for an
+ASCII CSV text file following this specification must be .csv so that 
 it can be read easily and correctly into spreadsheet programs like 
 Excel and Google Sheets. Bob Simons will write software to convert an
 NCCSV file into a NetCDF-3 (and perhaps also a NetCDF-4) .nc file, 
@@ -168,9 +168,11 @@ In this specification, brackets, [ ], denote optional items.
 A complete NCCSV file consists of two sections: the metadata section, 
 followed by the data section.
 
-<p>NCCSV files may contain any UCS-2 characters 
-(i.e., 2-byte Unicode characters, as in Java) encoded via UTF-8.
-ERDDAP reads and writes NCCSV files using the UTF-8 encoding.
+<p>NCCSV files must contain only 7-bit ASCII characters.
+Because of this, the character set or encoding used to write and
+read the file may be any character set or encoding which is compatible
+with the 7-bit ASCII character set, e.g., ISO-8859-1. 
+ERDDAP reads and writes NCCSV files with the ISO-8859-1 charset.
 
 <p>NCCSV files may use either newline (\n)
 (which is common on Linux and Mac OS X computers)
@@ -203,8 +205,8 @@ The first line of an NCCSV file is the first line of the metadata section and
 must have a <a rel="help" href="#GLOBAL"><kbd>*GLOBAL*</kbd></a>
 <kbd>Conventions</kbd> attribute listing all of the 
 conventions used in the file as a String containing a CSV list, for example:
-<br><kbd>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2"</kbd>
-<br>One of the conventions listed must be <kbd>NCCSV-1.2</kbd>, 
+<br><kbd>*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1"</kbd>
+<br>One of the conventions listed must be <kbd>NCCSV-1.1</kbd>, 
 which refers to the current version of this specification.
 
 <p><a class="selfLink" id="END_METADATA" href="#END_METADATA" rel="bookmark">*END_METADATA*</a> -
@@ -274,10 +276,9 @@ and must be an array with one or more of either a
 <kbd>byte, ubyte, short, ushort, int, uint, long, ulong, float, double, String,</kbd> or <kbd>char</kbd>. 
 No other data types are supported. Attributes with no value will be ignored. 
 If there is more than one sub-value, the sub-values must all be of the 
-same data type.
-For data types other than Strings, the values MUST be separated by commas, for example:
+same data type and separated by commas, for example:
 <br><kbd>sst,actual_range,0.17f,23.58f</kbd>
-<br>For Strings, use a single String with 
+<br>If there are multiple String values, use a single String with 
 <kbd>\n</kbd> (newline) characters separating the substrings.
 
 <p>The definitions of the attribute data types are:
@@ -378,36 +379,32 @@ For data types other than Strings, the values MUST be separated by commas, for e
 <li><a class="selfLink" id="String" href="#String" rel="bookmark"><kbd><strong>String</strong></kbd></a>
   attribute values are a sequence of UCS-2 characters 
   (i.e., 2-byte Unicode characters, as in Java), 
-  which must be written as JSON-like strings. 
+  which must be written as 7-bit ASCII, JSON-like strings 
+  so that non-ASCII characters can be specified. 
   <ul>
-  <li>Double quotes (") within a String value must be encoded as two double 
+  <li>Double quotes (") must be encoded as two double 
     quotes (<kbd>""</kbd>). That's what spreadsheet programs require when 
     reading .csv files. That's what spreadsheet programs write when 
     you save a spreadsheet as a .csv file.
-  <li>The special JSON backslash-encoded characters within a String value must be encoded as 
-    in JSON (notably \n (newline), \\ (backslash), 
+  <li>The special JSON backslash-encoded characters must be encoded as 
+    in JSON (notably \n (newline), but also \\ (backslash), 
     \f (formfeed), \t (tab), \r (carriage return) or with the 
     <a rel="help" href="#uhhhh">\u<i>hhhh</i></a> syntax. In a spreadsheet, 
     don't use Alt Enter to specify a new line within a text cell; 
     instead, use \n (2 characters: backslash and 'n') to indicate a new line.
   <li><a class="selfLink" id="uhhhh" href="#uhhhh" rel="bookmark">\u<i>hhhh</i></a> -
-    All other characters less than character #32 must be encoded with the syntax
+    All characters less than character #32 or greater than character #126,
+    and not otherwise encoded, must be encoded with the syntax
     <kbd>\u<i>hhhh</i></kbd>, where hhhh is the 4-digit hexadecimal
-    number of the character.
-  <li>All printable characters greater than character #126, e.g., the Euro sign, 
-    may appear unencoded, e.g., € (the Euro character), or encoded with the 
-    <a rel="help" href="#uhhhh">\u<i>hhhh</i></a> syntax, e.g., <kbd>\u20AC</kbd>.
+    number of the character, e.g., the Euro sign is <kbd>\u20AC</kbd>.
     See the code pages referenced at 
-    <a rel="bookmark" href="https://en.wikipedia.org/wiki/Unicode"
+    <a rel="bookmark"
+    href="https://en.wikipedia.org/wiki/Unicode"
     >https://en.wikipedia.org/wiki/Unicode<img 
         src="../images/external.png" alt=" (external link)" 
         title="This link to an external website does not constitute an endorsement."></a> 
     to find the hexadecimal numbers associated with specific Unicode characters,
     or use a software library.
-    Note that some ERDDAP output file types, e.g., .csv, use the ISO 8859-1 character set,
-    so Unicode characters above #255 will be lost when these data values are written to those file types.
-  <li>All non-printable characters greater than character #126, e.g., character #127,
-    are STRONGLY DISCOURAGED, but you SHOULD use the \u<i>hhhh</i> syntax if you do include them.
   <li>If the String has a space at the beginning or end, or includes <kbd>"</kbd>
     (double quote) or a comma, or contains values that would otherwise be 
     interpreted as some other data type (e.g., an int), or is the word "null", 
@@ -416,27 +413,32 @@ For data types other than Strings, the values MUST be separated by commas, for e
     the enclosing double quotes are optional. 
     We recommend: when in doubt, enclose the entire String in double quotes. 
     Spaces at the beginning or end of a String are strongly discouraged.
+  <li>For now, the use of characters greater than #255 is discouraged. 
+    NCCSV supports them. ERDDAP supports them internally. Some output file types 
+    support them (e.g., .json and .nccsv). 
+    But many output file types don't support them.
+    For example, NetCDF-3 files do not support such characters because NetCDF files 
+    use 1-byte characters and CF currently does not have a system for 
+    specifying how Unicode characters are encoded in NetCDF Strings (e.g., UTF-8).
+    This will probably improve over time.
     <br>&nbsp;
   </ul>
 <li><a class="selfLink" id="char" href="#char" rel="bookmark"><kbd><strong>char</strong></kbd></a>
   attribute values are a single UCS-2 character
-  (i.e., 2-byte Unicode characters, as in Java).
-  Printable characters (other than special characters like newline, ", ', and \) 
-  can be written as is.
-  Special characters (e.g., newline) and other unprintable characters (e.g., #127)
-  must be written with the 
-    <a rel="help" href="#uhhhh">\u<i>hhhh</i></a> syntax. 
+  (i.e., 2-byte Unicode characters, as in Java), which must be written
+  as 7-bit ASCII, JSON-like characters so that other characters can be specified
+  (see the <kbd>String</kbd> definition above for encoding of special characters,
+  with the addition of encoding a single quote as \'). 
   Char attribute values must be enclosed in single quotes (the inner quotes)
   and double quotes (the outer quotes), e.g., <kbd>"'a'", "'""'"</kbd> 
   (a double quote character), 
   <kbd>"'\''"</kbd> (a single quote character), <kbd>"'\t'"</kbd> (a tab), 
-  <kbd>"'\u007F'"</kbd> (the delete 'character'), and 
-  <kbd>"'€'"</kbd> (the Euro character). This system of using 
+  <kbd>"'\u20AC'"</kbd> (a Euro character). This system of using 
   single and double quotes is odd and cumbersome, but it is a way to 
   distinguish char values from Strings in a way that works with spreadsheets. 
   A value that looks like a char but is invalid will generate an error message. 
-  Note that some ERDDAP output file types, e.g., .csv, use the ISO 8859-1 character set,
-  so Unicode characters above #255 will be lost when these data values are written to those file types.
+  As with Strings, the use of characters greater than #255 
+  is currently discouraged. 
 </ul>
 
 <p><a class="selfLink" id="Suffix" href="#Suffix" rel="bookmark"><strong>Suffix</strong></a> &mdash; 
@@ -697,7 +699,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm
 
 Here is a sample file which demonstrates many of the features of an NCCSV file:
 <pre>
-*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2"
+*GLOBAL*,Conventions,"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1"
 *GLOBAL*,cdm_trajectory_variables,"ship"
 *GLOBAL*,creator_email,erd.data@noaa.gov
 *GLOBAL*,creator_name,Bob Simons
@@ -743,7 +745,7 @@ sst,testInts,-2147483648i,0i,2147483647i
 sst,testLongs,-9223372036854775808L,0L,9223372036854775807L
 sst,testFloats,-3.40282347e38f,0f,3.40282347E+38f
 sst,testDoubles,-1.79769313486231570e308d,0d,1.79769313486231570E+308d
-sst,testChars,"','","'""'","'€'"
+sst,testChars,"','","'""'","'\u20AC'"
 sst,testStrings," a~,\n'z""\u20AC"
 sst,testUBytes,0ub,127ub,255ub
 sst,testUInts,0ui,2147483647ui,4294967295ui
@@ -766,8 +768,8 @@ Bell M. Shimada,2017-03-23T01:45:00Z,28.0003,-130.3472,\u20AC,0,127,-90071992547
   Most NCCSV files will be much simpler.
 <li>The <kbd>license</kbd> line is broken into two lines here, but is just
   one line in the sample file.
-<li>\u20ac is the \uhhhh encoding of &euro;.  \u00FC is the \uhhhh encoding of &uuml;.
-  You can also use the unencoded characters directly.
+<li>\u20AC is the encoding of the Euro character and
+  \u00FC is the encoding of &uuml;.
 <li>Many Strings in the example are enclosed by double quotes 
   even though they don't have to be,
   e.g., many global attributes including the title, the <kbd>lon units</kbd>
@@ -793,15 +795,14 @@ In a spreadsheet, as in an NCCSV file:
 <ul>
 <li>Write numeric attribute values as specified for NCCSV files
 (e.g., with a suffix letter, e.g., 'f', to identify attribute's data type).
-<li>In Strings, all non-printable and special characters must be written 
-as either a JSON-like backslashed character
+<li>In Strings, write all characters less than ASCII character #32 or 
+greater than character #126 as either a JSON-like backslashed character
 (e.g., <kbd>\n</kbd> for newline) or as the hexadecimal Unicode character number
 (case insensitive) with the syntax 
-<a rel="help" href="#uhhhh"><kbd>\u<i>hhhh</i></kbd></a>.
-Notably, use <kbd>\n</kbd> (2 characters: backslash and 'n') 
-to indicate a new line within a String, not Alt Enter.
-All printable characters may be written unencoded or with the syntax 
-<a rel="help" href="#uhhhh"><kbd>\u<i>hhhh</i></kbd></a>.
+<a rel="help" href="#uhhhh"><kbd>\u<i>hhhh</i></kbd></a> 
+(e.g., <kbd>\u20AC</kbd> for the Euro sign). 
+Use <kbd>\n</kbd> (2 characters: backslash and 'n') 
+to indicate a new line, not Alt Enter.
 </ul>
 
 <p>The only differences between NCCSV files and the analogous spreadsheet 
@@ -851,7 +852,7 @@ The software that converts NCCSV files into .nc files will ignore the extra comm
 To import an NCCSV file into Google Sheets:
 
 <ol>
-<li>Choose <kbd>File : Import</kbd> .
+<li>Choose <kbd>File : Open</kbd> .
 <li>Choose to <kbd>Upload</kbd> a file and click on 
   <kbd>Upload a file from your computer</kbd> . 
   Select the file, then click <kbd>Open</kbd> .
@@ -914,23 +915,10 @@ To import an NCCSV file into Google Sheets:
 <p>&nbsp;
 
 <h2><a class="selfLink" id="Changes" href="#Changes" rel="bookmark">Changes</a></h2>
-
-The original version was <a rel="bookmark" href="./NCCSV_1.00">NCCSV v1.00</a> (in ERDDAP v1.76, released 2017-05-12)
 <ul>
-<li>Changes introduced in <a rel="bookmark" href="./NCCSV_1.10">NCCSV v1.10</a> (in ERDDAP v2.10, released 2020-11-05):
+<li>Changes Introduced in v1.10 (April 2020):
   <ul>
   <li>Added support for ubyte, ushort, uint, ulong.
-    Thanks to CF for adding support for these data types in CF.
-  </ul>
-<li>Changes introduced in v1.20 (in ERDDAP v2.23, released 202?-??-??):
-  <ul>
-  <li>Switched from ASCII character encoding to UTF-8 encoding for NCCSV .csv files.
-    <ul>
-    <li>ERDDAP can still read files from all previous versions of NCCSV.
-    <li>ERDDAP now always writes NCCSV v1.20 files.
-    <li>If you wrote a client to read NCCSV files, change it so it treats all NCCSV files as UTF-8 files.
-    <li>Thanks to Pauline Chauvet, Nate, and Thomas Gardiner.
-    </ul>
   </ul>
 </ul>
 

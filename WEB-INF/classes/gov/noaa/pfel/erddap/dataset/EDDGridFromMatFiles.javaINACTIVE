@@ -539,7 +539,7 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
 "        <att name=\"keywords\">atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +

@@ -536,7 +536,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
         sb.append(
             "    <addAttributes>\n" +
             "        <att name=\"cdm_data_type\">Grid</att>\n" +
-            "        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+            "        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
             "        <att name=\"creator_name\">Bob Joyce</att>\n" +
             "        <att name=\"creator_email\">robert.joyce@noaa.gov</att>\n" +
             "        <att name=\"creator_url\">https://www.cpc.ncep.noaa.gov/</att>\n" +
@@ -651,7 +651,7 @@ public class EDDGridFromMergeIRFiles extends EDDGridFromFiles {
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Bob Joyce</att>\n" +
 "        <att name=\"creator_email\">robert.joyce@noaa.gov</att>\n" +
 "        <att name=\"creator_url\">https://www.cpc.ncep.noaa.gov/</att>\n" +
