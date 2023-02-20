@@ -3586,10 +3586,6 @@ Vain henkilöt, jotka ovat sopineet tämän ERDDAP :n ylläpitäjän kanssa, voi
 <loginPassword>Salasana</loginPassword>
 <loginUserNameAndPassword>Käyttäjänimi ja salasana</loginUserNameAndPassword>
 <loginGoogleSignIn>Todennus Google-tililläsi.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Odota 5 sekuntia, kun painikkeen nimi vaihtuu kirjautumisesta sisäänkirjautuneeksi.
-<br>Sitten
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Todenna ORCID iD:lläsi.</loginOrcidSignIn>
 <loginOpenID>Kirjaudu sisään OpenID-URL-osoitteellasi</loginOpenID>
 <loginOpenIDOr>Tai kirjaudu sisään olemassa olevaan (ei OpenID) tiliisi osoitteessa</loginOpenIDOr>

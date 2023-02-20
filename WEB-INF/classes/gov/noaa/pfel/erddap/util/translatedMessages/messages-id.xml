@@ -3513,10 +3513,6 @@ Hanya orang yang telah membuat perjanjian dengan administrator ERDDAP ini yang d
 <loginPassword>Kata sandi</loginPassword>
 <loginUserNameAndPassword>Nama pengguna dan kata sandi</loginUserNameAndPassword>
 <loginGoogleSignIn>Otentikasi dengan akun Google Anda.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Setelah label tombol berubah dari &quot;Masuk&quot; menjadi &quot;Masuk&quot;, tunggu 5 detik.
-<br>Kemudian
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Otentikasi dengan iD ORCID Anda.</loginOrcidSignIn>
 <loginOpenID>Masuk dengan URL OpenID Anda</loginOpenID>
 <loginOpenIDOr>Atau masuk ke akun Anda yang sudah ada (non-OpenID) di</loginOpenIDOr>
