@@ -1439,8 +1439,9 @@ public class DoubleArray extends PrimitiveArray {
         String2.log("*** DoubleArray.basicTest");
 
         DoubleArray anArray = DoubleArray.fromCSV(-Double.MAX_VALUE + ", " + Double.MAX_VALUE + ", , NaN, 1e400 ");
-        Test.ensureEqual(anArray.toString(),         "-1.7976931348623157E308, 1.7976931348623157E308, NaN, NaN, NaN", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "-1.7976931348623157E308d,1.7976931348623157E308d,NaNd,NaNd,NaNd", "");
+        Test.ensureEqual(anArray.toString(),            "-1.7976931348623157E308, 1.7976931348623157E308, NaN, NaN, NaN",  "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "-1.7976931348623157E308d,1.7976931348623157E308d,NaNd,NaNd,NaNd", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "-1.7976931348623157E308d,1.7976931348623157E308d,NaNd,NaNd,NaNd", "");
 
         //** test default constructor and many of the methods
         anArray = new DoubleArray();

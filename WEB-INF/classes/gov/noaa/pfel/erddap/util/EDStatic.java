@@ -189,6 +189,7 @@ public class EDStatic {
      * <br>2.20 released on 2022-09-30
      * <br>2.21 released on 2022-10-09
      * <br>2.22 released on 2022-12-08
+     * <br>2.23 released on 202?-??-??
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -202,7 +203,7 @@ public class EDStatic {
      * A request to http.../erddap/version will return just the number (as text).
      * A request to http.../erddap/version_string will return the full string.
      */   
-    public static String erddapVersion = "2.22"; //see comment above
+    public static String erddapVersion = "2.23"; //see comment above
 
     /** 
      * This is almost always false.  
@@ -213,7 +214,7 @@ public static boolean developmentMode = false;
 
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   
-    public static String serverVersion = "dods/3.7"; //this is what thredds replies
+    public static String serverVersion = "dods/3.7"; //this is what thredds replies (in 2008!)
       //drds at https://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
       //both reply with server version, neither replies with coreVersion
       //spec says #.#.#, but Gallagher says #.# is fine.

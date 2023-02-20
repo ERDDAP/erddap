@@ -3016,8 +3016,8 @@ public abstract class EDDTable extends EDD {
                 table.addColumn(dvi, dv.destinationName(), 
                     PrimitiveArray.factory(tPAType, 1, false), catts);
             }        
-            Writer writer = File2.getBufferedWriter88591(
-                outputStreamSource.outputStream(File2.ISO_8859_1)); 
+            Writer writer = File2.getBufferedWriterUtf8(
+                outputStreamSource.outputStream(File2.UTF_8)); 
             table.saveAsNccsv(false, true, 0, 0, writer); //catchScalars, writeMetadata, writeDataRows
             return;
         }
@@ -5432,17 +5432,18 @@ public abstract class EDDTable extends EDD {
 
     }
 
-    /** Ensure a conventions string includes "CF-1.6" (or already >1.6). */
-    public static String ensureAtLeastCF16(String conv) {
+    /** Ensure a conventions string includes "CF-1.10" (or already >1.10). */
+    public static String ensureAtLeastCF110(String conv) {
         if (conv == null || conv.length() == 0) {
-            conv = "CF-1.6";
+            conv = "CF-1.10";
         } else if (conv.indexOf("CF-") < 0) {
-            conv += ", CF-1.6";
+            conv += ", CF-1.10";
         } else {
-            for (int i = 0; i < 6; i++)
-                conv = String2.replaceAll(conv, "CF-1." + i, "CF-1.6");
+            //1.x -> 1.10
+            conv += " "; // so there is always a char after CF-1.x
+            conv = conv.replaceAll("CF[ \\-]\\d\\.\\d[^\\d]", "CF-1.10");
         }
-        return conv;
+        return conv.trim();
     }
 
     /**
@@ -5478,8 +5479,8 @@ public abstract class EDDTable extends EDD {
         //add metadata 
         Attributes globalAtts = twawm.globalAttributes();
         globalAtts.set("featureType", "Point");
-        globalAtts.set(                            "Conventions", 
-            ensureAtLeastCF16(globalAtts.getString("Conventions")));
+        globalAtts.set(                             "Conventions", 
+            ensureAtLeastCF110(globalAtts.getString("Conventions")));
 
         //set the variable attributes
         //section 9.1.1 says "The coordinates attribute must identify the variables 
@@ -5719,8 +5720,8 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("featureType", featureType);
             if (cdmGlobalAttributes.get("id") == null)
                 cdmGlobalAttributes.set("id", datasetID); //2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file name
-            cdmGlobalAttributes.set(                            "Conventions", 
-                ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
+            cdmGlobalAttributes.set(                             "Conventions", 
+                ensureAtLeastCF110(cdmGlobalAttributes.getString("Conventions")));
             NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
 
 
@@ -6149,8 +6150,8 @@ public abstract class EDDTable extends EDD {
             cdmGlobalAttributes.set("featureType", featureType);
             if (cdmGlobalAttributes.get("id") == null)
                 cdmGlobalAttributes.set("id", datasetID); //2019-05-07 was File2.getNameNoExtension(ncCFName)); //id attribute = file name
-            cdmGlobalAttributes.set(                            "Conventions", 
-                ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
+            cdmGlobalAttributes.set(                             "Conventions", 
+                ensureAtLeastCF110(cdmGlobalAttributes.getString("Conventions")));
             NcHelper.setAttributes(nc3Mode, rootGroup, cdmGlobalAttributes);
 
             //set the variable attributes

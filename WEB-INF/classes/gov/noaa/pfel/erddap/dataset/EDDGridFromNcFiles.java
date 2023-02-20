@@ -212,7 +212,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -419,7 +419,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">NCEP</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://www.ncep.noaa.gov/</att>\n" + 
@@ -692,7 +692,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement: These data were provided by GHRSST and the US National Oceanographic Data Center. This project was supported in part by a grant from the NOAA Climate Data Record (CDR) Program for satellites.</att>\n" +
 "        <att name=\"acknowledgment\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
 "        <att name=\"creator_url\">https://pathfinder.nodc.noaa.gov</att>\n" +
 "        <att name=\"date_created\">2013-04-26T02:56:04Z</att>\n" +
@@ -1173,7 +1173,7 @@ public class EDDGridFromNcFiles extends EDDGridFromNcLow {
 "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n" +
 "        <att name=\"acknowledgment\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n" +
 "        <att name=\"date_created\">2018-08-08T02:38:31Z</att>\n" + //changes
@@ -1527,7 +1527,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" +
 "        <att name=\"data_bins\">null</att>\n" +
@@ -1730,7 +1730,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://oceandata.sci.gsfc.nasa.gov</att>\n" +
 "        <att name=\"data_bins\">null</att>\n" +
@@ -1849,7 +1849,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">array, ArrayOfStructures|a_name, ArrayOfStructures|b_name, ArrayOfStructures|c_name, axis0, data, local, name, source, structures</att>\n" +
@@ -2045,7 +2045,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">rama.nemani@nasa.gov</att>\n" +
 "        <att name=\"creator_name\">Rama Nemani</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -2279,7 +2279,7 @@ expected =
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -2957,7 +2957,7 @@ expected =
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -3095,7 +3095,7 @@ expected =
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -3202,7 +3202,7 @@ expected =
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,acknowledgement,\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\"\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,composite,true\n" +
@@ -7502,7 +7502,7 @@ String2.setClipboardString(results);
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
 "        <att name=\"creator_url\">https://www.nodc.noaa.gov/SatelliteData</att>\n" +
 "        <att name=\"date_created\">2015-12-12T08:26:10Z</att>\n" +
@@ -8140,7 +8140,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"Data_Bins\">null</att>\n" +
 "        <att name=\"Data_Maximum\">null</att>\n" +
 "        <att name=\"Data_Minimum\">null</att>\n" +
@@ -9645,7 +9645,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webadmin@oceancolor.gsfc.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA/GSFC OBPG</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
@@ -9979,7 +9979,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webadmin@oceancolor.gsfc.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">NASA/GSFC OBPG</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
@@ -10495,7 +10495,7 @@ expected =
 "    <addAttributes>\n" +
 "        <att name=\"_NCProperties\">null</att>\n" + //2021-01-07 appeared because of change is source above
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">1/time, 1/water, 1/x, 1/y, air, air_pressure, atmosphere, atmospheric, averaged, currents, data, depth, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, elevation, level, local, measurements, pressure, science, sea, seawater, source, static, synthetic, Synthetic_032_-_1/Atmospheric_Pressure, Synthetic_032_-_1/time, Synthetic_032_-_1/Water_Elevation, Synthetic_032_-_1/X_Depth_Averaged_Velocity, Synthetic_032_-_1/X_Wind_Velocity, Synthetic_032_-_1/Y_Depth_Averaged_Velocity, Synthetic_032_-_1/Y_Wind_Velocity, time, velocity, water, wind</att>\n" +
@@ -10848,7 +10848,7 @@ expected =
 "    <addAttributes>\n" +
 "        <att name=\"_NCProperties\">null</att>\n" +  
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">3/time, 3/water, 3/x, 3/y, air, air_pressure, atmosphere, atmospheric, averaged, currents, data, depth, earth, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure, Earth Science &gt; Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure, elevation, level, local, measurements, pressure, science, sea, seawater, source, static, synthetic, Synthetic_035_-_3/Atmospheric_Pressure, Synthetic_035_-_3/time, Synthetic_035_-_3/Water_Elevation, Synthetic_035_-_3/X_Depth_Averaged_Velocity, Synthetic_035_-_3/X_Wind_Velocity, Synthetic_035_-_3/Y_Depth_Averaged_Velocity, Synthetic_035_-_3/Y_Wind_Velocity, time, velocity, water, wind</att>\n" +
@@ -11970,7 +11970,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +
@@ -14214,7 +14214,7 @@ expected =
     "<addAttributes>\n" +
 "        <att name=\"_NCProperties\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"grid_mapping_inverse_flattening\" type=\"float\">298.25723</att>\n" +
 "        <att name=\"grid_mapping_longitude_of_prime_meridian\" type=\"float\">0.0</att>\n" +
 "        <att name=\"grid_mapping_name\">latitude_longitude</att>\n" +
@@ -14801,7 +14801,7 @@ expected =
         results = File2.directReadFrom88591File(EDStatic.fullTestCacheDirectory + tName);
         results = results.replaceAll("2\\d{3}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z ", "[TODAY] ");
         expected = 
-"*GLOBAL*,Conventions,\"CF-1.6, COARDS, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"CF-1.6, COARDS, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,_lastModified,2017-11-18T01:49:38.000Z\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,creator_email,data@oceancolor.gsfc.nasa.gov\n" +

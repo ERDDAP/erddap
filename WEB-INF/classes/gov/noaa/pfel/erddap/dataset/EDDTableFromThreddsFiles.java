@@ -906,7 +906,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">NODC.Webmaster@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NODC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +

@@ -852,7 +852,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cols\">null</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">erd.data@noaa.gov</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">https://coastwatch.pfeg.noaa.gov</att>\n" +

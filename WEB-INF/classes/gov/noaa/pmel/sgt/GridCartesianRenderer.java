@@ -123,7 +123,7 @@ if(grid_.getTimeArray().length == 0) return; //2014-04-06 bob added this and sim
         if (xSize == 1) { //2014-04-06 bob added this and similar below
             xp[0] = cg_.getLayer().getXPtoD(0);
             xp[1] = cg_.getLayer().getXPtoD(1);
-String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
+            //String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
         } else {
             xp[0] = cg_.getXUtoD(tValues[0].subtract(
                                 (tValues[1].subtract(tValues[0])).divide(2.0)));
@@ -153,7 +153,7 @@ if(grid_.getXArray().length == 0) return;
         if (xSize == 1) {
             xp[0] = cg_.getLayer().getXPtoD(0);
             xp[1] = cg_.getLayer().getXPtoD(1);
-String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
+            //String2.log(">>xp[0]=" + xp[0] + " xp[1]=" + xp[1]); 
         } else {
             xp[0] = cg_.getXUtoD(xValues[0]-(xValues[1]-xValues[0])*0.5);
             for(count=1; count < xSize; count++) {
@@ -184,7 +184,7 @@ if(grid_.getTimeArray().length == 0) return;
         if (ySize == 1) {
             yp[0] = cg_.getLayer().getYPtoD(0);
             yp[1] = cg_.getLayer().getYPtoD(1);
-String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
+            //String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
         } else {
             yp[0] = cg_.getYUtoD(tValues[0].subtract(
                               (tValues[1].subtract(tValues[0])).divide(2.0)));
@@ -214,7 +214,7 @@ if(grid_.getYArray().length == 0) return;
         if (ySize == 1) {
             yp[0] = cg_.getLayer().getYPtoD(0);
             yp[1] = cg_.getLayer().getYPtoD(1);
-String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
+            //String2.log(">>yp[0]=" + yp[0] + " yp[1]=" + yp[1]); 
         } else {
             yp[0] = cg_.getYUtoD(yValues[0]-(yValues[1]-yValues[0])*0.5);
             for(count=1; count < ySize; count++) {

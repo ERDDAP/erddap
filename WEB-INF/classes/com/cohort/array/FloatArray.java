@@ -1455,8 +1455,9 @@ public class FloatArray extends PrimitiveArray {
         Test.ensureTrue(Float.compare(f1, f2) < 0, "");
         
         FloatArray anArray = FloatArray.fromCSV(-Float.MAX_VALUE + ", " + Float.MAX_VALUE + ", , NaN, 1e400 ");
-        Test.ensureEqual(anArray.toString(),         "-3.4028235E38, 3.4028235E38, NaN, NaN, NaN", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "-3.4028235E38f,3.4028235E38f,NaNf,NaNf,NaNf", "");
+        Test.ensureEqual(anArray.toString(),            "-3.4028235E38, 3.4028235E38, NaN, NaN, NaN", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "-3.4028235E38f,3.4028235E38f,NaNf,NaNf,NaNf", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "-3.4028235E38f,3.4028235E38f,NaNf,NaNf,NaNf", "");
 
         //** test default constructor and many of the methods
         anArray = new FloatArray();

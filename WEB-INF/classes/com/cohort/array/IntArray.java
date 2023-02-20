@@ -1534,9 +1534,10 @@ public class IntArray extends PrimitiveArray {
     public static void basicTest() throws Throwable{
         String2.log("*** IntArray.basicTest");
 
-        IntArray anArray = IntArray.fromCSV(         " -2147483648, -1, 0, 2147483646, ,          2147483647, 9999999999 ");
-        Test.ensureEqual(anArray.toString(),         "-2147483648, -1, 0, 2147483646, 2147483647, 2147483647, 2147483647", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "-2147483648i,-1i,0i,2147483646i,2147483647i,2147483647i,2147483647i", "");
+        IntArray anArray = IntArray.fromCSV(            " -2147483648, -1, 0, 2147483646, ,          2147483647, 9999999999 ");
+        Test.ensureEqual(anArray.toString(),            "-2147483648, -1, 0, 2147483646, 2147483647, 2147483647, 2147483647", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "-2147483648i,-1i,0i,2147483646i,2147483647i,2147483647i,2147483647i", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "-2147483648i,-1i,0i,2147483646i,2147483647i,2147483647i,2147483647i", "");
 
         //test speed
         long time = System.currentTimeMillis();

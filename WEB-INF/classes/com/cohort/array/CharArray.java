@@ -946,6 +946,18 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * This is like getNccsvDataString, but encodes chars &gt;=127.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getNccsv127DataString(final int index) {
+        final char ch = get(index);
+        return ch == '\uFFFF'? "" : String2.toNccsv127DataString("" + ch);
+    }
+
+    /**
      * Return a value from the array as a String suitable for the data section 
      * of an ASCII csv or tsv string, e.g., z "\t" "\u0000" , "\"".
      * 
@@ -1124,20 +1136,20 @@ public class CharArray extends PrimitiveArray {
         for (int i = 0; i < size; i++)
             if (getInt(i) != other.getInt(i)) //handles mv
                 return "The two CharArrays aren't equal: this[" + i + "]=" + 
-                    getNccsvDataString(i) + //safe char to int type conversion
+                    getNccsv127DataString(i) + //safe char to int type conversion
                                                      "; other[" + i + "]=" + 
-                    other.getNccsvDataString(i) + "."; //safe char to int type conversion
+                    other.getNccsv127DataString(i) + "."; //safe char to int type conversion
         return "";
     }
 
     /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * This is just used for diagnostic messages (e.g., to a DOS window).
      *
-     * @return a Comma-Space-Separated-Value (CSSV) String representation 
-     *  (with chars acting like unsigned shorts).
+     * @return a Comma-Space-Separated-Value (CSSV) String representation.
      */
     public String toString() {
-        return String2.toCSSVString(toArray()); //toArray() get just 'size' elements
+        return String2.toCSSVString(toArray()); //toArray() gets just 'size' elements
     }
 
     /** 
@@ -1146,9 +1158,22 @@ public class CharArray extends PrimitiveArray {
      * @return an NCCSV attribute String
      */
     public String toNccsvAttString() {
-        final StringBuilder sb = new StringBuilder(size * 6);
+        final StringBuilder sb = new StringBuilder(size * 7);
         for (int i = 0; i < size; i++) 
-            sb.append((i == 0? "\"'" : ",\"'") + String2.toNccsvChar(array[i]) + "'\"");
+            sb.append((i == 0? "" : ",") + "\"'" + String2.toNccsvChar(array[i]) + "'\"");
+        //String2.log(">> CharArray " + toString() + "  >>  " + sb.toString());
+        return sb.toString();
+    }
+
+    /** 
+     * This is like toNccsvAttString, but chars &gt;127 are \\uhhhh encoded.
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsv127AttString() {
+        final StringBuilder sb = new StringBuilder(size * 7);
+        for (int i = 0; i < size; i++) 
+            sb.append((i == 0? "" : ",") + "\"'" + String2.toNccsv127Char(array[i]) + "'\"");
         return sb.toString();
     }
 
@@ -1639,9 +1664,10 @@ public class CharArray extends PrimitiveArray {
     public static void basicTest() throws Throwable{
         String2.log("*** CharArray.basicTest");
 
-        CharArray anArray = CharArray.fromCSV(       "\"\\t\", a, \"\\n\", \"\\u20AC\", ,  \"\\uffff\" ");
-        Test.ensureEqual(anArray.toString(),         "\\t, a, \\n, \\u20ac, \\uffff, \\uffff", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "\"'\\t'\",\"'a'\",\"'\\n'\",\"'\\u20ac'\",\"'\\uffff'\",\"'\\uffff'\"", "");
+        CharArray anArray = CharArray.fromCSV(          "\"\\t\", a, \"\\n\", \"\\u20AC\", ,  \"\\uffff\" ");
+        Test.ensureEqual(anArray.toString(),            "\\t, a, \\n, \\u20ac, \\uffff, \\uffff", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "\"'\\t'\",\"'a'\",\"'\\n'\",\"'\u20ac'\",\"'\uffff'\",\"'\uffff'\"", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "\"'\\t'\",\"'a'\",\"'\\n'\",\"'\\u20ac'\",\"'\\uffff'\",\"'\\uffff'\"", "");
 
         //** test default constructor and many of the methods
         anArray = new CharArray();

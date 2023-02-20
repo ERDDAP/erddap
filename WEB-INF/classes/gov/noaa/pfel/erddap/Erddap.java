@@ -496,6 +496,7 @@ public class Erddap extends HttpServlet {
             String2.log(summary);
 
             //then immediately test ipAddress (so little possible error in between)
+            //This is the "on-ramp metering" system to limit requests from a given IP address.
             if (!EDStatic.ipAddressUnlimited.contains(ipAddress)) {
                 //always add requestNumber to ipAddressQueue for this ipAddress
                 //Important: ipAddressQueue is thread-safe so only 1 thread will succeed in creating a new IntArray for this ipAddress
