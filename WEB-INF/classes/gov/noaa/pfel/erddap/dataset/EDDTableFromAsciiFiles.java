@@ -526,7 +526,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -784,7 +784,7 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -1033,7 +1033,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">webmaster.ndbc@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA NDBC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -1165,7 +1165,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">info@bco-dmo.org</att>\n" +
 "        <att name=\"creator_name\">BCO-DMO</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -3814,7 +3814,7 @@ String expected =
 "        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
 "        <att name=\"archive_location\">Other</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Steve Lewis</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -3980,7 +3980,7 @@ expected =
 "        <att name=\"acknowledgment\">Steve Lewis, Jarvis Shultz</att>\n" +
 "        <att name=\"archive_location\">Other</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">steve.lewis@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Steve Lewis</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -4384,7 +4384,7 @@ String expected =
 "        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
 "        <att name=\"archive_location\">NCEI-MD</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">thomas.hurst@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Thomas Hurst</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -4512,7 +4512,7 @@ expected =
 "        <att name=\"acknowledgment\">Field collection of data was conducted as part of the Bering-Aleutian Salmon International Survey and was supported in part by the Bering Sea Fishermen&#39;s Association, The Arctic Yukon Kuskokwim Sustainable Salmon Initiative, and the Bering Sea Integrated Ecosystem Research Program. Data analysis was supported in part by a grant from the North Pacific Research Board (#R0816) and published in publication #325.</att>\n" +
 "        <att name=\"archive_location\">NCEI-MD</att>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">thomas.hurst@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Thomas Hurst</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -5743,7 +5743,7 @@ String expected =
 "        <att name=\"BCO_DMO_dataset_ID\">549122</att>\n" +
 "        <att name=\"brief_description\">Element quotas of individual phytoplankton cells</att>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">info@bco-dmo.org</att>\n" +
 "        <att name=\"creator_name\">Dr Benjamin Twining</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -6538,7 +6538,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">???</att>\n" +
 "        <att name=\"institution\">???</att>\n" +
 "        <att name=\"keywords\">data, date, local, source, time</att>\n" +
@@ -6707,7 +6707,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">bobsimonsdata</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://bobsimonsdata.s3.us-east-1.amazonaws.com/ascii/</att>\n" +

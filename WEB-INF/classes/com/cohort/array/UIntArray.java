@@ -1644,7 +1644,8 @@ public class UIntArray extends PrimitiveArray {
         Test.ensureEqual(anArray.toString(),        "2147483648, 4294967295, 0, 1, 2147483647", "");
         anArray = UIntArray.fromCSV(                   "0, 1, 2147483647, 2147483648, 4294967295, 4294967295, 9999999999");
         Test.ensureEqual(anArray.toString(),           "0, 1, 2147483647, 2147483648, 4294967295, 4294967295, 4294967295", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "0ui,1ui,2147483647ui,2147483648ui,4294967295ui,4294967295ui,4294967295ui", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "0ui,1ui,2147483647ui,2147483648ui,4294967295ui,4294967295ui,4294967295ui", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "0ui,1ui,2147483647ui,2147483648ui,4294967295ui,4294967295ui,4294967295ui", "");
 
         //** test default constructor and many of the methods
         anArray = new UIntArray();

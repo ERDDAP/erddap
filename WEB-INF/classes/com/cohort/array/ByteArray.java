@@ -1639,9 +1639,10 @@ public class ByteArray extends PrimitiveArray {
     public static void basicTest() throws Throwable {
         String2.log("*** ByteArray.basicTest");
 
-        ByteArray anArray = ByteArray.fromCSV(     " -128, -1, 0, 126, ,     127, 200 ");
-        Test.ensureEqual(anArray.toString(),         "-128, -1, 0, 126, 127, 127, 127", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "-128b,-1b,0b,126b,127b,127b,127b", "");
+        ByteArray anArray = ByteArray.fromCSV(          " -128, -1, 0, 126, ,     127, 200 ");
+        Test.ensureEqual(anArray.toString(),            "-128, -1, 0, 126, 127, 127, 127", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "-128b,-1b,0b,126b,127b,127b,127b", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "-128b,-1b,0b,126b,127b,127b,127b", "");
 
         //** test default constructor and many of the methods
         anArray = new ByteArray();

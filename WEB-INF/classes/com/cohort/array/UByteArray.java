@@ -1728,10 +1728,11 @@ public class UByteArray extends PrimitiveArray {
         Test.ensureEqual(unpack((byte)  -1), 255, "");
 
         UByteArray anArray = new UByteArray(new byte[]{-128, -1, 0, 1, 127}); //packed values
-        Test.ensureEqual(anArray.toString(),          "128, 255, 0, 1, 127", "");
-        anArray = UByteArray.fromCSV(                  "0, 1, 127, 128, 255,  -1, 999");
-        Test.ensureEqual(anArray.toString(),           "0, 1, 127, 128, 255, 255, 255", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "0ub,1ub,127ub,128ub,255ub,255ub,255ub", "");
+        Test.ensureEqual(anArray.toString(),            "128, 255, 0, 1, 127", "");
+        anArray = UByteArray.fromCSV(                   "0, 1, 127, 128, 255,  -1, 999");
+        Test.ensureEqual(anArray.toString(),            "0, 1, 127, 128, 255, 255, 255", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "0ub,1ub,127ub,128ub,255ub,255ub,255ub", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "0ub,1ub,127ub,128ub,255ub,255ub,255ub", "");
 
 
         //** test default constructor and many of the methods

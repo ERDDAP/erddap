@@ -355,7 +355,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray csvFactory(PAType elementType, String csv) {
 
         String[] sa = StringArray.arrayFromCSV(csv);
-        //String2.log(">> csvFactory " + elementType + " " + (new StringArray(sa)).toNccsvAttString());
+        //String2.log(">> csvFactory " + elementType + " " + (new StringArray(sa)).toNccsv127AttString());
         if (elementType == PAType.STRING) 
             return new StringArray(sa);
         int n = sa.length;
@@ -1125,6 +1125,15 @@ public abstract class PrimitiveArray {
     }
 
     /**
+     * This is like getNccsvDataString, but encodes chars &gt;=127.
+     * CharArray and StringArray overwrite this.
+     */
+     public String getNccsv127DataString(int index) {
+         return getString(index);
+     }
+    
+
+    /**
      * Return a value from the array as a String suitable for the data section 
      * of an ASCII csv or tsv string. This is close to a json string.
      * 
@@ -1242,7 +1251,7 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(",");
-            sb.append(getNccsvDataString(i));
+            sb.append(getNccsv127DataString(i));
         }
         return sb.toString();
     }
@@ -1259,7 +1268,7 @@ public abstract class PrimitiveArray {
         for (int i = 0; i < size; i++) {
             if (i > 0)
                 sb.append(", ");
-            sb.append(getNccsvDataString(i));
+            sb.append(getNccsv127DataString(i));
         }
         return sb.toString();
     }
@@ -1267,10 +1276,24 @@ public abstract class PrimitiveArray {
     /** 
      * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
      * Integer types show MAX_VALUE numbers (not "").
+     * Chars above 255 are left as unicode chars (not json encoded).
+     * See tests in PrimitiveArray.testNccsv().
      *
      * @return an NCCSV attribute String
      */
     abstract public String toNccsvAttString();
+
+    /** 
+     * This is like the original version of toNccsvAttString, where chars &gt;127 
+     * are json127 encoded in StringArray and CharArray values.
+     * StringArray and CharArray overwrite this. 
+     * See tests in PrimitiveArray.testNccsv().
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsv127AttString() {
+        return toNccsvAttString();
+    }
 
     /**
      * This returns a JSON-style comma-separated-value list of the elements.
@@ -4157,7 +4180,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray parseNccsvAttributes(StringArray sa) {
         if (sa == null || sa.size() == 0)
             return sa;
-        //String2.log("nccsv(sa)=" + sa.toNccsvAttString());
+        //String2.log("nccsv(sa)=" + sa.toNccsv127AttString());
 
         //are first and lastChar all the same? e.g., 7b, -12b
         int saSize = sa.size();
@@ -4452,43 +4475,91 @@ public abstract class PrimitiveArray {
 
         //String2.toNccsvChar
         Test.ensureEqual(String2.toNccsvChar(' '), " ", "");
-        Test.ensureEqual(String2.toNccsvChar('\u20AC'), "\\u20ac", "");
+        Test.ensureEqual(String2.toNccsvChar('\t'), "\\t", "");
+        Test.ensureEqual(String2.toNccsvChar('a'), "a", "");
+        Test.ensureEqual(String2.toNccsvChar('µ'), "µ", ""); //#181
+        Test.ensureEqual(String2.toNccsvChar('\u20AC'), "€", "");
+        Test.ensureEqual(String2.toNccsvChar('\u0081'), "\u0081", ""); //now left as is
+
+        //String2.toNccsv127Char
+        Test.ensureEqual(String2.toNccsv127Char(' '), " ", "");
+        Test.ensureEqual(String2.toNccsv127Char('\t'), "\\t", "");
+        Test.ensureEqual(String2.toNccsv127Char('a'), "a", "");
+        Test.ensureEqual(String2.toNccsv127Char('µ'), "\\u00b5", ""); //#181
+        Test.ensureEqual(String2.toNccsv127Char('€'), "\\u20ac", "");
+        Test.ensureEqual(String2.toNccsv127Char('\u0081'), "\\u0081", ""); //not defined in Unicode
+
 
         //String2.toNccsvDataString  won't be quoted
         Test.ensureEqual(String2.toNccsvDataString(""), "", "");
+        Test.ensureEqual(String2.toNccsvDataString("a\n\f\t\r"), "a\\n\\f\\t\\r", "");  //special char
         Test.ensureEqual(String2.toNccsvDataString("a"), "a", "");
-        Test.ensureEqual(String2.toNccsvDataString("a ~"), "a ~", "");
-        s = String2.toNccsvDataString("a\n\f\t\r");
-        Test.ensureEqual(s, "a\\n\\f\\t\\r", s);
+        Test.ensureEqual(String2.toNccsvDataString("a ~ µ€"), "a ~ µ€", "");
         Test.ensureEqual(String2.toNccsvDataString("a"), "a", "");
         Test.ensureEqual(String2.toNccsvDataString("5"), "5", "");     //number
         Test.ensureEqual(String2.toNccsvDataString("'c'"), "'c'", ""); //char
 
         //String2.toNccsvDataString  will be quoted
         Test.ensureEqual(String2.toNccsvDataString(" "), "\" \"", "");           //start/end  ' '
-        Test.ensureEqual(String2.toNccsvDataString("a "), "\"a \"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsvDataString("aµ€ "), "\"aµ€ \"", "");     //start/end  ' '
         Test.ensureEqual(String2.toNccsvDataString(" b"), "\" b\"", "");         //start/end  ' '
         Test.ensureEqual(String2.toNccsvDataString("a,"), "\"a,\"", "");         // ,
         Test.ensureEqual(String2.toNccsvDataString("b\""), "\"b\"\"\"", "");     // "
+        Test.ensureEqual(String2.toNccsvDataString("\\ \f\n\r\t\"' z\u0000\uffffÿ\u20ac"), 
+                                                   "\"\\\\ \\f\\n\\r\\t\"\"' z\\u0000\uffff\u00ff€\"", "");
+
+
+        //String2.toNccsv127DataString  won't be quoted
+        Test.ensureEqual(String2.toNccsv127DataString(""), "", "");
+        Test.ensureEqual(String2.toNccsv127DataString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsv127DataString("5"), "5", "");     //number
+        Test.ensureEqual(String2.toNccsv127DataString("'c'"), "'c'", ""); //char
+        Test.ensureEqual(String2.toNccsv127DataString("aµ€"), "a\\u00b5\\u20ac", "");  
+        Test.ensureEqual(String2.toNccsv127DataString("a\n\f\t\r"), "a\\n\\f\\t\\r", ""); 
+
+        //String2.toNccsv127DataString  will be quoted
+        Test.ensureEqual(String2.toNccsv127DataString(" "), "\" \"", "");             //start/end  ' '
+        Test.ensureEqual(String2.toNccsv127DataString("aµ€ "), "\"a\\u00b5\\u20ac \"", ""); //start/end  ' '
+        Test.ensureEqual(String2.toNccsv127DataString(" b"), "\" b\"", "");           //start/end  ' '
+        Test.ensureEqual(String2.toNccsv127DataString("a,"), "\"a,\"", "");           // ,
+        Test.ensureEqual(String2.toNccsv127DataString("b\""), "\"b\"\"\"", "");       // "
+        Test.ensureEqual(String2.toNccsv127DataString("\\ \f\n\r\t\"' z\u0000\uffffÿ\u20ac"), 
+                                                      "\"\\\\ \\f\\n\\r\\t\"\"' z\\u0000\\uffff\\u00ff\\u20ac\"", "");
 
 
         //String2.toNccsvAttString  won't be quoted
         Test.ensureEqual(String2.toNccsvAttString(""), "", "");
         Test.ensureEqual(String2.toNccsvAttString("a"), "a", "");
-        Test.ensureEqual(String2.toNccsvAttString("a ~"), "a ~", "");
+        Test.ensureEqual(String2.toNccsvAttString("a ~ µ€"), "a ~ µ€", "");
         s = String2.toNccsvAttString("a\n\f\t\r");
         Test.ensureEqual(s, "a\\n\\f\\t\\r", s);
         Test.ensureEqual(String2.toNccsvAttString("a"), "a", "");
-
+        Test.ensureEqual(String2.toNccsvAttString("aµ€"), "aµ€", "");     
 
         //String2.toNccsvAttString  will be quoted
         Test.ensureEqual(String2.toNccsvAttString(" "), "\" \"", "");           //start/end  ' '
-        Test.ensureEqual(String2.toNccsvAttString("a "), "\"a \"", "");         //start/end  ' '
         Test.ensureEqual(String2.toNccsvAttString(" b"), "\" b\"", "");         //start/end  ' '
         Test.ensureEqual(String2.toNccsvAttString("a,"), "\"a,\"", "");         // ,
         Test.ensureEqual(String2.toNccsvAttString("b\""), "\"b\"\"\"", "");     // "
-        Test.ensureEqual(String2.toNccsvAttString("\'c\'"), "\"'c'\"", ""); //char
-        Test.ensureEqual(String2.toNccsvAttString("5"), "\"5\"", "");       //number
+        Test.ensureEqual(String2.toNccsvAttString("\'c\'"), "\"'c'\"", "");     //char
+        Test.ensureEqual(String2.toNccsvAttString("5"), "\"5\"", "");           //number
+
+
+        //String2.toNccsv127AttString  won't be quoted
+        Test.ensureEqual(String2.toNccsv127AttString(""), "", "");
+        Test.ensureEqual(String2.toNccsv127AttString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsv127AttString("a ~ µ€"), "a ~ \\u00b5\\u20ac", "");
+        Test.ensureEqual(String2.toNccsv127AttString("a"), "a", "");
+        Test.ensureEqual(String2.toNccsv127AttString("a\n\f\t\r"), "a\\n\\f\\t\\r", "");  
+        Test.ensureEqual(String2.toNccsv127AttString("aµ€"), "a\\u00b5\\u20ac", "");  
+
+        //String2.toNccsv127AttString  will be quoted
+        Test.ensureEqual(String2.toNccsv127AttString(" "), "\" \"", "");           //start/end  ' '
+        Test.ensureEqual(String2.toNccsv127AttString(" b"), "\" b\"", "");         //start/end  ' '
+        Test.ensureEqual(String2.toNccsv127AttString("a,"), "\"a,\"", "");         // ,
+        Test.ensureEqual(String2.toNccsv127AttString("b\""), "\"b\"\"\"", "");     // "
+        Test.ensureEqual(String2.toNccsv127AttString("\'c\'"), "\"'c'\"", "");     //char
+        Test.ensureEqual(String2.toNccsv127AttString("5"), "\"5\"", "");           //number
 
         //ByteArray
         s = "1b";
@@ -4665,7 +4736,7 @@ public abstract class PrimitiveArray {
             "a~ [12] [10]\n" +
             " [13] [9] \\ / [192] [0] [65535][end]", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
-            "a~ \\f \\n \\r \\t \\\\ / \\u00c0 \\u0000 \\uffff", "");
+            "a~ \\f \\n \\r \\t \\\\ / \u00c0 \\u0000 \uffff", "");
         
         
         //CharArray
@@ -4696,7 +4767,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.toString(), 
             "~, \\u00c0, \\u0000, \\uffff", "");
         Test.ensureEqual(pa.toNccsvAttString(), 
-            "\"'~'\",\"'\\u00c0'\",\"'\\u0000'\",\"'\\uffff'\"", "");
+            "\"'~'\",\"'\u00c0'\",\"'\\u0000'\",\"'\uffff'\"", "");
         
         try {
             pa = parseNccsvAttributes(StringArray.simpleFromNccsv("'\\b'"));

@@ -716,12 +716,14 @@ public class Attributes {
         return this;
     }
 
-    /** This prints the attributes to a newline separated String, one per line: "&nbsp;&nbsp;&nbsp;&nbsp;[name]=[value]".*/
+    /** For diagnostics, this prints the attributes to a newline separated String,
+     * one per line: "&nbsp;&nbsp;&nbsp;&nbsp;[name]=[value]",
+     * where [value] is att.toNccsv127AttString(). */
     public String toString() {
         StringBuilder sb = new StringBuilder();
         String names[] = getNames();
         for (int i = 0; i < names.length; i++) {
-            sb.append("    " + names[i] + "=" + get(names[i]).toNccsvAttString() + "\n");
+            sb.append("    " + names[i] + "=" + get(names[i]).toNccsv127AttString() + "\n");
         }
         return sb.toString();
     }
@@ -1042,7 +1044,9 @@ public class Attributes {
             tName = "Conventions";
             String val = getString(tName);
             if (String2.isSomething(val)) {
-                if (val.indexOf("NCCSV") < 0)
+                if (val.indexOf("NCCSV") >= 0)
+                    val = val.replaceAll("NCCSV-.\\..", String2.NCCSV_VERSION);   //string.replaceAll(regex, newS) should match. No change if not.
+                else
                     val += ", " + String2.NCCSV_VERSION;
             } else {
                 val = "COARDS, CF-1.6, ACDD-1.3, " + String2.NCCSV_VERSION;
@@ -1068,7 +1072,7 @@ public class Attributes {
             sb.append(
                 String2.toNccsvDataString(nccsvVarName) + "," + 
                 String2.toNccsvDataString(tName)        + "," +  
-                tValue.toNccsvAttString()           + "\n"); 
+                tValue.toNccsvAttString()               + "\n"); 
         }
         return sb.toString();        
     }
@@ -1853,50 +1857,60 @@ public class Attributes {
         String results;
         Test.ensureEqual(atts.size(), 0, "");
         atts.set("byte", (byte)1);
-        atts.set("char", 'a');
+        atts.set("char", '\u20ac');
         atts.set("short", (short)3000);
         atts.set("int",  1000000);
         atts.set("long", 1000000000000L);
         atts.set("float", 2.5f);
         atts.set("double", Math.PI);
-        atts.set("String", "a, csv, string");
+        atts.set("String1", "a, csv, ÿ\u20ac, string"); //1 string with csv content
+        atts.set("String4", StringArray.fromCSV("a, csv, ÿ\u20ac, string")); //4 strings
         atts.set("PA", new IntArray(new int[]{1,2,3}));
 
-        Test.ensureEqual(atts.size(), 9, "");
+        Test.ensureEqual(atts.size(), 10, "");
 
         //add and remove an item
         Test.ensureEqual(atts.set("zz", new IntArray(new int[]{1})), null, "");
-        Test.ensureEqual(atts.size(), 10, "");
+        Test.ensureEqual(atts.size(), 11, "");
 
         Test.ensureEqual(atts.set("zz", (PrimitiveArray)null), new IntArray(new int[]{1}), "");
-        Test.ensureEqual(atts.size(), 9, "");
+        Test.ensureEqual(atts.size(), 10, "");
 
         //add and remove an item
         Test.ensureEqual(atts.set("zz", new IntArray(new int[]{2})), null, "");
-        Test.ensureEqual(atts.size(), 10, "");
+        Test.ensureEqual(atts.size(), 11, "");
 
         Test.ensureEqual(atts.remove("zz"), new IntArray(new int[]{2}), "");
-        Test.ensureEqual(atts.size(), 9, "");
+        Test.ensureEqual(atts.size(), 10, "");
 
         //empty string same as null; attribute removed
         atts.set("zz", "a"); 
-        Test.ensureEqual(atts.size(), 10, "");
+        Test.ensureEqual(atts.size(), 11, "");
         atts.set("zz", ""); 
-        Test.ensureEqual(atts.size(), 9, "");
+        Test.ensureEqual(atts.size(), 10, "");
 
         //get
-        Test.ensureEqual(atts.get("byte"),   new ByteArray(new byte[]{(byte)1}), "");
-        Test.ensureEqual(atts.get("char"),   new CharArray(new char[]{'a'}), "");
-        Test.ensureEqual(atts.get("short"),  new ShortArray(new short[]{(short)3000}), "");
-        Test.ensureEqual(atts.get("int"),    new IntArray(new int[]{1000000}), "");
-        Test.ensureEqual(atts.get("long"),   new LongArray(new long[]{1000000000000L}), "");
-        Test.ensureEqual(atts.get("float"),  new FloatArray(new float[]{2.5f}), "");
-        Test.ensureEqual(atts.get("double"), new DoubleArray(new double[]{Math.PI}), "");
-        Test.ensureEqual(atts.get("String"), new StringArray(new String[]{"a, csv, string"}), "");
-        Test.ensureEqual(atts.get("PA"),     new IntArray(new int[]{1,2,3}), "");
+        Test.ensureEqual(atts.get("byte"),    new ByteArray(new byte[]{(byte)1}), "");
+        Test.ensureEqual(atts.get("char"),    new CharArray(new char[]{'\u20ac'}), "");
+        Test.ensureEqual(atts.get("short"),   new ShortArray(new short[]{(short)3000}), "");
+        Test.ensureEqual(atts.get("int"),     new IntArray(new int[]{1000000}), "");
+        Test.ensureEqual(atts.get("long"),    new LongArray(new long[]{1000000000000L}), "");
+        Test.ensureEqual(atts.get("float"),   new FloatArray(new float[]{2.5f}), "");
+        Test.ensureEqual(atts.get("double"),  new DoubleArray(new double[]{Math.PI}), "");
+        Test.ensureEqual(atts.get("String1"), new StringArray(new String[]{"a, csv, ÿ\u20ac, string"}), "");  //1 string with csv content
+        Test.ensureEqual(atts.get("String4"), StringArray.fromCSV("a, csv, ÿ\u20ac, string"), "");        //4 strings
+        Test.ensureEqual(atts.get("PA"),      new IntArray(new int[]{1,2,3}), "");
+
+        Test.ensureEqual(atts.get("String1").toString(),            "\"a, csv, \\u00ff\\u20ac, string\"", "");  //1 string with csv content
+        Test.ensureEqual(atts.get("String1").toNccsvAttString(),    "\"a, csv, ÿ\u20ac, string\"", "");         //1 string with csv content
+        Test.ensureEqual(atts.get("String1").toNccsv127AttString(), "\"a, csv, \\u00ff\\u20ac, string\"", "");  //1 string with csv content
+
+        Test.ensureEqual(atts.get("String4").toString(),            "a, csv, \\u00ff\\u20ac, string", "");      //4 strings
+        Test.ensureEqual(atts.get("String4").toNccsvAttString(),    "a\\ncsv\\nÿ\u20ac\\nstring", "");          //4 strings
+        Test.ensureEqual(atts.get("String4").toNccsv127AttString(), "a\\ncsv\\n\\u00ff\\u20ac\\nstring", "");   //4 strings
 
         Test.ensureEqual(atts.getInt("byte"),  1, "");
-        Test.ensureEqual(atts.getInt("char"),  97, "");
+        Test.ensureEqual(atts.getInt("char"),  8364, "");
         Test.ensureEqual(atts.getInt("short"), 3000, "");
         Test.ensureEqual(atts.getInt(   "int"), 1000000, "");
         Test.ensureEqual(atts.getLong(  "int"), 1000000, "");
@@ -1908,9 +1922,9 @@ public class Attributes {
         Test.ensureEqual(atts.getString("float"), "2.5", "");
         Test.ensureEqual(atts.getDouble("double"), Math.PI, "");
         Test.ensureEqual(atts.getInt(   "double"), 3, "");
-        Test.ensureEqual(atts.getString(        "String"), "a, csv, string", "");
-        Test.ensureEqual(atts.getStringsFromCSV("String"), new String[]{"a", "csv", "string"}, "");
-        Test.ensureEqual(atts.getInt(           "String"), Integer.MAX_VALUE, "");
+        Test.ensureEqual(atts.getString(        "String1"), "a, csv, ÿ\u20ac, string", "");
+        Test.ensureEqual(atts.getStringsFromCSV("String1"), new String[]{"a", "csv", "ÿ\u20ac", "string"}, "");
+        Test.ensureEqual(atts.getInt(           "String1"), Integer.MAX_VALUE, "");
         Test.ensureEqual(atts.get(      "PA"), new IntArray(new int[]{1,2,3}), "");
         Test.ensureEqual(atts.getInt(   "PA"), 1, "");
         Test.ensureEqual(atts.getDouble("PA"), 1, "");
@@ -1918,36 +1932,38 @@ public class Attributes {
 
         //getNames
         Test.ensureEqual(atts.getNames(), 
-            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String"}, 
+            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String1", "String4"}, 
             "");
 
         //toString
         results = atts.toString();
         Test.ensureEqual(results, 
             "    byte=1b\n" +
-            "    char=\"'a'\"\n" +
+            "    char=\"'\\u20ac'\"\n" +
             "    double=3.141592653589793d\n" +
             "    float=2.5f\n" +
             "    int=1000000i\n" +
             "    long=1000000000000L\n" +
             "    PA=1i,2i,3i\n" +   
             "    short=3000s\n" +
-            "    String=\"a, csv, string\"\n", "results=\n" + results);
+            "    String1=\"a, csv, \\u00ff\\u20ac, string\"\n" +
+            "    String4=a\\ncsv\\n\\u00ff\\u20ac\\nstring\n", "results=\n" + results);
 
         //clone   
         Attributes atts2 = (Attributes)atts.clone();
-        Test.ensureEqual(atts2.get("byte"),   new ByteArray(new byte[]{(byte)1}), "");
-        Test.ensureEqual(atts2.get("char"),   new CharArray(new char[]{'a'}), "");
-        Test.ensureEqual(atts2.get("short"),  new ShortArray(new short[]{(short)3000}), "");
-        Test.ensureEqual(atts2.get("int"),    new IntArray(new int[]{1000000}), "");
-        Test.ensureEqual(atts2.get("long"),   new LongArray(new long[]{1000000000000L}), "");
-        Test.ensureEqual(atts2.get("float"),  new FloatArray(new float[]{2.5f}), "");
-        Test.ensureEqual(atts2.get("double"), new DoubleArray(new double[]{Math.PI}), "");
-        Test.ensureEqual(atts2.get("String"), new StringArray(new String[]{"a, csv, string"}), "");
-        Test.ensureEqual(atts2.get("PA"),     new IntArray(new int[]{1,2,3}), "");
+        Test.ensureEqual(atts2.get("byte"),    new ByteArray(new byte[]{(byte)1}), "");
+        Test.ensureEqual(atts2.get("char"),    new CharArray(new char[]{'\u20ac'}), "");
+        Test.ensureEqual(atts2.get("short"),   new ShortArray(new short[]{(short)3000}), "");
+        Test.ensureEqual(atts2.get("int"),     new IntArray(new int[]{1000000}), "");
+        Test.ensureEqual(atts2.get("long"),    new LongArray(new long[]{1000000000000L}), "");
+        Test.ensureEqual(atts2.get("float"),   new FloatArray(new float[]{2.5f}), "");
+        Test.ensureEqual(atts2.get("double"),  new DoubleArray(new double[]{Math.PI}), "");
+        Test.ensureEqual(atts2.get("String1"), new StringArray(new String[]{"a, csv, ÿ\u20ac, string"}), "");
+        Test.ensureEqual(atts2.get("String4"), StringArray.fromCSV("a, csv, ÿ\u20ac, string"), "");
+        Test.ensureEqual(atts2.get("PA"),      new IntArray(new int[]{1,2,3}), "");
 
         Test.ensureEqual(atts2.getNames(), 
-            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String"},
+            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String1", "String4"},
             "");
         
         //clear
@@ -1957,22 +1973,24 @@ public class Attributes {
         //copyTo
         atts.copyTo(atts2);
         Test.ensureEqual(atts2.getNames(), 
-            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String"},
+            new String[]{"byte", "char", "double", "float", "int", "long", "PA", "short", "String1", "String4"},
             "");
-        Test.ensureEqual(atts2.get("String"), new StringArray(new String[]{"a, csv, string"}), "");
+        Test.ensureEqual(atts2.get("String1"), new StringArray(new String[]{"a, csv, \u00ff\u20ac, string"}), "");  //1 string with csv content
+        Test.ensureEqual(atts2.get("String4"), StringArray.fromCSV("a, csv, \u00ff\u20ac, string"), "");  //4 strings
 
         //equals
         Test.ensureTrue(atts.equals(atts2), "");
 
         //add
         Attributes atts3 = (new Attributes()).add("byte", (byte)1)
-            .add("char", 'a')
+            .add("char", '\u20ac')
             .add("short", (short)3000)
             .add("int",  1000000)
             .add("long", 1000000000000L)
             .add("float", 2.5f)
             .add("double", Math.PI)
-            .add("String", "a, csv, string")
+            .add("String1", "a, csv, \u00ff\u20ac, string")
+            .add("String4", StringArray.fromCSV("a, csv, \u00ff\u20ac, string"))
             .add("PA", new IntArray(new int[]{1,2,3}));
         Test.ensureTrue(atts3.equals(atts), "");
 
@@ -1991,7 +2009,8 @@ public class Attributes {
             "    long=1000000000000L\n" +
             "    PA=1i,2i,3i\n" +   
             "    short=3000s\n" +
-            "    String=\"a, csv, string\"\n" +
+            "    String1=\"a, csv, \\u00ff\\u20ac, string\"\n" +  //1 string with 4 values
+            "    String4=a\\ncsv\\n\\u00ff\\u20ac\\nstring\n" +   //4 strings
             "    zztop=77i\n",
             "results=\n" + results);
 

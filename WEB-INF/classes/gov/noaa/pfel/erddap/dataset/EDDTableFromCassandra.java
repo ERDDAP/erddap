@@ -2111,7 +2111,7 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Ocean Networks Canada</att>\n" +
 "        <att name=\"creator_url\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"infoUrl\">http://www.oceannetworks.ca/</att>\n" +

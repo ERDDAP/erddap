@@ -1646,9 +1646,10 @@ public class UShortArray extends PrimitiveArray {
 
         UShortArray anArray = new UShortArray(new short[]{-32768, -1, 0, 1, 32767}); //packed values
         Test.ensureEqual(anArray.toString(),              "32768, 65535, 0, 1, 32767", "");
-        anArray = UShortArray.fromCSV(       "0, 1, 32767, 32768, 65535, -1");
-        Test.ensureEqual(anArray.toString(), "0, 1, 32767, 32768, 65535, 65535", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "0us,1us,32767us,32768us,65535us,65535us", "");
+        anArray = UShortArray.fromCSV(                    "0, 1, 32767, 32768, 65535, -1");
+        Test.ensureEqual(anArray.toString(),              "0, 1, 32767, 32768, 65535, 65535", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),      "0us,1us,32767us,32768us,65535us,65535us", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(),   "0us,1us,32767us,32768us,65535us,65535us", "");
 
         //** test default constructor and many of the methods
         anArray = new UShortArray();

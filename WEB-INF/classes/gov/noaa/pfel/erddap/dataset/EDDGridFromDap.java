@@ -1789,6 +1789,7 @@ if (datasets != null) {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"authority\">gov.noaa.pfeg.coastwatch</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, CWHDF</att>\n" +
 "        <att name=\"creator_name\">NASA GSFC (G. Feldman)</att>\n" +
 */
 
@@ -4633,7 +4634,6 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 
 
     public static void testOpendap() throws Throwable {
-        try {
             String2.log("\n****************** EDDGridFromDap test opendap\n" +
                 "!!!THIS READS DATA FROM SERVER RUNNING ON COASTWATCH: erdMHchla8day on " + 
                 EDStatic.erddapUrl + "!!!"); //in tests, always non-https url
@@ -4972,11 +4972,6 @@ expected = "http://127.0.0.1:8080/cwexperimental/griddap/erdMHchla8day.ncoJson?c
 "</html>\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
-
-            //check error...
-        } catch (Throwable t) {
-            throw new RuntimeException("Error accessing " + EDStatic.erddapUrl, t); //in tests, always non-https url
-        }
     }
 
 
@@ -5001,7 +4996,7 @@ String expected1 =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">chepurin@umd.edu</att>\n" +
 "        <att name=\"creator_name\">HAWAII SOEST</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -5245,7 +5240,7 @@ expected1 =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">chepurin@umd.edu</att>\n" +
 "        <att name=\"creator_name\">HAWAII SOEST</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
@@ -5540,6 +5535,7 @@ String expected1 =
 "        <att name=\"Westernmost_Easting\" type=\"double\">180.025</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
 "        <att name=\"keywords\">coastwatch, day, degrees, goes, hemisphere, hourly, imager, night, noaa, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
@@ -9510,7 +9506,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.html", que
 "        <att name=\"acknowledgement\">In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean &amp; Sea Ice  used in this study are accessible through the SAF&#39;s homepage http://www.osi-saf.org</att>\n" +
 "        <att name=\"acknowledgment\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"date_created\">[VARIES]</att>\n" +
 "        <att name=\"easternmost_longitude\">null</att>\n" +
@@ -10052,7 +10048,7 @@ EDStatic.startBodyHtml(language, null, "griddap/hawaii_d90f_20ee_c4cb.html", que
         results = results.replaceAll("20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[DATE_TIME] http");
         results = results.replaceAll("sea_ice_fraction,time_offset,.*d", "sea_ice_fraction,time_offset,[TIME_OFFSET]");
         expected = 
-"*GLOBAL*,Conventions,\"CF-1.6, COARDS, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"CF-1.10, COARDS, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,acknowledgement,In case SAF data (pre-operational or operational) has been used for the study described in a paper the following sentence would be an appropriate reference to the funding coming from EUMETSAT: The data from the EUMETSAT Satellite Application Facility on Ocean & Sea Ice  used in this study are accessible through the SAF's homepage http://www.osi-saf.org\n" +
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,creator_email,helpdesk@osi-saf.org\n" +
@@ -10367,7 +10363,7 @@ expected =
 "        <att name=\"acknowledgement\">Please acknowledge the use of these data with the following statement:  These data were provided by JPL under support by NASA MEaSUREs program.</att>\n" +
 "        <att name=\"acknowledgment\">null</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.7, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"creator_url\">https://podaac.jpl.nasa.gov/dataset/MUR-JPL-L4-GLOB-v4.1</att>\n";
         po = results.indexOf(expected.substring(0, 80));
@@ -10763,7 +10759,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6 ACDD-1.3, COARDS</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, ACDD-1.3, COARDS</att>\n" + 
 "        <att name=\"creator_type\">group</att>\n" +
 "        <att name=\"data_bins\">null</att>\n" +
 "        <att name=\"data_maximum\">null</att>\n" +
@@ -10993,7 +10989,7 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String _lastModified \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this.  2021-11-16 time jumped backwards from 2020-09-21!
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"CF-1.6 ACDD-1.3, COARDS\";\n" +
+"    String Conventions \"CF-1.10, ACDD-1.3, COARDS\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
 "    String creator_type \"group\";\n" +
@@ -11344,7 +11340,7 @@ expected =
                                      "*GLOBAL*,time_coverage_end,[TIME]Z");
 
 expected = 
-"*GLOBAL*,Conventions,\"CF-1.6 ACDD-1.3, COARDS, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"CF-1.6 ACDD-1.3, COARDS, NCCSV-1.2\"\n" +
 "*GLOBAL*,_lastModified,2019-12-17T[TIME].000Z\n" +  //changes by a few seconds periodically!
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,creator_email,data@oceancolor.gsfc.nasa.gov\n" +
@@ -11426,7 +11422,7 @@ expected =
 "*GLOBAL*,temporal_range,8-day\n" +
 "*GLOBAL*,time_coverage_end,[TIME]Z\n" +
 "*GLOBAL*,time_coverage_start,2002-07-04T00:00:00Z\n" +
-"*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\\u00b0, 2002-present\"\n" +
+"*GLOBAL*,title,\"MODISA L3 SMI, MODIS AQUA L3 SST MID IR 8DAY 4KM NIGHTTIME v2019.0 [time][lat][lon], 0.041666668\u00b0, 2002-present\"\n" +
 "*GLOBAL*,Westernmost_Easting,-179.979166667d\n" +
 "time,*DATA_TYPE*,String\n" +
 "time,_CoordinateAxisType,Time\n" +
@@ -11833,7 +11829,7 @@ String expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">support@remss.com</att>\n" +
 "        <att name=\"creator_name\">Remote Sensing Systems</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +

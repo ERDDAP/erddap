@@ -435,7 +435,7 @@ String expected =
 "        <att name=\"cdm_data_type\">TrajectoryProfile</att>\n" +
 "        <att name=\"cdm_profile_variables\">profile_id, ???</att>\n" +
 "        <att name=\"cdm_trajectory_variables\">trajectory_id, ???</att>\n" +
-"        <att name=\"Conventions\">Argo-3.1 CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">Argo-3.1, CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Coriolis GDAC</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://www.argodatamgt.org/Documentation</att>\n" +
@@ -1869,7 +1869,7 @@ String expected =
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
-"        <att name=\"Conventions\">SeaDataNet_1.0, CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">SeaDataNet_1.0, CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">SeaDataNet</att>\n" +
 "        <att name=\"creator_url\">https://www.seadatanet.org/</att>\n" +
 "        <att name=\"infoUrl\">https://www.seadatanet.org/</att>\n" +
@@ -2342,7 +2342,7 @@ String expected =
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, latitude, longitude, ???</att>\n" +
-"        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">OceanSITES Manual 1.1, CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"conventions\">null</att>\n" +
 "        <att name=\"creator_email\">codac@ifremer.fr</att>\n" +
 "        <att name=\"creator_name\">CODAC</att>\n" +

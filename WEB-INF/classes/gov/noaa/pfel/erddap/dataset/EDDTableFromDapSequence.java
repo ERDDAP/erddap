@@ -966,7 +966,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">DYNDNS CIMT</att>\n" +
 "        <att name=\"creator_type\">institution</att>\n" +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
@@ -1181,17 +1181,17 @@ String expected =
      */
     public static void testGenerateDatasetsXml2() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testGenerateDatasetsXml2\n" +
-            "This requires testNccsvScalar in localhost ERDDAP.\n");
+            "This requires testNccsvScalar11 in localhost ERDDAP.\n");
         testVerboseOn();
 
         try {
 
-        String tUrl = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar.html"; //test that it removes .html
+        String tUrl = "http://localhost:8080/cwexperimental/tabledap/testNccsvScalar11.html"; //test that it removes .html
         String results = generateDatasetsXml(tUrl, 1440, null) + "\n";
 
 String expected = 
-"<dataset type=\"EDDTableFromDapSequence\" datasetID=\"localhost_a9c0_2412_8777\" active=\"true\">\n" +
-"    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar</sourceUrl>\n" +
+"<dataset type=\"EDDTableFromDapSequence\" datasetID=\"localhost_6f85_6209_a3de\" active=\"true\">\n" +
+"    <sourceUrl>http://localhost:8080/cwexperimental/tabledap/testNccsvScalar11</sourceUrl>\n" +
 "    <outerSequenceName>s</outerSequenceName>\n" +
 "    <skipDapperSpacerRows>false</skipDapperSpacerRows>\n" +
 "    <sourceCanConstrainStringEQNE>true</sourceCanConstrainStringEQNE>\n" +
@@ -1201,7 +1201,7 @@ String expected =
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">Trajectory</att>\n" +
 "        <att name=\"cdm_trajectory_variables\">ship</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">bob.simons@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Bob Simons</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -1242,9 +1242,9 @@ expected =
 "        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"keywords\">byte, center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testByte, testlong, testnccsvscalar, testUByte, testULong, time, trajectory, ubyte, ulong</att>\n" +
+"        <att name=\"keywords\">byte, center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, longs, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testByte, testlong, testnccsvscalar11, testUByte, testULong, time, trajectory, ubyte, ulong</att>\n" +
 "        <att name=\"subsetVariables\">ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst</att>\n" +
-"        <att name=\"title\">NCCSV Demonstration (testNccsvScalar)</att>\n" +
+"        <att name=\"title\">NCCSV Demonstration (testNccsvScalar11)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>ship</sourceName>\n" +
@@ -1427,11 +1427,11 @@ expected =
             Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it
-            String tDatasetID = "localhost_a9c0_2412_8777";
+            String tDatasetID = "localhost_6f85_6209_a3de";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
-            Test.ensureEqual(edd.title(), "NCCSV Demonstration (testNccsvScalar)", "");
+            Test.ensureEqual(edd.title(), "NCCSV Demonstration (testNccsvScalar11)", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "ship, time, latitude, longitude, status, testByte, testUByte, testLong, testULong, sst",
                 "");
