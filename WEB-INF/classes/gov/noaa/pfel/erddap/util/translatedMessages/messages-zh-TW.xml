@@ -2915,10 +2915,6 @@ URL 標識數據集、響應所需的文件類型、要查看的數據子集以�
 <loginPassword>密碼</loginPassword>
 <loginUserNameAndPassword>用戶名和密碼</loginUserNameAndPassword>
 <loginGoogleSignIn>使用您的 Google 帳戶進行身份驗證。</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-按鈕的標籤從“登錄”變為“已登錄”後，等待 5 秒鐘。
-<br>然後
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>使用您的 ORCID iD 進行身份驗證。</loginOrcidSignIn>
 <loginOpenID>使用您的 OpenID URL 登錄</loginOpenID>
 <loginOpenIDOr>或登錄您現有的（非 OpenID）帳戶，網址為</loginOpenIDOr>

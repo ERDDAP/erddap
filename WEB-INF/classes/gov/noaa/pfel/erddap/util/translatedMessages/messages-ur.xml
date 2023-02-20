@@ -2786,10 +2786,6 @@ ERDDAP کے افقی لیجنڈ کے لیے، legendTitle1 اور 2 کو ایک 
 <loginPassword>پاس ورڈ</loginPassword>
 <loginUserNameAndPassword>صارف کا نام اور پاس ورڈ</loginUserNameAndPassword>
 <loginGoogleSignIn>اپنے گوگل اکاؤنٹ سے تصدیق کریں۔</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-بٹن کا لیبل &quot;سائن ان&quot; سے &quot;سائن ان&quot; میں تبدیل ہونے کے بعد، 5 سیکنڈ انتظار کریں۔
-<br>پھر
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>اپنے ORCID آئی ڈی کے ساتھ تصدیق کریں۔</loginOrcidSignIn>
 <loginOpenID>اپنے OpenID URL کے ساتھ لاگ ان کریں۔</loginOpenID>
 <loginOpenIDOr>یا اپنے موجودہ (غیر اوپن آئی ڈی) اکاؤنٹ میں لاگ ان کریں۔</loginOpenIDOr>

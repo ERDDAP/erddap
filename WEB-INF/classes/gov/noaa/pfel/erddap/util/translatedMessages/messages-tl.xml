@@ -3524,10 +3524,6 @@ Ang mga tao lamang na gumawa ng mga pakikipag-ayos sa administrator ng ERDDAP na
 <loginPassword>Password</loginPassword>
 <loginUserNameAndPassword>User Name at Password</loginUserNameAndPassword>
 <loginGoogleSignIn>I-authenticate gamit ang iyong Google account.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Pagkatapos magbago ang label ng button mula sa &quot;Mag-sign in&quot; patungong &quot;Naka-sign in&quot;, maghintay ng 5 segundo.
-<br>Pagkatapos
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>I-authenticate gamit ang iyong ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Mag-log in gamit ang iyong OpenID URL</loginOpenID>
 <loginOpenIDOr>O mag-log in sa iyong umiiral na (non-OpenID) account sa</loginOpenIDOr>

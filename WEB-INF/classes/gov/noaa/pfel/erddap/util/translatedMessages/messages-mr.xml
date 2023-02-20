@@ -3635,10 +3635,6 @@ Google ईमेल खाते किंवा ORCID iD असलेले क
 <loginPassword>पासवर्ड</loginPassword>
 <loginUserNameAndPassword>वापरकर्ता नाव आणि पासवर्ड</loginUserNameAndPassword>
 <loginGoogleSignIn>तुमच्या Google खात्यासह प्रमाणित करा.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-बटणाचे लेबल &quot;साइन इन&quot; वरून &quot;साइन इन केलेले&quot; मध्ये बदलल्यानंतर, 5 सेकंद प्रतीक्षा करा.
-<br>मग
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>तुमच्या ORCID iD सह प्रमाणीकरण करा.</loginOrcidSignIn>
 <loginOpenID>तुमच्या OpenID URL ने लॉग इन करा</loginOpenID>
 <loginOpenIDOr>किंवा येथे तुमच्या विद्यमान (नॉन-ओपनआयडी) खात्यात लॉग इन करा</loginOpenIDOr>

@@ -3577,10 +3577,6 @@ Alleen mensen die afspraken hebben gemaakt met de beheerder van deze ERDDAP moge
 <loginPassword>Wachtwoord</loginPassword>
 <loginUserNameAndPassword>Gebruikersnaam en wachtwoord</loginUserNameAndPassword>
 <loginGoogleSignIn>Verifieer met uw Google-account.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Wacht 5 seconden nadat het label van de knop is gewijzigd van &#39;Aanmelden&#39; in &#39;Aangemeld&#39;.
-<br>Vervolgens
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Authenticeer met uw ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Log in met uw OpenID URL</loginOpenID>
 <loginOpenIDOr>Of log in op uw bestaande (niet-OpenID) account op</loginOpenIDOr>

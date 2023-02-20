@@ -3594,10 +3594,6 @@ Ní féidir ach le daoine a rinne socruithe le riarthóir an ERDDAP seo logáil 
 <loginPassword>Pasfhocal</loginPassword>
 <loginUserNameAndPassword>Ainm Úsáideora agus Pasfhocal</loginUserNameAndPassword>
 <loginGoogleSignIn>Fíordheimhnigh le do chuntas Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Tar éis go n-athraíonn lipéad an chnaipe ó &quot;Sínigh isteach&quot; go &quot;Sínithe isteach&quot;, fan 5 soicind.
-<br>Ansin
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Fíordheimhnigh le do ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Logáil isteach le do URL OpenID</loginOpenID>
 <loginOpenIDOr>Nó logáil isteach i do chuntas reatha (neamh-OpenID) ag</loginOpenIDOr>
