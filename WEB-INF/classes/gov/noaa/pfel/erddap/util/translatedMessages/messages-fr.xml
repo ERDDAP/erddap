@@ -3514,10 +3514,6 @@ Seules les personnes ayant pris des dispositions avec l&#39;administrateur de ce
 <loginPassword>Mot de passe</loginPassword>
 <loginUserNameAndPassword>Nom d&#39;utilisateur et mot de passe</loginUserNameAndPassword>
 <loginGoogleSignIn>Authentifiez-vous avec votre compte Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Une fois que le libellé du bouton passe de « Connexion » à « Connexion », attendez 5 secondes.
-<br>Puis
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Authentifiez-vous avec votre ID ORCID.</loginOrcidSignIn>
 <loginOpenID>Connectez-vous avec votre URL OpenID</loginOpenID>
 <loginOpenIDOr>Ou connectez-vous à votre compte existant (non OpenID) sur</loginOpenIDOr>

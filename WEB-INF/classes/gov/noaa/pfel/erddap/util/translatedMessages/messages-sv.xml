@@ -3553,10 +3553,6 @@ Endast personer som har gjort överenskommelser med administratören av denna ER
 <loginPassword>Lösenord</loginPassword>
 <loginUserNameAndPassword>Användarnamn och lösenord</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentisera med ditt Google-konto.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Efter att knappens etikett ändrats från &quot;Logga in&quot; till &quot;Inloggad&quot;, vänta 5 sekunder.
-<br>Sedan
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autentisera med ditt ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Logga in med din OpenID URL</loginOpenID>
 <loginOpenIDOr>Eller logga in på ditt befintliga (icke-OpenID) konto på</loginOpenIDOr>

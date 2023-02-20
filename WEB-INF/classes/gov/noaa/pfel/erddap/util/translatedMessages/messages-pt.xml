@@ -3563,10 +3563,6 @@ Somente pessoas que fizeram acordos com o administrador deste ERDDAP podem fazer
 <loginPassword>Senha</loginPassword>
 <loginUserNameAndPassword>Usuário e senha</loginUserNameAndPassword>
 <loginGoogleSignIn>Autentique com sua conta do Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-Depois que o rótulo do botão mudar de &quot;Fazer login&quot; para &quot;Conectado&quot;, aguarde 5 segundos.
-<br>Então
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Autentique com seu ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Faça login com o seu URL OpenID</loginOpenID>
 <loginOpenIDOr>Ou faça login em sua conta existente (não OpenID) em</loginOpenIDOr>

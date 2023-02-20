@@ -3701,10 +3701,6 @@ Google 이메일 계정 또는 ORCID iD가 있는 사람은 누구나 로그인�
 <loginPassword>비밀번호</loginPassword>
 <loginUserNameAndPassword>사용자 이름과 비밀번호</loginUserNameAndPassword>
 <loginGoogleSignIn>Google 계정으로 인증합니다.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-버튼의 레이블이 &quot;로그인&quot;에서 &quot;로그인&quot;으로 변경된 후 5초 동안 기다립니다.
-<br>그 다음에
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>ORCID ID로 인증하십시오.</loginOrcidSignIn>
 <loginOpenID>OpenID URL로 로그인</loginOpenID>
 <loginOpenIDOr>또는 다음에서 기존(비 OpenID) 계정에 로그인하십시오.</loginOpenIDOr>
