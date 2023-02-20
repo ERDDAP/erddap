@@ -3646,10 +3646,6 @@ URL-адрес, который вы видите здесь, является UR
 <loginPassword>Пароль</loginPassword>
 <loginUserNameAndPassword>Имя пользователя и пароль</loginUserNameAndPassword>
 <loginGoogleSignIn>Авторизуйтесь с помощью своей учетной записи Google.</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-После того, как метка кнопки изменится с «Войти» на «Выполнен вход», подождите 5 секунд.
-<br>потом
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>Выполните аутентификацию с помощью своего ORCID iD.</loginOrcidSignIn>
 <loginOpenID>Войдите в систему с вашим URL-адресом OpenID</loginOpenID>
 <loginOpenIDOr>Или войдите в свою существующую (не OpenID) учетную запись на</loginOpenIDOr>

@@ -3022,10 +3022,6 @@ GoogleメールアカウントまたはORCIDiDを持っている人なら誰で�
 <loginPassword>パスワード</loginPassword>
 <loginUserNameAndPassword>ユーザー名とパスワード</loginUserNameAndPassword>
 <loginGoogleSignIn>Googleアカウントで認証します。</loginGoogleSignIn>
-<loginGoogleSignIn2><![CDATA[
-ボタンのラベルが「サインイン」から「サインイン」に変わったら、5秒待ちます。
-<br>それで
-]]></loginGoogleSignIn2>
 <loginOrcidSignIn>ORCIDiDで認証します。</loginOrcidSignIn>
 <loginOpenID>OpenIDURLでログインします</loginOpenID>
 <loginOpenIDOr>または、既存の（OpenID以外の）アカウントにログインします。</loginOpenIDOr>
