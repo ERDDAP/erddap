@@ -369,7 +369,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
         try {
             String results = generateDatasetsXml(
                 EDStatic.unitTestDataDir + "nccsv", 
-                "sampleScalar\\.csv",
+                "sampleScalar_1.2\\.csv",
                 "",
                 1440,
                 "","","","", 
@@ -384,7 +384,7 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromNccsvFiles",
                 EDStatic.unitTestDataDir + "nccsv", 
-                "sampleScalar\\.csv",
+                "sampleScalar_1.2\\.csv",
                 "",
                 "1440",
                 "", "", "", "", 
@@ -395,11 +395,11 @@ public class EDDTableFromNccsvFiles extends EDDTableFromFiles {
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
-"<dataset type=\"EDDTableFromNccsvFiles\" datasetID=\"nccsv_9632_f0df_07b0\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromNccsvFiles\" datasetID=\"nccsv_b307_4c67_12f3\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>/erddapTest/nccsv/</fileDir>\n" +
-"    <fileNameRegex>sampleScalar\\.csv</fileNameRegex>\n" +
+"    <fileNameRegex>sampleScalar_1.2\\.csv</fileNameRegex>\n" +
 "    <recursive>true</recursive>\n" +
 "    <pathRegex>.*</pathRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -409,7 +409,7 @@ String expected =
 "    <accessibleViaFiles>true</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_trajectory_variables\">ship</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2</att>\n" +
 "        <att name=\"creator_email\">bob.simons@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">Bob Simons</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +
@@ -430,6 +430,7 @@ String expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Trajectory</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"keywords\">byte, center, data, demonstration, earth, Earth Science &gt; Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testByte, testLong, testUByte, testULong, time, trajectory, ubyte, ulong</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
@@ -595,7 +596,7 @@ String expected =
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
-            String tDatasetID = "nccsv_9632_f0df_07b0";
+            String tDatasetID = "nccsv_b307_4c67_12f3";
             EDD.deleteCachedDatasetInfo(tDatasetID);
             EDD edd = oneFromXmlFragment(null, results);
             Test.ensureEqual(edd.datasetID(), tDatasetID, "");
@@ -645,7 +646,7 @@ String expected =
             "\nstats as doubles: " + String2.toCSSVString(laStats));
         //String2.pressEnterToContinue();
 
-        String id = "testNccsvScalar"; //straight from generateDatasetsXml
+        String id = "testNccsvScalar11"; //straight from generateDatasetsXml
         if (deleteCachedDatasetInfo)
             deleteCachedDatasetInfo(id);
 
@@ -762,7 +763,7 @@ String expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Trajectory\";\n" +
 "    String cdm_trajectory_variables \"ship\";\n" +
-"    String Conventions \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\";\n" +
+"    String Conventions \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "    String creator_email \"bob.simons@noaa.gov\";\n" +
 "    String creator_name \"Bob Simons\";\n" +
 "    String creator_type \"person\";\n" +
@@ -780,7 +781,7 @@ String expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 expected =
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.das\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.das\";\n" +
 "    String infoUrl \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";\n" +
 "    String institution \"NOAA NMFS SWFSC ERD, NOAA PMEL\";\n" +
 "    String keywords \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";\n" +
@@ -865,7 +866,7 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -883,7 +884,7 @@ expected =
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "time,ship,sst\n" +
@@ -895,7 +896,7 @@ expected =
         userDapQuery = "&ship=\" a\\t~\\u00fc,\\n'z\\\"\\u20ac\""; //json formatted constraint
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1string", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -912,7 +913,7 @@ expected =
         userDapQuery = "&status=\"\\u20ac\""; //json formatted constraint
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1char", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -924,7 +925,7 @@ expected =
         userDapQuery = "&testLong=-9007199254740992";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1long", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -936,7 +937,7 @@ expected =
         userDapQuery = "&testLong=-9223372036854775808";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1longb", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -948,7 +949,7 @@ expected =
         userDapQuery = "&testULong=18446744073709551614";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_u1longb", ".csv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
@@ -960,10 +961,10 @@ expected =
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45"; //will be ignored
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".nccsvMetadata"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.10, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -1027,7 +1028,7 @@ expected =
 "longitude,standard_name,longitude\n" +
 "longitude,units,degrees_east\n" +
 "status,*DATA_TYPE*,char\n" +
-"status,actual_range,\"'\\t'\",\"'\\u20ac'\"\n" +
+"status,actual_range,\"'\\t'\",\"'\u20ac'\"\n" +
 "status,comment,\"From http://some.url.gov/someProjectDocument , Table C\"\n" +
 "status,ioos_category,Unknown\n" +
 "status,long_name,Status\n" +
@@ -1062,13 +1063,13 @@ expected =
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -1082,10 +1083,10 @@ expected =
         userDapQuery = "";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_all", ".nccsv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.10, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -1106,7 +1107,7 @@ expected =
 
 expected =        
 //T17:35:08Z (local files)\\n2017-04-18T17:35:08Z  
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nccsv\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nccsv\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
@@ -1182,13 +1183,13 @@ expected =
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -1197,12 +1198,12 @@ expected =
 "\n" +
 "*END_METADATA*\n" +
 "ship,time,latitude,longitude,status,testByte,testUByte,testLong,testULong,sst\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\\u00fc,,,,,\n" +
-"\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
+"\" a\\t~\u00fc,\\n'z\"\"\u20ac\",2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
 "*END_DATA*\n";
         tPo = results.indexOf(expected.substring(0, 40));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -1214,10 +1215,10 @@ expected =
         userDapQuery = "time,ship,sst&time=2017-03-23T02:45";
         tName = eddTable.makeNewFileForDapQuery(language, null, null, userDapQuery, dir, 
             eddTable.className() + "_1time", ".nccsv"); 
-        results = File2.directReadFrom88591File(dir + tName);
+        results = File2.directReadFromUtf8File(dir + tName);
         //String2.log(results);
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.10, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_data_type,Trajectory\n" +
 "*GLOBAL*,cdm_trajectory_variables,ship\n" +
 "*GLOBAL*,creator_email,bob.simons@noaa.gov\n" +
@@ -1238,7 +1239,7 @@ expected =
 
 expected =        
 //2017-04-18T17:41:53Z (local files)\\n2017-04-18T17:41:53Z 
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nccsv?time,ship,sst&time=2017-03-23T02:45\"\n" +
 "*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
@@ -1274,13 +1275,13 @@ expected =
 "sst,missing_value,99.0f\n" +
 "sst,standard_name,sea_surface_temperature\n" +
 "sst,testBytes,-128b,0b,127b\n" +
-"sst,testChars,\"','\",\"'\"\"'\",\"'\\u20ac'\"\n" +
+"sst,testChars,\"','\",\"'\"\"'\",\"'\u20ac'\"\n" +
 "sst,testDoubles,-1.7976931348623157E308d,0.0d,1.7976931348623157E308d\n" +
 "sst,testFloats,-3.4028235E38f,0.0f,3.4028235E38f\n" +
 "sst,testInts,-2147483648i,0i,2147483647i\n" +
 "sst,testLongs,-9223372036854775808L,-9007199254740992L,9007199254740992L,9223372036854775806L,9223372036854775807L\n" +
 "sst,testShorts,-32768s,0s,32767s\n" +
-"sst,testStrings,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\"\n" +
+"sst,testStrings,\" a\\t~\u00fc,\\n'z\"\"\u20ac\"\n" +
 "sst,testUBytes,0ub,127ub,255ub\n" +
 "sst,testUInts,0ui,2147483647ui,4294967295ui\n" +
 "sst,testULongs,0uL,9223372036854775807uL,18446744073709551615uL\n" +
@@ -1289,7 +1290,7 @@ expected =
 "\n" +
 "*END_METADATA*\n" +
 "time,ship,sst\n" +
-"2017-03-23T02:45:00Z,\" a\\t~\\u00fc,\\n'z\"\"\\u20ac\",99.0\n" +
+"2017-03-23T02:45:00Z,\" a\\t~\u00fc,\\n'z\"\"\u20ac\",99.0\n" +
 "*END_DATA*\n";    
         tPo = results.indexOf(expected.substring(0, 40));
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
@@ -1315,7 +1316,7 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         int po, tPo;
 
-        String id = "testNccsvScalar"; //straight from generateDatasetsXml
+        String id = "testNccsvScalar11"; //straight from generateDatasetsXml
         EDDTable eddTable = (EDDTable)oneFromDatasetsXml(null, id); 
 
         //*** getting dap asc
@@ -1891,7 +1892,7 @@ results=
 */
 
         //*** display source file (useful for diagnosing problems in next section)
-        String2.log(File2.directReadFrom88591File("/erddapTest/nccsv/testScalar.csv"));
+        String2.log(File2.directReadFrom88591File("/erddapTest/nccsv/testScalar_1.1.csv"));
 
         //*** getting nc   and ncHeader
         edv = eddTable.findDataVariableByDestinationName("status");
@@ -2009,7 +2010,7 @@ results=
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
 "  :cdm_trajectory_variables = \"ship\";[10]\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\";[10]\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";[10]\n" +
 "  :creator_email = \"bob.simons@noaa.gov\";[10]\n" +
 "  :creator_name = \"Bob Simons\";[10]\n" +
 "  :creator_type = \"person\";[10]\n" +
@@ -2030,8 +2031,8 @@ results=
 //        T18:32:36Z (local files)[10]\n" +
 //"2017-04-21T18:32:36Z 
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.nc\";[10]\n" +
-"  :id = \"testNccsvScalar\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.nc\";[10]\n" +
+"  :id = \"testNccsvScalar11\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
@@ -2084,6 +2085,7 @@ expected =
             expected, "results=\n" + results);
 
         //*** getting ncCF   and ncCFHeader
+String2.log(">> getting ncCF " + eddTable.combinedGlobalAttributes().getString("Conventions"));
         tName = eddTable.makeNewFileForDapQuery(language, null, null, "", dir, 
             eddTable.className() + "_char", ".ncCF"); 
         results = String2.annotatedString(NcHelper.ncdump(dir + tName, ""));
@@ -2206,7 +2208,7 @@ expected =
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
 "  :cdm_trajectory_variables = \"ship\";[10]\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\";[10]\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";[10]\n" +
 "  :creator_email = \"bob.simons@noaa.gov\";[10]\n" +
 "  :creator_name = \"Bob Simons\";[10]\n" +
 "  :creator_type = \"person\";[10]\n" +
@@ -2224,8 +2226,8 @@ expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncCF\";[10]\n" +
-"  :id = \"testNccsvScalar\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncCF\";[10]\n" +
+"  :id = \"testNccsvScalar11\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
@@ -2396,7 +2398,7 @@ expected =
 "  // global attributes:[10]\n" +
 "  :cdm_data_type = \"Trajectory\";[10]\n" +
 "  :cdm_trajectory_variables = \"ship\";[10]\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\";[10]\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";[10]\n" +
 "  :creator_email = \"bob.simons@noaa.gov\";[10]\n" +
 "  :creator_name = \"Bob Simons\";[10]\n" +
 "  :creator_type = \"person\";[10]\n" +
@@ -2414,8 +2416,8 @@ expected =
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 expected = 
-"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncCFMA\";[10]\n" +
-"  :id = \"testNccsvScalar\";[10]\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncCFMA\";[10]\n" +
+"  :id = \"testNccsvScalar11\";[10]\n" +
 "  :infoUrl = \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\";[10]\n" +
 "  :institution = \"NOAA NMFS SWFSC ERD, NOAA PMEL\";[10]\n" +
 "  :keywords = \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\";[10]\n" +
@@ -2492,7 +2494,7 @@ expected =
 "  \"attributes\": {[10]\n" +
 "    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
 "    \"cdm_trajectory_variables\": {\"type\": \"char\", \"data\": \"ship\"},[10]\n" +
-"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"},[10]\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.10, ACDD-1.3\"},[10]\n" +
 "    \"creator_email\": {\"type\": \"char\", \"data\": \"bob.simons@noaa.gov\"},[10]\n" +
 "    \"creator_name\": {\"type\": \"char\", \"data\": \"Bob Simons\"},[10]\n" +
 "    \"creator_type\": {\"type\": \"char\", \"data\": \"person\"},[10]\n" +
@@ -2509,7 +2511,7 @@ expected =
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
-expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson\"},[10]\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncoJson\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
@@ -2690,7 +2692,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "  \"attributes\": {[10]\n" +
 "    \"cdm_data_type\": {\"type\": \"char\", \"data\": \"Trajectory\"},[10]\n" +
 "    \"cdm_trajectory_variables\": {\"type\": \"char\", \"data\": \"ship\"},[10]\n" +
-"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"},[10]\n" +
+"    \"Conventions\": {\"type\": \"char\", \"data\": \"COARDS, CF-1.10, ACDD-1.3\"},[10]\n" +
 "    \"creator_email\": {\"type\": \"char\", \"data\": \"bob.simons@noaa.gov\"},[10]\n" +
 "    \"creator_name\": {\"type\": \"char\", \"data\": \"Bob Simons\"},[10]\n" +
 "    \"creator_type\": {\"type\": \"char\", \"data\": \"person\"},[10]\n" +
@@ -2707,7 +2709,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //        2017-07-28T15:33:25Z (local files)\\n2017-07-28T15:33:25Z 
-expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
+expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar11.ncoJson?&.jsonp=myFunctionName\"},[10]\n" +
 "    \"infoUrl\": {\"type\": \"char\", \"data\": \"https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\"},[10]\n" +
 "    \"institution\": {\"type\": \"char\", \"data\": \"NOAA NMFS SWFSC ERD, NOAA PMEL\"},[10]\n" +
 "    \"keywords\": {\"type\": \"char\", \"data\": \"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"},[10]\n" +
@@ -2890,7 +2892,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
 "//<CreateTime>9999-99-99T99:99:99</CreateTime>[10]\n" +
 "//<Encoding>UTF-8</Encoding>[10]\n" +
 "//<Software>ERDDAP - Version " + EDStatic.erddapVersion + "</Software>[10]\n" +
-"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testNccsvScalar.html</Source>[10]\n" +
+"//<Source>https://127.0.0.1:8443/cwexperimental/tabledap/testNccsvScalar11.html</Source>[10]\n" +
 "//<Version>ODV Spreadsheet V4.6</Version>[10]\n" +
 "//<DataField>GeneralField</DataField>[10]\n" +
 "//<DataType>Trajectories</DataType>[10]\n" +
@@ -3111,7 +3113,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         //*** test getting .nccsvMetadata for entire dataset
         tQuery = ".nccsvMetadata";
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_data_type,TimeSeries\n" +
 "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +
@@ -3278,7 +3280,7 @@ expected = "http://127.0.0.1:8080/cwexperimental/tabledap/testNccsvScalar.ncoJso
         //*** test getting .nccsv 
         tQuery = ".nccsv?&station=%220n125w%22&time%3E=2010-01-01&time%3C=2010-01-05";
         expected = 
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.1\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
 "*GLOBAL*,cdm_data_type,TimeSeries\n" +
 "*GLOBAL*,cdm_timeseries_variables,\"array, station, wmo_platform_code, longitude, latitude, depth\"\n" +
 "*GLOBAL*,creator_email,Dai.C.McClurg@noaa.gov\n" +

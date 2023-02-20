@@ -101,6 +101,8 @@ public class TestAll  {
 
 //INDIVIDUAL TESTS (for convenience) -- ~alphabetical by class name
 
+//TestUtil.testString2();
+
         /* 
         ByteArray.basicTest();
         UByteArray.basicTest();
@@ -115,6 +117,7 @@ public class TestAll  {
         DoubleArray.basicTest();
         StringArray.basicTest();
         PrimitiveArray.basicTest();
+        PrimitiveArray.testNccsv();
         Attributes.basicTest();
         /* */
 
@@ -125,9 +128,9 @@ public class TestAll  {
 //      String tFileName = "/u00/satellite/MH1/chla/1day/AQUA_MODIS.20220301.L3m.DAY.CHL.chlor_a.4km.NRT.nc"; 
 //      String2.log(NcHelper.ncdump(tFileName, "-h"));  
 
-//      DasDds.main(new String[]{"testTableNoIoosCat", "-verbose"});
+//      DasDds.main(new String[]{"testMediaBob", "-verbose"});
 
-//      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("S://obisSubset/", ".*\\.csv", 
+//      String2.log(EDDTableFromAsciiFiles.generateDatasetsXml("c:/data/bob/testMedia.csv", ".*\\.csv", 
 //        "", "", 1, 2, ",", 1000000000, "", "", "", "", "", "", "myInfo", "myInstitution", "mySummary", "myTitle",
 //          0, "", null));
 //      GenerateDatasetsXml.main(new String[0]); //interactive 
@@ -673,7 +676,7 @@ public class TestAll  {
          EDDTableFromAsciiFiles.testGenerateDatasetsXmlWithMV();
          EDDTableFromAudioFiles.testGenerateDatasetsXml();
          EDDTableFromAwsXmlFiles.testGenerateDatasetsXml();
-         EDDTableFromCassandra.testGenerateDatasetsXml();    //requires cassandra
+         //EDDTableFromCassandra.testGenerateDatasetsXml();    //requires cassandra
          EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXml();
          EDDTableFromColumnarAsciiFiles.testGenerateDatasetsXmlFromEML();
          //EDDTableFromDapSequence.testGenerateDatasetsXml();   //source is gone
@@ -1097,6 +1100,7 @@ WaitThenTryAgainException wttae;
         StringBuilder errorSB = new StringBuilder();
         boolean interactive = false;
         boolean doSlowTestsToo = false;
+
 
 /* for releases, this line should have open/close comment */
 // and all tests should be "0, -1" 

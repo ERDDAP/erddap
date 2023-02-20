@@ -224,7 +224,7 @@ public class StringArray extends PrimitiveArray {
     public StringArray fromUTF8() {
         for (int i = 0; i < size; i++)
             set(i, String2.utf8StringToString(get(i)));
-        //String2.log(">>after fromUTF8: " + toNccsvAttString());
+        //String2.log(">>after fromUTF8: " + toNccsv127AttString());
         return this;
     }
 
@@ -238,7 +238,7 @@ public class StringArray extends PrimitiveArray {
     public StringArray toUTF8() {
         for (int i = 0; i < size; i++)
             set(i, String2.stringToUtf8String(get(i)));
-        //String2.log(">>after toUTF8: " + toNccsvAttString());
+        //String2.log(">>after toUTF8: " + toNccsv127AttString());
         return this;
     }
 
@@ -1206,6 +1206,18 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * This is like getNccsvDataString, but encodes chars &gt;=127.
+     * CharArray and StringArray overwrite this.
+     * 
+     * @param index the index number 0 ... size-1 
+     * @return For numeric types, this returns ("" + ar[index]), or "" if NaN or infinity.
+     *   CharArray and StringArray overwrite this.
+     */
+    public String getNccsv127DataString(final int index) {
+        return String2.toNccsv127DataString(get(index));
+    }
+
+    /**
      * Return a value from the array as a String suitable for the data section 
      * of an ASCII csv or tsv string, e.g., z \t \u0000 , \".
      * 
@@ -1405,7 +1417,7 @@ public class StringArray extends PrimitiveArray {
 
 
     /** 
-     * This converts the elements into an JSON attribute String, e.g.,: -128b, 127b
+     * This converts the elements into an NCCSV attribute String, e.g.,: -128b, 127b
      * There is no trailing \n.
      * Strings are handled specially: make a newline-separated string, then encode it.
      *
@@ -1413,6 +1425,15 @@ public class StringArray extends PrimitiveArray {
      */
     public String toNccsvAttString() {
         return String2.toNccsvAttString(String2.toSVString(toArray(), "\n", false));  
+    }
+
+    /** 
+     * This is like toNccsvAttString, but chars &gt;127 are \\uhhhh encoded.
+     *
+     * @return an NCCSV attribute String
+     */
+    public String toNccsv127AttString() {
+        return String2.toNccsv127AttString(String2.toSVString(toArray(), "\n", false));  
     }
 
     /**
@@ -2718,6 +2739,12 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.getString(0), "", "");
         anArray.clear();
 
+        anArray = StringArray.fromCSV(                   "\"a\\t\", a, \"a\\n\", \"a\\u20AC\", ,  \"a\\uffff\" ");
+        Test.ensureEqual(anArray.toString(),             "a\\t, a, a\\n, a\\u20ac, , a\\uffff", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),     "a\\t\\na\\na\\n\\na\u20ac\\n\\na\uffff", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(),  "a\\t\\na\\na\\n\\na\\u20ac\\n\\na\\uffff", "");
+        anArray.clear();
+
 
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add("1234.5");
@@ -3205,10 +3232,10 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(da.getString(1), "", "");
 
         //arrayFromCSV, test with unquoted internal strings
-        //outside of a quoted string \\u20ac is backslash+...
+        //outside of a quoted string \\u20ac is json-encoded
         sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ",                 ",", true);  //trim?
         Test.ensureEqual(String2.annotatedString(String2.toCSVString(sar)), 
-            "ab,\"\\\\\\u00c3\\u20ac\",[8364],[end]", "");  //spaces, \n, \\t are trimmed
+            "ab,\"\\\\\\u00c3\\u20ac\",\"\\u20ac\",[end]", "");  //spaces, \n, \\t are trimmed
         sar = arrayFromCSV(" ab , \n\t\\\u00c3\u20ac , \n\u20ac , ",                 ",", false); //trim?
         Test.ensureEqual(String2.toCSVString(sar), 
             "\" ab \",\" \\n\\t\\\\\\u00c3\\u20ac \",\" \\n\\u20ac \",\" \"", "");

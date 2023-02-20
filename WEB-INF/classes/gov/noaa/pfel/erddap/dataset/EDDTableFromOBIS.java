@@ -827,7 +827,7 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">dhyrenbach@duke.edu</att>\n" +
 "        <att name=\"creator_name\">DHYRENBACH</att>\n" +
 "        <att name=\"creator_type\">person</att>\n" +

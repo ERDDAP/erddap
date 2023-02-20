@@ -1445,9 +1445,10 @@ public class LongArray extends PrimitiveArray {
         //-9007199254740992  see https://www.mathworks.com/help/matlab/ref/flintmax.html
 
 
-        LongArray anArray = LongArray.fromCSV(      " -9223372036854775808, -1,0,  9223372036854775806,  ,                   9223372036854775807, 9999999999999999999 ");
-        Test.ensureEqual(anArray.toString(),         "-9223372036854775808, -1, 0, 9223372036854775806, 9223372036854775807, 9223372036854775807, 9223372036854775807", "");
-        Test.ensureEqual(anArray.toNccsvAttString(), "-9223372036854775808L,-1L,0L,9223372036854775806L,9223372036854775807L,9223372036854775807L,9223372036854775807L", "");
+        LongArray anArray = LongArray.fromCSV(         " -9223372036854775808, -1,0,  9223372036854775806,  ,                   9223372036854775807, 9999999999999999999 ");
+        Test.ensureEqual(anArray.toString(),            "-9223372036854775808, -1, 0, 9223372036854775806, 9223372036854775807, 9223372036854775807, 9223372036854775807", "");
+        Test.ensureEqual(anArray.toNccsvAttString(),    "-9223372036854775808L,-1L,0L,9223372036854775806L,9223372036854775807L,9223372036854775807L,9223372036854775807L", "");
+        Test.ensureEqual(anArray.toNccsv127AttString(), "-9223372036854775808L,-1L,0L,9223372036854775806L,9223372036854775807L,9223372036854775807L,9223372036854775807L", "");
 
         //** test default constructor and many of the methods
         anArray = new LongArray();

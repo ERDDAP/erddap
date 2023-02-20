@@ -293,7 +293,7 @@ public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow {
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">ghrsst@podaac.jpl.nasa.gov</att>\n" +
 "        <att name=\"creator_name\">GHRSST</att>\n" +
 "        <att name=\"creator_type\">group</att>\n" +
@@ -817,7 +817,7 @@ expected =
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">CF-1.6, COARDS, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">CF-1.10, COARDS, ACDD-1.3</att>\n" +
 "        <att name=\"Data_Bins\">null</att>\n" +
 "        <att name=\"Data_Maximum\">null</att>\n" +
 "        <att name=\"Data_Minimum\">null</att>\n" +
