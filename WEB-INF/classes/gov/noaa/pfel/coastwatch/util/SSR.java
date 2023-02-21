@@ -84,10 +84,11 @@ import jakarta.mail.URLName;
 //import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.transfer.s3.FileDownload;
-import software.amazon.awssdk.transfer.s3.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.FileDownload;
+import software.amazon.awssdk.transfer.s3.model.FileUpload;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest.Builder;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 
@@ -1553,10 +1554,10 @@ public class SSR {
      */
     public static S3TransferManager buildS3TransferManager(String region) {
         return S3TransferManager.builder()
-            .s3ClientConfiguration(b -> b.region(Region.of(region))
+            .s3Client(S3AsyncClient.crtBuilder().region(Region.of(region))
                                        //.credentialsProvider(credentialProvider)  //handled by default credentials provider
                                          .targetThroughputInGbps(20.0)  //??? make a separate setting?
-                                         .minimumPartSizeInBytes(Long.valueOf(8 * Math2.BytesPerMB)))
+                                         .minimumPartSizeInBytes(Long.valueOf(8 * Math2.BytesPerMB)).build())
             .build();
     }
 
