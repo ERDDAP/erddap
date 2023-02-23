@@ -237,7 +237,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.18.19</version> <!-- and same number several places below -->
+              <version>2.20.8</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -325,7 +325,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <version>9.4.1</version>
+            <version>9.5.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.lucene/lucene-queryparser 
@@ -333,7 +333,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queryparser</artifactId>
-            <version>9.4.1</version>
+            <version>9.5.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.json/json 
@@ -408,7 +408,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
-            <version>1.2.0</version>
+            <version>2.0.0</version>
         </dependency>
 
         <!-- To use downloaded local netcdf-all:
@@ -422,7 +422,8 @@ since this is impossible for AWS S3 dependencies without Maven.
             <artifactId>netcdfAll</artifactId>
             <version>5.5.3</version>  <!-- version number duplicated several times below -->
             <scope>system</scope>
-            <systemPath>C:/programs/mavenERDDAP/ERDDAP/repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar</systemPath> <!-- gets WARNING about absolute path, but okay -->
+            <systemPath>${basedir}/netcdfAll-5.5.3.jar</systemPath>
+            <!-- <systemPath>C:/programs/mavenERDDAP/ERDDAP/repo/edu/ucar/netcdfAll/5.5.3/netcdfAll-5.5.3.jar</systemPath> gets WARNING about absolute path, but okay -->
         </dependency>
 
         <!-- These will be needed if I ever switch away from netcdfAll.
@@ -589,7 +590,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.5.1</version>
+            <version>42.5.4</version>
         </dependency>
 
 
@@ -624,7 +625,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.12</version>
+            <version>4.2.16</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -632,7 +633,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.85.Final</version>
+            <version>4.1.89.Final</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.xerial.snappy/snappy-java 
@@ -640,7 +641,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
-            <version>1.1.8.4</version>
+            <version>1.1.9.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.dropwizard.metrics/metrics-jmx 
@@ -664,7 +665,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.18.19</version>
+          <version>2.20.8</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -672,7 +673,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.18.19</version>
+            <version>2.20.8</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -680,7 +681,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.18.19-PREVIEW</version>
+            <version>2.20.8</version>
         </dependency>
 
 
@@ -694,7 +695,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.6.0</version>
+            <version>2.11.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
@@ -702,19 +703,19 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.6.0</version>
+            <version>2.11.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
             <groupId>com.google.auth</groupId>
             <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>1.13.0</version>
+            <version>1.16.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.api/gax -->
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.19.5</version>
+            <version>2.23.1</version>
         </dependency>
 
     </dependencies>
