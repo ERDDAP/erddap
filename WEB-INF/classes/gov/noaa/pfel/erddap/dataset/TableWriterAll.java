@@ -43,7 +43,7 @@ import java.util.Arrays;
  * write the data anywhere (to an outputStream or to another tableWriter), 
  * it just makes all of the data available.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public class TableWriterAll extends TableWriter {
 

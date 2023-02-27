@@ -9,7 +9,7 @@ import com.cohort.util.SimpleException;
 /** 
  * This exception may be used when a TableWriter says NoMoreDataPlease.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2018-07-26
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2018-07-26
  */
 public class NoMoreDataPleaseException extends SimpleException { 
 

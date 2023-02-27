@@ -30,7 +30,7 @@ import java.io.OutputStreamWriter;
  * This is used by EDDTable.
  * The outputStream isn't obtained until the first call to write().
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2016-11-15
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-11-15
  */
 public class TableWriterJsonl extends TableWriter {
 

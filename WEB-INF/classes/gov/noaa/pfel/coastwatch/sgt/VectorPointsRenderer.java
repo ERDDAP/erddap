@@ -1,6 +1,6 @@
 /*
  * VectorPointsRenderer 
- * was derived from VectorCartesianRenderer by Bob Simons (bob.simons@noaa.gov 2006-05-11),
+ * was derived from VectorCartesianRenderer by Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com 2006-05-11),
  * so that vectors could be draw from points (x,y,u,v values, not 2 grids) 
  * and with a ColorMap or a Color, and with anti-aliasing.
  *

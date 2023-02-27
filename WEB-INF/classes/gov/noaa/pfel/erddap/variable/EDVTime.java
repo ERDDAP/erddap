@@ -12,7 +12,7 @@ import com.cohort.util.String2;
  * This class holds information about *the* main time variable,
  * which is like EDVTimeStamp, but has destinationName="time".
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDVTime extends EDVTimeStamp { 
 

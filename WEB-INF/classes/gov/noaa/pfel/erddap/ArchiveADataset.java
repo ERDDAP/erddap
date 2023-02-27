@@ -50,7 +50,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * (I specified JAVA_HOME in the .bat file.)
  * To verify a bag: File : Open existing bag 
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2015-12-15
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-12-15
  */
 public class ArchiveADataset {
 

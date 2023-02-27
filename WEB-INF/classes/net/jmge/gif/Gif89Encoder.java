@@ -80,7 +80,7 @@ import java.util.Vector;
  *  }
  *  </pre>
  *
- * <p>Bob Simons (bob.simons@noaa.gov) added color palette options 2005-04-11.
+ * <p>Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) added color palette options 2005-04-11.
  * You can get the original Gif89Encoder for free from http://jmge.net/java/gifenc/ .
  *
  * @version 0.90 beta (15-Jul-2000)

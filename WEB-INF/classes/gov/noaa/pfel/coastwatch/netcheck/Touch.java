@@ -15,7 +15,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
  * This class has static methods which call various urls
  * to ensure they respond. 
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-02-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-02-08
  */
 public class Touch  {
 

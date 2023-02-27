@@ -8,7 +8,7 @@ package com.cohort.util;
 /**
  * This class holds a double that can be changed.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-18
  *
  */
 public class DoubleObject  {

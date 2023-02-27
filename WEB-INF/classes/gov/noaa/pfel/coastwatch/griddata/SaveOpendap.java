@@ -36,7 +36,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * This class has some static methods to read opendap data sources and
  * save the data in different types of files.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-08-15
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-08-15
  */
 public class SaveOpendap  {
 

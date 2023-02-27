@@ -199,7 +199,7 @@ This problem doesn't occur for data files before or after June 2008.
  * https://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html).
  * Observation Dataset Conventions because the Coventions have been abandoned.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-12-22
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-12-22
  */
 public class NdbcMetStation  {
 

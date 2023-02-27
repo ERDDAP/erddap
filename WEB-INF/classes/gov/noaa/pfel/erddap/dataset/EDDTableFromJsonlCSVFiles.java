@@ -34,7 +34,7 @@ import gov.noaa.pfel.erddap.variable.*;
  * This class represents a table of data from a collection of jsonlCSV files.
  * See https://jsonlines.org/examples/
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2018-04-09
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2018-04-09
  */
 public class EDDTableFromJsonlCSVFiles extends EDDTableFromFiles { 
 

@@ -17,7 +17,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 /**
  * This does a series of touches.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2022-08-27
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2022-08-27
  */
 public class TouchThread extends Thread {
 

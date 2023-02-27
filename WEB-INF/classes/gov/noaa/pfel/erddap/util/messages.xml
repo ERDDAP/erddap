@@ -1511,7 +1511,7 @@ calendar years and months, and does not strictly follow the UDUNITS standard.
 <table class="erd commonBGColor T">
 <tr>
   <th style="width:8%;">Issue</th>
-  <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
+  <th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a></th>
   <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
@@ -1641,7 +1641,7 @@ But there are a few difficulties and special cases:
 <table class="erd commonBGColor T">
 <tr>
   <th style="width:8%;">Units</th>
-  <th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS<img 
+  <th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS<img 
     src="../images/external.png" alt=" (external link)" 
     title="This link to an external website does not constitute an endorsement."></a></th>
   <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
@@ -6711,7 +6711,7 @@ but they can be a useful way to distribute the data to a wider audience.
 <p><a class="selfLink" id="sustainable" href="#sustainable" rel="bookmark"><strong>How sustainable is the ERDDAP project?</strong></a>
 <br>ERDDAP is very sustainable.
 <br>Some people are surprised and disappointed to hear that ERDDAP is mostly
-developed by one person (me, Bob Simons). 
+developed by one person (was Bob Simons, now Chris John). 
 [By the way, the opinions on this web page are my personal opinions and 
 do not necessarily reflect any position of the Government or the National Oceanic and Atmospheric Administration.]
 They fear that if something happens
@@ -6962,7 +6962,7 @@ please include that in the citation you create.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="cite" href="#cite" rel="bookmark">How to Cite ERDDAP in a Paper</a></strong>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
-<br><kbd>Simons, R.A. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
+<br><kbd>Simons, R.A., and Chris John. 2022. ERDDAP. https://coastwatch.pfeg.noaa.gov/erddap . Monterey, CA: NOAA/NMFS/SWFSC/ERD.</kbd>
 
 <p><strong><a class="selfLink" id="acronym" href="#acronym" rel="bookmark">What does the acronym "ERDDAP" stand for?</a></strong>
 <br>"ERDDAP" used to be an acronym, but it outgrew that original description.

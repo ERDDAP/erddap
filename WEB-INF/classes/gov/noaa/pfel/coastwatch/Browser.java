@@ -96,7 +96,7 @@ import jakarta.servlet.http.HttpSession;
  *   e.g., externally, Luke's grd2Hdf script is relies on a specific file name format
  *   for files generated from CWBrowser.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public abstract class Browser extends HttpServlet {
   

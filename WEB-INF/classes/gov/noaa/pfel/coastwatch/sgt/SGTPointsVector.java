@@ -1,6 +1,6 @@
 /*
  * SGTPointsVector
- * modified from gov.noaa.pmel.sgt.SGTVector.java by Bob Simons (2006-05-11 bob.simons@noaa.gov)
+ * modified from gov.noaa.pmel.sgt.SGTVector.java by Bob Simons (2006-05-11 was bob.simons@noaa.gov, now BobSimons2.00@gmail.com)
  *
  * This software is provided by NOAA for full, free and open release.  It is
  * understood by the recipient/user that NOAA assumes no liability for any

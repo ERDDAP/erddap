@@ -36,7 +36,7 @@ import java.util.BitSet;
  * For stations, x,y,z can also help to quickly accepted or reject 
  * a station at a time in the 'subset' method.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-01-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-01-12
  */
 public class PointIndex  {
 

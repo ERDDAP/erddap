@@ -39,7 +39,7 @@ import java.util.ArrayList;
  * from the enclosed dataset with ascending longitude values, at least some
  * of which are &gt; 180.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2015-08-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-08-05
  */
 public class EDDGridLonPM180 extends EDDGrid { 
 

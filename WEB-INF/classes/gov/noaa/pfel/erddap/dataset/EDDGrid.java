@@ -104,7 +104,7 @@ import ucar.unidata.geoloc.LatLonRect;
  * to separate them out and create separate EDDGrids (one per 
  * set of axes).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public abstract class EDDGrid extends EDD { 
 

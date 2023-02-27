@@ -68,7 +68,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
 /**
  * This class has static methods special, one-time projects.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-12-11
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-12-11
  */
 public class Projects  {
 

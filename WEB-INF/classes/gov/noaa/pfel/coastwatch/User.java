@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 /**
  * This is a collection of the things unique to a user's CWBrowser session.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-12
  */
 public abstract class User  {
 

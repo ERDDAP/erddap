@@ -21,7 +21,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
  * for all datasets listed by validDataSets in DataSet.properties.
  * Don't run this on the coastwatch computer.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-10-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-10-06
  *
  */
 public class ValidateDataSetProperties {

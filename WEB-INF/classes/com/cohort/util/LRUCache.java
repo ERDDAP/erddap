@@ -1,6 +1,6 @@
 /* This file is Copyright (c) 2010, NOAA.
  * See the MIT/X-like license in LICENSE.txt.
- * For more information, bob.simons@noaa.gov.
+ * For more information, email BobSimons2.00@gmail.com.
  */
 package com.cohort.util;
 

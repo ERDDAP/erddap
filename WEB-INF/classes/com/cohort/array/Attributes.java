@@ -1045,11 +1045,11 @@ public class Attributes {
             String val = getString(tName);
             if (String2.isSomething(val)) {
                 if (val.indexOf("NCCSV") >= 0)
-                    val = val.replaceAll("NCCSV-.\\..", String2.NCCSV_VERSION);   //string.replaceAll(regex, newS) should match. No change if not.
+                    val = val.replaceAll("NCCSV-\\d\\.\\d", String2.NCCSV_VERSION);   //string.replaceAll(regex, newS) should match. No change if not.
                 else
                     val += ", " + String2.NCCSV_VERSION;
             } else {
-                val = "COARDS, CF-1.6, ACDD-1.3, " + String2.NCCSV_VERSION;
+                val = "COARDS, CF-1.10, ACDD-1.3, " + String2.NCCSV_VERSION;
             }
             sb.append(
                 String2.toNccsvDataString(varName) + "," +  

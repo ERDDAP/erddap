@@ -32,7 +32,7 @@ import java.io.OutputStreamWriter;
  * This is used by EDDTable.
  * The outputStream isn't obtained until the first call to writeSome().
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-03-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-03-04
  */
 public class TableWriterGeoJson extends TableWriter {
 

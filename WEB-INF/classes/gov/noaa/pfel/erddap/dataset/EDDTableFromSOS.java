@@ -117,7 +117,7 @@ import java.util.HashSet;
  * <p>This class insists that each station is indeed a station at one lat lon point:
  *    lowerCorner's lat lon must equal upperCorner's lat lon or the station is ignored.
  *    
- * @author Bob Simons (bob.simons@noaa.gov) 2007-09-21
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-09-21
  */
 public class EDDTableFromSOS extends EDDTable{ 
 
@@ -7896,7 +7896,7 @@ https://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"infoUrl\">" + XML.encodeAsXML(tInfoUrl) + "</att>\n" +
 "        <att name=\"institution\">" + XML.encodeAsXML(tInstitution) + "</att>\n" +
 "        <att name=\"license\">" + XML.encodeAsXML(tLicense) + "</att>\n" +

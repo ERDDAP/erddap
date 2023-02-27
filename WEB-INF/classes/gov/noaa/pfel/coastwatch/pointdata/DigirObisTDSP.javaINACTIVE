@@ -59,7 +59,7 @@ import ucar.nc2.NetcdfFile;
  * DiGIR (and Darwin and OBIS) data sources. See
  * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/DatasetSource.html
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-05-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-05-07
  */
 public class DigirObisTDSP implements thredds.servlet.DatasetSource {
 

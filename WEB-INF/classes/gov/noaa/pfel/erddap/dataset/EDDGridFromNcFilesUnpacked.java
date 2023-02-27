@@ -51,7 +51,7 @@ import ucar.ma2.*;
  * GRIB .grb (https://en.wikipedia.org/wiki/GRIB),
  * (and related) netcdfFiles which are unpacked at a low level.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-01-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-01-05
  */
 public class EDDGridFromNcFilesUnpacked extends EDDGridFromNcLow { 
 

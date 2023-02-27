@@ -47,7 +47,7 @@ import java.util.concurrent.ExecutionException;
  * The first call to increment() causes the first partial response to be obtained 
  * from the source.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-07-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-07-06
  */
 public class GridDataAccessor { 
 

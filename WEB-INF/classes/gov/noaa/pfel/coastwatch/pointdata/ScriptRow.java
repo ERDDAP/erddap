@@ -26,7 +26,7 @@ import org.apache.commons.jexl3.MapContext;
  *
  * <p>This class is Copyright 2019, NOAA.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2019-11-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2019-11-14
  */
 public class ScriptRow  {
 

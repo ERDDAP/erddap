@@ -35,7 +35,7 @@ import jakarta.servlet.http.HttpSession;
  * CWBrowser below the "Edit" line if the user selects "Edit : Point Data").
  * Each UserCW has its own instance of this.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-12
  */
 public class PointScreen extends Screen {
 
