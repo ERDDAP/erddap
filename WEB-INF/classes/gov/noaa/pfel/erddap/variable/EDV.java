@@ -27,7 +27,7 @@ import java.util.HashMap;
 /** 
  * This class holds information about an ErdDap axis or data Variable (EDV).
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDV { 
 

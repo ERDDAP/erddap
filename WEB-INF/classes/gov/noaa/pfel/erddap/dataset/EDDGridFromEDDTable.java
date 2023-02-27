@@ -41,7 +41,7 @@ import java.util.Arrays;
 /** 
  * This class represents a grid dataset from an EDDTable source.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2015-01-27
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-01-27
  */
 public class EDDGridFromEDDTable extends EDDGrid { 
 

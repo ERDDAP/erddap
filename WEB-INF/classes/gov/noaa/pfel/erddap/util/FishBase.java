@@ -35,7 +35,7 @@ import ucar.ma2.*;
 /**
  * This class has static methods related to import/processing of FishBase data.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2011-06-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2011-06-01
  */
 public class FishBase  {
 

@@ -23,7 +23,7 @@ import java.util.Vector;
 /** 
  * This class represents the "None" TableDataSet.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-03-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-03-06
  */
 public class TableDataSetNone extends TableDataSet { 
 

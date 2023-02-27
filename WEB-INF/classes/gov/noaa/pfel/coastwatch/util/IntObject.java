@@ -10,7 +10,7 @@ package gov.noaa.pfel.coastwatch.util;
  * destroying an old object and creating a new object).
  * Thus, it is mutable, unlike an immutable Java Integer object.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-18
  *
  */
 public class IntObject  {

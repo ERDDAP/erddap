@@ -38,7 +38,7 @@ import java.util.HashMap;
 /** 
  * This is a subclass of EDDTableFromAsciiService for the NOS Ascii services.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2010-11-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-11-12
  */
 public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService { 
 

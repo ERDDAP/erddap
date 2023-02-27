@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This is an easy way to use a WatchService.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2014-12-30
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-12-30
  */
 public class WatchDirectory {
 

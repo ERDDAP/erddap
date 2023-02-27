@@ -36,7 +36,7 @@ import java.util.ArrayList;
  * This is the abstract superclass for classes which deal with a table of data from a 
  * web service that returns ASCII files.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2010-11-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-11-12
  */
 public abstract class EDDTableFromAsciiService extends EDDTable{ 
 

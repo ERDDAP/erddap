@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * This class represents a grid dataset with Etopo bathymetry data.
  * <br>2011-03-14 I switched from etopo2v2 to etopo1.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2008-02-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-20
  */
 public class EDDGridFromEtopo extends EDDGrid { 
 

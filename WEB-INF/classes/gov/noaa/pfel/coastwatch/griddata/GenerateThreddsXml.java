@@ -31,7 +31,7 @@ import java.util.HashMap;
  * all two-letter satellite datasets, using info in the 
  * gov/noaa/pfel/coastwatch/DataSet.properties file.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-10-03
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-10-03
  */
 public class GenerateThreddsXml {
 

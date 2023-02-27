@@ -53,7 +53,7 @@ import org.apache.commons.jexl3.MapContext;
 /** 
  * This class represents a table of file names.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2015-01-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2015-01-06
  */
 public class EDDTableFromFileNames extends EDDTable{ 
 

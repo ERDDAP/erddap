@@ -35,7 +35,7 @@ import java.util.Vector;
  * 
  * The constructor searches for available data.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-01
  */
 public abstract class GridDataSet { 
 

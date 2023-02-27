@@ -44,7 +44,7 @@ import ucar.ma2.*;
  * 
  * The constructor searches for available data.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-07-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-07-20
  */
 public class StationVariableNc4D extends GroupVariableWithDepthLevels { 
 

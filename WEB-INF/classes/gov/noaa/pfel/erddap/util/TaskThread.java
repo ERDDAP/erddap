@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This does a series of tasks.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-05-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-20
  */
 public class TaskThread extends Thread {
 

@@ -38,7 +38,7 @@ import java.util.Arrays;
  * <p>This is also the only way to get correct actual_range
  * metadata for a subset of data. (It is set in finish().)
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public class TableWriterAllWithMetadata extends TableWriterAll {
 

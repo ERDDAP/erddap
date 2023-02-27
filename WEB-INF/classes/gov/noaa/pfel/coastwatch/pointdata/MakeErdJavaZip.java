@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * DoubleCenterGrids, GridSaveAs, NetCheck, ConvertTable, and GenerateThreddsXml can be distributed.
  * This also makes converttable.jar.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-11-22
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-11-22
  */
 public class MakeErdJavaZip  {
 

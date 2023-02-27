@@ -12,7 +12,7 @@ import org.apache.commons.logging.Log;
  * This class responds to and attribute called "level" 
  * and an Integer with one of the xxx_LEVEL values.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-08-25
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-08-25
  */
 public class String2Log implements Log {
 

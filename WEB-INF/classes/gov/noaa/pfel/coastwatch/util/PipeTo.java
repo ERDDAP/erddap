@@ -11,7 +11,7 @@ import java.io.InputStream;
  * The basic idea is from http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html,
  * but the code here is very different.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-18
  */
 public abstract class PipeTo extends Thread {
 

@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
  *  do anything useful, and will be removed in 1.1.
  *
  * @author Costin Manolache
- * [Modified by Bob Simons (bob.simons@noaa.gov) to work with String2.log]
+ * [Modified by Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) to work with String2.log]
  */
 public final class String2LogFactory extends LogFactory {
 

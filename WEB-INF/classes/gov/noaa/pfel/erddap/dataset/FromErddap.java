@@ -9,7 +9,7 @@ package gov.noaa.pfel.erddap.dataset;
 /** 
  * This identifies that extra methods that EDDTableFromErddap and EDDGridFromErddap share.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2009-12-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-12-14
  */
 public interface FromErddap { 
 

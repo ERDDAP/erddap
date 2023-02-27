@@ -18,7 +18,7 @@ import java.util.GregorianCalendar;
  * This class holds the master TimePeriods.OPTIONS list and related information
  * and methods.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-02-28
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-02-28
  */
 public class TimePeriods {
 

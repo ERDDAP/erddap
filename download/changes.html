@@ -71,7 +71,7 @@ those great suggestions coming!
 <!-- ****************************************************************************** -->
 
 <h2><a class="selfLink" id="changes2.23" href="#changes2.23" rel="bookmark">Changes</a> 
-in ERDDAP version 2.23 (released 2023-02-??)</h2>
+in ERDDAP version 2.23 (released 2023-02-27)</h2>
 Note that this release was done by Bob Simons, thereby showing that he
 is still around and active during the transition to Chris John, his successor.
 Stating with this release, all code changes were done by Chis John, unless specified otherwise.
@@ -86,8 +86,9 @@ Stating with this release, all code changes were done by Chis John, unless speci
   <li>TO DO: SECURITY CHANGE: Google Authentication is now accomplished via the new 
     Google Identity Services library. Google's support for the old OAuth2 system
     will be discontinued 2023-03-15 ("Beware the Ide's of March"?!)
-    So if you use Google Authentication you MUST update to ERDDAP v2.23 
-    before then.
+    So if you use Google Authentication in your ERDDAP installation, 
+    you MUST update to ERDDAP v2.23 before then.
+    (Bob is sorry for the short notice. It's Bob's fault.)
     <br>&nbsp;
 
   <li>IMPROVED: NCCSV is now v1.2. The change is that the files are now UTF-8-encoded files (was ASCII)
@@ -98,6 +99,15 @@ Stating with this release, all code changes were done by Chis John, unless speci
     <br>Thanks to Pauline-Chauvet, n-a-t-e, and thogar-computer for suggesting this
     and doing the tests to ensure various spreadsheet programs can import UTF-8 files. 
     Thanks to Bob Simons for this code change.
+    <br>&nbsp;
+  <li>NEW: The status.html web page now has a line near the top which indicates
+    which dataset loadDatasets is currently loading and related statistics,
+    or none if no dataset is being loaded. 
+    This can be very helpful to ERDDAP administrators trying to figure out why
+    loadDatasets is taking so long.
+    Also, the nGridDatasets, nTableDatasets, and nTotalDatasets counts below that
+    are now instantaneous (previously, they were as of the end of the last major loadDatasets).
+    <br>This change is for Roy Mendelssohn. Thanks to Bob Simons for this code change.
     <br>&nbsp;
   <li>IMPROVED: GenerateDatasetsXml now changes to CF-10 (was CF-1.6) in the "Conventions" attributes.
     <br>Thanks to Bob Simons for this code change.

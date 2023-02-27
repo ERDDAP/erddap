@@ -59,7 +59,7 @@ import java.util.List;
  *
  * <p>This class is very similar to EDDTableFromHyraxFiles.
  *
- * @author Bob Simons (bob.simons@noaa.gov) originally 2009-06-08;
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) originally 2009-06-08;
  * modified extensively (copy the files first) 2012-02-21.
  */
 public class EDDTableFromThreddsFiles extends EDDTableFromFiles { 

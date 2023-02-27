@@ -117,7 +117,7 @@ import dods.dap.*;
  * (ASCII, MatLab, .nc, ...).
  * Since there is often a lot of data, these objects are usually short-lived.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-12-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-12-05
  */
 public class Table  {
 
@@ -34858,7 +34858,7 @@ readAsNcCF?
         results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); //catchScalars, writeMetadata, firstDataRow, lastDataRow
 
         expected = //many vars are scalar because they're constant in last 6 rows
-"*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
+"*GLOBAL*,Conventions,\"COARDS, CF-1.10, ACDD-1.3, NCCSV-1.2\"\n" +
 "cruise_name,*DATA_TYPE*,String\n" +
 "station,*DATA_TYPE*,byte\n" +
 "cast,*DATA_TYPE*,byte\n" +

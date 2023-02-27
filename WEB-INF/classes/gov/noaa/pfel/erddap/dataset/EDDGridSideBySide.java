@@ -46,7 +46,7 @@ import java.util.Arrays;
  * <p>Children created by this method are held privately.
  *   They are not separately accessible datasets (e.g., by queries or by flag files).
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2008-02-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
 public class EDDGridSideBySide extends EDDGrid { 
 

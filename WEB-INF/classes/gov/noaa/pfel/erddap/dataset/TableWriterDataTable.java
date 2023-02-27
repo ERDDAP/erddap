@@ -32,7 +32,7 @@ import java.util.GregorianCalendar;
  * This is used by EDDTable.
  * The outputStream isn't obtained until the first call to write().
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-24
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-24
  * @author Roland Schweitzer (roland.schweitzer@noaa.gov) May 2018
  */
 public class TableWriterDataTable extends TableWriter {

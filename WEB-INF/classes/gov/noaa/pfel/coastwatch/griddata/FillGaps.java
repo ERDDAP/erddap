@@ -20,7 +20,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
  * This class can fill in gaps in a data set by searching for nearest
  * neighbors in time and space.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-03-28
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-03-28
  *
  */
 public class FillGaps  {

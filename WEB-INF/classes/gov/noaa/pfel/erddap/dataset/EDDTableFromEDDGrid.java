@@ -43,7 +43,7 @@ import java.util.Enumeration;
 /** 
  * This class creates an EDDTable from an EDDGrid.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2013-03-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2013-03-08
  */
 public class EDDTableFromEDDGrid extends EDDTable{ 
 

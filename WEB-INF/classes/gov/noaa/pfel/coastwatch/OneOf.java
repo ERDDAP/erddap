@@ -48,7 +48,7 @@ import java.util.Vector;
  * This class holds things that there is just one of and which are shared 
  * throughout the CWBrowser program and by all users.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-10-31
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-10-31
  */
 public class OneOf {
 

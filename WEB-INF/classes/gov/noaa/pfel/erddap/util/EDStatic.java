@@ -189,7 +189,7 @@ public class EDStatic {
      * <br>2.20 released on 2022-09-30
      * <br>2.21 released on 2022-10-09
      * <br>2.22 released on 2022-12-08
-     * <br>2.23 released on 202?-??-??
+     * <br>2.23 released on 2023-02-27
      *
      * For master branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
@@ -277,12 +277,21 @@ public static boolean developmentMode = false;
     public static HashSet<String> requestBlacklist = null; //is read-only. Replacement is swapped into place.
     public static long startupMillis = System.currentTimeMillis();
     public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocalTZ();
-    public static int nGridDatasets = 0;  
-    public static int nTableDatasets = 0;
+    public static int nGridDatasets = 0;    //as of end of last major loadDatasets
+    public static int nTableDatasets = 0;   //as of end of last major loadDatasets
     public static long lastMajorLoadDatasetsStartTimeMillis = System.currentTimeMillis();
     public static long lastMajorLoadDatasetsStopTimeMillis = System.currentTimeMillis() - 1;
     private static ConcurrentHashMap<String,String> sessionNonce = 
         new ConcurrentHashMap(16, 0.75f, 4); //for a session: loggedInAs -> nonce
+    //Currently Loading Dataset
+    public static volatile boolean cldMajor       = false;
+    public static volatile int     cldNTry        = 0;    //   0=none actively loading
+    public static volatile String  cldDatasetID   = null; //null=none actively loading
+    public static volatile long    cldStartMillis = 0;    //   0=none actively loading
+    //set by ERDDAP constructor. Only used by status.html below.
+    public static ConcurrentHashMap<String,EDDGrid>  gridDatasetHashMap  = null; 
+    public static ConcurrentHashMap<String,EDDTable> tableDatasetHashMap = null; 
+
 
     public final static ConcurrentHashMap<String,String> activeRequests = new ConcurrentHashMap();  //request# -> 1 line info about request
     public static volatile long lastActiveRequestReportTime = 0; //0 means not currently in dangerousMemory inUse event
@@ -4510,10 +4519,28 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
             Math2.roundToInt((System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis)/1000) ) + 
             " ago and " +
             (loadTime < 0 ? "is still running.\n" : "finished after " + (loadTime/1000) + " seconds.\n"));
-        //would be nice to know if minor LoadDataset is active, for how long
-        sb.append("nGridDatasets  = " + nGridDatasets + "\n");
-        sb.append("nTableDatasets = " + nTableDatasets + "\n");
-        sb.append("nTotalDatasets = " + (nGridDatasets + nTableDatasets) + "\n");
+
+        //make local copies to avoid trouble from volatile variables
+        boolean tcldMajor       = cldMajor;
+        int     tcldNTry        = cldNTry;        //   0=none actively loading
+        String  tcldDatasetID   = cldDatasetID;   //null=none actively loading
+        long    tcldStartMillis = cldStartMillis; //   0=none actively loading
+        if (tcldNTry == 0 || tcldDatasetID == null || tcldStartMillis == 0) {
+            sb.append("Currently, no dataset is loading.\n");
+        } else {
+            sb.append("Currently, " + (tcldMajor? "major" : "minor") + " LoadDatasets is loading dataset #" +
+                tcldNTry + "=" + tcldDatasetID + 
+                " (" + Calendar2.elapsedTimeString(Math2.longToDoubleNaN(System.currentTimeMillis() - tcldStartMillis)) + ").\n");
+        }
+
+        //make local copy of volatile variables to avoid null pointers and so sum is correct
+        ConcurrentHashMap<String,EDDGrid>  tGridDatasetHashMap  = gridDatasetHashMap; 
+        ConcurrentHashMap<String,EDDTable> tTableDatasetHashMap = tableDatasetHashMap; 
+        int tnGridDatasets  = tGridDatasetHashMap  == null? 0 : tGridDatasetHashMap.size();
+        int tnTableDatasets = tTableDatasetHashMap == null? 0 : tTableDatasetHashMap.size();
+        sb.append("nGridDatasets  = " + tnGridDatasets + "\n");
+        sb.append("nTableDatasets = " + tnTableDatasets + "\n");
+        sb.append("nTotalDatasets = " + (tnGridDatasets + tnTableDatasets) + "\n");
         sb.append(datasetsThatFailedToLoad);
         sb.append(errorsDuringMajorReload);
         sb.append("Unique users (since startup)                            n = " + ipAddressQueue.size() + "\n");

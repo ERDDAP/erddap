@@ -53,7 +53,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * (https://en.wikipedia.org/wiki/Esri_grid) is that it is only
  * for one grid of data (not two). So that format is not supported here.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-10-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-10-23
  *
  */
 public class TwoGrids  {

@@ -32,7 +32,7 @@ import gov.noaa.pfel.erddap.variable.*;
  * using CF Discrete Sampling Geometries (was Point Observation Conventions), 
  * https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2011-01-27
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2011-01-27
  */
 public class EDDTableFromNcCFFiles extends EDDTableFromFiles { 
 

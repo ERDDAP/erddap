@@ -30,7 +30,7 @@ import java.util.Vector;
  * This class represents GridDataSets where the matadata is available 
  * from DataSet.properties.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2006-06-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-06-23
  */
 public abstract class GridDataSetCW extends GridDataSet {  
 

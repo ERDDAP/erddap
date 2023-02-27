@@ -23,7 +23,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  * This is used by EDDTable.
  * The outputStream isn't obtained until the first call to writeSome().
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-23
  */
 public abstract class TableWriter {
 

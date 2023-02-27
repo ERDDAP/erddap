@@ -72,7 +72,7 @@ import org.apache.lucene.index.Term;
  *    and the results take effect without restarting Erddap.
  * </ul>
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-02-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-12
  */
 public class LoadDatasets extends Thread {
 
@@ -165,6 +165,8 @@ public class LoadDatasets extends Thread {
                 orphanIDSet.addAll(       erddap.tableDatasetHashMap.keySet());
                 orphanIDSet.remove(EDDTableFromAllDatasets.DATASET_ID);
             }
+            EDStatic.cldMajor = majorLoad;
+            EDStatic.cldNTry  = 0; //that alone says none is currently active
             HashMap tUserHashMap = new HashMap(); //no need for thread-safe, all puts are here (1 thread); future gets are thread safe
             StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
             HashSet<String> datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
@@ -355,6 +357,9 @@ public class LoadDatasets extends Thread {
                         EDD dataset = null, oldDataset = null;
                         boolean oldCatInfoRemoved = false;
                         long timeToLoadThisDataset = System.currentTimeMillis();
+                        EDStatic.cldNTry = nTry;
+                        EDStatic.cldStartMillis = timeToLoadThisDataset;
+                        EDStatic.cldDatasetID = tId;
                         try {
                             dataset = EDD.fromXml(erddap, xmlReader.attributeValue("type"), xmlReader);
 
@@ -469,6 +474,9 @@ public class LoadDatasets extends Thread {
                                 change = tError;
                         }
                         if (verbose) String2.log("change=" + change);
+                        EDStatic.cldNTry = nTry;
+                        EDStatic.cldStartMillis = 0;
+                        EDStatic.cldDatasetID = null;
 
                         //whether succeeded (new or swapped in) or failed (removed), it was changed
                         changedDatasetIDs.add(tId);

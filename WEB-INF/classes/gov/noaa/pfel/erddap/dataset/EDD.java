@@ -178,7 +178,7 @@ Some features are:
 </ul>  
 
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public abstract class EDD { 
 
@@ -9709,10 +9709,11 @@ public abstract class EDD {
         if (con.indexOf("COARDS") < 0) 
             con += ", COARDS";
 
+        //this code works because of the transition from CF-1.x versions to CF-1.xx versions.
         if (con.indexOf("CF") < 0) {
-             con += ", CF-1.10";
+            con += ", CF-1.10";
         } else if (String2.extractRegex(con, "CF[ \\-]\\d\\.\\d\\d", 0) == null) {  //doesn't already have CF-1.xx
-            con = con.replace("CF[ \\-]\\d\\.\\d", "CF-1.10");  //replace 1.x with 1.10
+            con = con.replaceFirst("CF[ \\-]\\d\\.\\d", "CF-1.10");  //replace 1.x with 1.10
         }
 
         con = String2.replaceAll(con, "Unidata Dataset Discovery v1.0", "ACDD-1.3");

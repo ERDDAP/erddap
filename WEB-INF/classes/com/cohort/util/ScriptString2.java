@@ -15,7 +15,7 @@ import com.cohort.util.String2;
  * <p>The underlying String2 class is Copyright (c) 2005 Robert Simons (CoHortSoftware@gmail.com).
  * See the MIT/X-like license in com/cohort/util/LICENSE.txt.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2019-11-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2019-11-14
  */
 public class ScriptString2  {
 

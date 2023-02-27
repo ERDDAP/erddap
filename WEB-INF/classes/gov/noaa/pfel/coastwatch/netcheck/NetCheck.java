@@ -59,7 +59,7 @@ import java.util.HashSet;
  * <p>The pass% reported in the status reports (every minutesBetweenStatusReports)
  * indicates the pass% since the last status report.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-08-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-08-16
  *
  */
 public class NetCheck  {

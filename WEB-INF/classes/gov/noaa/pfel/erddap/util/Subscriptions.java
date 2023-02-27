@@ -27,7 +27,7 @@ import java.util.Set;
  * be notified when a dataset has changed.
  *
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-12-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-12-01
  */
 public class Subscriptions {
 //FUTURE: more efficient to switch this from synchronized to using 

@@ -10,7 +10,7 @@ package gov.noaa.pfel.coastwatch.griddata;
  * one directory into files of another type in another directory. 
  * See Grid.davesSaveAs() for details.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-11-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-11-04
  *
  */
 public class GridSaveAs {

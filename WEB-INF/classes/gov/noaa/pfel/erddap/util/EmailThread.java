@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * This sends emails which are queued in the EDStatic.emailList.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2022-08-27
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2022-08-27
  */
 public class EmailThread extends Thread {
 

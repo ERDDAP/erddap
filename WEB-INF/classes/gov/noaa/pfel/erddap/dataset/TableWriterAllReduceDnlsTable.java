@@ -21,7 +21,7 @@ import java.util.HashSet;
  * write the data anywhere (to an outputStream or to another tableWriter), 
  * it just makes the resulting data table and subdirectory names available.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2019-08-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2019-08-06
  */
 public class TableWriterAllReduceDnlsTable extends TableWriterAll {
 
