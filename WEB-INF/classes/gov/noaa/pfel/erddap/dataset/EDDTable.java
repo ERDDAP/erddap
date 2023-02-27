@@ -100,7 +100,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * used by the dataVariables. To say so would invite software to query it that way.
  * OR: NCML is a convenient and reasonable way to represent the data.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
 public abstract class EDDTable extends EDD { 
 
@@ -5432,18 +5432,16 @@ public abstract class EDDTable extends EDD {
 
     }
 
-    /** Ensure a conventions string includes "CF-1.10" (or already >1.10). */
+    /** Ensure a conventions string includes "CF-1.10" (or already >=1.10). */
     public static String ensureAtLeastCF110(String conv) {
         if (conv == null || conv.length() == 0) {
             conv = "CF-1.10";
         } else if (conv.indexOf("CF-") < 0) {
             conv += ", CF-1.10";
-        } else {
-            //1.x -> 1.10
-            conv += " "; // so there is always a char after CF-1.x
-            conv = conv.replaceAll("CF[ \\-]\\d\\.\\d[^\\d]", "CF-1.10");
+        } else if (String2.extractRegex(conv, "CF[ \\-]\\d\\.\\d\\d", 0) == null) {  //doesn't already have CF-1.xx
+            conv = conv.replaceFirst("CF[ \\-]\\d\\.\\d", "CF-1.10");  //replace 1.x with 1.10
         }
-        return conv.trim();
+        return conv;
     }
 
     /**

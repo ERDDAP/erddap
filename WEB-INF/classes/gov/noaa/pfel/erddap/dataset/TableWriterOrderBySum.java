@@ -37,7 +37,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  *
  * TableWriterOrderBySum is derived from TableWriterOrderByMean
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2018-09-11
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2018-09-11
  * @author Rob Fuller (rob.fuller@marine.ie) 2018-09-11
  * @author Adam Leadbetter (adam.leadbetter@marine.ie) 2018-09-11
  * @author Marco Alba (marco.alba@ettsolutions.com) 2021-09-10

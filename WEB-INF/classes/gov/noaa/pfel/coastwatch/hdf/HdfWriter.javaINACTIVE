@@ -22,7 +22,7 @@ import java.util.Arrays;
  * finicky (the jar files are tied to specific out-of-date versions of Java) 
  * native libraries (which are different for each OS) from NCSA.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-01
  *
  */
 public class HdfWriter  {

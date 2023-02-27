@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
  * This class represents a table of data from a collection of jsonlCSV data files
  * which are created by HTTP GET calls to ERDDAP.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2016-06-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-06-14
  */
 public class EDDTableFromHttpGet extends EDDTableFromFiles { 
 

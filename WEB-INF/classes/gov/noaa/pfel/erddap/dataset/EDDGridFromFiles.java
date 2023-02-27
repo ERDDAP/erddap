@@ -69,7 +69,7 @@ import java.util.TimeZone;
  * <br>And file data can be cached and reused because each file has a lastModified
  *   time and size which can be used to detect if file is unchanged.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-11-26
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-11-26
  */
 public abstract class EDDGridFromFiles extends EDDGrid{ 
 

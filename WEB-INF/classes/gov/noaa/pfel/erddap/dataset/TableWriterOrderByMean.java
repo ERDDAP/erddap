@@ -38,7 +38,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  * <p>This uses the incremental-averaging algorithm to calculate the means, e.g.,
  * https://math.stackexchange.com/questions/106700/incremental-averageing
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2018-09-11
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2018-09-11
  * @author Rob Fuller (rob.fuller@marine.ie) 2018-09-11
  * @author Adam Leadbetter (adam.leadbetter@marine.ie) 2018-09-11
  */

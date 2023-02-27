@@ -12,7 +12,7 @@ import com.cohort.util.Test;
 /** 
  * This class holds information about an altitude grid axis variable.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDVAltGridAxis extends EDVGridAxis { 
    

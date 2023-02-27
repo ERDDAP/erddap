@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpSession;
 /**
  * The CoastWatch Browser. See info for Browser.java.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  */
 public class CWBrowserWW180 extends Browser {
 

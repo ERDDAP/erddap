@@ -20,7 +20,7 @@ import java.util.ArrayList;
 /**
  * This deals with one type of netCheck test: validity of an HTTP request.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-08-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-08-16
  *
  */
 public class HttpTest extends NetCheckTest {

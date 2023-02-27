@@ -62,7 +62,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * Currently it can read .grd and .nc files. In the future it may 
  * read and write other types of files.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  *
  */
 public class Grid  {
@@ -3384,7 +3384,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
     //public static void miniTestSaveAsHDF() {
         //test hdf    test in CoastWatch Utilities CDAT (it has the required metadata)
         //also use NCSA HDSView 2.2 to view the file
-        //7/14/05 this file was tested by bob.simons@noaa.gov in CDAT
+        //7/14/05 this file was tested by (now) BobSimons2.00@gmail.com in CDAT
     //    String2.log("\n***** Grid.main miniJavaTestSaveAsHDF");
     //    time = System.currentTimeMillis();
         //miniJavaTestSaveAsHDF();  //different test than other files since more complicated to set up

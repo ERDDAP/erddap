@@ -79,7 +79,7 @@ import ucar.nc2.dataset.NetcdfDatasets;
  * two properties files: gov/noaa/pfel/coastwatch/pointdata/DigirDarwin2.properties
  * and gov/noaa/pfel/coastwatch/pointdata/DigirObis.properties.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-05-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-05-07
  */
 public class DigirHelper  {
 

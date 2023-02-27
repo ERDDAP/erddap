@@ -58,7 +58,7 @@ import java.time.format.*;
  *
  * <p>This class is very similar to EDDTableFromThreddsFiles.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-06-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-06-08
  */
 public class EDDTableFromHyraxFiles extends EDDTableFromFiles { 
 

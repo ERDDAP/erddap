@@ -41,7 +41,7 @@ import ucar.nc2.write.*;
  * It is usually set by the main program (e.g., NetCheck).
  * For a simple solution, use String2.setupCommonsLogging(-1);
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-12-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-12-07
  */
 public class NcHelper  {
 

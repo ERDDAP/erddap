@@ -33,7 +33,7 @@ import java.io.InputStreamReader;
 /** 
  * This class represents a table of data from a file downloaded from a WFS server.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2013-01-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2013-01-16
  */
 public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles { 
 

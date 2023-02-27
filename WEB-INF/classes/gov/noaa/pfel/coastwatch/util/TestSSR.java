@@ -30,7 +30,7 @@ import java.util.Properties;
 /**
  * This is a Java program to test all of the methods in SSR.
  *
- * @author Robert Simons  bob.simons@noaa.gov  January 2005
+ * @author Robert Simons  was bob.simons@noaa.gov, now BobSimons2.00@gmail.com  January 2005
  */
 public class TestSSR {
 

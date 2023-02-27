@@ -14,7 +14,7 @@ import java.io.DataOutputStream;
 /**
  * This represents an HdfScientificDataDimension tag (DFTAG_SDD tagType = 0x02bd).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-01
  *
  */
 public class HdfScientificDataDimension extends HdfTag {

@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * This follows Linux symbolic links, but not Windows .lnk's 
  *   (see FileVistorDNLS.testSymbolicLinks() below).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2014-12-29
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-12-29
  */
 public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
 

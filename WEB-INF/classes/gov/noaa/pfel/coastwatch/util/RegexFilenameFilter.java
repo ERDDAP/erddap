@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
  * regular expression.
  * See regEx documentation in Java Docs for java.util.regex.Pattern.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  *
  */
 public class RegexFilenameFilter implements FilenameFilter {

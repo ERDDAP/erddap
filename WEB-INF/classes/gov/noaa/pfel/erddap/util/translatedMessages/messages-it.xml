@@ -1252,7 +1252,7 @@ Pertanto, ERDDAP interpreta &quot;years since&quot; e &quot;months since&quot; c
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Problema</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">Ucum <img 
@@ -1389,7 +1389,7 @@ Ma ci sono alcune difficoltà e casi speciali:
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Unità</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Questo collegamento a un sito Web esterno non costituisce un&#39;approvazione."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">Ucum <img 

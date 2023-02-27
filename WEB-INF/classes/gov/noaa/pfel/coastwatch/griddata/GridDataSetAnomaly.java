@@ -28,7 +28,7 @@ import java.util.Vector;
  * This class combines a regular GridDataSet and a climatology GridDataSet to 
  * create a GridDataSetAnomaly.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2006-12-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-12-18
  */
 public class GridDataSetAnomaly extends GridDataSet { 
 

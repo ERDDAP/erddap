@@ -17,7 +17,7 @@ import java.util.ArrayList;
 /**
  * NetCheckTest describes the methods which NetCheck XxxTest classes must have.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-08-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-08-16
  *
  */
 public abstract class NetCheckTest {

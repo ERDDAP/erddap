@@ -34,7 +34,7 @@ import java.time.format.DateTimeFormatter;
  * variables, the main one will be EDVTime and the secondary will be EDVTimeStamp
  * (not both EDVTimeStamp). 
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  *   Converted from EDVTime 2009-06-29.
  */
 public class EDVTimeStamp extends EDV { 

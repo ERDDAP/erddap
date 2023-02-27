@@ -27,7 +27,7 @@ import dods.dap.*;
  * This deals with one type of netCheck test: the ability to 
  * get das and dds information and actual data from Opendap.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-08-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-08-16
  *
  */
 public class OpendapTest extends NetCheckTest {

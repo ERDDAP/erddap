@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
  * this class just see/deal with numeric values (epochSoconds).  
  * There are just too many places where it is assumed that all axes are numeric.]
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2014-10-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-10-07
  */
 public class EDVTimeStampGridAxis extends EDVGridAxis { 
 

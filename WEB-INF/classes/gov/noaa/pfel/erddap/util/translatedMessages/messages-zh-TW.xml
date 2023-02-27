@@ -982,7 +982,7 @@ UDUNITS將月份定義為 year/12。不幸的是，我們看到的大多數/所�
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">問題</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
@@ -1101,7 +1101,7 @@ UDUNITS使用 ASCII、ISO 8859-1 (Latin-1) 和 ISO 10646 (Unicode) 的 UTF-8 編
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">單位</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 

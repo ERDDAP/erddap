@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
  * A screen is the part of the form in a Browser (usually below the "Edit" line).
  * Each User has its own instance of each relevant screen.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-12
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-12
  */
 public abstract class Screen  {
 

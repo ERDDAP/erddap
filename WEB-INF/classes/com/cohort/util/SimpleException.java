@@ -9,7 +9,7 @@ package com.cohort.util;
  * This is used when the user doesn't need to see the stack trace 
  * (e.g., for a syntax error in a request).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-05-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-20
  */
 public class SimpleException extends RuntimeException {
 

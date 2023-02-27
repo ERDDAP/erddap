@@ -27,7 +27,7 @@ import java.util.BitSet;
  * or update metadata at end. It is assumed that this is like a filter,
  * and that a subsequent TableWriter will handle that if needed.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-05-13
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-13
  */
 public class TableWriterOrderByMinMax extends TableWriterAll {
 

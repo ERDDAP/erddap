@@ -34,7 +34,7 @@ import ucar.ma2.*;
 /** 
  * This class represents a gridDataSet based on locally stored climatology data files.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-11-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-11-06
  */
 public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal { 
 

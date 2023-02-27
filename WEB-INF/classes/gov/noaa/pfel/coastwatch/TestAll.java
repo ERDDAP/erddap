@@ -61,7 +61,7 @@ import ucar.ma2.*;
  * calling makeCWExperimentalWar (and ultimately makeCoastWatchWar) or makeErddapWar and
  * deploying the .war file to Tomcat.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-10-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-10-06
  */
 public class TestAll  {
 
@@ -1098,8 +1098,8 @@ TranslateMessages translateMessages;
 WaitThenTryAgainException wttae; 
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = false;
-        boolean doSlowTestsToo = false;
+        boolean interactive = true;
+        boolean doSlowTestsToo = true;
 
 
 /* for releases, this line should have open/close comment */

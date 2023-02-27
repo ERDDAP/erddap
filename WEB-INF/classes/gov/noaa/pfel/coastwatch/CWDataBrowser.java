@@ -50,7 +50,7 @@ import jakarta.servlet.http.HttpSession;
  * Otherwise, the data gathered by the periodic reset thread may
  * be inconsistent with this class's properties info.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  *
  * <p>Changes:
  * <ul>

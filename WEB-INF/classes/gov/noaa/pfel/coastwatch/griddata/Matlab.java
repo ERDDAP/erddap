@@ -41,7 +41,7 @@ import java.util.Vector;
  * which is available from www.matworks.com.  Bob has a printout.
  * Note that Matlab files don't have global or variable attributes.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-18
  *
  */
 public class Matlab  {

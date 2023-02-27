@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /** 
  * This class represents a table of all datasets in this ERDDAP.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2013-12-23
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2013-12-23
  */
 public class EDDTableFromAllDatasets extends EDDTable{ 
 

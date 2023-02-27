@@ -123,7 +123,7 @@ import org.json.JSONTokener;
  *    gridDatasetHashMap and tableDatasetHashMap
  *    (notably also via gridDatasetIDs, tableDatasetIDs, allDatasetIDs).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-20
  */
 public class Erddap extends HttpServlet {
 
@@ -320,6 +320,10 @@ public class Erddap extends HttpServlet {
         runLoadDatasets = new RunLoadDatasets(this);
         EDStatic.runningThreads.put("runLoadDatasets", runLoadDatasets); 
         runLoadDatasets.start(); 
+
+        //set some things in EDStatic
+        EDStatic.gridDatasetHashMap  = gridDatasetHashMap;
+        EDStatic.tableDatasetHashMap = tableDatasetHashMap;
 
         //done
         String2.log("\n\\\\\\\\**** Erddap constructor finished. TIME=" +

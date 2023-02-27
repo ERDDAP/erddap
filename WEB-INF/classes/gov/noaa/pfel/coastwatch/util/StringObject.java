@@ -8,7 +8,7 @@ package gov.noaa.pfel.coastwatch.util;
 /**
  * This class holds a String that can be changed.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-06-28
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-06-28
  *
  */
 public class StringObject  {

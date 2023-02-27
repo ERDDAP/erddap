@@ -30,7 +30,7 @@ import gov.noaa.pfel.erddap.variable.*;
 /** 
  * This class represents a table of data from a collection of multidimensional .nc data files.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2016-05-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-05-05
  */
 public class EDDTableFromMultidimNcFiles extends EDDTableFromFiles { 
 

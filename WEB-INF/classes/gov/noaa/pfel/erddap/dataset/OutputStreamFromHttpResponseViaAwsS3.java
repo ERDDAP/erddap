@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * This is like OutputStreamFromHttpResponse, but creates a file in an S3 bucket, 
  * then redirects user to the download the file.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2020-12-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2020-12-08
  */
 public class OutputStreamFromHttpResponseViaAwsS3 implements OutputStreamSource {
 

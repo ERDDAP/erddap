@@ -52,7 +52,7 @@ import dods.dap.*;
  * This class represents a gridDataSet which gets data and metadata from 
  * THREDDS/Opendap.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-05-16
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-05-16
  */
 public class GridDataSetThredds extends GridDataSet { 
 

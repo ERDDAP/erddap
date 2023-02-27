@@ -74,7 +74,7 @@ import software.amazon.awssdk.services.s3.S3Client;
  * This class gathers basic information about a group of files.
  * This follows Linux symbolic links, but not Windows .lnk's (see testSymbolicLinks() below).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2014-11-25
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-11-25
  */
 public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
 

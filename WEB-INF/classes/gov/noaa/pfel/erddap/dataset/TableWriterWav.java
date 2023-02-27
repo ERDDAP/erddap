@@ -30,7 +30,7 @@ import java.io.OutputStream;
  * at one time.
  * This is used by EDDTable.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2017-09-13
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2017-09-13
  */
 public class TableWriterWav extends TableWriter {
 

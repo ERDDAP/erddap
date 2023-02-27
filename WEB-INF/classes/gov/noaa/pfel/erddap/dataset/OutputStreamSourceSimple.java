@@ -9,7 +9,7 @@ import java.io.OutputStream;
 /**
  * OutputStreamSourceSimple provides an OutputStream upon request.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-01
  */
 public class OutputStreamSourceSimple implements OutputStreamSource {
 

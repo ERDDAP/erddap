@@ -43,7 +43,7 @@ import java.util.GregorianCalendar;
  *   for files generated from CWBrowser.
  * </ul>
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-27
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-27
  *
  */
 public class FileNameUtility  {

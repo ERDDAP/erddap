@@ -13,7 +13,7 @@ import java.io.DataOutputStream;
 /**
  * This represents an HdfLibraryVersion tag (0x001e).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-01
  *
  */
 public class HdfLibraryVersion extends HdfTag {

@@ -12,7 +12,7 @@ package gov.noaa.pfel.coastwatch.netcheck;
  * This allows NetCheck to run a test in a separate thread
  * (which can be killed if the test doesn't respond fast enough).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-08
  *
  */
 public class TestThread extends Thread {
