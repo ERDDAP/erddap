@@ -1318,7 +1318,7 @@ Vì vậy, ERDDAP diễn giải &quot;years since&quot; và &quot;months since&q
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Phát hành</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
@@ -1461,7 +1461,7 @@ Nhưng có một số khó khăn và trường hợp đặc biệt:
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Các đơn vị</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Liên kết này đến một trang web bên ngoài không cấu thành sự chứng thực."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 

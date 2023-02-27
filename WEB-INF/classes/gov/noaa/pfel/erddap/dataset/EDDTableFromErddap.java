@@ -55,7 +55,7 @@ import ucar.ma2.*;
 /** 
  * This class represents a table of data from an opendap sequence source.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
 public class EDDTableFromErddap extends EDDTable implements FromErddap { 
 

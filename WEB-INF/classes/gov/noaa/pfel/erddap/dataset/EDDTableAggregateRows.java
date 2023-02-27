@@ -41,7 +41,7 @@ import java.util.Arrays;
  * EDDTableFromX.generateDatasetsXml for each child, 
  * then wrap them up with EDDTableAggregateRows.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2016-02-19
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-02-19
  */
 public class EDDTableAggregateRows extends EDDTable{ 
 

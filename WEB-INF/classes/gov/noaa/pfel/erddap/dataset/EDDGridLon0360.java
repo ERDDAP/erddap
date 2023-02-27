@@ -39,7 +39,7 @@ import java.util.ArrayList;
  * from the enclosed dataset with ascending longitude values, at least some
  * of which are &lt; 0.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2021-05-28
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2021-05-28
  */
 public class EDDGridLon0360 extends EDDGrid { 
 

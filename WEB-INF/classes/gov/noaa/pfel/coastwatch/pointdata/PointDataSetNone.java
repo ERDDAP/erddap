@@ -15,7 +15,7 @@ import java.util.Vector;
 /** 
  * This class represents the "(None)" point dataset for CWBrowser.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-01
  */
 public class PointDataSetNone extends PointDataSet { 
 

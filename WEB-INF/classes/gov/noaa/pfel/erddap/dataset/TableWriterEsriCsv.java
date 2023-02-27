@@ -43,7 +43,7 @@ import java.util.HashSet;
  * <br>This doesn't yet truncate strings to 255 chars. (Hopefully ArcGIS does this.)
  * <br>This doesn't deal with non-ASCII chars (about which ArcGIS is vague).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2010-07-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-07-20
  */
 public class TableWriterEsriCsv extends TableWriter {
 

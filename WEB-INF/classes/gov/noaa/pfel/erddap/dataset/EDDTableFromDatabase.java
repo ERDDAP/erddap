@@ -68,7 +68,7 @@ import org.apache.commons.jexl3.MapContext;
  * This class avoids the SQL Injection security problem 
  * (see https://en.wikipedia.org/wiki/SQL_injection).
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-08
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-08
  */
 public class EDDTableFromDatabase extends EDDTable{ 
 

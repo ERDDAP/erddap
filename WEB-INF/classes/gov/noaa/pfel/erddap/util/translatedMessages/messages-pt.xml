@@ -1268,7 +1268,7 @@ Portanto, ERDDAP interpreta &quot;years since&quot; e &quot;months since&quot; c
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Questão</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Este link para um site externo não constitui um endosso."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
@@ -1398,7 +1398,7 @@ Mas existem algumas dificuldades e casos especiais:
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">Unidades</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="Este link para um site externo não constitui um endosso."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 

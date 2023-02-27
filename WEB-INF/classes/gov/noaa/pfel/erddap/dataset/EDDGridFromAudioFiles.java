@@ -36,7 +36,7 @@ import java.util.List;
  * See Table.readAudio file for info on which types of audio files can be read.
  * https://docs.oracle.com/javase/tutorial/sound/converters.html
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2017-09-11
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2017-09-11
  */
 public class EDDGridFromAudioFiles extends EDDGridFromFiles {
 

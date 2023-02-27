@@ -46,7 +46,7 @@ import dods.dap.*;
  * Opendap.
  * This class doesn't use FileNameUtility.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-03-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-03-06
  */
 public class GridDataSetOpendap extends GridDataSet { 
 

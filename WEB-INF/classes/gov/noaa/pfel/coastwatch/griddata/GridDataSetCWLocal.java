@@ -32,7 +32,7 @@ import ucar.ma2.*;
 /** 
  * This class represents a gridDataSet based on locally stored data files.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-01
  */
 public class GridDataSetCWLocal extends GridDataSetCW { 
 

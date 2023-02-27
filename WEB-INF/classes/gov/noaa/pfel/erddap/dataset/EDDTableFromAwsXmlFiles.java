@@ -39,7 +39,7 @@ import java.util.List;
  * http://developer.weatherbug.com/docs/read/WeatherBug_Rest_XML_API   
  * 2017-12-08 weatherbug.com is INACTIVE
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2012-11-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2012-11-05
  */
 public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles { 
 

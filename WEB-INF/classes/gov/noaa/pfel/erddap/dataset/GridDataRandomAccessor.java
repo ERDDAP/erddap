@@ -37,7 +37,7 @@ import java.io.RandomAccessFile;
  *   which uses a variant of StringArray.readDis (but from RandomAccessFile).
  * ]
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-07-06
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-07-06
  */
 public class GridDataRandomAccessor { 
 

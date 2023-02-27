@@ -37,7 +37,7 @@ import java.util.Enumeration;
  * This class makes and maintains a local copy of the data from a remote source.
  * This class serves data from the local copy.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2009-05-19
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-05-19
  */
 public class EDDTableCopy extends EDDTable{ 
 

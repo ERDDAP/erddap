@@ -25,7 +25,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
  * or update metadata at end. It is assumed that this is like a filter,
  * and that a subsequent TableWriter will handle that if needed.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2022-05-26 (based on TableWriterOrderBy)
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2022-05-26 (based on TableWriterOrderBy)
  */
 public class TableWriterOrderByDescending extends TableWriterAll {
 

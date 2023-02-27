@@ -33,7 +33,7 @@ import javax.imageio.stream.ImageInputStream;
  * <p>"name" vs. "id" - for widgets, "name" is the required attributes.
  * "id" is not required and causes problems.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-09-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-09-04
  */
 public class HtmlWidgets {
 

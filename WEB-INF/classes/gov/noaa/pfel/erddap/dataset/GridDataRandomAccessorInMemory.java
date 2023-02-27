@@ -22,7 +22,7 @@ import gov.noaa.pfel.erddap.variable.EDV;
  * It first stores all of the data in memory.
  * This does work for String data.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2020-06-18
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2020-06-18
  */
 public class GridDataRandomAccessorInMemory { 
 

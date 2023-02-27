@@ -24,7 +24,7 @@ import java.util.Set;
  * and an attribute name).
  * Basically, you create the Tally object; call add() repeatedly; call toString().
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-05-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-05-01
  *
  */
 public class Tally  {

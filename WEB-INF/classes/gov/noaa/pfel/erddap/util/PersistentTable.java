@@ -38,7 +38,7 @@ import java.util.Arrays;
   </pre>
  * That also has the advantage of making a group of changes atomically.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-12-02
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-12-02
  */
 public class PersistentTable {
 

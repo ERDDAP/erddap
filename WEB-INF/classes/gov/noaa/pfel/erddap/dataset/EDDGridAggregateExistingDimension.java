@@ -36,7 +36,7 @@ import java.util.ArrayList;
  * for first existing dimension of other datasets.
  * Each child holds a contiguous group of values for the aggregated dimension.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2008-02-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-04
  */
 public class EDDGridAggregateExistingDimension extends EDDGrid { 
 

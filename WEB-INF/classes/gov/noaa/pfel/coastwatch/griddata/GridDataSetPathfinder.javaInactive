@@ -105,7 +105,7 @@ sst.sst[sst.lat=45.7700462341309], 52, 52, 50, 53, 53, 68, 70, 87, 87, 71, 90, 1
 
  * </pre>
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-05-01
  */
 public class GridDataSetPathfinder extends GridDataSet { 
 

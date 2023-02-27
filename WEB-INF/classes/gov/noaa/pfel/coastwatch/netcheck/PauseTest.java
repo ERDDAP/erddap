@@ -23,7 +23,7 @@ import java.util.ArrayList;
 /**
  * This looks like a test, but just pauses for n seconds.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-07-20
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-07-20
  *
  */
 public class PauseTest extends NetCheckTest {

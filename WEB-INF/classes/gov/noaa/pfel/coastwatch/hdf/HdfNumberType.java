@@ -10,7 +10,7 @@ import java.io.DataOutputStream;
 /**
  * This represents an HdfNumberType tag (DFTAG_NT, tagType = 0x006a).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-09-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-09-01
  *
  */
 public class HdfNumberType extends HdfTag {

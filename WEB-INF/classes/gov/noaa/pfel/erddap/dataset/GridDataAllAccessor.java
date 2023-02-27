@@ -29,7 +29,7 @@ import java.io.FileOutputStream;
  * as a PrimitiveArray or DataInputStream.
  * This works with all data types (even Strings).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2010-09-03
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-09-03
  */
 public class GridDataAllAccessor { 
 

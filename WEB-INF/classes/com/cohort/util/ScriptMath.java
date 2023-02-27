@@ -8,7 +8,7 @@ package com.cohort.util;
  * This class makes almost all of the static methods
  * in java.lang.Math accessible to JexlScript scripts as "Math.<i>name</i>()" methods.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2019-11-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2019-11-14
  */
 public class ScriptMath  {
 

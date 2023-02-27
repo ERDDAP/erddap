@@ -922,13 +922,14 @@ The original version was <a rel="bookmark" href="./NCCSV_1.00">NCCSV v1.00</a> (
   <li>Added support for ubyte, ushort, uint, ulong.
     Thanks to CF for adding support for these data types in CF.
   </ul>
-<li>Changes introduced in v1.20 (in ERDDAP v2.23, released 202?-??-??):
+<li>Changes introduced in v1.20 (in ERDDAP v2.23, released 2023-02-27):
   <ul>
   <li>Switched from ASCII character encoding to UTF-8 encoding for NCCSV .csv files.
     <ul>
-    <li>ERDDAP can still read files from all previous versions of NCCSV.
+    <li>ERDDAP can still read files from all previous and current versions of NCCSV.
     <li>ERDDAP now always writes NCCSV v1.20 files.
     <li>If you wrote a client to read NCCSV files, change it so it treats all NCCSV files as UTF-8 files.
+      That will work with older NCCSV files because ASCII is a subset of the UTF-8 character encoding.
     <li>Thanks to Pauline Chauvet, Nate, and Thomas Gardiner.
     </ul>
   </ul>

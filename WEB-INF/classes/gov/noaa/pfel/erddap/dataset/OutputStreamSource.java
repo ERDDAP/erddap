@@ -11,7 +11,7 @@ import java.io.OutputStream;
  * This is used by Erddap to delay calling response.getOutputStream
  * as long as possible.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-01
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-01
  */
 public interface OutputStreamSource {
 

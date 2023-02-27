@@ -89,7 +89,7 @@ import thredds.client.catalog.ThreddsMetadata.Vocab;
  * <p>Note that THREDDS has a default limit of 500MB for opendap responses. See
  * https://www.unidata.ucar.edu/software/thredds/current/tds/reference/ThreddsConfigXMLFile.html#opendap
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDDGridFromDap extends EDDGrid { 
 
@@ -10629,6 +10629,8 @@ expected =
             "https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml", 
             null, null, new String[]{"time", "lat", "lon"}, -1, null);
         //frequent small changes. I don't know why.
+        results = results.replaceAll("(2019\\-12\\-17|2022\\-03\\-23)",         //flips between 2019-12-17 and 2022-03-23
+                                     "[DATE]");
         results = results.replaceAll("T\\d{2}:\\d{2}:\\d{2}.000Z", 
                                      "T[TIME].000Z");
         results = results.replaceAll("<att name=\"data_bins\" type=\"int\">\\d*</att>",        
@@ -10653,12 +10655,13 @@ expected =
                                      "<att name=\"testOutOfDate\">now-[N_DAYS]days</att>");
 
         String tDatasetID = "nasa_jpl_0d1b_74cd_7593";
+        boolean newStuff = false; //appeared once then left
         String expected = 
 "<dataset type=\"EDDGridFromDap\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>https://thredds.jpl.nasa.gov/thredds/dodsC/ncml_aggregation/OceanTemperature/modis/aqua/4um/4km/aggregate__MODIS_AQUA_L3_SST_MID_IR_8DAY_4KM_NIGHTTIME_v2019.0.ncml</sourceUrl>\n" +
 "    <reloadEveryNMinutes>[RELOAD]</reloadEveryNMinutes>\n" + //changes
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"_lastModified\">2019-12-17T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!  2021-11-16 was 2020-09-21! We're going backwards! //2022-08-31 now 2020-01-06, then 2019-12-17
+"        <att name=\"_lastModified\">[DATE]T[TIME].000Z</att>\n" + //2020-08-20 this change by 5 seconds. why?   few seconds changes often!  2021-11-16 was 2020-09-21! We're going backwards! //2022-08-31 now 2020-01-06, then 2019-12-17
 "        <att name=\"cdm_data_type\">grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6 ACDD-1.3</att>\n" +
 "        <att name=\"creator_email\">data@oceancolor.gsfc.nasa.gov</att>\n" +
@@ -10667,7 +10670,7 @@ expected =
 "        <att name=\"data_bins\" type=\"int\">[DATA_BINS]</att>\n" +   //changes  (often?)
 "        <att name=\"data_maximum\" type=\"float\">[DATA_MAXIMUM]</att>\n" + //changes  (often?)
 "        <att name=\"data_minimum\" type=\"float\">[DATA_MINIMUM]</att>\n" + //changes  (often?)
-"        <att name=\"date_created\">2019-12-17T[TIME].000Z</att>\n" +  //few seconds changes  (often?)   2021-11-16 was 2020-09-21! We're going backwards!
+"        <att name=\"date_created\">[DATE]T[TIME].000Z</att>\n" +  //few seconds changes  (often?)   2021-11-16 was 2020-09-21! We're going backwards!
 "        <att name=\"easternmost_longitude\" type=\"float\">180.0</att>\n" +
 "        <att name=\"end_orbit_number\" type=\"int\">[END_ORBIT_NUMBER]</att>\n" + //changes often?
 "        <att name=\"geospatial_lat_max\" type=\"float\">90.0</att>\n" +
@@ -10718,6 +10721,8 @@ expected =
 "        <att name=\"processing_control_input_parameters_pversion\">R2019.0</att>\n" +
 "        <att name=\"processing_control_input_parameters_quiet\">false</att>\n" +
 "        <att name=\"processing_control_input_parameters_resolution\">4km</att>\n" +
+(newStuff? 
+"        <att name=\"processing_control_input_parameters_rgb_land\">160,82,45</att>\n" : "") +
 "        <att name=\"processing_control_input_parameters_south\">-90.000</att>\n" +
 "        <att name=\"processing_control_input_parameters_suite\">SST4</att>\n" +
 "        <att name=\"processing_control_input_parameters_threshold\">0</att>\n" +
@@ -10726,9 +10731,12 @@ expected =
 "        <att name=\"processing_control_input_parameters_use_rgb\">no</att>\n" +
 "        <att name=\"processing_control_input_parameters_use_transparency\">no</att>\n" +
 "        <att name=\"processing_control_input_parameters_west\">-180.000</att>\n" +
+(newStuff? 
+"        <att name=\"processing_control_input_parameters_write_projtext\">no</att>\n" : "") +
 "        <att name=\"processing_control_l2_flag_names\">LAND,~HISOLZEN</att>\n" +
 "        <att name=\"processing_control_software_name\">l3mapgen</att>\n" +
-"        <att name=\"processing_control_software_version\">2.2.0-V2019.4</att>\n" + //2021-11-16 was 2.3.0-b2c954b
+"        <att name=\"processing_control_software_version\">" +
+(newStuff? "2.3.0-V2021.1" : "2.2.0-V2019.4") + "</att>\n" + //changes periodically
 "        <att name=\"processing_control_source\">AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc</att>\n" +
 "        <att name=\"processing_level\">L3 Mapped</att>\n" +
 "        <att name=\"processing_version\">R2019.0</att>\n" +
@@ -10929,7 +10937,9 @@ expected =
             EDStatic.fullTestCacheDirectory, edd.className() + "UInt16", ".das"); 
         results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
         results = results.replaceAll("\\d{8}_\\d{8}", "[DATE_DATE]");
-        results = results.replaceAll("2019-12-17T\\d{2}:\\d{2}:\\d{2}.000Z", "2019-12-17T[TIME_VARIES].000Z");
+        results = results.replaceAll("(2019\\-12\\-17|2022\\-03\\-23)",         //flips between 2019-12-17 and 2022-03-23
+                                     "[DATE]");
+        results = results.replaceAll("\\[DATE\\]T\\d{2}:\\d{2}:\\d{2}.000Z", "[DATE]T[TIME_VARIES].000Z");
         results = results.replaceAll("20\\d{2}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z http", "[DATE_TIME] http");
         expected = 
 "Attributes {\n" +
@@ -10987,14 +10997,14 @@ expected =
 "    UInt16 valid_min 0;\n" +
 "  }\n" +
 "  NC_GLOBAL {\n" +
-"    String _lastModified \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this.  2021-11-16 time jumped backwards from 2020-09-21!
+"    String _lastModified \"[DATE]T[TIME_VARIES].000Z\";\n" +  //2019-12-17T13:42:11.000Z value from source drifts a little each time I run this.  2021-11-16 time jumped backwards from 2020-09-21!
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"CF-1.10, ACDD-1.3, COARDS\";\n" +
 "    String creator_email \"data@oceancolor.gsfc.nasa.gov\";\n" +
 "    String creator_name \"NASA/GSFC/OBPG\";\n" +
 "    String creator_type \"group\";\n" +
 "    String creator_url \"https://oceandata.sci.gsfc.nasa.gov\";\n" +
-"    String date_created \"2019-12-17T[TIME_VARIES].000Z\";\n" +  //changes sometimes
+"    String date_created \"[DATE]T[TIME_VARIES].000Z\";\n" +  //changes sometimes
 "    Float64 Easternmost_Easting 179.979169546;\n" +
 "    Float64 geospatial_lat_max 89.979166667;\n" +
 "    Float64 geospatial_lat_min -89.97916810599999;\n" +
@@ -11043,6 +11053,8 @@ expected =
 "    String processing_control_input_parameters_pversion \"R2019.0\";\n" +
 "    String processing_control_input_parameters_quiet \"false\";\n" +
 "    String processing_control_input_parameters_resolution \"4km\";\n" +
+(newStuff?
+"    String processing_control_input_parameters_rgb_land \"160,82,45\";\n" : "") +
 "    String processing_control_input_parameters_south \"-90.000\";\n" +
 "    String processing_control_input_parameters_suite \"SST4\";\n" +
 "    String processing_control_input_parameters_threshold \"0\";\n" +
@@ -11051,9 +11063,12 @@ expected =
 "    String processing_control_input_parameters_use_rgb \"no\";\n" +
 "    String processing_control_input_parameters_use_transparency \"no\";\n" +
 "    String processing_control_input_parameters_west \"-180.000\";\n" +
+(newStuff?
+"    String processing_control_input_parameters_write_projtext \"no\";\n" : "") +
 "    String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
 "    String processing_control_software_name \"l3mapgen\";\n" +
-"    String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"    String processing_control_software_version \""+
+(newStuff? "2.3.0-V2021.1" : "2.2.0-V2019.4") + "\";\n" + //changes sometimes
 "    String processing_control_source \"AQUA_MODIS.[DATE_DATE].L3b.8D.SST4.nc\";\n" +
 "    String processing_level \"L3 Mapped\";\n" +
 "    String processing_version \"R2019.0\";\n" +
@@ -11271,7 +11286,7 @@ expected =
 "        String stop_date \"[STOP_DATE] UTC\";\n" +  //varies
 "        String stop_time \"23:59:59 UTC\";\n" +
 "        String processing_control_software_name \"l3mapgen\";\n" +
-"        String processing_control_software_version \"2.2.0-V2019.4\";\n" + //2011-11-17 was 2.3.0-b2c954b !
+"        String processing_control_software_version \"2.3.0-V2021.1\";\n" + //changes sometimes
 "        String processing_control_source \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
 "        String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
 "        String processing_control_input_parameters_par \"AQUA_MODIS.[DATE]_[DATE].L3m.8D.SST4.sst4.4km.nc.param\";\n" +
@@ -11287,12 +11302,14 @@ expected =
 "        String processing_control_input_parameters_resolution \"4km\";\n" +
 "        String processing_control_input_parameters_width \"\";\n" +
 "        String processing_control_input_parameters_projection \"smi\";\n" +
+"        String processing_control_input_parameters_write_projtext \"no\";\n" +
 "        String processing_control_input_parameters_central_meridian \"-999\";\n" +
 "        String processing_control_input_parameters_lat_ts \"\";\n" +
 "        String processing_control_input_parameters_lat_0 \"\";\n" +
 "        String processing_control_input_parameters_lat_1 \"\";\n" +
 "        String processing_control_input_parameters_lat_2 \"\";\n" +
 "        String processing_control_input_parameters_azimuth \"\";\n" +
+"        String processing_control_input_parameters_utm_zone \"\";\n" +
 "        String processing_control_input_parameters_north \"90.000\";\n" +
 "        String processing_control_input_parameters_south \"-90.000\";\n" +
 "        String processing_control_input_parameters_east \"180.000\";\n" +
@@ -11315,6 +11332,7 @@ expected =
 "        String processing_control_input_parameters_threshold \"0\";\n" +
 "        String processing_control_input_parameters_num_cache \"500\";\n" +
 "        String processing_control_input_parameters_mask_land \"no\";\n" +
+"        String processing_control_input_parameters_rgb_land \"160,82,45\";\n" +
 "        String processing_control_input_parameters_land \"$OCDATAROOT/common/landmask_GMT15ARC.nc\";\n" +
 "        String processing_control_input_parameters_full_latlon \"yes\";\n" +
 "    }\n" +
@@ -11332,8 +11350,10 @@ expected =
         tName = eddGrid.makeNewFileForDapQuery(language, null, null, "", 
             EDStatic.fullTestCacheDirectory, eddGrid.className() + "uint16", ".nccsvMetadata"); 
         results = File2.readFromFile88591(EDStatic.fullTestCacheDirectory + tName)[1];
-        results = results.replaceAll("2019-12-17T.*.000Z",          //date changes sometimes  //2021-11-17 was 2020-09-21, now 2019!
-                                     "2019-12-17T[TIME].000Z");
+        results = results.replaceAll("(2019\\-12\\-17|2022\\-03\\-23)",         //flips between 2019-12-17 and 2022-03-23
+                                     "[DATE]");
+        results = results.replaceAll("\\[DATE\\]T.*.000Z",          //date changes sometimes  //2021-11-17 was 2020-09-21, now 2019!
+                                     "[DATE]T[TIME].000Z");
         results = results.replaceAll("AQUA_MODIS\\.\\d{8}_\\d{8}\\.L3", 
                                      "AQUA_MODIS.[DATE]_[DATE].L3");        
         results = results.replaceAll("\\*GLOBAL\\*,time_coverage_end,.*Z", 
@@ -11341,13 +11361,13 @@ expected =
 
 expected = 
 "*GLOBAL*,Conventions,\"CF-1.6 ACDD-1.3, COARDS, NCCSV-1.2\"\n" +
-"*GLOBAL*,_lastModified,2019-12-17T[TIME].000Z\n" +  //changes by a few seconds periodically!
+"*GLOBAL*,_lastModified,[DATE]T[TIME].000Z\n" +  //changes by a few seconds periodically!
 "*GLOBAL*,cdm_data_type,Grid\n" +
 "*GLOBAL*,creator_email,data@oceancolor.gsfc.nasa.gov\n" +
 "*GLOBAL*,creator_name,NASA/GSFC/OBPG\n" +
 "*GLOBAL*,creator_type,group\n" +
 "*GLOBAL*,creator_url,https://oceandata.sci.gsfc.nasa.gov\n" +
-"*GLOBAL*,date_created,2019-12-17T[TIME].000Z\n" +
+"*GLOBAL*,date_created,[DATE]T[TIME].000Z\n" +
 "*GLOBAL*,Easternmost_Easting,179.979169546d\n" +
 "*GLOBAL*,geospatial_lat_max,89.979166667d\n" +
 "*GLOBAL*,geospatial_lat_min,-89.97916810599999d\n" +
@@ -11394,6 +11414,7 @@ expected =
 "*GLOBAL*,processing_control_input_parameters_pversion,R2019.0\n" +
 "*GLOBAL*,processing_control_input_parameters_quiet,false\n" +
 "*GLOBAL*,processing_control_input_parameters_resolution,4km\n" +
+"*GLOBAL*,processing_control_input_parameters_rgb_land,\"160,82,45\"\n" +
 "*GLOBAL*,processing_control_input_parameters_south,\"-90.000\"\n" +
 "*GLOBAL*,processing_control_input_parameters_suite,SST4\n" +
 "*GLOBAL*,processing_control_input_parameters_threshold,\"0\"\n" +
@@ -11402,9 +11423,10 @@ expected =
 "*GLOBAL*,processing_control_input_parameters_use_rgb,no\n" +
 "*GLOBAL*,processing_control_input_parameters_use_transparency,no\n" +
 "*GLOBAL*,processing_control_input_parameters_west,\"-180.000\"\n" +
+"*GLOBAL*,processing_control_input_parameters_write_projtext,no\n" +
 "*GLOBAL*,processing_control_l2_flag_names,\"LAND,~HISOLZEN\"\n" +
 "*GLOBAL*,processing_control_software_name,l3mapgen\n" +
-"*GLOBAL*,processing_control_software_version,2.2.0-V2019.4\n" + //2021-11-17 was 2.3.0-b2c954b so it went backwards!
+"*GLOBAL*,processing_control_software_version,2.3.0-V2021.1\n" + //changes sometimes
 "*GLOBAL*,processing_control_source,AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\n" +
 "*GLOBAL*,processing_level,L3 Mapped\n" +
 "*GLOBAL*,processing_version,R2019.0\n" +
@@ -11605,6 +11627,7 @@ expected =
 "    String processing_control_input_parameters_pversion \"R2019.0\";\n" +
 "    String processing_control_input_parameters_quiet \"false\";\n" +
 "    String processing_control_input_parameters_resolution \"4km\";\n" +
+"    String processing_control_input_parameters_rgb_land \"160,82,45\";\n" +
 "    String processing_control_input_parameters_south \"-90.000\";\n" +
 "    String processing_control_input_parameters_suite \"SST4\";\n" +
 "    String processing_control_input_parameters_threshold \"0\";\n" +
@@ -11613,9 +11636,10 @@ expected =
 "    String processing_control_input_parameters_use_rgb \"no\";\n" +
 "    String processing_control_input_parameters_use_transparency \"no\";\n" +
 "    String processing_control_input_parameters_west \"-180.000\";\n" +
+"    String processing_control_input_parameters_write_projtext \"no\";\n" +
 "    String processing_control_l2_flag_names \"LAND,~HISOLZEN\";\n" +
 "    String processing_control_software_name \"l3mapgen\";\n" +
-"    String processing_control_software_version \"2.2.0-V2019.4\";\n" +
+"    String processing_control_software_version \"2.3.0-V2021.1\";\n" + //changes
 "    String processing_control_source \"AQUA_MODIS.[DATE]_[DATE].L3b.8D.SST4.nc\";\n" +
 "    String processing_level \"L3 Mapped\";\n" +
 "    String processing_version \"R2019.0\";\n" +

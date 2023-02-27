@@ -24,7 +24,7 @@ import java.util.HashSet;
  * when the file is copied to the new directory). 
  * It uses info in the gov/noaa/pfel/coastwatch/DataSet.properties file.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-01-22
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-01-22
  */
 public class DoubleCenterGrids {
 

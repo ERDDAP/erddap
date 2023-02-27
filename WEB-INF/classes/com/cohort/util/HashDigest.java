@@ -13,7 +13,7 @@ import java.io.IOException;
 /**
  * This generates a hash digest (e.g., MD5, SHA256) of a password or a file.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2016-03-09
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2016-03-09
  */
 public class HashDigest {
 

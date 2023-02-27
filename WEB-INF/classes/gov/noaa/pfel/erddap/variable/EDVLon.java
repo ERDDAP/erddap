@@ -14,7 +14,7 @@ import com.cohort.util.Test;
  * which is like EDV, but the destinationName, and units
  * are standardized.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-06-04
  */
 public class EDVLon extends EDV { 
 

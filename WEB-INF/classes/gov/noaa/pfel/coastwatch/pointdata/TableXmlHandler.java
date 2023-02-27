@@ -41,7 +41,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *    differentiated here.
  * </ul>
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-05-02
+ * @author Bob Simons (was was bob.simons@noaa.gov, now BobSimons2.00@gmail.com, now BobSimons2.00@gmail.com) 2007-05-02
  */
 public class TableXmlHandler extends DefaultHandler {
    

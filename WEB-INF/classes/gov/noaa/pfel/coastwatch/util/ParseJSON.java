@@ -16,7 +16,7 @@ import java.util.ArrayList;
  * This facilitates parsing JSON information.
  * See http://json.org/ .
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-01-11
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-01-11
  *
  */
 public class ParseJSON {

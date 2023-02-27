@@ -39,7 +39,7 @@ import java.util.HashSet;
  * See gov.noaa.pfel.coastwatch.pointdata.DigirHelper for more information
  * on DiGIR and OBIS.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2007-10-22
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-10-22
  */
 public class EDDTableFromOBIS extends EDDTable{ 
 

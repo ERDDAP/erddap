@@ -24,7 +24,7 @@ import java.util.Arrays;
  * This class stores the values for an index (an ascending sorted array) 
  * in a disk file and has facilities to do quick binary searches.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2006-07-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2006-07-10
  */
 public class StoredIndex  {
 

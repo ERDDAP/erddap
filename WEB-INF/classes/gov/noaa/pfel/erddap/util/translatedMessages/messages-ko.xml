@@ -1305,7 +1305,7 @@ UDUNITS 표준은 연도를 고정된 단일 값인 3.15569259747e7초로 정의
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">문제</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 
@@ -1448,7 +1448,7 @@ Todd 단위의 경우&quot;[todd&#39;U]&quot;).</td>
 <table class="erd commonBGColor T">
 <tr>
 <th style="width:8%;">단위</th>
-<th style="width:23%;"><a rel="bookmark" href="https://www.unidata.ucar.edu/software/udunits/udunits-2.0.4/udunits2lib.html#Syntax">UDUNITS <img 
+<th style="width:23%;"><a rel="bookmark" href="https://docs.unidata.ucar.edu/udunits/current/udunits2lib.html#Syntax">UDUNITS <img 
     src="../images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a></th>
 <th style="width:23%;"><a rel="bookmark" href="https://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM <img 

@@ -44,7 +44,7 @@ import java.util.List;
  * Columnar / Fixed Length / Fixed Format ASCII data files.
  * I.e., each data variable is stored in a specific, fixed substring of each row.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2014-11-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-11-07
  */
 public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles { 
 

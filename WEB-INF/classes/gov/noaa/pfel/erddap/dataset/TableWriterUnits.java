@@ -18,7 +18,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
  *
  * <p>This is a flow-through filter.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2010-05-05
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2010-05-05
  */
 public class TableWriterUnits extends TableWriter {
 

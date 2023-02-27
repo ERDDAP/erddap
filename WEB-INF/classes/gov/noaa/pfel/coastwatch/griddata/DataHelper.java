@@ -32,7 +32,7 @@ import dods.dap.*;
  * This class has some static convenience methods related to the 
  * other Data classes.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-12-07
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-12-07
  */
 public class DataHelper  {
 

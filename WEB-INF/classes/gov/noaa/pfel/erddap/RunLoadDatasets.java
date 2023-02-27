@@ -24,7 +24,7 @@ import org.apache.lucene.store.NIOFSDirectory;
 /**
  * This class is in charge of creating and monitoring LoadDatasets threads.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2008-02-14
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2008-02-14
  */
 public class RunLoadDatasets extends Thread {
 

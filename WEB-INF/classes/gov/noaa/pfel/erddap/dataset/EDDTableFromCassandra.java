@@ -263,7 +263,7 @@ import java.util.List;
 /** 
  * This class represents a table of data from Cassandra.
  * 
- * @author Bob Simons (bob.simons@noaa.gov) 2014-11-03
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2014-11-03
  */
 public class EDDTableFromCassandra extends EDDTable{ 
 
@@ -2392,7 +2392,7 @@ expected =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.6, ACDD-1.3</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.10, ACDD-1.3</att>\n" +
 "        <att name=\"creator_name\">Ocean Networks Canada</att>\n" +
 "        <att name=\"creator_url\">http://www.oceannetworks.ca/</att>\n" +
 "        <att name=\"infoUrl\">http://www.oceannetworks.ca/</att>\n" +

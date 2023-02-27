@@ -17,7 +17,7 @@ import java.util.Vector;
  * or itself) as vectors (so thread-safe).
  *
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2005-02-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2005-02-10
  *
  * <p>Changes:
  * <ul>

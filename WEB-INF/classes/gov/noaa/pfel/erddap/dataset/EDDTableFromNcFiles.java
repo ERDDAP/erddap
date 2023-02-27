@@ -76,7 +76,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  *   and the values may be different in different files.
  * <br>[Was: only the leftmost dimension (e.g., time) could have multiple values.]
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-02-13
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2009-02-13
  */
 public class EDDTableFromNcFiles extends EDDTableFromFiles { 
 
@@ -9174,7 +9174,7 @@ expected =
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
@@ -9392,7 +9392,7 @@ String expected2 =
 "  :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 "  :contributor_name = \"NOAA NDBC\";\n" +
 "  :contributor_role = \"Source of data.\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"erd.data@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NMFS SWFSC ERD\";\n" +
 "  :creator_type = \"institution\";\n" +
@@ -9598,7 +9598,7 @@ String expected2 =
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Trajectory\";\n" +
 "  :cdm_trajectory_variables = \"cruise\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
 "  :creator_type = \"person\";\n" +
@@ -9768,7 +9768,7 @@ String expected2 =
 "  // global attributes:\n" +
 "  :cdm_data_type = \"Trajectory\";\n" +
 "  :cdm_trajectory_variables = \"cruise\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"Keith.Sakuma@noaa.gov\";\n" +
 "  :creator_name = \"Keith Sakuma\";\n" +
 "  :creator_type = \"person\";\n" +
@@ -10183,7 +10183,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -124.18f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :geospatial_lat_max = 44.65f; // float\n" +
@@ -10396,7 +10396,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-"  :Conventions = \"COARDS, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, CF-1.10, ACDD-1.3\";\n" +
 "  :Easternmost_Easting = -124.18f; // float\n" +
 "  :featureType = \"TrajectoryProfile\";\n" +
 "  :geospatial_lat_max = 44.65f; // float\n" +
@@ -10775,7 +10775,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
-"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +
@@ -11207,7 +11207,7 @@ expected =
 "  :cdm_data_type = \"TrajectoryProfile\";\n" +
 "  :cdm_profile_variables = \"station_id, longitude, latitude, time\";\n" +
 "  :cdm_trajectory_variables = \"trajectory, org, type, platform, cruise\";\n" +
-"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.6, ACDD-1.3\";\n" +
+"  :Conventions = \"COARDS, WOCE, GTSPP, CF-1.10, ACDD-1.3\";\n" +
 "  :creator_email = \"nodc.gtspp@noaa.gov\";\n" +
 "  :creator_name = \"NOAA NESDIS NODC \\(IN295\\)\";\n" +
 "  :creator_url = \"https://www.nodc.noaa.gov/GTSPP/\";\n" +

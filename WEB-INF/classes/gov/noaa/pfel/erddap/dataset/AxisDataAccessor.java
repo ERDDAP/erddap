@@ -26,7 +26,7 @@ import java.util.Arrays;
  * This class provides access to the axis data corresponding to a axis data 
  * query to an EDDGrid.  This always deals with just 1 axis variable.
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2007-08-10
+ * @author Bob Simons (was bob.simons@noaa.gov, now BobSimons2.00@gmail.com) 2007-08-10
  */
 public class AxisDataAccessor { 
   
