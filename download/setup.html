@@ -816,10 +816,10 @@ or Mac server instead.
     <br>&nbsp;  -->
 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.21.zip -->  <!-- erddapVersion -->
+     <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.23.zip -->  <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddapContent.zip">erddapContent.zip</a>
-    (version 2.22, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-12-08)
+    href="https://github.com/BobSimons/erddap/releases/download/v2.23/erddapContent.zip">erddapContent.zip</a>
+    (version 2.23, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27)
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p><a class="selfLink" id="erddapContentDirectory" href="#erddapContentDirectory" rel="bookmark"
@@ -864,6 +864,10 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddapContent.zip">2.21</a>
     (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-10-09)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddapContent.zip">2.22</a>
+    (19,810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2022-12-08)
+    <br>and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
     ]
 
   <p>Then,
@@ -901,7 +905,7 @@ or Mac server instead.
       by specifying an environment variable named ERDDAP_<i>valueName</i>
       before running ERDDAP. 
       For example, use ERDDAP_baseUrl overrides the &lt;baseUrl&gt; value.
-     This can be handy when deploying ERDDAP with a container, as you can
+     This can be handy when deploying ERDDAP with a container like Docker, as you can
      put standard settings in setup.xml and then supply special settings
      via environment variables.
      If you supply secret information to ERDDAP via this method, be sure 
@@ -940,13 +944,13 @@ or Mac server instead.
 
 <li><a class="selfLink" id="erddap.war" href="#erddap.war" rel="bookmark">Install the erddap.war file.</a>
   <br>On Linux, Mac, and Windows, download 
-    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.22.war        // erddapVersion 
+    <!-- from DOS command line in \backup : \content\bat\md5.bat erddap2.23.war        // erddapVersion 
          ver, size, md5 duplicated below -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.23/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.22, 567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated
-    <span class="N">2022-12-08</span>)
+    <br>(version 2.23, 572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated
+    <span class="N">2023-02-27</span>)
     <br>The .war file is big because it contains high resolution coastline, boundary, 
     and elevation data needed to create maps.
 
@@ -983,6 +987,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="https://github.com/BobSimons/erddap/releases/download/v2.21/erddap.war">2.21</a>
     (568,644,411 bytes, MD5=F2CFF805893146E932E498FDDBD519B6, dated 2022-10-09)
+    <br><a rel="bookmark"
+    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddap.war">2.22</a>
+    (567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated 2022-12-08)
     ]
 
 <li><a class="selfLink" id="ProxyPass" href="#ProxyPass" rel="bookmark">Use ProxyPass</a> 
@@ -1178,10 +1185,10 @@ And in the nginx config file, you need to set these headers:
 
 <li>Download            <!-- erddapVersion -->
     <a rel="bookmark"
-    href="https://github.com/BobSimons/erddap/releases/download/v2.22/erddap.war">erddap.war</a>
+    href="https://github.com/BobSimons/erddap/releases/download/v2.23/erddap.war">erddap.war</a>
     into <i>tomcat</i>/webapps .  
-    <br>(version 2.22, 567,742,765 bytes, MD5=2B33354F633294213AE2AFDDCF4DA6D0, dated
-    <span class="N">2022-12-08</span>)
+    <br>(version 2.23, 572,124,953 bytes, MD5=D843A043C506725EBD6F8EFDCCA8FD5F, dated
+    <span class="N">2023-02-27</span>)
   <br>&nbsp;
 
 <li><a class="selfLink" id="messages.xml" href="#messages.xml" rel="bookmark">messages.xml</a>
@@ -3252,8 +3259,8 @@ So you are freed from that responsibility.
 
   <ul>
   <li>The <kbd>google</kbd> authentication option uses 
-    <a rel="help" href="https://developers.google.com/identity/sign-in/web/"
-    >Google Sign-In<img 
+    <a rel="help" href="https://developers.google.com/identity/gsi/web/guides/overview"
+    >Sign In with Google<img 
       src="../images/external.png" alt=" (external link)" 
       title="This link to an external website does not constitute an endorsement."></a>,
     which is an implementation of the 
@@ -3267,6 +3274,18 @@ So you are freed from that responsibility.
     and access their profile image, 
     but does not give ERDDAP access to their emails, their Google Drive, 
     or any other private information.
+
+    <p>For ERDDAP v2.22 and below, ERDDAP used "Google Sign-In". Google says that system 
+    is deprecated after March 31, 2023. If you haven't already done so, 
+    please switch to ERDDAP v2.23+ to use the new "Sign In with Google"-based 
+    authentication system.
+
+    <p>For ERDDAP v2.23+ instances with a Content-Security-Policy configured and 
+    using Google Authentication, you need to add <kbd>https://accounts.google.com</kbd> 
+    to the list of allowed <kbd>script-src</kbd> (or <kbd>script-src-elem</kbd>). 
+    ERDDAP no longer uses <kbd>https://apis.google.com</kbd>, so if you have that allowed, 
+    you may be able to remove it now. 
+    If you have any questions, contact chris.john at noaa.gov.
     <br>&nbsp;
 
   <li>The <kbd>orcid</kbd> authentication option uses 
@@ -4728,7 +4747,7 @@ at the source code and try to figure out how ERDDAP works, please do.
 <li><strong><a class="selfLink" id="codeContributions" href="#codeContributions" rel="bookmark">Code Contributions</a></strong>  
   <br>If you have written some code which would be a nice addition to ERDDAP
   (or better, before you write the code so that we can coordinate), 
-  please email <kbd>erd dot data at noaa dot gov</kbd>. We'll work out the details.
+  please email <kbd>chris dot john at noaa dot gov</kbd>. We'll work out the details.
   The most likely situations are:
     <ol>
     <li>You want to write another subclass of EDDGrid or EDDTable to handle another data source type.
@@ -4777,21 +4796,22 @@ at the source code and try to figure out how ERDDAP works, please do.
   your contribution being accepted.
   <br>&nbsp;
   <ul>
-  <li>I'll try to be a BDFL (Benevolent Dictator For Life, well, until I retire),
-    with the emphasis on Benevolent. 
-    <br>Basically, that means I'm responsible for ERDDAP so I have final word
-    on decisions about ERDDAP, notably about the design and whether a pull
+  <li>The ERDDAP project is managed by a BDFL (Benevolent Dictator For Life, with the emphasis on Benevolent).
+    <br>From 2007 (the beginning of ERDDAP) through 2022, that was Bob Simons.
+    Staring in January 2023, that is Chris John. 
+    Basically, the BDFL is responsible for ERDDAP, so s/he has the final word
+    on decisions about ERDDAP code, notably about the design and whether a given pull
     request will be accepted or not. It needs to be this way partly for efficiency reasons
-    (it works for Linus Torvalds and Linux) and partly for security
-    reasons: I have to tell the IT security people that I take responsibility 
+    (it works great for Linus Torvalds and Linux) and partly for security
+    reasons: Someone has to tell the IT security people that s/he takes responsibility 
     for the security and integrity of the code. 
     <br>&nbsp;
 
-  <li>I don't guarantee that I'll accept your code.
+  <li>The BDFL doesn't guarantee that s/he will accept your code.
     <br>If a project just doesn't work out as well as we had hoped and if it can't be salvaged, 
-    I won't include the project in the ERDDAP distribution. 
+    the BDFL won't include the project in the ERDDAP distribution. 
     Please don't feel bad. Sometimes projects don't work out as well as hoped. 
-    It happens, even to me.
+    It happens to all software developers (including Bob).
     If you follow the guidelines below, you greatly increase your chances of success.
     <br>&nbsp;
 
@@ -4799,7 +4819,7 @@ at the source code and try to figure out how ERDDAP works, please do.
     <br>If the code is specific to your organization, it is probably best to maintain
     a separate branch of ERDDAP for your use. Axiom does this.
     Fortunately, Git makes this easy to do.
-    I want to maintain a consistent vision for ERDDAP, not allow it to become
+    The BDFL wants to maintain a consistent vision for ERDDAP, not allow it to become
     a kitchen sink project where everyone adds a custom feature for their project. 
     <br>&nbsp;
 
@@ -4819,7 +4839,7 @@ at the source code and try to figure out how ERDDAP works, please do.
     give .class files an appropriate name, 
     include proper JavaDoc comments, include //comments at the start of each
     paragraph of code, indent with 4 spaces (not tab), avoid lines &gt;80 characters, etc.
-    (Yes, my code is far from perfect in this regard. I continually work to make it better.)
+    (Yes, Bob's code isn't perfect in this regard. Bob continually worked to make it better.)
     <br>&nbsp;
 
   <li>Use descriptive class, method and variable names.
@@ -4834,22 +4854,22 @@ at the source code and try to figure out how ERDDAP works, please do.
     use it, but extensively document what you did, why, and how it works.
     <br>&nbsp;
 
-  <li>Work with Bob before you start.
+  <li>Work with the BDFL before you start.
     <br>If you hope to get your code changes pulled into ERDDAP,
-    I definitely want to talk about what you're going to do and how you're 
+    The BDFL will definitely want to talk about what you're going to do and how you're 
     going to do it before you make any changes to the code. 
-    That way, we can avoid you making changes that I, in the end, don't accept.
-    When you're doing the work, I'm willing to answer questions to help you figure out the
-    existing code and (overall) how to tackle your project.
+    That way, we can avoid you making changes that the BDFL, in the end, doesn't accept.
+    When you're doing the work, the BDFL is willing to answer questions to help
+    you figure out the existing code and (overall) how to tackle your project.
     <br>&nbsp;
 
   <li>Work independently (as much as possible) after you start.
-    <br>In contrast to the above "Work with Bob", after you get started on the
-    project, I encourage you to work as independently as possible. 
-    If I have to tell you almost everything and answer lots of questions 
+    <br>In contrast to the above "Work with the BDFL", after you get started on the
+    project, the BDFL encourages you to work as independently as possible. 
+    If the BDFL has to tell you almost everything and answer lots of questions 
     (especially ones that you could have answered by reading the documentation or the code),
-    then your efforts aren't a time savings for me and 
-    I might as well do the work myself. 
+    then your efforts aren't a time savings for the BDFL and 
+    s/he might as well do the work themself. 
     It's the  
     <a rel="help" href="https://en.wikipedia.org/wiki/The_Mythical_Man-Month">Mythical Man Month<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4857,7 +4877,7 @@ at the source code and try to figure out how ERDDAP works, please do.
     Of course, we should still communicate. It would be great to periodically see 
     your work in progress to make sure the project is on track. 
     But the more you can work independently
-    (after we agree on the task at hand and the general approach),
+    (after the BDFL agrees on the task at hand and the general approach),
     the better.
     <br>&nbsp;
 
@@ -4868,7 +4888,7 @@ at the source code and try to figure out how ERDDAP works, please do.
     Work very hard to avoid bugs. Part of this is writing clean code (so it is easier to 
     see problems). Part of this is writing unit tests. Part of this is 
     a constant attitude of bug avoidance when you write code. 
-    Don't make me regret adding your code to ERDDAP.
+    Don't make the BDFL regret adding your code to ERDDAP.
     <br>&nbsp;
 
   <li>Write a unit test or tests. 
@@ -4878,14 +4898,14 @@ at the source code and try to figure out how ERDDAP works, please do.
     code you write and add it to the class' test() method so that it is run automatically.
     Unit (and related) tests are one of the best ways to catch bugs, initially,
     and in the long run (as other things change in ERDDAP).
-    As I've said, "Unit tests are what lets me sleep at night."
+    As Bob said, "Unit tests are what lets me sleep at night."
     <br>&nbsp;
 
-  <li>Make it easy for me to understand and accept the changes in your pull request.
+  <li>Make it easy for the BDFL to understand and accept the changes in your pull request.
     <br>Part of that is writing a unit test method(s).
     Part of that is limiting your changes to one section of code (or one class) if possible. 
-    I won't accept any pull request with hundreds of changes throughout the code.
-    I tell the IT security people that I take responsibility for the security 
+    The BDFL won't accept any pull request with hundreds of changes throughout the code.
+    The BDFL tells the IT security people that s/he takes responsibility for the security 
     and integrity of the code. 
     If there are too many changes or they are too hard to figure out,
     then it's just too hard to verify the changes are correct and don't introduce
@@ -4895,7 +4915,7 @@ at the source code and try to figure out how ERDDAP works, please do.
   <li>Keep it simple.
     <br>A good overall theme for your code is: Keep it simple.
     Simple code is easy for others (including you in the future) to read and maintain.
-    It's easy for me to understand and thus accept.
+    It's easy for the BDFL to understand and thus accept.
     <br>&nbsp;
 
   <li>Assume long term responsibility for your code.
@@ -4905,8 +4925,8 @@ at the source code and try to figure out how ERDDAP works, please do.
     If a bug is discovered in the future, it's best if you fix it because no one
     knows your code better than you 
     (also so that there is an incentive to avoid bugs in the first place). 
-    I'm not asking for a firm commitment to provide ongoing maintenance. 
-    I'm just saying that doing the maintenance will be greatly appreciated. 
+    The BDFL isn't asking for a firm commitment to provide ongoing maintenance. 
+    The BDFL is just saying that doing the maintenance will be greatly appreciated. 
     <br>&nbsp;
   </ul>
 </ul>
@@ -5578,7 +5598,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
       title="This link to an external website does not constitute an endorsement."></a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2022, NOAA.
+ERDDAP, Copyright 2023, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
@@ -5609,7 +5629,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.22
+<p>ERDDAP, Version 2.23
 <br><a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

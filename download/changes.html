@@ -74,7 +74,7 @@ those great suggestions coming!
 in ERDDAP version 2.23 (released 2023-02-27)</h2>
 Note that this release was done by Bob Simons, thereby showing that he
 is still around and active during the transition to Chris John, his successor.
-Stating with this release, all code changes were done by Chis John, unless specified otherwise.
+Stating with this release, all code changes are being done by Chis John, unless specified otherwise.
 <ul>
 <li><strong>New Features and Changes (for users):</strong> 
   <ul>
@@ -84,16 +84,15 @@ Stating with this release, all code changes were done by Chis John, unless speci
 <li><strong>Things ERDDAP Administrators Need to Know and Do:</strong> 
   <ul> 
   <li>TO DO: SECURITY CHANGE: Google Authentication is now accomplished via the new 
-    Google Identity Services library. Google's support for the old OAuth2 system
-    will be discontinued 2023-03-15 ("Beware the Ide's of March"?!)
+    Google Identity Services library which is part of "Sign In with Google". 
+    Google's support for the old "Google Sign In" system will be discontinued 2023-03-31.
     So if you use Google Authentication in your ERDDAP installation, 
-    you MUST update to ERDDAP v2.23 before then.
+    you MUST update to ERDDAP v2.23+ before then.
     (Bob is sorry for the short notice. It's Bob's fault.)
     <br>&nbsp;
 
-  <li>IMPROVED: NCCSV is now v1.2. The change is that the files are now UTF-8-encoded files (was ASCII)
-    and so can now include any Unicode character 
-    (as is, without encoding as \u<i>hhhh</i>, although that is still allowed).    
+  <li>IMPROVED: NCCSV is now v1.2. The change is that the files are now UTF-8-encoded files (they were ASCII)
+    and so can now include any Unicode character as is, without encoding as \u<i>hhhh</i>, although that is still allowed.    
     <br>When writing NCCSV files, ERDDAP now writes v1.2 files.
     <br>ERDDAP will still read NCCSV files that follow the v1.0 and v1.1 specification.
     <br>Thanks to Pauline-Chauvet, n-a-t-e, and thogar-computer for suggesting this
@@ -7043,7 +7042,7 @@ or search to see if the question has already been asked and answered.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 2.22
+<p>ERDDAP, Version 2.23
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="https://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
