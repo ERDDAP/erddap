@@ -1098,8 +1098,8 @@ TranslateMessages translateMessages;
 WaitThenTryAgainException wttae; 
 
         StringBuilder errorSB = new StringBuilder();
-        boolean interactive = true;
-        boolean doSlowTestsToo = true;
+        boolean interactive = false;
+        boolean doSlowTestsToo = false;
 
 
 /* for releases, this line should have open/close comment */
