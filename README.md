@@ -5,4 +5,4 @@ ERDDAP is a Free and Open Source (Apache and Apache-like) Java Servlet from NOAA
 * To read installation instructions: [https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html]
 * To contribute code: [https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide]
 
-Questions? Email bob.simons at noaa.gov .
+Questions? Email BobSimons2.00 @ gmail.com .
