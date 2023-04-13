@@ -106,6 +106,32 @@ since this is impossible for AWS S3 dependencies without Maven.
         </resources>
         <plugins>
             <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>WEB-INF\lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>WEB-INF\lib</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
 
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
@@ -220,6 +246,14 @@ since this is impossible for AWS S3 dependencies without Maven.
                     <artifactId>plexus-utils</artifactId>
                     <version>3.5.0</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M6</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -232,7 +266,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.20.9</version> <!-- and same number several places below -->
+              <version>2.20.22</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -336,7 +370,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220924</version>
+            <version>20230227</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -417,7 +451,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <artifactId>netcdfAll</artifactId>
             <version>5.5.3</version>  <!-- version number duplicated several times below -->
             <scope>system</scope>
-            <systemPath>${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar</systemPath>
+            <systemPath>${project.basedir}/netcdfAll-5.5.3.jar</systemPath>
         </dependency>
 
         <!-- These will be needed if I ever switch away from netcdfAll.
@@ -620,7 +654,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.16</version>
+            <version>4.2.17</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -660,7 +694,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.20.9</version>
+          <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -668,7 +702,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.20.9</version>
+            <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -676,18 +710,18 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.20.9</version>
+            <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
             Maven compiling and dependency checking don't catch s3-transfer-manager's requirement for this.
             (Bob says: This modern fancy programming sucks. 
             Back in my day, if it compiled, all needed classes were present.) -->      
-        <dependency>
+        <!-- <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.21.7</version>
-        </dependency>
+            <version>2.20.22</version>
+        </dependency> -->
 
 
         <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
@@ -700,7 +734,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.11.0</version>
+            <version>2.12.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
@@ -708,7 +742,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.11.0</version>
+            <version>2.12.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
@@ -720,7 +754,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.23.1</version>
+            <version>2.23.2</version>
         </dependency>
 
     </dependencies>
