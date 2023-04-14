@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
-This is how Bob uses Maven for ERDDAP. 
-Maven users will probably be mystified/horrified, 
-but it works for me and does what I need it to do: 
-  identify and gather all needed .jar dependencies
-since this is impossible for AWS S3 dependencies without Maven.
-
-* One time: Make a new Maven project/archetype: 
-  cd \programs\mavenERDDAP
-  mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
-
-* Copy Java source files from Tomcat/webapps/cwexperimental to Maven:
-    With bash:
-      cd /c/content/bat
-      ./synchToMaven.sh
-
-* Make a backup copy of pom.xml with today's date, e.g., pom20220811.xml
-
 * Update ERDDAP version number below in ...
    <version>2.23-SNAPSHOT</version>
 
@@ -43,15 +26,6 @@ since this is impossible for AWS S3 dependencies without Maven.
       (then copy netcdfAll-x.x.x.jar into /lib)
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
-   
-* Temporarily rename [tomcat]/webapps/cwexperimental/WEB-INF/lib to today's date: /libYYYYMMDD
-
-* Move all .jar files 
-    from inside C:\programs\mavenERDDAP\ERDDAP\target\ERDDAP-...-SNAPSHOT\WEB-INF\lib directory
-    to   tomcat/webapps/cwexperimental/WEB-INF/lib
-    The vast majority of .jars are from the AWS S3 dependency.
-
-* Copy netcdfAll...jar into new /lib
 
 * Run TestAll. If passes all tests, delete temporary libYYYYMMDD directory.
 
