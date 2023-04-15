@@ -27,7 +27,7 @@
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
 
-* Run TestAll. If passes all tests, delete temporary libYYYYMMDD directory.
+* Run TestAll.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
