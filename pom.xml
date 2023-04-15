@@ -45,6 +45,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <erddapcontent.download.version>v2.23</erddapcontent.download.version>
+        <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
     </properties>
 
     <repositories>
@@ -201,7 +202,7 @@
                         </goals>
                         <configuration>
                             <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/ref/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
+                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
                                 <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
                                 <unzip src="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
                             </target>
@@ -216,7 +217,7 @@
                         </goals>
                         <configuration>
                             <target>
-                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/ref/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
+                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
                                 <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
                                 <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
                             </target>
