@@ -725,11 +725,11 @@
             Maven compiling and dependency checking don't catch s3-transfer-manager's requirement for this.
             (Bob says: This modern fancy programming sucks. 
             Back in my day, if it compiled, all needed classes were present.) -->      
-        <!-- <dependency>
+        <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>2.20.22</version>
-        </dependency> -->
+            <version>0.21.12</version>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-translate -->
