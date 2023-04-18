@@ -79,7 +79,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>WEB-INF\lib</outputDirectory>
+                            <outputDirectory>WEB-INF/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -90,7 +90,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>WEB-INF\lib</directory>
+                            <directory>WEB-INF/lib</directory>
                             <followSymlinks>false</followSymlinks>
                         </fileset>
                     </filesets>
@@ -151,32 +151,29 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+                <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>make-lib</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/WEB-INF/lib"/>
+                            </target>
+                        </configuration>
+                    </execution>
                     <execution>
                         <?m2e execute onConfiguration,onIncremental?>
                         <id>download-netcdf</id>
-                        <phase>initialize</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
                                 <get src="https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar" dest="${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar" skipexisting="true" verbose="true"/>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <?m2e execute onConfiguration?>
-                        <id>download-erddap-content</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <get src="https://github.com/BobSimons/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/erddapContent.zip" skipexisting="true" verbose="true"/>
-                                <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
-                                <unzip src="${project.basedir}/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
-                                <delete file="${project.basedir}/erddapContent.zip"/>
                             </target>
                         </configuration>
                     </execution>
@@ -195,6 +192,20 @@
                     </execution>
                     <execution>
                         <?m2e execute onConfiguration?>
+                        <id>download-erddap-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="https://github.com/BobSimons/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
+                                <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
                         <id>download-etopo</id>
                         <phase>initialize</phase>
                         <goals>
@@ -203,7 +214,6 @@
                         <configuration>
                             <target>
                             <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
-                                <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
                                 <unzip src="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
                             </target>
                         </configuration>
@@ -218,7 +228,6 @@
                         <configuration>
                             <target>
                             <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
-                                <!-- note: the overwrite="false" option doesn't seem to act as advertised.  It will overwrite files in the dest folder if they are older than in archive -->
                                 <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
                             </target>
                         </configuration>
@@ -458,8 +467,6 @@
             <groupId>edu.ucar</groupId>
             <artifactId>netcdfAll</artifactId>
             <version>5.5.3</version>  <!-- version number duplicated several times below -->
-            <scope>system</scope>
-            <systemPath>${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar</systemPath>
         </dependency>
 
         <!-- These will be needed if I ever switch away from netcdfAll.
