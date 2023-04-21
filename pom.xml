@@ -1,23 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
-This is how Bob uses Maven for ERDDAP. 
-Maven users will probably be mystified/horrified, 
-but it works for me and does what I need it to do: 
-  identify and gather all needed .jar dependencies
-since this is impossible for AWS S3 dependencies without Maven.
-
-* One time: Make a new Maven project/archetype: 
-  cd \programs\mavenERDDAP
-  mvn -B archetype:generate -DgroupId=gov.noaa.pfel.erddap -DartifactId=ERDDAP -DarchetypeArtifactId=maven-archetype-quickstart -DarchetypeVersion=1.4
-
-* Copy Java source files from Tomcat/webapps/cwexperimental to Maven:
-    With bash:
-      cd /c/content/bat
-      ./synchToMaven.sh
-
-* Make a backup copy of pom.xml with today's date, e.g., pom20220811.xml
-
 * Update ERDDAP version number below in ...
    <version>2.23-SNAPSHOT</version>
 
@@ -43,17 +26,8 @@ since this is impossible for AWS S3 dependencies without Maven.
       (then copy netcdfAll-x.x.x.jar into /lib)
 
    or: mvn clean install -U   //clears out cached information (more thoroughly than 'clean') and does it all?
-   
-* Temporarily rename [tomcat]/webapps/cwexperimental/WEB-INF/lib to today's date: /libYYYYMMDD
 
-* Move all .jar files 
-    from inside C:\programs\mavenERDDAP\ERDDAP\target\ERDDAP-...-SNAPSHOT\WEB-INF\lib directory
-    to   tomcat/webapps/cwexperimental/WEB-INF/lib
-    The vast majority of .jars are from the AWS S3 dependency.
-
-* Copy netcdfAll...jar into new /lib
-
-* Run TestAll. If passes all tests, delete temporary libYYYYMMDD directory.
+* Run TestAll.
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -70,6 +44,8 @@ since this is impossible for AWS S3 dependencies without Maven.
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <erddapcontent.download.version>v2.23</erddapcontent.download.version>
+        <erddapreffiles.download.version>1.0.0</erddapreffiles.download.version>
     </properties>
 
     <repositories>
@@ -84,17 +60,6 @@ since this is impossible for AWS S3 dependencies without Maven.
             <name>UNIDATA All</name>
             <url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
         </repository>
-
-        <!-- NOT ACTIVE. Close, but couldn't get to work with mvn compile.
-          See netcdfAll.jar dependency below.
-          [This approach is from https://stackoverflow.com/questions/3765903/how-to-include-local-jar-files-in-maven-project ]
-          - ->
-        <repository>
-            <id>data-local</id>
-            <name>data</name>
-            <url>file://C/programs/mavenERDDAP/ERDDAP/repo</url>
-        </repository> -->
-
     </repositories>
 
     <build>
@@ -105,6 +70,32 @@ since this is impossible for AWS S3 dependencies without Maven.
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>WEB-INF/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>WEB-INF/lib</directory>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
             <plugin>
 
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
@@ -154,39 +145,95 @@ since this is impossible for AWS S3 dependencies without Maven.
                 </configuration>
             </plugin>
 
-            <!-- NOT ACTIVE. See above and below.
-              Download netcdfAll  
-                from https://artifacts.unidata.ucar.edu/#browse/browse:downloads-netcdf-java
-                then choose version number,
-                then click on file, 
-                then click on "Path" to right to actually download
-                and save to c:/programs/mavenERDDAP/ERDDAP/external_libs/
-                Update version number below.
-                Note that code below doesn't download netcdfAll (as hoped)
-                  but it does identify that the jar should be included in mvn compile.
-                  (mvn compile says "File already exist, skipping".)
-              Alternative that didn't work for me: 
-                This approach is from Jennifer Oxelson. See https://github.com/oxelson/netcdfAll/blob/main/pom.xml 
-                I think this isn't needed/doesn't work(?). 
-            - ->
+            <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
             <plugin>
-                <groupId>com.googlecode.maven-download-plugin</groupId>
-                <artifactId>download-maven-plugin</artifactId>
-                <version>1.6.8</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
-                    <execution>
+                <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>make-lib</id>
                         <phase>validate</phase>
                         <goals>
-                            <goal>wget</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <url>https://artifacts.unidata.ucar.edu/repository/downloads-netcdf-java/5.5.2/netcdfAll-5.5.2.jar</url>
-                            <outputFileName>netcdfAll-5.5.3.jar</outputFileName>
-                            <outputDirectory>${project.basedir}/external_libs</outputDirectory>
+                            <target>
+                                <mkdir dir="${project.basedir}/WEB-INF/lib"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration,onIncremental?>
+                        <id>download-netcdf</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar" dest="${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar" skipexisting="true" verbose="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>make-download-cache-dir</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/download_cache"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>download-erddap-content</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <get src="https://github.com/BobSimons/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
+                                <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>download-etopo</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/etopo1_ice_g_i2.zip" dest="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" skipexisting="true" verbose="true"/>
+                                <unzip src="${project.basedir}/download_cache/etopo1_ice_g_i2.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>download-ref-files</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                            <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
+                                <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -206,7 +253,7 @@ since this is impossible for AWS S3 dependencies without Maven.
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>3.0.0-M6</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/surefire-junit4 -->
                 <plugin>
@@ -220,6 +267,10 @@ since this is impossible for AWS S3 dependencies without Maven.
                     <artifactId>plexus-utils</artifactId>
                     <version>3.5.0</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -232,7 +283,7 @@ since this is impossible for AWS S3 dependencies without Maven.
             <dependency>
               <groupId>software.amazon.awssdk</groupId>
               <artifactId>bom</artifactId>
-              <version>2.20.9</version> <!-- and same number several places below -->
+              <version>2.20.22</version> <!-- and same number several places below -->
               <type>pom</type>
               <scope>import</scope>
             </dependency>
@@ -336,7 +387,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20220924</version>
+            <version>20230227</version>
         </dependency>
 
         <!-- I have private copy of source code in with my code.
@@ -416,8 +467,6 @@ since this is impossible for AWS S3 dependencies without Maven.
             <groupId>edu.ucar</groupId>
             <artifactId>netcdfAll</artifactId>
             <version>5.5.3</version>  <!-- version number duplicated several times below -->
-            <scope>system</scope>
-            <systemPath>${project.basedir}/WEB-INF/lib/netcdfAll-5.5.3.jar</systemPath>
         </dependency>
 
         <!-- These will be needed if I ever switch away from netcdfAll.
@@ -620,7 +669,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
-            <version>4.2.16</version>
+            <version>4.2.17</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.netty/netty-all 
@@ -660,7 +709,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>s3</artifactId>
-          <version>2.20.9</version>
+          <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/regions 
@@ -668,7 +717,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>2.20.9</version>
+            <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/s3-transfer-manager
@@ -676,7 +725,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>2.20.9</version>
+            <version>2.20.22</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/software.amazon.awssdk.crt/aws-crt
@@ -686,7 +735,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>software.amazon.awssdk.crt</groupId>
             <artifactId>aws-crt</artifactId>
-            <version>0.21.7</version>
+            <version>0.21.12</version>
         </dependency>
 
 
@@ -700,7 +749,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-translate</artifactId>
-            <version>2.11.0</version>
+            <version>2.12.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-cloud-translate-v3 -->
@@ -708,7 +757,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api.grpc</groupId>
             <artifactId>proto-google-cloud-translate-v3</artifactId>
-            <version>2.11.0</version>
+            <version>2.12.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.auth/google-auth-library-oauth2-http -->
         <dependency>
@@ -720,7 +769,7 @@ since this is impossible for AWS S3 dependencies without Maven.
         <dependency>
             <groupId>com.google.api</groupId>
             <artifactId>gax</artifactId>
-            <version>2.23.1</version>
+            <version>2.23.2</version>
         </dependency>
 
     </dependencies>

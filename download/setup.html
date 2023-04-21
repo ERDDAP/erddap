@@ -4612,15 +4612,30 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     for that project. 
     If you want to modify the source code (and possibly have the changes incorporated
     into the standard ERDDAP distribution), this is the recommended approach.
-
-    <p><strong>Before the 2020-12-22 GitHub release, one file was missing from the GitHub version</strong>
-    of the code because it was too big: the AWS SDK for Java v1.11 jar file. 
-    With the 2020-12-22 release, we switched to v2 of the AWS SDK which 
-    uses numerous small .jar files (which are in the /lib directory) instead of one huge .jar file. 
-    Thus, the GitHub version now includes all ERDDAP files.
-
   </ul>
+  <br>
+  <b><a class="selfLink" id="erddapDependencies" href="#erddapDependencies" rel="bookmark"
+  >ERDDAP dependencies</a> </b>
+  <br>ERDDAP uses Maven to load code dependencies as well as some static reference files (WEB-INF/ref). This is done to avoid storing many large files in the repository.
+   <br>You can use <kbd>mvn compile</kbd> and that will fetch the dependencies and ref files. You can also use <kbd>mvn package</kbd> to generate a war file.
 
+  <p>You can manually download the ref files:</p>
+  <ul>
+    <li><a rel="bookmark"
+      href="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/1.0.0/etopo1_ice_g_i2.zip">etopo1_ice_g_i2.zip</a>
+      and unzip it into /WEB-INF/ref/ .</li>
+      <li><a rel="bookmark"
+        href="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/1.0.0/ref_files.zip">ref_files.zip</a>
+        and unzip it into /WEB-INF/ref/ .</li>
+    <li>
+      <!-- Use DOS command line from \backup\ : \content\bat\md5 erddapContent2.23.zip -->  <!-- erddapVersion -->
+     <a rel="bookmark"
+     href="https://github.com/BobSimons/erddap/releases/download/v2.23/erddapContent.zip">erddapContent.zip</a>
+     (version 2.23, 19810 bytes, MD5=1E26F62E7A06191EE6868C40B9A29362, dated 2023-02-27)
+     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
+   </li>
+  </ul>
+<br>
   ERDDAP and its subcomponents have very liberal, open-source <a rel="license" href="#license">licenses</a>,
     so you can use and modify the source code for any purpose, for-profit or not-for-profit.
     Note that ERDDAP and many subcomponents have licenses that require that you 
