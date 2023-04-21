@@ -11,3 +11,6 @@ Thumbs.db
 .settings
 .classpath
 .project
+WEB-INF/lib/
+WEB-INF/ref/
+download_cache/
