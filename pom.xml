@@ -199,7 +199,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <get src="https://github.com/BobSimons/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
+                                <get src="https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
                                 <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
                             </target>
                         </configuration>

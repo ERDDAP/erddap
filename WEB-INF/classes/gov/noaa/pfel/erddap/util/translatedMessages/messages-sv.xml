@@ -5561,7 +5561,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Kanske finns det något sådant som gratis lunch.
 <p>ERDDAP är ett Java -program.
 Källkoden för varje version finns på
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, det mest använda systemet för samarbetande programvaruprojekt.
 Hittills har dessa grupper/personer bidragit med kod till ERDDAP :

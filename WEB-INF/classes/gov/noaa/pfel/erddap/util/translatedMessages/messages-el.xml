@@ -5551,7 +5551,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Ίσως υπάρχει ένα τέτοιο πράγμα όπως ένα δωρεάν γεύμα.
 <p>ERDDAP είναι ένα πρόγραμμα Java .
 Ο πηγαίος κώδικας για κάθε έκδοση βρίσκεται στο
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Αυτός ο σύνδεσμος προς έναν εξωτερικό ιστότοπο δεν αποτελεί έγκριση."></a>, το πιο συχνά χρησιμοποιούμενο σύστημα για συνεργατικά έργα λογισμικού.
 Μέχρι στιγμής, αυτές οι ομάδες/άτομα έχουν συνεισφέρει κώδικα στο ERDDAP :

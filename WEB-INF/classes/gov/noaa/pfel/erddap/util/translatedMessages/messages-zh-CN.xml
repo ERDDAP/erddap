@@ -4529,7 +4529,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">免费下载�
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >至少 14 个国家/地区的 90 多个组织使用ERDDAP</a> 。也许有免费午餐之类的东西。
-<p>ERDDAP是一个Java程序。每个版本的源代码都在<a rel="bookmark" href="https://github.com/BobSimons">GitHub 上<img 
+<p>ERDDAP是一个Java程序。每个版本的源代码都在<a rel="bookmark" href="https://github.com/ERDDAP">GitHub 上<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部网站的链接不构成认可。"></a> ，协作软件项目最常用的系统。到目前为止，这些团体/人已经为ERDDAP贡献了代码：
 <ul><!-- start contributor's info -->

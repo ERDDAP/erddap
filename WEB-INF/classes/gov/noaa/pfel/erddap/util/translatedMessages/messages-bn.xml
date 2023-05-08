@@ -4988,8 +4988,8 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">করতে 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >অন্তত 14টি দেশে 90টিরও বেশি প্রতিষ্ঠান ERDDAP ব্যবহার করে</a> । হয়তো একটি বিনামূল্যে লাঞ্চ হিসাবে যেমন একটি জিনিস আছে.
 <p>ERDDAP হল একটি Java প্রোগ্রাম। প্রতিটি সংস্করণের জন্য সোর্স কোড
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a> এ রয়েছে
-<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a> এ রয়েছে
+<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="একটি বহিরাগত ওয়েবসাইটের এই লিঙ্ক একটি অনুমোদন গঠন করে না."></a>, সহযোগী সফ্টওয়্যার প্রকল্পগুলির জন্য সর্বাধিক ব্যবহৃত সিস্টেম৷ এখন পর্যন্ত, এই গোষ্ঠী/লোকেরা ERDDAP তে কোড অবদান রেখেছে:
 <ul><!-- start contributor's info -->

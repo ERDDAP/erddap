@@ -5526,7 +5526,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Baka may libreng tanghalian.
 <p>ERDDAP ay isang Java program.
 Ang source code para sa bawat bersyon ay nasa
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ang link na ito sa isang panlabas na website ay hindi bumubuo ng isang pag-endorso."></a>, ang pinakakaraniwang ginagamit na sistema para sa mga collaborative na proyekto ng software.
 Sa ngayon, ang mga grupo/tao na ito ay nag-ambag ng code sa ERDDAP :

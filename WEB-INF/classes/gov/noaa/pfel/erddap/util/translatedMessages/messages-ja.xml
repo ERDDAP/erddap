@@ -4706,7 +4706,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAPダウ�
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >少なくとも14か国の90を超える組織がERDDAPを使用しています</a>。たぶん、フリーランチのようなものがあります。
-<p>ERDDAPはJavaプログラムです。すべてのバージョンのソースコードは<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a>にあります<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<p>ERDDAPはJavaプログラムです。すべてのバージョンのソースコードは<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a>にあります<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="外部のウェブサイトへのこのリンクは、承認を構成するものではありません。"></a> 、共同ソフトウェアプロジェクトで最も一般的に使用されるシステム。これまでのところ、これらのグループ/人々はERDDAPにコードを提供しています：
 <ul><!-- start contributor's info -->

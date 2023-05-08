@@ -5609,7 +5609,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Ehkä on olemassa sellainen asia kuin ilmainen lounas.
 <p>ERDDAP on Java -ohjelma.
 Jokaisen version lähdekoodi on
-<a rel="bookmark" href="https://github.com/BobSimons">GitHubissa <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHubissa <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>, yleisimmin käytetty järjestelmä yhteistyöohjelmistoprojekteihin.
 Toistaiseksi nämä ryhmät/henkilöt ovat toimittaneet koodia ERDDAP :iin:
