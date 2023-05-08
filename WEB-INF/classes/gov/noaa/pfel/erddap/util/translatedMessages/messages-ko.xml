@@ -5762,8 +5762,8 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 어쩌면 공짜 점심 같은 것이 있을지도 모릅니다.
 <p>ERDDAP 는 Java 프로그램입니다.
 모든 버전의 소스 코드는
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a> 에 있습니다.
-<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a> 에 있습니다.
+<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>, 협업 소프트웨어 프로젝트에 가장 일반적으로 사용되는 시스템입니다.
 지금까지 이 그룹/사람들은 ERDDAP 에 코드를 기여했습니다.

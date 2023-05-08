@@ -4977,8 +4977,8 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP ਡਾ
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >ਘੱਟੋ-ਘੱਟ 14 ਦੇਸ਼ਾਂ ਵਿੱਚ 90 ਤੋਂ ਵੱਧ ਸੰਸਥਾਵਾਂ ERDDAP ਦੀ ਵਰਤੋਂ ਕਰਦੀਆਂ ਹਨ</a> । ਹੋ ਸਕਦਾ ਹੈ ਕਿ ਮੁਫਤ ਦੁਪਹਿਰ ਦੇ ਖਾਣੇ ਵਰਗੀ ਕੋਈ ਚੀਜ਼ ਹੋਵੇ.
 <p>ERDDAP ਇੱਕ Java ਪ੍ਰੋਗਰਾਮ ਹੈ। ਹਰੇਕ ਸੰਸਕਰਣ ਲਈ ਸਰੋਤ ਕੋਡ
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a> &#39;ਤੇ ਹੈ
-<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a> &#39;ਤੇ ਹੈ
+<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="ਕਿਸੇ ਬਾਹਰੀ ਵੈੱਬਸਾਈਟ ਲਈ ਇਹ ਲਿੰਕ ਕਿਸੇ ਸਮਰਥਨ ਦਾ ਗਠਨ ਨਹੀਂ ਕਰਦਾ ਹੈ।"></a>, ਸਹਿਯੋਗੀ ਸਾਫਟਵੇਅਰ ਪ੍ਰੋਜੈਕਟਾਂ ਲਈ ਸਭ ਤੋਂ ਵੱਧ ਵਰਤਿਆ ਜਾਣ ਵਾਲਾ ਸਿਸਟਮ। ਹੁਣ ਤੱਕ, ਇਹਨਾਂ ਸਮੂਹਾਂ/ਲੋਕਾਂ ਨੇ ERDDAP ਵਿੱਚ ਕੋਡ ਦਾ ਯੋਗਦਾਨ ਪਾਇਆ ਹੈ:
 <ul><!-- start contributor's info -->

@@ -2673,7 +2673,7 @@ public class SSR {
 "https://myhsts.org",                             //javax.net.ssl.SSLHandshakeException: No subject alternative DNS name matching myhsts.org found.
 "https://gcoos5.geos.tamu.edu/erddap/index.html", //javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
 "https://gcoos4.tamu.edu/erddap/index.html",      //javax.net.ssl.SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
-"https://github.com/BobSimons/",                  //fails here, but works in browser
+"https://github.com/ERDDAP/",                  //fails here, but works in browser
 "http://localhost:8080/manager/html/",            //will always fail this test
 "https://mvnrepository.com/artifact/com.datastax.cassandra/cassandra-driver-core", //it's clever: no follow
 "https://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2",      //it's clever: no follow

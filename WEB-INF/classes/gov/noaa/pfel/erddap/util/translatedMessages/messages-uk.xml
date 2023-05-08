@@ -5536,7 +5536,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Можливо, є таке поняття, як безкоштовний обід.
 <p>ERDDAP - це програма на Java .
 Вихідний код кожної версії знаходиться на
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Це посилання на зовнішній веб-сайт не є рекомендацією."></a>, найбільш часто використовувана система для спільних програмних проектів.
 Наразі ці групи/люди внесли код до ERDDAP :

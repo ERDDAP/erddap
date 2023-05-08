@@ -5700,7 +5700,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 Talán van olyan, hogy ingyen ebéd.
 <p>ERDDAP egy Java program.
 Minden verzió forráskódja megtalálható a
-<a rel="bookmark" href="https://github.com/BobSimons">GitHubon <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHubon <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>, a kollaboratív szoftverprojektek leggyakrabban használt rendszere.
 Eddig ezek a csoportok/emberek adtak hozzá kódot az ERDDAP -hoz:

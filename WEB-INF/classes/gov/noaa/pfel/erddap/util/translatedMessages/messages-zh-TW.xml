@@ -4528,7 +4528,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">免費下載�
 <p><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >至少 14 個國家/地區的 90 多個組織使用ERDDAP</a> 。也許有免費午餐之類的東西。
-<p>ERDDAP是一個Java程序。每個版本的源代碼都在<a rel="bookmark" href="https://github.com/BobSimons">GitHub 上<img 
+<p>ERDDAP是一個Java程序。每個版本的源代碼都在<a rel="bookmark" href="https://github.com/ERDDAP">GitHub 上<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> ，協作軟件項目最常用的系統。到目前為止，這些團體/人已經為ERDDAP貢獻了代碼：
 <ul><!-- start contributor's info -->

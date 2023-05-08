@@ -4235,8 +4235,8 @@ ERDDAP ایک ایسی میٹھی جگہ تلاش کرنے کی کوشش کرت�
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP لوڈ، انسٹال اور استعمال</a> کر سکتی ہے۔ سائنسی ڈیٹا<p style=";text-align:right;direction:rtl"><a rel="bookmark" 
 href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
 >کم از کم 14 ممالک میں 90 سے زیادہ تنظیمیں ERDDAP استعمال کرتی</a> ہیں۔ ہوسکتا ہے کہ مفت لنچ جیسی کوئی چیز ہو۔<p style=";text-align:right;direction:rtl">ERDDAP Java پروگرام ہے۔ ہر ورژن کا سورس کوڈ
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a> پر ہے۔
-<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a> پر ہے۔
+<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="کسی بیرونی ویب سائٹ کا یہ لنک توثیق نہیں کرتا۔"></a> مشترکہ سافٹ ویئر پروجیکٹس کے لیے سب سے زیادہ استعمال ہونے والا نظام۔ اب تک، ان گروہوں/لوگوں نے ERDDAP میں کوڈ کا تعاون کیا ہے:<ul style=";text-align:right;direction:rtl"><!-- start contributor's info --><li style=";text-align:right;direction:rtl"><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">انضمام آئی آر</a>
 <br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
