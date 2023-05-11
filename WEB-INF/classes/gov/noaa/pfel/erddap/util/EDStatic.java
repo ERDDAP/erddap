@@ -191,7 +191,7 @@ public class EDStatic {
      * <br>2.22 released on 2022-12-08
      * <br>2.23 released on 2023-02-27
      *
-     * For master branch releases, this will be a floating point
+     * For main branch releases, this will be a floating point
      * number with 2 decimal digits, with no additional text. 
      * !!! In general, people other than the main ERDDAP developer (Bob) 
      * should not change the *number* below.
