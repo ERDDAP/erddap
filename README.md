@@ -4,8 +4,8 @@ ERDDAP is a scientific data server that gives users a simple, consistent way to 
 gridded and tabular scientific datasets in common file formats and make graphs and maps.
 ERDDAP is a Free and Open Source (Apache and Apache-like) Java Servlet from NOAA NMFS SWFSC Environmental Research Division (ERD).
 * To see/use an ERDDAP installation: [https://coastwatch.pfeg.noaa.gov/erddap/index.html]
-* To read installation instructions: [https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html]
-* To contribute code: [https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide]
+* To read installation instructions: [https://erddap.github.io/setup.html]
+* To contribute code: [https://erddap.github.io/setup.html#programmersGuide]
 
 Below you will find relevant links for asking questions and how to contribute.
 * Review conversations and ask questions at https://groups.google.com/g/erddap or at https://github.com/erddap/erddap/discussions

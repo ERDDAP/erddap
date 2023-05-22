@@ -9893,8 +9893,8 @@ public abstract class EDD {
 "\n" +
 " DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
-"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
-" * Read https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   https://erddap.github.io/setupDatasetsXml.html .\n" +
+" * Read https://erddap.github.io/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
 " * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
 "   below as comments, for informational purposes only.\n" +

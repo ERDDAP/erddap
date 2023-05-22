@@ -82,11 +82,11 @@ Ek bağlantılar için önerileriniz varsa <kbd>erd dot data at noaa dot gov</kb
 <advl_institution>Kurum</advl_institution>
 <advc_dataStructure>ERDDAP, her veri kümesini bir &quot;ızgara&quot; veya bir &quot;tablo&quot; veri kümesi olarak ele alır.</advc_dataStructure>
 <advl_dataStructure>Veri yapısı</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Ortak Veri Modeli Türü</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP Sınıfı</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Başlık</advl_title>
 <advl_minLongitude>Minimum Boylam</advl_minLongitude>
 <advl_maxLongitude>Maksimum Boylam</advl_maxLongitude>
@@ -136,7 +136,7 @@ Güncel olmayan veri kümeleri için, muhtemelen veri kaynağında bir sorun var
 <advl_outOfDate>Güncel Olmayan İndeks</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Görünüşe göre, hiçbir veri kümesi
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> özniteliğine sahip değil.
 Belki de bu ERDDAP gerçek zamanlıya yakın veri kümeleri yoktur.
 ]]></advn_outOfDate>
@@ -1817,7 +1817,7 @@ Bu içerir:
 <li>Halihazırda ilişkisel bir veritabanında depolanan
 <a class="selfLink" id="databases" href="#databases" rel="bookmark">veriler</a> .
 <br>Lütfen
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">ERDDAP&#39;deki EDDTableFromDatabase</a> veri kümesi türü hakkındaki bilgileri, özellikle denormalize bir tablo oluşturma ERDDAP ilk ~2 bilgi ekranını okuyun.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">ERDDAP&#39;deki EDDTableFromDatabase</a> veri kümesi türü hakkındaki bilgileri, özellikle denormalize bir tablo oluşturma ERDDAP ilk ~2 bilgi ekranını okuyun.
 Bu çılgınca gelebilir.
 Lütfen bunun mantığını okuyacak kadar güvenin.
 <br>&nbsp;
@@ -3072,7 +3072,7 @@ Her iki sürümün de dosyaları .nc uzantısına sahiptir ve .nc dosyalarını 
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, .nc dosyalarını kalıcı olarak değiştirmek için güçlü bir komut satırı aracı.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, .nc dosyalarını kalıcı olarak değiştirmek için güçlü bir komut satırı aracı.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C ve NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>, .nc dosyalarını okumak ve yazmak için C, C++, Fortran veya Java için ana yazılım kitaplıkları.
@@ -3468,7 +3468,7 @@ Yukarıda açıklandığı gibi, Java programları web&#39;de bulunan verilere e
 <p>Veya, ERDDAP tamamen açık kaynaklı bir program olduğundan, kendi verilerinizi sunmak için kendi sunucunuza (herkese açık olan veya olmayan) kendi ERDDAP kopyanızı da kurabilirsiniz.
 Java programlarınız bu ERDDAP kopyasından veri alabilir.
 Bkz.
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Kendi ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Kendi ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  justGenerateAndView mesajları justGenerateAndView düğmesi için kullanılır
 Veri Erişim Formlarında.
@@ -3543,7 +3543,7 @@ Varsayılan hiçbir şey değildir (kullanılmayan).
 Şu anda ERDDAP, NOAA ve birçok üniversitedeki e-posta hesaplarını içeren Google tarafından yönetilen e-posta hesapları aracılığıyla kimlik doğrulamasını desteklemektedir.
 Bir ERDDAP kimlik doğrulaması etkinleştirilmişse, Google tarafından yönetilen bir e-posta hesabı olan herkes oturum açabilir, ancak bu kişiler yalnızca ERDDAP yöneticisinin kendilerine erişim için açıkça yetki verdiği özel veri kümelerine erişebilir.
 Bir tarayıcıdan veya bir komut dosyası aracılığıyla ERDDAP oturum açmaya ilişkin talimatlar için, bkz
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">.
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">.
 ERDDAP Özel Veri Kümelerine Erişim</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>HATA: 3 başarısız denemeden sonra {0} için giriş denemeleri geçici olarak engelleniyor.
@@ -4151,7 +4151,7 @@ ERDDAP bilgisayar programları veya yazdığınız scriptler tarafından kullan�
 Bunları ERDDAP üzerine başka web uygulamaları veya web hizmetleri oluşturmak için kullanabilir ve işin çoğunu ERDDAP yapmasını ERDDAP ! Bu nedenle, ERDDAP verilere daha iyi bir arayüz veya verilere erişmenin kolay bir yoluna ihtiyaç duyan bir web sayfası için bir fikriniz varsa, kendi web uygulamanızı, web hizmetinizi veya web sayfanızı oluşturmanızı ve ERDDAP bu şekilde kullanmanızı öneririz.
 temel.
 Sisteminiz, ERD ERDDAP veya diğer ERDDAP kurulumlarından veri, grafik ve diğer bilgileri alabilir veya<!-- setup always from coastwatch's erddap --> herkese açık veya sadece özel olarak erişilebilen
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">kendi ERDDAP sunucunuzu kurun</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">kendi ERDDAP sunucunuzu kurun</a> .
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL İstekleri</a></h3>
 ERDDAP (örneğin, arama sonuçları) kullanıcı arayüzü bilgilerine yönelik istekler, istekler için web&#39;in evrensel standardını kullanır:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL&#39;ler &externalLinkHtml;</a>
@@ -4211,7 +4211,7 @@ ERDDAP, kullanıcı arayüzü sonuçlarını şu yaygın, bilgisayar programı d
 <li>.nc - düz, tablo benzeri bir NetCDF -3 ikili dosyası.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">daha fazla&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.nccsv - düz, tablo benzeri, NetCDF benzeri, ASCII CSV dosyası.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">daha fazla&nbsp;bilgi &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">daha fazla&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.tsv - sekmeyle ayrılmış bir ASCII metin tablosu.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">daha fazla&nbsp;bilgi &externalLinkHtml;</a>)
 <li>.xhtml - bir tablodaki verileri içeren bir XHTML (XML) dosyası.
@@ -4461,7 +4461,7 @@ Sonuçlar, yalnızca veri kümesinin meta verilerinde (veri kümesiyle ilgili ve
 <searchMultipleERDDAPs>Birden Çok ERDDAP Ara</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Veri kümeleri için birden çok ERDDAP aramanın resmi olmayan iki yolu vardır:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Birden Çok ERDDAP Ara <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> ve
@@ -4848,7 +4848,7 @@ veri kümelerini ararken, arama terimleri arasında <kbd>AND</kbd> kullanmayın.
 Bu örtüktür.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>ERDDAP hakkında daha fazla bilgi edinin.</strong></a>
 <p><strong>Veri Sağlayıcılar:
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Kendi ERDDAP sunucunuzu kurabilir</a> ve kendi verilerinizi sunabilirsiniz.</strong> ERDDAP ücretsiz ve açık kaynak kodludur.
+<a rel="help" href="https://erddap.github.io/setup.html">Kendi ERDDAP sunucunuzu kurabilir</a> ve kendi verilerinizi sunabilirsiniz.</strong> ERDDAP ücretsiz ve açık kaynak kodludur.
 Apache benzeri lisanslar kullanır, böylece onunla istediğiniz her şeyi yapabilirsiniz.
 ERDDAP görünümü özelleştirilebilir, bu nedenle ERDDAP NOAA kurumunuzu yansıtacaktır.
 ERDDAP kurmak için küçük bir çaba, birçok fayda sağlar.
@@ -5168,7 +5168,7 @@ Bu örtüktür.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP, yerel (sunucunun sabit diskindeki) ve uzak (web üzerinden erişilen) veri kaynaklarından veri alabilir.</a></strong>
 <br>ERDDAP erişebileceği
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">veri kaynağı türlerinin listesine</a> bakın.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">veri kaynağı türlerinin listesine</a> bakın.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP sadece oşinografik verilere değil, birçok bilimsel veriye de hizmet edebilir.</a></strong>
 <br>ERDDAP,
@@ -5326,8 +5326,8 @@ Bir
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a>) verileri açıklayan.
 ERDDAP, yöneticinin veri kümelerine ve değişkenlerine anında eklenecek meta verileri tanımlamasına izin verir (ve teşvik eder).
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">Yöneticiler için yönergelerin</a>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes bölümüne</a> bakın.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">Yöneticiler için yönergelerin</a>
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes bölümüne</a> bakın.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP, grafikler ve haritalar içeren .png ve .pdf görüntü dosyalarını istemenizi sağlar.</a></strong>
@@ -5480,7 +5480,7 @@ Oturum açan kullanıcılar, genel veri kümelerine ve erişimlerine izin verile
 Kullanıcılar, oturum açmak ve özel veri kümelerine erişmek için https:
 (Güvenli Yuva Katmanı) kullanmalıdır.
 Veri kümeleri, genel olarak erişilebilir grafiklere ve haritalara sahip olacak şekilde yapılandırılabilir, ancak verilere yalnızca yetkili kullanıcılar erişebilir.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">daha fazla bilgi</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">daha fazla bilgi</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP verileri parçalar halinde işler.</a></strong>
 <br>Bellekten tasarruf etmek (büyük bir sorun) ve yanıtların daha erken başlamasını sağlamak için ERDDAP, veri isteklerini parçalar halinde işler - art arda kaynaktan bir veri yığını alır, onu temizler (örneğin,
@@ -5504,16 +5504,16 @@ bir kullanıcıdan bir istek alır; uzak bir veri kaynağından veri alır; veri
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> :
 Ancak ERDDAP ayrıca uzak bir veri kaynağından mevcut tüm verileri aktif olarak alma ve verilerin
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">yerel bir kopyasını saklama</a> yeteneğine de sahiptir .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">yerel bir kopyasını saklama</a> yeteneğine de sahiptir .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push Teknolojisi <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Harici bir web sitesine bu bağlantı bir onay anlamına gelmez."></a> :
 ERDDAP
 <a href="#subscriptions">abonelik servislerini</a> kullanarak, diğer veri sunucuları yeni veri geldiği anda haberdar edilerek veri talep edebilirler (veri çekerek).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ve
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap&#39;ı</a> ERDDAP abonelik hizmetlerini ve
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">bayrak sistemini</a> kullanır, böylece yeni veriler mevcut olduğunda anında haberdar olurlar.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ve
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap&#39;ı</a> ERDDAP abonelik hizmetlerini ve
+<a rel="help" href="https://erddap.github.io/setup.html#flag">bayrak sistemini</a> kullanır, böylece yeni veriler mevcut olduğunda anında haberdar olurlar.
 Bunları harika bir etki için birleştirebilirsiniz:
 EDDGrid EDDGrid sararsanız (veya bir EDDTableFromErddap veri kümesinin etrafına bir EDDTableCopy sararsanız), ERDDAP otomatik olarak başka bir ERDDAP veri kümesinin yerel bir kopyasını oluşturur ve korur.
 Abonelik hizmetleri yeni veriler bulunur bulunmaz çalıştığından, push teknolojisi verileri çok hızlı bir şekilde (saniyeler içinde) yayar.
@@ -5605,10 +5605,10 @@ Bu sebep tek başına ERDDAP geliştirme masrafını haklı çıkarır.
 (Sanırım ERDDAP benim ERDDAP geliştirmek için harcadığımdan daha fazla NOAA bilim insanının zamanından tasarruf ettiği gösterilebilir.
 Zaman=Para.) Ancak bunun yan yararı, diğer herhangi bir kuruluşun
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP</a> <strong>ücretsiz</strong> olarak indirebilmesi, kurabilmesi ve dağıtabilmesidir.
+href="https://erddap.github.io/setup.html">ERDDAP</a> <strong>ücretsiz</strong> olarak indirebilmesi, kurabilmesi ve dağıtabilmesidir.
 bilimsel veriler.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >En az 14 ülkede 90&#39;dan fazla kuruluş ERDDAP</a> .
 Belki bedava öğle yemeği diye bir şey vardır.
 <p>ERDDAP bir Java programıdır.
@@ -5619,7 +5619,7 @@ Her sürüm için kaynak kodu
 Şimdiye kadar, bu gruplar/kişiler ERDDAP kod katkıda bulundu:
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a>, R.Tech Engineering&#39;den Jonathan Lafite ve Philippe Makowski tarafından yazılmış ve katkıda bulunmuştur.
 <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
@@ -5790,14 +5790,14 @@ Veri kümesinin meta verileri bir
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">burada</a> bulunabilir.
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Kendi</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>ERDDAP Sunucunuzu Kurabilir</strong></a> ve kendi verilerinizi sunabilirsiniz.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>ERDDAP Sunucunuzu Kurabilir</strong></a> ve kendi verilerinizi sunabilirsiniz.
 <ul>
 <li>ERDDAP kurmak için küçük bir çaba, birçok fayda sağlar.
 <li>Verilerinizi dağıtmak için halihazırda bir web hizmetiniz varsa, verilerinize mevcut hizmet üzerinden veya kaynak dosyalar veya veritabanı üzerinden erişmek için ERDDAP .
 Ardından, kişilerin verilerinize erişmenin başka bir yolu olacak ve verileri ek dosya formatlarında veya grafikler veya haritalar olarak indirebilecekler.
 <li>Yüksek talep gören veri kümeleriniz varsa, ölçeği büyütmek ve büyük bir veri dağıtım merkezinin ihtiyaçlarını karşılamak için
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >birlikte çalışan birden çok ERDDAP</a> kurabilirsiniz.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Bize Ulaşın</a></h2>
@@ -7318,7 +7318,7 @@ veri kümesi olmalıdır.
 <li>Veri değişkeni, boylam ve enlem ekseni değişkenlerine sahip OLMALIDIR.
 (Diğer eksen değişkenleri İSTEĞE BAĞLIDIR.)
 <li>-180 ile 180 arasında bazı boylam değerleri OLMALIDIR.
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum ve colorBarMaximum niteliklerinin</a> belirtilmesi ZORUNLUDUR.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum ve colorBarMaximum niteliklerinin</a> belirtilmesi ZORUNLUDUR.
 (Diğer renk çubuğu özellikleri İSTEĞE BAĞLIDIR.)
 </ul>
 <li><strong>Grid veri katmanları:</strong> ERDDAP boylam ve enlem boyutlarını kullanan grid veri setlerindeki tüm veri değişkenleri WMS üzerinden WMS .

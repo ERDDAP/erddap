@@ -83,11 +83,11 @@ Ha további linkekre vonatkozó javaslatai vannak, forduljon <kbd>erd dot data a
 <advl_institution>Intézmény</advl_institution>
 <advc_dataStructure>Az ERDDAP minden adatkészletet „rács” vagy „tábla” adatkészletként kezel.</advc_dataStructure>
 <advl_dataStructure>Adatstruktúra</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Közös adatmodell típus</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP osztály</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Cím</advl_title>
 <advl_minLongitude>Minimális hosszúság</advl_minLongitude>
 <advl_maxLongitude>Maximális hosszúság</advl_maxLongitude>
@@ -137,7 +137,7 @@ Az elavult adatkészleteknél feltehetően az adatforrással van probléma, ezé
 <advl_outOfDate>Elavult index</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Úgy tűnik, egyetlen adatkészlet sem rendelkezik a
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> attribútummal.
 Talán nincsenek közel valós idejű adatkészletek ebben az ERDDAP -ban.
 ]]></advn_outOfDate>
@@ -1879,7 +1879,7 @@ Ebbe beletartozik:
 <li>Jelenleg egy relációs adatbázisban tárolt
 <a class="selfLink" id="databases" href="#databases" rel="bookmark">adatok</a> .
 <br>Kérjük, olvassa el az
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> adatkészlet típusával kapcsolatos információkat az ERDDAP -ban, különösen a kezdeti ~2 képernyőt, amely egy denormalizált tábla létrehozásának szükségességéről szól.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> adatkészlet típusával kapcsolatos információkat az ERDDAP -ban, különösen a kezdeti ~2 képernyőt, amely egy denormalizált tábla létrehozásának szükségességéről szól.
 Ez őrülten hangozhat.
 Kérjük, bízzon eléggé ahhoz, hogy elolvassa ennek indoklását.
 <br>&nbsp;
@@ -3147,7 +3147,7 @@ Mindkét verzió fájljai .nc kiterjesztéssel rendelkeznek, és az .nc fájloka
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, egy hatékony parancssori eszköz az .nc fájlok végleges módosításához.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, egy hatékony parancssori eszköz az .nc fájlok végleges módosításához.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C és NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>, a C, C++, Fortran vagy Java fő szoftverkönyvtárai .nc fájlok olvasásához és írásához.
@@ -3543,7 +3543,7 @@ A fent leírtak szerint, mivel a Java programok hozzáférhetnek a weben elérhe
 <p>Vagy mivel az ERDDAP egy teljesen nyílt forráskódú program, saját kiszolgálón is beállíthatja az ERDDAP saját példányát (nyilvánosan elérhető vagy nem), hogy kiszolgálja saját adatait.
 Java programjai adatokat kaphatnak az ERDDAP adott példányából.
 Lásd:
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Saját ERDDAP beállítása</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Saját ERDDAP beállítása</a> .
 ]]></javaProgramsHTML>
 <!--  A justGenerateAndView üzenetek a justGenerateAndView gombhoz használatosak
 az Adathozzáférési űrlapokon.
@@ -3618,7 +3618,7 @@ Sok ERDDAP telepítésen nincs engedélyezve a hitelesítés, így nem biztosít
 Jelenleg az ERDDAP csak a Google által kezelt e-mail fiókokon keresztüli hitelesítést támogatja, amely magában foglalja a NOAA és számos egyetem e-mail fiókjait.
 Ha egy ERDDAP -on engedélyezett a hitelesítés, bárki bejelentkezhet a Google által kezelt e-mail fiókkal, de csak azokhoz a privát adatkészletekhez férhet hozzá, amelyek elérésére az ERDDAP adminisztrátora kifejezetten felhatalmazta.
 Az ERDDAP -ba böngészőből vagy szkripten keresztüli bejelentkezéssel kapcsolatos utasításokért lásd:
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Hozzáférés a privát adatkészletekhez az ERDDAP -ban</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Hozzáférés a privát adatkészletekhez az ERDDAP -ban</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>HIBA: A(z) {0} bejelentkezési kísérletei 3 sikertelen kísérlet után ideiglenesen blokkolva vannak.
 Várjon {1} percet, majd próbálja újra.</loginAttemptBlocked>
@@ -4226,7 +4226,7 @@ Például az emberek ezt az URL-t használhatják az érdekes adatkészletek tel
 Az ERDDAP számos olyan szolgáltatást tartalmaz, amelyeket az Ön által írt számítógépes programok vagy szkriptek használhatnak.
 Használhatja őket más webalkalmazások vagy webszolgáltatások létrehozására az ERDDAP mellett, így az ERDDAP elvégzi a munka nagy részét! Tehát ha van egy ötlete az ERDDAP kiszolgált adatok jobb interfészére, vagy olyan weboldalra, amelyhez egyszerű hozzáférést kell biztosítani az adatokhoz, javasoljuk, hogy készítse el saját webalkalmazását, webszolgáltatását vagy weboldalát, és használja az ERDDAP -t Alapítvány.
 Rendszere adatokat, grafikonokat és egyéb információkat kaphat az ERD ERDDAP -jából vagy más ERDDAP -telepítésekből, vagy<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">állítsa be saját ERDDAP szerverét</a>, amely lehet nyilvánosan vagy csak privát módon elérhető.
+<a rel="help" href="https://erddap.github.io/setup.html">állítsa be saját ERDDAP szerverét</a>, amely lehet nyilvánosan vagy csak privát módon elérhető.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL kérések</a></h3>
 Az ERDDAP -tól származó felhasználói felület információira vonatkozó kérések (például keresési eredmények) a web univerzális szabványát használják a kérésekhez:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL-ek &externalLinkHtml;</a>
@@ -4285,7 +4285,7 @@ ERDDAP a felhasználói felület eredményeit adattáblázatként tudja visszaad
 <li>.nc - egy lapos, táblázatszerű, NetCDF -3 bináris fájl.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">tovább&nbsp;információ &externalLinkHtml;</a>)
 <li>.nccsv – egy lapos, táblázatszerű, NetCDF -szerű, ASCII CSV-fájl.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">tovább&nbsp;információ &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">tovább&nbsp;információ &externalLinkHtml;</a>)
 <li>.tsv – tabulátorral elválasztott ASCII szövegtábla.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">tovább&nbsp;információ &externalLinkHtml;</a>)
 <li>.xhtml – egy XHTML (XML) fájl az adatokkal egy táblázatban.
@@ -4536,7 +4536,7 @@ Például, ha a sebességre keres, a <kbd>speed</kbd> rendelkező adatkészletek
 <searchMultipleERDDAPs>Több ERDDAP keresése</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Két nem hivatalos módja van több ERDDAP adathalmaz keresésének:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Több ERDDAP keresése <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> és
@@ -4926,7 +4926,7 @@ adathalmazok keresésekor ne használjon <kbd>AND</kbd> jelet a keresési kifeje
 Ez implicit.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Tudjon meg többet az ERDDAP .</strong></a>
 <p><strong>Adatszolgáltatók:
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Saját ERDDAP szervert állíthat be</a> és saját adatait szolgálhatja ki.</strong> ERDDAP ingyenes és nyílt forráskódú.
+<a rel="help" href="https://erddap.github.io/setup.html">Saját ERDDAP szervert állíthat be</a> és saját adatait szolgálhatja ki.</strong> ERDDAP ingyenes és nyílt forráskódú.
 Apache-szerű licenceket használ, így bármit megtehet vele.
 ERDDAP megjelenése testreszabható, így az ERDDAP az Ön intézményét fogja tükrözni, nem a NOAA -t.
 Az ERDDAP létrehozásának kis erőfeszítése számos előnnyel jár.
@@ -5250,7 +5250,7 @@ Ez implicit.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP helyi (a szerver merevlemezén lévő) és távoli (weben keresztül elérhető) adatforrásokból is tud adatokat szerezni.</a></strong>
 <br>Tekintse meg azon
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">adatforrástípusok listáját</a>, amelyekhez az ERDDAP hozzáférhet.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">adatforrástípusok listáját</a>, amelyekhez az ERDDAP hozzáférhet.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP sokféle tudományos adatot tud szolgálni, nem csak oceanográfiai adatokat.</a></strong>
 <br>ERDDAP egy adatszerver, amelyet a
@@ -5409,8 +5409,8 @@ Amikor adatokat vagy grafikont kér egy
       title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a>) írja le az adatokat.
 ERDDAP lehetővé teszi (és bátorítja) az adminisztrátor számára, hogy leírja azokat a metaadatokat, amelyeket menet közben adnak hozzá az adatkészletekhez és azok változóihoz.
 Tekintse meg az
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes részt</a> a
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">rendszergazdáknak</a> szóló útmutatóban.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes részt</a> a
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">rendszergazdáknak</a> szóló útmutatóban.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP segítségével .png és .pdf formátumú képfájlokat kérhet grafikonokkal és térképekkel</a></strong>
@@ -5568,7 +5568,7 @@ A bejelentkezett felhasználók hozzáférhetnek a nyilvános adatkészletekhez 
 A felhasználóknak a https:
 (Secure Sockets Layer) használatával kell bejelentkezniük és hozzáférniük a privát adatkészletekhez.
 Az adatkészletek konfigurálhatók úgy, hogy a grafikonok és térképek nyilvánosan hozzáférhetők legyenek, de az adatokhoz csak a jogosult felhasználók férhetnek hozzá.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">további információ</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">további információ</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP az adatokat darabokban dolgozza fel.</a></strong>
 <br>A memória megtakarítása (nagy probléma) és a válaszadás mielőbbi megindítása érdekében az ERDDAP az adatkéréseket darabokban dolgozza fel – ismételten lekér egy adattömeget a forrásból, megtisztítja (például
@@ -5591,16 +5591,16 @@ kér egy felhasználót; távoli adatforrásból kap adatokat; újraformázza az
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> :
 De az ERDDAP arra is képes, hogy aktívan lekérje az összes elérhető adatot egy távoli adatforrásból, és
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">tárolja az adatok helyi másolatát</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">tárolja az adatok helyi másolatát</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push technológia <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ez a külső webhelyre mutató hivatkozás nem minősül jóváhagyásnak."></a> :
 Az ERDDAP
 <a href="#subscriptions">előfizetéses szolgáltatásainak</a> használatával a többi adatszerver azonnal értesítést kaphat, amint új adatok állnak rendelkezésre, hogy lekérhessék az adatokat (az adatok lehívásával).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> és
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap programjai</a> az ERDDAP előfizetéses szolgáltatásait és
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">jelzőrendszerét</a> használják, így azonnal értesítést kapnak, ha új adatok állnak rendelkezésre.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> és
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap programjai</a> az ERDDAP előfizetéses szolgáltatásait és
+<a rel="help" href="https://erddap.github.io/setup.html#flag">jelzőrendszerét</a> használják, így azonnal értesítést kapnak, ha új adatok állnak rendelkezésre.
 Kombinálhatja ezeket a nagyszerű hatás érdekében:
 ha egy EDDGrid másolatot egy EDDGrid FromErddap-adatkészlet köré csomagol (vagy egy EDDTableCopy-t egy EDDTableFromErddap-adatkészlet köré), az ERDDAP automatikusan létrehozza és karbantartja egy másik ERDDAP adatkészletének helyi másolatát.
 Mivel az előfizetési szolgáltatások azonnal működnek, amint új adatok állnak rendelkezésre, a push technológia nagyon gyorsan (másodperceken belül) terjeszti az adatokat.
@@ -5692,10 +5692,10 @@ Ez önmagában is indokolja az ERDDAP fejlesztésének költségeit.
 (Azt hiszem, be lehetne mutatni, hogy az ERDDAP több NOAA tudós idejét spórolt meg, mint amennyit én az ERDDAP fejlesztésével töltöttem.
 Idő=Pénz.) De ennek mellékes előnye, hogy bármely más szervezet <strong>ingyenesen</strong>
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">letöltheti, telepítheti és használhatja az ERDDAP</a> -ot saját terjesztésére.
+href="https://erddap.github.io/setup.html">letöltheti, telepítheti és használhatja az ERDDAP</a> -ot saját terjesztésére.
 tudományos adatok.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Legalább 14 országban több mint 90 szervezet használja az ERDDAP</a> .
 Talán van olyan, hogy ingyen ebéd.
 <p>ERDDAP egy Java program.
@@ -5706,7 +5706,7 @@ Minden verzió forráskódja megtalálható a
 Eddig ezek a csoportok/emberek adtak hozzá kódot az ERDDAP -hoz:
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java fájlt</a> Jonathan Lafite és Philippe Makowski, az R.Tech Engineering munkatársa írta és segítette.
 <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
@@ -5877,14 +5877,14 @@ Nos, kérem, gondolja csak névnek, ne mozaikszónak.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">itt találja</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Beállíthatja</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>saját ERDDAP szerverét</strong></a>, és kiszolgálhatja saját adatait.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>saját ERDDAP szerverét</strong></a>, és kiszolgálhatja saját adatait.
 <ul>
 <li>Az ERDDAP létrehozásának kis erőfeszítése számos előnnyel jár.
 <li>Ha már rendelkezik webszolgáltatással az adatok terjesztésére, akkor beállíthatja az ERDDAP -t, hogy a meglévő szolgáltatáson vagy a forrásfájlokon vagy adatbázisokon keresztül hozzáférjen adataihoz.
 Ezután az emberek más módon is hozzáférhetnek az Ön adataihoz, és további fájlformátumokban, illetve grafikonok vagy térképek formájában tölthetik le az adatokat.
 <li>Ha olyan adatkészletekkel rendelkezik, amelyekre nagy a kereslet,
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >több ERDDAP -t is telepíthet, amelyek együtt működnek</a> a méretezés érdekében, és megfelelnek egy nagy adatelosztó központ igényeinek.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Lépjen kapcsolatba velünk</a></h2>
@@ -7415,7 +7415,7 @@ adatkészletnek kell lennie.
 (A többi tengelyváltozó OPCIONÁLIS.)
 <li>KELL lennie néhány hosszúsági értéknek -180 és 180 között.
 <li>A
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum és colorBarMaximum attribútumokat</a> KELL megadni.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum és colorBarMaximum attribútumokat</a> KELL megadni.
 (A színsáv többi attribútuma OPCIONÁLIS.)
 </ul>
 <li><strong>Rács adatrétegek:</strong> Az ERDDAP WMS rendszerében a rácsadatkészletekben található összes adatváltozó, amely hosszúsági és szélességi dimenziókat használ, elérhető a WMS -en keresztül.

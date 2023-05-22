@@ -181,7 +181,7 @@ public class ArchiveADataset {
                 logFileName + "\n" +
                 "Press ^D or ^C to exit this program at any time.\n" +
                 "For detailed information, see\n" +
-                "https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset");
+                "https://erddap.github.io/setup.html#ArchiveADataset");
             
             //get bagitMode
             int whichArg = 0;

@@ -644,7 +644,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 "   send an email to the admin asking that s/he add onChange tags to the datasets.\n" +
 "   See the EDDTableFromErddap documentation.\n" + 
 " * The XML needed for EDDTableFromErddap in datasets.xml has few options.  See\n" +
-"   https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap .\n" +
+"   https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap .\n" +
 "   If you want to alter a dataset's metadata or make other changes to a dataset,\n" +
 "   use EDDTableFromDapSequence to access the dataset instead of EDDTableFromErddap.\n" +
 " * If the remote ERDDAP is version 1.12 or below, this will generate incorrect, useless results.\n" +
@@ -798,7 +798,7 @@ expected =
 "*GLOBAL*,geospatial_lon_max,-130.2576d\n" +
 "*GLOBAL*,geospatial_lon_min,-132.1591d\n" +
 "*GLOBAL*,geospatial_lon_units,degrees_east\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +
@@ -927,7 +927,7 @@ expected =
 "http://127.0.0.1:8080/cwexperimental/tabledap/" + 
     (tRedirect? "testNccsvScalar11" : tID) + 
     ".nccsv\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"center, data, demonstration, Earth Science > Oceans > Ocean Temperature > Sea Surface Temperature, environmental, erd, fisheries, identifier, laboratory, latitude, long, longitude, marine, national, nccsv, nmfs, noaa, ocean, oceans, pacific, pmel, science, sea, sea_surface_temperature, service, ship, southwest, sst, status, surface, swfsc, temperature, test, testLong, time, trajectory\"\n" +
 "*GLOBAL*,keywords_vocabulary,GCMD Science Keywords\n" +

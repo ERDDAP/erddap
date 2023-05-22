@@ -82,11 +82,11 @@ Dacă aveți sugestii pentru linkuri suplimentare, contactați <kbd>erd dot data
 <advl_institution>Instituţie</advl_institution>
 <advc_dataStructure>ERDDAP tratează fiecare set de date fie ca o „grilă”, fie ca un set de date „tabel”.</advc_dataStructure>
 <advl_dataStructure>Structură de date</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Tip comun de model de date</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>Clasa ERDDAP</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Titlu</advl_title>
 <advl_minLongitude>Longitudine minima</advl_minLongitude>
 <advl_maxLongitude>Longitudine maximă</advl_maxLongitude>
@@ -136,7 +136,7 @@ Pentru seturile de date învechite, probabil că există o problemă cu sursa de
 <advl_outOfDate>Index învechit</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Aparent, niciun set de date nu are atributul
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> .
 Poate că în acest ERDDAP nu există seturi de date aproape în timp real.
 ]]></advn_outOfDate>
@@ -1790,7 +1790,7 @@ Aceasta include:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Date</a> care sunt stocate în prezent într-o bază de date relațională.
 <br>Vă rugăm să citiți informațiile despre tipul setului de date
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> din ERDDAP, în special primele ~2 ecrane de informații care vorbesc despre necesitatea creării unui tabel denormalizat.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> din ERDDAP, în special primele ~2 ecrane de informații care vorbesc despre necesitatea creării unui tabel denormalizat.
 Asta poate suna nebunesc.
 Vă rugăm să aveți suficientă încredere pentru a citi raționamentul acestui lucru.
 <br>&nbsp;
@@ -3035,7 +3035,7 @@ Fișierele ambelor versiuni au extensia .nc și pot fi citite de programele care
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">prin Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Acest link către un site extern nu constituie o aprobare."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, un instrument puternic de linie de comandă pentru modificarea permanentă a fișierelor .nc .
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, un instrument puternic de linie de comandă pentru modificarea permanentă a fișierelor .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C și NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Acest link către un site extern nu constituie o aprobare."></a>, principalele biblioteci software pentru C, C++, Fortran sau Java pentru a citi și scrie fișiere .nc .
@@ -3418,7 +3418,7 @@ După cum este descris mai sus, deoarece programele Java pot accesa datele dispo
 Programele dvs.
 Java pot obține date din acea copie a ERDDAP .
 Consultați
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Configurați-vă propriul ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Configurați-vă propriul ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  Mesajele justGenerateAndView sunt folosite pentru butonul justGenerateAndView
 pe formularele de acces la date.
@@ -3493,7 +3493,7 @@ Multe instalări ERDDAP nu au autentificarea activată și, prin urmare, nu ofer
 În prezent, ERDDAP acceptă doar autentificarea prin conturi de e-mail gestionate de Google, care includ conturi de e-mail la NOAA și multe universități.
 Dacă un ERDDAP are autentificarea activată, oricine are un cont de e-mail gestionat de Google se poate conecta, dar va avea acces numai la seturile de date private pe care administratorul ERDDAP le-a autorizat în mod explicit să le acceseze.
 Pentru instrucțiuni despre conectarea la ERDDAP dintr-un browser sau printr-un script, consultați
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Accesul la seturile de date private în ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Accesul la seturile de date private în ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>EROARE: încercările de conectare pentru {0} sunt blocate temporar după 3 încercări eșuate.
 Așteptați {1} minute, apoi încercați din nou.</loginAttemptBlocked>
@@ -4108,7 +4108,7 @@ De exemplu, oamenii pot folosi această adresă URL pentru a căuta seturi de da
 Există multe caracteristici în ERDDAP care pot fi utilizate de programele de calculator sau scripturile pe care le scrieți.
 Le puteți folosi pentru a construi alte aplicații web sau servicii web pe deasupra ERDDAP, făcându-le ERDDAP să facă cea mai mare parte a muncii! Deci, dacă aveți o idee pentru o interfață mai bună pentru datele pe care le deservește ERDDAP sau o pagină web care are nevoie de o modalitate ușoară de a accesa date, vă încurajăm să vă creați propria aplicație web, serviciu web sau pagină web și să utilizați ERDDAP ca fundație.
 Sistemul dumneavoastră poate obține date, grafice și alte informații de la ERDDAP al ERD sau de la alte instalații ERDDAP sau puteți<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">configurați-vă propriul server ERDDAP</a>, care poate fi accesibil public sau doar accesibil privat.
+<a rel="help" href="https://erddap.github.io/setup.html">configurați-vă propriul server ERDDAP</a>, care poate fi accesibil public sau doar accesibil privat.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Solicitări URL RESTful</a></h3>
 Solicitările de informații despre interfața cu utilizatorul de la ERDDAP (de exemplu, rezultatele căutării) utilizează standardul universal web pentru solicitări:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL-uri &externalLinkHtml;</a> trimis prin
@@ -4171,7 +4171,7 @@ ERDDAP poate returna rezultatele interfeței cu utilizatorul ca un tabel de date
 <li>.nc - un fișier binar plat, asemănător tabelului, NetCDF -3.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">mai mult&nbsp;informații &externalLinkHtml;</a>)
 <li>.nccsv - un fișier CSV ASCII plat, asemănător unui tabel, asemănător NetCDF .
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">mai mult&nbsp;informații &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">mai mult&nbsp;informații &externalLinkHtml;</a>)
 <li>.tsv - un tabel text ASCII separat de tabulatori.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">mai mult&nbsp;informații &externalLinkHtml;</a>)
 <li>.xhtml - un fișier XHTML (XML) cu datele dintr-un tabel.
@@ -4427,7 +4427,7 @@ De exemplu, căutarea vitezei va găsi seturi de date cu <kbd>speed</kbd>, dar n
 <searchMultipleERDDAPs>Căutați mai multe ERDDAP</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Există două moduri neoficiale de a căuta mai multe ERDDAP uri pentru seturi de date:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Căutați mai multe ERDDAP uri <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Acest link către un site extern nu constituie o aprobare."></a> și
@@ -4824,7 +4824,7 @@ Este implicit.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Aflați mai multe despre ERDDAP .</strong></a>
 <p><strong>Furnizori de date:
 vă puteți
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">configura propriul server ERDDAP</a> și vă puteți servi propriile date.</strong> ERDDAP este gratuit și open source.
+<a rel="help" href="https://erddap.github.io/setup.html">configura propriul server ERDDAP</a> și vă puteți servi propriile date.</strong> ERDDAP este gratuit și open source.
 Folosește licențe asemănătoare Apache, așa că puteți face orice doriți cu el.
 ERDDAP este personalizabil, astfel încât ERDDAP va reflecta instituția dvs., nu NOAA .
 Micul efort de a înființa ERDDAP aduce multe beneficii.
@@ -5144,7 +5144,7 @@ Este implicit.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP poate obține date din surse de date locale (pe hard disk-ul serverului) și la distanță (accesate prin web).</a></strong>
 <br>Consultați
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">lista tipurilor de surse de date</a> pe care le poate accesa ERDDAP .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">lista tipurilor de surse de date</a> pe care le poate accesa ERDDAP .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP poate servi mai multe tipuri de date științifice, nu doar date oceanografice.</a></strong>
 <br>ERDDAP este un server de date care a fost scris la
@@ -5301,8 +5301,8 @@ Când solicitați date sau un grafic dintr-un set de
       title="Acest link către un site extern nu constituie o aprobare."></a>) descriind datele.
 ERDDAP permite (și încurajează) administratorul să descrie metadatele care vor fi adăugate la seturile de date și variabilele acestora din mers.
 Consultați
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">secțiunea addAttributes</a> din
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">instrucțiunile pentru administratori</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">secțiunea addAttributes</a> din
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">instrucțiunile pentru administratori</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP vă permite să solicitați fișiere imagine .png și .pdf cu grafice și hărți</a></strong>
@@ -5452,7 +5452,7 @@ Utilizatorii care s-au autentificat pot accesa seturile de date publice și setu
 Utilizatorii trebuie să folosească https:
 (Secure Sockets Layer) pentru a se conecta și pentru a accesa seturi de date private.
 Seturile de date pot fi configurate pentru a avea grafice și hărți accesibile public, dar au date accesibile numai utilizatorilor autorizați.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">mai multe informatii</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">mai multe informatii</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP prelucrează datele în bucăți.</a></strong>
 <br>Pentru a economisi memorie (o problemă majoră) și pentru a face răspunsurile să înceapă mai devreme, ERDDAP procesează cererile de date în bucăți - obținând în mod repetat o bucată de date de la sursă, curățând-o (de exemplu, adăugând
@@ -5474,16 +5474,16 @@ preia o solicitare de la un utilizator; obține date de la o sursă de date de l
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> :
 Dar ERDDAP are și capacitatea de a obține în mod activ toate datele disponibile de la o sursă de date de la distanță și
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">de a stoca o copie locală a datelor</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">de a stoca o copie locală a datelor</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Tehnologia Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Acest link către un site extern nu constituie o aprobare."></a> :
 Prin utilizarea
 <a href="#subscriptions">serviciilor de abonament</a> ERDDAP, alte servere de date pot fi notificate de îndată ce sunt disponibile date noi, astfel încât să poată solicita datele (prin extragerea datelor).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> și EDDTableFromErddap ale
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> utilizează serviciile de abonament și
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">sistemul de semnalizare</a> ERDDAP, astfel încât să fie notificați imediat când sunt disponibile date noi.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> și EDDTableFromErddap ale
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> utilizează serviciile de abonament și
+<a rel="help" href="https://erddap.github.io/setup.html#flag">sistemul de semnalizare</a> ERDDAP, astfel încât să fie notificați imediat când sunt disponibile date noi.
 Puteți combina acestea cu un mare efect:
 dacă includeți o copie EDDGrid în jurul unui set de date EDDGrid FromErddap (sau includeți o EDDTableCopy în jurul unui set de date EDDTableFromErddap), ERDDAP va crea și menține automat o copie locală a unui alt set de date ERDDAP .
 Deoarece serviciile de abonament funcționează de îndată ce sunt disponibile date noi, tehnologia push diseminează datele foarte rapid (în câteva secunde).
@@ -5572,9 +5572,9 @@ Numai acest motiv justifică cheltuielile pentru dezvoltarea ERDDAP .
 (Cred că s-ar putea demonstra că ERDDAP a economisit mai mult timp oamenilor de știință de la NOAA decât am petrecut eu dezvoltând ERDDAP .
 Timp=Bani.) Dar avantajul secundar este că orice altă organizație poate
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">descărca, instala și utiliza ERDDAP</a> <strong>gratuit</strong> pentru a-și distribui date științifice.
+href="https://erddap.github.io/setup.html">descărca, instala și utiliza ERDDAP</a> <strong>gratuit</strong> pentru a-și distribui date științifice.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Peste 90 de organizații din cel puțin 14 țări utilizează ERDDAP</a> .
 Poate că există așa ceva ca un prânz gratuit.
 <p>ERDDAP este un program Java .
@@ -5585,7 +5585,7 @@ Codul sursă pentru fiecare versiune este pe
 Până acum, aceste grupuri/persoane au contribuit cu cod la ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> a fost scris și contribuit de Jonathan Lafite și Philippe Makowski de la R.Tech Engineering <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5748,14 +5748,14 @@ Acum, vă rog să vă gândiți la el ca un nume, nu un acronim.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">aici</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Puteți să</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>vă configurați propriul server ERDDAP</strong></a> și să vă serviți propriile date.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>vă configurați propriul server ERDDAP</strong></a> și să vă serviți propriile date.
 <ul>
 <li>Micul efort de a înființa ERDDAP aduce multe beneficii.
 <li>Dacă aveți deja un serviciu web pentru distribuirea datelor dvs., puteți configura ERDDAP pentru a vă accesa datele prin serviciul existent sau prin fișierele sursă sau baza de date.
 Apoi, oamenii vor avea o altă modalitate de a vă accesa datele și vor putea descărca datele în formate suplimentare de fișiere sau sub formă de grafice sau hărți.
 <li>Dacă aveți seturi de date care sunt la mare căutare, puteți instala
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >mai multe ERDDAP uri care funcționează împreună</a> pentru a se extinde și a satisface nevoile unui centru mare de distribuție de date.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Contactaţi-ne</a></h2>
@@ -7279,7 +7279,7 @@ un set de date.
 <li>Variabila de date TREBUIE să aibă variabile ale axei de longitudine și latitudine.
 (Alte variabile ale axei sunt OPȚIONALE.)
 <li>TREBUIE să existe niște valori ale longitudinii între -180 și 180.
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum și colorBarMaximum</a> TREBUIE specificate.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum și colorBarMaximum</a> TREBUIE specificate.
 (Alte atribute ale barei de culoare sunt OPȚIONALE.)
 </ul>
 <li><strong>Straturi de date grilă:</strong> în WMS -ul ERDDAP, toate variabilele de date din seturile de date grilă care utilizează dimensiunile de longitudine și latitudine sunt disponibile prin WMS .

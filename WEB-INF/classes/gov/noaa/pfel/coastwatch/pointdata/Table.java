@@ -3258,7 +3258,7 @@ public class Table  {
 
     /**
      * This reads an NCCSV .csv file from a URL or a file.
-     * See https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html .
+     * See https://erddap.github.io/NCCSV.html .
      * *SCALAR* and dataType attributes are processed and removed.
      * This just calls readNccsv(fullName, true).
      * 
@@ -3291,7 +3291,7 @@ public class Table  {
 
     /**
      * This reads an NCCSV .csv file.
-     * See https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html .
+     * See https://erddap.github.io/NCCSV.html .
      * *SCALAR* and *DATA_TYPE* attributes are processed and removed.
      * 
      * @param fullName for error messages only
@@ -3504,7 +3504,7 @@ public class Table  {
 
     /**
      * This saves this table in an NCCSV .csv file.
-     * See https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html .
+     * See https://erddap.github.io/NCCSV.html .
      * This can be a metadata table -- where scalar vars have 1 value and others have 0 values.
      * This doesn't close the writer at the end.
      * 
@@ -3681,7 +3681,7 @@ public class Table  {
 "*GLOBAL*,creator_type,person\n" +
 "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n" +
 "*GLOBAL*,featureType,trajectory\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
@@ -3746,7 +3746,7 @@ public class Table  {
 "*GLOBAL*,creator_type,person\n" +
 "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n" +
 "*GLOBAL*,featureType,trajectory\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
@@ -3823,7 +3823,7 @@ String2.log(">> sample_1.1.csv testChars isCharArray?" + (pa instanceof CharArra
 "*GLOBAL*,creator_type,person\n" +
 "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n" +
 "*GLOBAL*,featureType,trajectory\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
@@ -3912,7 +3912,7 @@ String2.log(">> sample_1.2.csv testChars isCharArray?" + (pa instanceof CharArra
 "*GLOBAL*,creator_type,person\n" +
 "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n" +
 "*GLOBAL*,featureType,trajectory\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +
@@ -3998,7 +3998,7 @@ if (haveExcel) {
 "*GLOBAL*,creator_type,person\n" +
 "*GLOBAL*,creator_url,https://www.pfeg.noaa.gov\n" +
 "*GLOBAL*,featureType,trajectory\n" +
-"*GLOBAL*,infoUrl,https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html\n" +
+"*GLOBAL*,infoUrl,https://erddap.github.io/NCCSV.html\n" +
 "*GLOBAL*,institution,\"NOAA NMFS SWFSC ERD, NOAA PMEL\"\n" +
 "*GLOBAL*,keywords,\"NOAA, sea, ship, sst, surface, temperature, trajectory\"\n" +
 "*GLOBAL*,license,\"\"\"NCCSV Demonstration\"\" by Bob Simons and Steve Hankin is licensed under CC BY 4.0, https://creativecommons.org/licenses/by/4.0/ .\"\n" +

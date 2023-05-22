@@ -101,7 +101,7 @@ public class ScriptCalendar2  {
      *
      * @param sourceTime a formatted time string
      * @param dateTimeFormat See
-     *  https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#stringTimeUnits
+     *  https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits
      * @param timeZoneString  For a list of valid timezone ID's, 
      *   see the "TZ database names" column in the table at 
      *   https://en.wikipedia.org/wiki/List_of_tz_database_time_zones .
@@ -117,7 +117,7 @@ public class ScriptCalendar2  {
      *
      * @param sourceTime a formatted time string
      * @param dateTimeFormat See
-     *  https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#stringTimeUnits
+     *  https://erddap.github.io/setupDatasetsXml.html#stringTimeUnits
      * @return the epochSeconds value or NaN if trouble
      */
     public static double parseToEpochSeconds(String sourceTime, String dateTimeFormat) {

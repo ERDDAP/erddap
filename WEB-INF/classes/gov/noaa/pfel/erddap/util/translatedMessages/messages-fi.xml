@@ -83,11 +83,11 @@ Jos sinulla on ehdotuksia lisälinkkeistä, ota yhteyttä <kbd>erd dot data at n
 <advl_institution>Instituutio</advl_institution>
 <advc_dataStructure>ERDDAP käsittelee jokaista tietojoukkoa joko &quot;ruudukkona&quot; tai &quot;taulukkona&quot;.</advc_dataStructure>
 <advl_dataStructure>Tietorakenne</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Yhteinen tietomallityyppi</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP-luokka</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Otsikko</advl_title>
 <advl_minLongitude>Pienin pituusaste</advl_minLongitude>
 <advl_maxLongitude>Suurin pituusaste</advl_maxLongitude>
@@ -137,7 +137,7 @@ Vanhentuneiden tietojoukoissa oletettavasti on ongelma tietolähteessä, joten E
 <advl_outOfDate>Vanhentunut indeksi</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Ilmeisesti millään tietojoukolla ei ole
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> attribuuttia.
 Ehkä tässä ERDDAP :ssa ei ole lähes reaaliaikaisia tietojoukkoja.
 ]]></advn_outOfDate>
@@ -1823,7 +1823,7 @@ Tämä sisältää:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Tiedot</a>, jotka on tällä hetkellä tallennettu relaatiotietokantaan.
 <br>Lue tiedot
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase-</a> tietojoukon tyypistä ERDDAP :ssa, erityisesti ensimmäiset ~2 tietoruutua, jotka kertovat tarpeesta luoda denormalisoitu taulukko.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase-</a> tietojoukon tyypistä ERDDAP :ssa, erityisesti ensimmäiset ~2 tietoruutua, jotka kertovat tarpeesta luoda denormalisoitu taulukko.
 Se voi kuulostaa hullulta.
 Ole hyvä ja luota tarpeeksi lukeaksesi perustelut tälle.
 <br>&nbsp;
@@ -3068,7 +3068,7 @@ Molempien versioiden tiedostojen tunniste on .nc, ja .nc -tiedostoja lukevat ohj
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">myös Conda kautta <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, tehokas komentorivityökalu .nc -tiedostojen pysyvään muokkaamiseen.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, tehokas komentorivityökalu .nc -tiedostojen pysyvään muokkaamiseen.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C ja NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>, tärkeimmät C-, C++-, Fortran- tai Java -ohjelmistokirjastot .nc -tiedostojen lukemiseen ja kirjoittamiseen.
@@ -3460,7 +3460,7 @@ Kuten edellä on kuvattu, koska Java -ohjelmat voivat käyttää verkossa saatav
 <p>Tai koska ERDDAP on täysin avoimen lähdekoodin ohjelma, voit myös asettaa oman ERDDAP -kopion omalle palvelimellesi (julkisesti saatavilla tai ei) palvelemaan omia tietojasi.
 Java - ohjelmasi voivat saada tietoja kyseisestä ERDDAP - kopiosta .
 Katso
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Oman ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Oman ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  JustGenerateAndView-viestejä käytetään justGenerateAndView-painikkeelle
 tietojen käyttölomakkeilla.
@@ -3535,7 +3535,7 @@ Monissa ERDDAP asennuksissa ei ole käytössä todennusta, joten käyttäjät ei
 Tällä hetkellä ERDDAP tukee vain todennusta Googlen hallinnoimien sähköpostitilien kautta, joihin kuuluvat NOAA :n ja monien yliopistojen sähköpostitilit.
 Jos ERDDAP :ssa on todennus käytössä, kuka tahansa Googlen hallinnoiman sähköpostitilin omaava voi kirjautua sisään, mutta heillä on pääsy vain niihin yksityisiin tietokokonaisuuksiin, joihin ERDDAP järjestelmänvalvoja on nimenomaisesti antanut luvan.
 Katso ohjeet ERDDAP :hen kirjautumisesta selaimesta tai komentosarjan kautta kohdasta
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Pääsy yksityisiin ERDDAP :ssa</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Pääsy yksityisiin ERDDAP :ssa</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>VIRHE: Käyttäjän {0} kirjautumisyritykset estetään tilapäisesti kolmen epäonnistuneen yrityksen jälkeen.
 Odota {1} minuuttia ja yritä sitten uudelleen.</loginAttemptBlocked>
@@ -4143,7 +4143,7 @@ Ihmiset voivat esimerkiksi käyttää tätä URL-osoitetta tehdäkseen kokotekst
 ERDDAP :ssa on monia ominaisuuksia, joita kirjoittamasi tietokoneohjelmat tai komentosarjat voivat käyttää.
 Voit käyttää niitä muiden verkkosovellusten tai verkkopalvelujen rakentamiseen ERDDAP :n päälle, jolloin ERDDAP tekee suurimman osan työstä! Joten jos sinulla on idea paremmasta käyttöliittymästä ERDDAP :n palvelemiin tietoihin tai verkkosivulle, joka tarvitsee helpon tavan päästä tietoihin, suosittelemme luomaan oman verkkosovelluksesi, verkkopalvelusi tai verkkosivusi ja käyttämään ERDDAP :tä perusta.
 Järjestelmäsi voi saada tietoja, kaavioita ja muuta tietoa ERD :n ERDDAP :sta tai muista ERDDAP asennuksista, tai voit<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">perustaa oma ERDDAP palvelin</a>, joka voi olla julkisesti tai vain yksityisesti käytettävissä.
+<a rel="help" href="https://erddap.github.io/setup.html">perustaa oma ERDDAP palvelin</a>, joka voi olla julkisesti tai vain yksityisesti käytettävissä.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL-pyynnöt</a></h3>
 ERDDAP :n käyttöliittymätietojen pyynnöt (esimerkiksi hakutulokset) käyttävät verkon yleistä standardia pyynnöille:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL-osoitteet &externalLinkHtml;</a> lähetetty
@@ -4204,7 +4204,7 @@ ERDDAP voi palauttaa käyttöliittymätuloksia tietotaulukona näissä yleisiss�
 <li>.nc - litteä, taulukkomainen NetCDF -3 binaaritiedosto.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.nccsv - litteä, taulukkomainen, NetCDF kaltainen ASCII CSV-tiedosto.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">lisää&nbsp;tiedot &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.tsv - sarkaimilla eroteltu ASCII-tekstitaulukko.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">lisää&nbsp;tiedot &externalLinkHtml;</a>)
 <li>.xhtml - XHTML (XML) -tiedosto, joka sisältää tiedot taulukossa.
@@ -4455,9 +4455,9 @@ Esimerkiksi nopeus <kbd>WindSpeed</kbd> löytää tietojoukkoja, joissa on <kbd>
 <searchMultipleERDDAPs>Hae useita ERDDAP-tiedostoja</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 On kaksi epävirallista tapaa etsiä tietojoukkoja useista ERDDAP :ista:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Hae useista ERDDAP</a> :ista
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 ><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> ja
@@ -4847,7 +4847,7 @@ Se on implisiittinen.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Lue lisää ERDDAP .</strong></a>
 <p><strong>Tiedontarjoajat:
 Voit
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">perustaa oman ERDDAP palvelimen</a> ja palvella omia tietojasi.</strong> ERDDAP on ilmainen ja avoin lähdekoodi.
+<a rel="help" href="https://erddap.github.io/setup.html">perustaa oman ERDDAP palvelimen</a> ja palvella omia tietojasi.</strong> ERDDAP on ilmainen ja avoin lähdekoodi.
 Se käyttää Apachen kaltaisia lisenssejä, joten voit tehdä sillä mitä haluat.
 ERDDAP :n ulkoasu on muokattavissa, joten ERDDAP kuvastaa oppilaitostasi, ei NOAA :ta.
 Pieni vaiva ERDDAP :n perustamiseksi tuo monia etuja.
@@ -5172,7 +5172,7 @@ Se on implisiittinen.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP voi saada tietoja paikallisista (palvelimen kiintolevyltä) ja etätietolähteistä (käytetään verkon kautta).</a></strong>
 <br>Katso
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">luettelo tietolähteistä</a>, joita ERDDAP voi käyttää.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">luettelo tietolähteistä</a>, joita ERDDAP voi käyttää.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP voi palvella monenlaista tieteellistä dataa, ei vain merentutkimusta.</a></strong>
 <br>ERDDAP on tietopalvelin, joka on kirjoitettu
@@ -5327,8 +5327,8 @@ Kun pyydät dataa tai kaaviota
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a>) kuvaavat tiedot.
 ERDDAP antaa (ja rohkaisee) järjestelmänvalvojan kuvailemaan metatietoja, jotka lisätään tietokokonaisuuksiin ja niiden muuttujiin lennossa.
 Katso järjestelmänvalvojille tarkoitettujen
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">ohjeiden</a>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">AddAttributes -osio</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">ohjeiden</a>
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">AddAttributes -osio</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP avulla voit pyytää .png- ja .pdf-kuvatiedostoja, joissa on kaavioita ja karttoja</a></strong>
@@ -5480,7 +5480,7 @@ Käyttäjien ei koskaan tarvitse kirjautua sisään päästäkseen julkisesti sa
 Käyttäjät, jotka ovat kirjautuneet sisään, voivat käyttää julkisia tietojoukkoja ja yksityisiä tietojoukkoja, joihin heillä on pääsy.
 Käyttäjien on käytettävä https::tä (Secure Sockets Layer) kirjautuakseen sisään ja käyttääkseen yksityisiä tietojoukkoja.
 Tietojoukot voidaan määrittää siten, että kaaviot ja kartat ovat julkisesti saatavilla, mutta tiedot ovat vain valtuutettujen käyttäjien käytettävissä.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">lisätietoa</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">lisätietoa</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP käsittelee tiedot paloina.</a></strong>
 <br>Säästääkseen muistia (iso ongelma) ja saadakseen vastaukset alkamaan nopeammin ERDDAP käsittelee tietopyynnöt paloina – saa toistuvasti osan dataa lähteestä ja puhdistaa sen (esimerkiksi lisäämällä
@@ -5502,16 +5502,16 @@ se ottaa pyynnön käyttäjältä; saa tiedot etätietolähteestä; alustaa tied
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> :
 Mutta ERDDAP :lla on myös mahdollisuus saada aktiivisesti kaikki saatavilla oleva data etätietolähteestä ja
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">tallentaa tiedoista paikallinen kopio</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">tallentaa tiedoista paikallinen kopio</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push tekniikka <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tämä linkki ulkoiselle verkkosivustolle ei ole suositus."></a> :
 ERDDAP :n
 <a href="#subscriptions">tilauspalveluita</a> käyttämällä voidaan ilmoittaa muille tietopalvelimille heti kun uutta tietoa on saatavilla, jotta ne voivat pyytää tietoja (vetämällä tiedot).
 ERDDAP :n
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ja
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> käyttävät ERDDAP :n tilauspalveluita ja
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">lippujärjestelmää,</a> jotta he saavat välittömästi tiedon, kun uutta tietoa on saatavilla.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> ja
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> käyttävät ERDDAP :n tilauspalveluita ja
+<a rel="help" href="https://erddap.github.io/setup.html#flag">lippujärjestelmää,</a> jotta he saavat välittömästi tiedon, kun uutta tietoa on saatavilla.
 Voit yhdistää nämä erinomaisesti:
 jos EDDGrid -kopion EDDGrid FromErddap -tietojoukon ympärille (tai käärit EDDTableCopyn EDDTableFromErddap-tietojoukon ympärille), ERDDAP luo automaattisesti paikallisen kopion toisen ERDDAP :n tietojoukosta ja ylläpitää sitä.
 Koska tilauspalvelut toimivat heti, kun uutta tietoa on saatavilla, push-tekniikka levittää tiedot erittäin nopeasti (sekunneissa).
@@ -5601,10 +5601,10 @@ Pelkästään tämä syy oikeuttaa ERDDAP :n kehittämiskustannukset.
 (Luulen, että voitaisiin osoittaa, että ERDDAP on säästänyt NOAA -tutkijan aikaa enemmän kuin mitä olen käyttänyt ERDDAP :n kehittämiseen .
 Aika=rahaa.) Mutta sivuetu on, että mikä tahansa muu organisaatio voi
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ladata, asentaa ja käyttää ERDDAP</a> :tä <strong>ilmaiseksi</strong> jakaakseen omia tietojaan.
+href="https://erddap.github.io/setup.html">ladata, asentaa ja käyttää ERDDAP</a> :tä <strong>ilmaiseksi</strong> jakaakseen omia tietojaan.
 tieteellistä tietoa.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Yli 90 organisaatiota vähintään 14 maassa käyttää ERDDAP</a> .
 Ehkä on olemassa sellainen asia kuin ilmainen lounas.
 <p>ERDDAP on Java -ohjelma.
@@ -5615,7 +5615,7 @@ Jokaisen version lähdekoodi on
 Toistaiseksi nämä ryhmät/henkilöt ovat toimittaneet koodia ERDDAP :iin:
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">YhdistäIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.javan</a> ovat kirjoittaneet ja osallistuneet Jonathan Lafite ja Philippe Makowski R.Tech Engineeringistä <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5779,14 +5779,14 @@ Ajattele sitä nyt vain nimenä, ei lyhenteenä.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">täältä</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Voit</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>perustaa oman ERDDAP palvelimesi</strong></a> ja palvella omia tietojasi.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>perustaa oman ERDDAP palvelimesi</strong></a> ja palvella omia tietojasi.
 <ul>
 <li>Pieni vaiva ERDDAP :n perustamiseksi tuo monia etuja.
 <li>Jos sinulla on jo verkkopalvelu tietojesi jakeluun, voit määrittää ERDDAP :n käyttämään tietojasi olemassa olevan palvelun tai lähdetiedostojen tai tietokannan kautta.
 Tämän jälkeen ihmisillä on toinen tapa päästä käsiksi tietoihisi ja he voivat ladata tiedot muissa tiedostomuodoissa tai kaavioina tai karttoina.
 <li>Jos sinulla on paljon kysyttyjä tietojoukkoja, voit asentaa
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >useita ERDDAP, jotka toimivat yhdessä</a> skaalautuakseen ja vastatakseen suuren tiedonjakelukeskuksen tarpeisiin.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Ota meihin yhteyttä</a></h2>
@@ -7311,7 +7311,7 @@ On
 <li>Datamuuttujalla PITÄÄ olla pituus- ja leveysaste-akselimuuttujat.
 (Muut akselimuuttujat ovat VALINNAisia.)
 <li>Pituusaste-arvoja TÄYTYY olla välillä -180 ja 180.
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum ja colorBarMaximum</a> TÄYTYY määrittää.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum ja colorBarMaximum</a> TÄYTYY määrittää.
 (Muut väripalkin määritteet ovat VALINNAISET.)
 </ul>
 <li><strong>Grid-tietokerrokset:</strong> ERDDAP :n WMS :ssä kaikki pituus- ja leveysastemittoja käyttävien ruudukkotietojoukkojen datamuuttujat ovat saatavilla WMS :n kautta.
