@@ -344,7 +344,7 @@ public class EDDTableFromFileNames extends EDDTable{
                     null, null, //String tDefaultDataQuery, String tDefaultGraphQuery, 
                     (new Attributes()) //Attributes tAddGlobalAttributes,
                         .add("cdm_data_type", "other")
-                        .add("infoUrl", "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFileNames")
+                        .add("infoUrl", "https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFileNames")
                         .add("institution", "NOAA")
                         .add("license", "[standard]")
                         .add("sourceUrl", "(local files)")

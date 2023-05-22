@@ -83,11 +83,11 @@ Als je suggesties hebt voor extra links, neem dan contact op met <kbd>erd dot da
 <advl_institution>Instelling</advl_institution>
 <advc_dataStructure>ERDDAP behandelt elke dataset als een &#39;raster&#39;- of een &#39;tabel&#39;-dataset.</advc_dataStructure>
 <advl_dataStructure>Data structuur</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Type gemeenschappelijk gegevensmodel</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP-klasse</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Titel</advl_title>
 <advl_minLongitude>Minimale lengtegraad</advl_minLongitude>
 <advl_maxLongitude>Maximale lengtegraad</advl_maxLongitude>
@@ -137,7 +137,7 @@ Voor verouderde datasets is er vermoedelijk een probleem met de gegevensbron, du
 <advl_outOfDate>Verouderde index</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Blijkbaar hebben geen datasets het attribuut
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> .
 Misschien zijn er geen bijna-realtime datasets in deze ERDDAP .
 ]]></advn_outOfDate>
@@ -1818,7 +1818,7 @@ Dit bevat:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Gegevens</a> die momenteel zijn opgeslagen in een relationele database.
 <br>Lees de informatie over het
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase datasettype</a> in ERDDAP, vooral de eerste ~2 schermen met informatie die praten over de noodzaak om een gedenormaliseerde tabel te maken.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase datasettype</a> in ERDDAP, vooral de eerste ~2 schermen met informatie die praten over de noodzaak om een gedenormaliseerde tabel te maken.
 Dat klinkt misschien gek.
 Vertrouw alstublieft genoeg om de reden hiervoor te lezen.
 <br>&nbsp;
@@ -3065,7 +3065,7 @@ kan worden geïnstalleerd
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Deze link naar een externe website houdt geen goedkeuring in."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, een krachtige opdrachtregeltool om .nc bestanden permanent te wijzigen.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, een krachtige opdrachtregeltool om .nc bestanden permanent te wijzigen.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C en NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Deze link naar een externe website houdt geen goedkeuring in."></a>, de belangrijkste softwarebibliotheken voor C, C++, Fortran of Java om .nc bestanden te lezen en te schrijven.
@@ -3451,7 +3451,7 @@ Zoals hierboven beschreven, kunt u, aangezien Java -programma&#39;s toegang hebb
 <p>Of, aangezien ERDDAP een volledig open source programma is, kunt u ook uw eigen exemplaar van ERDDAP op uw eigen server (al dan niet openbaar toegankelijk) opzetten om uw eigen gegevens te bedienen.
 Uw Java -programma&#39;s kunnen gegevens ophalen uit dat exemplaar van ERDDAP .
 Zie
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Uw eigen ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Uw eigen ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  De justGenerateAndView-berichten worden gebruikt voor de justGenerateAndView-knop
 op de formulieren voor gegevenstoegang.
@@ -3526,7 +3526,7 @@ Veel ERDDAP installaties hebben geen authenticatie ingeschakeld en bieden dus ge
 Momenteel ondersteunt ERDDAP alleen authenticatie via door Google beheerde e-mailaccounts, waaronder e-mailaccounts bij NOAA en veel universiteiten.
 Als authenticatie voor een ERDDAP is ingeschakeld, kan iedereen met een door Google beheerd e-mailaccount inloggen, maar heeft deze alleen toegang tot de privégegevenssets waarvoor de ERDDAP beheerder hen expliciet toestemming heeft gegeven.
 Voor instructies over inloggen op ERDDAP vanuit een browser of via een script, zie
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Toegang tot privédatasets in ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Toegang tot privédatasets in ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>FOUT: Inlogpogingen voor {0} worden tijdelijk geblokkeerd na 3 mislukte pogingen.
 Wacht {1} minuten en probeer het opnieuw.</loginAttemptBlocked>
@@ -4135,7 +4135,7 @@ Mensen kunnen deze URL bijvoorbeeld gebruiken om een Full Text Search uit te voe
 Er zijn veel functies in ERDDAP die kunnen worden gebruikt door computerprogramma&#39;s of scripts die u schrijft.
 U kunt ze gebruiken om andere webapplicaties of webservices bovenop ERDDAP te bouwen, waardoor ERDDAP het meeste werk doet! Dus als u een idee heeft voor een betere interface voor de gegevens die ERDDAP bedient of een webpagina die een gemakkelijke manier nodig heeft om toegang te krijgen tot gegevens, raden we u aan om uw eigen webtoepassing, webservice of webpagina te bouwen en ERDDAP te gebruiken als de fundering.
 Uw systeem kan gegevens, grafieken en andere informatie krijgen van ERD &#39;s ERDDAP of van andere ERDDAP installaties, of u kunt<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">zet uw eigen ERDDAP -server op</a>, die openbaar toegankelijk of alleen privé toegankelijk kan zijn.
+<a rel="help" href="https://erddap.github.io/setup.html">zet uw eigen ERDDAP -server op</a>, die openbaar toegankelijk of alleen privé toegankelijk kan zijn.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL-verzoeken</a></h3>
 Verzoeken om gebruikersinterface-informatie van ERDDAP (bijvoorbeeld zoekresultaten) gebruiken de universele standaard van het web voor verzoeken:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL&#39;s &externalLinkHtml;</a> verzonden via
@@ -4196,7 +4196,7 @@ ERDDAP kan resultaten van de gebruikersinterface retourneren als een gegevenstab
 <li>.nc - een plat, tafelachtig, NetCDF -3 binair bestand.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">meer&nbsp;informatie &externalLinkHtml;</a>)
 <li>.nccsv - een plat, tabelachtig, NetCDF -achtig, ASCII CSV-bestand.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">meer&nbsp;informatie &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">meer&nbsp;informatie &externalLinkHtml;</a>)
 <li>.tsv - een door tabs gescheiden ASCII-teksttabel.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">meer&nbsp;informatie &externalLinkHtml;</a>)
 <li>.xhtml - een XHTML (XML) bestand met de gegevens in een tabel.
@@ -4448,7 +4448,7 @@ Als u bijvoorbeeld op <kbd>spee</kbd> zoekt, vindt u wel datasets met <kbd>speed
 <searchMultipleERDDAPs>Zoeken in meerdere ERDDAP&#39;s</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Er zijn twee onofficiële manieren om in meerdere ERDDAP &#39;s naar datasets te zoeken:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Zoek in meerdere ERDDAP &#39;s <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Deze link naar een externe website houdt geen goedkeuring in."></a> en
@@ -4834,7 +4834,7 @@ Het is impliciet.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Lees meer over ERDDAP .</strong></a>
 <p><strong>Gegevensproviders:
 u kunt
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">uw eigen ERDDAP -server opzetten</a> en uw eigen gegevens bedienen.</strong> ERDDAP is gratis en open source.
+<a rel="help" href="https://erddap.github.io/setup.html">uw eigen ERDDAP -server opzetten</a> en uw eigen gegevens bedienen.</strong> ERDDAP is gratis en open source.
 Het maakt gebruik van Apache-achtige licenties, dus je kunt er alles mee doen wat je wilt.
 Het uiterlijk van ERDDAP kan worden aangepast, dus uw ERDDAP weerspiegelt uw instelling, niet NOAA .
 De kleine moeite om ERDDAP op te zetten brengt veel voordelen met zich mee.
@@ -5155,7 +5155,7 @@ Het is impliciet.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP kan gegevens ophalen van lokale (op de harde schijf van de server) en externe (toegankelijk via het web) gegevensbronnen.</a></strong>
 <br>Bekijk de
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">lijst met soorten gegevensbronnen</a> waartoe ERDDAP toegang heeft.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">lijst met soorten gegevensbronnen</a> waartoe ERDDAP toegang heeft.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP kan vele soorten wetenschappelijke gegevens dienen, niet alleen oceanografische gegevens.</a></strong>
 <br>ERDDAP is een gegevensserver die is geschreven bij
@@ -5310,8 +5310,8 @@ Wanneer u gegevens of een grafiek opvraagt uit een
       title="Deze link naar een externe website houdt geen goedkeuring in."></a>) beschrijft de gegevens.
 ERDDAP laat (en stimuleert) de beheerder om metadata te beschrijven die on-the-fly aan datasets en hun variabelen worden toegevoegd.
 Zie de
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">sectie addAttributes</a> van de
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">instructies voor beheerders</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">sectie addAttributes</a> van de
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">instructies voor beheerders</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP kunt u .png- en .pdf-afbeeldingsbestanden met grafieken en kaarten opvragen</a></strong>
@@ -5466,7 +5466,7 @@ Gebruikers die zijn ingelogd hebben toegang tot openbare datasets en de privé d
 Gebruikers moeten https:
 (Secure Sockets Layer) gebruiken om in te loggen en toegang te krijgen tot privégegevenssets.
 Gegevenssets kunnen worden geconfigureerd om grafieken en kaarten openbaar toegankelijk te maken, maar hebben gegevens die alleen toegankelijk zijn voor geautoriseerde gebruikers.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">meer informatie</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">meer informatie</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP verwerkt data in chunks.</a></strong>
 <br>Om geheugen te besparen (een groot probleem) en om reacties eerder te laten beginnen, verwerkt ERDDAP gegevensverzoeken in brokken — herhaaldelijk een stuk gegevens uit de bron halen, het opschonen (bijvoorbeeld door
@@ -5489,16 +5489,16 @@ het neemt een verzoek van een gebruiker aan; krijgt gegevens van een externe geg
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Deze link naar een externe website houdt geen goedkeuring in."></a> :
 Maar ERDDAP heeft ook de mogelijkheid om actief alle beschikbare gegevens uit een externe gegevensbron te halen en
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">een lokale kopie van de gegevens op te slaan</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">een lokale kopie van de gegevens op te slaan</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push technologie <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Deze link naar een externe website houdt geen goedkeuring in."></a> :
 Door gebruik te maken van de
 <a href="#subscriptions">abonnementsdiensten</a> van ERDDAP kunnen andere dataservers worden verwittigd zodra er nieuwe data beschikbaar zijn, zodat ze de data kunnen opvragen (door de data op te halen).
 ERDDAP &#39;s
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> en
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> gebruiken de abonnementsdiensten en het
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">vlaggensysteem van</a> ERDDAP, zodat ze onmiddellijk op de hoogte worden gebracht wanneer nieuwe gegevens beschikbaar zijn.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> en
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> gebruiken de abonnementsdiensten en het
+<a rel="help" href="https://erddap.github.io/setup.html#flag">vlaggensysteem van</a> ERDDAP, zodat ze onmiddellijk op de hoogte worden gebracht wanneer nieuwe gegevens beschikbaar zijn.
 U kunt deze met groot effect combineren:
 als u een EDDGrid kopie om een EDDGrid FromErddap-dataset wikkelt (of een EDDTableCopy om een EDDTableFromErddap-dataset wikkelt), zal ERDDAP automatisch een lokale kopie van een andere ERDDAP -dataset maken en onderhouden.
 Omdat de abonnementsdiensten werken zodra er nieuwe data beschikbaar is, verspreidt push-technologie data zeer snel (binnen enkele seconden).
@@ -5586,9 +5586,9 @@ Alleen al die reden rechtvaardigt de kosten van het ontwikkelen van ERDDAP .
 (Ik denk dat kan worden aangetoond dat ERDDAP meer tijd van NOAA -wetenschappers heeft bespaard dan dat ik heb besteed aan het ontwikkelen van ERDDAP .
 Tijd = geld.) Maar het nevenvoordeel is dat elke andere organisatie ERDDAP <strong>gratis</strong> kan
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP, installeren en gebruiken</a> om hun wetenschappelijke gegevens.
+href="https://erddap.github.io/setup.html">ERDDAP, installeren en gebruiken</a> om hun wetenschappelijke gegevens.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Meer dan 90 organisaties in ten minste 14 landen gebruiken ERDDAP</a> .
 Misschien bestaat er wel zoiets als een gratis lunch.
 <p>ERDDAP is een Java -programma.
@@ -5599,7 +5599,7 @@ De broncode voor elke versie staat op
 Tot dusver hebben deze groepen/mensen code bijgedragen aan ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">SamenvoegenIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> is geschreven en bijgedragen door Jonathan Lafite en Philippe Makowski van R.Tech Engineering <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5766,14 +5766,14 @@ Zie het alsjeblieft als een naam, niet als een acroniem.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">hier</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">U kunt</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>uw eigen ERDDAP server instellen</strong></a> en uw eigen gegevens bedienen.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>uw eigen ERDDAP server instellen</strong></a> en uw eigen gegevens bedienen.
 <ul>
 <li>De kleine moeite om ERDDAP op te zetten brengt veel voordelen met zich mee.
 <li>Als u al een webservice heeft voor het distribueren van uw gegevens, kunt u ERDDAP om toegang te krijgen tot uw gegevens via de bestaande service of via de bronbestanden of database.
 Dan hebben mensen een andere manier om toegang te krijgen tot uw gegevens en kunnen ze de gegevens downloaden in extra bestandsindelingen of als grafieken of kaarten.
 <li>Als je datasets hebt waar veel vraag naar is, kun je
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >meerdere ERDDAP &#39;s installeren die samenwerken</a> om op te schalen en te voldoen aan de behoeften van een groot datadistributiecentrum.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Neem contact met ons op</a></h2>
@@ -7302,7 +7302,7 @@ dataset zijn.
 (Andere asvariabelen zijn OPTIONEEL.)
 <li>Er MOET enige lengtegraad zijn tussen -180 en 180.
 <li>De
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum en colorBarMaximum</a> MOETEN worden gespecificeerd.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum en colorBarMaximum</a> MOETEN worden gespecificeerd.
 (Andere kenmerken van de kleurenbalk zijn OPTIONEEL.)
 </ul>
 <li>Rastergegevenslagen <strong>:</strong> In het WMS van ERDDAP zijn alle gegevensvariabelen in rastergegevenssets die lengte- en breedtegraden gebruiken, beschikbaar via WMS .

@@ -986,7 +986,7 @@ public class LoadDatasets extends Thread {
                                 "A (basically) ever-increasing number indicates a file handle leak in ERDDAP.\n" +
                                 "In any case, you should increase the maximum number of open files allowed\n" +
                                 "and restart ERDDAP. See\n" +
-                                "https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#TooManyOpenFiles\n");
+                                "https://erddap.github.io/setup.html#TooManyOpenFiles\n");
 
                     }
                 } catch (Throwable t) {

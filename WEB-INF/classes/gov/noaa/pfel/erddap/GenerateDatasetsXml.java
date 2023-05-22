@@ -234,7 +234,7 @@ public class GenerateDatasetsXml {
                         "  correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
                         "  THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
                         "For detailed information, see\n" +
-                        "https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html\n" +
+                        "https://erddap.github.io/setupDatasetsXml.html\n" +
                         "\n" +
                         "The EDDType options are:\n" +
                         eddTypesString + "\n" +
