@@ -96,10 +96,10 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     data from the data source. A solution is to copy the dataset onto ERDDAP's hard drive,
     perhaps with 
   <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
   or
   <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
     <br>&nbsp;
   <li>ERDDAP's server's bandwidth &mdash; Unless ERDDAP's server has a very high bandwidth Internet
     connection, ERDDAP's responses will be constrained by how fast ERDDAP can get data from
@@ -118,7 +118,7 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
      lots of memory.
      See the 
      <a rel="help" 
-     href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">-Xmx and -Xms settings</a> 
+     href="https://erddap.github.io/setup.html#initialSetup">-Xmx and -Xms settings</a> 
      for ERDDAP/Tomcat.     
      An ERDDAP getting heavy usage on a computer with a 64-bit server
      with 8GB of memory and -Xmx set to 4000M is rarely, if ever, constrained by memory.
@@ -137,13 +137,13 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     <br>&nbsp;
   <li><a class="selfLink" id="tooManyFiles" href="#tooManyFiles" rel="bookmark">Too many files</a>
     in a <a rel="help"
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory &mdash; 
+    href="https://erddap.github.io/setup.html#cachedResponses">cache</a> directory &mdash; 
      ERDDAP caches all images, but only caches the 
      data for certain types of data requests. It is possible for the cache directory for a 
      dataset to have a large number of files temporarily. This will slow down requests to see 
      if a file is in the cache (really!). <kbd>&lt;cacheMinutes&gt;</kbd> in 
        <a rel="help" 
-       href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
+       href="https://erddap.github.io/setup.html#setup.xml">setup.xml</a> 
        lets you set how 
      long a file can be in the cache before it is deleted. Setting a smaller 
      number would minimize this problem.
@@ -337,7 +337,7 @@ with the added benefit that you have removed the risk from a single point of fai
   </ul>  
 
   <p><a class="selfLink" id="recommendations" href="#recommendations" rel="bookmark">Our recommendations are:</a>
-    <br><img src="https://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" style="vertical-align:middle">
+    <br><img src="https://erddap.github.io/cluster.png" alt="grid/cluster diagram" style="vertical-align:middle">
   <ul>
   <li>Basically, I suggest setting up a Composite ERDDAP 
     (<strong>D</strong> in the diagram), which is a
@@ -348,10 +348,10 @@ with the added benefit that you have removed the risk from a single point of fai
     from the Composite ERDDAP to the other ERDDAPs.
   <li>ERDDAP has two special dataset types,
     <a rel="help" 
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
+    href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
     and
     <a rel="help" 
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>,
+    href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>,
     which refer to
     <br>datasets on other ERDDAPs. 
   <li>When the composite ERDDAP receives a request for data or images from 
@@ -409,10 +409,10 @@ with the added benefit that you have removed the risk from a single point of fai
        perhaps with 
        
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+href="https://erddap.github.io/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      <li><strong>B</strong> servers must be publicly accessible.
      </ul>
 
@@ -422,10 +422,10 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
     consider setting up another ERDDAP and storing a copy of the dataset
     on that ERDDAP's hard drives, perhaps with
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+href="https://erddap.github.io/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
      If several such ERDDAPs
     aren't getting many requests for data, you can consolidate them into one ERDDAP. 
     <br><strong>C</strong> servers must be publicly accessible.
@@ -464,14 +464,14 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       stored information about each source dataset
       when the source dataset is 
       <a rel="help"
-      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#reloadEveryNMinutes"
+      href="https://erddap.github.io/setupDatasetsXml.html#reloadEveryNMinutes"
       >"reload"ed</a>
       and some piece of metadata changes (e.g.,
       the time variable's actual_range), thereby generating a subscription notification.
       If the source dataset has data that changes frequently (for example, new data every second) 
       and uses the 
       <a rel="help"
-      href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+      href="https://erddap.github.io/setupDatasetsXml.html#updateEveryNMillis"
       >"update"</a>
       system to notice frequent changes to the underlying data, 
       the EDDGrid/TableFromErddap won't be notified about these frequent changes
@@ -490,7 +490,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       <li>Set the source dataset's &lt;reloadEveryNMinutes&gt; to a larger number (1440?).
       <li>Have the script contact the source dataset's 
         <a rel="help"
-    href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setDatasetFlag">flag URL</a>
+    href="https://erddap.github.io/setup.html#setDatasetFlag">flag URL</a>
         right after it copies a new data file into place.
         <br>&nbsp;
       </ol>
@@ -574,10 +574,10 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       it makes sense to copy the data (again) on to another server+hardDrive+ERDDAP,
       perhaps with
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
 and/or
 <a rel="help" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+href="https://erddap.github.io/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
        While it may seem ideal to have the original dataset and the
       copied dataset appear seamlessly as one dataset in the composite ERDDAP, this is difficult
       because the two datasets will be in slightly different states at different times (notably,
@@ -803,7 +803,7 @@ href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDD
       to subsetting tabular datasets, which is one of ERDDAP's main goals.
       It is likely that you can create an ERDDAP dataset from a BigQuery dataset via        
       <a rel="help" 
-        href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
+        href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a>
       because BigQuery can be accessed via a JDBC interface.
     </ul>
 
@@ -1016,7 +1016,7 @@ seeks to maintain a remote copy of a dataset:
       updating the local dataset.
       <br>&nbsp;
 
-    <li>ERDDAP's <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag"
+    <li>ERDDAP's <a rel="help" href="https://erddap.github.io/setup.html#flag"
     >flag system</a> 
     <br>provides a way for an ERDDAP administrator to tell a dataset on his/her ERDDAP
     to reload ASAP. The URL form of a flag can easily be used in scripts. 
@@ -1116,13 +1116,13 @@ e.g., Unidata's <a rel="help" href="https://www.unidata.ucar.edu/projects/index.
 
 <li><strong><a class="selfLink" id="RemoteReplicationOfDatasets_cacheFromUrl" href="#RemoteReplicationOfDatasets_cacheFromUrl"
   rel="bookmark">The</a>
-  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cacheFromUrl"
+  <a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#cacheFromUrl"
   >cacheFromUrl</a> setting</strong>
 <br>is available (starting with ERDDAP v2.0) 
 for all of ERDDAP's dataset types that make datasets from files (basically, all subclasses of 
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromFiles"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromFiles"
 >EDDGridFromFiles</a> and 
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFiles"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromFiles"
 >EDDTableFromFiles</a>).
 cacheFromUrl makes it trivial to automatically download and maintain the 
 local data files by copying them from a remote source via the cacheFromUrl setting. 
@@ -1134,7 +1134,7 @@ source files via the ERDDAP
 "files" system, then you can 
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">subscribe</a>
 to the remote dataset, and use the
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag URL</a> 
+<a rel="help" href="https://erddap.github.io/setup.html#flag">flag URL</a> 
 for your local dataset as the action for the subscription.
 Then, whenever the remote dataset changes, it will contact the flag URL for your
 dataset, which will tell it to reload ASAP, which will detect and download
@@ -1148,7 +1148,7 @@ the entire remote dataset. (This is where an rsync-like approach is needed.)
 
 <li><strong><a class="selfLink" id="RemoteReplicationOfDatasets_ArchiveADataset" href="#RemoteReplicationOfDatasets_ArchiveADataset"
   rel="bookmark">ERDDAP's</a>
-  <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#ArchiveADataset"
+  <a rel="help" href="https://erddap.github.io/setup.html#ArchiveADataset"
   >ArchiveADataset</a></strong>
 <br>is a good solution when data is added to a dataset frequently, but older data is never changed.
 Basically, an ERDDAP administrator can run ArchiveADataset 
@@ -1179,7 +1179,7 @@ by making more frequent requests for smaller time periods.
   rel="bookmark"><strong>EDDTableFromHttpGet</strong></a>
 <br>[This option doesn't yet exist, but seems possible to build in the near future.]
 <br>The new  
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromHttpGet"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromHttpGet"
 >EDDTableFromHttpGet</a> dataset type in ERDDAP v2.0 makes it possible to envision 
 another solution. The underlying files maintained by this type of dataset
 are essentially log files that record

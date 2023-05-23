@@ -82,11 +82,11 @@ Ikiwa una mapendekezo ya viungo vya ziada, wasiliana na <kbd>erd dot data at noa
 <advl_institution>Taasisi</advl_institution>
 <advc_dataStructure>ERDDAP huchukulia kila seti ya data kama &#39;gridi&#39; au seti ya data ya &#39;meza&#39;.</advc_dataStructure>
 <advl_dataStructure>Muundo wa Data</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Aina ya Mfano wa Data ya Kawaida</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>Darasa la ERDDAP</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Kichwa</advl_title>
 <advl_minLongitude>Kiwango cha chini cha Longitude</advl_minLongitude>
 <advl_maxLongitude>Upeo wa Longitudo</advl_maxLongitude>
@@ -136,7 +136,7 @@ Kwa seti za data zilizopitwa na wakati, huenda kuna tatizo na chanzo cha data, k
 <advl_outOfDate>Kielezo Kilichopitwa na Wakati</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Inavyoonekana, hakuna hifadhidata zilizo na sifa ya
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> .
 Labda hakuna hifadhidata za wakati halisi katika ERDDAP hii.
 ]]></advn_outOfDate>
@@ -1799,7 +1799,7 @@ Hii ni pamoja na:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a> ambayo kwa sasa imehifadhiwa katika hifadhidata ya uhusiano.
 <br>Tafadhali soma maelezo kuhusu aina ya hifadhidata ya
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> katika ERDDAP, hasa skrini ~2 za awali za maelezo ambazo huzungumzia hitaji la kuunda jedwali lisilo la kawaida.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> katika ERDDAP, hasa skrini ~2 za awali za maelezo ambazo huzungumzia hitaji la kuunda jedwali lisilo la kawaida.
 Hiyo inaweza kuonekana kama wazimu.
 Tafadhali amini vya kutosha kusoma mantiki ya hili.
 <br>&nbsp;
@@ -3038,7 +3038,7 @@ Faili za matoleo yote mawili zina kiendelezi .nc na zinaweza kusomwa na programu
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">kupitia Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>)
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, zana yenye nguvu ya mstari wa amri ya kurekebisha kabisa faili za .nc .
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, zana yenye nguvu ya mstari wa amri ya kurekebisha kabisa faili za .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C na NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, maktaba kuu za programu za C, C++, Fortran, au Java kusoma na kuandika faili za .nc .
@@ -3422,7 +3422,7 @@ Kama ilivyoelezwa hapo juu, kwa kuwa programu za Java zinaweza kufikia data inay
 <p>Au, kwa kuwa ERDDAP ni programu huria ya kila kitu, unaweza pia kusanidi nakala yako mwenyewe ya ERDDAP kwenye seva yako mwenyewe (inaweza kufikiwa na umma au la) ili kuhudumia data yako mwenyewe.
 Programu zako za Java zinaweza kupata data kutoka kwa nakala hiyo ya ERDDAP .
 Tazama
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Sanidi ERDDAP Yako Mwenyewe</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Sanidi ERDDAP Yako Mwenyewe</a> .
 ]]></javaProgramsHTML>
 <!--  Ujumbe wa justGenerateAndView hutumiwa kwa kitufe cha JustGenerateAndView
 kwenye Fomu za Ufikiaji Data.
@@ -3497,7 +3497,7 @@ ERDDAP uthibitishaji na kwa hivyo hautoi njia yoyote kwa watumiaji kuingia, wala
 Kwa sasa, ERDDAP inasaidia tu uthibitishaji kupitia akaunti za barua pepe zinazodhibitiwa na Google, ambazo zinajumuisha akaunti za barua pepe katika NOAA na vyuo vikuu vingi.
 Ikiwa ERDDAP imewashwa uthibitishaji, mtu yeyote aliye na akaunti ya barua pepe inayodhibitiwa na Google anaweza kuingia, lakini atapata tu ufikiaji wa seti za data za faragha ambazo msimamizi wa ERDDAP kwa uwazi kufikia.
 Kwa maagizo ya kuingia kwenye ERDDAP kutoka kwa kivinjari au kupitia hati, angalia
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Ufikiaji wa Hifadhidata za Kibinafsi katika ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Ufikiaji wa Hifadhidata za Kibinafsi katika ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>HITILAFU: Majaribio ya kuingia kwa {0} yanazuiwa kwa muda baada ya majaribio 3 kutofaulu.
 Subiri dakika {1}, kisha ujaribu tena.</loginAttemptBlocked>
@@ -4105,7 +4105,7 @@ Kwa mfano, wanadamu wanaweza kutumia URL hii kufanya Utafutaji Kamili wa Maandis
 Kuna vipengele vingi katika ERDDAP vinavyoweza kutumiwa na programu za kompyuta au hati unazoandika.
 Unaweza kuzitumia kuunda programu zingine za wavuti au huduma za wavuti juu ya ERDDAP, na kuifanya ERDDAP kufanya kazi nyingi! Kwa hivyo ikiwa una wazo la kiolesura bora cha data ambayo ERDDAP hutumikia au ukurasa wa wavuti unaohitaji njia rahisi ya kufikia data, tunakuhimiza uunde programu yako ya wavuti, huduma ya tovuti, au ukurasa wa wavuti na utumie ERDDAP kama msingi.
 Mfumo wako unaweza kupata data, grafu, na taarifa nyingine kutoka kwa ERDDAP ya ERD au kutoka kwa usakinishaji mwingine ERDDAP, au unaweza<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">sanidi seva yako ya ERDDAP</a>, ambayo inaweza kupatikana kwa umma au kufikiwa tu kwa faragha.
+<a rel="help" href="https://erddap.github.io/setup.html">sanidi seva yako ya ERDDAP</a>, ambayo inaweza kupatikana kwa umma au kufikiwa tu kwa faragha.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Maombi RESTful URL</a></h3>
 Maombi ya maelezo ya kiolesura cha mtumiaji kutoka kwa ERDDAP (kwa mfano, matokeo ya utafutaji) hutumia kiwango cha mtandaoni kwa maombi:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a> imetumwa kupitia
@@ -4165,7 +4165,7 @@ ERDDAP inaweza kurudisha matokeo ya kiolesura cha mtumiaji kama jedwali la data 
 <li>.nc - faili tambarare, kama meza, NetCDF -3.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">zaidi&nbsp;habari &externalLinkHtml;</a>)
 <li>.nccsv - faili bapa, kama jedwali, NetCDF -kama, ASCII CSV faili.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">zaidi&nbsp;habari &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">zaidi&nbsp;habari &externalLinkHtml;</a>)
 <li>.tsv - jedwali la maandishi la ASCII lililotenganishwa na kichupo.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">zaidi&nbsp;habari &externalLinkHtml;</a>)
 <li>.xhtml - faili ya XHTML (XML) yenye data kwenye jedwali.
@@ -4416,7 +4416,7 @@ Kwa mfano, kutafuta <kbd>spee</kbd> utapata seti za data kwa <kbd>speed</kbd>, l
 <searchMultipleERDDAPs>Tafuta ERDDAP nyingi</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Kuna njia mbili zisizo rasmi za kutafuta ERDDAP nyingi kwa hifadhidata:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Tafuta Multiple ERDDAP s.
 <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
@@ -4799,7 +4799,7 @@ Ni dhahiri.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Pata maelezo zaidi kuhusu ERDDAP .</strong></a>
 <p><strong>Watoa Data:
 Unaweza
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">kusanidi seva yako ya ERDDAP</a> na kuhudumia data yako mwenyewe.</strong> ERDDAP ni chanzo huria na huria.
+<a rel="help" href="https://erddap.github.io/setup.html">kusanidi seva yako ya ERDDAP</a> na kuhudumia data yako mwenyewe.</strong> ERDDAP ni chanzo huria na huria.
 Inatumia leseni kama Apache, kwa hivyo unaweza kufanya chochote unachotaka nayo.
 Mwonekano wa ERDDAP unaweza kubinafsishwa, kwa hivyo ERDDAP yako itaakisi taasisi yako, si NOAA .
 Juhudi ndogo za kuanzisha ERDDAP huleta manufaa mengi.
@@ -5119,7 +5119,7 @@ Ni wazi.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP inaweza kupata data kutoka kwa ndani (kwenye diski kuu ya seva) na vyanzo vya data vya mbali (kupitia wavuti).</a></strong>
 <br>Tazama
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">orodha ya aina za vyanzo vya data ambavyo</a> ERDDAP inaweza kufikia.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">orodha ya aina za vyanzo vya data ambavyo</a> ERDDAP inaweza kufikia.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP inaweza kutoa aina nyingi za data ya kisayansi, sio data ya bahari tu.</a></strong>
 <br>ERDDAP ni seva ya data ambayo iliandikwa
@@ -5275,8 +5275,8 @@ Unapoomba data au grafu kutoka kwa mkusanyiko wa data ya
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>) kuelezea data.
 ERDDAP huruhusu (na kuhimiza) msimamizi kuelezea metadata ambayo itaongezwa kwenye seti za data na vigeuzo vyake popote ulipo.
 Tazama
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">sehemu ya addAttributes</a> ya
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">maelekezo kwa wasimamizi</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">sehemu ya addAttributes</a> ya
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">maelekezo kwa wasimamizi</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP kuomba faili za picha za .png na .pdf zenye grafu na ramani</a></strong>
@@ -5425,7 +5425,7 @@ Watumiaji ambao wameingia wanaweza kufikia hifadhidata za umma na seti za faragh
 Watumiaji lazima watumie https:
 (Secure Sockets Layer) kuingia na kufikia hifadhidata za faragha.
 Seti za data zinaweza kusanidiwa kuwa na grafu na ramani zinazoweza kufikiwa na umma, lakini ziwe na data inayofikiwa na watumiaji walioidhinishwa pekee.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">maelezo zaidi</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">maelezo zaidi</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP huchakata data katika vipande.</a></strong>
 <br>Ili kuhifadhi kumbukumbu (suala kubwa) na kufanya majibu kuanza mapema, ERDDAP huchakata maombi ya data katika vipande - kupata sehemu ya data kutoka kwa chanzo mara kwa mara, kuisafisha (kwa mfano, kuongeza
@@ -5449,16 +5449,16 @@ inachukua ombi kutoka kwa mtumiaji; hupata data kutoka kwa chanzo cha data cha m
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> :
 Lakini ERDDAP pia ina uwezo wa kupata data yote inayopatikana kutoka kwa chanzo cha mbali na
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">kuhifadhi nakala ya data ya ndani</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">kuhifadhi nakala ya data ya ndani</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teknolojia ya Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a> :
 Kwa kutumia
 <a href="#subscriptions">huduma za usajili za</a> ERDDAP, seva zingine za data zinaweza kuarifiwa punde tu data mpya inapopatikana ili ziweze kuomba data (kwa kuvuta data).
 ERDDAP ya
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid kwaErddap</a> na
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> hutumia huduma za usajili za ERDDAP na
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">mfumo wa kuripoti</a> ili wataarifiwe mara moja data mpya inapopatikana.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid kwaErddap</a> na
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> hutumia huduma za usajili za ERDDAP na
+<a rel="help" href="https://erddap.github.io/setup.html#flag">mfumo wa kuripoti</a> ili wataarifiwe mara moja data mpya inapopatikana.
 Unaweza kuchanganya haya kwa matokeo mazuri:
 ukifunga Nakala ya EDDGrid karibu na seti ya data ya EDDGrid FromErddap (au kufunika EDDTableCopy karibu na seti ya data ya EDDTableFromErddap), ERDDAP itaunda na kudumisha nakala ya ndani ya hifadhidata nyingine ya ERDDAP .
 Kwa sababu huduma za usajili hufanya kazi mara tu data mpya inapopatikana, teknolojia ya kusukuma husambaza data haraka sana (ndani ya sekunde).
@@ -5548,20 +5548,20 @@ Sababu hiyo pekee inahalalisha gharama ya kutengeneza ERDDAP .
 (Nadhani inaweza kuonyeshwa kuwa ERDDAP imeokoa muda mwingi wa mwanasayansi wa NOAA kuliko ambao nimetumia kutengeneza ERDDAP .
 Time=Money.) Lakini manufaa ya upande ni kwamba shirika lingine lolote linaweza
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">kupakua, kusakinisha na kutumia ERDDAP</a> <strong>bila malipo</strong> ili kusambaza data za kisayansi.
+href="https://erddap.github.io/setup.html">kupakua, kusakinisha na kutumia ERDDAP</a> <strong>bila malipo</strong> ili kusambaza data za kisayansi.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Zaidi ya mashirika 90 katika angalau nchi 14 hutumia ERDDAP</a> .
 Labda kuna kitu kama chakula cha mchana cha bure.
 <p>ERDDAP ni programu ya Java .
 Nambari ya chanzo kwa kila toleo iko kwenye
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Kiungo hiki cha tovuti ya nje hakijumuishi ridhaa."></a>, mfumo unaotumika sana kwa miradi ya programu shirikishi.
 Kufikia sasa, vikundi/watu hawa wamechangia msimbo kwa ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">KuunganishaIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> iliandikwa na kuchangiwa na Jonathan Lafite na Philippe Makowski wa R.Tech Engineering <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5725,14 +5725,14 @@ Sasa, tafadhali lifikirie kama jina, si kifupi.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">hapa</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Unaweza</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>Kusanidi Seva Yako ya ERDDAP</strong></a> na utumie data yako mwenyewe.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>Kusanidi Seva Yako ya ERDDAP</strong></a> na utumie data yako mwenyewe.
 <ul>
 <li>Juhudi ndogo za kusanidi ERDDAP huleta manufaa mengi.
 <li>Ikiwa tayari una huduma ya tovuti ya kusambaza data yako, unaweza kusanidi ERDDAP ili kufikia data yako kupitia huduma iliyopo au kupitia faili chanzo au hifadhidata.
 Kisha, watu watakuwa na njia nyingine ya kufikia data yako na wataweza kupakua data katika miundo ya ziada ya faili au kama grafu au ramani.
 <li>Ikiwa una seti za data zinazohitajika sana, unaweza kusakinisha
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >ERDDAP nyingi zinazofanya kazi pamoja</a> ili kuongeza na kukidhi mahitaji ya kituo kikubwa cha usambazaji wa data.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Wasiliana nasi</a></h2>
@@ -7253,7 +7253,7 @@ seti ya data.
 <li>Tofauti ya data LAZIMA iwe na viambajengo vya mhimili wa longitudo na latitudo.
 (Vigezo vingine vya mhimili ni SI LAZIMA.)
 <li>LAZIMA kuwe na thamani za longitudo kati ya -180 na 180.
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum na colorBarMaximum sifa</a> LAZIMA zibainishwe.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum na colorBarMaximum sifa</a> LAZIMA zibainishwe.
 (Sifa zingine za upau wa rangi ni SI LAZIMA.)
 </ul>
 <li><strong>Tabaka za data ya gridi:</strong> Katika WMS ya ERDDAP, vigeuzo vyote vya data katika hifadhidata za gridi zinazotumia vipimo vya longitudo na latitudo zinapatikana kupitia WMS .

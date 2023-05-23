@@ -83,11 +83,11 @@ x-gzip=gzip 및 x-compress=compress
 <advl_institution>기관</advl_institution>
 <advc_dataStructure>ERDDAP는 각 데이터세트를 &#39;그리드&#39; 또는 &#39;테이블&#39; 데이터세트로 취급합니다.</advc_dataStructure>
 <advl_dataStructure>데이터 구조</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>공통 데이터 모델 유형</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP 클래스</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>제목</advl_title>
 <advl_minLongitude>최소 경도</advl_minLongitude>
 <advl_maxLongitude>최대 경도</advl_maxLongitude>
@@ -137,7 +137,7 @@ x-gzip=gzip 및 x-compress=compress
 <advl_outOfDate>오래된 색인</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 분명히
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> 속성이 있는 데이터 세트는 없습니다.
 아마도 이 ERDDAP 에는 실시간에 가까운 데이터 세트가 없을 것입니다.
 ]]></advn_outOfDate>
@@ -1889,7 +1889,7 @@ ERDDAP 는 그리드 데이터 또는 표 형식 데이터의 두 가지 방법 
 <li>현재 관계형 데이터베이스에 저장된
 <a class="selfLink" id="databases" href="#databases" rel="bookmark">데이터</a> 입니다.
 <br>ERDDAP 의
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> 데이터셋 유형에 대한 정보, 특히 비정규화된 테이블을 생성해야 할 필요성에 대해 이야기하는 정보의 초기 ~2 화면을 읽으십시오.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> 데이터셋 유형에 대한 정보, 특히 비정규화된 테이블을 생성해야 할 필요성에 대해 이야기하는 정보의 초기 ~2 화면을 읽으십시오.
 미친 소리로 들릴 수 있습니다.
 이에 대한 근거를 충분히 믿으시기 바랍니다.
 <br>&nbsp;
@@ -3166,7 +3166,7 @@ ERDDAP 의 주요 기능 중 하나는 데이터 세트의 하위 집합(데이�
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a> 는 .nc 파일을 영구적으로 수정하는 강력한 명령줄 도구입니다.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a> 는 .nc 파일을 영구적으로 수정하는 강력한 명령줄 도구입니다.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C 및 NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>, .nc 파일을 읽고 쓰기 위한 C, C++, Fortran 또는 Java 용 주요 소프트웨어 라이브러리.
@@ -3576,7 +3576,7 @@ Matlab, R 또는 작성) 및 웹 페이지(HTML 이미지 태그 또는 Java 스
 위에서 설명한 것처럼 Java 프로그램은 웹에서 사용할 수 있는 데이터에 액세스할 수 있으므로 공개적으로 액세스 가능한 ERDDAP 설치의 데이터에 액세스하는 Java 프로그램을 작성할 수 있습니다.
 <p>또는 ERDDAP 은 모든 오픈 소스 프로그램이므로 자체 서버(공개적으로 액세스할 수 있는지 여부)에 자체 ERDDAP 복사본을 설정하여 자체 데이터를 제공할 수도 있습니다.
 Java 프로그램은 해당 ERDDAP 사본에서 데이터를 가져올 수 있습니다.
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">자신의 ERDDAP 설정을</a> 참조하십시오.
+<a rel="help" href="https://erddap.github.io/setup.html">자신의 ERDDAP 설정을</a> 참조하십시오.
 ]]></javaProgramsHTML>
 <!--  justGenerateAndView 메시지는 justGenerateAndView 버튼에 사용됩니다.
 데이터 액세스 양식에서.
@@ -3650,7 +3650,7 @@ ERDDAP의 가로 범례는 legendTitle1과 2가 같은 줄에 있습니다.
 현재 ERDDAP 는 NOAA 및 많은 대학의 이메일 계정을 포함하여 Google에서 관리하는 이메일 계정을 통한 인증만 지원합니다.
 ERDDAP 에 인증이 활성화된 경우 Google 관리 이메일 계정이 있는 사람은 누구나 로그인할 수 있지만 ERDDAP 관리자가 액세스 권한을 명시적으로 부여한 비공개 데이터 세트에만 액세스할 수 있습니다.
 브라우저에서 또는 스크립트를 통해 ERDDAP 에 로그인하는 방법에 대한 지침은 ERDDAP에서
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">ERDDAP 데이터 세트에 액세스를</a> 참조하십시오.
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">ERDDAP 데이터 세트에 액세스를</a> 참조하십시오.
 ]]></loginHTML>
 <loginAttemptBlocked>오류: {0}에 대한 로그인 시도가 3회 실패한 후 일시적으로 차단됩니다.
 {1}분 동안 기다렸다가 다시 시도하세요.</loginAttemptBlocked>
@@ -4263,7 +4263,7 @@ ERDDAP 는 둘 다:
 ERDDAP 에는 사용자가 작성하는 컴퓨터 프로그램이나 스크립트에서 사용할 수 있는 많은 기능이 있습니다.
 그것들을 사용하여 ERDDAP ERDDAP 대부분의 작업을 수행합니다! 따라서 ERDDAP 가 제공하는 데이터에 대한 더 나은 인터페이스 또는 데이터에 쉽게 액세스할 수 있는 방법이 필요한 웹 페이지에 대한 아이디어가 있는 경우 자체 웹 애플리케이션, 웹 서비스 또는 웹 페이지를 구축하고 ERDDAP 를 기반.
 시스템은 ERD 의 ERDDAP 또는 다른 ERDDAP 설치에서 데이터, 그래프 및 기타 정보를 얻을 수 있습니다.<!-- setup always from coastwatch's erddap --> 공개적으로 액세스하거나 비공개로 액세스할 수 있는
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">고유 ERDDAP 서버를 설정합니다</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">고유 ERDDAP 서버를 설정합니다</a> .
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL 요청</a></h3>
 ERDDAP 의 사용자 인터페이스 정보 요청(예:
 검색 결과)은 요청에 대해 웹의 범용 표준을 사용합니다.
@@ -4329,7 +4329,7 @@ ERDDAP 는 사용자 인터페이스 결과를 다음과 같은 일반적인 컴
 <li>.nc - 평평한 테이블 같은 NetCDF -3 바이너리 파일.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">더&nbsp;정보 &externalLinkHtml;</a>)
 <li>.nccsv - 평평한 테이블과 같은 NetCDF 같은 ASCII CSV 파일.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">더&nbsp;정보 &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">더&nbsp;정보 &externalLinkHtml;</a>)
 <li>.tsv - 탭으로 구분된 ASCII 텍스트 테이블.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">더&nbsp;정보 &externalLinkHtml;</a>)
 <li>.xhtml - 테이블에 데이터가 있는 XHTML(XML) 파일입니다.
@@ -4588,7 +4588,7 @@ ERDDAP 은 구문이 아닌 개별적으로 단어를 검색합니다.
 <searchMultipleERDDAPsDescription><![CDATA[
 데이터 세트에 대해 여러 ERDDAP 를 검색하는 두 가지 비공식적인 방법이 있습니다.
 여러 ERDDAP
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> 및
@@ -4978,7 +4978,7 @@ ERDDAP 의 웹 서비스 위에 다른 유용하고 흥미로운 것들을 구�
 암시적입니다.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>ERDDAP 에 대해 자세히 알아보십시오.</strong></a>
 <p><strong>데이터 공급자:
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">자신의 ERDDAP 서버를 설정하고</a> 자신의 데이터를 제공할 수 있습니다.</strong> ERDDAP 은 무료이며 오픈 소스입니다.
+<a rel="help" href="https://erddap.github.io/setup.html">자신의 ERDDAP 서버를 설정하고</a> 자신의 데이터를 제공할 수 있습니다.</strong> ERDDAP 은 무료이며 오픈 소스입니다.
 Apache와 유사한 라이선스를 사용하므로 원하는 모든 작업을 수행할 수 있습니다.
 ERDDAP 의 모양은 사용자 정의가 가능하므로 ERDDAP 는 NOAA 가 아닌 귀하의 기관을 반영합니다.
 ERDDAP 을 설정하기 위한 작은 노력은 많은 이점을 가져옵니다.
@@ -5302,7 +5302,7 @@ Rich Signell에게 감사드립니다.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP 는 로컬(서버의 하드 드라이브에 있음) 및 원격(웹을 통해 액세스) 데이터 소스에서 데이터를 가져올 수 있습니다.</a></strong>
 <br>ERDDAP 이 액세스할 수
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">있는 데이터 소스 유형 목록을</a> 참조하십시오.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">있는 데이터 소스 유형 목록을</a> 참조하십시오.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP 은 해양 데이터뿐만 아니라 다양한 유형의 과학 데이터를 제공할 수 있습니다.</a></strong>
 <br>ERDDAP 는
@@ -5461,8 +5461,8 @@ setup.xml의 <kbd>&lt;units_standard&gt;</kbd> 태그로 지정할 수 있습니
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>) 데이터를 설명합니다.
 ERDDAP 를 사용하면 관리자가 즉석에서 데이터 세트 및 해당 변수에 추가될 메타데이터를 설명할 수 있습니다.
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">관리자를 위한 지침</a> 의
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes 섹션</a> 을 참조하십시오.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">관리자를 위한 지침</a> 의
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes 섹션</a> 을 참조하십시오.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP 를 사용하면 그래프와 지도가 포함된 .png 및 .pdf 이미지 파일을 요청할 수 있습니다.</a></strong>
@@ -5620,7 +5620,7 @@ ERDDAP 설치에 인증이 켜져 있는 경우 각 웹 페이지 상단에 &quo
 로그인한 사용자는 공개 데이터 세트와 액세스가 허용된 비공개 데이터 세트에 액세스할 수 있습니다.
 사용자는 https:(Secure Sockets Layer)를 사용하여 로그인하고 개인 데이터 세트에 액세스해야 합니다.
 데이터 세트는 그래프와 지도에 공개적으로 액세스할 수 있도록 구성할 수 있지만 승인된 사용자만 데이터에 액세스할 수 있습니다.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">더 많은 정보</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">더 많은 정보</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP 는 데이터를 청크로 처리합니다.</a></strong>
 <br>메모리(큰 문제)를 절약하고 응답을 더 빨리 시작하기 위해 ERDDAP 은 데이터 요청을 청크로 처리합니다.
@@ -5652,16 +5652,16 @@ Push 앤 Pull 기술</a></strong>
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> 참고:
 그러나 ERDDAP 에는 원격 데이터 소스에서 사용 가능한 모든 데이터를 능동적으로 가져와 데이터
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">의 로컬 복사본을 저장할 수 있는</a> 기능도 있습니다.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">의 로컬 복사본을 저장할 수 있는</a> 기능도 있습니다.
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push 기술 <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a> :
 ERDDAP 의
 <a href="#subscriptions">구독 서비스</a> 를 사용하여 다른 데이터 서버는 새로운 데이터가 사용 가능한 즉시 알림을 받아 데이터를 요청할 수 있습니다(데이터를 가져옴으로써).
 ERDDAP 의
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> 및
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> 은 ERDDAP 의 구독 서비스 및
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">플래그 시스템</a> 을 사용하므로 새 데이터가 사용 가능할 때 즉시 알림을 받을 수 있습니다.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> 및
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> 은 ERDDAP 의 구독 서비스 및
+<a rel="help" href="https://erddap.github.io/setup.html#flag">플래그 시스템</a> 을 사용하므로 새 데이터가 사용 가능할 때 즉시 알림을 받을 수 있습니다.
 이것을 결합하면 큰 효과를 얻을 수 있습니다.
 EDDGrid FromErddap 데이터셋 주위에 EDDGrid Copy를 래핑하면(또는 EDDTableFromErddap 데이터셋 주위에 EDDTableCopy를 래핑하면) ERDDAP 는 자동으로 다른 ERDDAP 데이터셋의 로컬 복사본을 생성하고 유지 관리합니다.
 구독 서비스는 새로운 데이터가 제공되는 즉시 작동하기 때문에 푸시 기술은 데이터를 매우 빠르게(초 이내에) 보급합니다.
@@ -5754,22 +5754,22 @@ ERDDAP 이 내가 하도록 고용된 일을 하기 때문입니다.
 (내가 ERDDAP .
 Time=Money 를 개발하는 데 보낸 시간보다 ERDDAP 가 NOAA 과학자의 시간을 더 많이 절약했다는 것을 보여줄 수 있다고 생각합니다.) 그러나 부수적인 이점은 다른 조직이 ERDDAP <strong>를 무료</strong> 로
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP, 설치 및 사용</a> 하여 배포할 수 있다는 것입니다.
+href="https://erddap.github.io/setup.html">ERDDAP, 설치 및 사용</a> 하여 배포할 수 있다는 것입니다.
 과학적 데이터.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >최소 14개국의 90개 이상의 조직에서 ERDDAP 를 사용합니다</a> .
 어쩌면 공짜 점심 같은 것이 있을지도 모릅니다.
 <p>ERDDAP 는 Java 프로그램입니다.
 모든 버전의 소스 코드는
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub</a> 에 있습니다.
-<a rel="bookmark" href="https://github.com/BobSimons"><img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub</a> 에 있습니다.
+<a rel="bookmark" href="https://github.com/ERDDAP"><img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="외부 웹사이트에 대한 이 링크는 보증을 구성하지 않습니다."></a>, 협업 소프트웨어 프로젝트에 가장 일반적으로 사용되는 시스템입니다.
 지금까지 이 그룹/사람들은 ERDDAP 에 코드를 기여했습니다.
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">병합IR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> 는 R.Tech Engineering의 Jonathan Lafite와 Philippe Makowski가 작성하고 기여했습니다.
 <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
@@ -5948,14 +5948,14 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <br>데이터 분배 시스템의 설계 및 평가에 대한 Bob의 의견은
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">여기</a> 에서 찾을 수 있습니다.
 <br>&nbsp;
-<p><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>자신의 ERDDAP 서버</strong></a> <strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">를</a></strong> 설정하고 자신의 데이터를 제공할 수 있습니다.
+<p><a rel="help" href="https://erddap.github.io/setup.html"><strong>자신의 ERDDAP 서버</strong></a> <strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">를</a></strong> 설정하고 자신의 데이터를 제공할 수 있습니다.
 <ul>
 <li>ERDDAP 을 설정하기 위한 작은 노력은 많은 이점을 가져옵니다.
 <li>데이터 배포를 위한 웹 서비스가 이미 있는 경우 기존 서비스나 소스 파일 또는 데이터베이스를 통해 데이터에 액세스하도록 ERDDAP 를 설정할 수 있습니다.
 그러면 사람들은 데이터에 액세스할 수 있는 다른 방법을 갖게 되며 추가 파일 형식이나 그래프 또는 지도로 데이터를 다운로드할 수 있습니다.
 <li>수요가 많은 데이터 세트가 있는 경우
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >함께 작동하는 여러 ERDDAP</a> 를 설치하여 대규모 데이터 배포 센터의 요구 사항을 충족하고 확장할 수 있습니다.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">문의하기</a></h2>
@@ -7485,7 +7485,7 @@ A-Za-z0-9_-!.~&#39;()* 이외의 쿼리 값의 모든 문자는 %HH로 인코딩
 <li>데이터 변수에는 경도 및 위도 축 변수가 있어야 합니다(MUST).
 (다른 축 변수는 OPTIONAL입니다.)
 <li>-180에서 180 사이의 경도 값이 있어야 합니다(MUST).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum 및 colorBarMaximum 속성</a> 을 지정해야 합니다(MUST).
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum 및 colorBarMaximum 속성</a> 을 지정해야 합니다(MUST).
 (다른 색상 막대 속성은 선택 사항입니다.)
 </ul>
 <li><strong>그리드 데이터 레이어:</strong> ERDDAP 의 WMS 에서 경도 및 위도 차원을 사용하는 그리드 데이터 세트의 모든 데이터 변수는 WMS 를 통해 사용할 수 있습니다.

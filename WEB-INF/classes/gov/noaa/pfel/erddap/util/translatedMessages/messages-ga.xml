@@ -82,11 +82,11 @@ Má tá moltaí agat maidir le naisc bhreise, déan teagmháil le <kbd>erd dot d
 <advl_institution>Institiúid</advl_institution>
 <advc_dataStructure>Déileálann ERDDAP le gach tacar sonraí mar tacar sonraí &#39;greille&#39; nó &#39;tábla&#39;.</advc_dataStructure>
 <advl_dataStructure>Struchtúr Sonraí</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Cineál Múnla Sonraí Coiteann</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>Rang ERDDAP</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Teideal</advl_title>
 <advl_minLongitude>Domhanfhad Íosta</advl_minLongitude>
 <advl_maxLongitude>Domhanfhad Uasta</advl_maxLongitude>
@@ -136,7 +136,7 @@ Maidir le tacair sonraí atá as dáta, is dócha go bhfuil fadhb leis an bhfoin
 <advl_outOfDate>Innéacs atá as dáta</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 De réir cosúlachta, níl an tréith
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> ag aon tacar sonraí.
 B’fhéidir nach bhfuil aon tacar sonraí beagnach fíor-ama san ERDDAP seo.
 ]]></advn_outOfDate>
@@ -1838,7 +1838,7 @@ mar shonraí gridded nó mar shonraí tábla.
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Sonraí</a> atá stóráilte faoi láthair i mbunachar sonraí coibhneasta.
 <br>Léigh an fhaisnéis le do thoil faoin gcineál tacar sonraí
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> in ERDDAP, go háirithe na ~ 2 scáileán faisnéise tosaigh a labhraíonn faoin ngá le tábla dí-normalaithe a chruthú.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> in ERDDAP, go háirithe na ~ 2 scáileán faisnéise tosaigh a labhraíonn faoin ngá le tábla dí-normalaithe a chruthú.
 B’fhéidir go bhfuil sé sin craiceáilte.
 Cuir muinín go leor le do thoil chun an réasúnaíocht leis seo a léamh.
 <br>&nbsp;
@@ -3083,7 +3083,7 @@ Tá an síneadh .nc ag comhaid den dá leagan agus is féidir iad a léamh le cl
 <a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, uirlis chumhachtach líne ordaithe chun comhaid .nc a mhodhnú go buan.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, uirlis chumhachtach líne ordaithe chun comhaid .nc a mhodhnú go buan.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C agus NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a>, na príomh leabharlanna bogearraí do C, C ++, Fortran, nó Java chun comhaid .nc a léamh agus a scríobh.
@@ -3468,7 +3468,7 @@ Mar a thuairiscítear thuas, ós rud é gur féidir le cláir Java rochtain a fh
 <p>Nó, ós rud é gur clár foinse uile-oscailte é ERDDAP, is féidir leat do chóip féin de ERDDAP a bhunú ar do fhreastalaí féin (inrochtana go poiblí nó nach bhfuil) chun freastal ar do chuid sonraí féin.
 Is féidir le do chláir Java sonraí a fháil ón gcóip sin de ERDDAP .
 Féach
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Cuir Do ERDDAP Féin ar bun</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Cuir Do ERDDAP Féin ar bun</a> .
 ]]></javaProgramsHTML>
 <!--  Úsáidtear na teachtaireachtaí justGenerateAndView don chnaipe justGenerateAndView
 ar na Foirmeacha Rochtana Sonraí.
@@ -3543,7 +3543,7 @@ Níl cumas fíordheimhnithe ag go leor suiteálacha ERDDAP agus mar sin ní shol
 Faoi láthair, ní thacaíonn ERDDAP ach le fíordheimhniú trí chuntais ríomhphoist arna mbainistiú ag Google, lena n-áirítear cuntais ríomhphoist ag NOAA agus go leor ollscoileanna.
 Má tá fíordheimhniú cumasaithe ag ERDDAP, is féidir le duine ar bith a bhfuil cuntas ríomhphoist arna bhainistiú ag Google logáil isteach, ach ní bheidh rochtain acu ach ar na tacair sonraí príobháideacha a bhfuil údarás sainráite ag riarthóir ERDDAP iad a rochtain.
 Le haghaidh treoracha maidir le logáil isteach in ERDDAP ó bhrabhsálaí nó trí script, féach
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Rochtain ar Shonraí Sonraí Príobháideacha in ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Rochtain ar Shonraí Sonraí Príobháideacha in ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>ERROR: Tá iarrachtaí logála isteach do {0} á mbacadh go sealadach tar éis 3 iarracht theip.
 Fan {1} nóiméad, ansin bain triail eile as.</loginAttemptBlocked>
@@ -4152,7 +4152,7 @@ Mar shampla, is féidir le daoine an URL seo a úsáid chun Cuardach Téacs Ioml
 Tá go leor gnéithe in ERDDAP ar féidir le cláir ríomhaire nó scripteanna a scríobhann tú a úsáid.
 Is féidir leat iad a úsáid chun feidhmchláir ghréasáin nó seirbhísí gréasáin eile a thógáil ar bharr ERDDAP, rud a fhágann go ndéanann ERDDAP an chuid is mó den obair! Mar sin má tá smaoineamh agat maidir le comhéadan níos fearr leis na sonraí a bhfreastalaíonn ERDDAP nó leathanach gréasáin a bhfuil bealach éasca de dhíth air chun rochtain a fháil ar shonraí, molaimid duit d’iarratas gréasáin féin, seirbhís gréasáin, nó leathanach gréasáin a thógáil agus ERDDAP a úsáid mar an bunús.
 Is féidir le do chóras sonraí, graif agus faisnéis eile a fháil ó ERDDAP ERD nó ó shuiteálacha ERDDAP eile, nó is féidir leat<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">cuir do fhreastalaí ERDDAP féin ar bun</a>, ar féidir leis a bheith inrochtana go poiblí nó díreach inrochtana go príobháideach.
+<a rel="help" href="https://erddap.github.io/setup.html">cuir do fhreastalaí ERDDAP féin ar bun</a>, ar féidir leis a bheith inrochtana go poiblí nó díreach inrochtana go príobháideach.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">Iarrataí URL RESTful</a></h3>
 Úsáideann iarratais ar fhaisnéis maidir le comhéadan úsáideora ó ERDDAP (mar shampla, torthaí cuardaigh) caighdeán uilíoch an ghréasáin le haghaidh iarratas:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLanna &externalLinkHtml;</a> seolta trí
@@ -4214,7 +4214,7 @@ Péirí luacha.
 <li>.nc - comhad dénártha cothrom, cosúil le tábla, NetCDF -3.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.nccsv - comhad cothrom, cosúil le tábla, NetCDF, ASCII CSV.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.tsv - tábla téacs ASCII atá scartha le cluaisíní.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">níos mó&nbsp;faisnéis &externalLinkHtml;</a>)
 <li>.xhtml - comhad XHTML (XML) leis na sonraí i dtábla.
@@ -4467,7 +4467,7 @@ Mar shampla, má dhéantar <kbd>spee</kbd> a chuardach gheobhaidh tú tacar sonr
 <searchMultipleERDDAPs>Cuardaigh Il ERDDAPanna</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Tá dhá bhealach neamhoifigiúla ann chun iliomad ERDDAP a chuardach le haghaidh tacar sonraí:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Cuardaigh Il ERDDAP s <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo le suíomh Gréasáin seachtrach."></a> agus
@@ -4861,7 +4861,7 @@ Tá sé intuigthe.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Faigh tuilleadh eolais faoi ERDDAP .</strong></a>
 <p><strong>Soláthraithe Sonraí:
 Is féidir leat
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">do fhreastalaí ERDDAP féin a bhunú</a> agus do chuid sonraí féin a sheirbheáil.</strong> Tá ERDDAP saor in aisce agus foinse oscailte.
+<a rel="help" href="https://erddap.github.io/setup.html">do fhreastalaí ERDDAP féin a bhunú</a> agus do chuid sonraí féin a sheirbheáil.</strong> Tá ERDDAP saor in aisce agus foinse oscailte.
 Úsáideann sé ceadúnais cosúil le Apache, ionas gur féidir leat aon rud a theastaíonn uait a dhéanamh leis.
 Tá cuma ERDDAP, mar sin léireoidh do ERDDAP d’institiúid, ní NOAA .
 Is iomaí sochar a bhaineann leis an iarracht bheag chun ERDDAP a chur ar bun.
@@ -5181,7 +5181,7 @@ Tá sé intuigthe.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">Is féidir le ERDDAP sonraí a fháil ó fhoinsí sonraí áitiúla (ar thiomántán crua an fhreastalaí) agus ó fhoinsí sonraí cianda (a bhfuil rochtain orthu tríd an ngréasán).</a></strong>
 <br>Féach ar an
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">liosta de na cineálacha foinsí sonraí ar</a> féidir le ERDDAP rochtain a fháil orthu.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">liosta de na cineálacha foinsí sonraí ar</a> féidir le ERDDAP rochtain a fháil orthu.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">Is féidir le ERDDAP freastal ar go leor cineálacha sonraí eolaíocha, ní hamháin sonraí aigéaneolaíochta.</a></strong>
 <br>Is freastalaí sonraí é ERDDAP a scríobhadh ag
@@ -5335,8 +5335,8 @@ Nuair a iarrann tú sonraí nó graf ó
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>) ag cur síos ar na sonraí.
 Ligeann ERDDAP don riarthóir (agus spreagann sé) cur síos a dhéanamh ar mheiteashonraí a chuirfear le tacair shonraí agus a n-athróga ar an eitilt.
 Féach an
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">rannán addAttributes</a> de na
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">treoracha do riarthóirí</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">rannán addAttributes</a> de na
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">treoracha do riarthóirí</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >Ligeann ERDDAP duit comhaid íomhá .png agus .pdf a iarraidh le graif agus léarscáileanna</a></strong>
@@ -5490,7 +5490,7 @@ Is féidir le húsáideoirí atá logáilte isteach rochtain a fháil ar thacair
 Ní mór d’úsáideoirí https:
 (Secure Sockets Layer) a úsáid chun logáil isteach agus chun rochtain a fháil ar thacair sonraí príobháideacha.
 Is féidir tacair sonraí a chumrú chun graif agus léarscáileanna a bheith inrochtana don phobal, ach níl rochtain ag úsáideoirí údaraithe ar shonraí ach amháin.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">tuilleadh eolais</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">tuilleadh eolais</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">Próiseálann ERDDAP sonraí ina smután.</a></strong>
 <br>Chun cuimhne a shábháil (saincheist mhór) agus tús a chur le freagraí níos luaithe, ERDDAP iarratais ar shonraí a phróiseáil ina smután - ag fáil smután sonraí arís agus arís eile ón bhfoinse, é a ghlanadh (mar shampla,
@@ -5513,16 +5513,16 @@ glacann sé iarratas ó úsáideoir; faigheann sé sonraí ó fhoinse sonraí ci
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
 Ach tá an cumas ag ERDDAP freisin na sonraí go léir atá ar fáil a fháil go gníomhach ó chianfhoinse sonraí agus
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">cóip áitiúil de na sonraí a stóráil</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">cóip áitiúil de na sonraí a stóráil</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Teicneolaíocht Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a> :
 Trí úsáid a bhaint as
 <a href="#subscriptions">seirbhísí síntiúis</a> ERDDAP, is féidir freastalaithe sonraí eile a chur ar an eolas a luaithe a bhíonn sonraí nua ar fáil ionas gur féidir leo na sonraí a iarraidh (trí na sonraí a tharraingt).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid ERDDAP</a> agus
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> seirbhísí síntiúis agus
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">córas bratach</a> ERDDAP ionas go gcuirfear ar an eolas iad láithreach nuair a bheidh sonraí nua ar fáil.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid ERDDAP</a> agus
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> seirbhísí síntiúis agus
+<a rel="help" href="https://erddap.github.io/setup.html#flag">córas bratach</a> ERDDAP ionas go gcuirfear ar an eolas iad láithreach nuair a bheidh sonraí nua ar fáil.
 Is féidir leat iad seo a chomhcheangal go héifeachtach:
 má fhillteann tú Cóip EDDGrid thart ar thacar sonraí EDDGrid FromErddap (nó má fhillteann tú Cóip EDDTable timpeall ar thacar sonraí EDDTableFromErddap), cruthóidh agus coimeádfaidh ERDDAP cóip áitiúil de thacar sonraí ERDDAP eile go huathoibríoch agus má choimeádann tú é.
 Toisc go n-oibríonn na seirbhísí síntiúis chomh luath agus a bhíonn sonraí nua ar fáil, scaipeann teicneolaíocht bhrú na sonraí go han-tapa (laistigh de soicind).
@@ -5611,21 +5611,21 @@ Tugann an chúis sin amháin údar leis an gcostas a bhaineann le ERDDAP a fhorb
 (Sílim go bhféadfaí a thaispeáint gur shábháil ERDDAP níos mó ama eolaí NOAA ná mar a chaith mé ag forbairt ERDDAP .
 Am = Airgead.) Ach is é an buntáiste taobh leis gur féidir le haon eagraíocht eile
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid sonraí eolaíocha.
+href="https://erddap.github.io/setup.html">ERDDAP a íoslódáil, a shuiteáil agus a úsáid</a> <strong>saor in aisce</strong> chun a gcuid sonraí eolaíocha.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Úsáideann breis agus 90 eagraíocht i 14 thír ar a laghad ERDDAP</a> .
 B’fhéidir go bhfuil a leithéid de rud ann agus lón saor.
 <p>Is clár Java é ERDDAP .
 Tá an cód foinse do gach leagan ar
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Ní formhuiniú é an nasc seo chuig suíomh Gréasáin seachtrach."></a>, an córas is coitianta a úsáidtear le haghaidh tionscadal bogearraí comhoibríoch.
 Go dtí seo, chuir na grúpaí/daoine seo cód le ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">CumaiscIR</a>
 <br>Scríobh Jonathan Lafite agus Philippe Makowski ó R.Tech Engineering
-<a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid</a> FromMergeIRFiles.java agus chuir sé leis <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5792,14 +5792,14 @@ Anois, le do thoil, smaoinigh air mar ainm, ní mar acrainm.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">anseo</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Is féidir leat</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>do fhreastalaí ERDDAP Féin a Shocrú</strong></a> agus do shonraí féin a sheirbheáil.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>do fhreastalaí ERDDAP Féin a Shocrú</strong></a> agus do shonraí féin a sheirbheáil.
 <ul>
 <li>Tá go leor buntáistí ag baint leis an iarracht bheag ERDDAP a bhunú.
 <li>Má tá seirbhís gréasáin agat cheana féin chun do shonraí a dháileadh, is féidir leat ERDDAP a chur ar bun chun rochtain a fháil ar do shonraí tríd an tseirbhís atá ann cheana féin nó trí na comhaid foinse nó an bhunachar sonraí.
 Ansin, beidh bealach eile ag daoine rochtain a fháil ar do shonraí agus beidh siad in ann na sonraí a íoslódáil i bhformáidí breise comhaid nó mar ghraif nó léarscáileanna.
 <li>Má tá tacair shonraí agat a bhfuil éileamh mór orthu, is féidir leat
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >ERDDAP iolracha a shuiteáil a oibríonn le chéile</a> chun scála suas agus chun freastal ar riachtanais lárionad mór dáilte sonraí.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Glaoigh orainn</a></h2>
@@ -7345,7 +7345,7 @@ a bheith sa tacar sonraí.
 (Tá athróga aiseach eile ROGHNACH.)
 <li>NÍ MÓR roinnt luachanna domhanfhad a bheith ann idir -180 agus 180.
 <li>NÍ MÓR
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">na tréithe colorBarMinimum agus colorBarMaximum</a> a shonrú.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">na tréithe colorBarMinimum agus colorBarMaximum</a> a shonrú.
 (Tá tréithe barra dathanna eile ROGHNACH.)
 </ul>
 <li><strong>Sraitheanna sonraí eangaí:</strong> I WMS ERDDAP, tá gach athróg sonraí i tacar sonraí eangaí a úsáideann toisí domhanfhad agus domhanleithead ar fáil trí WMS .

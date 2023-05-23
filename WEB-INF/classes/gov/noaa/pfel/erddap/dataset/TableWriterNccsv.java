@@ -23,7 +23,7 @@ import java.io.OutputStreamWriter;
 
 /**
  * TableWriterNccsv provides a way to write a table to an NCCSV file 
- * (see https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html )
+ * (see https://erddap.github.io/NCCSV.html )
  * outputStream in chunks so that the whole table doesn't have to be in memory 
  * at one time.
  * This is used by EDDTable.

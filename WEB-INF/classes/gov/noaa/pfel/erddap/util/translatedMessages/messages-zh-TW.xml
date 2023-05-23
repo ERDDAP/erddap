@@ -72,11 +72,11 @@ HTML 與否？
 <advl_institution>機構</advl_institution>
 <advc_dataStructure>ERDDAP 將每個數據集視為“網格”或“表格”數據集。</advc_dataStructure>
 <advl_dataStructure>數據結構</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>通用數據模型類型</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP 類</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>標題</advl_title>
 <advl_minLongitude>最小經度</advl_minLongitude>
 <advl_maxLongitude>最大經度</advl_maxLongitude>
@@ -119,7 +119,7 @@ HTML 與否？
 <advc_outOfDate>outOfDate 指數是衡量數據集過時程度的簡單度量：&lt;0：意外來自未來（！），&lt;1：最新，&gt;=1：過時，&gt;= 2：非常過時。對於過時的數據集，估計是數據源有問題，所以ERDDAP無法訪問到最近時間點的數據。</advc_outOfDate>
 <advl_outOfDate>過期索引</advl_outOfDate>
 <advn_outOfDate><![CDATA[
-顯然，沒有數據集具有<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+顯然，沒有數據集具有<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a>屬性。也許在這個ERDDAP中沒有近實時的數據集。
 ]]></advn_outOfDate>
 <advancedSearch>高級搜索</advancedSearch>
@@ -1428,7 +1428,7 @@ ERDDAP管理員將編輯它並與您一起改進它。在數據集位於ERDDAP�
 <br>ERDDAP還可以提供可以<i>表示</i>為單個類似數據庫的表的數據，其中每種類型的數據都有一列，每個觀察都有一行。這包括：
 <ul>
 <li>當前存儲在關係<a class="selfLink" id="databases" href="#databases" rel="bookmark">數據庫</a>中的數據。
-<br>請閱讀有關<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">ERDDAP</a>中ERDDAP數據集類型的信息，尤其是最初的 ~2 屏幕信息，其中討論了創建非規範化表的必要性。這聽起來可能很瘋狂。請足夠信任以閱讀其理由。
+<br>請閱讀有關<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">ERDDAP</a>中ERDDAP數據集類型的信息，尤其是最初的 ~2 屏幕信息，其中討論了創建非規範化表的必要性。這聽起來可能很瘋狂。請足夠信任以閱讀其理由。
 <br>&nbsp;
 <li>所有<i>現場</i>數據。
 <br>示例：來自一個儀器或多個類似儀器的時間序列、來自一個 CTD 或一組 CTD 的剖面數據，或在船舶航行期間收集的數據（幾年內的類似 cuises）。
@@ -2508,7 +2508,7 @@ ERDDAP的主要功能之一是它允許您以您想要的任何文件格式下�
        title="此指向外部網站的鏈接不構成認可。"></a> （也可以<a rel="help" href="https://anaconda.org/eumetsat/ncview">通過Conda</a>安裝<a rel="help" href="https://anaconda.org/eumetsat/ncview"><img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="此指向外部網站的鏈接不構成認可。"></a> ）。
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a> ，一個強大的命令行工具，用於永久修改.nc文件。
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a> ，一個強大的命令行工具，用於永久修改.nc文件。
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C 和NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="此指向外部網站的鏈接不構成認可。"></a> ，用於 C、C++、Fortran 或Java讀寫.nc文件的主要軟件庫。
@@ -2815,7 +2815,7 @@ href="https://groups.google.com/forum/#!forum/erddap"><img
 <javaProgramsHTML><![CDATA[
 
 <h2><a class="selfLink" id="JavaPrograms" href="#JavaPrograms" rel="bookmark">在Java程序中使用ERDDAP作為數據源</a></h2>如上所述，由於Java程序可以訪問 Web 上可用的數據，因此您可以編寫一個Java程序來訪問任何可公開訪問ERDDAP安裝中的數據。
-<p>或者，由於ERDDAP是一個全開源程序，您也可以在您自己的服務器（可公開訪問或不可公開訪問）上設置您自己的ERDDAP副本來為您自己的數據提供服務。您的Java程序可以從ERDDAP的該副本中獲取數據。請參閱<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">設置您自己的ERDDAP</a> 。
+<p>或者，由於ERDDAP是一個全開源程序，您也可以在您自己的服務器（可公開訪問或不可公開訪問）上設置您自己的ERDDAP副本來為您自己的數據提供服務。您的Java程序可以從ERDDAP的該副本中獲取數據。請參閱<a rel="help" href="https://erddap.github.io/setup.html">設置您自己的ERDDAP</a> 。
 ]]></javaProgramsHTML>
 <!--  justGenerateAndView 消息用於 justGenerateAndView 按鈕
 在數據訪問表單上。
@@ -2874,7 +2874,7 @@ URL 標識數據集、響應所需的文件類型、要查看的數據子集以�
 
 <h2><a class="selfLink" id="login" href="#login" rel="bookmark">登錄以訪問私有數據集。</a></h2>許多ERDDAP安裝沒有啟用身份驗證，因此不為用戶提供任何登錄方式，也沒有任何私有數據集。
 <p>某些ERDDAP安裝確實啟用了身份驗證。目前， ERDDAP僅支持通過 Google 管理的電子郵件帳戶進行身份驗證，其中包括NOAA和許多大學的電子郵件帳戶。如果ERDDAP啟用了身份驗證，任何擁有 Google 管理的電子郵件帳戶的人都可以登錄，但他們只能訪問ERDDAP管理員明確授權他們訪問的私有數據集。有關從瀏覽器或通過腳本登錄ERDDAP的說明，請參閱
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">訪問ERDDAP中的私有數據集</a>。
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">訪問ERDDAP中的私有數據集</a>。
 ]]></loginHTML>
 <loginAttemptBlocked>錯誤：{0} 的登錄嘗試在 3 次失敗嘗試後被暫時阻止。
 等待 {1} 分鐘，然後重試。</loginAttemptBlocked>
@@ -3423,7 +3423,7 @@ ERDDAP是：
 <br>通過將 URL 中的文件擴展名從 .html 更改為.json （或 .csv、或.htmlTable 、或.jsonlCSV1或.xhtml 、...）：
 <br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>
 <br>我們得到一個 URL，計算機程序或Java Script 腳本可以使用該 URL 以更計算機程序友好的格式獲取相同的信息，例如<a rel="help" href="https://www.json.org/">JSON &externalLinkHtml;</a> .
-<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">在ERDDAP構建事物</a></h3>ERDDAP中有許多功能可供您編寫的計算機程序或腳本使用。您可以使用它們在ERDDAP之上構建其他 Web 應用程序或 Web 服務，讓ERDDAP完成大部分工作！因此，如果您對ERDDAP服務的數據的更好接口或需要一種訪問數據的簡單方法的網頁有一個想法，我們鼓勵您構建自己的 Web 應用程序、Web 服務或網頁，並使用ERDDAP作為基礎。您的系統可以從ERD的ERDDAP或其他ERDDAP安裝中獲取數據、圖形和其他信息，或者您也可以<!-- setup always from coastwatch's erddap --><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">設置您自己的ERDDAP服務器</a>，它可以是公開訪問的，也可以是私人訪問的。
+<h3><a class="selfLink" id="BuildThings" href="#BuildThings" rel="bookmark">在ERDDAP構建事物</a></h3>ERDDAP中有許多功能可供您編寫的計算機程序或腳本使用。您可以使用它們在ERDDAP之上構建其他 Web 應用程序或 Web 服務，讓ERDDAP完成大部分工作！因此，如果您對ERDDAP服務的數據的更好接口或需要一種訪問數據的簡單方法的網頁有一個想法，我們鼓勵您構建自己的 Web 應用程序、Web 服務或網頁，並使用ERDDAP作為基礎。您的系統可以從ERD的ERDDAP或其他ERDDAP安裝中獲取數據、圖形和其他信息，或者您也可以<!-- setup always from coastwatch's erddap --><a rel="help" href="https://erddap.github.io/setup.html">設置您自己的ERDDAP服務器</a>，它可以是公開訪問的，也可以是私人訪問的。
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL 請求</a></h3>來自ERDDAP的用戶界面信息請求（例如，搜索結果）使用 Web 的通用請求標準：
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a>通過<a href="https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET &externalLinkHtml;</a>發送.這與您在網頁上填寫表單並單擊<kbd>Submit</kbd> To use HTTP GET時瀏覽器使用的機制相同，您生成一個特殊格式的 URL（可能包含查詢）並使用HTTP GET發送它。您可以手動形成這些 URL 並將它們輸入到瀏覽器的地址文本字段中（例如，
 <br><a href="&jsonQueryUrl;">&jsonQueryUrl;</a>)
@@ -3464,7 +3464,7 @@ ERDDAP可以將用戶界面結果作為這些常見的、計算機程序友好�
 <li>.nc - 一個扁平的、類似表格的NetCDF -3 二進製文件。
 （<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.nccsv - 一個扁平的、類似表格的、類似NetCDF的 ASCII CSV 文件。
-（<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">更多&nbsp;信息&externalLinkHtml;</a>)
+（<a rel="help" href="https://erddap.github.io/NCCSV.html">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.tsv - 製表符分隔的 ASCII 文本表。
 （<a rel="help" href="https://jkorpela.fi/TSV.html">更多&nbsp;信息&externalLinkHtml;</a>)
 <li>.xhtml - 包含表格中數據的 XHTML (XML) 文件。
@@ -3673,7 +3673,7 @@ ERDDAP將單獨搜索單詞，而不是作為短語搜索。
 <searchMultipleERDDAPs>搜索多個 ERDDAP</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 有兩種非官方的方法可以在多個ERDDAP中搜索數據集：
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Search Multiple ERDDAP s <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a>和<a rel="bookmark" href="http://erddap.com/">ERDDAP數據集發現<img 
@@ -3994,7 +3994,7 @@ ERDDAP始終使用Zulu （UTC、GMT）時區來消除使用不同時區和標準
     title="此指向外部網站的鏈接不構成認可。"></a> （在 5 分鐘內！）。感謝 Rich Signell。
 （視頻中的一個小錯誤：搜索數據集時，不要在搜索詞之間使用<kbd>AND</kbd> 。這是隱含的。）
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>了解更多關於ERDDAP的信息。</strong></a>
-<p><strong>數據提供者：您可以<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">設置自己的ERDDAP服務器</a>並提供您自己的數據。</strong> ERDDAP是免費和開源的。它使用類似 Apache 的許可證，所以你可以用它做任何你想做的事情。
+<p><strong>數據提供者：您可以<a rel="help" href="https://erddap.github.io/setup.html">設置自己的ERDDAP服務器</a>並提供您自己的數據。</strong> ERDDAP是免費和開源的。它使用類似 Apache 的許可證，所以你可以用它做任何你想做的事情。
 ERDDAP的外觀是可定制的，因此您的ERDDAP將反映您的機構，而不是NOAA 。設置ERDDAP的小努力帶來了許多好處。如果您已有用於分發數據的 Web 服務，則可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式來訪問您的數據，並且能夠以其他文件格式或圖表或地圖的形式下載數據。
 ERDDAP已被至少 14 個國家的 90 多個組織安裝。
 <a rel="bookmark"
@@ -4267,7 +4267,7 @@ URL 指定整個請求。
 （視頻中的一個小錯誤：搜索數據集時，不要在搜索詞之間使用<kbd>AND</kbd> 。這是隱含的。）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP可以從本地（在服務器的硬盤上）和遠程（通過 Web 訪問）數據源獲取數據。</a></strong>
-<br>查看ERDDAP可以訪問<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">的數據源類型列表</a>。
+<br>查看ERDDAP可以訪問<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">的數據源類型列表</a>。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP可以提供多種類型的科學數據，而不僅僅是海洋學數據。</a></strong>
 <br>ERDDAP是在<a title="美國國家海洋和大氣管理局" rel="bookmark" href="https://www.noaa.gov">NOAA</a>
@@ -4375,7 +4375,7 @@ ERDDAP是為這些添加而構建的，似乎沒有任何障礙。
 <a rel="help" href="https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html">CF 元數據<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a>) 描述數據。
-ERDDAP允許（並鼓勵）管理員描述將添加到數據集及其變量中的元數據。請參閱<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">管理員</a>說明的<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes 部分</a>。
+ERDDAP允許（並鼓勵）管理員描述將添加到數據集及其變量中的元數據。請參閱<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">管理員</a>說明的<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes 部分</a>。
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP允許您請求帶有圖形和地圖的 .png 和 .pdf 圖像文件</a></strong>
@@ -4464,7 +4464,7 @@ ERDDAP並非旨在成為高級數據探索/繪圖服務。相反， ERDDAP旨在
 <br>&nbsp;
 <li><strong><a class="selfLink" id="security" href="#security" rel="bookmark">安全</a></strong>性 - 默認情況下， ERDDAP作為一個完全公共的服務器運行，沒有登錄系統，也沒有數據訪問限制。但是， ERDDAP管理員可以配置ERDDAP以限制登錄並已分配特定角色的用戶訪問部分或全部數據集。
 ERDDAP具有用於身份驗證（登錄）的內置方法。如果ERDDAP安裝啟用了身份驗證，則每個網頁的頂部都會有一個“登錄”鏈接。用戶無需登錄即可訪問公開可用的數據集。已登錄的用戶可以訪問公共數據集和允許他們訪問的私有數據集。用戶必須使用 https:（安全套接字層）登錄和訪問私有數據集。數據集可以配置為具有可公開訪問的圖形和地圖，但只有授權用戶才能訪問數據。
-（<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">更多信息</a>）
+（<a rel="help" href="https://erddap.github.io/setup.html#security">更多信息</a>）
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP以塊的形式處理數據。</a></strong>
 <br>為了節省內存（一個大問題）並讓響應更快開始， ERDDAP以塊的形式處理數據請求——重複從源獲取一塊數據，清理它（例如，添加<a rel="help" href="https://en.wikipedia.org/wiki/Metadata">元數據<img 
@@ -4479,11 +4479,11 @@ ERDDAP具有用於身份驗證（登錄）的內置方法。如果ERDDAP安裝�
 <a rel="help" href="https://en.wikipedia.org/wiki/Pull_technology">Pull技術<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> :
-但是ERDDAP也有能力從遠程數據源主動獲取所有可用數據並<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">存儲數據的本地副本</a>。
+但是ERDDAP也有能力從遠程數據源主動獲取所有可用數據並<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">存儲數據的本地副本</a>。
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push技術<img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> ：通過使用ERDDAP的<a href="#subscriptions">訂閱服務</a>，可以在有新數據可用時立即通知其他數據服務器，以便他們可以請求數據（通過拉取數據）。
-ERDDAP的<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>使用ERDDAP的訂閱服務和<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">標記系統</a>，以便在有新數據可用時立即通知它們。您可以將這些組合起來產生很好的效果：如果您將EDDGrid Copy 包裹在EDDGrid FromErddap 數據集周圍（或將 EDDTableCopy 包裹在 EDDTableFromErddap 數據集周圍）， ERDDAP將自動創建並維護另一個ERDDAP數據集的本地副本。由於訂閱服務會在新數據可用時立即運行，因此推送技術可以非常快速地（在幾秒鐘內）傳播數據。
+ERDDAP的<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a>和<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>使用ERDDAP的訂閱服務和<a rel="help" href="https://erddap.github.io/setup.html#flag">標記系統</a>，以便在有新數據可用時立即通知它們。您可以將這些組合起來產生很好的效果：如果您將EDDGrid Copy 包裹在EDDGrid FromErddap 數據集周圍（或將 EDDTableCopy 包裹在 EDDTableFromErddap 數據集周圍）， ERDDAP將自動創建並維護另一個ERDDAP數據集的本地副本。由於訂閱服務會在新數據可用時立即運行，因此推送技術可以非常快速地（在幾秒鐘內）傳播數據。
 <p>這種架構讓每個ERDDAP管理員負責確定他/她的ERDDAP的數據來自哪裡。其他ERDDAP管理員也可以這樣做。管理員之間無需協調。如果多個ERDDAP管理員鏈接到彼此的ERDDAP ，就形成了一個數據分發網絡。數據將快速、高效、自動地從數據源（ ERDDAP和其他服務器）傳播到網絡中任何地方的數據再分發站點（ ERDDAP ）。給定的ERDDAP既可以是某些數據集的數據源，也可以是其他數據集的再分發站點。生成的網絡大致類似於使用<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/">Unidata的 IDD/IDM</a>等程序建立的數據分發網絡<a rel="bookmark" href="https://www.unidata.ucar.edu/software/idd/"><img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="此指向外部網站的鏈接不構成認可。"></a> ，但結構不那麼嚴格。
@@ -4524,16 +4524,16 @@ ERDDAP對長期可持續性的定位非常好，並且接近於它可能達到�
 <p>是的，我是ERDDAP的主要開發者。我是一名資金充足的聯邦僱員。我的資金不是“軟”錢，所以我不接受或依賴贈款。我花了一半以上的時間來開發ERDDAP 。我剩下的時間都花在管理數據集上。這項工作對ERDDAP很有用，因為我需要使用真實的數據集才能詳細了解ERDDAP需要做什麼。我的老闆完全支持我在ERDDAP上的工作，因為它完成了我受僱要做的事情：讓漁業科學家（主要是，但實際上是每個人）更容易從不同來源獲取科學數據。
 <p><a class="selfLink" id="miraculous" href="#miraculous" rel="bookmark">軟件的神奇之處在於復制不需要任何成本。</a>因此，為了完成我的工作，我編寫ERDDAP供ERD使用。我認為這是我完成工作的最佳方式。僅這個原因就證明了開發ERDDAP的費用是合理的。
 （我認為可以證明ERDDAP為NOAA科學家節省的時間比我開發ERDDAP所花費的時間要多。時間=金錢。）但附帶的好處是任何其他組織都可以<a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">免費下載、安裝和使用ERDDAP</a><strong>來</strong>分發他們的科學數據。
+href="https://erddap.github.io/setup.html">免費下載、安裝和使用ERDDAP</a><strong>來</strong>分發他們的科學數據。
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >至少 14 個國家/地區的 90 多個組織使用ERDDAP</a> 。也許有免費午餐之類的東西。
-<p>ERDDAP是一個Java程序。每個版本的源代碼都在<a rel="bookmark" href="https://github.com/BobSimons">GitHub 上<img 
+<p>ERDDAP是一個Java程序。每個版本的源代碼都在<a rel="bookmark" href="https://github.com/ERDDAP">GitHub 上<img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="此指向外部網站的鏈接不構成認可。"></a> ，協作軟件項目最常用的系統。到目前為止，這些團體/人已經為ERDDAP貢獻了代碼：
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">合併IR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a>由 R.Tech Engineering 的 Jonathan Lafite 和 Philippe Makowski 編寫和貢獻<!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -4626,12 +4626,12 @@ I am sure we can work something out.&lt;/sarc&gt;) -->
 <p><strong><a class="selfLink" id="dataDistributionSystems" href="#dataDistributionSystems" rel="bookmark">數據分發系統指南</a></strong>
 <br>Bob 關於數據分發系統的設計和評估的意見可以在<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">這裡</a>找到。
 <br>&nbsp;
-<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>設置自己的ERDDAP服務器</strong></a>並提供自己的數據。
+<p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">您可以</a></strong><a rel="help" href="https://erddap.github.io/setup.html"><strong>設置自己的ERDDAP服務器</strong></a>並提供自己的數據。
 <ul>
 <li>建立ERDDAP的小努力帶來了很多好處。
 <li>如果您已經有一個用於分發數據的 Web 服務，您可以設置ERDDAP以通過現有服務或通過源文件或數據庫訪問您的數據。然後，人們將有另一種方式來訪問您的數據，並且能夠以其他文件格式或圖形或地圖的形式下載數據。
 <li>如果您的數據集需求量很大，您可以安裝<a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >多個協同工作的ERDDAP</a>以擴大規模並滿足大型數據分發中心的需求。
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">聯繫我們</a></h2>如果您對ERDDAP有一般問題、建議或意見（不是這個特定ERDDAP安裝），請發送電子郵件至<kbd>erd dot data at noaa dot gov</kbd>並附上與您的問題或意見直接相關的ERDDAP URL。
@@ -6059,7 +6059,7 @@ URL 必須採用以下格式
 <li>數據變量必須有經度和緯度軸變量。
 （其他軸變量是可選的。）
 <li>必須有一些介於 -180 和 180 之間的經度值。
-<li>必須指定<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum和colorBarMaximum屬性</a>。
+<li>必須指定<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum和colorBarMaximum屬性</a>。
 （其他顏色條屬性是可選的。）
 </ul>
 <li><strong>網格數據層：</strong>在ERDDAP的WMS中，使用經度和緯度維度的網格數據集中的所有數據變量都可以通過WMS獲得。每個這樣的變量都可用作WMS圖層，名稱為<i>datasetID</i> &WMSSEPARATOR;<i>變量名</i>。每個這樣的層都是透明的（即，數據值表示為一系列顏色，缺失值表示為透明像素）。

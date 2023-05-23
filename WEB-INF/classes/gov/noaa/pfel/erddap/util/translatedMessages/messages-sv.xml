@@ -83,11 +83,11 @@ Om du har förslag på ytterligare länkar, kontakta <kbd>erd dot data at noaa d
 <advl_institution>Institution</advl_institution>
 <advc_dataStructure>ERDDAP behandlar varje datauppsättning som antingen ett &quot;rutnät&quot; eller en &quot;tabell&quot; datauppsättning.</advc_dataStructure>
 <advl_dataStructure>Datastruktur</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Vanlig datamodelltyp</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>ERDDAP-klass</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Titel</advl_title>
 <advl_minLongitude>Minsta longitud</advl_minLongitude>
 <advl_maxLongitude>Maximal longitud</advl_maxLongitude>
@@ -137,7 +137,7 @@ För inaktuella datauppsättningar finns det förmodligen ett problem med datak�
 <advl_outOfDate>Inaktuellt index</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Uppenbarligen har inga
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> attributet testOutOfDate.
 Kanske finns det inga nästan realtidsdatauppsättningar i denna ERDDAP .
 ]]></advn_outOfDate>
@@ -1804,7 +1804,7 @@ Detta inkluderar:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a> som för närvarande lagras i en relationsdatabas.
 <br>Vänligen läs informationen om
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">datauppsättningstypen EDDTableFromDatabase</a> i ERDDAP, särskilt de första ~2 skärmarna med information som talar om behovet av att skapa en denormaliserad tabell.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">datauppsättningstypen EDDTableFromDatabase</a> i ERDDAP, särskilt de första ~2 skärmarna med information som talar om behovet av att skapa en denormaliserad tabell.
 Det låter kanske galet.
 Vänligen lita på tillräckligt för att läsa motiveringen till detta.
 <br>&nbsp;
@@ -3047,7 +3047,7 @@ Filer av båda versionerna har .nc och kan läsas av program som läser .nc file
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">via Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Denna länk till en extern webbplats utgör inte ett stöd."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, ett kraftfullt kommandoradsverktyg för att permanent ändra .nc filer.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, ett kraftfullt kommandoradsverktyg för att permanent ändra .nc filer.
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C och NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, de viktigaste programvarubiblioteken för C, C++, Fortran eller Java för att läsa och skriva .nc filer.
@@ -3427,7 +3427,7 @@ Som beskrivits ovan, eftersom Java -program kan komma åt data som är tillgäng
 <p>Eller, eftersom ERDDAP är ett helt öppen källkodsprogram, kan du också ställa in din egen kopia av ERDDAP på din egen server (allmänt tillgänglig eller inte) för att servera din egen data.
 Dina Java -program kan hämta data från den kopian av ERDDAP .
 Se
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Konfigurera din egen ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Konfigurera din egen ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  JustGenerateAndView-meddelandena används för justGenerateAndView-knappen
 på dataåtkomstformulären.
@@ -3502,7 +3502,7 @@ Många ERDDAP installationer har inte autentisering aktiverad och ger därför i
 För närvarande stöder ERDDAP endast autentisering via Google-hanterade e-postkonton, vilket inkluderar e-postkonton hos NOAA och många universitet.
 Om en ERDDAP har autentisering aktiverad kan alla med ett Google-hanterat e-postkonto logga in, men de kommer bara att ha åtkomst till de privata datauppsättningar som ERDDAP administratören uttryckligen har auktoriserat dem att få åtkomst till.
 För instruktioner om hur du loggar in på ERDDAP från en webbläsare eller via ett skript, se
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Åtkomst till privata datauppsättningar i ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Åtkomst till privata datauppsättningar i ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>FEL: Inloggningsförsök för {0} blockeras tillfälligt efter tre misslyckade försök.
 Vänta {1} minuter och försök sedan igen.</loginAttemptBlocked>
@@ -4109,7 +4109,7 @@ Människor kan till exempel använda den här webbadressen för att göra en ful
 Det finns många funktioner i ERDDAP som kan användas av datorprogram eller skript som du skriver.
 Du kan använda dem för att bygga andra webbapplikationer eller webbtjänster ovanpå ERDDAP, vilket får ERDDAP att göra det mesta av jobbet! Så om du har en idé om ett bättre gränssnitt till data som ERDDAP betjänar eller en webbsida som behöver ett enkelt sätt att komma åt data, uppmuntrar vi dig att bygga din egen webbapplikation, webbtjänst eller webbsida och använda ERDDAP som fundament.
 Ditt system kan hämta data, grafer och annan information från ERD :s ERDDAP eller från andra ERDDAP installationer, eller så kan du<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ställ in din egen ERDDAP -server</a>, som kan vara allmänt tillgänglig eller bara privat tillgänglig.
+<a rel="help" href="https://erddap.github.io/setup.html">ställ in din egen ERDDAP -server</a>, som kan vara allmänt tillgänglig eller bara privat tillgänglig.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL-förfrågningar</a></h3>
 Förfrågningar om användargränssnittsinformation från ERDDAP (till exempel sökresultat) använder webbens universella standard för förfrågningar:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URLs &externalLinkHtml;</a> skickas via
@@ -4170,7 +4170,7 @@ ERDDAP kan returnera användargränssnittsresultat som en datatabell i dessa van
 <li>.nc - en platt, NetCDF -3 binär fil.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">mer&nbsp;information &externalLinkHtml;</a>)
 <li>.nccsv - en platt, tabellliknande, NetCDF -liknande, ASCII CSV-fil.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">mer&nbsp;information &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">mer&nbsp;information &externalLinkHtml;</a>)
 <li>.tsv - en tabbseparerad ASCII-texttabell.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">mer&nbsp;information &externalLinkHtml;</a>)
 <li>.xhtml - en XHTML-fil (XML) med data i en tabell.
@@ -4421,7 +4421,7 @@ Om du till exempel söker efter <kbd>spee</kbd> hittar du datauppsättningar med
 <searchMultipleERDDAPs>Sök i flera ERDDAP:er</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Det finns två inofficiella sätt att söka i flera ERDDAP er efter datauppsättningar:
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Sök i flera ERDDAP er <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a> och
@@ -4806,7 +4806,7 @@ Det är implicit.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Ta reda på mer om ERDDAP .</strong></a>
 <p><strong>Dataleverantörer:
 Du kan
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">sätta upp din egen ERDDAP -server</a> och servera din egen data.</strong> ERDDAP är gratis och öppen källkod.
+<a rel="help" href="https://erddap.github.io/setup.html">sätta upp din egen ERDDAP -server</a> och servera din egen data.</strong> ERDDAP är gratis och öppen källkod.
 Den använder Apache-liknande licenser, så du kan göra vad du vill med den.
 ERDDAP :s utseende är anpassningsbart, så din ERDDAP kommer att spegla din institution, inte NOAA .
 Den lilla ansträngningen att sätta upp ERDDAP ger många fördelar.
@@ -5125,7 +5125,7 @@ Det är implicit.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP kan hämta data från lokala (på serverns hårddisk) och fjärranslutna (åtkomliga via webben) datakällor.</a></strong>
 <br>Se
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">listan över typer av datakällor</a> som ERDDAP kan komma åt.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">listan över typer av datakällor</a> som ERDDAP kan komma åt.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP kan tjäna många typer av vetenskapliga data, inte bara oceanografiska data.</a></strong>
 <br>ERDDAP är en dataserver som skrevs på
@@ -5280,8 +5280,8 @@ När du begär data eller en graf från en
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a>) som beskriver data.
 ERDDAP låter (och uppmuntrar) administratören att beskriva metadata som kommer att läggas till datauppsättningar och deras variabler i farten.
 Se
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">avsnittet addAttributes</a> i instruktionerna
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">för administratörer</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">avsnittet addAttributes</a> i instruktionerna
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">för administratörer</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP låter dig begära .png- och .pdf-bildfiler med grafer och kartor</a></strong>
@@ -5434,7 +5434,7 @@ Användare som har loggat in kan komma åt offentliga datauppsättningar och de 
 Användare måste använda https:
 (Secure Sockets Layer) för att logga in och för att komma åt privata datauppsättningar.
 Datauppsättningar kan konfigureras för att ha grafer och kartor offentligt tillgängliga, men har data endast tillgängliga för behöriga användare.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">mer information</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">mer information</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP bearbetar data i bitar.</a></strong>
 <br>För att spara minne (ett stort problem) och få svar att starta tidigare, bearbetar ERDDAP i bitar - upprepade gånger hämtar en bit data från källan, rensar upp den (till exempel lägga till
@@ -5456,16 +5456,16 @@ den tar emot en begäran från en användare; hämtar data från en fjärrdatak�
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> :
 Men ERDDAP har också förmågan att aktivt hämta all tillgänglig data från en fjärrdatakälla och
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">lagra en lokal kopia av datan</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">lagra en lokal kopia av datan</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Push teknik <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Denna länk till en extern webbplats utgör inte ett stöd."></a> :
 Genom att använda ERDDAP :s
 <a href="#subscriptions">prenumerationstjänster</a> kan andra dataservrar meddelas så snart ny data finns tillgänglig så att de kan begära data (genom att dra data).
 ERDDAP :s
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> och
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> använder ERDDAP :s prenumerationstjänster och
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flaggsystem</a> så att de kommer att meddelas omedelbart när ny data finns tillgänglig.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid FromErddap</a> och
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> använder ERDDAP :s prenumerationstjänster och
+<a rel="help" href="https://erddap.github.io/setup.html#flag">flaggsystem</a> så att de kommer att meddelas omedelbart när ny data finns tillgänglig.
 Du kan kombinera dessa med stor effekt:
 om du lindar en EDDGrid kopia runt en EDDGrid FromErddap-datauppsättning (eller lindar en EDDTableCopy runt en EDDTableFromErddap-datauppsättning), kommer ERDDAP automatiskt att skapa och underhålla en lokal kopia av en annan ERDDAP -datauppsättning.
 Eftersom prenumerationstjänsterna fungerar så fort ny data finns tillgänglig, sprider push-teknik data mycket snabbt (inom några sekunder).
@@ -5554,20 +5554,20 @@ Bara det skälet motiverar kostnaderna för att utveckla ERDDAP .
 (Jag tror att det kan visas att ERDDAP har sparat mer NOAA -forskares tid än att jag har lagt ner på att utveckla ERDDAP .
 Tid=Pengar.) Men sidofördelen är att vilken annan organisation som helst kan
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">ladda ner, installera och använda ERDDAP</a> <strong>gratis</strong> för att distribuera sina vetenskapliga data.
+href="https://erddap.github.io/setup.html">ladda ner, installera och använda ERDDAP</a> <strong>gratis</strong> för att distribuera sina vetenskapliga data.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >Över 90 organisationer i minst 14 länder använder ERDDAP</a> .
 Kanske finns det något sådant som gratis lunch.
 <p>ERDDAP är ett Java -program.
 Källkoden för varje version finns på
-<a rel="bookmark" href="https://github.com/BobSimons">GitHub <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHub <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Denna länk till en extern webbplats utgör inte ett stöd."></a>, det mest använda systemet för samarbetande programvaruprojekt.
 Hittills har dessa grupper/personer bidragit med kod till ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> skrevs och bidrog med Jonathan Lafite och Philippe Makowski från R.Tech Engineering <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5730,14 +5730,14 @@ Tänk bara på det som ett namn, inte en akronym.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">här</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Du kan</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>ställa in din egen ERDDAP server</strong></a> och servera din egen data.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>ställa in din egen ERDDAP server</strong></a> och servera din egen data.
 <ul>
 <li>Den lilla ansträngningen att sätta upp ERDDAP ger många fördelar.
 <li>Om du redan har en webbtjänst för att distribuera dina data kan du ställa in ERDDAP för att komma åt dina data via den befintliga tjänsten eller via källfilerna eller databasen.
 Sedan kommer människor att ha ett annat sätt att komma åt din data och kommer att kunna ladda ner data i ytterligare filformat eller som grafer eller kartor.
 <li>Om du har datauppsättningar som är mycket efterfrågade kan du installera
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >flera ERDDAP er som arbetar tillsammans</a> för att skala upp och möta behoven hos ett stort datadistributionscenter.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontakta oss</a></h2>
@@ -7260,7 +7260,7 @@ dataset.
 <li>Datavariabeln MÅSTE ha longitud- och latitudaxelvariabler.
 (Andra axelvariabler är VALFRITT.)
 <li>Det MÅSTE finnas några longitudvärden mellan -180 och 180.
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">colorBarMinimum och colorBarMaximum</a> anges.
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">colorBarMinimum och colorBarMaximum</a> anges.
 (Andra färgfältsattribut är VALFRITT.)
 </ul>
 <li><strong>Griddatalager:</strong> I ERDDAP :s WMS är alla datavariabler i griddatauppsättningar som använder longitud- och latituddimensioner tillgängliga via WMS .

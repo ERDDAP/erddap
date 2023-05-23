@@ -83,11 +83,11 @@ Pokud máte návrhy na další odkazy, kontaktujte <kbd>erd dot data at noaa dot
 <advl_institution>Instituce</advl_institution>
 <advc_dataStructure>ERDDAP zachází s každým souborem dat buď jako s datovým souborem „mřížka“ nebo „tabulka“.</advc_dataStructure>
 <advl_dataStructure>Datová struktura</advl_dataStructure>
-<advr_dataStructure>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advr_dataStructure>https://erddap.github.io/setupDatasetsXml.html#dataStructures</advr_dataStructure>
 <advl_cdm_data_type>Typ společného datového modelu</advl_cdm_data_type>
-<advr_cdm_data_type>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advr_cdm_data_type>https://erddap.github.io/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
 <advl_class>Třída ERDDAP</advl_class>
-<advr_class>https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advr_class>https://erddap.github.io/setupDatasetsXml.html#datasetTypes</advr_class>
 <advl_title>Titul</advl_title>
 <advl_minLongitude>Minimální zeměpisná délka</advl_minLongitude>
 <advl_maxLongitude>Maximální zeměpisná délka</advl_maxLongitude>
@@ -137,7 +137,7 @@ U neaktuálních datových sad je pravděpodobně problém se zdrojem dat, takž
 <advl_outOfDate>Neaktuální index</advl_outOfDate>
 <advn_outOfDate><![CDATA[
 Zjevně žádné datové sady nemají atribut
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#testOutOfDate"
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#testOutOfDate"
 ><kbd>testOutOfDate</kbd></a> .
 Možná v tomto ERDDAP nejsou žádné datové sady téměř v reálném čase.
 ]]></advn_outOfDate>
@@ -1829,7 +1829,7 @@ To zahrnuje:
 <ul>
 <li><a class="selfLink" id="databases" href="#databases" rel="bookmark">Data</a>, která jsou aktuálně uložena v relační databázi.
 <br>Přečtěte si prosím informace o typu datové sady
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> v ERDDAP, zejména úvodní ~2 obrazovky s informacemi, které hovoří o potřebě vytvořit denormalizovanou tabulku.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromDatabase">EDDTableFromDatabase</a> v ERDDAP, zejména úvodní ~2 obrazovky s informacemi, které hovoří o potřebě vytvořit denormalizovanou tabulku.
 To může znít šíleně.
 Důvěřujte prosím natolik, abyste si přečetli zdůvodnění.
 <br>&nbsp;
@@ -3076,7 +3076,7 @@ Soubory obou verzí mají příponu .nc a lze je číst programy, které čtou s
 <a rel="help" href="https://anaconda.org/eumetsat/ncview">přes Conda <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>).
-<li><a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NCO">NCO</a>, výkonný nástroj příkazového řádku pro trvalou úpravu souborů .nc .
+<li><a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#NCO">NCO</a>, výkonný nástroj příkazového řádku pro trvalou úpravu souborů .nc .
 <li><a rel="help" href="https://www.unidata.ucar.edu/downloads/netcdf/">NetCDF -C a NetCDF - Java <img
        src="https://coastwatch.pfeg.noaa.gov/erddap/images/external.png" alt=" (external link)"
        title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, hlavní softwarové knihovny pro C, C++, Fortran nebo Java pro čtení a zápis souborů .nc .
@@ -3459,7 +3459,7 @@ Jak je popsáno výše, protože programy Java mohou přistupovat k datům dostu
 <p>Nebo, protože ERDDAP je plnohodnotný program s otevřeným zdrojovým kódem, můžete si také nastavit vlastní kopii ERDDAP na svém vlastním serveru (veřejně přístupném nebo ne), aby obsluhoval vaše vlastní data.
 Vaše Java programy mohou získat data z této kopie ERDDAP .
 Viz
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">Nastavení vlastního ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/setup.html">Nastavení vlastního ERDDAP</a> .
 ]]></javaProgramsHTML>
 <!--  Zprávy justGenerateAndView se používají pro tlačítko justGenerateAndView
 na formulářích pro přístup k datům.
@@ -3534,7 +3534,7 @@ Mnoho instalací ERDDAP nemá povolenou autentizaci, a proto uživatelům neposk
 V současné době ERDDAP podporuje pouze ověřování prostřednictvím e-mailových účtů spravovaných společností Google, které zahrnují e-mailové účty na NOAA a mnoha univerzitách.
 Pokud má ERDDAP povoleno ověřování, může se přihlásit kdokoli s e-mailovým účtem spravovaným společností Google, ale bude mít přístup pouze k soukromým datovým sadám, ke kterým mu administrátor ERDDAP výslovně povolil přístup.
 Pokyny k přihlášení do ERDDAP z prohlížeče nebo pomocí skriptu najdete v tématu
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/AccessToPrivateDatasets.html">Přístup k soukromým datovým sadám v ERDDAP</a> .
+<a rel="help" href="https://erddap.github.io/AccessToPrivateDatasets.html">Přístup k soukromým datovým sadám v ERDDAP</a> .
 ]]></loginHTML>
 <loginAttemptBlocked>CHYBA: Pokusy o přihlášení pro {0} jsou dočasně zablokovány po 3 neúspěšných pokusech.
 Počkejte {1} minut a zkuste to znovu.</loginAttemptBlocked>
@@ -4142,7 +4142,7 @@ Lidé mohou například tuto adresu URL použít k fulltextovému vyhledávání
 V ERDDAP je mnoho funkcí, které mohou používat počítačové programy nebo skripty, které píšete.
 Můžete je použít k vytváření dalších webových aplikací nebo webových služeb nad ERDDAP, takže většinu práce udělá ERDDAP ! Pokud tedy máte nápad na lepší rozhraní pro data, která ERDDAP poskytuje, nebo webovou stránku, která potřebuje snadný způsob přístupu k datům, doporučujeme vám vytvořit si vlastní webovou aplikaci, webovou službu nebo webovou stránku a používat ERDDAP jako nadace.
 Váš systém může získávat data, grafy a další informace z ERDDAP ERD nebo z jiných instalací ERDDAP, nebo můžete<!-- setup always from coastwatch's erddap -->
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">nastavit si vlastní ERDDAP server</a>, který může být veřejně přístupný nebo jen soukromě přístupný.
+<a rel="help" href="https://erddap.github.io/setup.html">nastavit si vlastní ERDDAP server</a>, který může být veřejně přístupný nebo jen soukromě přístupný.
 <h3><a class="selfLink" id="requests" href="#requests" rel="bookmark">RESTful URL požadavky</a></h3>
 Požadavky na informace o uživatelském rozhraní z ERDDAP (například výsledky vyhledávání) používají univerzální standard webu pro požadavky:
 <a rel="help" href="https://en.wikipedia.org/wiki/Uniform_Resource_Locator">URL &externalLinkHtml;</a> odesláno přes
@@ -4203,7 +4203,7 @@ ERDDAP může vrátit výsledky uživatelského rozhraní jako tabulku dat v tě
 <li>.nc - plochý binární soubor NetCDF -3 podobný tabulce.
 (<a rel="help" href="https://www.unidata.ucar.edu/software/netcdf/">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.nccsv – plochý soubor ASCII CSV podobný tabulce podobný NetCDF .
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/NCCSV.html">více&nbsp;informace &externalLinkHtml;</a>)
+(<a rel="help" href="https://erddap.github.io/NCCSV.html">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.tsv - textová tabulka ASCII oddělená tabulátory.
 (<a rel="help" href="https://jkorpela.fi/TSV.html">více&nbsp;informace &externalLinkHtml;</a>)
 <li>.xhtml – soubor XHTML (XML) s daty v tabulce.
@@ -4455,7 +4455,7 @@ Například hledání rychlosti najde datové sady s <kbd>speed</kbd>, ale nikol
 <searchMultipleERDDAPs>Prohledejte více ERDDAP</searchMultipleERDDAPs>
 <searchMultipleERDDAPsDescription><![CDATA[
 Existují dva neoficiální způsoby, jak vyhledávat datové sady ve více ERDDAP :
-<a rel="bookmark" href="https://coastwatch.pfeg.noaa.gov/erddap/download/SearchMultipleERDDAPs.html"
+<a rel="bookmark" href="https://erddap.github.io/SearchMultipleERDDAPs.html"
 >Hledat více ERDDAP <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> a
@@ -4847,7 +4847,7 @@ Je to implicitní.)
 <p><a rel="help" href="&erddapUrl;/information.html"><strong>Zjistěte více o ERDDAP .</strong></a>
 <p><strong>Poskytovatelé dat:
 Můžete si
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">nastavit svůj vlastní server ERDDAP</a> a obsluhovat svá vlastní data.</strong> ERDDAP je bezplatný a open source.
+<a rel="help" href="https://erddap.github.io/setup.html">nastavit svůj vlastní server ERDDAP</a> a obsluhovat svá vlastní data.</strong> ERDDAP je bezplatný a open source.
 Používá licence podobné Apache, takže s ním můžete dělat, co chcete.
 ERDDAP je přizpůsobitelný, takže váš ERDDAP bude odrážet vaši instituci, nikoli NOAA .
 Malé úsilí o nastavení ERDDAP přináší mnoho výhod.
@@ -5169,7 +5169,7 @@ Je to implicitní.)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="localAndRemote" href="#localAndRemote" rel="bookmark">ERDDAP může získávat data z lokálních (na pevném disku serveru) a vzdálených (přístupných přes web) datových zdrojů.</a></strong>
 <br>Podívejte se na
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#datasetTypes">seznam typů zdrojů dat</a>, ke kterým má ERDDAP přístup.
 <br>&nbsp;
 <li><strong><a class="selfLink" id="scientificData" href="#scientificData" rel="bookmark">ERDDAP může sloužit mnoha typům vědeckých dat, nejen oceánografických dat.</a></strong>
 <br>ERDDAP je datový server, který byl napsán na
@@ -5324,8 +5324,8 @@ Když požadujete data nebo graf z
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>) popisující údaje.
 ERDDAP umožňuje (a doporučuje) administrátorovi popsat metadata, která budou přidávána do datových sad a jejich proměnných za běhu.
 Viz část
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes</a> v
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">pokynech pro administrátory</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#addAttributes">addAttributes</a> v
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html">pokynech pro administrátory</a> .
 <br>&nbsp;
 <li><strong><a class="selfLink" id="images" href="#images" rel="bookmark"
  >ERDDAP vám umožňuje požádat o obrázkové soubory .png a .pdf s grafy a mapami</a></strong>
@@ -5477,7 +5477,7 @@ Uživatelé, kteří se přihlásili, mají přístup k veřejným datovým sad�
 Uživatelé musí používat https:
 (Secure Sockets Layer) pro přihlášení a pro přístup k soukromým datovým sadám.
 Datové sady lze nakonfigurovat tak, aby byly grafy a mapy veřejně přístupné, ale data měla přístupná pouze oprávněným uživatelům.
-(<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">více informací</a>)
+(<a rel="help" href="https://erddap.github.io/setup.html#security">více informací</a>)
 <br>&nbsp;
 <li><strong><a class="selfLink" id="chunks" href="#chunks" rel="bookmark">ERDDAP zpracovává data v blocích.</a></strong>
 <br>Aby se ušetřila paměť (velký problém) a odpovědi začaly dříve, zpracovává ERDDAP požadavky na data po částech – opakovaně získává část dat ze zdroje, čistí je (například přidáváním
@@ -5499,16 +5499,16 @@ přijímá požadavek od uživatele; získává data ze vzdáleného zdroje dat;
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> :
 Ale ERDDAP má také schopnost aktivně získávat všechna dostupná data ze vzdáleného zdroje dat a
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">ukládat místní kopii dat</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#EDDGridCopy">ukládat místní kopii dat</a> .
 <a rel="help" href="https://en.wikipedia.org/wiki/Push_technology">Technologie Push <img 
       src="&erddapUrl;/images/external.png" alt=" (external link)" 
       title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a> :
 Pomocí
 <a href="#subscriptions">předplatitelských služeb</a> ERDDAP mohou být ostatní datové servery upozorněny, jakmile jsou k dispozici nová data, aby si mohly data vyžádat (vytažením dat).
 ERDDAP
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> a ERDDAP společnosti
-<a rel="help"  href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> používají předplacené služby a
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">systém</a> příznaků ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromErddap">EDDGrid</a> a ERDDAP společnosti
+<a rel="help"  href="https://erddap.github.io/setupDatasetsXml.html#EDDTableFromErddap">ERDDAP</a> používají předplacené služby a
+<a rel="help" href="https://erddap.github.io/setup.html#flag">systém</a> příznaků ERDDAP, takže budou okamžitě informovány, když budou k dispozici nová data.
 Můžete je zkombinovat s velkým efektem:
 pokud EDDGrid kopii EDDGrid kolem datové sady EDDGrid FromErddap (nebo obalíte EDDTableCopy kolem datové sady EDDTableFromErddap), ERDDAP automaticky vytvoří a udržuje místní kopii datové sady jiného ERDDAP .
 Protože předplacené služby fungují, jakmile jsou k dispozici nová data, technologie push šíří data velmi rychle (během několika sekund).
@@ -5601,20 +5601,20 @@ Tento důvod sám o sobě ospravedlňuje náklady na vývoj ERDDAP .
 (Myslím, že by se dalo ukázat, že ERDDAP ušetřil více času vědců NOAA, než který jsem strávil vývojem ERDDAP .
 Čas=Peníze.) Ale vedlejší výhodou je, že jakákoli jiná organizace si může
 <a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědecká data.
+href="https://erddap.github.io/setup.html">stáhnout, nainstalovat a používat ERDDAP</a> <strong>zdarma</strong> k distribuci svých vědecká data.
 <p><a rel="bookmark" 
-href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#organizations"
+href="https://erddap.github.io/setup.html#organizations"
 >ERDDAP používá více než 90 organizací v nejméně 14 zemích</a> .
 Možná existuje něco jako oběd zdarma.
 <p>ERDDAP je program v Java .
 Zdrojový kód každé verze je na
-<a rel="bookmark" href="https://github.com/BobSimons">GitHubu <img 
+<a rel="bookmark" href="https://github.com/ERDDAP">GitHubu <img 
     src="&erddapUrl;/images/external.png" alt=" (external link)" 
     title="Tento odkaz na externí webovou stránku nepředstavuje podporu."></a>, nejběžněji používaný systém pro kolaborativní softwarové projekty.
 Doposud tyto skupiny/lidé přispěli kódem do ERDDAP :
 <ul><!-- start contributor's info -->
 <li><a class="selfLink" id="submittedCode" href="#submittedCode" rel="bookmark">MergeIR</a>
-<br><a href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
+<br><a href="https://erddap.github.io/setupDatasetsXml.html#EDDGridFromMergeIRFiles" rel="bookmark"
   >EDDGrid FromMergeIRFiles.java</a> napsali a přispěli Jonathan Lafite a Philippe Makowski z R.Tech Engineering <!--
 <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
       src="../images/external.png" alt=" (external link)" 
@@ -5778,14 +5778,14 @@ Teď to prosím berte jako jméno, ne jako zkratku.
 <a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/images/erddapTalk/erdData.html">zde</a> .
 <br>&nbsp;
 <p><strong><a class="selfLink" id="setup" href="#setup" rel="bookmark">Můžete si</a></strong>
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><strong>nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
+<a rel="help" href="https://erddap.github.io/setup.html"><strong>nastavit svůj vlastní ERDDAP server</strong></a> a obsluhovat svá vlastní data.
 <ul>
 <li>Malé úsilí o nastavení ERDDAP přináší mnoho výhod.
 <li>Pokud již máte webovou službu pro distribuci vašich dat, můžete nastavit ERDDAP pro přístup k vašim datům prostřednictvím stávající služby nebo prostřednictvím zdrojových souborů či databáze.
 Lidé pak budou mít jiný způsob přístupu k vašim datům a budou si moci data stáhnout v dalších formátech souborů nebo jako grafy či mapy.
 <li>Máte-li datové sady, po kterých je vysoká poptávka, můžete nainstalovat
 <a rel="help" 
-  href="https://coastwatch.pfeg.noaa.gov/erddap/download/grids.html"
+  href="https://erddap.github.io/grids.html"
   >více ERDDAP, které spolupracují</a> na škálování a splňují potřeby velkého datového distribučního centra.
 </ul>
 <h2><a class="selfLink" id="contact" href="#contact" rel="bookmark">Kontaktujte nás</a></h2>
@@ -7309,7 +7309,7 @@ datová sada.
 (Další proměnné osy jsou VOLITELNÉ.)
 <li>MUSÍ existovat nějaké hodnoty zeměpisné délky mezi -180 a 180.
 <li>MUSÍ být specifikovány
-<a rel="help" href="https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#colorBar">atributy colorBarMinimum a colorBarMaximum</a> .
+<a rel="help" href="https://erddap.github.io/setupDatasetsXml.html#colorBar">atributy colorBarMinimum a colorBarMaximum</a> .
 (Další atributy barevných pruhů jsou VOLITELNÉ.)
 </ul>
 <li><strong>Vrstvy dat mřížky:</strong> Ve WMS ERDDAP jsou všechny datové proměnné v sadách dat mřížky, které používají rozměry zeměpisné délky a šířky, dostupné prostřednictvím WMS .
