@@ -14,3 +14,7 @@ Thumbs.db
 .settings
 .classpath
 .project
+/build/
+/out/
+/.idea/
+/.gradle/
