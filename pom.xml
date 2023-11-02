@@ -64,9 +64,109 @@
 
     <build>
         <sourceDirectory>WEB-INF/classes</sourceDirectory>
+        <!-- set outputDirectory and resources to assemble a staging war directory as ERDDAP
+             expects it, so that tests etc can be run before the final WAR is created.
+             Use the staging war directory when building the war in maven-war-plugin below. -->
+        <outputDirectory>${project.build.directory}/war-staging/WEB-INF/classes</outputDirectory>
         <resources>
             <resource>
+                <directory>download</directory>
+                <targetPath>${project.build.directory}/war-staging/download</targetPath>
+            </resource>
+            <resource>
+                <directory>images</directory>
+                <targetPath>${project.build.directory}/war-staging/images</targetPath>
+                <includes>
+                    <include>arrow2D.gif</include>
+                    <include>arrow2L.gif</include>
+                    <include>arrow2R.gif</include>
+                    <include>arrow2U.gif</include>
+                    <include>arrowDD.gif</include>
+                    <include>arrowD.gif</include>
+                    <include>arrowL.gif</include>
+                    <include>arrowLL.gif</include>
+                    <include>arrowR.gif</include>
+                    <include>arrowRR.gif</include>
+                    <include>arrowU.gif</include>
+                    <include>arrowUU.gif</include>
+                    <include>data.gif</include>
+                    <include>embed.html</include>
+                    <include>envelope.gif</include>
+                    <include>erddap2.css</include>
+                    <include>erddap.css</include>
+                    <include>external.png</include>
+                    <include>favicon.ico</include>
+                    <include>fileIcons/</include>
+                    <include>leaflet.css</include>
+                    <include>leaflet.js</include>
+                    <include>loading.png</include>
+                    <include>minus1000.gif</include>
+                    <include>minus100.gif</include>
+                    <include>minus10.gif</include>
+                    <include>minus.gif</include>
+                    <include>minusminus.gif</include>
+                    <include>nlogo.gif</include>
+                    <include>noaa20.gif</include>
+                    <include>noaab.png</include>
+                    <include>noaa_simple.gif</include>
+                    <include>openid.png</include>
+                    <include>orcid_24x24.png</include>
+                    <include>plus1000.gif</include>
+                    <include>plus100.gif</include>
+                    <include>plus10.gif</include>
+                    <include>plus.gif</include>
+                    <include>plusplus.gif</include>
+                    <include>QuestionMark.png</include>
+                    <include>resize.gif</include>
+                    <include>rss.gif</include>
+                    <include>sliderBg.gif</include>
+                    <include>sliderCenter.gif</include>
+                    <include>sliderLeft.gif</include>
+                    <include>sliderRight.gif</include>
+                    <include>spacer.gif</include>
+                    <include>TranslatedByGoogle.png</include>
+                    <include>world0360Big.png</include>
+                    <include>world0360.png</include>
+                    <include>world540Big.png</include>
+                    <include>world540.png</include>
+                    <include>worldPM180Big.png</include>
+                    <include>worldPM180.png</include>
+                    <include>wz_dragdrop.js</include>
+                    <include>wz_tooltip.js</include>
+                    <include>x.gif</include>
+                    <include>youtube.png</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>public</directory>
+                <targetPath>${project.build.directory}/war-staging/public</targetPath>
+            </resource>
+            <resource>
+                <directory>WEB-INF</directory>
+                <targetPath>${project.build.directory}/war-staging/WEB-INF</targetPath>
+                <includes>
+                    <include>ArchiveADataset.bat</include>
+                    <include>ArchiveADataset.sh</include>
+                    <include>ConvertTable.bat</include>
+                    <include>ConvertTable.sh</include>
+                    <include>cptfiles/</include>
+                    <include>DasDds.bat</include>
+                    <include>DasDds.sh</include>
+                    <include>GenerateDatasetsXml.bat</include>
+                    <include>GenerateDatasetsXml.sh</include>
+                    <include>HashDigest.bat</include>
+                    <include>HashDigest.sh</include>
+                    <include>ref/</include>
+                    <include>temp/</include>
+                    <include>web.xml</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>WEB-INF/classes</directory>
+                <targetPath>${project.build.directory}/war-staging/WEB-INF/classes</targetPath>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -140,8 +240,9 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
                 <configuration>
-                    <warSourceDirectory>${project.basedir}</warSourceDirectory>
-                    <warSourceExcludes>WEB-INF/lib/**, target/**, data/**, content/**, .settings/**, *.*</warSourceExcludes>
+                    <warSourceDirectory>${project.build.directory}/war-staging</warSourceDirectory>
+                    <!-- classes get included in the war already, so don't use the ones from war-staging -->
+                    <warSourceExcludes>WEB-INF/classes/**</warSourceExcludes>
                 </configuration>
             </plugin>
 
@@ -192,6 +293,19 @@
                     </execution>
                     <execution>
                         <?m2e execute onConfiguration?>
+                        <id>make-big-parent-tmp-dir</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/tmp/big-parent"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
                         <id>download-erddap-content</id>
                         <phase>initialize</phase>
                         <goals>
@@ -201,6 +315,57 @@
                             <target>
                                 <get src="https://github.com/ERDDAP/erddap/releases/download/${erddapcontent.download.version}/erddapContent.zip" dest="${project.basedir}/download_cache/erddapContent.zip" skipexisting="true" verbose="true"/>
                                 <unzip src="${project.basedir}/download_cache/erddapContent.zip" dest="${project.basedir}" overwrite="false" />
+
+                                <!-- copy unaltered content to a second directory where we can alter invalid/disallowed setup.xml values for testing -->
+                                <copy todir="${project.basedir}/content/erddap-fake">
+                                    <fileset dir="${project.basedir}/content/erddap" />
+                                </copy>
+                                <replace file="${project.basedir}/content/erddap-fake/setup.xml">
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<bigParentDirectory>/home/yourName/erddap/</bigParentDirectory>]]></replacetoken>
+                                      <replacevalue><![CDATA[<bigParentDirectory>${project.basedir}/tmp/big-parent/</bigParentDirectory>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<flagKeyKey>CHANGE THIS TO YOUR FAVORITE QUOTE</flagKeyKey>]]></replacetoken>
+                                      <replacevalue><![CDATA[<flagKeyKey>random-value-iosh9ohsah1ro0Laegh5Zoh6eijehuqu2uch4Chu</flagKeyKey>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<emailEverythingTo>your.email@yourInstitution.edu</emailEverythingTo>]]></replacetoken>
+                                      <replacevalue><![CDATA[<emailEverythingTo>fake.email@erddap.org</emailEverythingTo>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminInstitution>Your Institution</adminInstitution>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminInstitution>ERDDAP</adminInstitution>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminInstitutionUrl>Your Institution's or Group's Url</adminInstitutionUrl>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminInstitutionUrl>https://github.com/ERDDAP/erddap/</adminInstitutionUrl>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminIndividualName>Your Name</adminIndividualName>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminIndividualName>Fake Name</adminIndividualName>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminPhone>+1 999-999-9999</adminPhone>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminPhone>+1 555-555-1212</adminPhone>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminAddress>123 Main St.</adminAddress>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminAddress>123 Fake St.</adminAddress>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminCity>Some Town</adminCity>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminCity>Fake Town</adminCity>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminPostalCode>99999</adminPostalCode>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminPostalCode>00000</adminPostalCode>]]></replacevalue>
+                                    </replacefilter>
+                                    <replacefilter>
+                                      <replacetoken><![CDATA[<adminEmail>your.email@yourCompany.com</adminEmail>]]></replacetoken>
+                                      <replacevalue><![CDATA[<adminEmail>fake.email@noCompany.com</adminEmail>]]></replacevalue>
+                                    </replacefilter>
+                                </replace>
                             </target>
                         </configuration>
                     </execution>
@@ -253,13 +418,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M6</version>
-                </plugin>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/surefire-junit4 -->
-                <plugin>
-                    <groupId>org.apache.maven.surefire</groupId>
-                    <artifactId>surefire-junit4</artifactId>
-                    <version>2.19.1</version>
+                    <version>3.2.1</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
@@ -274,6 +433,42 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>standard-tests</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- exclude tests with remote dependenecies unless the remote-tests profile is enabled -->
+                            <!-- https://maven.apache.org/surefire/maven-failsafe-plugin/examples/junit.html#using-junit-categories -->
+                            <excludedGroups>gov.noaa.pfel.erddap.categories.RemoteTest</excludedGroups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>remote-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <groups>gov.noaa.pfel.erddap.categories.RemoteTest</groups>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
