@@ -177,6 +177,7 @@ public class Erddap extends HttpServlet {
     public AtomicInteger totalNRequests  = new AtomicInteger();
     public String lastReportDate = "";
     RequestDetails userRequestDetails = new RequestDetails();
+    UsageMetrics usageMetrics = new UsageMetrics();
 
     /** Set by loadDatasets. */
     /** datasetHashMaps are read from many threads and written to by loadDatasets, 
@@ -482,6 +483,7 @@ public class Erddap extends HttpServlet {
 
             // Sets the Request object values to be passed into the UsageMetrics
             userRequestDetails.setDateTime(Calendar2.getCurrentISODateTimeStringLocalTZ());
+            userRequestDetails.setProtocol(requestUrl);
             userRequestDetails.setDataSetId(requestUrl);
             userRequestDetails.setIpAddress(ipAddress);
             userRequestDetails.setUrl(requestUrl);
@@ -808,7 +810,7 @@ public class Erddap extends HttpServlet {
                 if(Objects.equals(userRequestDetails.getResponse(), "200")) {
                     for(String s : EDDTable.dataFileTypeNames) {
                         if(userRequestDetails.getVariables().endsWith(s)) {
-                            UsageMetrics.sendUsageMetrics(userRequestDetails);
+                            usageMetrics.sendUsageMetrics(userRequestDetails);
                         }
                     }
                 }

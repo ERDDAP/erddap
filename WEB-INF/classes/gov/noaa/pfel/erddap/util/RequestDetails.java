@@ -8,6 +8,7 @@ public class RequestDetails {
     public String variables;
     public String queryParams;
     public String response;
+    public String protocol;
 
     public RequestDetails() {};
 
@@ -68,11 +69,15 @@ public class RequestDetails {
         this.response = response;
     }
 
+    public String getProtocol() { return protocol; }
+
+    public void setProtocol(String protocol) { this.protocol = protocol; }
+
     @Override
     public String toString() {
         return """
-                { "dateTime": "%s", "dataSetId": "%s", "ipAddress": "%s", "variables": "%s", "queryParams": "%s", "response": "%s"}
+                { "dateTime": "%s", "protocol": "%s", "dataSetId": "%s", "ipAddress": "%s", "variables": "%s", "queryParams": "%s", "response": "%s"}
                """
-                .formatted(dateTime, dataSetId, ipAddress, variables, queryParams, response);
+                .formatted(dateTime, protocol, dataSetId, ipAddress, variables, queryParams, response);
     }
 }
