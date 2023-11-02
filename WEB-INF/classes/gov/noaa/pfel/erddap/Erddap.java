@@ -64,18 +64,10 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.URLConnection;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -184,6 +176,7 @@ public class Erddap extends HttpServlet {
     protected RunLoadDatasets runLoadDatasets;
     public AtomicInteger totalNRequests  = new AtomicInteger();
     public String lastReportDate = "";
+    RequestDetails userRequestDetails = new RequestDetails();
 
     /** Set by loadDatasets. */
     /** datasetHashMaps are read from many threads and written to by loadDatasets, 
@@ -485,7 +478,15 @@ public class Erddap extends HttpServlet {
             //  and block a request from processing until the number dips below MaxNRequests.
             //  Such a system would need good assurance that the list was valid
             //  (not old requests filling up the system but actually processed).
-            ipAddress = EDStatic.getIPAddress(request); 
+            ipAddress = EDStatic.getIPAddress(request);
+
+            // Sets the Request object values to be passed into the UsageMetrics
+            userRequestDetails.setDateTime(Calendar2.getCurrentISODateTimeStringLocalTZ());
+            userRequestDetails.setDataSetId(requestUrl);
+            userRequestDetails.setIpAddress(ipAddress);
+            userRequestDetails.setUrl(requestUrl);
+            userRequestDetails.setQueryParams(queryString);
+            userRequestDetails.setResponse("");
 
             //always log request as soon as all info known (even if request will soon be rejected)
             String summary = "{{{{#" + requestNumber + " " +
@@ -797,6 +798,17 @@ public class Erddap extends HttpServlet {
                             int which = iaq.indexOf(requestNumber);
                             if (which >= 0) //it should be
                                 iaq.remove(which);
+                        }
+                    }
+                }
+
+                // Send the user request details if the response was SUCCESS
+                // & it is a valid file type
+                userRequestDetails.setResponse(String.valueOf(response));
+                if(Objects.equals(userRequestDetails.getResponse(), "200")) {
+                    for(String s : EDDTable.dataFileTypeNames) {
+                        if(userRequestDetails.getVariables().endsWith(s)) {
+                            UsageMetrics.sendUsageMetrics(userRequestDetails);
                         }
                     }
                 }
