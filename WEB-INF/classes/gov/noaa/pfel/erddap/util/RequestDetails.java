@@ -3,17 +3,18 @@ package gov.noaa.pfel.erddap.util;
 public class RequestDetails {
 
     public String dateTime;
+    public String protocol;
     public String dataSetId;
     public String ipAddress;
     public String variables;
     public String queryParams;
     public String response;
-    public String protocol;
 
     public RequestDetails() {};
 
-    public RequestDetails(String dateTime, String dataSetId, String ipAddress, String variables, String queryParams, String response) {
+    public RequestDetails(String dateTime, String protocol, String dataSetId, String ipAddress, String variables, String queryParams, String response) {
         this.dateTime = dateTime;
+        this.protocol = protocol;
         this.dataSetId = dataSetId;
         this.ipAddress = ipAddress;
         this.variables = variables;
