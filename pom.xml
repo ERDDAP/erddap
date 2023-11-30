@@ -236,9 +236,9 @@
                 </executions>
             </plugin>
             <plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.1</version>
-			</plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.1</version>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -287,7 +287,7 @@
                 <version>5.10.1</version>
                 <type>pom</type>
                 <scope>import</scope>
-			</dependency>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -307,10 +307,10 @@
         </dependency> 
 
         <dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Kyle had this: 
              https://mvnrepository.com/artifact/org.apache.ant/ant 
