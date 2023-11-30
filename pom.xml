@@ -64,7 +64,6 @@
 
     <build>
         <sourceDirectory>WEB-INF/classes</sourceDirectory>
-        <testSourceDirectory>src/test</testSourceDirectory>
         <resources>
             <resource>
                 <directory>WEB-INF/classes</directory>
