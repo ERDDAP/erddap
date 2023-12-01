@@ -2,20 +2,7 @@ package com.cohort.array;
 
 import com.cohort.util.*;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.math.BigInteger;
-import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-
-import ucar.ma2.StructureData;
 
 class ByteArrayTests {
     @org.junit.jupiter.api.Test
