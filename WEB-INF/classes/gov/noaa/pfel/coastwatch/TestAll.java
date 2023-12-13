@@ -967,7 +967,6 @@ TableXmlHandler txh;
 Tally tally;
 Test test;
 TestBrowsers tb;
-TestSSR tssr;
 Touch touch;
 TrajectoryScreen trajs;
 UByteArray uba;
@@ -1130,8 +1129,6 @@ WaitThenTryAgainException wttae;
         PAOne.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
         Attributes.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
         ResourceBundle2.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-
-        TestSSR.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); //requires localhost ERDDAP
         RegexFilenameFilter.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
         Tally.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
         PersistentTable.test(            errorSB, interactive, doSlowTestsToo, 0, -1);

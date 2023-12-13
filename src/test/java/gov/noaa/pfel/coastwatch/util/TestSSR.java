@@ -4,28 +4,19 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
-import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
-import com.cohort.util.XML;
 
-import java.awt.Color;
-import java.awt.Image;
-import java.awt.image.PixelGrabber;
+import tags.TagAWS;
+import tags.TagLocalERDDAP;
+import tags.TagPassword;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.GregorianCalendar;
-import java.util.Properties;
 
 /**
  * This is a Java program to test all of the methods in SSR.
@@ -39,7 +30,9 @@ public class TestSSR {
     /**
      * Run all of the tests which are operating system independent.
      */
-    public static void runNonUnixTests() throws Throwable {
+    @org.junit.jupiter.api.Test
+    @TagPassword
+    void runNonUnixTests() throws Throwable {
         String sar[];
 
         String2.log("\n*** TestSSR"); 
@@ -343,7 +336,9 @@ public class TestSSR {
      *   Access Protection Properties : Anti Virus Standard Protections :
      *   Prevent mass mailing worms from sending mail" is un-checked.
      */
-    public static void testEmail() throws Exception {
+    @org.junit.jupiter.api.Test
+    @TagPassword
+    void testEmail() throws Exception {
 
         String emailServer, emailPort, emailProperties, emailUser,
             emailPassword, emailReplyToAddress, emailToAddresses;
@@ -388,8 +383,7 @@ public class TestSSR {
         }
         SSR.debugMode = false;
     }
-
-
+    
     /** 
      * Test email. 
      * If this fails with "Connection refused" error, make sure McAffee "Virus Scan Console :
@@ -417,7 +411,9 @@ public class TestSSR {
     /**
      * Test posting info and getting response.
      */
-    public static void testPostFormGetResponseString() throws Exception {
+    @org.junit.jupiter.api.Test
+    @TagLocalERDDAP
+    void testPostFormGetResponseString() throws Exception {
         for (int i = 0; i < 2; i++) {
             try {
                 String s = SSR.postFormGetResponseString(
@@ -451,7 +447,8 @@ public class TestSSR {
     /**
      * Run all of the tests which are dependent on Unix.
      */
-    public static void runUnixTests() throws Exception {
+    @org.junit.jupiter.api.Test
+    void runUnixTests() throws Exception {
         //cShell
         String2.log("test cShell");
         //Test.ensureEqual(toNewlineString(SSR.cShell("")), "", "a");
@@ -462,7 +459,9 @@ public class TestSSR {
     /**
      * Runs some AWS S3-related tests.
      */
-    public static void testAwsS3() throws Exception {
+    @org.junit.jupiter.api.Test
+    @TagAWS
+    void testAwsS3() throws Exception {
 
         String2.log("\n*** TestSSR.testAwsS3() -- THIS TEST REQUIRES testPrivateAwsS3MediaFiles in localhost erddap.");
         String localFile20           = "/u00/data/points/testMediaFiles/ShouldWork/noaa20.gif";
@@ -577,7 +576,9 @@ public class TestSSR {
     /**
      * Tests Aws TransferManager.
      */
-    public static void testAwsTransferManager() throws Exception {
+    @org.junit.jupiter.api.Test
+    @TagAWS
+    void testAwsTransferManager() throws Exception {
 
         //*** test a lot of AWS S3 actions on a private AWS bucket
         //delete a file on S3 to ensure it doesn't exist (ignore result)
@@ -663,54 +664,6 @@ public class TestSSR {
         //isAwsS3File
         Test.ensureEqual(File2.isAwsS3File(awsUrl2), false, "");
     }
-
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? 2 : 1;
-        String msg = "\n^^^ TestSSR.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    if (test ==  0) runNonUnixTests();
-                    if (test ==  1) testEmail();
-                    if (test ==  2) testPostFormGetResponseString();
-
-                    if (test == 1000) runUnixTests();
-
-                } else {
-                    if (test ==  0) testAwsS3();
-                    if (test ==  1) testAwsTransferManager();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 
     /**
      * Run all of the tests

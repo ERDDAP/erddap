@@ -237,6 +237,9 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.1</version>
+                <configuration>
+                    <excludedGroups>AWS, LocalERDDAP, Password</excludedGroups>
+                </configuration>
             </plugin>
         </plugins>
         <pluginManagement>
