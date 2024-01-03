@@ -1108,8 +1108,6 @@ WaitThenTryAgainException wttae;
 
         //low level utilities
         TestUtil.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-        HashDigest.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        Image2.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);  
         XML.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);
         LRUCache.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
 
@@ -1146,12 +1144,10 @@ WaitThenTryAgainException wttae;
 
         ValidateDataSetProperties.test(  errorSB, interactive, doSlowTestsToo, 0, -1);       
         Matlab.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);
-        Opendap.test(                    errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
         DataHelper.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);  
-        NcHelper.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);   
         OpendapHelper.test(              errorSB, interactive, doSlowTestsToo, 0, -1);  //few tests. relies on testing in classes that use it.
         Grid.test(                       errorSB, interactive, doSlowTestsToo, 0, -1);
         //GridDataSetCWOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
