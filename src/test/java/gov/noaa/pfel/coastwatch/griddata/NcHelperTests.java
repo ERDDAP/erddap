@@ -1,6 +1,9 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
+
+import org.junit.jupiter.api.io.TempDir;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
@@ -37,6 +40,9 @@ import ucar.nc2.Variable;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 class NcHelperTests {
+
+  @TempDir
+  private static Path TEMP_DIR;
 
   /**
    * This tests the methods in this class.
@@ -117,7 +123,7 @@ class NcHelperTests {
     for (int i = 0; i < 65536; i++)
       sa.add("a" + (i == 8 ? " " : (char) i) + "z"); // backspace not saved
     // write to file
-    fullName = "c:/temp/PAsInNc.nc";
+    fullName = TEMP_DIR.toAbsolutePath().toString() + "/PAsInNc.nc";
     File2.delete(fullName); // for test, make double sure it doesn't already exist
     StringArray varNames = new StringArray(new String[] {
         "ba", "sha", "ia", "la", "ca", "fa", "da", "sa" });
@@ -149,7 +155,7 @@ class NcHelperTests {
     Test.ensureEqual(pas[varNames.indexOf("sa")].toJsonCsvString(), pas2[0].toJsonCsvString(), "");
 
     // test writeAttributesToNc
-    fullName = "c:/temp/AttsInNc.nc";
+    fullName = TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc";
     Attributes atts = new Attributes();
     for (int i = 0; i < pas.length; i++)
       atts.set(varNames.get(i), pas[i]);
@@ -180,7 +186,7 @@ class NcHelperTests {
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
       if (e.toString().indexOf(
-          "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " +
+          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
               "(The system cannot find the file specified)") < 0)
         throw e;
     }
@@ -190,7 +196,7 @@ class NcHelperTests {
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
       if (e.toString().indexOf(
-          "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " +
+          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
               "(The system cannot find the file specified)") < 0)
         throw e;
     }
@@ -200,7 +206,7 @@ class NcHelperTests {
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
       if (e.toString().indexOf(
-          "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " +
+          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
               "(The system cannot find the file specified)") < 0)
         throw e;
     }
@@ -212,7 +218,7 @@ class NcHelperTests {
     } catch (Exception e) {
       if (e.toString().indexOf(
           String2.ERROR + ": Expected variable #0 not found while reading " +
-              "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
+              TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc (loadVarNames=zztop).") < 0)
         throw e;
     }
 
@@ -222,17 +228,17 @@ class NcHelperTests {
     } catch (Exception e) {
       if (e.toString().indexOf(
           String2.ERROR + ": Expected variable #0 not found while reading " +
-              "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
+              TEMP_DIR.toAbsolutePath().toString() + "/AttsInNc.nc (loadVarNames=zztop).") < 0)
         throw e;
     }
 
     // test if defining >2GB throws exception
-    fullName = "c:/temp/TooBig.nc";
+    fullName = TEMP_DIR.toAbsolutePath().toString() + "/TooBig.nc";
     File2.delete(fullName);
     NetcdfFormatWriter ncWriter = null;
 
     // *** test writing Strings to nc files
-    fullName = "c:/temp/StringsInNc.nc";
+    fullName = TEMP_DIR.toAbsolutePath().toString() + "/StringsInNc.nc";
     File2.delete(fullName);
     ncWriter = null;
     try {
@@ -296,7 +302,7 @@ class NcHelperTests {
 
     // *** test writing too-long Strings to nc files
     // Must the char[][] be the exact right size? What if too long?
-    fullName = "c:/temp/StringsInNc2.nc";
+    fullName = TEMP_DIR.toAbsolutePath().toString() + "/StringsInNc2.nc";
     File2.delete(fullName);
     ncWriter = null;
     try {
