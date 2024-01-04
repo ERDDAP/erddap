@@ -1,8 +1,6 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
@@ -36,7 +34,6 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 import ucar.nc2.Structure;
 import ucar.nc2.Variable;
-import ucar.nc2.write.NetcdfFileFormat;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 class NcHelperTests {
@@ -245,7 +242,7 @@ class NcHelperTests {
       ncOut.setFill(false);
       Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
       Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
-      ArrayList<Dimension> dims = new ArrayList();
+      ArrayList<Dimension> dims = new ArrayList<Dimension>();
       dims.add(dim0);
       dims.add(dim1);
       NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
@@ -309,7 +306,7 @@ class NcHelperTests {
       ncOut.setFill(false);
       Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 2);
       Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 3);
-      ArrayList<Dimension> dims = new ArrayList();
+      ArrayList<Dimension> dims = new ArrayList<Dimension>();
       dims.add(dim0);
       dims.add(dim1);
       NcHelper.addNc3StringVariable(rootGroup, "s1", dims, 4); // test strLength not long enough for all strings!
@@ -369,58 +366,63 @@ class NcHelperTests {
     // (Chris) I'm commenting out the below during the move to JUnit. Based on my
     // reading of the NetCDF Users Guide,
     // https://docs.unidata.ucar.edu/nug/current/file_structure_and_performance.html
-    // I don't think this is really an error. Besides that, this is testing the NetCDF
+    // I don't think this is really an error. Besides that, this is testing the
+    // NetCDF
     // library, not the ERDDAP code.
     // if (true) { // this is normally true
-    //   try {
-    //     NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
-    //         fullName)
-    //         .setFormat(NetcdfFileFormat.NETCDF3) // this is default. I'm just testing.
-    //         .setFill(false);
+    // try {
+    // NetcdfFormatWriter.Builder ncOut = NetcdfFormatWriter.createNewNetcdf3(
+    // fullName)
+    // .setFormat(NetcdfFileFormat.NETCDF3) // this is default. I'm just testing.
+    // .setFill(false);
 
-    //     // "define" mode 2vars * 3000*50000*8bytes = 2,400,000,000
-    //     Group.Builder rootGroup = ncOut.getRootGroup();
+    // // "define" mode 2vars * 3000*50000*8bytes = 2,400,000,000
+    // Group.Builder rootGroup = ncOut.getRootGroup();
 
-    //     Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 3000);
-    //     Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 50000);
-    //     List<Dimension> dims = Arrays.asList(dim0, dim1);
-    //     NcHelper.addVariable(rootGroup, "d1", DataType.DOUBLE, dims);
-    //     NcHelper.addVariable(rootGroup, "d2", DataType.DOUBLE, dims);
+    // Dimension dim0 = NcHelper.addDimension(rootGroup, "dim0", 3000);
+    // Dimension dim1 = NcHelper.addDimension(rootGroup, "dim1", 50000);
+    // List<Dimension> dims = Arrays.asList(dim0, dim1);
+    // NcHelper.addVariable(rootGroup, "d1", DataType.DOUBLE, dims);
+    // NcHelper.addVariable(rootGroup, "d2", DataType.DOUBLE, dims);
 
-    //     // define a var above 2GB (This causes the exception.)
-    //     NcHelper.addVariable(rootGroup, "b3", DataType.BYTE, Arrays.asList(dim0));
+    // // define a var above 2GB (This causes the exception.)
+    // NcHelper.addVariable(rootGroup, "b3", DataType.BYTE, Arrays.asList(dim0));
 
-    //     // "create" mode (and error isn't triggered till here)
-    //     ncWriter = ncOut.build();
+    // // "create" mode (and error isn't triggered till here)
+    // ncWriter = ncOut.build();
 
-    //     ncWriter.close(); // it calls flush() and doesn't like flush called separately
-    //     ncWriter = null;
-    //     if (true)
-    //       throw new RuntimeException(
-    //           "Shouldn't get here (It let me create nc3 file >2GB!) . fileSize=" + File2.length(fullName));
+    // ncWriter.close(); // it calls flush() and doesn't like flush called
+    // separately
+    // ncWriter = null;
+    // if (true)
+    // throw new RuntimeException(
+    // "Shouldn't get here (It let me create nc3 file >2GB!) . fileSize=" +
+    // File2.length(fullName));
 
-    //   } catch (Throwable t) {
-    //     String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE + MustBe.throwableToString(t));
-    //     if (ncWriter != null) {
-    //       try {
-    //         ncWriter.abort();
-    //       } catch (Exception e9) {
-    //       }
-    //       File2.delete(fullName);
-    //       ncWriter = null;
-    //     }
+    // } catch (Throwable t) {
+    // String2.log(NcHelper.ERROR_WHILE_CREATING_NC_FILE +
+    // MustBe.throwableToString(t));
+    // if (ncWriter != null) {
+    // try {
+    // ncWriter.abort();
+    // } catch (Exception e9) {
+    // }
+    // File2.delete(fullName);
+    // ncWriter = null;
+    // }
 
-    //     String msg = t.toString();
-    //     String2.log("Intentional error (should be: not allowed to create nc3 file >2GB):\n" + msg);
+    // String msg = t.toString();
+    // String2.log("Intentional error (should be: not allowed to create nc3 file
+    // >2GB):\n" + msg);
 
-    //     if (!msg.equals(
-    //         "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
-    //             "may not exceed 2147483647"))
-    //       Test.knownProblem("netcdf-java 5.4.1+ allows creation of nc3 files >2GB!\n" +
-    //           "I reported this to Sean Arms 2021-01-06.", t);
-    //   } finally {
-    //     File2.delete(fullName);
-    //   }
+    // if (!msg.equals(
+    // "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
+    // "may not exceed 2147483647"))
+    // Test.knownProblem("netcdf-java 5.4.1+ allows creation of nc3 files >2GB!\n" +
+    // "I reported this to Sean Arms 2021-01-06.", t);
+    // } finally {
+    // File2.delete(fullName);
+    // }
     // }
 
   }
@@ -475,13 +477,13 @@ class NcHelperTests {
           while (it.hasNext()) {
             StructureData sd = it.next();
             // System.out.println("byName recNo=" + recNo +
-            //     " a_name=" + sd.getScalarInt("a_name") +
-            //     " b_name=" + sd.getScalarFloat("b_name") +
-            //     " c_name=" + sd.getScalarDouble("c_name"));
-            // System.out.println("byMem  recNo=" + recNo +
-            //     " a_name=" + sd.getScalarInt(smma) +
-            //     " b_name=" + sd.getScalarFloat(smmb) +
-            //     " c_name=" + sd.getScalarDouble(smmc));
+            // " a_name=" + sd.getScalarInt("a_name") +
+            // " b_name=" + sd.getScalarFloat("b_name") +
+            // " c_name=" + sd.getScalarDouble("c_name"));
+            // System.out.println("byMem recNo=" + recNo +
+            // " a_name=" + sd.getScalarInt(smma) +
+            // " b_name=" + sd.getScalarFloat(smmb) +
+            // " c_name=" + sd.getScalarDouble(smmc));
             recNo++;
           }
         } finally {
@@ -549,7 +551,7 @@ class NcHelperTests {
       Dimension timeDim = Dimension.builder().setName("time").setIsUnlimited(true).setLength(0).build();
       rootGroup.addDimension(timeDim);
 
-      ArrayList<Dimension> dims = new ArrayList();
+      ArrayList<Dimension> dims = new ArrayList<Dimension>();
       dims.add(timeDim);
 
       // define Variables
@@ -604,7 +606,8 @@ class NcHelperTests {
         ncWriter.close();
         ncWriter = null;
 
-        // String2.log("\nrow=" + row + ":\n" + NcHelper.ncdump(testUnlimitedFileName, ""));
+        // String2.log("\nrow=" + row + ":\n" + NcHelper.ncdump(testUnlimitedFileName,
+        // ""));
 
         /*
          * if (row == 1) {

@@ -18,8 +18,7 @@ class Image2Tests {
     String2.log("\n*** Image2.testTestImagesIdentical");
 
     // test images which are identical
-    String testDir = File2.getClassPath() + // with / separator and / at the end
-        "com/cohort/util/";
+    String testDir = Image2Tests.class.getResource("/images/").getPath();
     String tempDir = File2.getSystemTempDirectory();
     Image2.testImagesIdentical(
         testDir + "testImagesIdentical_1.png",
@@ -53,8 +52,7 @@ class Image2Tests {
   void basicTest() throws Exception {
     String2.log("\n*** Image2.basicTest");
 
-    String imageDir = File2.getClassPath() + // with / separator and / at the end
-        "com/cohort/util/";
+    String imageDir = Image2Tests.class.getResource("/images/").getPath();
 
     // test ImageIO
     BufferedImage bi = ImageIO.read(new File(imageDir + "testmap.gif"));
