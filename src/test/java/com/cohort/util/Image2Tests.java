@@ -5,10 +5,16 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 
+import org.junit.jupiter.api.io.TempDir;
+
 class Image2Tests {
+
+  @TempDir
+  private static Path TEMP_DIR;
 
   @org.junit.jupiter.api.Test
   /**
@@ -19,11 +25,11 @@ class Image2Tests {
 
     // test images which are identical
     String testDir = Image2Tests.class.getResource("/images/").getPath();
-    String tempDir = File2.getSystemTempDirectory();
+    String tempDir = TEMP_DIR.toAbsolutePath().toString();
     Image2.testImagesIdentical(
-        testDir + "testImagesIdentical_1.png",
-        testDir + "testImagesIdentical_1.png",
-        tempDir + "testImagesIdentical_diff.png");
+        testDir + "/testImagesIdentical_1.png",
+        testDir + "/testImagesIdentical_1.png",
+        tempDir + "/testImagesIdentical_diff.png");
 
     // test images which aren't identical
     try {
@@ -36,9 +42,9 @@ class Image2Tests {
 
       // test images which aren't identical
       Image2.testImagesIdentical(
-          testDir + "testImagesIdentical_1.png",
-          testDir + "testImagesIdentical_2.png",
-          tempDir + "testImagesIdentical_diff.png");
+          testDir + "/testImagesIdentical_1.png",
+          testDir + "/testImagesIdentical_2.png",
+          tempDir + "/testImagesIdentical_diff.png");
     } catch (Exception e) {
       return;
     }

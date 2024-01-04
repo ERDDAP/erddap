@@ -1111,7 +1111,6 @@ WaitThenTryAgainException wttae;
         XML.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);
         LRUCache.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
 
-        ByteArray.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
         CharArray.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
         ShortArray.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
         IntArray.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
@@ -1127,7 +1126,6 @@ WaitThenTryAgainException wttae;
         PAOne.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
         Attributes.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
         ResourceBundle2.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-        RegexFilenameFilter.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
         Tally.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
         PersistentTable.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
@@ -1148,7 +1146,6 @@ WaitThenTryAgainException wttae;
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
         DataHelper.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);  
-        OpendapHelper.test(              errorSB, interactive, doSlowTestsToo, 0, -1);  //few tests. relies on testing in classes that use it.
         Grid.test(                       errorSB, interactive, doSlowTestsToo, 0, -1);
         //GridDataSetCWOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
         GridDataSetThredds.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
