@@ -4,12 +4,6 @@
  */
 package com.cohort.util;
 
-import com.cohort.util.String2;
-import com.cohort.util.File2;
-
-import java.io.FileWriter;
-import java.io.IOException;
-
 /**
  * This generates a hash digest (e.g., MD5, SHA256) of a password or a file.
  *

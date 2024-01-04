@@ -13,11 +13,9 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,8 +24,6 @@ import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
-//import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
 import ucar.nc2.write.*;
 
 

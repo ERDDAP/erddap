@@ -19,21 +19,9 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.TimePeriods;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
-//import java.net.URL;
-//import java.net.URLConnection;
-//import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-//import java.io.InputStream;
-//import java.io.InputStreamReader;
-import java.io.FileWriter;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Enumeration;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Vector;
 
 /** The Java DAP classes.  */
 import dods.dap.*;
