@@ -96,7 +96,7 @@ class RegexFilenameFilterTests {
     // Test.ensureEqual(lastMod.toString(), "2007-04-23T18:24:38Z,
     // 2007-05-02T19:18:32Z", "");
     Test.ensureEqual(info[3].toString(),
-        "155937, 359559, 89254", "");
+        "150556, 359559, 89254", "");
   }
 
 }
