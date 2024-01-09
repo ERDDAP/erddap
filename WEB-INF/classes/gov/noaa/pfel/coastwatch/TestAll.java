@@ -1148,7 +1148,6 @@ WaitThenTryAgainException wttae;
         DataHelper.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);  
         Grid.test(                       errorSB, interactive, doSlowTestsToo, 0, -1);
         //GridDataSetCWOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
-        GridDataSetThredds.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
         GridDataSetOpendap.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
         SaveOpendap.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
         TwoGrids.test(                   errorSB, interactive, doSlowTestsToo, 0, -1); 
