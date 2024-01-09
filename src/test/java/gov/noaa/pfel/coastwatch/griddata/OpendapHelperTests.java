@@ -15,6 +15,7 @@ import com.cohort.util.Test;
 import dods.dap.DAS;
 import dods.dap.DConnect;
 import dods.dap.DDS;
+import tags.TagExternalERDDAP;
 import tags.TagThredds;
 
 class OpendapHelperTests {
@@ -380,6 +381,7 @@ class OpendapHelperTests {
 
   /** This tests dapToNc DGrid. */
   @org.junit.jupiter.api.Test
+  @TagExternalERDDAP
   void testDapToNcDGrid() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
     String fileName, expected, results;
