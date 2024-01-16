@@ -5204,7 +5204,8 @@ class TableTests {
     String results, expected;
 
     // test no vars specified, 4D, only 2nd dim has >1 value, getMetadata
-    String fiName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").getPath();
+    String fiName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
+        .getPath();
     table.readNDNc(fiName, null, 0, // standardizeWhat=0
         null, 0, 0);
     results = table.toString();
@@ -17081,12 +17082,14 @@ class TableTests {
    * So go back to: finally {nc.close()}
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // The test fails on CJohn's machine because FileVisitorDNLS doesn't handle paths with drive letters for local files.
+  @TagIncompleteTest // The test fails on CJohn's machine because FileVisitorDNLS doesn't handle
+                     // paths with drive letters for local files.
   void testNcCloseTryWithResources() throws Throwable {
     String2.log("\n*** Table.testNcCloseTryWithResources()");
 
     long time = System.currentTimeMillis();
-    String fileName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").getPath();
+    String fileName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
+        .getPath();
     int n = 100000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
