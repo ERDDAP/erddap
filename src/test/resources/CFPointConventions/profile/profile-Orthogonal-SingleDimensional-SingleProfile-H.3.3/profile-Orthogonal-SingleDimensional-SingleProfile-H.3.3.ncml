@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<netcdf xmlns="http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2" location="./profile/profile-Orthogonal-SingleDimensional-SingleProfile-H.3.3/profile-Orthogonal-SingleDimensional-SingleProfile-H.3.3.nc">
+  <dimension name="z" length="42" />
+  <attribute name="Conventions" value="CF-1.6" />
+  <attribute name="featureType" value="profile" />
+  <variable name="lat" type="float">
+    <attribute name="units" value="degrees_north" />
+    <attribute name="long_name" value="station latitude" />
+    <attribute name="standard_name" value="latitude" />
+  </variable>
+  <variable name="lon" type="float">
+    <attribute name="units" value="degrees_east" />
+    <attribute name="long_name" value="station longitude" />
+    <attribute name="standard_name" value="longitude" />
+  </variable>
+  <variable name="profile" type="int">
+    <attribute name="cf_role" value="profile_id" />
+  </variable>
+  <variable name="time" type="int">
+    <attribute name="long_name" value="time" />
+    <attribute name="standard_name" value="time" />
+    <attribute name="units" value="seconds since 1990-01-01 00:00:00" />
+  </variable>
+  <variable name="z" shape="z" type="float">
+    <attribute name="units" value="m" />
+    <attribute name="standard_name" value="altitude" />
+    <attribute name="long_name" value="height above mean sea level" />
+    <attribute name="positive" value="up" />
+    <attribute name="axis" value="Z" />
+  </variable>
+  <variable name="temperature" shape="z" type="float">
+    <attribute name="long_name" value="Water Temperature" />
+    <attribute name="units" value="Celsius" />
+    <attribute name="coordinates" value="time lat lon z" />
+    <attribute name="missing_value" type="float" value="-999.9" />
+  </variable>
+  <variable name="humidity" shape="z" type="float">
+    <attribute name="long_name" value="Humidity" />
+    <attribute name="standard_name" value="specific_humidity" />
+    <attribute name="units" value="Percent" />
+    <attribute name="coordinates" value="time lat lon z" />
+    <attribute name="missing_value" type="float" value="-999.9" />
+  </variable>
+</netcdf>

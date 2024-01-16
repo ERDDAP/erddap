@@ -1,0 +1,7 @@
+#!/bin/bash
+
+find . -name "*.rb" -not -name "utils.rb" | while read f;
+do
+  ruby $f
+done
+

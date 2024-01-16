@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<netcdf xmlns="http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2" location="./point/point-H.1/point-H.1.nc">
+  <dimension name="obs" length="100" />
+  <attribute name="Conventions" value="CF-1.6" />
+  <attribute name="featureType" value="point" />
+  <variable name="lat" shape="obs" type="double">
+    <attribute name="units" value="degrees_north" />
+    <attribute name="long_name" value="latitude of the observation" />
+    <attribute name="standard_name" value="latitude" />
+  </variable>
+  <variable name="lon" shape="obs" type="double">
+    <attribute name="units" value="degrees_east" />
+    <attribute name="long_name" value="longitude of the observation" />
+    <attribute name="standard_name" value="longitude" />
+  </variable>
+  <variable name="alt" shape="obs" type="double">
+    <attribute name="units" value="m" />
+    <attribute name="positive" value="up" />
+    <attribute name="axis" value="Z" />
+    <attribute name="standard_name" value="height" />
+  </variable>
+  <variable name="time" shape="obs" type="int">
+    <attribute name="long_name" value="time" />
+    <attribute name="standard_name" value="time" />
+    <attribute name="units" value="seconds since 1990-01-01 00:00:00" />
+    <attribute name="missing_value" type="int" value="-999" />
+  </variable>
+  <variable name="temperature" shape="obs" type="float">
+    <attribute name="long_name" value="Water Temperature" />
+    <attribute name="standard_name" value="sea_water_temperature" />
+    <attribute name="units" value="Celsius" />
+    <attribute name="coordinates" value="time lat lon alt" />
+    <attribute name="missing_value" type="float" value="-999.9" />
+  </variable>
+  <variable name="humidity" shape="obs" type="float">
+    <attribute name="long_name" value="Humidity" />
+    <attribute name="standard_name" value="specific_humidity" />
+    <attribute name="units" value="Percent" />
+    <attribute name="coordinates" value="time lat lon alt" />
+    <attribute name="missing_value" type="float" value="-999.9" />
+  </variable>
+</netcdf>

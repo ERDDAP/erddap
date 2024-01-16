@@ -1,0 +1,47 @@
+netcdf profile-Indexed-Ragged-MultipleProfiles-H.3.5 {
+dimensions:
+	obs = UNLIMITED ; // (100 currently)
+	profile = 6 ;
+variables:
+	float lat(profile) ;
+		lat:units = "degrees_north" ;
+		lat:long_name = "station latitude" ;
+		lat:standard_name = "latitude" ;
+	float lon(profile) ;
+		lon:units = "degrees_east" ;
+		lon:long_name = "station longitude" ;
+		lon:standard_name = "longitude" ;
+	int profile(profile) ;
+		profile:cf_role = "profile_id" ;
+	int parentIndex(obs) ;
+		parentIndex:long_name = "index of profile" ;
+		parentIndex:instance_dimension = "profile" ;
+	int time(profile) ;
+		time:long_name = "time of measurement" ;
+		time:standard_name = "time" ;
+		time:units = "seconds since 1990-01-01 00:00:00" ;
+		time:missing_value = -999 ;
+	float z(obs) ;
+		z:long_name = "height above mean sea level" ;
+		z:standard_name = "altitude" ;
+		z:units = "m" ;
+		z:positive = "up" ;
+		z:axis = "Z" ;
+		z:missing_value = -999.9f ;
+	float temperature(obs) ;
+		temperature:long_name = "Air Temperature" ;
+		temperature:standard_name = "air_temperature" ;
+		temperature:units = "Celsius" ;
+		temperature:coordinates = "time lat lon z" ;
+		temperature:missing_value = -999.9f ;
+	float humidity(obs) ;
+		humidity:long_name = "Humidity" ;
+		humidity:standard_name = "specific_humidity" ;
+		humidity:units = "Percent" ;
+		humidity:coordinates = "time lat lon z" ;
+		humidity:missing_value = -999.9f ;
+
+// global attributes:
+		:Conventions = "CF-1.6" ;
+		:featureType = "profile" ;
+}

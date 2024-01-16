@@ -1,0 +1,38 @@
+netcdf timeSeriesProfile-Multidimensional-SingleStation-H.5.2 {
+dimensions:
+	profile = 4 ;
+	z = 30 ;
+	name_strlen = 50 ;
+variables:
+	double lat ;
+		lat:units = "degrees_north" ;
+		lat:long_name = "station latitude" ;
+		lat:standard_name = "latitude" ;
+	double lon ;
+		lon:units = "degrees_east" ;
+		lon:long_name = "station longitude" ;
+		lon:standard_name = "longitude" ;
+	int station_info ;
+		station_info:long_name = "station info" ;
+	char station_name(name_strlen) ;
+		station_name:cf_role = "timeseries_id" ;
+		station_name:long_name = "station name" ;
+	double alt(profile, z) ;
+		alt:units = "m" ;
+		alt:positive = "up" ;
+		alt:axis = "Z" ;
+	int time(profile) ;
+		time:long_name = "time" ;
+		time:standard_name = "time" ;
+		time:units = "seconds since 1990-01-01 00:00:00" ;
+		time:missing_value = -999 ;
+	float temperature(profile, z) ;
+		temperature:long_name = "Water Temperature" ;
+		temperature:units = "Celsius" ;
+		temperature:coordinates = "time lat lon alt" ;
+		temperature:missing_value = -999.9f ;
+
+// global attributes:
+		:Conventions = "CF-1.6" ;
+		:featureType = "timeSeriesProfile" ;
+}
