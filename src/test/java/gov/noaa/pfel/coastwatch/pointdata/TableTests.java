@@ -2607,6 +2607,7 @@ class TableTests {
 
   /** Test the speed of readNDNc */
   @org.junit.jupiter.api.Test
+  @TagLargeFile
   void testReadNDNcSpeed() throws Exception {
 
     String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc";
@@ -4992,7 +4993,7 @@ class TableTests {
     table.addColumn("floats", new FloatArray(new float[] { 1.1f, 2.2f, 3.3f }));
     table.addColumn("Strings", new StringArray(new String[] { "a", "bb", "ccc" }));
     table.addColumn("doubles", new DoubleArray(new double[] { 1.111, 2.222, 3.333 }));
-    String dir = "c:/temp/";
+    String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     File2.delete(dir + "temp.mat");
     table.saveAsMatlab(dir + "temp.mat", "sst"); // names of length 3,4,5 were a challenge
     String mhd = File2.hexDump(dir + "temp.mat", 1000);
@@ -5194,6 +5195,7 @@ class TableTests {
   /** This tests readNDNC. */
   @org.junit.jupiter.api.Test
   @TagMissingFile
+  @TagLargeFile
   void testReadNDNc() throws Exception {
     Table.verbose = true;
     Table.reallyVerbose = true;
@@ -5202,7 +5204,7 @@ class TableTests {
     String results, expected;
 
     // test no vars specified, 4D, only 2nd dim has >1 value, getMetadata
-    String fiName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
+    String fiName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").getPath();
     table.readNDNc(fiName, null, 0, // standardizeWhat=0
         null, 0, 0);
     results = table.toString();
@@ -5403,7 +5405,7 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // test 4D but request axis vars only, with constraints
-    fiName = "/u00/data/points/ndbcMet2/historical/NDBC_51001_met.nc"; // implied c:
+    fiName = TableTests.class.getResource("/points/ndbcMet2/historical/NDBC_51001_met.nc").getPath(); // implied c:
     table.readNDNc(fiName, new String[] { "LON", "LAT", "TIME" }, 0, // standardizeWhat=0
         "TIME", 1.2051936e9, 1.20528e9);
     results = table.dataToString(4);
@@ -17079,11 +17081,12 @@ class TableTests {
    * So go back to: finally {nc.close()}
    */
   @org.junit.jupiter.api.Test
+  @TagIncompleteTest // The test fails on CJohn's machine because FileVisitorDNLS doesn't handle paths with drive letters for local files.
   void testNcCloseTryWithResources() throws Throwable {
     String2.log("\n*** Table.testNcCloseTryWithResources()");
 
     long time = System.currentTimeMillis();
-    String fileName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
+    String fileName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").getPath();
     int n = 100000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
@@ -17099,7 +17102,7 @@ class TableTests {
     // open all of the 10,000 scripps glider files in batch14 after manually: gunzip
     // *.gz
     time = System.currentTimeMillis();
-    Table table = FileVisitorDNLS.oneStep("/u00/data/points/scrippsGliders/batch14/",
+    Table table = FileVisitorDNLS.oneStep(TableTests.class.getResource("/points/scrippsGliders/batch14/").getPath(),
         ".*\\.nc", true, "", false);
     PrimitiveArray dirs = table.getColumn(0);
     PrimitiveArray names = table.getColumn(1);
