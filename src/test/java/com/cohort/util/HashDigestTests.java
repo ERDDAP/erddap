@@ -7,8 +7,7 @@ class HashDigestTests {
    */
   void basicTest() throws Throwable {
     System.out.println("*** HashDigest.basicTest");
-    String tName = String2.replaceAll(
-        File2.getClassPath() + "com\\cohort\\util\\License.txt", "\\", "/");
+    String tName = HashDigestTests.class.getResource("LICENSE.txt").getPath();
     Test.ensureEqual(HashDigest.doIt(new String[] { "type:MD5" }),
         "Neither password or filename was specified.\n" + HashDigest.usage, "");
     Test.ensureEqual(HashDigest.doIt(new String[] { "password:myPassword", "type:MD-5" }),
@@ -26,7 +25,7 @@ class HashDigestTests {
     Test.ensureEqual(HashDigest.doIt(new String[] { "filename:" + tName, "type:SHA-256", "-file" }),
         "Created " + tName + ".sha256", "");
     Test.ensureEqual(File2.readFromFileUtf8(tName + ".sha256")[1],
-        "f6afea3f5fa69c8e54b14b3fdb86a9aa261a423cea957c9c87b55b92441d56bb  License.txt\n", "");
+        "f6afea3f5fa69c8e54b14b3fdb86a9aa261a423cea957c9c87b55b92441d56bb  LICENSE.txt\n", "");
     File2.delete(tName + ".sha256");
   }
 }
