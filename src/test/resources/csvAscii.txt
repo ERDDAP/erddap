@@ -1,0 +1,29 @@
+this is a header line
+# this is another header line
+*** END OF HEADER
+# this is a comment
+aString, aChar, aBoolean, aByte, aShort, anInt, aLong, aFloat, aDouble
+# this is a comment
+" b,d ", Ab, t, 24, 24000, 24000000,240000000000,2.4, 2.412345678987654   
+# this is a comment
+needs,1comma:
+# this is a comment
+fg,F,true, 11, 12001, 1200000, 12000000000, 1.21, 1e200   
+# this is a comment
+# this is a comment
+h, H, 1,       12,    12002,  120000 , 1200000000,  1.22,      2e200   
+i, I, TRUE,    13,    12003,  12000  , 120000000 ,  1.23,      3e200   
+j, J, f,       14,    12004,  1200   , 12000000  ,  1.24,      4e200   
+k, K, false,   15,    12005,  120    , 1200000   ,  1.25,      5e200   
+"BAD LINE: UNCLOSED QUOTE,K,false,15,12005,120,1200000,1.25,   5.5e200
+l, L, 0,       16,    12006,  12     , 120000    ,  1.26,      6e200   
+m, M, FALSE,   17,    12007,  121    , 12000     ,  1.27,      7e200   
+n, N, 8,       18,    12008,  122    , 1200      ,  1.28,      8e200   
+# this is a comment
+
+
+
+
+
+
+

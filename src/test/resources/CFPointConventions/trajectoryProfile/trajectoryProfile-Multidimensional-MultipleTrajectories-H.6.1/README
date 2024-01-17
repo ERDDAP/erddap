@@ -1,0 +1,15 @@
+** trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1 **
+    
+    http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#idp8443504 *
+
+This assumes that there are the same number of profiles for all
+trajectories, and the same number of vertical level for every profile.
+
+Use case:
+
+Unlimited Dimension:
+   Any of the three dimensions (profile, trajectory, or z) can be the
+   NetCDF unlimited dimension if it might be useful to enlarge it.
+   One must know the maximum size of the non-unlimited dimensions before file creation.
+
+    
