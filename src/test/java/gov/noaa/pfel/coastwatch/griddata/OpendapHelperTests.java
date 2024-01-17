@@ -1038,6 +1038,7 @@ class OpendapHelperTests {
    * @param whichTests -1 for all, or 0.. for specific ones
    */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testAllDapToNc() throws Throwable {
     // tests from nodc template examples https://www.ncei.noaa.gov/netcdf-templates
     String2.log("\n*** OpendapHelper.testAllDapToNc()");
