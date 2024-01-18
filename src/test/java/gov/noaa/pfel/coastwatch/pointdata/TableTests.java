@@ -353,7 +353,6 @@ class TableTests {
     long time;
     // was "/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc"
     String fileName = String2.unitTestBigDataDir + "nccf/MATimeSeriesReversedDim.nc";
-    NcHelper.ncdump(fileName, "-h")
     // String2.log(NcHelper.ncdump(fileName, "-h"));
 
     /* */
@@ -2614,7 +2613,6 @@ class TableTests {
     String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc";
     Table table = new Table();
     long time = 0;
-    NcHelper.ncdump(fileName, "-h")
     // String2.log(NcHelper.ncdump(fileName, "-h"));
 
     for (int attempt = 0; attempt < 3; attempt++) {
@@ -5611,7 +5609,6 @@ class TableTests {
     // String2.log("\n*** Table.testHardReadMultidimNc(" + fileName + ")");
     // Table.debugMode = true;
     Table table = new Table();
-    NcHelper.ncdump(fileName, "-h")
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readMultidimNc(fileName,
         StringArray.fromCSV("TIME,LATITUDE,LONGITUDE,DEPTH,TEMP,TEMP_DM"), // loadVarNames,
@@ -6085,7 +6082,6 @@ class TableTests {
     // String2.log("\n*** Table.testReadVlenNc");
     Table table = new Table();
     String fiName = String2.unitTestBigDataDir + "nccf/vlen/rr2_vlen_test.nc";
-    String2.log(NcHelper.ncdump(fiName, "-h")
     // String2.log(NcHelper.ncdump(fiName, "-h"));
     String results, expectedStart, expectedEnd;
     /* */
