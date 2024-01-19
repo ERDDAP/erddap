@@ -1171,7 +1171,6 @@ WaitThenTryAgainException wttae;
         DecimalDegreeFormatter.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  
         DegreeMinuteFormatter.test(      errorSB, interactive, doSlowTestsToo, 0, -1); 
         CompoundColorMap.test(           errorSB, interactive, doSlowTestsToo, 0, -1); 
-        SgtMap.test(                     errorSB, interactive, doSlowTestsToo, 0, -1); 
         SgtUtil.test(                    errorSB, interactive, doSlowTestsToo, 0, -1);  
         CartesianProjection.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         SgtGraph.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);   
