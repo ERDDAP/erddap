@@ -226,6 +226,15 @@ public class File2 {
     }
 
     /**
+     * This sets the temp directory instead of looking for one based on where the WEB-INF directory is.
+     * 
+     * THIS IS ONLY INTENDED FOR USE DURING TESTS.
+     */
+    public static void setWebInfParentDirectory() {
+        webInfParentDirectory =  System.getProperty("user.dir") + "\\";
+    }
+
+    /**
      * This indicates if the named file is indeed an existing local file.
      * AWS S3 files don't count as local here.
      * If dir="", it just says it isn't a file.

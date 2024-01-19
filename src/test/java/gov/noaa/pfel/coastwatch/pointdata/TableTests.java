@@ -46,7 +46,6 @@ import tags.TagLargeFile;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagPassword;
-import tags.TagWebInfStructureDependency;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
@@ -5603,8 +5602,8 @@ class TableTests {
    * Test readMultidimNc with treatDimensionsAs specified.
    */
   @org.junit.jupiter.api.Test
-  @TagWebInfStructureDependency
   void testHardReadMultidimNc() throws Exception {
+    File2.setWebInfParentDirectory();
     String fileName = TableTests.class.getResource("/nc/GLsubdir/GL_201207_TS_DB_44761.nc").getPath();
     // String2.log("\n*** Table.testHardReadMultidimNc(" + fileName + ")");
     // Table.debugMode = true;
