@@ -1161,8 +1161,6 @@ WaitThenTryAgainException wttae;
         CacheOpendapStation.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         PointDataSetFromStationVariables.test(
                                          errorSB, interactive, doSlowTestsToo, 0, -1); 
-        TableDataSet4DNc.test(           errorSB, interactive, doSlowTestsToo, 0, -1); 
-        GenerateThreddsXml.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         //other
         GSHHS.test(                      errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -1187,9 +1185,7 @@ WaitThenTryAgainException wttae;
         EDV.test(                        errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDVTimeStamp.test(               errorSB, interactive, doSlowTestsToo, 0, -1); 
         Units2.test(                     errorSB, interactive, doSlowTestsToo, 0, -1); 
-        Subscriptions.test(              errorSB, interactive, doSlowTestsToo, 0, -1);  
         FileVisitorDNLS.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-        FileVisitorSubdir.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
         WatchDirectory.test(             errorSB, interactive, doSlowTestsToo, 0, -1); 
         FindDuplicateTime.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
 

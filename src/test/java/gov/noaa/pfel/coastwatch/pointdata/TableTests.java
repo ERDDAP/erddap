@@ -17081,14 +17081,11 @@ class TableTests {
    * So go back to: finally {nc.close()}
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest // The test fails on CJohn's machine because FileVisitorDNLS doesn't handle
-                     // paths with drive letters for local files.
   void testNcCloseTryWithResources() throws Throwable {
     // String2.log("\n*** Table.testNcCloseTryWithResources()");
 
     long time = System.currentTimeMillis();
-    String fileName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
-        .getPath();
+    String fileName = Path.of(TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").toURI()).toString();
     int n = 100000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
@@ -17104,7 +17101,8 @@ class TableTests {
     // open all of the 10,000 scripps glider files in batch14 after manually: gunzip
     // *.gz
     time = System.currentTimeMillis();
-    Table table = FileVisitorDNLS.oneStep(TableTests.class.getResource("/points/scrippsGliders/batch14/").getPath(),
+    Table table = FileVisitorDNLS.oneStep(
+        Path.of(TableTests.class.getResource("/points/scrippsGliders/batch14/").toURI()).toString(),
         ".*\\.nc", true, "", false);
     PrimitiveArray dirs = table.getColumn(0);
     PrimitiveArray names = table.getColumn(1);
