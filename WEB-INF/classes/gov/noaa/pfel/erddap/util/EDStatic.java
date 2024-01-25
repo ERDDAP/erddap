@@ -107,7 +107,9 @@ import ucar.nc2.write.NetcdfFormatWriter;
  * This class holds a lot of static information set from the setup.xml and messages.xml
  * files and used by all the other ERDDAP classes. 
  */
-public class EDStatic { 
+public class EDStatic {
+
+    public static Boolean doSetupValidation = true;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -1785,6 +1787,8 @@ public static boolean developmentMode = false;
     String errorInMethod = "";
     try {
 
+        doSetupValidation = Boolean.parseBoolean(System.getProperty("doSetupValidation"));
+
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
         SSR.erddapVersion = erddapVersion;
@@ -1834,8 +1838,10 @@ public static boolean developmentMode = false;
         setLogLevel(getSetupEVString(setup, ev, "logLevel", DEFAULT_logLevel));
         bigParentDirectory = getSetupEVNotNothingString(setup, ev, "bigParentDirectory", ""); 
         bigParentDirectory = File2.addSlash(bigParentDirectory);
-        Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
-            "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+        if (doSetupValidation) {
+            Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
+                "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+        }
         unitTestDataDir    = getSetupEVString(setup, ev, "unitTestDataDir",    "[specify <unitTestDataDir> in setup.xml]"); 
         unitTestBigDataDir = getSetupEVString(setup, ev, "unitTestBigDataDir", "[specify <unitTestBigDataDir> in setup.xml]"); 
         unitTestDataDir    = File2.addSlash(unitTestDataDir);
@@ -1860,7 +1866,7 @@ public static boolean developmentMode = false;
             String2.isEmailAddress(emailFromAddress);
 
         String tsar[] = String2.split(emailEverythingToCsv, ',');
-        if (emailEverythingToCsv.length() > 0)
+        if (doSetupValidation && emailEverythingToCsv.length() > 0)
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
@@ -1868,7 +1874,7 @@ public static boolean developmentMode = false;
         emailSubscriptionsFrom = tsar.length > 0? tsar[0] : ""; //won't be null
 
         tsar = String2.split(emailDailyReportToCsv, ',');
-        if (emailDailyReportToCsv.length() > 0)
+        if (doSetupValidation && emailDailyReportToCsv.length() > 0)
             for (int i = 0; i < tsar.length; i++)
                 if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
                     throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
@@ -2024,28 +2030,30 @@ public static boolean developmentMode = false;
         adminCountry               = getSetupEVNotNothingString(setup, ev, "adminCountry",               errorInMethod);
         adminEmail                 = getSetupEVNotNothingString(setup, ev, "adminEmail",                 errorInMethod);
 
-        if (adminInstitution.startsWith("Your"))
-            throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
-        if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
-            throw new RuntimeException("setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);  
-        if (adminIndividualName.startsWith("Your"))
-            throw new RuntimeException("setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);             
-        //if (adminPosition.length() == 0)
-        //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);             
-        if (adminPhone.indexOf("999-999") >= 0)
-            throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);              
-        if (adminAddress.equals("123 Main St."))
-            throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);  
-        if (adminCity.equals("Some Town"))
-            throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);  
-        //if (adminStateOrProvince.length() == 0)
-        //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" + adminStateOrProvince);  
-        if (adminPostalCode.equals("99999"))
-            throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
-        //if (adminCountry.length() == 0)
-        //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
-        if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
-            throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
+        if (doSetupValidation) {
+            if (adminInstitution.startsWith("Your"))
+                throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
+            if (!adminInstitutionUrl.startsWith("http") || !String2.isUrl(adminInstitutionUrl))
+                throw new RuntimeException("setup.xml error: invalid <adminInstitutionUrl>=" + adminInstitutionUrl);  
+            if (adminIndividualName.startsWith("Your"))
+                throw new RuntimeException("setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);             
+            //if (adminPosition.length() == 0)
+            //    throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);             
+            if (adminPhone.indexOf("999-999") >= 0)
+                throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);              
+            if (adminAddress.equals("123 Main St."))
+                throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);  
+            if (adminCity.equals("Some Town"))
+                throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);  
+            //if (adminStateOrProvince.length() == 0)
+            //    throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" + adminStateOrProvince);  
+            if (adminPostalCode.equals("99999"))
+                throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
+            //if (adminCountry.length() == 0)
+            //    throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
+            if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) //prohibit default adminEmail
+                throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
+        }
 
         accessConstraints          = getSetupEVNotNothingString(setup, ev, "accessConstraints",          errorInMethod); 
         accessRequiresAuthorization= getSetupEVNotNothingString(setup, ev, "accessRequiresAuthorization",errorInMethod); 
@@ -2126,7 +2134,7 @@ wcsActive = false; //getSetupEVBoolean(setup, ev,          "wcsActive",         
         if (tdlm < 1)
             drawLandMask = DEFAULT_drawLandMask; //"under"
         flagKeyKey                 = getSetupEVNotNothingString(setup, ev, "flagKeyKey",                 errorInMethod);
-        if (flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
+        if (doSetupValidation && flagKeyKey.toUpperCase().indexOf("CHANGE THIS") >= 0)
               //really old default: "A stitch in time saves nine. CHANGE THIS!!!"  
               //current default:    "CHANGE THIS TO YOUR FAVORITE QUOTE"
             throw new RuntimeException(

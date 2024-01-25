@@ -1187,14 +1187,12 @@ WaitThenTryAgainException wttae;
         Units2.test(                     errorSB, interactive, doSlowTestsToo, 0, -1); 
         FileVisitorDNLS.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         WatchDirectory.test(             errorSB, interactive, doSlowTestsToo, 0, -1); 
-        FindDuplicateTime.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         //give antivirus a chance to get caught up
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
         //EDDGrid
         EDD.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGrid.test(                    errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridFromDap.test(             errorSB, interactive, doSlowTestsToo, 0, -1);  
         //EDDGridFromBinaryFile.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  class not finished / not in use
         EDDGridFromErddap.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  

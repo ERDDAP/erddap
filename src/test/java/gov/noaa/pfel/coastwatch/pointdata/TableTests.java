@@ -1306,7 +1306,7 @@ class TableTests {
         null, Table.BGCOLOR, 1, true, 0, true, // needEncodingAsHtml
         false);
     // String2.log(fileName + "=\n" + File2.directReadFromUtf8File(fileName));
-    Test.displayInBrowser("file://" + fileName); // .html
+    // Test.displayInBrowser("file://" + fileName); // .html
 
     // read it from the file
     String results = File2.directReadFromUtf8File(fileName);

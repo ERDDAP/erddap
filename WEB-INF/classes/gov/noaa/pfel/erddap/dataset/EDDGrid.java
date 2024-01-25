@@ -26,8 +26,6 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
-import dods.dap.*;
-
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
 import gov.noaa.pfel.coastwatch.griddata.Grid;
 import gov.noaa.pfel.coastwatch.griddata.Matlab;
@@ -36,7 +34,6 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
 import gov.noaa.pfel.coastwatch.sgt.GraphDataLayer;
-import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
 import gov.noaa.pfel.coastwatch.util.HtmlWidgets;
@@ -48,19 +45,15 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.RenderingHints;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.security.MessageDigest;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -70,25 +63,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
 import java.util.zip.ZipOutputStream;
-import javax.imageio.ImageIO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import ucar.ma2.Array;
-import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 import ucar.nc2.Group;
-import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dt.grid.GeoGrid;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
 import ucar.nc2.write.NetcdfFileFormat;
 import ucar.nc2.write.NetcdfFormatWriter;
 import ucar.nc2.Variable;
-import ucar.unidata.geoloc.LatLonRect;
 
 /** 
  * This class represents a dataset where the results can be represented as 
@@ -14793,248 +14780,4 @@ writer.write(
             new DoubleArray(pa);
         return times.findTimeGaps();
     }
-    
-    /**
-     * Test saveAsImage, specifically to make sure a transparent png that's
-     * partially outside of the range of the dataset still returns the image for
-     * the part that is within range.
-     */
-    public static void testSaveAsImage() throws Throwable {
-        String2.log("\n*** EDDGrid.testSaveAsImage()");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdMHchla8day");
-        int language = 0;
-        String dir = EDStatic.fullTestCacheDirectory;
-        //String requestUrl = "/erddap/griddap/erdMHchla8day.transparentPng";
-        String userDapQueryTemplate = "MWchla%5B(2022-01-16T12:00:00Z):1:(2022-01-16T12:00:00Z)%5D%5B(0.0):1:(0.0)%5D%5B({0,number,#.##########}):1:({1,number,#.##########})%5D%5B({2,number,#.##########}):1:({3,number,#.##########})%5D";
-        String baseName, tName;
-
-        String expectedHashForInvalidInput = "9b750d93bf5cc5f356e7b159facec812dc09c20050d38d6362280def580bc62e";
-
-        // Make fully valid image
-        baseName = "EDDGrid_testSaveAsImage_fullyValid";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 30, 40, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Invalid min y.
-        baseName = "EDDGrid_testSaveAsImage_invalidMinY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, -100, 40, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-//2020-08-03 For tests below, some generated images have data, some don't,
-//  but results seem inconsistent.
-//  The images in erddapTest/images are old and I'm not sure appropriate.
-//  I'm not sure what they should be. Leave this for Chris John.
-
-        // Invalid max y.
-        baseName = "EDDGrid_testSaveAsImage_invalidMaxY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 30, 100, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,                                      
-            String2.unitTestImagesDir()    + baseName + ".png",       
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // All invalid.
-        baseName = "EDDGrid_testSaveAsImage_allInvalid";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, -100, 100, -200, 370), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Out of range min x.
-        baseName = "EDDGrid_testSaveAsImage_OORMinX";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 30, 40, 200, 210), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Out of range max x.
-        baseName = "EDDGrid_testSaveAsImage_OORMaxX";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 30, 40, 250, 260), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Out of range min y.
-        baseName = "EDDGrid_testSaveAsImage_OORMinY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 20, 30, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Out of range max y.
-        baseName = "EDDGrid_testSaveAsImage_OORMaxY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 50, 60, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Fully out of range min x.
-        baseName = "EDDGrid_testSaveAsImage_FOORMinX";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate,  30, 40, 190, 200), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Fully out of range max x.
-        baseName = "EDDGrid_testSaveAsImage_FOORMaxX";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 30, 40, 260, 270), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Fully out of range min y.
-        baseName = "EDDGrid_testSaveAsImage_FOORMinY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 10, 20, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-
-        // Fully out of range max y.
-        baseName = "EDDGrid_testSaveAsImage_FOORMaxY";
-        tName = eddGrid.makeNewFileForDapQuery(language, null, null, 
-            MessageFormat.format(userDapQueryTemplate, 60, 70, 210, 220), //#'s are minLat, maxLat, minLon, maxLon
-            dir, baseName, ".transparentPng"); 
-        Image2.testImagesIdentical(
-            dir + tName,
-            String2.unitTestImagesDir()    + baseName + ".png",
-            File2.getSystemTempDirectory() + baseName + "_diff.png");
-        
-    }
-
-    /**
-     * Tests input for saveAsImage against the provided output. Specifically the
-     * output is provided as a hash (sha-256) of the output bytes.
-     * 
-     * @param eddGrid      EDDGrid that saveAsImage is called on.
-     * @param dir          Directory used for temporary/cache files.
-     * @param requestUrl   The part of the user's request, after
-     *                     EDStatic.baseUrl, before '?'.
-     * @param userDapQuery An OPeNDAP DAP-style query string, still
-     *                     percentEncoded (shouldn't be null). e.g.,
-     *                     ATssta[45:1:45][0:1:0][120:10:140][130:10:160]
-     * @param fileTypeName File type being requested (eg: .transparentPng)
-     * @param expected     The expected hash of the output of the saveAsImage
-     *                     call.
-     * @throws Throwable
-     */
-    private static void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir,
-            String requestUrl, String userDapQuery, String fileTypeName,
-            String expected) throws Throwable {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
-        String filename = dir +  Math2.random(Integer.MAX_VALUE) + ".png"; 
-
-        eddGrid.saveAsImage(0 /* language */, null /* loggedInAs */, requestUrl,
-                userDapQuery, dir, filename,
-                osss /* outputStreamSource */, fileTypeName);
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(baos.toByteArray());
-            StringBuilder hexString = new StringBuilder();
-
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if (hex.length() == 1)
-                    hexString.append('0');
-                hexString.append(hex);
-            }
-
-            String results = hexString.toString();
-            
-            // String2.log(results);
-            Test.ensureEqual(results.substring(0, expected.length()), expected,
-                    "\nresults=\n" + results.substring(0,
-                            Math.min(256, results.length())));
-        } catch (Exception ex) {
-            FileOutputStream fos = new FileOutputStream(filename);
-            fos.write(baos.toByteArray());
-            fos.flush();
-            fos.close();
-            Test.displayInBrowser("file://" + filename);
-            throw new RuntimeException(ex);
-        }
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB        all caught exceptions are logged to this.
-     * @param interactive    If true, this runs all of the interactive tests;
-     *                       otherwise, this runs all of the non-interactive
-     *                       tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest      The first test to be run (0...). Test numbers may
-     *                       change.
-     * @param lastTest       The last test to be run, inclusive (0..., or -1 for
-     *                       the last test). Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive,
-            boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive ? -1 : 0;
-        String msg = "\n^^^ EDDGrid.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-
-                if (interactive) {
-                    // if (test == 0) ...;
-
-                } else {
-                    if (test == 0)
-                        testSaveAsImage();
-                }
-
-                String2.log(msg + test + " finished successfully in "
-                        + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n"
-                        + MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive)
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }
