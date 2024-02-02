@@ -5,12 +5,12 @@ import com.cohort.util.*;
 import java.util.BitSet;
 
 class ByteArrayTests {
-  @org.junit.jupiter.api.Test
   /**
    * This tests the methods of this class.
    *
    * @throws Throwable if trouble.
    */
+  @org.junit.jupiter.api.Test
   void basicTest() throws Throwable {
     String2.log("*** ByteArray.basicTest");
 

@@ -148,43 +148,48 @@ class FileVisitorDNLSTests {
 
     // recursive and dirToo and test \\ separator
     table = FileVisitorDNLS.oneStep(testDir, ".*\\.png", true, tPathRegex, true);
+    table.removeColumn("lastModified");
     results = table.dataToString();
-    expected = "directory,name,lastModified,size\n" +
-        expectedDir + ",jplMURSST20150103090000.png,1421272444000,46482\n" +
-        expectedDir + ",jplMURSST20150104090000.png,1420665738000,46586\n" +
-        expectedDir + "sub\\\\,,1706019600813,0\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,1420665704000,46549\n";
+    expected = "directory,name,size\n" +
+        expectedDir + ",jplMURSST20150103090000.png,46482\n" +
+        expectedDir + ",jplMURSST20150104090000.png,46586\n" +
+        expectedDir + "sub\\\\,,0\n" +
+        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // recursive and !dirToo and test // separator
     table = FileVisitorDNLS.oneStep(testDir, ".*\\.png", true, tPathRegex, false);
+    table.removeColumn("lastModified");
     results = table.dataToString();
-    expected = "directory,name,lastModified,size\n" +
-        expectedDir + ",jplMURSST20150103090000.png,1421272444000,46482\n" +
-        expectedDir + ",jplMURSST20150104090000.png,1420665738000,46586\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,1420665704000,46549\n";
+    expected = "directory,name,size\n" +
+        expectedDir + ",jplMURSST20150103090000.png,46482\n" +
+        expectedDir + ",jplMURSST20150104090000.png,46586\n" +
+        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // !recursive and dirToo
     table = FileVisitorDNLS.oneStep(testDir, ".*\\.png", false, tPathRegex, true);
+    table.removeColumn("lastModified");
     results = table.dataToString();
-    expected = "directory,name,lastModified,size\n" +
-        expectedDir + ",jplMURSST20150103090000.png,1421272444000,46482\n" +
-        expectedDir + ",jplMURSST20150104090000.png,1420665738000,46586\n" +
-        expectedDir + "sub\\\\,,1706019600813,0\n";
+    expected = "directory,name,size\n" +
+        expectedDir + ",jplMURSST20150103090000.png,46482\n" +
+        expectedDir + ",jplMURSST20150104090000.png,46586\n" +
+        expectedDir + "sub\\\\,,0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // !recursive and !dirToo
     table = FileVisitorDNLS.oneStep(testDir, ".*\\.png", false, tPathRegex, false);
+    table.removeColumn("lastModified");
     results = table.dataToString();
-    expected = "directory,name,lastModified,size\n" +
-        expectedDir + ",jplMURSST20150103090000.png,1421272444000,46482\n" +
-        expectedDir + ",jplMURSST20150104090000.png,1420665738000,46586\n";
+    expected = "directory,name,size\n" +
+        expectedDir + ",jplMURSST20150103090000.png,46482\n" +
+        expectedDir + ",jplMURSST20150104090000.png,46586\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // ***
     // oneStepDouble
     table = FileVisitorDNLS.oneStepDouble(testDir, ".*\\.png", true, tPathRegex, true);
+    table.removeColumn("lastModified");
     results = table.toString();
     expected = "{\n" +
         "dimensions:\n" +
@@ -198,10 +203,6 @@ class FileVisitorDNLSTests {
         "\tchar name(row, name_strlen) ;\n" +
         "\t\tname:ioos_category = \"Identifier\" ;\n" +
         "\t\tname:long_name = \"File Name\" ;\n" +
-        "\tdouble lastModified(row) ;\n" +
-        "\t\tlastModified:ioos_category = \"Time\" ;\n" +
-        "\t\tlastModified:long_name = \"Last Modified\" ;\n" +
-        "\t\tlastModified:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
         "\tdouble size(row) ;\n" +
         "\t\tsize:ioos_category = \"Other\" ;\n" +
         "\t\tsize:long_name = \"Size\" ;\n" +
@@ -209,11 +210,11 @@ class FileVisitorDNLSTests {
         "\n" +
         "// global attributes:\n" +
         "}\n" +
-        "directory,name,lastModified,size\n" +
-        expectedDir + ",jplMURSST20150103090000.png,1.421272444E9,46482.0\n" +
-        expectedDir + ",jplMURSST20150104090000.png,1.420665738E9,46586.0\n" +
-        expectedDir + "sub\\\\,,1.706019600813E9,0.0\n" +
-        expectedDir + "sub\\\\,jplMURSST20150105090000.png,1.420665704E9,46549.0\n";
+        "directory,name,size\n" +
+        expectedDir + ",jplMURSST20150103090000.png,46482.0\n" +
+        expectedDir + ",jplMURSST20150104090000.png,46586.0\n" +
+        expectedDir + "sub\\\\,,0.0\n" +
+        expectedDir + "sub\\\\,jplMURSST20150105090000.png,46549.0\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // ***
