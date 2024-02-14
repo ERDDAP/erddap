@@ -1106,15 +1106,7 @@ WaitThenTryAgainException wttae;
 
         //*** All of the unit tests for CWBrowsers and ERDDAP. 
 
-        //low level utilities
-        TestUtil.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-
-        //give antivirus a chance to get caught up
-        Math2.gc("TestAll (between tests)", 20000); //in TestAll
-
-
         //data
-        DataStream.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
         SimpleXMLReader.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         TimePeriods.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
         FileNameUtility.test(            errorSB, interactive, doSlowTestsToo, 0, -1);

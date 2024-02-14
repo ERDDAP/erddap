@@ -17,6 +17,8 @@ class PersistentTableTests {
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Throwable {
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
     String2.log("\nPersistentTable.basicTest()");
     // verbose = true;
     // reallyVerbose = true;
