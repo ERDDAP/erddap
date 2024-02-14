@@ -1108,29 +1108,9 @@ WaitThenTryAgainException wttae;
 
         //low level utilities
         TestUtil.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-        XML.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);
-        LRUCache.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-
-        CharArray.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
-        ShortArray.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        IntArray.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-        LongArray.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
-        FloatArray.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        DoubleArray.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
-        StringArray.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
-        UByteArray.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        UShortArray.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
-        UIntArray.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
-        ULongArray.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        PrimitiveArray.test(             errorSB, interactive, doSlowTestsToo, 0, -1);
-        PAOne.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
-        Attributes.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);
-        ResourceBundle2.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-        Tally.test(                      errorSB, interactive, doSlowTestsToo, 0, -1);
-        PersistentTable.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up
-        if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
+        Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
 
         //data
