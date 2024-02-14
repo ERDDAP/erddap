@@ -914,6 +914,7 @@ class OpendapHelperTests {
 
   /** This tests findVarsWithSharedDimensions. */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testFindVarsWithSharedDimensions() throws Throwable {
     String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
     String expected, results;
@@ -959,6 +960,7 @@ class OpendapHelperTests {
 
   /** This tests findAllVars. */
   @org.junit.jupiter.api.Test
+  @TagThredds
   void testFindAllScalarOrMultiDimVars() throws Throwable {
     String2.log("\n\n*** OpendapHelper.testFindAllScalarOrMultiDimVars");
     String expected, results;
