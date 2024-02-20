@@ -1107,55 +1107,28 @@ WaitThenTryAgainException wttae;
         //*** All of the unit tests for CWBrowsers and ERDDAP. 
 
         //data
-        SimpleXMLReader.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-        TimePeriods.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
-        FileNameUtility.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
-        ParseJSON.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
-
+        // TODO: This is more of a script than a test, possibly set up better organization for that.
         ValidateDataSetProperties.test(  errorSB, interactive, doSlowTestsToo, 0, -1);       
-        Matlab.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
-        DataHelper.test(                 errorSB, interactive, doSlowTestsToo, 0, -1);  
-        Grid.test(                       errorSB, interactive, doSlowTestsToo, 0, -1);
         //GridDataSetCWOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
-        SaveOpendap.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
-        TwoGrids.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);
-        DoubleCenterGrids.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
-
         Shared.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);   
         Table.test(                      errorSB, interactive, doSlowTestsToo, 0, -1); 
-        DigirHelper.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
-        PointIndex.test(                 errorSB, interactive, doSlowTestsToo, 0, -1); 
-        StoredIndex.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         CacheOpendapStation.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         PointDataSetFromStationVariables.test(
                                          errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         //other
-        GSHHS.test(                      errorSB, interactive, doSlowTestsToo, 0, -1); 
-        Boundaries.test(                 errorSB, interactive, doSlowTestsToo, 0, -1); 
         //Browser.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); //INACTIVE. The cwbrowsers are no longer supported.
-        DecimalDegreeFormatter.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  
-        DegreeMinuteFormatter.test(      errorSB, interactive, doSlowTestsToo, 0, -1); 
-        CompoundColorMap.test(           errorSB, interactive, doSlowTestsToo, 0, -1); 
-        SgtUtil.test(                    errorSB, interactive, doSlowTestsToo, 0, -1);  
-        CartesianProjection.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         SgtGraph.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);   
-        NDimensionalIndex.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
-        ScriptRow.test(                  errorSB, interactive, doSlowTestsToo, 0, -1);
         
         //give antivirus a chance to get caught up
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
         //ERDDAP
         HtmlWidgets.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
-        CfToFromGcmd.test(               errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDStatic.test(                   errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDV.test(                        errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDVTimeStamp.test(               errorSB, interactive, doSlowTestsToo, 0, -1); 
         Units2.test(                     errorSB, interactive, doSlowTestsToo, 0, -1); 
         FileVisitorDNLS.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         WatchDirectory.test(             errorSB, interactive, doSlowTestsToo, 0, -1); 

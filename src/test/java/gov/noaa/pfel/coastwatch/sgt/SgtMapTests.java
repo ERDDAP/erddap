@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
@@ -26,7 +25,7 @@ class SgtMapTests {
   private void initFilePaths() {
     File2.setWebInfParentDirectory();
     // SSR.tempDirectory = "D:/GitHub/erddap/WEB-INF/temp/";
-    //     File2.webInfParentDirectory = "D:/GitHub/erddap/";
+    // File2.webInfParentDirectory = "D:/GitHub/erddap/";
   }
 
   /** This tests SgtMap making bathymetry maps. 0, 11 */
@@ -54,7 +53,7 @@ class SgtMapTests {
       // Test.displayInBrowser("file://" + tName);
       Image2.testImagesIdentical(
           tName,
-          expectedDir +  fileName + ".png",
+          expectedDir + fileName + ".png",
           File2.getSystemTempDirectory() + fileName + "_diff.png");
     }
   }
@@ -85,7 +84,7 @@ class SgtMapTests {
       // Test.displayInBrowser("file://" + tName);
       Image2.testImagesIdentical(
           tName,
-          expectedDir +  baseName + ".png",
+          expectedDir + baseName + ".png",
           File2.getSystemTempDirectory() + baseName + "_diff.png");
     }
   }
@@ -126,7 +125,7 @@ class SgtMapTests {
       // "tempRegionsMap" + testImageExtension);
       Image2.testImagesIdentical(
           SSR.getTempDirectory() + baseName + testImageExtension,
-          expectedDir +  baseName + ".png",
+          expectedDir + baseName + ".png",
           File2.getSystemTempDirectory() + baseName + "_diff.png");
 
       // these match the sizes in CWBrowser.properties
@@ -149,7 +148,7 @@ class SgtMapTests {
       // testImageExtension);
       Image2.testImagesIdentical(
           tName,
-          expectedDir +  baseName + ".png",
+          expectedDir + baseName + ".png",
           File2.getSystemTempDirectory() + baseName + "_diff.png");
 
       // test of properly created maps and test for memory leak (testForMemoryLeak)
@@ -178,7 +177,7 @@ class SgtMapTests {
               // Test.displayInBrowser("file://" + tName);
               Image2.testImagesIdentical(
                   tName,
-                  expectedDir +  baseName + ".png",
+                  expectedDir + baseName + ".png",
                   File2.getSystemTempDirectory() + baseName + "_diff.png");
             }
 
@@ -233,7 +232,7 @@ class SgtMapTests {
     // Test.displayInBrowser("file://" + tranName + ".png");
     Image2.testImagesIdentical(
         tName + ".png",
-        expectedDir +  baseName + ".png",
+        expectedDir + baseName + ".png",
         File2.getSystemTempDirectory() + baseName + "_diff.png");
 
   }
@@ -291,7 +290,7 @@ class SgtMapTests {
       // Test.displayInBrowser("file://" + tName + ".png");
       Image2.testImagesIdentical(
           tName + ".png",
-          expectedDir +  baseName + ".png",
+          expectedDir + baseName + ".png",
           File2.getSystemTempDirectory() + baseName + "_diff.png");
     }
 
@@ -313,7 +312,7 @@ class SgtMapTests {
    */
   void testRegionsMap(double minX, double maxX, double minY, double maxY)
       throws Exception {
-        initFilePaths();
+    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // Boundaries.verbose = true;
@@ -336,7 +335,7 @@ class SgtMapTests {
     // Test.displayInBrowser("file://" + dir + name);
     Image2.testImagesIdentical(
         dir + name,
-        expectedDir +  baseName + ".png",
+        expectedDir + baseName + ".png",
         File2.getSystemTempDirectory() + baseName + "_diff.png");
 
   }
@@ -543,7 +542,7 @@ class SgtMapTests {
       // Test.displayInBrowser("file://" + tName);
       Image2.testImagesIdentical(
           tName,
-          expectedDir +  fileName + ".png",
+          expectedDir + fileName + ".png",
           File2.getSystemTempDirectory() + fileName + "_diff.png");
     }
 
@@ -571,8 +570,7 @@ class SgtMapTests {
 
     // describe grid vectors
     ArrayList pointDataList = new ArrayList();
-    String griddataDir = File2.getClassPath() + // with / separator and / at the end
-        "gov/noaa/pfel/coastwatch/griddata/";
+    String griddataDir = SgtMapTests.class.getResource("/gridTests/").getPath();
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
      * File2.delete(fullResultCpt);

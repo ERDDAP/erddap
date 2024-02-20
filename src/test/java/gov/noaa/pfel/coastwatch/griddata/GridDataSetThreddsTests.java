@@ -54,10 +54,8 @@ class GridDataSetThreddsTests {
 
         //variables
         String internalName, sixName;
-        GridDataSetThredds.verbose = true;
-        Opendap.verbose = true;
-        String dir = File2.getClassPath() + //with / separator and / at the end
-            "gov/noaa/pfel/coastwatch/griddata/";
+        // GridDataSetThredds.verbose = true;
+        // Opendap.verbose = true;
 
         //****************************
         //ensure J1ugeo loads  (it has 1 level: <dataset>)

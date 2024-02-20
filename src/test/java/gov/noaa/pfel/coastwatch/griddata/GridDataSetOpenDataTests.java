@@ -186,8 +186,6 @@ class GridDataSetOpenDataTests {
     String internalName, sixName;
     GridDataSetOpendap.verbose = true;
     Opendap.verbose = true;
-    String dir = File2.getClassPath() + // with / separator and / at the end
-        "gov/noaa/pfel/coastwatch/griddata/";
 
     // *********************************************************************
     internalName = "OQSux10";
