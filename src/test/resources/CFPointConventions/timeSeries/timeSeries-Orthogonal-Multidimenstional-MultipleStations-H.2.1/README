@@ -1,0 +1,11 @@
+** timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1 **
+    
+    
+http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#idp8307552
+
+All of the 'stations' in this file need to have the same 'time' values (they share the 'time'
+variable as a dimension).  This means that each of the wind sensors would need to be taking
+measurements at exactly the same time.  While rather unlikely, some post-processing of data
+will normalize measurements to the even minute and this format might be useful.
+
+    

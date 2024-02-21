@@ -5,28 +5,18 @@
 package com.cohort.util;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.awt.image.RenderedImage;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.Writer;
 
 import java.net.URL;
 
@@ -61,7 +51,9 @@ public class Image2 {
     /** Java font drawing isn't consistent in minor ways.
      * Change this to change the sensitivity of Image2.compareImages().
      */
-    public static int DEFAULT_ALLOW_N_PIXELS_DIFFERENT = 250;
+    public static final int DEFAULT_ALLOW_N_PIXELS_DIFFERENT = 250;
+    public static final boolean DEFAULT_AUTO_CREATE_IF_MISSING = true;
+    public static final boolean DEFAULT_DISPLAY_IMAGES = false;
 
     /**
      * This tries to load the specified image (gif/jpg/png).
@@ -469,6 +461,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         return makeImageFromArray(pixels, imageWidth, imageHeight, millis);
     }
 
+    // TODO: Move this to test file after all uses of this are moved to test files.
     /**
      * This is like the other testImagesIdentical, but uses DEFAULT_ALLOW_N_PIXELS_DIFFERENT.
      *
@@ -480,7 +473,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      */
     public static void testImagesIdentical(String observed, String expected, 
             String diffName) throws Exception {
-        testImagesIdentical(observed, expected, diffName, DEFAULT_ALLOW_N_PIXELS_DIFFERENT);
+        testImagesIdentical(observed, expected, diffName, DEFAULT_ALLOW_N_PIXELS_DIFFERENT, DEFAULT_AUTO_CREATE_IF_MISSING, DEFAULT_DISPLAY_IMAGES);
     }
 
     /**
@@ -496,17 +489,23 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
      * @throws Exception if the images are different or there is trouble
      */
     public static void testImagesIdentical(String observed, String expected, 
-            String diffName, int allowNPixelsDifferent) throws Exception {
+            String diffName, int allowNPixelsDifferent, boolean autoCreateMissing, boolean displayImages) throws Exception {
 
         //if expected doesn't exist, save observed as expected?
         if (!File2.isFile(expected)) {
             Test.displayInBrowser("file://" + observed);
-            if (String2.getStringFromSystemIn("Error at\n" + MustBe.getStackTrace() + 
-                "testImagesIdentical: expected image file doesn't exist. Create it from observed (y/n)? ").equals("y")) {
+            if (autoCreateMissing) {
+                System.out.println("Expected image file doesn't exist, creating it from observed.");
                 File2.copy(observed, expected);
-                return;
-            } 
-            throw new RuntimeException("expectedFile=" + expected + " doesn't exist.");
+            }else {
+                if (String2.getStringFromSystemIn("Error at\n" + MustBe.getStackTrace() + 
+                    "testImagesIdentical: expected image file doesn't exist. Create it from observed (y/n)? ").equals("y")) {
+                    File2.copy(observed, expected);
+                    return;
+                } 
+                throw new RuntimeException("expectedFile=" + expected + " doesn't exist.");
+            }
+            return;
         }
 
         //if diffName not .png, throw exception
@@ -519,10 +518,12 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         String error = compareImages(obsImg, expImg, diffName, allowNPixelsDifferent);  //error.length>0 if > allowNPixelsDifferent
         if (error.length() == 0)
             return;
-        Test.displayInBrowser("file://" + observed);
-        Test.displayInBrowser("file://" + expected);
-        if (File2.isFile(diffName))
-            Test.displayInBrowser("file://" + diffName);
+        if (displayImages) {
+            Test.displayInBrowser("file://" + observed);
+            Test.displayInBrowser("file://" + expected);
+            if (File2.isFile(diffName))
+                Test.displayInBrowser("file://" + diffName);
+        }
         throw new RuntimeException(
             "testImagesIdentical found differences:\n" +
             error + "\n" +
@@ -779,118 +780,5 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         // */  
 
     //}
-
-    /**
-     * This intentionally throws an Exception to test testImagesIdentical().
-     */
-    public static void testTestImagesIdentical() throws Exception {
-        String2.log("\n*** Image2.testTestImagesIdentical");
-
-        //test images which are identical
-        String testDir = String2.unitTestDataDir + "images/"; 
-        String tempDir = File2.getSystemTempDirectory();
-        testImagesIdentical(
-            testDir + "testImagesIdentical_1.png",
-            testDir + "testImagesIdentical_1.png",
-            tempDir + "testImagesIdentical_diff.png");
-
-        //test images which aren't identical
-        try {
-
-            //one time: createImage with transparent background
-            //BufferedImage image2 = getImage(testDir + "testImagesIdentical_1.png", 2000, false); 
-            //image2 = makeImageBackgroundTransparent(image2, Color.white, 10000); 
-            //saveAsPng(image2, testDir + "testImagesIdentical_2.png");
-
-            //test images which aren't identical
-            testImagesIdentical(
-                testDir + "testImagesIdentical_1.png",
-                testDir + "testImagesIdentical_2.png",
-                tempDir + "testImagesIdentical_diff.png");
-        } catch (Exception e) {
-            Test.knownProblem("Not a problem! I'm just testing that Image2.testImagesIdentical() works.");
-        }
-        throw new RuntimeException("shouldn't get here");
-    }
-
-    /**
-     * Test the methods in Image2.
-     */
-    public static void basicTest() throws Exception {
-        String2.log("\n*** Image2.basicTest");
-
-        String imageDir = File2.getClassPath() + //with / separator and / at the end
-            "com/cohort/util/";
-
-        //test ImageIO
-        BufferedImage bi = ImageIO.read(new File(imageDir + "testmap.gif"));
-        Graphics g = bi.getGraphics(); 
-        ImageIO.write(bi, "png", new File(imageDir + "temp.png"));
-        Image2.saveAsGif(bi, imageDir + "temp.gif");
-
-        long localTime = System.currentTimeMillis();
-        String2.log("test() here 1");
-        Color gray = new Color(128,128,128);
-        String2.log("test() here 2=" + (System.currentTimeMillis() - localTime));
-        Image image = Image2.getImage(imageDir + "temp.gif",
-            10000, false); // javaShouldCache
-        String2.log("test() here 3=" + (System.currentTimeMillis() - localTime));
-
-        //convert 128,128,128 to transparent
-        image = Image2.makeImageBackgroundTransparent(image, gray, 10000);
-        String2.log("test() here 4=" + (System.currentTimeMillis() - localTime));
-
-        //save as gif again
-        Image2.saveAsGif(image, imageDir + "temp2.gif"); 
-        String2.log("test() here 5=" + (System.currentTimeMillis() - localTime));
-
-        File2.delete(imageDir + "temp.png");
-        File2.delete(imageDir + "temp.gif");
-        File2.delete(imageDir + "temp2.gif");
-
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 1;
-        String msg = "\n^^^ Image2.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                    if (test ==  1) testTestImagesIdentical();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
 }    
 

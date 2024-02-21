@@ -1,0 +1,134 @@
+INSTALL_PATH=/usr/local
+mkdir -p $INSTALL_PATH/src
+
+# ANTLR2
+APP=antlr-2.7.7
+ANTLR_PATH=/usr
+cd $INSTALL_PATH/src
+
+rm -rf antlr-2.7.7*
+wget http://www.antlr2.org/download/antlr-2.7.7.tar.gz
+tar xzf antlr-2.7.7.tar.gz ; cd antlr-2.7.7
+
+# Bug in antlr-2.7.7
+sed -i "13a #include <strings.h>" lib/cpp/antlr/CharScanner.hpp
+sed -i "14a #include <cstdio>" lib/cpp/antlr/CharScanner.hpp
+
+CC=gcc CXX='' ./configure \
+--prefix=$ANTLR_PATH \
+--disable-csharp \
+--disable-java \
+--disable-python 2>&1 | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+# UDUNITS
+APP=udunits-2.1.24
+UDUNITS_PATH=$INSTALL_PATH/$APP
+rm -rf $UDUNITS_PATH
+cd $INSTALL_PATH/src
+
+rm -rf udunits-2.1.24*
+wget ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.24.tar.gz
+tar xzf udunits-2.1.24.tar.gz ; cd udunits-2.1.24
+
+CC=gcc CXX='' F77=gfortran ./configure \
+--prefix=$UDUNITS_PATH 2>&1 | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+# ZLIB
+APP=zlib-1.2.5
+ZLIB_PATH=$INSTALL_PATH/$APP
+rm -rf $ZLIB_PATH
+cd $INSTALL_PATH/src
+
+rm -rf zlib-1.2.5*
+wget http://zlib.net/zlib-1.2.5.tar.gz
+tar zxf zlib-1.2.5.tar.gz ; cd zlib-1.2.5
+
+CC=gcc FC=gfortran CXX='' ./configure \
+--prefix=$ZLIB_PATH | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+# HDF4
+APP=hdf-4.2.6
+HDF4_PATH=$INSTALL_PATH/$APP
+rm -rf $HDF4_PATH
+cd $INSTALL_PATH/src
+
+rm -rf hdf-4.2.6*
+wget http://www.hdfgroup.org/ftp/HDF/HDF_Current/src/hdf-4.2.6.tar.gz
+tar xzf hdf-4.2.6.tar.gz ; cd hdf-4.2.6
+
+# Bug in configure script, need to define EGREP variable here
+EGREP=egrep CC=gcc FC=gfortran F77=gfortran ./configure \
+--prefix=$HDF4_PATH \
+--disable-netcdf \
+--enable-fortran \
+--with-zlib=$ZLIB_PATH \
+--with-pic 2>&1 | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+# HDF5
+APP=hdf5-1.8.8
+HDF5_PATH=$INSTALL_PATH/$APP
+rm -rf $HDF5_PATH
+cd $INSTALL_PATH/src
+
+rm -rf hdf5-1.8.8*
+wget http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.8/src/hdf5-1.8.8.tar.gz
+tar xzf hdf5-1.8.8.tar.gz ; cd hdf5-1.8.8
+
+CC=gcc FC=gfortran CXX='' ./configure \
+--prefix=$HDF5_PATH \
+--enable-fortran \
+--with-zlib=$ZLIB_PATH \
+--with-pic 2>&1 | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+export LD_LIBRARY_PATH=$HDF4_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$HDF4_PATH/bin:$PATH
+export LD_LIBRARY_PATH=$HDF5_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$HDF5_PATH/bin:$PATH
+export LD_LIBRARY_PATH=$ANTLR_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$ANTLR_PATH/bin:$PATH
+export LD_LIBRARY_PATH=$UDUNITS_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$UDUNITS_PATH/bin:$PATH
+export LD_LIBRARY_PATH=$ZLIB_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$ZLIB_PATH/bin:$PATH
+
+# NetCDF4
+APP=netcdf-4.1.3
+NETCDF4_PATH=$INSTALL_PATH/$APP
+rm -rf $NETCDF4_PATH
+cd $INSTALL_PATH/src
+
+rm -rf netcdf-4.1.3*
+wget http://www.unidata.ucar.edu/downloads/netcdf/ftp/netcdf-4.1.3.tar.gz
+tar xzf netcdf-4.1.3.tar.gz ; cd netcdf-4.1.3
+
+CPPFLAGS="-I$HDF5_PATH/include -I$ZLIB_PATH/include -I$HDF4_PATH/include" \
+LDFLAGS="-L$HDF5_PATH/lib -L$ZLIB_PATH/lib -L$HDF4_PATH/lib" \
+LIBS="-lmfhdf -lhdf5_hl -lhdf5 -lantlr -ldf -ljpeg -lz" \
+CXX=g++ CC=gcc FC=gfortran F77=gfortran ./configure \
+--prefix=$NETCDF4_PATH \
+--with-hdf5=$HDF5_PATH \
+--with-hdf4=$HDF4_PATH \
+--enable-fortran \
+--enable-static \
+--enable-shared \
+--enable-f77 \
+--enable-f90 \
+--enable-netcdf4 \
+--enable-hdf4 \
+--enable-cxx-4 \
+--with-pic 2>&1 | tee $APP.config
+make 2>&1 | tee $APP.make
+make install 2>&1 | tee $APP.install
+
+export LD_LIBRARY_PATH=$NETCDF4_PATH/lib:$LD_LIBRARY_PATH
+export PATH=$NETCDF4_PATH/bin:$PATH

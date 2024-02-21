@@ -8,12 +8,9 @@ import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 
-import com.cohort.util.Calendar2;
-import com.cohort.util.Math2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -21,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 /**
  * A filter to find files (and directories!) whose names match a specified 
@@ -379,137 +375,5 @@ public class RegexFilenameFilter implements FilenameFilter {
             File2.touch(fullName);
         }
         return true;
-    }
-
-
-    /**
-     * This tests the methods of RegexFilenameFilter.
-     *
-     * @throws Exception if trouble
-     */
-    public static void basicTest() throws Exception {
-        String2.log("\n* RegexFilenameFilter.basicTest ...");
-        String coastwatchDir = File2.webInfParentDirectory() + //with / separator and / at the end
-            "WEB-INF/classes/gov/noaa/pfel/coastwatch/";
-
-        //test list
-        String[] sar = list(coastwatchDir, "S.+\\.java");
-        String[] shouldBe = {
-            "Screen.java",
-            "Shared.java"};
-        Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
-
-        //test fullNameList
-        sar = fullNameList(coastwatchDir, "S.+\\.java");
-        shouldBe = new String[] {
-            coastwatchDir + "Screen.java",
-            coastwatchDir + "Shared.java"
-            };
-        Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.fullNameList");
-
-        //test recursiveList
-        sar = recursiveFullNameList(coastwatchDir, "S.+\\.java", true);
-        shouldBe = new String[] {
-            coastwatchDir + "Screen.java",
-            coastwatchDir + "Shared.java",
-            coastwatchDir + "griddata/",
-            coastwatchDir + "griddata/SaveOpendap.java",
-            coastwatchDir + "hdf/",
-            coastwatchDir + "hdf/SdsReader.java",
-            coastwatchDir + "hdf/SdsWriter.java",
-            coastwatchDir + "netcheck/",
-            coastwatchDir + "pointdata/",
-            coastwatchDir + "pointdata/ScriptRow.java",
-            coastwatchDir + "pointdata/StationVariableNc4D.java",
-            coastwatchDir + "pointdata/StoredIndex.java",
-            coastwatchDir + "sgt/",
-            coastwatchDir + "sgt/SGTPointsVector.java",
-            coastwatchDir + "sgt/SgtGraph.java",
-            coastwatchDir + "sgt/SgtMap.java",
-            coastwatchDir + "sgt/SgtUtil.java",
-            coastwatchDir + "util/",
-            coastwatchDir + "util/SSR.java",
-            coastwatchDir + "util/SimpleXMLReader.java",
-            coastwatchDir + "util/StringObject.java"             
-            };
-        Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
-
-        //test recursiveList   no directories
-        sar = recursiveFullNameList(coastwatchDir, "S.+\\.java", false);
-        shouldBe = new String[] {
-            coastwatchDir + "Screen.java",
-            coastwatchDir + "Shared.java",
-            coastwatchDir + "griddata/SaveOpendap.java",
-            coastwatchDir + "hdf/SdsReader.java",
-            coastwatchDir + "hdf/SdsWriter.java",
-            coastwatchDir + "pointdata/ScriptRow.java",
-            coastwatchDir + "pointdata/StationVariableNc4D.java",
-            coastwatchDir + "pointdata/StoredIndex.java",
-            coastwatchDir + "sgt/SGTPointsVector.java",
-            coastwatchDir + "sgt/SgtGraph.java",
-            coastwatchDir + "sgt/SgtMap.java",
-            coastwatchDir + "sgt/SgtUtil.java",
-            coastwatchDir + "util/SSR.java",
-            coastwatchDir + "util/SimpleXMLReader.java",
-            coastwatchDir + "util/StringObject.java"             
-            };
-        Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
-
-        //gatherInfo
-        PrimitiveArray info[] = gatherInfo("C:\\programs\\digir", "obis.*");
-        int tn = info[1].size();
-        StringArray lastMod = new StringArray();
-        for (int i = 0; i < tn; i++)
-            lastMod.add(Calendar2.safeEpochSecondsToIsoStringTZ(info[2].getLong(i) / 1000.0, "ERROR"));
-        Test.ensureEqual(info[0].toString(), 
-            "BiotaDiGIRProvider, DiGIR_Portal_Engine, DiGIRprov", "");
-        Test.ensureEqual(info[1].toString(), 
-            "obis.xsd, obisInventory.txt", "");
-        //lastMod and size verified by using DOS dir command
-        Test.ensureEqual(lastMod.toString(),                                 
-            "2007-04-23T18:24:38Z, 2007-05-02T19:18:32Z", "");  //2018-08-07 was :33Z on M4700, but :32 on Lenovo!
-        Test.ensureEqual(info[3].toString(), 
-            "21509, 3060", "");
-    }
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 0;
-        String msg = "\n^^^ RegexFilenameFilter.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) basicTest();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
     }
 }

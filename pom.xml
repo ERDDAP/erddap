@@ -234,6 +234,13 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <excludedGroups>AWS, LocalERDDAP, Password, Thredds, ExternalERDDAP, MissingFile, LargeFile, ExternalOther, IncompleteTest, WebInfStructureDependency</excludedGroups>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
           <plugins>
@@ -248,18 +255,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.5.0</version>
-                </plugin>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M6</version>
-                </plugin>
-                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/surefire-junit4 -->
-                <plugin>
-                    <groupId>org.apache.maven.surefire</groupId>
-                    <artifactId>surefire-junit4</artifactId>
-                    <version>2.19.1</version>
                 </plugin>
                 <!-- https://mvnrepository.com/artifact/org.codehaus.plexus/plexus-utils -->
                 <plugin>
@@ -287,8 +282,15 @@
               <type>pom</type>
               <scope>import</scope>
             </dependency>
-        </dependencies>
 
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.10.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
     </dependencyManagement>
 
     <dependencies>
@@ -306,14 +308,9 @@
             </configuration -->
         </dependency> 
 
-
-        <!-- https://mvnrepository.com/artifact/junit/junit
-             There are newer versions with different domain name, but cause trouble with dependency checking. 
-             For testing (by Kyle? Maven?). -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
 

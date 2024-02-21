@@ -1,0 +1,48 @@
+netcdf timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1 {
+dimensions:
+	station = 2 ;
+	z = 4 ;
+	name_strlen = 50 ;
+	time = UNLIMITED ; // (100 currently)
+variables:
+	float lat(station) ;
+		lat:units = "degrees_north" ;
+		lat:long_name = "station latitude" ;
+		lat:standard_name = "latitude" ;
+	float lon(station) ;
+		lon:units = "degrees_east" ;
+		lon:long_name = "station longitude" ;
+		lon:standard_name = "longitude" ;
+	float alt(z) ;
+		alt:units = "m" ;
+		alt:standard_name = "altitude" ;
+		alt:long_name = "height below mean sea level" ;
+		alt:positive = "down" ;
+		alt:axis = "Z" ;
+	int station_info(station) ;
+		station_info:long_name = "station info" ;
+	char station_name(station, name_strlen) ;
+		station_name:cf_role = "timeseries_id" ;
+		station_name:long_name = "station name" ;
+	int time(time) ;
+		time:long_name = "time" ;
+		time:standard_name = "time" ;
+		time:units = "seconds since 1990-01-01 00:00:00" ;
+		time:missing_value = -999 ;
+	float temperature(time, z, station) ;
+		temperature:long_name = "Air Temperature" ;
+		temperature:standard_name = "air_temperature" ;
+		temperature:units = "Celsius" ;
+		temperature:coordinates = "time lat lon alt" ;
+		temperature:missing_value = -999.9f ;
+	float humidity(time, z, station) ;
+		humidity:long_name = "Humidity" ;
+		humidity:standard_name = "specific_humidity" ;
+		humidity:units = "Percent" ;
+		humidity:coordinates = "time lat lon alt" ;
+		humidity:missing_value = -999.9f ;
+
+// global attributes:
+		:Conventions = "CF-1.6" ;
+		:featureType = "timeSeriesProfile" ;
+}
