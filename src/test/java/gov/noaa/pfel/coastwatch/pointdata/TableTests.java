@@ -12260,7 +12260,7 @@ class TableTests {
     String results, expected, fileName;
 
     // *************** timeseries orthogonal
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/CFPointConventions/timeSeries/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc").getPath();
     // String2.log("\n\n** Testing orthogonal file\n" +
@@ -12765,7 +12765,7 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *************** timeseries incomplete multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/CFPointConventions/timeSeries/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc").getPath();
     // String2.log("\n\n** Testing incomplete file\n" +
