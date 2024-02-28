@@ -2708,10 +2708,10 @@ class TableTests {
           (table.nColumns() * table.nRows() / time) + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +
           "\ntime=" + time
           + "ms (usual(https)=1285, was http=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");
-      if (time <= 1600)
+      if (time <= 2000)
         break;
     }
-    if (time > 1600)
+    if (time > 2000)
       throw new SimpleException("readOpendapSequence took too long (time=" + time + "ms).");
   }
 

@@ -4,7 +4,6 @@ RUN wget https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.ja
 RUN mvn install:install-file -Dfile=netcdfAll-5.5.3.jar -DgroupId=edu.ucar -DartifactId=netcdfAll -Dversion=5.5.3 -Dpackaging=jar
 COPY . /app/
 
-# RUN rm -rf /app/src/test
 # Temp dir required for a test.
 RUN mkdir /temp/
 
