@@ -1,4 +1,7 @@
 # NOTE: This docker file is currently just meant for local development use.
+# Usage:
+# docker build -t erddap-docker .
+# docker run -p 8080:8080 erddap-docker
 
 # Build erddap from source using maven.
 FROM maven:3.9.6-eclipse-temurin-17 AS build
