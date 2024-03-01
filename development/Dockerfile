@@ -1,7 +1,10 @@
 # NOTE: This docker file is currently just meant for local development use.
+#
 # Usage from project root:
 # docker build -f development/Dockerfile -t erddap-docker .
 # docker run -p 8080:8080 erddap-docker
+#
+# Erddap should then be available at http://localhost:8080/erddap
 
 # Set up build env.
 FROM maven:3.9.6-eclipse-temurin-17 AS build
