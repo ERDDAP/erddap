@@ -7,11 +7,20 @@
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 RUN wget https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar
 RUN mvn install:install-file -Dfile=netcdfAll-5.5.3.jar -DgroupId=edu.ucar -DartifactId=netcdfAll -Dversion=5.5.3 -Dpackaging=jar
-# Temp dir required for a test.
-RUN mkdir /temp/
-COPY . /app/
+
+RUN mkdir /app/
 WORKDIR /app/
-RUN mvn -f pom.xml clean package
+
+# Download dependencies + plugins separately from packaging to allow for caching.
+COPY pom.xml .
+RUN mvn dependency:go-offline
+
+# Temp dir required for a unit test.
+RUN mkdir /temp/
+
+# Copy in source files and build the war file.
+COPY . .
+RUN mvn -f pom.xml package
 
 # Run the built erddap war via a tomcat instance.
 FROM tomcat:10.1.19-jdk17-temurin-jammy
