@@ -64,7 +64,7 @@ Settings that you MUST change are in this top section.
     Whether or not you set up the email system, all potential email messages
     are logged to an emailLogYEAR-MONTH.txt file in [bigParentDirectory]/logs/.
     -->
-    <emailEverythingTo>username@noc.ac.uk</emailEverythingTo>
+    <emailEverythingTo>username@email.com</emailEverythingTo>
     <!-- optional:
     <emailDailyReportsTo>your.boss@yourInstitution.edu</emailDailyReportsTo>
     -->
@@ -109,8 +109,8 @@ Settings that you MUST change are in this top section.
     Anti Virus Standard Protections :
     Prevent mass mailing worms from sending mail" is un-checked.
     -->
-    <emailFromAddress>username@noc.ac.uk</emailFromAddress>
-    <emailUserName>username@noc.ac.uk</emailUserName>
+    <emailFromAddress>username@email.com</emailFromAddress>
+    <emailUserName>username@email.com</emailUserName>
     <emailPassword></emailPassword>
     <emailProperties></emailProperties>
     <emailSmtpHost>localhost</emailSmtpHost>
@@ -120,16 +120,16 @@ Settings that you MUST change are in this top section.
 
     <!-- Information about the ERDDAP administrator is used for the SOS and WMS
     servers. -->
-    <adminInstitution>British oceanographic Data Centre</adminInstitution>
-    <adminInstitutionUrl>https://www.bodc.ac.uk/</adminInstitutionUrl>
-    <adminIndividualName>BODC-local</adminIndividualName>
+    <adminInstitution>Institution Name</adminInstitution>
+    <adminInstitutionUrl>http://localhost/</adminInstitutionUrl>
+    <adminIndividualName>localhost</adminIndividualName>
     <adminPosition>Developer</adminPosition>
     <adminPhone>+44 000-000-0000</adminPhone>
-    <adminAddress>National Oceanography Centre, Joseph Proudman Building, 6 Brownlow Street</adminAddress>
-    <adminCity>Liverpool</adminCity>
-    <adminStateOrProvince>Merseyside</adminStateOrProvince>
-    <adminPostalCode>L3 5DA</adminPostalCode>
-    <adminCountry>UK</adminCountry>
+    <adminAddress>Institution, localhost</adminAddress>
+    <adminCity>CityName</adminCity>
+    <adminStateOrProvince>ProvinceName</adminStateOrProvince>
+    <adminPostalCode>L0 CAL</adminPostalCode>
+    <adminCountry>Country</adminCountry>
     <adminEmail>username@noc.ac.uk</adminEmail>
 
     <!-- Normally, if you have a EDDGridFromErddap or EDDTableFromErddap
