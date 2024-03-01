@@ -1,6 +1,6 @@
 # NOTE: This docker file is currently just meant for local development use.
-# Usage:
-# docker build -t erddap-docker .
+# Usage from project root:
+# docker build -f development/Dockerfile -t erddap-docker .
 # docker run -p 8080:8080 erddap-docker
 
 # Build erddap from source using maven.
@@ -19,5 +19,5 @@ RUN mkdir /usr/local/tomcat/content/erddap/ -p
 RUN mkdir /usr/local/erddap_data/
 COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/erddap.war
 COPY --from=build /app/content/erddap/* /usr/local/tomcat/content/erddap/
-COPY ./config/localSetup.xml /usr/local/tomcat/content/erddap/setup.xml
+COPY ./development/config/localSetup.xml /usr/local/tomcat/content/erddap/setup.xml
 CMD ["catalina.sh", "run"]

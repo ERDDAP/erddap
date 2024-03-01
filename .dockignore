@@ -1,3 +1,5 @@
-Dockerfile
+development/Dockerfile
 .github
 .idea
+makeErddapWar.bat
+README.md
