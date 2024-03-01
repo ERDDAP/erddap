@@ -187,8 +187,7 @@ class NcHelperTests {
       pa = NcHelper.readAttributeFromNc(fullName + "zztop", "sa");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      // if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath + "(The system cannot find the file specified)") < 0) {
-      if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath) < 0) {
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
       }
     }
@@ -197,8 +196,7 @@ class NcHelperTests {
       pas2 = NcHelper.readAttributesFromNc3(fullName + "zztop", varNames.toArray());
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      // if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath + "(The system cannot find the file specified)") < 0) {
-      if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath) < 0) {
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
       }
     }
@@ -207,8 +205,7 @@ class NcHelperTests {
       atts = NcHelper.readAttributesFromNc3(fullName + "zztop");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      // if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath + "(The system cannot find the file specified)") < 0) {
-      if (e.toString().indexOf( "java.io.FileNotFoundException: " + testPath) < 0) {
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
       }
     }
