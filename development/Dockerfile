@@ -1,22 +1,19 @@
-# NOTE: This docker file is currently just meant for local development use.
+# This docker file is currently just meant for local development use.
 #
 # Usage from project root:
 # docker build -f development/Dockerfile -t erddap-docker .
 # docker run -p 8080:8080 erddap-docker
 #
-# Erddap should then be available at http://localhost:8080/erddap
+# ERDDAP should then be available at http://localhost:8080/erddap
 
 # Set up build env.
 FROM maven:3.9.6-eclipse-temurin-17 AS build
-RUN wget https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar
-RUN mvn install:install-file -Dfile=netcdfAll-5.5.3.jar -DgroupId=edu.ucar -DartifactId=netcdfAll -Dversion=5.5.3 -Dpackaging=jar
 
 RUN mkdir /app/
 WORKDIR /app/
 
-# Download dependencies + plugins separately from packaging to allow for caching.
-COPY pom.xml .
-RUN mvn dependency:go-offline
+# Download netcdfAll jar dependency.
+RUN wget https://downloads.unidata.ucar.edu/netcdf-java/5.5.3/netcdfAll-5.5.3.jar
 
 # Temp dir required for a unit test.
 RUN mkdir /temp/
@@ -26,7 +23,10 @@ ADD download ./download
 ADD images ./images
 ADD src ./src
 ADD WEB-INF ./WEB-INF
-RUN mvn -f pom.xml package
+RUN mkdir WEB-INF/lib
+RUN mv netcdfAll-5.5.3.jar WEB-INF/lib/netcdfAll-5.5.3.jar
+COPY pom.xml .
+RUN --mount=type=cache,id=m2_repo,target=/root/.m2/repository --mount=type=cache,id=download_cache,target=download_cache mvn -f pom.xml package
 
 # Run the built erddap war via a tomcat instance.
 FROM tomcat:10.1.19-jdk17-temurin-jammy
