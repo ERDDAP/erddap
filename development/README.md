@@ -23,5 +23,5 @@ ERRDAP will then be accessible at the URL `http://localhost:8080/erddap`. Due to
 ### Config
 If required, you can edit the file `development/config/localSetup.xml` to customize your local instance of ERDDAP. Currently this file contains many placeholder values due to the nature of this DockerFile being intended for development use only.
 
-## Datasets
+### Datasets
 Currently the DockerFile uses the default datsets provided by ERDDAP. Feel free to extend this DockerFile yourself to allow for the use of custom datasets within the container.
