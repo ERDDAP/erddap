@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!-- setup.xml contains setup information for ERDDAP.
+When you install ERDDAP on your server, many of the settings can be left as is.
+Settings that you MUST change are in this top section.
+-->
+<erddapSetup>
+
+    <!-- bigParentDirectory is the absolute path on the server (with slash at the end)
+    to a directory on a drive with lots of space.
+    You must create a new directory, outside of the tomcat directory, for this purpose.
+    The user that runs Tomcat must have read/write privileges for this directory.
+    Subdirectories that will be created by ERDDAP are:
+    * datasetInfo (which some datasets use to cache information about the dataset
+       to speed up reloading the dataset in the future),
+    * flag (where you can put a file with a datasetID's name to force reloading of
+       that dataset) and
+    * cache (which ERDDAP uses to hold cached data files - ERDDAP periodically
+       removes files older than cacheMinutes).
+    The ERDDAP log file (log.txt) will be put in this directory.
+    At ERD, we use '/u00/cwatch/erddap/' for releases.
+    -->
+    <bigParentDirectory>/usr/local/erddap_data/</bigParentDirectory>
+
+    <!-- baseUrl is the start of the public url, to which "/erddap"
+    is appended. For example:
+    For running/testing on your personal computer:
+      <baseUrl>http://localhost:8080</baseUrl>
+      (127.0.0.1 doesn't work with authentication=google).
+    For ERD releases, we use
+      <baseUrl>http://coastwatch.pfeg.noaa.gov</baseUrl>
+    If you want to encourage all users to use https (not http),
+      make the baseUrl the same as the baseHttpsUrl (see below).
+    -->
+    <baseUrl>http://localhost:8080</baseUrl>
+
+    <!-- This is a variant of <baseUrl> which is used when
+    authentication is active and the user is logged in.
+    In general, you take the <baseUrl>, change "http" to "https",
+    and change/add ":8443". This must begin with "https://".
+    If you make a proxy so that ":8443" isn't needed,
+    then don't use ":8443" here.
+    This is relevant even if <authentication> is "".
+    See the instructions at
+    https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+    For example:
+    For running/testing on your personal computer:
+      <baseHttpsUrl>https://localhost:8443</baseHttpsUrl>
+    For releases at ERD, we use:
+      <baseHttpsUrl>https://coastwatch.pfeg.noaa.gov</baseHttpsUrl>
+    If you want to encourage all users to use https (not http),
+      make the baseUrl (see above) the same as the baseHttpsUrl.
+    -->
+    <baseHttpsUrl></baseHttpsUrl>
+
+    <!-- Daily status reports and all error messages are emailed to emailEverythingTo.
+    Daily status reports are emailed to emailDailyReportsTo.
+    Either of these can be not specified, blank (specified but with no value),
+      a single email address (e.g., john.doe@noaa.gov),
+      or a comma-separated list of email addresses.
+    The first emailEverythingTo email address is more important than the others,
+      e.g., it is used for subscriptions to EDDXxxxFromErddap datasets.
+    See the email account settings below.
+
+    Whether or not you set up the email system, all potential email messages
+    are logged to an emailLogYEAR-MONTH.txt file in [bigParentDirectory]/logs/.
+    -->
+    <emailEverythingTo>username@email.com</emailEverythingTo>
+    <!-- optional:
+    <emailDailyReportsTo>your.boss@yourInstitution.edu</emailDailyReportsTo>
+    -->
+
+
+    <!-- Email account information is used for sending emails to the
+    'emailEverythingTo' and 'emailDailyReportsTo' email addresses above
+    and for sending emails related to subscriptions. So if you don't setup the
+    email system, your ERDDAP won't support subscriptions (including allowing other
+    ERDDAP's to subscribe to datasets on your ERDDAP).
+
+    If you don't want your ERDDAP to send emails, change the emailSmtpHost tag
+    contents to be nothing.
+
+    It is a security risk to put your email password in a plain text file like this.
+    To mitigate that problem, we strongly remommend that you:
+    1) Set up an email account just for ERDDAP's use, e.g.,
+       erddap@yourInstitution.org
+       That has other benefits as well: more than one ERDDAP administrator can then
+       be given access to that email account.
+    2) Make the permissions of this setup.xml file rw (read+write) for the user who
+       will run Tomcat and ERDDAP (user=tomcat?) and no permissions (not read or
+       write) for the group and other users.
+
+    emailProperties is a list of additional properties in the form
+      prop1|value1|prop2|value2
+    The default is nothing.
+
+    If possible, set this up to use a secure connection (SSL / TLS) to the email server.
+
+    For gmail (even your.name@noaa.gov accounts which are managed by Google),
+      for emailSmtpHost, use smtp.gmail.com
+      for emailSmtpPort, use 587
+      for emailProperties, use mail.smtp.starttls.enable|true
+
+    Whether or not you set up the email system, all potential email messages
+    are logged to an emailLogYEAR-MONTH.txt file in [bigParentDirectory]/logs/.
+
+    If you can't get ERDDAP to send emails (error = "Connection refused")
+    and you are using anti-virus software (e.g., McAfee) make sure McAfee
+    "Virus Scan Console : Access Protection Properties :
+    Anti Virus Standard Protections :
+    Prevent mass mailing worms from sending mail" is un-checked.
+    -->
+    <emailFromAddress>username@email.com</emailFromAddress>
+    <emailUserName>username@email.com</emailUserName>
+    <emailPassword></emailPassword>
+    <emailProperties></emailProperties>
+    <emailSmtpHost>localhost</emailSmtpHost>
+    <emailSmtpPort>25</emailSmtpPort>
+
+
+
+    <!-- Information about the ERDDAP administrator is used for the SOS and WMS
+    servers. -->
+    <adminInstitution>Institution Name</adminInstitution>
+    <adminInstitutionUrl>http://localhost/</adminInstitutionUrl>
+    <adminIndividualName>localhost</adminIndividualName>
+    <adminPosition>Developer</adminPosition>
+    <adminPhone>+44 000-000-0000</adminPhone>
+    <adminAddress>Institution, localhost</adminAddress>
+    <adminCity>CityName</adminCity>
+    <adminStateOrProvince>ProvinceName</adminStateOrProvince>
+    <adminPostalCode>L0 CAL</adminPostalCode>
+    <adminCountry>Country</adminCountry>
+    <adminEmail>username@noc.ac.uk</adminEmail>
+
+    <!-- Normally, if you have a EDDGridFromErddap or EDDTableFromErddap
+    dataset in your datasets.xml, it will try to subscribe to the remote
+    ERDDAP dataset so that the local dataset is kept perfectly up-to-date.
+    If this ERDDAP is not publicly accessible (http://localhost), or its
+    IP address will change soon, or you have some other reason,
+    you can tell this ERDDAP to not try to subscribe to the remote
+    ERDDAP datasets by setting this to false. (default=true)
+    This is the overall setting for this ERDDAP. It can be overridden by
+    the same tag (with a different value) in the datasets.xml chunk for
+    a given EDD...FromErddap dataset.
+    For each fromErddap dataset that doesn't subscribe to the remote
+    ERDDAP dataset, you should set <reloadEveryNMinutes> to a smaller
+    number so that the local dataset stays reasonably up-to-date. -->
+    <subscribeToRemoteErddapDataset>true</subscribeToRemoteErddapDataset>
+
+    <!-- The font family to be used for all of the text in images.
+    See the fontFamily documentation on the ERDDAP setup.html#fonts web page. -->
+    <fontFamily>DejaVu Sans</fontFamily>
+
+    <!-- ERDDAP has a service that lets remote users set a flag
+    to notify ERDDAP to try to reload a dataset.
+    These requests use a key which is generated based
+    on baseUrl/erddap, a datasetID, and flagKeyKey.
+    *** CHANGE THIS ONCE, to any text (a favorite quote? random text? Whatever you want.).
+    Normally, you won't ever change this again.
+    But if you you think someone is abusing the flag system,
+    change this text again, restart ERDDAP, and send
+    all of the users of the flag system the relevant new flagKeys
+    (see the list in the Daily Report). -->
+    <flagKeyKey>this-world-was-being-watched-keenly-and-closely-by-intelligences-greater-than-mans-and-yet-as-mortal-as-his-own</flagKeyKey>
+
+
+    <!-- ******** End of MUST change settings.  ******************************** -->
+
+
+    <!-- The default log file maximum size is 20 MB. When that size is reached,
+    log.txt will be renamed to log.txt.previous .
+    Minimum allowed is 1. Maximum allowed is 2000. -->
+    <logMaxSizeMB>20</logMaxSizeMB>
+
+    <!-- This lets you specify a regular expression which determines which datasetIDs
+    in the datasets.xml file should be loaded.
+    The default is ".*", which loads all datasets.
+    During development or for other reasons, you might want to use a subset, e.g.,
+    "(etopo.*|erdQSu101day|erdMHchla8day|erdGlobecBottle|erdBAssta5day|pmelTaoDySst)",
+    so that ERDDAP quickly loads a dataset that you are interested in.
+    -->
+    <datasetsRegex>.*</datasetsRegex>
+
+    <!-- If true, when you start up ERDDAP, some types of datasets (e.g.,
+    EDDGridFromDap) will used cached information (.dds, .das, etc.) to reload
+    very quickly, without contacting the remote server.  The dataset's age
+    will be based on when the dataset was reloaded last.  Normally this
+    should be true (the default), but set it to false if you want to bypass
+    the cached information. -->
+    <quickRestart>true</quickRestart>
+
+    <!-- If you want to restrict access to some datasets,
+    you need to specify the method used for logging on (authentication).
+    See the info at
+    https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+    Currently, the options are: "" (logins not supported, the default),
+    "custom" (discouraged), "email" (discouraged), "google" (recommended),
+    "orcid" (recommended), and "oauth2" (recommended).
+    [No longer supported: "basic", "openid"]
+    -->
+    <authentication></authentication>
+
+    <!-- If authentication=google, you must supply your Google Client ID.
+    See
+    https://developers.google.com/identity/sign-in/web/devconsole-project
+    When setting this up, for Authorized JavaScript origins,
+    for testing on your computer, use the domain "localhost"
+    (e.g., origin=https://localhost:8443),
+    not "127.0.0.1" (because Google Sign-In doesn't work with anything
+    at that domain).
+    This will be a string of about 75 characters, probably starting with
+    several digits and ending with .apps.googleusercontent.com .
+    -->
+    <googleClientID></googleClientID>
+
+    <!-- If authentication=orcid or oauth2, you must supply your ORCID APP Client ID
+      (which will start with "APP-") and ORCID Client Secret (a hex number with hyphens).
+      Get these by logging into Orcid at https://orcid.org/signin.
+      Then click on "Developer Tools" (under "For Researchers" at the top).
+      Then click on "Register for the free ORCID public API".
+        Name: ERDDAP at [your organization]
+        Website: [your ERDDAP's domain]
+        Description: ERDDAP is a scientific data server. Users need to authenticate with Google or Orcid to access non-public datasets.
+        Redirect URIs: [your ERDDAP's domain]/erddap/loginOrcid.html
+      Then click on the Save icon (looks like a 3.5" disk!).
+        -->
+    <orcidClientID></orcidClientID>
+    <orcidClientSecret></orcidClientSecret>
+
+    <!-- For "custom" authentication, this specifies how you have
+    stored passwords in the roles tags in datasets.xml.
+    If you aren't storing any passwords, this is irrelevant.
+    The options (in order of increasing security) are:
+    "MD5", "UEPMD5" (MD5(UserName:ERDDAP:Password)),
+    "SHA256", "UEPSHA256" (SHA256(UserName:ERDDAP:Password),
+    the default).
+    You should only use "MD5" or "SHA256" if you need to match
+    values stored that way in an external password database.
+    See the info at
+    https://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security
+    -->
+    <passwordEncoding>UEPSHA256</passwordEncoding>
+
+    <!-- This determines whether datasets that the user doesn't currently have access
+    to (because he isn't logged in or because his roles don't allow access)
+    should be shown on lists of data sets
+    (e.g., from full text search, categorize, view all datasets, ...).
+    The options are: "true", or "false" (the default).
+    If false, no information about the dataset (even its existence) is shown
+      to users who don't have access to it.
+    If true, some information about the dataset (title, summary, etc) is shown
+      to users who don't have access to it.
+      If the user clicks on a link to a dataset he doesn't have access to,
+      he will get an error message and be prompted to log in.
+    -->
+    <listPrivateDatasets>false</listPrivateDatasets>
+
+
+    <!-- ERDDAP lets you choose between two search engines for full text searches:
+    * original (the default) - is the best choice in almost all cases.
+      It is very robust, trouble-free, and gives the results users expect.
+    * lucene - is an option if you have >10,000 datasets and find 'original' to be too slow;
+      otherwise, 'original' is strongly preferred.
+      The advantages are that with any number of datasets it works fast
+      and uses very little memory.
+      But there are many things that might go wrong with individual
+      queries and with the whole system.
+      And although its behaviour (the datasets it finds and the order that
+      it ranks them) is almost identical to the original search engine,
+      it has a few quirky, subtle, small, disadvantageous differences.
+    -->
+    <searchEngine>original</searchEngine>
+
+    <!--
+    These default accessConstraints, fees, and keywords are used by
+      ERDDAP's SOS, WCS, and WMS services.
+    accessConstraints and fees are the defaults for dataset's without an
+      "accessibleTo" tag.
+    accessRequiresAuthorization is the default "accessConstraints" for dataset's
+      with an "accessibleTo" tag.
+    keywords should describe this ERDDAP's data in a general way and be
+    comma-separated.
+    "accessConstraints", "fees", "keywords" can be overwritten by same-named
+      attributes in a dataset's global attributes in datasets.xml.
+    -->
+    <accessConstraints>NONE</accessConstraints>
+    <accessRequiresAuthorization>only accessible to authorized users</accessRequiresAuthorization>
+    <fees>NONE</fees>
+    <keywords>earth science, atmosphere, ocean, biosphere, biology, environment</keywords>
+
+    <!-- Specify the default units standard (e.g., "UDUNITS" (the default) or "UCUM")
+      that you (the ERDDAP admin) are using to specify units.
+      The value is case-sensitive.
+      This is used by ERDDAP's SOS server to determine if the units need to be
+      converted to UCUM units for WMS and SOS GetCapabilities responses.
+    -->
+    <units_standard>UDUNITS</units_standard>
+
+    <!-- ERDDAP automatically generates FGDC and ISO19115 metadata
+    for all relevant datasets, using information from the dataset's metadata.
+    By default these services are on (true). -->
+    <fgdcActive>true</fgdcActive>
+    <iso19115Active>true</iso19115Active>
+
+    <!-- The default for filesActive is "true". -->
+    <filesActive>true</filesActive>
+    <!-- This sets the default <accessibleViaFiles> for all of the datasets.
+         Before ERDDAP v.2.10, this tag didn't exist and the hard-coded setting was 'false'. -->
+    <defaultAccessibleViaFiles>true</defaultAccessibleViaFiles>
+
+    <!-- The default for dataProviderFormActive is "true". -->
+    <dataProviderFormActive>true</dataProviderFormActive>
+
+    <!-- ERDDAP has an email/URL subscription system which sends a user an email
+    or pings a URL whenever an interesting dataset changes.
+    (This is different from the RSS system, which is always active.)
+    The system relies on the server being able to send out
+    emails to people to validate their subscription requests.
+    The emails appear to come from the emailFromAddress below.
+    So if your server can't send out emails, don't make this system active.
+    You may choose (for whatever reason) to make this system active or not,
+    so valid values below are "true" (the default) and "false".
+    Note that if you change this and restart ERDDAP, the list of subscriptions
+    (in [bigParentDirectory]/subscriptionsV1.txt) isn't affected.
+    See also the subscriptionEmailBlacklist in datasets.xml.
+    -->
+    <subscriptionSystemActive>true</subscriptionSystemActive>
+
+    <!-- ERDDAP has converters for time, keywords, units, FIPS codes, etc.
+    ([domain]/erddap/convert/index.html).
+    You may make this system active ("true", the strongly-encouraged default value)
+    or not ("false").
+    -->
+    <convertersActive>true</convertersActive>
+
+    <!-- ERDDAP has a slide sorter ([domain]/erddap/slidesorter.html).
+    You may make this system active ("true", the default value) or not ("false").
+    -->
+    <slideSorterActive>true</slideSorterActive>
+
+
+
+    <!-- This is used to specify the directories with the unit test data files.
+         Only people that are running the ERDDAP unit tests need to specify this.
+    <unitTestDataDir>/someDirectory/</unitTestDataDir>
+    <unitTestBigDataDir>/someBigDirectory/</unitTestBigDataDir>
+    -->
+
+
+    <!-- The highRes and lowResImagefiles are used for map and graph legends
+    and are scaled to the desired size (highRes->80 or 40 pixels square,
+    lowRes->20 pixels square).
+    The googleEarthLogoFile is displayed at its original size in the lower left
+    corner of the Google Earth map if the user selects the .kml image file type.
+    The highRes, lowRes and GoogleEarth images are also used by OpenSearch.
+    These files must be in [tomcat]/content/erddap/images/ directory.
+    All files in this directory (and subdirectories)
+    will be copied to [tomcat]/webapps/erddap/images (and subdirectories)
+    and thus made available for direct downloading by any client.
+    (Any text files must be stored as plain ASCII (7 bit) or with UTF-8 encoding.)
+    For SGT graphics, currently, the Files designated below must be png, gif, jpg,
+    or bmp.
+    If you want to substitute other image files, it is best to make them
+    a similar number of pixels wide and high.
+    -->
+    <highResLogoImageFile>noaa_simple.gif</highResLogoImageFile>
+    <lowResLogoImageFile>noaa20.gif</lowResLogoImageFile>
+    <googleEarthLogoFile>nlogo.gif</googleEarthLogoFile>
+
+
+    <!-- If variablesRequireIoosCategory is true, all variables for all datasets must
+    have an "ioos_category" attribute defined (in sourceAttributes or addAttributes)
+    with a value from EDV.IOOS_CATEGORIES.
+    If you are affiliated with NOAA, you should set this to "true"
+    because the NOAA IOOS office wants to be able to categorize variables and
+    datasets in this way.
+    For non-NOAA ERDDAP installations, there is no downside to setting this to "false".
+    -->
+    <variablesMustHaveIoosCategory>true</variablesMustHaveIoosCategory>
+
+    <!-- This is the comma-separated list (recommended: in alphabetical order)
+    of the global attribute and variable attribute names which will be
+    used to categorize the datasets and shown to clients at urls like
+    .../erddap/categorize/ioos_category/index.html
+    (ioos_category is unusual, but is used at ERD).
+    If an attribute is a global attribute, identify it by prefixing it with "global:".
+    "variableName" is a special case: it categorizes the dataVariable destinationNames.
+    -->
+    <categoryAttributes>global:cdm_data_type, global:institution, ioos_category, global:keywords, long_name, standard_name, variableName</categoryAttributes>
+
+
+
+</erddapSetup>

@@ -1,6 +1,7 @@
 package gov.noaa.pfel.coastwatch.griddata;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -181,34 +182,32 @@ class NcHelperTests {
       Test.ensureEqual(pas[i].toJsonCsvString(), pa.toJsonCsvString(), "i=" + i);
     }
     // test fail to read non-existent file
+    String testPath = Paths.get(TEMP_DIR.toAbsolutePath().toString(), "AttsInNc.nczztop").toString();
     try {
       pa = NcHelper.readAttributeFromNc(fullName + "zztop", "sa");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     try {
       pas2 = NcHelper.readAttributesFromNc3(fullName + "zztop", varNames.toArray());
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     try {
       atts = NcHelper.readAttributesFromNc3(fullName + "zztop");
       throw new RuntimeException("shouldn't get here");
     } catch (Exception e) {
-      if (e.toString().indexOf(
-          "java.io.FileNotFoundException: " + TEMP_DIR.toAbsolutePath().toString() + "\\AttsInNc.nczztop " +
-              "(The system cannot find the file specified)") < 0)
+      if (!e.toString().contains("java.io.FileNotFoundException: " + testPath)) {
         throw e;
+      }
     }
 
     // test fail to read non-existent var

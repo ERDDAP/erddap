@@ -2708,10 +2708,10 @@ class TableTests {
           (table.nColumns() * table.nRows() / time) + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +
           "\ntime=" + time
           + "ms (usual(https)=1285, was http=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");
-      if (time <= 1600)
+      if (time <= 2000)
         break;
     }
-    if (time > 1600)
+    if (time > 2000)
       throw new SimpleException("readOpendapSequence took too long (time=" + time + "ms).");
   }
 
@@ -12260,7 +12260,7 @@ class TableTests {
     String results, expected, fileName;
 
     // *************** timeseries orthogonal
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/CFPointConventions/timeSeries/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc").getPath();
     // String2.log("\n\n** Testing orthogonal file\n" +
@@ -12765,7 +12765,7 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *************** timeseries incomplete multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/CFPointConventions/timeSeries/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc").getPath();
     // String2.log("\n\n** Testing incomplete file\n" +
