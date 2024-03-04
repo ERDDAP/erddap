@@ -15,4 +15,5 @@ Thumbs.db
 .settings
 .classpath
 .project
-src/test/resources/*
+src/test/resources/
+.idea
