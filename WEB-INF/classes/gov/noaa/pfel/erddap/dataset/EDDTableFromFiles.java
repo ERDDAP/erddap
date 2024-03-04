@@ -5,7 +5,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.LongArray;
@@ -25,7 +24,6 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
-import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -34,14 +32,11 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.WatchDirectory;
 
 import gov.noaa.pfel.erddap.Erddap;
-import gov.noaa.pfel.erddap.dataset.NoMoreDataPleaseException;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.ThreadedWorkManager;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.StringWriter;
 import java.nio.file.WatchEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,15 +44,9 @@ import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.TimeUnit;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.*;
-
-//import org.apache.commons.jexl3.introspection.JexlSandbox;
-import org.apache.commons.jexl3.JexlScript;
-import org.apache.commons.jexl3.MapContext;
 
 /** 
  * This class represents a virtual table of data from by aggregating a collection of data files.
@@ -1223,7 +1212,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
 
         //skip loading until after intial loadDatasets?
-        if (fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
+        if (EDStatic.doSetupValidation && fileTable.nRows() == 0 && EDStatic.initialLoadDatasets()) {
             requestReloadASAP();
             throw new RuntimeException(DEFER_LOADING_DATASET_BECAUSE + "fileTable.nRows=0.");
         } 
@@ -4153,258 +4142,4 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         return true;
     }
-
-    /** Test isOK() */
-    public static void testIsOK() {
-        String2.log("\n* EDDTableFromFiles.testIsOK");
-        //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};         
-        //isOK(String min, String max, int hasNaN, String conOp, String conValue) {
-        //isOK(double min, double max, int hasNaN, String conOp, double conValue) {
-        String ROP = PrimitiveArray.REGEX_OP;
-
-        Test.ensureEqual(String2.max("a", ""), "a", "");  //"" sorts lower than any string with characters       
-
-        //simple tests  String
-        Test.ensureEqual(isOK("a", "z", 0,  "=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "=", "5"), false, ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "!=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "!=", "5"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "<=", "|"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "<=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "<=", "a"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "<=", "5"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "<", "|"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "<", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "<", "a"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "<", "5"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, ">=", "|"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, ">=", "z"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, ">=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, ">=", "5"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ">", "|"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ">", "z"), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ">", "c"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ">", "5"), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ROP, "(5)"), true,  ""); 
-        Test.ensureEqual(isOK("a", "a", 0,  ROP, "(a)"), true,   ""); //only really tests if min=max
-        Test.ensureEqual(isOK("a", "a", 0,  ROP, "(5)"), false,  ""); //only really tests if min=max
-
-
-        //simple tests  numeric       
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "=", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "=", 0), false, ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "=", 1.99999), false,  "");  //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "=", 1.999999), true,  "");  //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "!=", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "!=", 0), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 6), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 2), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 1.99999), false,  "");  //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 1.999999), true,  "");  //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", 0), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 6), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 2), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", 0), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 6), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 4.0001), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 4.00001), true,  ""); //important
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 4), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", 0), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 6), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 4), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 3), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", 0), true,  ""); 
-
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  "=", 1.99999999), false,  "");  //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  "=", 1.999999999), true,  "");  //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, "<=", 2), true,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, "<=", 1.99999999), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, "<=", 1.999999999), true,  ""); //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  "<", 2), false,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, ">=", 4.00000001), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, ">=", 4.000000001), true,  ""); //important
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, ">=", 4), true,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  ">", 4), false,  ""); 
-        Test.ensureEqual(isOK(PAType.DOUBLE, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
-        
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  "=", 1.9999999999999), false,  "");  //important
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, "<=", 2), true,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, "<=", 1.9999999999999), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  "<", 2), false,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, ">=", 4.0000000000001), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, ">=", 4), true,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  ">", 4), false,  ""); 
-        Test.ensureEqual(isOK(PAType.INT, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
-        
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  "=", 1.9999999999999), false,  "");  //important
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, "<=", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, "<=", 2), true,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, "<=", 1.9999999999999), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  "<", 2.0000000001), true,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  "<", 2), false,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  "<", 1.9999999999), false,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, ">=", 4.0000000000001), false,  ""); //important
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, ">=", 4), true,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0, ">=", 3.9999999999), true,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  ">", 4.0000000001), false,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  ">", 4), false,  ""); 
-        Test.ensureEqual(isOK(PAType.STRING, 2, 4, 0,  ">", 3.9999999999), true,  ""); 
-        
-        Test.ensureEqual(isOK("2", "4", 0,  ROP, "(5)"), true,  ""); 
-        Test.ensureEqual(isOK("2", "2", 0,  ROP, "(2)"), true,   ""); //only really tests if min=max
-        Test.ensureEqual(isOK("2", "2", 0,  ROP, "(5)"), false,  ""); //only really tests if min=max
-
-        // value="" tests  String    hasNaN=0=false
-        Test.ensureEqual(isOK("a", "z", 0,  "=", ""), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "!=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, "<=", ""), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  "<", ""), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0, ">=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ">", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 0,  ROP, ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "a", 0,  ROP, ""), false,  ""); //only really tests if min=max
-
-        //value=NaN tests  numeric    hasNaN=0=false   
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "=", Double.NaN), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "!=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, "<=", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0, ">=", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 0,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK("2", "4", 0,  ROP, ""), true,  ""); 
-        Test.ensureEqual(isOK("2", "2", 0,  ROP, ""), false,   ""); //only really tests if min=max
-
-        // value="" tests  String    hasNaN=1=true
-        Test.ensureEqual(isOK("a", "z", 1,  "=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1, "!=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1, "<=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1,  "<", ""), false,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1, ">=", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1,  ">", ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "z", 1,  ROP, ""), true,  ""); 
-        Test.ensureEqual(isOK("a", "a", 1,  ROP, ""), true,  ""); //only really tests if min=max
-
-        //value=NaN tests  numeric    hasNaN=1=true
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1,  "=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1, "!=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1, "<=", Double.NaN), true,  ""); // =
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1,  "<", Double.NaN), false, ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1, ">=", Double.NaN), true,  ""); // =
-        Test.ensureEqual(isOK(PAType.FLOAT, 2, 4, 1,  ">", Double.NaN), false, ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK("2", "4", 1,  ROP, ""), true,  ""); 
-        Test.ensureEqual(isOK("2", "2", 1,  ROP, ""), true,   ""); //only really tests if min=max
-
-
-        //*** DATA IS ALL ""    hasNaN must be 1
-        //DATA IS ALL ""   value="c" tests  String   
-        Test.ensureEqual(isOK("", "", 1,  "=", "c"), false, ""); 
-        Test.ensureEqual(isOK("", "", 1, "!=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1, "<=", "c"), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  "<", "c"), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1, ">=", "c"), false,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  ">", "c"), false,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  ROP, "(c)"), false,  ""); //only really tests if min=max
-
-        //DATA IS ALL ""   value=5 tests  numeric    
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  "=", 5), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, "!=", 5), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, "<=", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  "<", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, ">=", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  ">", 5), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,   ""); //only really tests if min=max
-
-        //DATA IS ALL ""   value="" tests  String    hasNaN=1=true
-        Test.ensureEqual(isOK("", "", 1,  "=", ""), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1, "!=", ""), false,  ""); 
-        Test.ensureEqual(isOK("", "", 1, "<=", ""), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  "<", ""), false,  ""); 
-        Test.ensureEqual(isOK("", "", 1, ">=", ""), true,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  ">", ""), false,  ""); 
-        Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,  ""); //only really tests if min=max
-
-        //DATA IS ALL ""   value=NaN tests  numeric    hasNaN=1=true
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  "=", Double.NaN), true,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, "!=", Double.NaN), false,  ""); 
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, "<=", Double.NaN), true,   ""); // =
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  "<", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1, ">=", Double.NaN), true,   ""); // =
-        Test.ensureEqual(isOK(PAType.FLOAT, Double.NaN, Double.NaN, 1,  ">", Double.NaN), false,  ""); //NaN tests other than = != return false
-        Test.ensureEqual(isOK("", "", 1,  ROP, ""), true,   ""); //only really tests if min=max
-
-    }
-
-    /** Quick test of regex */
-    public static void testRegex() {
-
-        String2.log("\n*** EDDTableFromFiles.testRegex()");
-        String s = "20070925_41001_5day.csv";
-        Test.ensureEqual(String2.extractRegex(s, "^[0-9]{8}_", 0), "20070925_", "");
-        Test.ensureEqual(String2.extractRegex(s, "_5day\\.csv$", 0), "_5day.csv", "");
-    }
-
-
-    /**
-     * This runs all of the interactive or not interactive tests for this class.
-     *
-     * @param errorSB all caught exceptions are logged to this.
-     * @param interactive  If true, this runs all of the interactive tests; 
-     *   otherwise, this runs all of the non-interactive tests.
-     * @param doSlowTestsToo If true, this runs the slow tests, too.
-     * @param firstTest The first test to be run (0...).  Test numbers may change.
-     * @param lastTest The last test to be run, inclusive (0..., or -1 for the last test). 
-     *   Test numbers may change.
-     */
-    public static void test(StringBuilder errorSB, boolean interactive, 
-        boolean doSlowTestsToo, int firstTest, int lastTest) {
-        if (lastTest < 0)
-            lastTest = interactive? -1 : 1;
-        String msg = "\n^^^ EDDTableFromFiles.test(" + interactive + ") test=";
-
-        for (int test = firstTest; test <= lastTest; test++) {
-            try {
-                long time = System.currentTimeMillis();
-                String2.log(msg + test);
-            
-                if (interactive) {
-                    //if (test ==  0) ...;
-
-                } else {
-                    if (test ==  0) testIsOK();
-                    if (test ==  1) testRegex();
-                }
-
-                String2.log(msg + test + " finished successfully in " + (System.currentTimeMillis() - time) + " ms.");
-            } catch (Throwable testThrowable) {
-                String eMsg = msg + test + " caught throwable:\n" + 
-                    MustBe.throwableToString(testThrowable);
-                errorSB.append(eMsg);
-                String2.log(eMsg);
-                if (interactive) 
-                    String2.pressEnterToContinue("");
-            }
-        }
-    }
-
-
 }

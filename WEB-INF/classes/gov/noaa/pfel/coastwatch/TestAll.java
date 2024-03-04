@@ -878,7 +878,6 @@ IntArray inta;
 JSONObject jo;
 org.json.JSONTokener jt;
 LongArray la;
-MakeErdJavaZip mejz;
 MapScreen mapScreen;
 Math2 m2;
 Matlab matlab;     
@@ -894,7 +893,6 @@ PlainAxis2 sgtpa2;
 PointScreen ps;
 PointVectorScreen pvs;
 PrimitiveArray primitiveArray; 
-Projects projects;
 RegexFilenameFilter rff;
 ResourceBundle2 rb2;
 RowComparator rc;
@@ -1107,8 +1105,6 @@ WaitThenTryAgainException wttae;
         //*** All of the unit tests for CWBrowsers and ERDDAP. 
 
         //data
-        // TODO: This is more of a script than a test, possibly set up better organization for that.
-        ValidateDataSetProperties.test(  errorSB, interactive, doSlowTestsToo, 0, -1);       
 
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
@@ -1122,7 +1118,6 @@ WaitThenTryAgainException wttae;
 
         //other
         //Browser.test(                    errorSB, interactive, doSlowTestsToo, 0, -1); //INACTIVE. The cwbrowsers are no longer supported.
-        SgtGraph.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);   
         
         //give antivirus a chance to get caught up
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
@@ -1137,14 +1132,8 @@ WaitThenTryAgainException wttae;
         if (!interactive) for (int i = 0; i < 3; i++) Math2.gc("TestAll (between tests)", 20000); //in TestAll
 
         //EDDGrid
-        EDD.test(                        errorSB, interactive, doSlowTestsToo, 0, -1);  
         //EDDGridFromBinaryFile.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  class not finished / not in use
-        EDDGridFromErddap.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGridFromEtopo.test(           errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGridAggregateExistingDimension.test(    
-                                         errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromNcFiles.test(         errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGridFromNcFilesUnpacked.test( errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromMergeIRFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromAudioFiles.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
@@ -1158,8 +1147,6 @@ WaitThenTryAgainException wttae;
 
 
         //EDDTable
-        EDDTableFromFiles.test(          errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromNcFiles.test(        errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromNcCFFiles.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDTableFromMultidimNcFiles.test(errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromNccsvFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1);
@@ -1168,7 +1155,7 @@ WaitThenTryAgainException wttae;
         EDDTableFromColumnarAsciiFiles.test(
                                          errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromAwsXmlFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromThreddsFiles.test(   errorSB, interactive, doSlowTestsToo, 0, -1); 
+    
         EDDTableFromInvalidCRAFiles.test(errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromJsonlCSVFiles.test(  errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromAudioFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -1179,13 +1166,9 @@ WaitThenTryAgainException wttae;
         EDDTableFromCassandra.test(      errorSB, interactive, doSlowTestsToo, 0, -1);    
         EDDTableFromAsciiServiceNOS.test(errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromErddap.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromOBIS.test(           errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromHttpGet.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromSOS.test(            errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableAggregateRows.test(      errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableCopy.test(               errorSB, interactive, doSlowTestsToo, 0, -1);
-        EDDTableFromAllDatasets.test(    errorSB, interactive, doSlowTestsToo, 0, -1);
-        EDDTable.test(                   errorSB, interactive, doSlowTestsToo, 0, -1);  //mostly currently-inactive SOS server tests
 
         //EDDTableFromWFSFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE 2021-06-25 because test server is gone
         //EDDTableFromMWFS.test(         errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE as of 2009-01-14 
@@ -1196,7 +1179,6 @@ WaitThenTryAgainException wttae;
         //EDDTableCopyPost.test(-1, false);                                             //INACTIVE   which, reallyVerbose?
 
         Erddap.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);
-        TranslateMessages.test(          errorSB, interactive, doSlowTestsToo, 0, -1);
         ArchiveADataset.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //give antivirus a chance to get caught up

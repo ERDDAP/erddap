@@ -3,8 +3,6 @@ package gov.noaa.pfel.coastwatch.pointdata;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Test;
 
-import tags.TagLargeFile;
-
 class TableDataSet4DNcTests {
 
   /**
@@ -13,12 +11,11 @@ class TableDataSet4DNcTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void basicTest() throws Exception {
     // verbose = true;
     TableDataSet4DNc dataset = new TableDataSet4DNc(
         "4NBmeto", "NDBC Meteorological",
-        "c:/u00/data/points/ndbcMet2/historical/",
+        TableDataSet4DNcTests.class.getResource("/largeFiles/points/ndbcMet2/historical/").getPath(),
         // ".+\\.nc");
         "NDBC_41..._met.nc");
 

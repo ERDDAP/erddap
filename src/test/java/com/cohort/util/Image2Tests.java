@@ -24,7 +24,7 @@ class Image2Tests {
     String2.log("\n*** Image2.testTestImagesIdentical");
 
     // test images which are identical
-    String testDir = Image2Tests.class.getResource("/images/").getPath();
+    String testDir = Image2Tests.class.getResource("/data/images/").getPath();
     String tempDir = TEMP_DIR.toAbsolutePath().toString();
     Image2.testImagesIdentical(
         testDir + "/testImagesIdentical_1.png",
@@ -58,7 +58,7 @@ class Image2Tests {
   void basicTest() throws Exception {
     String2.log("\n*** Image2.basicTest");
 
-    String imageDir = Image2Tests.class.getResource("/images/").getPath();
+    String imageDir = Image2Tests.class.getResource("/data/images/").getPath();
 
     // test ImageIO
     BufferedImage bi = ImageIO.read(new File(imageDir + "testmap.gif"));

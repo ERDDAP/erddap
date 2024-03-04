@@ -2,7 +2,7 @@
  * Projects Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch;
+package scripts;
 
 import com.cohort.array.*;
 import com.cohort.util.*;
@@ -11,21 +11,15 @@ import com.cohort.util.*;
 import dods.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.*;
-import gov.noaa.pfel.coastwatch.hdf.*;
-import gov.noaa.pfel.coastwatch.pointdata.ScriptRow;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.*;
 import gov.noaa.pfel.erddap.dataset.EDD;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.Writer;
@@ -45,13 +39,9 @@ import java.util.regex.*;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.jexl3.introspection.JexlSandbox;
-import org.apache.commons.jexl3.*;
-
 import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
 //import org.codehaus.janino.ExpressionEvaluator;
 
-import java.time.*;
 import java.time.format.*;
 
 // from netcdfAll-x.jar
@@ -59,8 +49,6 @@ import ucar.ma2.*;
 import ucar.nc2.*;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
-//import ucar.nc2.dods.*;
-import ucar.nc2.util.*;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 
@@ -8230,46 +8218,6 @@ towTypesDescription);
         } finally {
             try {if (nc != null) nc.close(); } catch (Exception e9) {}
         }
-    }
-
-    /** This prints time, lat, and lon values from an .ncml dataset. */
-    public static String dumpTimeLatLon(String ncmlName) throws Exception {
-
-        String latName = "latitude";   
-        String lonName = "longitude";  
-        StringBuilder sb = new StringBuilder();
-        sb.append("ncmlName=" + ncmlName + "\n"); 
-        NetcdfFile nc = NcHelper.openFile(ncmlName);
-        try {
-            Variable v = nc.findVariable(latName);
-            PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
-            sb.append(latName + 
-                " [0]=" + pa.getString(0) +
-                " [1]=" + pa.getString(1) +
-                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
-
-            v = nc.findVariable(lonName);
-            pa = NcHelper.getPrimitiveArray(v);
-            sb.append(lonName + 
-                " [0]=" + pa.getString(0) +
-                " [1]=" + pa.getString(1) +
-                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
-
-            v = nc.findVariable("time");
-            pa = NcHelper.getPrimitiveArray(v);
-            sb.append("time" +
-                " [0]=" + pa.getString(0) +
-                " [1]=" + pa.getString(1) +
-                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
-
-        } catch (Throwable t) {
-            String2.log(sb.toString());
-            String2.log(MustBe.throwableToString(t));
-        } finally {
-            try {if (nc != null) nc.close(); } catch (Exception e9) {}
-        }
-
-        return sb.toString();
     }
 
     /** 

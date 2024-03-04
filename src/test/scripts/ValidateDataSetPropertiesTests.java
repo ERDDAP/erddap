@@ -1,4 +1,4 @@
-package gov.noaa.pfel.coastwatch;
+package scripts;
 
 import tags.TagIncompleteTest;
 

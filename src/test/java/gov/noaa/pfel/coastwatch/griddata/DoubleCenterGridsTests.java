@@ -16,13 +16,14 @@ class DoubleCenterGridsTests {
   void basicTest() throws Exception {
 
     // delete old files
-    String newDir = DoubleCenterGridsTests.class.getResource("/centeredSatellite/").getPath() + "AG";
+    String newDir = DoubleCenterGridsTests.class.getResource("/data/centeredSatellite/").getPath() + "AG";
     RegexFilenameFilter.recursiveDelete(newDir);
     String fullName = newDir + "/ssta/1day/AG2005040_2005040_ssta.nc";
 
     // copy a dir and subdirs and files
     DoubleCenterGrids.main(
-        new String[] { DoubleCenterGridsTests.class.getResource("/centeredSatellite/AGsource").getPath(), newDir });
+        new String[] { DoubleCenterGridsTests.class.getResource("/data/centeredSatellite/AGsource").getPath(),
+            newDir });
 
     // do tests
     String ncdump = NcHelper.ncdump(fullName, "-h");
@@ -169,7 +170,7 @@ class DoubleCenterGridsTests {
 
     // just ensure the other file exists
     Test.ensureTrue(File2.isFile(
-        DoubleCenterGridsTests.class.getResource("/centeredSatellite/AG/ssta/1day/AG2005041_2005041_ssta.nc")
+        DoubleCenterGridsTests.class.getResource("/data/centeredSatellite/AG/ssta/1day/AG2005041_2005041_ssta.nc")
             .getPath()),
         "");
 

@@ -28,7 +28,6 @@ import com.sun.management.UnixOperatingSystemMXBean;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
-import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.sgt.Boundaries;
 import gov.noaa.pfel.coastwatch.sgt.FilledMarkerRenderer;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
@@ -109,7 +108,7 @@ import ucar.nc2.write.NetcdfFormatWriter;
  */
 public class EDStatic {
 
-    public static Boolean doSetupValidation = true;
+    public static boolean doSetupValidation = true;
 
     /** The all lowercase name for the program that appears in urls. */
     public final static String programname = "erddap";
@@ -3924,7 +3923,6 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
         OutputStreamFromHttpResponse.verbose = verbose;
         PathCartesianRenderer.verbose = verbose;
         PrimitiveArray.verbose = verbose;
-        Projects.verbose = verbose;
         //ResourceBundle2.verbose = verbose;
         RunLoadDatasets.verbose = verbose;
         SgtGraph.verbose = verbose;
@@ -6558,7 +6556,10 @@ accessibleViaNC4 = ".nc4 is not yet supported.";
     public static String getIPAddress(HttpServletRequest request) {
 
         //getRemoteHost(); always returns our proxy server (never changes)
-        String ipAddress = request.getHeader("x-forwarded-for");  
+        String ipAddress = request.getHeader("True-Client-IP");  
+        if (ipAddress == null) {
+            ipAddress = request.getHeader("x-forwarded-for");  
+        }
         if (ipAddress == null) {
             ipAddress = "";
         } else {

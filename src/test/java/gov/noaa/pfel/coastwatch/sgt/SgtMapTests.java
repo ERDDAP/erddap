@@ -20,7 +20,7 @@ import tags.TagFontDependent;
 class SgtMapTests {
   private final static String testImageExtension = ".png";
 
-  private final static String expectedDir = SgtMapTests.class.getResource("/images/").getPath() + "/";
+  private final static String expectedDir = SgtMapTests.class.getResource("/data/images/").getPath() + "/";
 
   private void initFilePaths() {
     File2.setWebInfParentDirectory();
@@ -570,7 +570,7 @@ class SgtMapTests {
 
     // describe grid vectors
     ArrayList pointDataList = new ArrayList();
-    String griddataDir = SgtMapTests.class.getResource("/gridTests/").getPath();
+    String griddataDir = SgtMapTests.class.getResource("/data/gridTests/").getPath();
     /*
      * String fullResultCpt = griddataDir + "TestMakeMap.cpt";
      * File2.delete(fullResultCpt);

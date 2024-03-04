@@ -493,7 +493,9 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
 
         //if expected doesn't exist, save observed as expected?
         if (!File2.isFile(expected)) {
-            Test.displayInBrowser("file://" + observed);
+            if (displayImages) {
+                Test.displayInBrowser("file://" + observed);
+            }
             if (autoCreateMissing) {
                 System.out.println("Expected image file doesn't exist, creating it from observed.");
                 File2.copy(observed, expected);

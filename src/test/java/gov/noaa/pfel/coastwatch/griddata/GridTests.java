@@ -14,13 +14,12 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.hdf.HdfConstants;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
-import tags.TagLargeFile;
 import tags.TagMissingFile;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class GridTests {
-  public final static String testDir = GridTests.class.getResource("/gridTests/").getPath();
+  public final static String testDir = GridTests.class.getResource("/data/gridTests/").getPath();
   public final static String testName = "OQNux10S1day_20050712_x-135_X-105_y22_Y50";
 
   /**
@@ -378,7 +377,6 @@ public class GridTests {
    * @throws Exception if trouble
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFile // erddapTest/gmt/TestGMT4.grd
   void testGrd() throws Exception {
     String2.log("\n***** Grid.testGrd");
     Grid.verbose = true;
@@ -472,7 +470,7 @@ public class GridTests {
     File2.delete(testDir + "temp.grd");
 
     // ******************** test of GMT 4 file
-    String dir4 = String2.unitTestDataDir + "gmt/";
+    String dir4 = GridTests.class.getResource("/largeFiles/gmt/").getPath();
     String name4 = "TestGMT4";
     grdDump = "netcdf TestGMT4.grd {\n" +
         "  dimensions:\n" +

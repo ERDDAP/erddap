@@ -5,7 +5,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.ByteArray;
 import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
@@ -18,7 +17,6 @@ import com.cohort.array.StringArray;
 import com.cohort.array.ULongArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -12416,120 +12414,6 @@ Attributes {
             "\n");
 
     }
-
-    /**
-     * Test the WCS server using erdBAssta5day.
-     */
-    public static void testWcsBAssta() throws Throwable {
-        String2.log("\n*** EDDGridFromNcFiles.testWcsBAssta()");
-        EDDGrid eddGrid = (EDDGrid)oneFromDatasetsXml(null, "erdBAssta5day"); 
-        String wcsQuery, fileName, results, expected;
-        java.io.StringWriter writer;
-        ByteArrayOutputStream baos;
-        OutputStreamSourceSimple osss;
-        String loggedInAs = null;
-
-        //1.0.0 capabilities 
-        //try to validate with https://xmlvalidation.com/ (just an error in a schema)
-        String2.log("\n+++ GetCapabilities 1.0.0");
-        writer = new java.io.StringWriter();
-        eddGrid.wcsGetCapabilities(0, loggedInAs, "1.0.0", writer);
-        results = writer.toString();
-        String2.log(results);        
-
-        //1.0.0 DescribeCoverage
-        //try to validate with https://xmlvalidation.com/
-        String2.log("\n+++ DescribeCoverage 1.0.0");
-        writer = new java.io.StringWriter();
-        eddGrid.wcsDescribeCoverage(0, loggedInAs, "1.0.0", "sst", writer);
-        results = writer.toString();
-        String2.log(results);        
-
-        //test wcsQueryToDapQuery()
-        String wcsQuery1 = 
-            "service=WCS&version=1.0.0&request=GetCoverage" +
-            "&coverage=sst" +
-            "&format=NetCDF3";
-        String wcsQuery2 = 
-            "service=WCS&version=1.0.0&request=GetCoverage" +
-            "&coverage=sst" +
-            "&format=netcdf3" +
-            "&time=2008-08-01T00:00:00Z" +
-            "&bbox=220,20,250,50&width=10&height=10";
-        String wcsQuery3 = 
-            "service=WCS&version=1.0.0&request=GetCoverage" +
-            "&coverage=sst" +
-            "&format=png" +
-            "&time=2008-08-01T00:00:00Z" +
-            "&bbox=220,20,250,50";
-        HashMap<String, String> wcsQueryMap1 = EDD.userQueryHashMap(wcsQuery1, true);
-        HashMap<String, String> wcsQueryMap2 = EDD.userQueryHashMap(wcsQuery2, true);
-        HashMap<String, String> wcsQueryMap3 = EDD.userQueryHashMap(wcsQuery3, true);
-
-        String dapQuery1[] = eddGrid.wcsQueryToDapQuery(0, wcsQueryMap1);
-        String2.log("\nwcsQuery1=" + wcsQuery1 + "\n\ndapQuery1=" + dapQuery1[0]);
-        Test.ensureEqual(dapQuery1[0], 
-            "sst[(last)][(0.0):1:(0.0)][(-75.0):1:(75.0)][(0.0):1:(360.0)]", "");
-
-        String dapQuery2[] = eddGrid.wcsQueryToDapQuery(0, wcsQueryMap2);
-        String2.log("\nwcsQuery2=" + wcsQuery2 + "\n\ndapQuery2=" + dapQuery2[0]);
-        Test.ensureEqual(dapQuery2[0], 
-            "sst[(2008-08-01T00:00:00Z)][(0.0):1:(0.0)][(20):33:(50)][(220):33:(250)]", 
-            "");
-        Test.ensureEqual(dapQuery2[1], ".nc", "");
-
-        String dapQuery3[] = eddGrid.wcsQueryToDapQuery(0, wcsQueryMap3);
-        String2.log("\nwcsQuery3=" + wcsQuery3 + "\n\ndapQuery3=" + dapQuery3[0]);
-        Test.ensureEqual(dapQuery3[0], 
-            "sst[(2008-08-01T00:00:00Z)][(0.0):1:(0.0)][(20):1:(50)][(220):1:(250)]", 
-            "");
-        Test.ensureEqual(dapQuery3[1], ".transparentPng", "");
-
-        //???write tests of invalid queries?
-
-        //*** check netcdf response        
-        String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-        fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_2.nc";
-        String endOfRequest = "myEndOfRequest";
-        eddGrid.wcsGetCoverage(0, "someIPAddress", loggedInAs, endOfRequest, wcsQuery2, 
-            new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-        results = NcHelper.ncdump(fileName, "");
-        String2.log(results);        
-        //expected = "zztop";
-        //Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
-        //*** check png response        
-        String2.log("\n+++ GetCoverage\n" + wcsQuery1);
-        fileName = EDStatic.fullTestCacheDirectory + "testWcsBA_3.png";
-        eddGrid.wcsGetCoverage(0, "someIPAddress", loggedInAs, endOfRequest, wcsQuery3, 
-            new OutputStreamSourceSimple(new BufferedOutputStream(new FileOutputStream(fileName))));
-        Test.displayInBrowser("file://" + fileName);
-
-/*
-        //*** observations   for all stations and with BBOX  (but just same 1 station)
-        //featureOfInterest=BBOX:<min_lon>,<min_lat>,<max_lon>,<max_lat>
-        String2.log("\n+++ GetObservations with BBOX (1 station)");
-        writer = new java.io.StringWriter();
-        String2.log("query: " + wcsQuery2);
-        baos = new ByteArrayOutputStream();
-        osss = new OutputStreamSourceSimple(baos);
-        eddGrid.respondToWcsQuery(wcsQuery2, null, osss);
-        results = baos.toString(File2.UTF_8);
-        String2.log(results);        
-        
-        //*** observations   for all stations and with BBOX  (multiple stations)
-        //featureOfInterest=BBOX:<min_lon>,<min_lat>,<max_lon>,<max_lat>
-        String2.log("\n+++ GetObservations with BBOX (multiple stations)");
-        writer = new java.io.StringWriter();
-        String2.log("query: " + wcsQuery3);
-        baos = new ByteArrayOutputStream();
-        osss = new OutputStreamSourceSimple(baos);
-        eddGrid.respondToWcsQuery(wcsQuery3, null, osss);
-        results = baos.toString(File2.UTF_8);
-        String2.log(results);        
-  */      
-    }
-
 
     /** 
      * This writes the dataset's FGDC-STD-001-1998

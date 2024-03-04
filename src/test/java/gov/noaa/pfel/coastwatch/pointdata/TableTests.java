@@ -42,7 +42,6 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import tags.TagExternalOther;
 import tags.TagIncompleteTest;
-import tags.TagLargeFile;
 import tags.TagLocalERDDAP;
 import tags.TagMissingFile;
 import tags.TagPassword;
@@ -168,7 +167,8 @@ class TableTests {
 
     // removeColumn
     table.removeColumn(3);
-    Test.ensureEqual(table.getColumn(3).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000", "");
+    Test.ensureEqual(table.getColumn(3).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000",
+        "");
     Test.ensureEqual(table.getColumnName(3), "Long Data", "");
     Test.ensureEqual(table.columnAttributes(3).getString("units"), "longs", "");
 
@@ -176,7 +176,8 @@ class TableTests {
     table.addColumn(3, "test3", new IntArray(new int[] { 10, 20, 30, Integer.MAX_VALUE }));
     Test.ensureEqual(table.getColumn(3).toString(), "10, 20, 30, 2147483647", "");
     Test.ensureEqual(table.getColumnName(3), "test3", "");
-    Test.ensureEqual(table.getColumn(4).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000", "");
+    Test.ensureEqual(table.getColumn(4).toString(), "9223372036854775807, 2000000000000000, 2, -2000000000000000",
+        "");
     Test.ensureEqual(table.getColumnName(4), "Long Data", "");
     Test.ensureEqual(table.columnAttributes(4).getString("units"), "longs", "");
 
@@ -337,12 +338,11 @@ class TableTests {
    * @param readAsNcCF if true, this reads the file via readNcCF.
    *                   If false, this reads the file via readMultidimNc
    */
-  @org.junit.jupiter.api.Test
   @ParameterizedTest
   @ValueSource(booleans = { true, false })
-  @TagLargeFile
   void testReadNcCFMATimeSeriesReversed(boolean readAsNcCF) throws Exception {
-    // String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" + readAsNcCF);
+    // String2.log("\n*** Table.testReadNcCFMATimeSeriesReversed readAsNcCF=" +
+    // readAsNcCF);
     // time is days since 2006-01-01 00:00:00. file has 2007-10-01T04 through
     // 2013-11-14T17:06
     boolean oDebug = Table.debugMode;
@@ -351,12 +351,12 @@ class TableTests {
     String results, expected;
     long time;
     // was "/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc"
-    String fileName = String2.unitTestBigDataDir + "nccf/MATimeSeriesReversedDim.nc";
+    String fileName = TableTests.class.getResource("/largeFiles/nccf/MATimeSeriesReversedDim.nc").getPath();
     // String2.log(NcHelper.ncdump(fileName, "-h"));
 
     /* */
     // read all vars when obs is constrained
-    // String2.log("\n* read all vars  when obs is constrained");
+    // String2.log("\n* read all vars when obs is constrained");
     time = System.currentTimeMillis();
     if (readAsNcCF)
       table.readNcCF(fileName,
@@ -377,7 +377,8 @@ class TableTests {
         // I think readNcCF is too aggressive at removing MV rows.
         "discharge,station,time,longitude,latitude\n" +
             (readAsNcCF ? "" : "-99999.0,1327750.0,3426.691666666651,-73.5958333,43.26944444\n") +
-            "80.98618241999999,1327750.0,3426.6979166667443,-73.5958333,43.26944444\n" + // same station, later time
+            "80.98618241999999,1327750.0,3426.6979166667443,-73.5958333,43.26944444\n" + // same station,
+                                                                                         // later time
             (readAsNcCF ? "" : "-99999.0,1357500.0,3426.691666666651,-73.7075,42.78527778\n") +
             "181.2278208,1357500.0,3426.6979166667443,-73.7075,42.78527778\n" + // same station, later time
             "183.77633703,1357500.0,3426.708333333372,-73.7075,42.78527778\n" +
@@ -385,7 +386,7 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // just read station vars (all stations) no constraints
-    // String2.log("\n* just read station vars (all stations)  no constraints");
+    // String2.log("\n* just read station vars (all stations) no constraints");
     time = System.currentTimeMillis();
     if (readAsNcCF)
       table.readNcCF(fileName,
@@ -423,7 +424,8 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // just read station vars (a few stations because lat is constrained)
-    // String2.log("\n* just read station vars (a few stations because lat is constrained)");
+    // String2.log("\n* just read station vars (a few stations because lat is
+    // constrained)");
     time = System.currentTimeMillis();
     if (readAsNcCF)
       table.readNcCF(fileName,
@@ -444,7 +446,7 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // just read obs vars (obs is constrained)
-    // String2.log("\n* just read obs vars  (obs is constrained)");
+    // String2.log("\n* just read obs vars (obs is constrained)");
     time = System.currentTimeMillis();
     if (readAsNcCF)
       table.readNcCF(fileName,
@@ -599,13 +601,15 @@ class TableTests {
       table.readNcCF(fileName,
           StringArray.fromCSV("station,latitude,longitude,time,discharge"),
           0, // standardizeWhat=0
-          StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
+          StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"),
+          StringArray.fromCSV("1463500.0,5400"));
     else
       table.readMultidimNc(fileName,
           StringArray.fromCSV("station,latitude,longitude,time,discharge"),
           null, null, // dimensions, treatDimensionsAs
           true, 0, true, // getMetadata, standardizeWhat, removeMVRows,
-          StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
+          StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"),
+          StringArray.fromCSV("1463500.0,5400"));
     String2.log("time=" + (System.currentTimeMillis() - time) + "ms");
     results = table.dataToString();
     expected = "station,latitude,longitude,time,discharge\n" +
@@ -773,7 +777,7 @@ class TableTests {
   @org.junit.jupiter.api.Test
   void testJsonlCSV() throws Exception {
     // String2.log("\n* String2.testReadJsonlCSV()\n" +
-        // "The WARNING's below are expected...");
+    // "The WARNING's below are expected...");
 
     String source = "[\"a\",\"\",\"ccc\",\"dddd\"]\n" +
         "[2,1.5,\" c3\u00b5\u20acz\\\\q\\f\\n\\r\\t\\u00b5\\u20ac \",true]\n" +
@@ -790,8 +794,10 @@ class TableTests {
     String results = table.dataToString();
     Test.ensureEqual(results,
         "a,,ccc,dddd\n" +
-            "2,1.5,\"\"\" c3\\u00b5\\u20acz\\\\\\\\q\\\\f\\\\n\\\\r\\\\t\\\\u00b5\\\\u20ac \"\"\",true\n" + // ?! not
-                                                                                                            // sure if
+            "2,1.5,\"\"\" c3\\u00b5\\u20acz\\\\\\\\q\\\\f\\\\n\\\\r\\\\t\\\\u00b5\\\\u20ac \"\"\",true\n" + // ?!
+                                                                                                            // not
+                                                                                                            // sure
+                                                                                                            // if
                                                                                                             // correct
             ",,\"\"\"1\"\"\",\n",
         "results=\n" + results);
@@ -866,7 +872,8 @@ class TableTests {
             ",\\u20ac,,,,,,,,,,\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
     PAType tTypes[] = {
-        PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT, PAType.SHORT, // char->String, unsigned -> larger
+        PAType.STRING, PAType.STRING, PAType.BYTE, PAType.SHORT, PAType.SHORT, // char->String, unsigned ->
+                                                                               // larger
                                                                                // signed
         PAType.INT, PAType.INT, PAType.LONG, PAType.LONG, PAType.DOUBLE, // ULong -> Double
         PAType.DOUBLE, PAType.DOUBLE }; // float->double because lots of decimal digits
@@ -874,7 +881,7 @@ class TableTests {
       Test.ensureEqual(table.getColumn(col).elementType(), tTypes[col], "col=" + col);
 
     // another hard test
-    fullName = TableTests.class.getResource("/jsonl/sampleCSV.jsonl").getPath();
+    fullName = TableTests.class.getResource("/data/jsonl/sampleCSV.jsonl").getPath();
     table.readJsonlCSV(fullName, null, null, true); // simpify
     results = table.dataToString();
     Test.ensureEqual(results,
@@ -1144,7 +1151,7 @@ class TableTests {
   @org.junit.jupiter.api.Test
   void testASCII() throws Exception {
     // *** test read all
-    // String2.log("\n***** Table.testASCII  read all");
+    // String2.log("\n***** Table.testASCII read all");
     // Table.verbose = true;
     // Table.reallyVerbose = true;
 
@@ -1180,14 +1187,15 @@ class TableTests {
 
     // test simplification: see if column types are the same as original table
     int n = table.nColumns();
-    for (int col = 2; col < n; col++) // skip first 2 columns which are intentionally initially stored in bigger type
+    for (int col = 2; col < n; col++) // skip first 2 columns which are intentionally initially stored in bigger
+                                      // type
       if (col != 4 && // LongArray -> StringArray
           col != 8) // CharArray -> StringArray
         Test.ensureEqual(table.columns.get(col).elementType(),
             table2.getColumn(col).elementType(), "test type of col#" + col);
 
     // *** test read subset
-    // String2.log("\n***** Table.testASCII  read subset");
+    // String2.log("\n***** Table.testASCII read subset");
 
     // read 2nd row from the file
     table2 = new Table();
@@ -1203,7 +1211,7 @@ class TableTests {
     Test.ensureEqual(table2.getStringData(1, 0), "bb", "");
 
     // *** test read subset with no column names (otherwise same as test above)
-    // String2.log("\n***** Table.testASCII  read subset with no column names");
+    // String2.log("\n***** Table.testASCII read subset with no column names");
     // read 3rd row from the file
     table2 = new Table();
     table2.readASCII(fileName, File2.ISO_8859_1,
@@ -1407,7 +1415,8 @@ class TableTests {
         false, true); // secondRowHasUnits, simplify
     String csv = String2.annotatedString(table2.dataToString());
     Test.ensureEqual(csv, // so units appear here as a row of data
-        "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,Char Data,String Data[10]\n" +
+        "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,Char Data,String Data[10]\n"
+            +
             "UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,chars,Strings[10]\n" +
             "1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,\",\",a[10]\n" +
             "2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,\"\"\"\",bb[10]\n" +
@@ -1422,7 +1431,8 @@ class TableTests {
         true, true); // secondRowHasUnits, simplify
     csv = String2.annotatedString(table2.dataToString());
     Test.ensureEqual(csv, // so units correctly stored as units
-        "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,Char Data,String Data[10]\n" +
+        "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,Char Data,String Data[10]\n"
+            +
             "1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,\",\",a[10]\n" +
             "2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,\"\"\"\",bb[10]\n" +
             "2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,\\u20ac,ccc[10]\n" +
@@ -1435,7 +1445,8 @@ class TableTests {
     Test.ensureEqual(table2.columnAttributes(9).getString("units"), "Strings", "");
 
     // ** finally
-    Math2.gc("Table (between tests)", 10000); // in a test. Do something useful while browser gets going to display the
+    Math2.gc("Table (between tests)", 10000); // in a test. Do something useful while browser gets going to display
+                                              // the
                                               // file.
     File2.delete(fileName);
   }
@@ -1472,8 +1483,9 @@ class TableTests {
       table.columnNames.set(i, String2.replaceAll(table.columnNames.get(i), " ", "_"));
 
     // do the test that the tables are equal
-    // String2.log("testFlatNc table.nColAtt=" + table.columnAttributes.size() + // ? why columnAtt?
-    //     " table2.nColAtt=" + table2.columnAttributes.size());
+    // String2.log("testFlatNc table.nColAtt=" + table.columnAttributes.size() + //
+    // ? why columnAtt?
+    // " table2.nColAtt=" + table2.columnAttributes.size());
     // except char \\u20ac becomes "?" in nc file, so reset it
     Test.ensureEqual(
         table2.columns.get(7).getString(2), "?", "");
@@ -2520,7 +2532,7 @@ class TableTests {
   @org.junit.jupiter.api.Test
   void testReadASCIISpeed() throws Exception {
 
-    String fileName = TableTests.class.getResource("/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+    String fileName = TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
     long time = 0;
 
     for (int attempt = 0; attempt < 4; attempt++) {
@@ -2563,7 +2575,7 @@ class TableTests {
   void testReadJsonSpeed() throws Exception {
 
     // warmup
-    String fileName = TableTests.class.getResource("/cPostDet3.files.json.gz").getPath();
+    String fileName = TableTests.class.getResource("/data/cPostDet3.files.json.gz").getPath();
     long time = 0;
     String msg = "";
     String expected = "dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,latitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_min_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_\n"
@@ -2606,16 +2618,16 @@ class TableTests {
 
   /** Test the speed of readNDNc */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void testReadNDNcSpeed() throws Exception {
 
-    String fileName = "c:/u00/data/points/ndbcMet2/historical/NDBC_41004_met.nc";
+    String fileName = TableTests.class.getResource("/largeFiles/points/ndbcMet2/historical/NDBC_41004_met.nc")
+        .getPath();
     Table table = new Table();
     long time = 0;
     // String2.log(NcHelper.ncdump(fileName, "-h"));
 
     for (int attempt = 0; attempt < 3; attempt++) {
-    //   String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
+      // String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
       Math2.gcAndWait("Table (between tests)"); // in a test
 
       // time it
@@ -2660,7 +2672,7 @@ class TableTests {
     long time = 0;
 
     for (int attempt = 0; attempt < 3; attempt++) {
-    //   String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
+      // String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
       Math2.gcAndWait("Table (between tests)"); // in a test
 
       // time it
@@ -2691,7 +2703,8 @@ class TableTests {
 
           // 2020-03-03 this data changed significantly after big changes to processing
           // system/ dealing with duplicate lines (prefer newer data/later in file)
-          "station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+          "station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n"
+              +
               "41009,-80.166,28.519,9.151488E8,21,1.4,3.4,1.1,11.11,6.82,32767,1020.9,20.4,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.5,-1.3\n"
               + // 1999-01-01T00:00
               "41009,-80.166,28.519,9.151524E8,53,1.5,2.6,1.1,11.11,6.97,32767,1021.1,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n"
@@ -2704,7 +2717,8 @@ class TableTests {
       Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
       time = System.currentTimeMillis() - time;
       String2.log("********** Done. cells/ms=" +
-          (table.nColumns() * table.nRows() / time) + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +
+          (table.nColumns() * table.nRows() / time)
+          + " (usual(https)=33, was(http) 337 Java 1.7M4700, was 106)" +
           "\ntime=" + time
           + "ms (usual(https)=1285, was http=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");
       if (time <= 1600)
@@ -2720,7 +2734,7 @@ class TableTests {
 
     // warmup
     // String2.log("\n*** Table.testSaveAsSpeed\n");
-    String sourceName = TableTests.class.getResource("/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
+    String sourceName = TableTests.class.getResource("/data/points/ndbcMet2HistoricalTxt/41009h1990.txt").getPath();
     String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
     Table table = new Table();
     table.readASCII(sourceName);
@@ -2733,7 +2747,7 @@ class TableTests {
 
     for (int attempt = 0; attempt < 3; attempt++) {
       // time it
-    //   String2.log("\ntime it\n");
+      // String2.log("\ntime it\n");
 
       // saveAsCsvASCII
       time = System.currentTimeMillis();
@@ -2777,7 +2791,8 @@ class TableTests {
         break;
     }
     if (time > 200)
-      throw new SimpleException("saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
+      throw new SimpleException(
+          "saveAsFlatNc took too long (time=" + time + "ms). Expected=~125 for 17117 rows.");
 
   }
 
@@ -3028,9 +3043,9 @@ class TableTests {
   void testOrderByMinMax() throws Exception {
 
     for (int proc = 0; proc < 3; proc++) {
-    //   String2.log("Table.testOrderBy" +
-    //       (proc == 1 ? "" : "Max") +
-    //       (proc == 0 ? "" : "Min"));
+      // String2.log("Table.testOrderBy" +
+      // (proc == 1 ? "" : "Max") +
+      // (proc == 0 ? "" : "Min"));
 
       // *** test #1
       PrimitiveArray substation = PrimitiveArray.csvFactory(PAType.INT,
@@ -3677,7 +3692,8 @@ class TableTests {
       results = t.toString();
     }
     Test.ensureEqual(results,
-        "com.cohort.util.SimpleException: Query error: Numeric tests of NaN must use \"NaN\", not value=\"NAN\".", "");
+        "com.cohort.util.SimpleException: Query error: Numeric tests of NaN must use \"NaN\", not value=\"NAN\".",
+        "");
 
     results = "invalid NaN value, something";
     try {
@@ -3841,7 +3857,7 @@ class TableTests {
     // String2.log("\n*** Table.testReadMultidimNc");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
-    String fiName = TableTests.class.getResource("/nc/2901175_prof.nc").getPath();
+    String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
     // String2.log(NcHelper.ncdump(fiName, "-h"));
     String results, expectedStart, expectedEnd;
     /* */
@@ -3969,7 +3985,8 @@ class TableTests {
         "\tdouble JULD_LOCATION(row) ;\n" +
         "\t\tJULD_LOCATION:_FillValue = 999999.0 ;\n" +
         "\t\tJULD_LOCATION:conventions = \"Relative julian days with decimal part (as parts of day)\" ;\n" +
-        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n" +
+        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n"
+        +
         "\t\tJULD_LOCATION:resolution = 0.0 ;\n" +
         "\t\tJULD_LOCATION:units = \"days since 1950-01-01 00:00:00 UTC\" ;\n" +
         "\tdouble LATITUDE(row) ;\n" +
@@ -4008,7 +4025,8 @@ class TableTests {
         "\tint CONFIG_MISSION_NUMBER(row) ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:_FillValue = 99999 ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:conventions = \"1...N, 1 : first complete mission\" ;\n" +
-        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n" +
+        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n"
+        +
         "\tfloat PRES(row) ;\n" +
         "\t\tPRES:_FillValue = 99999.0f ;\n" +
         "\t\tPRES:axis = \"Z\" ;\n" +
@@ -4381,7 +4399,7 @@ class TableTests {
     // String2.log("\nTable.testReadAsciiCsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/csvAscii.txt").getPath();
+    String fileName = TableTests.class.getResource("/data/csvAscii.txt").getPath();
     String skipHeaderToRegex = "\\*\\*\\* END OF HEADER.*";
     String skipLinesRegex = "#.*";
 
@@ -4475,7 +4493,7 @@ class TableTests {
     // String2.log("\nTable.testReadAsciiSsvASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fileName = TableTests.class.getResource("/ssvAscii.txt").getPath();
+    String fileName = TableTests.class.getResource("/data/ssvAscii.txt").getPath();
     Table table;
 
     // public void readASCII(String fullFileName, int columnNamesLine, int
@@ -4562,7 +4580,7 @@ class TableTests {
     // String2.log("\nTable.testReadColumnarASCIIFile");
     String results, expected;
     StringArray sa = new StringArray();
-    String fullFileName = TableTests.class.getResource("/columnarAsciiWithComments.txt").getPath();
+    String fullFileName = TableTests.class.getResource("/data/columnarAsciiWithComments.txt").getPath();
     String skipHeaderToRegex = "END OF HEADER.*";
     String skipLinesRegex = "%.*";
     String colNames[] = {
@@ -4662,7 +4680,7 @@ class TableTests {
   @TagMissingFile
   void testNccsv() throws Exception {
     // String2.log("\n**** Table.testNccsv()\n");
-    String dir = TableTests.class.getResource("/nccsv/").getPath();
+    String dir = TableTests.class.getResource("/data/nccsv/").getPath();
 
     // read/write scalar
     String fileName = dir + "testScalar_1.1.csv";
@@ -4731,7 +4749,8 @@ class TableTests {
         "time,lat,lon,status,testByte,testUByte,testLong,testULong,sst\n" +
         "2017-03-23T00:45:00Z,28.0002,-130.2576,A,-128,0,-9223372036854775808L,0uL,10.9\n" +
         "2017-03-23T01:45:00Z,28.0003,-130.3472,\u20ac,0,127,-9007199254740992L,9223372036854775807uL,10.0\n" +
-        "2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n" +
+        "2017-03-23T02:45:00Z,28.0001,-130.4305,\\t,126,254,9223372036854775806L,18446744073709551614uL,99.0\n"
+        +
         "2017-03-23T12:45:00Z,27.9998,-131.5578,\"\"\"\",,,,,\n" +
         "2017-03-23T21:45:00Z,28.0003,-132.0014,\u00fc,,,,,\n" +
         "2017-03-23T23:45:00Z,28.0002,-132.1591,?,,,,,\n" +
@@ -4817,8 +4836,9 @@ class TableTests {
     // String2.log(table.toString());
     Attributes atts = table.columnAttributes("sst");
     PrimitiveArray pa = atts.get("testChars");
-    // String2.log(">> sample_1.1.csv testChars isCharArray?" + (pa instanceof CharArray) + " isStringArray?"
-    //     + (pa instanceof StringArray));
+    // String2.log(">> sample_1.1.csv testChars isCharArray?" + (pa instanceof
+    // CharArray) + " isStringArray?"
+    // + (pa instanceof StringArray));
     results = table.saveAsNccsv(false, true, 0, Integer.MAX_VALUE); // don't catch scalars
     expected1 = "*GLOBAL*,Conventions,\"COARDS, CF-1.6, ACDD-1.3, NCCSV-1.2\"\n" +
         "*GLOBAL*,cdm_trajectory_variables,ship\n" +
@@ -5052,7 +5072,7 @@ class TableTests {
   void testReadAwsXmlFile() throws Exception {
     // String2.log("\nTable.testReadAwsXmlFile");
     Table table = new Table();
-    table.readAwsXmlFile(TableTests.class.getResource("/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml").getPath());
+    table.readAwsXmlFile(TableTests.class.getResource("/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml").getPath());
     String results = table.toString();
     String expected = "{\n" +
         "dimensions:\n" +
@@ -5194,7 +5214,6 @@ class TableTests {
   /** This tests readNDNC. */
   @org.junit.jupiter.api.Test
   @TagMissingFile
-  @TagLargeFile
   void testReadNDNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -5203,7 +5222,8 @@ class TableTests {
     String results, expected;
 
     // test no vars specified, 4D, only 2nd dim has >1 value, getMetadata
-    String fiName = TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
+    String fiName = TableTests.class
+        .getResource("/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc")
         .getPath();
     table.readNDNc(fiName, null, 0, // standardizeWhat=0
         null, 0, 0);
@@ -5405,7 +5425,8 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // test 4D but request axis vars only, with constraints
-    fiName = TableTests.class.getResource("/points/ndbcMet2/historical/NDBC_51001_met.nc").getPath(); // implied c:
+    fiName = TableTests.class.getResource("/data/points/ndbcMet2/historical/NDBC_51001_met.nc").getPath(); // implied
+                                                                                                           // c:
     table.readNDNc(fiName, new String[] { "LON", "LAT", "TIME" }, 0, // standardizeWhat=0
         "TIME", 1.2051936e9, 1.20528e9);
     results = table.dataToString(4);
@@ -5425,7 +5446,7 @@ class TableTests {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
     // String2.log("\n*** Table.testReadNDNc2");
-    String fiName = TableTests.class.getResource("/wodSample/wod_008015632O.nc").getPath();
+    String fiName = TableTests.class.getResource("/data/wodSample/wod_008015632O.nc").getPath();
     Table table = new Table();
     String results, expected;
 
@@ -5604,7 +5625,7 @@ class TableTests {
   @org.junit.jupiter.api.Test
   void testHardReadMultidimNc() throws Exception {
     File2.setWebInfParentDirectory();
-    String fileName = TableTests.class.getResource("/nc/GLsubdir/GL_201207_TS_DB_44761.nc").getPath();
+    String fileName = TableTests.class.getResource("/data/nc/GLsubdir/GL_201207_TS_DB_44761.nc").getPath();
     // String2.log("\n*** Table.testHardReadMultidimNc(" + fileName + ")");
     // Table.debugMode = true;
     Table table = new Table();
@@ -5702,7 +5723,7 @@ class TableTests {
     // String2.log("\n*** Table.testUnpack");
     Table table = new Table();
     // ftp://ftp.ifremer.fr/ifremer/argo/dac/csio/2901175/2901175_prof.nc
-    String fiName = TableTests.class.getResource("/nc/2901175_prof.nc").getPath();
+    String fiName = TableTests.class.getResource("/data/nc/2901175_prof.nc").getPath();
     String results, expected;
 
     // ** test the original packed format for comparison
@@ -5807,7 +5828,8 @@ class TableTests {
         "\tdouble JULD_LOCATION(row) ;\n" +
         "\t\tJULD_LOCATION:_FillValue = 999999.0 ;\n" +
         "\t\tJULD_LOCATION:conventions = \"Relative julian days with decimal part (as parts of day)\" ;\n" +
-        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n" +
+        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n"
+        +
         "\t\tJULD_LOCATION:resolution = 0.0 ;\n" +
         "\t\tJULD_LOCATION:units = \"days since 1950-01-01 00:00:00 UTC\" ;\n" +
         "\tdouble LATITUDE(row) ;\n" +
@@ -5846,7 +5868,8 @@ class TableTests {
         "\tint CONFIG_MISSION_NUMBER(row) ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:_FillValue = 99999 ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:conventions = \"1...N, 1 : first complete mission\" ;\n" +
-        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n" +
+        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n"
+        +
         "\tchar PARAMETER(row, PARAMETER_strlen) ;\n" +
         "\t\tPARAMETER:conventions = \"Argo reference table 3\" ;\n" +
         "\t\tPARAMETER:long_name = \"List of parameters with calibration information\" ;\n" +
@@ -5983,7 +6006,8 @@ class TableTests {
         "\tdouble JULD_LOCATION(row) ;\n" +
         "\t\tJULD_LOCATION:_FillValue = NaN ;\n" +
         "\t\tJULD_LOCATION:conventions = \"Relative julian days with decimal part (as parts of day)\" ;\n" +
-        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n" +
+        "\t\tJULD_LOCATION:long_name = \"Julian day (UTC) of the location relative to REFERENCE_DATE_TIME\" ;\n"
+        +
         "\t\tJULD_LOCATION:resolution = 0.0 ;\n" +
         "\t\tJULD_LOCATION:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
         "\tdouble LATITUDE(row) ;\n" +
@@ -6022,7 +6046,8 @@ class TableTests {
         "\tint CONFIG_MISSION_NUMBER(row) ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:_FillValue = 2147483647 ;\n" +
         "\t\tCONFIG_MISSION_NUMBER:conventions = \"1...N, 1 : first complete mission\" ;\n" +
-        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n" +
+        "\t\tCONFIG_MISSION_NUMBER:long_name = \"Unique number denoting the missions performed by the float\" ;\n"
+        +
         "\tchar PARAMETER(row, PARAMETER_strlen) ;\n" +
         "\t\tPARAMETER:conventions = \"Argo reference table 3\" ;\n" +
         "\t\tPARAMETER:long_name = \"List of parameters with calibration information\" ;\n" +
@@ -6072,15 +6097,15 @@ class TableTests {
 
   /** This tests readVlenNc. */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
+  @TagIncompleteTest // illegal heap address when reading file
   void testReadVlenNc() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
-    boolean oDebugMode = Table.debugMode;
+    // boolean oDebugMode = Table.debugMode;
     // Table.debugMode = true;
     // String2.log("\n*** Table.testReadVlenNc");
     Table table = new Table();
-    String fiName = String2.unitTestBigDataDir + "nccf/vlen/rr2_vlen_test.nc";
+    String fiName = TableTests.class.getResource("/largeFiles/nccf/vlen/rr2_vlen_test.nc").getPath();
     // String2.log(NcHelper.ncdump(fiName, "-h"));
     String results, expectedStart, expectedEnd;
     /* */
@@ -6330,13 +6355,12 @@ class TableTests {
    */
 
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void testReadInvalidCRA() throws Exception {
     // String2.log("\n*** Table.testReadInvalidCRA()");
     StringArray colNames, conNames, conOps, conVals;
     Table table = new Table();
     table.debugMode = true;
-    String dir = String2.unitTestBigDataDir + "nccf/wod/";
+    String dir = TableTests.class.getResource("/largeFiles/nccf/wod/").getPath();
     String fullName, results, expected;
     // String doAllString = String2.getStringFromSystemIn(
     // "Do all the tests, including ones that are slow and take lots of memory
@@ -6462,7 +6486,8 @@ class TableTests {
           "\t\tTemperature_WODflag:standard_name = \"sea_water_temperature status_flag\" ;\n" +
           "\tfloat Pressure(row) ;\n" +
           "\t\tPressure:_FillValue = -1.0E10f ;\n" +
-          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n" +
+          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n"
+          +
           "\t\tPressure:coordinates = \"time lat lon z\" ;\n" +
           "\t\tPressure:grid_mapping = \"crs\" ;\n" +
           "\t\tPressure:long_name = \"sea_water_pressure\" ;\n" +
@@ -6472,7 +6497,8 @@ class TableTests {
           "\t\tPressure_sigfigs:long_name = \"sea_water_pressure significant_figures\" ;\n" +
           "\tfloat Salinity(row) ;\n" +
           "\t\tSalinity:_FillValue = -1.0E10f ;\n" +
-          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n" +
+          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n"
+          +
           "\t\tSalinity:coordinates = \"time lat lon z\" ;\n" +
           "\t\tSalinity:grid_mapping = \"crs\" ;\n" +
           "\t\tSalinity:long_name = \"sea_water_salinity\" ;\n" +
@@ -6990,7 +7016,8 @@ class TableTests {
           "\t\tChlorophyll_Instrument:comment = \"Device used for measurement\" ;\n" +
           "\t\tChlorophyll_Instrument:long_name = \"Instrument\" ;\n" +
           "\tchar Chlorophyll_Original_units(row, Chlorophyll_Original_units_strlen) ;\n" +
-          "\t\tChlorophyll_Original_units:comment = \"Units originally used: coverted to standard units\" ;\n" +
+          "\t\tChlorophyll_Original_units:comment = \"Units originally used: coverted to standard units\" ;\n"
+          +
           "\tint Chlorophyll_uncalibrated(row) ;\n" +
           "\t\tChlorophyll_uncalibrated:_FillValue = -99999 ;\n" +
           "\t\tChlorophyll_uncalibrated:comment = \"set if measurements have not been calibrated\" ;\n" +
@@ -7064,7 +7091,8 @@ class TableTests {
           "\t\tOxygen:standard_name = \"volume_fraction_of_oxygen_in_sea_water\" ;\n" +
           "\t\tOxygen:units = \"ml/l\" ;\n" +
           "\tbyte Oxygen_sigfigs(row) ;\n" +
-          "\t\tOxygen_sigfigs:long_name = \"volume_fraction_of_oxygen_in_sea_water significant_figures\" ;\n" +
+          "\t\tOxygen_sigfigs:long_name = \"volume_fraction_of_oxygen_in_sea_water significant_figures\" ;\n"
+          +
           "\tbyte Oxygen_WODflag(row) ;\n" +
           "\t\tOxygen_WODflag:flag_meanings = \"accepted range_out inversion gradient anomaly gradient+inversion range+inversion range+gradient range+anomaly range+inversion+gradient\" ;\n"
           +
@@ -7107,7 +7135,8 @@ class TableTests {
           +
           "\t\tChlorophyll_WODflag:flag_values = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ;\n" +
           "\t\tChlorophyll_WODflag:long_name = \"WOD_observation_flag\" ;\n" +
-          "\t\tChlorophyll_WODflag:standard_name = \"mass_concentration_of_chlorophyll_in_sea_water status_flag\" ;\n" +
+          "\t\tChlorophyll_WODflag:standard_name = \"mass_concentration_of_chlorophyll_in_sea_water status_flag\" ;\n"
+          +
           "\tbyte Chlorophyll_origflag(row) ;\n" +
           "\t\tChlorophyll_origflag:_FillValue = -9 ;\n" +
           "\t\tChlorophyll_origflag:flag_definitions = \"flag definitions dependent on origflagset\" ;\n" +
@@ -7348,7 +7377,8 @@ class TableTests {
           "\t\tTemperature_WODflag:standard_name = \"sea_water_temperature status_flag\" ;\n" +
           "\tfloat Salinity(row) ;\n" +
           "\t\tSalinity:_FillValue = -1.0E10f ;\n" +
-          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n" +
+          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n"
+          +
           "\t\tSalinity:coordinates = \"time lat lon z\" ;\n" +
           "\t\tSalinity:grid_mapping = \"crs\" ;\n" +
           "\t\tSalinity:long_name = \"sea_water_salinity\" ;\n" +
@@ -7363,7 +7393,8 @@ class TableTests {
           "\t\tSalinity_WODflag:standard_name = \"sea_water_salinity status_flag\" ;\n" +
           "\tfloat Pressure(row) ;\n" +
           "\t\tPressure:_FillValue = -1.0E10f ;\n" +
-          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n" +
+          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n"
+          +
           "\t\tPressure:coordinates = \"time lat lon z\" ;\n" +
           "\t\tPressure:grid_mapping = \"crs\" ;\n" +
           "\t\tPressure:long_name = \"sea_water_pressure\" ;\n" +
@@ -7728,7 +7759,8 @@ class TableTests {
           +
           "\t\tChlorophyll_WODflag:flag_values = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ;\n" +
           "\t\tChlorophyll_WODflag:long_name = \"WOD_observation_flag\" ;\n" +
-          "\t\tChlorophyll_WODflag:standard_name = \"mass_concentration_of_chlorophyll_in_sea_water status_flag\" ;\n" +
+          "\t\tChlorophyll_WODflag:standard_name = \"mass_concentration_of_chlorophyll_in_sea_water status_flag\" ;\n"
+          +
           "\tbyte Chlorophyll_origflag(row) ;\n" +
           "\t\tChlorophyll_origflag:_FillValue = -9 ;\n" +
           "\t\tChlorophyll_origflag:flag_definitions = \"flag definitions dependent on origflagset\" ;\n" +
@@ -8351,7 +8383,8 @@ class TableTests {
           "\t\tOxygen:standard_name = \"volume_fraction_of_oxygen_in_sea_water\" ;\n" +
           "\t\tOxygen:units = \"ml/l\" ;\n" +
           "\tbyte Oxygen_sigfigs(row) ;\n" +
-          "\t\tOxygen_sigfigs:long_name = \"volume_fraction_of_oxygen_in_sea_water significant_figures\" ;\n" +
+          "\t\tOxygen_sigfigs:long_name = \"volume_fraction_of_oxygen_in_sea_water significant_figures\" ;\n"
+          +
           "\tbyte Oxygen_WODflag(row) ;\n" +
           "\t\tOxygen_WODflag:flag_meanings = \"accepted range_out inversion gradient anomaly gradient+inversion range+inversion range+gradient range+anomaly range+inversion+gradient\" ;\n"
           +
@@ -8604,7 +8637,8 @@ class TableTests {
           "\t\tTemperature_WODflag:standard_name = \"sea_water_temperature status_flag\" ;\n" +
           "\tfloat Salinity(row) ;\n" +
           "\t\tSalinity:_FillValue = -1.0E10f ;\n" +
-          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n" +
+          "\t\tSalinity:ancillary_variables = \"Salinity_sigfigs Salinity_WODflag Salinity_WODprofileflag\" ;\n"
+          +
           "\t\tSalinity:coordinates = \"time lat lon z\" ;\n" +
           "\t\tSalinity:grid_mapping = \"crs\" ;\n" +
           "\t\tSalinity:long_name = \"sea_water_salinity\" ;\n" +
@@ -8619,7 +8653,8 @@ class TableTests {
           "\t\tSalinity_WODflag:standard_name = \"sea_water_salinity status_flag\" ;\n" +
           "\tfloat Pressure(row) ;\n" +
           "\t\tPressure:_FillValue = -1.0E10f ;\n" +
-          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n" +
+          "\t\tPressure:ancillary_variables = \"Pressure_sigfigs Pressure_WODflag Pressure_WODprofileflag\" ;\n"
+          +
           "\t\tPressure:coordinates = \"time lat lon z\" ;\n" +
           "\t\tPressure:grid_mapping = \"crs\" ;\n" +
           "\t\tPressure:long_name = \"sea_water_pressure\" ;\n" +
@@ -9088,7 +9123,7 @@ class TableTests {
     String results, expected;
     // From Ajay Krishnan, NCEI/NODC, from
     // https://data.nodc.noaa.gov/thredds/catalog/testdata/wod_ragged/05052016/catalog.html?dataset=testdata/wod_ragged/05052016/ind199105_ctd.nc
-    String fileName = TableTests.class.getResource("/nccf/ncei/ind199105_ctd.nc").getPath();
+    String fileName = TableTests.class.getResource("/data/nccf/ncei/ind199105_ctd.nc").getPath();
     Attributes gatts;
     String scalarVars = ",crs,WODf,WODfd";
 
@@ -9333,7 +9368,8 @@ class TableTests {
     // String2.log("\n*** Table.testReadNcCFPoint");
     Table table = new Table();
     String results, expected;
-    String fileName = TableTests.class.getResource("/CFPointConventions/point/point-H.1/point-H.1.nc").getPath();
+    String fileName = TableTests.class.getResource("/data/CFPointConventions/point/point-H.1/point-H.1.nc")
+        .getPath();
     Attributes gatts;
 
     /* */
@@ -9484,7 +9520,6 @@ class TableTests {
 
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void testReadNcCF1() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -9493,16 +9528,17 @@ class TableTests {
     // String2.log("\n*** Table.testReadNcCF1");
     Table table = new Table();
     String results, expected;
-    String profileFileName = TableTests.class.getResource("/nccf/Profile.nc").getPath();
+    String profileFileName = TableTests.class.getResource("/data/nccf/Profile.nc").getPath();
     Attributes gatts;
 
     /* */
     // *************** contiguous profileFileName
     // String2.log("\n\n** Testing profile contiguousRagged\n" +
-        // "  " + profileFileName);
+    // " " + profileFileName);
     // String2.log(NcHelper.ncdump(profileFileName, "-h"));
 
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  no loadVars, no constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged no loadVars, no
+    // constraints");
     table.readNcCF(profileFileName, null, 0, // standardizeWhat=0
         null, null, null);
     // String2.log(table.toCSVString());
@@ -9544,8 +9580,8 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     //
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-    //     "many loadVars, constraints, NO_DATA");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged " +
+    // "many loadVars, constraints, NO_DATA");
     table.readNcCF(profileFileName, StringArray.fromCSV(
         "id,longitude,latitude,time,altitude,salinity,salinity_qc,temperature"),
         0, // standardizeWhat=0
@@ -9592,8 +9628,8 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     //
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-    //     "just outerTable loadVars, no constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged " +
+    // "just outerTable loadVars, no constraints");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("longitude,latitude,time,zztop,id"), 0, // standardizeWhat=0
         null, null, null);
@@ -9638,8 +9674,8 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     //
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-    //     "just outerTable loadVars, constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged " +
+    // "just outerTable loadVars, constraints");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("longitude,latitude,time,zztop,id"), 0, // standardizeWhat=0
 
@@ -9657,8 +9693,8 @@ class TableTests {
     Test.ensureEqual(gatts.getString("subsetVariables"),
         "id, longitude, latitude, time", gatts.toString());
 
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-    //     "just outerTable loadVars, constraints, NO_DATA");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged " +
+    // "just outerTable loadVars, constraints, NO_DATA");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("longitude,latitude,time,zztop,id"), 0, // standardizeWhat=0
         StringArray.fromCSV("id"),
@@ -9667,7 +9703,8 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
     Test.ensureEqual(table.nRows(), 0, "");
 
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged, specific loadVars, constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged, specific loadVars,
+    // constraints");
     table.readNcCF(profileFileName, StringArray.fromCSV(
         "longitude,latitude,time,altitude,temperature,temperature_qc,zztop,id"),
         0, // standardizeWhat=0
@@ -9688,7 +9725,8 @@ class TableTests {
     Test.ensureEqual(gatts.getString("subsetVariables"),
         "id, longitude, latitude, time", gatts.toString());
 
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  just obs loadVars, no constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged just obs loadVars, no
+    // constraints");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("salinity,temperature,zztop"), 0, // standardizeWhat=0
         null, null, null);
@@ -9721,7 +9759,8 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     //
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  just obs loadVars, constraints");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged just obs loadVars,
+    // constraints");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("temperature,zztop"), 0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
@@ -9741,8 +9780,8 @@ class TableTests {
     Test.ensureEqual(gatts.getString("subsetVariables"),
         null, gatts.toString());
 
-    // String2.log("\n\n** Test nLevels=1/contiguousRagged  " +
-    //     "just obs loadVars, constraints, NO_DATA");
+    // String2.log("\n\n** Test nLevels=1/contiguousRagged " +
+    // "just obs loadVars, constraints, NO_DATA");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("temperature,zztop"), 0, // standardizeWhat=0
         StringArray.fromCSV("temperature"),
@@ -9753,7 +9792,8 @@ class TableTests {
 
     // test quick reject
     // if (constraintVar!=NaN or constraintVar=(finite)) and var not in file,
-    // String2.log("\n\n** Test #1m quick reject var=(nonNumber) if var not in file: NO_DATA");
+    // String2.log("\n\n** Test #1m quick reject var=(nonNumber) if var not in file:
+    // NO_DATA");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("temperature,zzStation"), 0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
@@ -9762,7 +9802,8 @@ class TableTests {
     Test.ensureEqual(table.nRows(), 0, "");
     Test.ensureEqual(table.nColumns(), 0, "");
 
-    // String2.log("\n\n** Test #1n quick reject var!=\"\" if var not in file: NO_DATA");
+    // String2.log("\n\n** Test #1n quick reject var!=\"\" if var not in file:
+    // NO_DATA");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("temperature,zzStation"), 0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
@@ -9772,8 +9813,9 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // but this can't be quickly rejected
-    // String2.log("\n\n** Test #1o can't quick reject var=99 if var not in file\n" +
-    //     "(since 99 might be defined as missing_value)");
+    // String2.log("\n\n** Test #1o can't quick reject var=99 if var not in file\n"
+    // +
+    // "(since 99 might be defined as missing_value)");
     table.readNcCF(profileFileName,
         StringArray.fromCSV("temperature,zzStation"), 0, // standardizeWhat=0
         StringArray.fromCSV("zzStation"),
@@ -9788,13 +9830,15 @@ class TableTests {
       // ncCF1b and ncCFMA1b have same data, so tests are the same!
       String fileType = type == 0 ? "contiguous" : "multidimensional";
       // from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
-      String fileName = TableTests.class.getResource("/nccf/" + (type == 0 ? "ncCF1b.nc" : "ncCFMA1b.nc")).getPath();
+      String fileName = TableTests.class.getResource("/data/nccf/" + (type == 0 ? "ncCF1b.nc" : "ncCFMA1b.nc"))
+          .getPath();
 
-    //   String2.log("\n\n** Testing nLevels=1/" + fileType + "\n" +
-    //       "  " + fileName);
+      // String2.log("\n\n** Testing nLevels=1/" + fileType + "\n" +
+      // " " + fileName);
       // String2.log(NcHelper.ncdump(fileName, "-h"));
 
-      // String2.log("\n\n** Test nLevels=1/" + fileType + "  no loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " no loadVars, no
+      // constraints");
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
       // String2.log(table.toString());
@@ -9849,8 +9893,8 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       //
-    //   String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
-    //       "just outerTable loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " " +
+      // "just outerTable loadVars, no constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "line_station,zztop"), 0, // standardizeWhat=0
           null, null, null);
@@ -9876,8 +9920,8 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       //
-    //   String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
-    //       "just outerTable loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " " +
+      // "just outerTable loadVars, constraints");
       table.readNcCF(fileName, StringArray.fromCSV("line_station,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
@@ -9894,8 +9938,8 @@ class TableTests {
       Test.ensureEqual(gatts.getString("subsetVariables"),
           "line_station", gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=1/" + fileType + "  " +
-    //       "just outerTable loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " " +
+      // "just outerTable loadVars, constraints, NO_DATA");
       table.readNcCF(fileName,
           StringArray.fromCSV("line_station,zztop"), 0, // standardizeWhat=0
           StringArray.fromCSV("line_station"),
@@ -9904,7 +9948,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-      // String2.log("\n\n** Test nLevels=1/" + fileType + ", specific loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + ", specific loadVars,
+      // constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "longitude,latitude,altitude,time,line_station,zztop,obsScientific,obsValue,obsUnits"),
           0, // standardizeWhat=0
@@ -9925,8 +9970,8 @@ class TableTests {
       Test.ensureEqual(gatts.getString("subsetVariables"),
           "line_station", gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=1/" + fileType +
-    //       ", specific loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=1/" + fileType +
+      // ", specific loadVars, constraints, NO_DATA");
       table.readNcCF(fileName, StringArray.fromCSV(
           "longitude,latitude,altitude,time,line_station,zztop,obsScientific,obsValue,obsUnits"),
           0, // standardizeWhat=0
@@ -9936,7 +9981,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-      // String2.log("\n\n** Test nLevels=1/" + fileType + "  just obs loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " just obs loadVars, no
+      // constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "obsScientific,obsValue,obsUnits,zztop"), 0, // standardizeWhat=0
           null, null, null);
@@ -9982,7 +10028,8 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       //
-      // String2.log("\n\n** Test nLevels=1/" + fileType + "  just obs loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=1/" + fileType + " just obs loadVars,
+      // constraints");
       table.readNcCF(fileName,
           StringArray.fromCSV("obsScientific,obsValue,obsUnits,zztop"),
           0, // standardizeWhat=0
@@ -10002,8 +10049,8 @@ class TableTests {
       Test.ensureEqual(gatts.getString("subsetVariables"),
           null, gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=1/" + fileType +
-    //       "  just obs loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=1/" + fileType +
+      // " just obs loadVars, constraints, NO_DATA");
       table.readNcCF(fileName,
           StringArray.fromCSV("obsScientific,obsValue,obsUnits,zztop"),
           0, // standardizeWhat=0
@@ -10019,7 +10066,7 @@ class TableTests {
     // ********* expected errors
     // String2.log("\n** Expected errors");
     try {
-      table.readNcCF(TableTests.class.getResource("/nccf/badIndexed1To6.nc").getPath(), null,
+      table.readNcCF(TableTests.class.getResource("/data/nccf/badIndexed1To6.nc").getPath(), null,
           0, // standardizeWhat=0
           null, null, null);
       throw new SimpleException("Shouldn't get here.");
@@ -10032,7 +10079,9 @@ class TableTests {
 
     // ******* another test file, from Kevin O'Brien
     try {
-      table.readNcCF("c:/data/kevin/interpolated_gld.20120620_045152_meta_2.nc",
+      table.readNcCF(
+          TableTests.class.getResource("/largeFiles/kevin/interpolated_gld.20120620_045152_meta_2.nc")
+              .getPath(),
           null, 0, // standardizeWhat=0
           null, null, null);
       throw new SimpleException("Shouldn't get here.");
@@ -10051,16 +10100,17 @@ class TableTests {
 
   /** This tests readNcCF nLevels=1. */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
+  @TagIncompleteTest // Invalid contiguous ragged file
   void testReadNcCF1Kevin() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
-    boolean oDebug = Table.debugMode;
+    // boolean oDebug = Table.debugMode;
     // Table.debugMode = true;
     // String2.log("\n*** Table.testReadNcCF1Kevin");
     Table table = new Table();
     String results, expected;
-    String fileName = "c:/data/kevin/interpolated_gld.20120620_045152_meta_2.nc"; // from Kevin O'Brien
+    String fileName = TableTests.class.getResource("/largeFiles/kevin/interpolated_gld.20120620_045152_meta_2.nc")
+        .getPath(); // from Kevin O'Brien
     Attributes gatts;
 
     // String2.log(NcHelper.ncdump(fileName, "-h"));
@@ -10139,7 +10189,7 @@ class TableTests {
     // this tests if var[scalarDim][obs] was read (e.g., depth[obs]
     // File dims are outerDim=[scalarDim], inner=[time], obs=[obs]
     table = new Table();
-    fileName = TableTests.class.getResource("/gocdNcCF/gocd_v3_sadcp.nc").getPath();
+    fileName = TableTests.class.getResource("/data/gocdNcCF/gocd_v3_sadcp.nc").getPath();
     // String2.log("\n\n** Testing " + fileName);
     results = NcHelper.ncdump(fileName, "-h");
     // String2.log(results);
@@ -10402,8 +10452,10 @@ class TableTests {
         "    String grid_mapping_semi_major_axis \"6378137.0\";\n" +
         "    String history \"Wed Feb 10 18:31:43 2016: ncrename -d depth,z test.nc\n" +
         "2016-01-18T04:39:10Z csun updateOCD.R Version 2.0\n" +
-        "Thu Jan  7 15:59:35 2016: ncatted -a valid_max,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
-        "Thu Jan  7 15:59:35 2016: ncatted -a valid_min,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n" +
+        "Thu Jan  7 15:59:35 2016: ncatted -a valid_max,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n"
+        +
+        "Thu Jan  7 15:59:35 2016: ncatted -a valid_min,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n"
+        +
         "Thu Jan  7 15:59:35 2016: ncatted -a missing_value,seafloor_depth,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n"
         +
         "Thu Jan  7 15:59:35 2016: ncatted -a missing_value,sampling_interval,d,, ../V3/a0067774/gocd_a0067774_01192v3.nc\n"
@@ -10422,7 +10474,8 @@ class TableTests {
         "    String principal_invesigator \"E.Firing,J.Hummon,R.Brainard\";\n" +
         "    String project_name \"Coral Reef Ecosystem Investigations\";\n" +
         "    String publisher_email \"NODC.Services@noaa.gov\";\n" +
-        "    String publisher_name \"US DOC; NESDIS; NATIONAL CENTERS FOR ENVIRONMENTAL INFORMATION - IN295\";\n" +
+        "    String publisher_name \"US DOC; NESDIS; NATIONAL CENTERS FOR ENVIRONMENTAL INFORMATION - IN295\";\n"
+        +
         "    String publisher_url \"http://www.nodc.noaa.gov/\";\n" +
         "    String QC_indicator \"Contact Principle Investigaror(s)\";\n" + // sic
         "    String QC_Manual \"Contact Principle Investigaror(s)\";\n" +
@@ -10493,9 +10546,12 @@ class TableTests {
     expected = // why are cspeed and cdir known, but u,v not?
         // sampInt sfDpth lat lon depth time u v cspeed cdir crs
         "9999.9,9999.9,-14.2758,-170.6805,1,1,680.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
-            "9999.9,9999.9,-14.2758,-170.6805,1,1,690.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
-            "9999.9,9999.9,-14.2758,-170.6805,1,1,700.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
-            "9999.9,9999.9,-14.2758,-170.6805,1,1,710.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n" +
+            "9999.9,9999.9,-14.2758,-170.6805,1,1,690.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n"
+            +
+            "9999.9,9999.9,-14.2758,-170.6805,1,1,700.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n"
+            +
+            "9999.9,9999.9,-14.2758,-170.6805,1,1,710.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n"
+            +
             "9999.9,9999.9,-14.2758,-170.6805,1,1,720.0,1,38751.8319,1,9999.9,-9,9999.9,-9,141.42,1,45.0,1,0\n";
     po = results.indexOf(expected.substring(0, 40));
     Test.ensureEqual(results.substring(po), expected,
@@ -10507,7 +10563,7 @@ class TableTests {
     // this tests if var[scalarDim][obs] was read (e.g., depth[obs]
     // File dims are outerDim=[scalarDim], inner=[time], obs=[obs]
     table = new Table();
-    fileName = TableTests.class.getResource("/gocd/gocd_v3_madcp.nc").getPath();
+    fileName = TableTests.class.getResource("/data/gocd/gocd_v3_madcp.nc").getPath();
     // String2.log("\n\n** Testing " + fileName);
     results = NcHelper.ncdump(fileName, "-h");
     // String2.log(results);
@@ -10588,9 +10644,12 @@ class TableTests {
     expected = // why are cspeed and cdir known, but u,v not?
         // si sDepth lat lon q q depth q time q u q v q cspeed q cDir q crs
         "60.0,32.6386,42.37859,-70.78094,1,1,8.34,1,38754.5365,1,-0.0177,1,-0.0152,1,0.0257,1,229.2,1,0\n" +
-            "60.0,32.6386,42.37859,-70.78094,1,1,6.34,1,38754.5365,1,-0.0186,1,-0.0145,1,0.0251,1,232.0,1,0\n" +
-            "60.0,32.6386,42.37859,-70.78094,1,1,4.34,1,38754.5365,1,-0.0149,1,-0.0181,1,0.03,1,219.4,1,0\n" +
-            "60.0,32.6386,42.37859,-70.78094,1,1,2.34,1,38754.5365,1,-0.0026,2,-0.0202,2,0.0293,1,187.4,2,0\n" +
+            "60.0,32.6386,42.37859,-70.78094,1,1,6.34,1,38754.5365,1,-0.0186,1,-0.0145,1,0.0251,1,232.0,1,0\n"
+            +
+            "60.0,32.6386,42.37859,-70.78094,1,1,4.34,1,38754.5365,1,-0.0149,1,-0.0181,1,0.03,1,219.4,1,0\n"
+            +
+            "60.0,32.6386,42.37859,-70.78094,1,1,2.34,1,38754.5365,1,-0.0026,2,-0.0202,2,0.0293,1,187.4,2,0\n"
+            +
             "60.0,32.6386,42.37859,-70.78094,1,1,0.34,1,38754.5365,1,9999.9,9,9999.9,9,9999.9,9,45.0,9,0\n";
     po = results.indexOf(expected.substring(0, 80));
     Test.ensureEqual(results.substring(po), expected,
@@ -10601,7 +10660,7 @@ class TableTests {
     // featureType=timeSeriesProfile cdm_data_type=profile
     // outerdim=scalar var[time=6952][z=1] time[time=6952] depth[z=1]
     table = new Table();
-    fileName = TableTests.class.getResource("/gocd/gocd_a0000841_rcm00566_v4.nc").getPath();
+    fileName = TableTests.class.getResource("/data/gocd/gocd_a0000841_rcm00566_v4.nc").getPath();
     // String2.log("\n\n** Testing " + fileName);
     results = NcHelper.ncdump(fileName, "-h");
     // String2.log(results);
@@ -10614,9 +10673,12 @@ class TableTests {
         "u,u_quality_flag,v,v_quality_flag,current_speed,current_speed_quality_flag," +
         "current_direction,current_direction_quality_flag,crs\n" +
         // si sd lat lon q q depth q time q u q v q cSpeed p dir q crs
-        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.424999999814,1,0.015,1,0.0865,1,0.0878,1,9.8,1,0\n" +
-        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,0\n" +
-        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,0\n" +
+        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.424999999814,1,0.015,1,0.0865,1,0.0878,1,9.8,1,0\n"
+        +
+        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.46666666679,1,-0.0045,1,0.0933,1,0.0934,1,357.2,1,0\n"
+        +
+        "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.508333333302,1,-0.0072,1,0.0856,1,0.0859,1,355.2,1,0\n"
+        +
         "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.549999999814,1,-0.0065999995,1,0.1025,1,0.1027,1,356.3,1,0\n"
         +
         "60.0,2640.0,62.894997,-35.857998,1,1,1980.0,1,31662.59166666679,1,-0.0036,1,0.11200001,1,0.1121,1,358.2,1,0\n"
@@ -10666,18 +10728,19 @@ class TableTests {
       // ncCF2b and ncCFMA2b have same data, so tests are the same!
       String fileType = type == 0 ? "ragged" : "multidimensional";
       // from EDDTableFromNcFiles.testNcCF2b() and testNcCFMA2b();
-      String fileName = TableTests.class.getResource("/nccf/" +
+      String fileName = TableTests.class.getResource("/data/nccf/" +
           (type == 0 ? "ncCF2b.nc" : "ncCFMA2b.nc")).getPath();
       String msg = "ERROR when type=" + type + ": ";
 
-    //   String2.log("\n\n** Testing type=" + type + " nLevels=2/" + fileType + "\n" +
-    //       "  " + fileName);
-    //   String2.log(NcHelper.ncdump(fileName, "-h"));
+      // String2.log("\n\n** Testing type=" + type + " nLevels=2/" + fileType + "\n" +
+      // " " + fileName);
+      // String2.log(NcHelper.ncdump(fileName, "-h"));
       /* */
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  no loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " no loadVars, no
+      // constraints");
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
-    //   String2.log(table.toString());
+      // String2.log(table.toString());
       results = table.dataToString(5);
       expected = "platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
           "33P2,Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,4.0,-1.84,35.64\n" +
@@ -10891,8 +10954,8 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable loadVars, constraints");
       table.readNcCF(fileName, StringArray.fromCSV("platform,cruise,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
@@ -10913,8 +10976,8 @@ class TableTests {
           msg + gatts.toString());
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable loadVars, constraints, NO_DATA");
       table.readNcCF(fileName, StringArray.fromCSV("platform,cruise,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("platform"),
@@ -10923,9 +10986,10 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable loadVars, no constraints");
-    //   String2.log("ncdump of " + fileName + "\n" + NcHelper.ncdump(fileName, "-v station_id;type"));
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable loadVars, no constraints");
+      // String2.log("ncdump of " + fileName + "\n" + NcHelper.ncdump(fileName, "-v
+      // station_id;type"));
       table.readNcCF(fileName,
           StringArray.fromCSV("station_id,zztop,type"),
           0, // standardizeWhat=0
@@ -10954,8 +11018,8 @@ class TableTests {
           msg + gatts.toString());
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable loadVars, constraints");
       table.readNcCF(fileName, StringArray.fromCSV("station_id,zztop,type"),
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
@@ -10975,8 +11039,8 @@ class TableTests {
       Test.ensureEqual(gatts.getString("subsetVariables"), "type, station_id",
           msg + gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable loadVars, constraints, NO_DATA");
       table.readNcCF(fileName, StringArray.fromCSV("station_id,zztop,type"),
           0, // standardizeWhat=0
           StringArray.fromCSV("station_id"),
@@ -10985,8 +11049,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable and innerTable loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable and innerTable loadVars, no constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "cruise,org,type,station_id,longitude,latitude,time,zztop,platform"),
           0, // standardizeWhat=0
@@ -10996,7 +11060,8 @@ class TableTests {
           "Q990046312,ME,TE,13968849,176.64,-75.45,1.3351446E9,33P2\n" +
           "Q990046312,ME,TE,13968850,176.64,-75.43,1.335216E9,33P2\n" +
           "SHIP    12,ME,BA,13933177,173.54,-34.58,1.33514142E9,9999\n" +
-          (type == 0 ? "" : "SHIP    12,,,2147483647,,,,9999\n"); // 2020-08-03 this also appeared. See 2020-08-03
+          (type == 0 ? "" : "SHIP    12,,,2147483647,,,,9999\n"); // 2020-08-03 this also appeared. See
+                                                                  // 2020-08-03
                                                                   // comments above
       Test.ensureEqual(results, expected, msg + "results=\n" + results);
       gatts = table.globalAttributes();
@@ -11011,8 +11076,8 @@ class TableTests {
           "platform, cruise, org, type, station_id, longitude, latitude, time",
           msg + gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable and innerTable loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable and innerTable loadVars, constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "row,cruise,org,type,station_id,longitude,latitude,time,zztop,platform"),
           0, // standardizeWhat=0
@@ -11036,8 +11101,8 @@ class TableTests {
           msg + gatts.toString());
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable and innerTable loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable and innerTable loadVars, constraints, NO_DATA");
       table.readNcCF(fileName, StringArray.fromCSV(
           "row,cruise,org,type,station_id,longitude,latitude,time,zztop,platform"),
           0, // standardizeWhat=0
@@ -11047,8 +11112,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable and obs loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable and obs loadVars, constraints");
       table.readNcCF(fileName,
           StringArray.fromCSV("salinity,platform,zztop,cruise"),
           0, // standardizeWhat=0
@@ -11071,8 +11136,8 @@ class TableTests {
       Test.ensureEqual(gatts.getString("subsetVariables"), "platform, cruise",
           msg + gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just outerTable and obs loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just outerTable and obs loadVars, constraints, NO_DATA");
       table.readNcCF(fileName,
           StringArray.fromCSV("salinity,platform,zztop,cruise"),
           0, // standardizeWhat=0
@@ -11082,8 +11147,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable and obs loadVars, no constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable and obs loadVars, no constraints");
       table.readNcCF(fileName, StringArray.fromCSV(
           "latitude,longitude,time,zztop,salinity"), 0, // standardizeWhat=0
           null, null, null);
@@ -11160,8 +11225,8 @@ class TableTests {
           "longitude, latitude, time",
           msg + gatts.toString());
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable and obs loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable and obs loadVars, constraints");
       table.readNcCF(fileName,
           StringArray.fromCSV("latitude,longitude,time,zztop,salinity"),
           0, // standardizeWhat=0
@@ -11183,8 +11248,8 @@ class TableTests {
           "longitude, latitude, time", msg + gatts.toString());
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  " +
-    //       "just innerTable and obs loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " " +
+      // "just innerTable and obs loadVars, constraints, NO_DATA");
       table.readNcCF(fileName,
           StringArray.fromCSV("latitude,longitude,time,zztop,salinity"),
           0, // standardizeWhat=0
@@ -11194,7 +11259,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Test nLevels=2/" + fileType + "  just obs loadVars, constraints");
+      // String2.log("\n\n** Test nLevels=2/" + fileType + " just obs loadVars,
+      // constraints");
       table.readNcCF(fileName, StringArray.fromCSV("temperature,salinity,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
@@ -11216,8 +11282,8 @@ class TableTests {
           msg + gatts.toString());
 
       //
-    //   String2.log("\n\n** Test nLevels=2/" + fileType +
-    //       "  just obs loadVars, constraints, NO_DATA");
+      // String2.log("\n\n** Test nLevels=2/" + fileType +
+      // " just obs loadVars, constraints, NO_DATA");
       table.readNcCF(fileName, StringArray.fromCSV("temperature,salinity,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("salinity"),
@@ -11248,11 +11314,11 @@ class TableTests {
 
     /* */
     // *************** profile contiguous
-    fileName = TableTests.class.getResource("/CFPointConventions/profile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/profile/" +
         "profile-Contiguous-Ragged-MultipleProfiles-H.3.4/" +
         "profile-Contiguous-Ragged-MultipleProfiles-H.3.4.nc").getPath();
     // String2.log("\n\n** Testing contiguous file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -11519,11 +11585,11 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *************** profile incomplete multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/profile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/profile/" +
         "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2/" +
         "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2.nc").getPath();
     // String2.log("\n\n** Testing incomplete\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -11783,15 +11849,15 @@ class TableTests {
 
     // *************** profile indexed IMPORTANT - I didn't have sample of indexed
     try {
-      fileName = TableTests.class.getResource("/CFPointConventions/profile/" +
+      fileName = TableTests.class.getResource("/data/CFPointConventions/profile/" +
           "profile-Indexed-Ragged-MultipleProfiles-H.3.5/" +
           "profile-Indexed-Ragged-MultipleProfiles-H.3.5.nc").getPath();
-    //   String2.log("\n\n** Testing indexed file\n" +
-    //       "  " + fileName);
-    //   String2.log(NcHelper.ncdump(fileName, ""));
+      // String2.log("\n\n** Testing indexed file\n" +
+      // " " + fileName);
+      // String2.log(NcHelper.ncdump(fileName, ""));
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
-    //   String2.log(table.dataToString());
+      // String2.log(table.dataToString());
       results = table.dataToString(20);
       expected = "lat,lon,profile,time,z,temperature,humidity\n" +
           "93.0,71.0,0,0,0.38200212,23.69535,52.60904\n" +
@@ -12078,11 +12144,11 @@ class TableTests {
     }
 
     // *************** profile orthogonal
-    fileName = TableTests.class.getResource("/CFPointConventions/profile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/profile/" +
         "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1/" +
         "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1.nc").getPath();
     // String2.log("\n\n** Testing orthogonal file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -12259,11 +12325,11 @@ class TableTests {
     String results, expected, fileName;
 
     // *************** timeseries orthogonal
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/timeseries/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc").getPath();
     // String2.log("\n\n** Testing orthogonal file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     // !!! obs vars are temperature[time=100][station=10]
     // so outer=time and inner is station!
@@ -12764,11 +12830,11 @@ class TableTests {
     Test.ensureEqual(results, expected, "results=\n" + results);
 
     // *************** timeseries incomplete multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/timeseries/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/timeseries/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
         "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc").getPath();
     // String2.log("\n\n** Testing incomplete file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -13071,11 +13137,11 @@ class TableTests {
 
     /* */
     // *************** trajectory contiguous
-    fileName = TableTests.class.getResource("/CFPointConventions/trajectory/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/trajectory/" +
         "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3/" +
         "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3.nc").getPath();
     // String2.log("\n\n** Testing contiguous file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -13311,11 +13377,11 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // *************** trajectory single multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/trajectory/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/trajectory/" +
         "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2/" +
         "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2.nc").getPath();
     // String2.log("\n\n** Testing single multidimensional file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -13535,11 +13601,11 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // *************** trajectory indexed ---
-    fileName = TableTests.class.getResource("/CFPointConventions/trajectory/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/trajectory/" +
         "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4/" +
         "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4.nc").getPath();
     // String2.log("\n\n** Testing indexed file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -13776,19 +13842,21 @@ class TableTests {
     // String2.log("\n*** Table.testReadNcCFASATimeSeriesProfile");
     Table table = new Table();
     String results, expected, fileName;
-    String orthoMultiDimH51FileName = TableTests.class.getResource("/CFPointConventions/timeSeriesProfile/" +
+    String orthoMultiDimH51FileName = TableTests.class.getResource("/data/CFPointConventions/timeSeriesProfile/" +
         "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1/" +
         "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1.nc").getPath();
-    String raggedSingleStationFileName = TableTests.class.getResource("/CFPointConventions/timeSeriesProfile/" +
-        "timeSeriesProfile-Ragged-SingleStation-H.5.3/" +
-        "timeSeriesProfile-Ragged-SingleStation-H.5.3.nc").getPath();
+    String raggedSingleStationFileName = TableTests.class
+        .getResource("/data/CFPointConventions/timeSeriesProfile/" +
+            "timeSeriesProfile-Ragged-SingleStation-H.5.3/" +
+            "timeSeriesProfile-Ragged-SingleStation-H.5.3.nc")
+        .getPath();
 
     // *************** timeSeriesProfile multidimensional ---
-    fileName = TableTests.class.getResource("/CFPointConventions/timeSeriesProfile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/timeSeriesProfile/" +
         "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1/" +
         "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1.nc").getPath();
     // String2.log("\n\n** Testing incomplete file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -14025,11 +14093,11 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // *************** timeSeriesProfile multidimensional single station
-    fileName = TableTests.class.getResource("/CFPointConventions/timeSeriesProfile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/timeSeriesProfile/" +
         "timeSeriesProfile-Multidimensional-SingleStation-H.5.2/" +
         "timeSeriesProfile-Multidimensional-SingleStation-H.5.2.nc").getPath();
     // String2.log("\n\n** Testing contiguous file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -14281,7 +14349,7 @@ class TableTests {
     // !!! IMPORTANT/ONLY test of file with variable[innerDim] for innerTable
     // and variable[time][z][station] which is allowed, ordering
     fileName = orthoMultiDimH51FileName;
-    // String2.log("\n\n** Testing incomplete file\n" + "  " + fileName);
+    // String2.log("\n\n** Testing incomplete file\n" + " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -14526,7 +14594,7 @@ class TableTests {
 
     fileName = orthoMultiDimH51FileName;
     // String2.log("\n\n** Testing incomplete file with constraints\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(orthoMultiDimH51FileName, "-h"));
     table.readNcCF(fileName, null,
         0, // standardizeWhat=0
@@ -14774,7 +14842,7 @@ class TableTests {
 
     // test just variable[obs] (interiorTable)
     // String2.log("\n\n** Testing incomplete file\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName, StringArray.fromCSV("lat,lon,station_name,zztop"),
         0, // standardizeWhat=0
         StringArray.fromCSV("station_name"),
@@ -14794,8 +14862,9 @@ class TableTests {
     // ********** NO_DATA
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA,
     // outer/inner/obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH51FileName just outer/inner/obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51FileName just outer/inner/obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("time,zztop,alt,temperature"),
         0, // standardizeWhat=0
@@ -14807,8 +14876,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // outerVar
-    // String2.log("\n\n** Testing orthoMultiDimH51FileName just outerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51FileName just outerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("zztop,temperature"),
         0, // standardizeWhat=0
@@ -14820,8 +14890,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // innerVar
-    // String2.log("\n\n** Testing orthoMultiDimH51FileName just innerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51FileName just innerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("alt,zztop"),
         0, // standardizeWhat=0
@@ -14834,7 +14905,7 @@ class TableTests {
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // obsVar
     // String2.log("\n\n** Testing orthoMultiDimH51File just obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("zztop,temperature"),
         0, // standardizeWhat=0
@@ -14846,8 +14917,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // outerVar* and innerVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer*/innerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer*/innerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("zztop,time,alt"),
         0, // standardizeWhat=0
@@ -14859,8 +14931,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // outerVar and innerVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/innerVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/innerVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("zztop,time,alt"),
         0, // standardizeWhat=0
@@ -14872,8 +14945,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // outerVar* and obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer*/obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer*/obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("time,temperature,zztop"),
         0, // standardizeWhat=0
@@ -14885,8 +14959,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // outerVar and obsVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("time,temperature,zztop"),
         0, // standardizeWhat=0
@@ -14898,8 +14973,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // innerVar* and obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just inner*/obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just inner*/obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("alt,temperature,zztop"),
         0, // standardizeWhat=0
@@ -14911,8 +14987,9 @@ class TableTests {
 
     // ********** timeSeriesProfile orthoMultiDimH51FileName --- NO_DATA, just
     // innerVar and obsVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH51FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH51FileName);
     table.readNcCF(orthoMultiDimH51FileName,
         StringArray.fromCSV("alt,temperature,zztop"),
         0, // standardizeWhat=0
@@ -14924,11 +15001,11 @@ class TableTests {
 
     // *******
     // *************** timeSeriesProfile ragged ---
-    fileName = TableTests.class.getResource("/CFPointConventions/timeSeriesProfile/" +
+    fileName = TableTests.class.getResource("/data/CFPointConventions/timeSeriesProfile/" +
         "timeSeriesProfile-Ragged-MultipeStations-H.5.3/" +
         "timeSeriesProfile-Ragged-MultipeStations-H.5.3.nc").getPath();
     // String2.log("\n\n** Testing timeSeriesProfile ragged file\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, "-h"));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -15182,7 +15259,7 @@ class TableTests {
     // since there is no instance_dimension
     fileName = raggedSingleStationFileName;
     // String2.log("\n\n** Testing raggedSingleStationFile\n" +
-    //     "  " + fileName);
+    // " " + fileName);
     // String2.log(NcHelper.ncdump(fileName, ""));
     table.readNcCF(fileName, null, 0, // standardizeWhat=0
         null, null, null);
@@ -15422,7 +15499,7 @@ class TableTests {
 
     // *************** timeSeriesProfile ragged single station --- just outerVar
     // String2.log("\n\n** Testing raggedSingleStationFile just outerVar\n" +
-    //     "  " + raggedSingleStationFileName);
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("zztop,lat,lon,station_info,station_name"),
         0, // standardizeWhat=0
@@ -15440,7 +15517,7 @@ class TableTests {
 
     // *************** timeSeriesProfile ragged single station --- just innerVar
     // String2.log("\n\n** Testing raggedSingleStationFile just innerVar\n" +
-    //     "  " + raggedSingleStationFileName);
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("time,zztop,profile"),
         0, // standardizeWhat=0
@@ -15462,8 +15539,9 @@ class TableTests {
 
     // *************** timeSeriesProfile ragged single station --- just outerVar and
     // innerVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar and innerVar\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar and
+    // innerVar\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("station_info,station_name,lon,lat,time,profile,"),
         0, // standardizeWhat=0
@@ -15482,8 +15560,9 @@ class TableTests {
 
     // *************** timeSeriesProfile ragged single station --- just outerVar and
     // obsVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar and obsVar\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar and
+    // obsVar\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("station_info,temperature,zztop,station_name,"),
         0, // standardizeWhat=0
@@ -15503,8 +15582,9 @@ class TableTests {
 
     // *************** timeSeriesProfile ragged single station --- just innerVar and
     // obsVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just innerVar and obsVar\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just innerVar and
+    // obsVar\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("temperature,zztop,time"),
         0, // standardizeWhat=0
@@ -15529,8 +15609,9 @@ class TableTests {
     // ********** NO_DATA
     // ********** timeSeriesProfile ragged single station --- NO_DATA,
     // outer/inner/obsVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outer/inner/obsVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outer/inner/obsVar,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("station_info,zztop,profile,temperature"),
         0, // standardizeWhat=0
@@ -15541,8 +15622,9 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just outerVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outerVar, NO_DATA\n"
+    // +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("zztop,station_info"),
         0, // standardizeWhat=0
@@ -15553,8 +15635,9 @@ class TableTests {
     Test.ensureEqual(table.nColumns(), 0, "");
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just innerVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just innerVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just innerVar, NO_DATA\n"
+    // +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("profile,zztop"),
         0, // standardizeWhat=0
@@ -15566,7 +15649,7 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just obsVar
     // String2.log("\n\n** Testing raggedSingleStationFile just obsVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("zztop,temperature"),
         0, // standardizeWhat=0
@@ -15578,8 +15661,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just
     // outerVar* and innerVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outer*/innerVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outer*/innerVar,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("zztop,station_info,profile"),
         0, // standardizeWhat=0
@@ -15591,8 +15675,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just outerVar
     // and innerVar*
-    // String2.log("\n\n** Testing raggedSingleStationFile just outer/innerVar*, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outer/innerVar*,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("zztop,station_info,profile"),
         0, // standardizeWhat=0
@@ -15604,8 +15689,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just
     // outerVar* and obsVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just outer*/obsVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outer*/obsVar,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("temperature,station_info,zztop"),
         0, // standardizeWhat=0
@@ -15617,8 +15703,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just outerVar
     // and obsVar*
-    // String2.log("\n\n** Testing raggedSingleStationFile just outer/obsVar*, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just outer/obsVar*,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("temperature,station_info,zztop"),
         0, // standardizeWhat=0
@@ -15630,8 +15717,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just
     // innerVar* and obsVar
-    // String2.log("\n\n** Testing raggedSingleStationFile just inner*/obsVar, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just inner*/obsVar,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("temperature,profile,zztop"),
         0, // standardizeWhat=0
@@ -15643,8 +15731,9 @@ class TableTests {
 
     // ********** timeSeriesProfile ragged single station --- NO_DATA, just innerVar
     // and obsVar*
-    // String2.log("\n\n** Testing raggedSingleStationFile just inner/obsVar*, NO_DATA\n" +
-    //     "  " + raggedSingleStationFileName);
+    // String2.log("\n\n** Testing raggedSingleStationFile just inner/obsVar*,
+    // NO_DATA\n" +
+    // " " + raggedSingleStationFileName);
     table.readNcCF(raggedSingleStationFileName,
         StringArray.fromCSV("temperature,profile,zztop"),
         0, // standardizeWhat=0
@@ -15672,22 +15761,24 @@ class TableTests {
     // String2.log("\n*** Table.testReadNcCFASATrajectoryProfile");
     Table table = new Table();
     String results, expected, fileName;
-    String orthoMultiDimH61FileName = TableTests.class.getResource("/CFPointConventions/trajectoryProfile/" +
+    String orthoMultiDimH61FileName = TableTests.class.getResource("/data/CFPointConventions/trajectoryProfile/" +
         "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1/" +
         "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1.nc").getPath();
-    String raggedMultipleStationFileName = TableTests.class.getResource("/CFPointConventions/trajectoryProfile/" +
-        "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3/" +
-        "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3.nc").getPath();
+    String raggedMultipleStationFileName = TableTests.class
+        .getResource("/data/CFPointConventions/trajectoryProfile/" +
+            "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3/" +
+            "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3.nc")
+        .getPath();
 
     /* */
     // *************** trajectoryProfile multidimensional single station
     try {
-      fileName = TableTests.class.getResource("/CFPointConventions/trajectoryProfile/" +
+      fileName = TableTests.class.getResource("/data/CFPointConventions/trajectoryProfile/" +
           "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2/" +
           "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2.nc").getPath();
-    //   String2.log("\n\n** Testing contiguous file\n" +
-    //       "  " + fileName);
-    //   String2.log(NcHelper.ncdump(fileName, "-h"));
+      // String2.log("\n\n** Testing contiguous file\n" +
+      // " " + fileName);
+      // String2.log(NcHelper.ncdump(fileName, "-h"));
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
       results = table.dataToString();
@@ -15941,9 +16032,9 @@ class TableTests {
     // *************** trajectoryProfile orthogonal multidimensional ---
     try {
       fileName = orthoMultiDimH61FileName;
-    //   String2.log("\n\n** Testing orthogonal multidim file\n" +
-    //       "  " + fileName);
-    //   String2.log(NcHelper.ncdump(fileName, ""));
+      // String2.log("\n\n** Testing orthogonal multidim file\n" +
+      // " " + fileName);
+      // String2.log(NcHelper.ncdump(fileName, ""));
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
       results = table.dataToString(14);
@@ -16188,8 +16279,8 @@ class TableTests {
       Test.ensureEqual(table.nRows(), 0, "");
       Test.ensureEqual(table.nColumns(), 0, "");
 
-    //   String2.log("\n\n** Testing incomplete file with constraints\n" +
-    //       "  " + orthoMultiDimH61FileName);
+      // String2.log("\n\n** Testing incomplete file with constraints\n" +
+      // " " + orthoMultiDimH61FileName);
       // String2.log(NcHelper.ncdump(orthoMultiDimH61FileName, "-h"));
       table.readNcCF(orthoMultiDimH61FileName, null,
           0, // standardizeWhat=0
@@ -16236,8 +16327,8 @@ class TableTests {
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // test just variable[obs] (interiorTable)
-    //   String2.log("\n\n** Testing incomplete file\n" +
-    //       "  " + orthoMultiDimH61FileName);
+      // String2.log("\n\n** Testing incomplete file\n" +
+      // " " + orthoMultiDimH61FileName);
       table.readNcCF(orthoMultiDimH61FileName, StringArray.fromCSV("lat,lon,trajectory,time,zztop"),
           0, // standardizeWhat=0
           StringArray.fromCSV("trajectory"),
@@ -16261,8 +16352,9 @@ class TableTests {
     // ********** NO_DATA
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA,
     // outer/inner/obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH61FileName just outer/inner/obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH61FileName just outer/inner/obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("trajectory,lat,zztop,temperature"),
         0, // standardizeWhat=0
@@ -16274,8 +16366,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // outerVar
-    // String2.log("\n\n** Testing orthoMultiDimH61FileName just outerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH61FileName just outerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("zztop,trajectory"),
         0, // standardizeWhat=0
@@ -16287,8 +16380,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // innerVar
-    // String2.log("\n\n** Testing orthoMultiDimH61FileName just innerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH61FileName just innerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("lat,zztop"),
         0, // standardizeWhat=0
@@ -16301,7 +16395,7 @@ class TableTests {
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // obsVar
     // String2.log("\n\n** Testing orthoMultiDimH51File just obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("zztop,temperature"),
         0, // standardizeWhat=0
@@ -16313,8 +16407,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // outerVar* and innerVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer* /innerVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer* /innerVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("zztop,trajectory,lat"),
         0, // standardizeWhat=0
@@ -16326,8 +16421,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // outerVar and innerVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/innerVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/innerVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("zztop,trajectory,lat"),
         0, // standardizeWhat=0
@@ -16339,8 +16435,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // outerVar* and obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer* /obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer* /obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("trajectory,temperature,zztop"),
         0, // standardizeWhat=0
@@ -16352,8 +16449,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // outerVar and obsVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just outer/obsVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("trajectory,temperature,zztop"),
         0, // standardizeWhat=0
@@ -16365,8 +16463,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // innerVar* and obsVar
-    // String2.log("\n\n** Testing orthoMultiDimH51File just inner* /obsVar, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just inner* /obsVar,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("lat,temperature,zztop"),
         0, // standardizeWhat=0
@@ -16378,8 +16477,9 @@ class TableTests {
 
     // ********** trajectoryProfile orthoMultiDimH61FileName --- NO_DATA, just
     // innerVar and obsVar*
-    // String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*, NO_DATA\n" +
-    //     "  " + orthoMultiDimH61FileName);
+    // String2.log("\n\n** Testing orthoMultiDimH51File just inner/obsVar*,
+    // NO_DATA\n" +
+    // " " + orthoMultiDimH61FileName);
     table.readNcCF(orthoMultiDimH61FileName,
         StringArray.fromCSV("lat,temperature,zztop"),
         0, // standardizeWhat=0
@@ -16393,9 +16493,9 @@ class TableTests {
     // *************** trajectoryProfile ragged multiple station ---
     try {
       fileName = raggedMultipleStationFileName;
-    //   String2.log("\n\n** Testing raggedMultipleStationFile\n" +
-    //       "  " + fileName);
-    //   String2.log(NcHelper.ncdump(fileName, ""));
+      // String2.log("\n\n** Testing raggedMultipleStationFile\n" +
+      // " " + fileName);
+      // String2.log(NcHelper.ncdump(fileName, ""));
       table.readNcCF(fileName, null, 0, // standardizeWhat=0
           null, null, null);
       results = table.dataToString();
@@ -16647,8 +16747,8 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       // *************** trajectoryProfile ragged multiple station --- just outerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outerVar\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outerVar\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("zztop,trajectory"),
           0, // standardizeWhat=0
@@ -16667,8 +16767,8 @@ class TableTests {
       Test.ensureEqual(results, expected, "results=\n" + results);
 
       // *************** trajectoryProfile ragged multiple station --- just innerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just innerVar\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just innerVar\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("time,zztop,trajectory"),
           0, // standardizeWhat=0
@@ -16706,8 +16806,9 @@ class TableTests {
 
       // *************** trajectoryProfile ragged multiple station --- just outerVar
       // and innerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and innerVar\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and
+      // innerVar\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("lon,lat,time,trajectory,"),
           0, // standardizeWhat=0
@@ -16744,8 +16845,9 @@ class TableTests {
 
       // *************** trajectoryProfile ragged multiple station --- just outerVar
       // and obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and obsVar\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outerVar and
+      // obsVar\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("trajectory,temperature,zztop"),
           0, // standardizeWhat=0
@@ -16783,8 +16885,9 @@ class TableTests {
 
       // *************** trajectoryProfile ragged multiple station --- just innerVar
       // and obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just innerVar and obsVar\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just innerVar and
+      // obsVar\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("temperature,zztop,time"),
           0, // standardizeWhat=0
@@ -16827,8 +16930,9 @@ class TableTests {
       // ********** NO_DATA
       // ********** trajectoryProfile ragged multiple station --- NO_DATA,
       // outer/inner/obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outer/inner/obsVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just
+      // outer/inner/obsVar, NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("trajectory,zztop,temperature"),
           0, // standardizeWhat=0
@@ -16840,8 +16944,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // outerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outerVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outerVar,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("zztop,trajectory"),
           0, // standardizeWhat=0
@@ -16853,8 +16958,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // innerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just innerVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just innerVar,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("time,zztop"),
           0, // standardizeWhat=0
@@ -16865,8 +16971,9 @@ class TableTests {
       Test.ensureEqual(table.nColumns(), 0, "");
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just obsVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just obsVar, NO_DATA\n"
+      // +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("zztop,temperature"),
           0, // standardizeWhat=0
@@ -16878,8 +16985,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // outerVar* and innerVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outer*/innerVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outer*/innerVar,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("zztop,z,trajectory"),
           0, // standardizeWhat=0
@@ -16891,8 +16999,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // outerVar and innerVar*
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outer/innerVar*, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outer/innerVar*,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("zztop,z,trajectory"),
           0, // standardizeWhat=0
@@ -16904,8 +17013,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // outerVar* and obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outer*/obsVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outer*/obsVar,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("temperature,trajectory,zztop"),
           0, // standardizeWhat=0
@@ -16917,8 +17027,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // outerVar and obsVar*
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just outer/obsVar*, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just outer/obsVar*,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("temperature,trajectory,zztop"),
           0, // standardizeWhat=0
@@ -16930,8 +17041,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // innerVar* and obsVar
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just inner*/obsVar, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just inner*/obsVar,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("temperature,z,zztop"),
           0, // standardizeWhat=0
@@ -16943,8 +17055,9 @@ class TableTests {
 
       // ********** trajectoryProfile ragged multiple station --- NO_DATA, just
       // innerVar and obsVar*
-    //   String2.log("\n\n** Testing raggedMultipleStationFile just inner/obsVar*, NO_DATA\n" +
-    //       "  " + raggedMultipleStationFileName);
+      // String2.log("\n\n** Testing raggedMultipleStationFile just inner/obsVar*,
+      // NO_DATA\n" +
+      // " " + raggedMultipleStationFileName);
       table.readNcCF(raggedMultipleStationFileName,
           StringArray.fromCSV("temperature,z,zztop"),
           0, // standardizeWhat=0
@@ -16972,7 +17085,6 @@ class TableTests {
    * Total time to read and ingest=~33s from gz file (was ~420s before).
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void testBigAscii() throws Exception {
     // PrimitiveArray.reallyVerbose = true;
     Math2.gcAndWait("Table (between tests)");
@@ -16981,12 +17093,12 @@ class TableTests {
 
     Table table = new Table();
     long time = System.currentTimeMillis();
-    table.readASCII("/data/biddle/3937_v1_CTD_Profiles.tsv.gz");
+    table.readASCII(TableTests.class.getResource("/largeFiles/biddle/3937_v1_CTD_Profiles.tsv.gz").getPath());
     time = System.currentTimeMillis() - time;
     Math2.gcAndWait("Table (between tests)");
     Math2.gcAndWait("Table (between tests)"); // in a test
     // String2.log(" done. " + Math2.memoryString() + "\n" +
-    //     String2.canonicalStatistics()); // in a test
+    // String2.canonicalStatistics()); // in a test
     String results = table.dataToString(4);
     // String2.log(results);
     String expected = "cruise_name,station,cast,ISO_DateTime,Year,Month,Day,timeutc,lon,lat,depth_max,pres_max,Date,timecode,HOT_summary_file_name,parameters,num_bottles,section,nav_code,depth_hgt,EXPOCODE,Ship,comments,CTDPRS,CTDTMP,CTDSAL,CTDOXY,XMISS,CHLPIG,NUMBER,NITRATE,FLUOR,QUALT1\n"
@@ -17000,11 +17112,7 @@ class TableTests {
         "001,2,1,1988-10-30T21:34:00,1988,10,30,2134,-157.9967,22.7483,4750,238,103088,BE,cruise.summaries/hot1.sum,NaN,11,PRS2,GPS,4514,32MW001_1,32MW001/1,NaN,6.0,26.2377,35.2455,204.8,3.05,0.0167,108,,,222122\n"
         +
         "...\n";
-    try {
-      Test.ensureEqual(results, expected, "");
-    } catch (Exception e) {
-      String2.pressEnterToContinue(MustBe.throwableToString(e));
-    }
+    Test.ensureEqual(results, expected, "");
 
     Test.ensureEqual(table.nRows(), 3503266, "");
     Test.ensureEqual(table.nColumns(), 33, "");
@@ -17085,24 +17193,27 @@ class TableTests {
     // String2.log("\n*** Table.testNcCloseTryWithResources()");
 
     long time = System.currentTimeMillis();
-    String fileName = Path.of(TableTests.class.getResource("/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").toURI()).toString();
+    String fileName = Path.of(TableTests.class
+        .getResource("/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc").toURI())
+        .toString();
     int n = 100000;
     for (int i = 0; i < n; i++) {
       try (NetcdfFile ncfile = NcHelper.openFile(fileName)) {
-        if (i % 10000 == 0) 
+        if (i % 10000 == 0)
           String2.log("" + i);
         // } catch (Exception e) {
         // String2.log("i=" + i + " " + e.toString());
       }
     }
-    String2.log("Opened the same file " + n + " times and auto-closed them. time=" + (System.currentTimeMillis() - time)
-        + " (exp=35534ms)");
+    String2.log(
+        "Opened the same file " + n + " times and auto-closed them. time=" + (System.currentTimeMillis() - time)
+            + " (exp=35534ms)");
 
     // open all of the 10,000 scripps glider files in batch14 after manually: gunzip
     // *.gz
     time = System.currentTimeMillis();
     Table table = FileVisitorDNLS.oneStep(
-        Path.of(TableTests.class.getResource("/points/scrippsGliders/batch14/").toURI()).toString(),
+        Path.of(TableTests.class.getResource("/data/points/scrippsGliders/batch14/").toURI()).toString(),
         ".*\\.nc", true, "", false);
     PrimitiveArray dirs = table.getColumn(0);
     PrimitiveArray names = table.getColumn(1);
@@ -17115,7 +17226,8 @@ class TableTests {
       }
     }
     String2.log(
-        "Opened " + n + " files and auto-closed them. time=" + (System.currentTimeMillis() - time) + " (exp=4530ms)");
+        "Opened " + n + " files and auto-closed them. time=" + (System.currentTimeMillis() - time)
+            + " (exp=4530ms)");
   }
 
   /**
@@ -17363,7 +17475,8 @@ class TableTests {
     }
     long tTime = System.currentTimeMillis();
     Connection con = DriverManager.getConnection(url, user, password);
-    // String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) + "ms"); // often 9s !
+    // String2.log("getConnection time=" + (System.currentTimeMillis() - tTime) +
+    // "ms"); // often 9s !
 
     DatabaseMetaData dm = con.getMetaData();
     // String2.log("getMaxRowSize=" + dm.getMaxRowSize()); // 1GB
@@ -17406,14 +17519,16 @@ class TableTests {
       String times[] = { "01:02:03", "07:08:09", null, "23:59:59" };
       for (int i = 0; i < 4; i++) {
         dateDoubles[i] = dates[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(dates[i]);
-        timestampDoubles[i] = timestamps[i] == null ? Double.NaN : Calendar2.isoStringToEpochSeconds(timestamps[i]);
+        timestampDoubles[i] = timestamps[i] == null ? Double.NaN
+            : Calendar2.isoStringToEpochSeconds(timestamps[i]);
       }
       Table tempTable = new Table();
       tempTable.addColumn("uid", PrimitiveArray.factory(new int[] { 1, 2, 3, 4 }));
       tempTable.addColumn("short", PrimitiveArray.factory(new short[] { -10, 0, Short.MAX_VALUE, 10 }));
       // Math2.random makes this test different every time. ensures old table is
       // dropped and new one created.
-      tempTable.addColumn("int", PrimitiveArray.factory(new int[] { Math2.random(1000), 0, Integer.MAX_VALUE, 20 }));
+      tempTable.addColumn("int",
+          PrimitiveArray.factory(new int[] { Math2.random(1000), 0, Integer.MAX_VALUE, 20 }));
       tempTable.addColumn("long", PrimitiveArray.factory(new long[] { -30, 0, Long.MAX_VALUE, 30 }));
       tempTable.addColumn("float", PrimitiveArray.factory(new float[] { -44.4f, 0f, Float.NaN, 44.4f }));
       tempTable.addColumn("double", PrimitiveArray.factory(new double[] { -55.5, 0, Double.NaN, 55.5 }));
@@ -17601,7 +17716,8 @@ class TableTests {
       long[] al = { -2000000000000000L, 2, 2000000000000000L, Long.MAX_VALUE };
       col = table.addColumn("Long Data", new LongArray(al).setMaxIsMV(true));
       table.columnAttributes(col).set("units", new StringArray(new String[] { "longs" }));
-      table.columnAttributes(col).set("long_att2", new LongArray(new long[] { -2000000000000000L, 2000000000000000L }));
+      table.columnAttributes(col).set("long_att2",
+          new LongArray(new long[] { -2000000000000000L, 2000000000000000L }));
     }
 
     // 5=int
@@ -17695,7 +17811,8 @@ class TableTests {
         (new Attributes()).add("_FillValue", LongArray.fromCSV("999999999999"))
             .add("test", LongArray.fromCSV("-9223372036854775808, 9223372036854775807")));
     table.addColumn(9, "aULong",
-        ULongArray.fromCSV("0,  1, 9223372036854775807, 18446744073709551614, 18446744073709551615").setMaxIsMV(true),
+        ULongArray.fromCSV("0,  1, 9223372036854775807, 18446744073709551614, 18446744073709551615")
+            .setMaxIsMV(true),
         (new Attributes()).add("_FillValue", ULongArray.fromCSV("999999999999"))
             .add("test", ULongArray.fromCSV("0, 18446744073709551615")));
     table.addColumn(10, "aFloat",
@@ -17703,7 +17820,8 @@ class TableTests {
         (new Attributes()).add("_FillValue", 1e36f)
             .add("test", new FloatArray(new float[] { -Float.MAX_VALUE, Float.NaN })));
     table.addColumn(11, "aDouble",
-        new DoubleArray(new double[] { -Double.MAX_VALUE, 3.3, Double.MIN_VALUE, Double.MAX_VALUE, Double.NaN }),
+        new DoubleArray(
+            new double[] { -Double.MAX_VALUE, 3.3, Double.MIN_VALUE, Double.MAX_VALUE, Double.NaN }),
         (new Attributes()).add("_FillValue", 1e300)
             .add("test", new DoubleArray(new double[] { -Double.MAX_VALUE, Double.NaN })));
     return table;

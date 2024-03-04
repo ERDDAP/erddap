@@ -441,7 +441,7 @@ class NcHelperTests {
   @org.junit.jupiter.api.Test
   void testFindAllVariablesWithDims() throws Exception {
     StringArray sa = new StringArray();
-    NetcdfFile ncFile = NcHelper.openFile(NcHelperTests.class.getResource("/nodcTemplates/ncCFMA2a.nc").getFile());
+    NetcdfFile ncFile = NcHelper.openFile(NcHelperTests.class.getResource("/data/nodcTemplates/ncCFMA2a.nc").getFile());
     try {
       Variable vars[] = NcHelper.findAllVariablesWithDims(ncFile);
       for (int v = 0; v < vars.length; v++)
@@ -462,7 +462,7 @@ class NcHelperTests {
    */
   @org.junit.jupiter.api.Test
   void testReadStructure() throws Throwable {
-    String fileName = NcHelperTests.class.getResource("/nc/SDScompound.h5").getFile();
+    String fileName = NcHelperTests.class.getResource("/data/nc/SDScompound.h5").getFile();
     // System.out.println(NcHelper.ncdump(fileName, "-v ArrayOfStructures"));
     NetcdfFile nc = NetcdfFiles.open(fileName);
     try {
@@ -507,7 +507,7 @@ class NcHelperTests {
    */
   @org.junit.jupiter.api.Test
   void testReadStructure2() throws Throwable {
-    String fileName = NcHelperTests.class.getResource("/nc/SDScompound.h5").getFile();
+    String fileName = NcHelperTests.class.getResource("/data/nc/SDScompound.h5").getFile();
     // System.out.println(NcHelper.ncdump(fileName, "-v ArrayOfStructures"));
     NetcdfFile nc = NetcdfFiles.open(fileName);
     try {

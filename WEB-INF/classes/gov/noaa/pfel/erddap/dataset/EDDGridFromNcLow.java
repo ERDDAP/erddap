@@ -22,7 +22,6 @@ import com.cohort.util.Test;
 import com.cohort.util.Units2;
 import com.cohort.util.XML;
 
-import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;

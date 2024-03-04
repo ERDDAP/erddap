@@ -183,7 +183,8 @@ class PrimitiveArrayTests {
     }
     Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid int value: 2147483648i", "");
 
-    pa = PrimitiveArray.parseNccsvAttributes(StringArray.simpleFromNccsv("1i,123456789091i")); // doesn't match regex
+    pa = PrimitiveArray.parseNccsvAttributes(StringArray.simpleFromNccsv("1i,123456789091i")); // doesn't match
+                                                                                               // regex
     Test.ensureEqual(pa.elementTypeString(), "String", "");
     Test.ensureEqual(pa.toString(), "1i, 123456789091i", "");
 
@@ -211,7 +212,8 @@ class PrimitiveArrayTests {
     }
     Test.ensureEqual(msg, "com.cohort.util.SimpleException: Invalid long value: 9223372036854775808L", "");
 
-    pa = PrimitiveArray.parseNccsvAttributes(StringArray.simpleFromNccsv("1L,12345678901234567890L")); // doesn't match
+    pa = PrimitiveArray.parseNccsvAttributes(StringArray.simpleFromNccsv("1L,12345678901234567890L")); // doesn't
+                                                                                                       // match
                                                                                                        // regex
     Test.ensureEqual(pa.elementTypeString(), "String", "");
     Test.ensureEqual(pa.toString(), "1L, 12345678901234567890L", "");
@@ -384,7 +386,8 @@ class PrimitiveArrayTests {
         "");
     Test.ensureEqual(PrimitiveArray.factory(PAType.DOUBLE, 7, "70").toString(),
         "70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0", "");
-    Test.ensureEqual(PrimitiveArray.factory(PAType.STRING, 8, "ab").toString(), "ab, ab, ab, ab, ab, ab, ab, ab", "");
+    Test.ensureEqual(PrimitiveArray.factory(PAType.STRING, 8, "ab").toString(), "ab, ab, ab, ab, ab, ab, ab, ab",
+        "");
 
     // test simplify
     pa = new StringArray(new String[] { "-127", "126", ".", "NaN", null });
@@ -509,9 +512,11 @@ class PrimitiveArrayTests {
         new int[] { 3, 2, 0, 1 }, "");
     Test.ensureEqual(PrimitiveArray.rank(table, new int[] { 3 }, new boolean[] { true }),
         new int[] { 2, 3, 0, 1 }, "");
-    Test.ensureEqual(PrimitiveArray.rank(table, new int[] { 1, 0 }, new boolean[] { true, true }), // tie, a/ascending
+    Test.ensureEqual(PrimitiveArray.rank(table, new int[] { 1, 0 }, new boolean[] { true, true }), // tie,
+                                                                                                   // a/ascending
         new int[] { 3, 0, 2, 1 }, "");
-    Test.ensureEqual(PrimitiveArray.rank(table, new int[] { 1, 0 }, new boolean[] { true, false }), // tie, a/descending
+    Test.ensureEqual(PrimitiveArray.rank(table, new int[] { 1, 0 }, new boolean[] { true, false }), // tie,
+                                                                                                    // a/descending
         new int[] { 3, 0, 1, 2 }, "");
     Test.ensureEqual(arByte.elementType(), PAType.BYTE, "");
     Test.ensureEqual(arFloat.elementType(), PAType.FLOAT, "");
@@ -576,18 +581,23 @@ class PrimitiveArrayTests {
     StringArray arString2 = new StringArray(new String[] { "b", "aa", "A", "c" });
     ArrayList table2 = String2.toArrayList(new Object[] { arByte2, arFloat2, arInt2, arString2 });
     PrimitiveArray.merge(table2, table, new int[] { 1, 0 }, new boolean[] { true, true }, false);
-    Test.ensureEqual(((PrimitiveArray) table2.get(0)).toDoubleArray(), new double[] { 110, 0, 50, 50, 100, 5, 15, 25 },
+    Test.ensureEqual(((PrimitiveArray) table2.get(0)).toDoubleArray(),
+        new double[] { 110, 0, 50, 50, 100, 5, 15, 25 },
         "");
-    Test.ensureEqual(((PrimitiveArray) table2.get(1)).toDoubleArray(), new double[] { -5, 1, 3, 3, 3, 4, 14, 24 }, "");
-    Test.ensureEqual(((PrimitiveArray) table2.get(2)).toDoubleArray(), new double[] { 0, 17, 3, 3, 1e300, 3, 13, 1 },
+    Test.ensureEqual(((PrimitiveArray) table2.get(1)).toDoubleArray(), new double[] { -5, 1, 3, 3, 3, 4, 14, 24 },
+        "");
+    Test.ensureEqual(((PrimitiveArray) table2.get(2)).toDoubleArray(),
+        new double[] { 0, 17, 3, 3, 1e300, 3, 13, 1 },
         "");
     Test.ensureEqual(((PrimitiveArray) table2.get(3)).toStringArray(),
         new String[] { "ABE", "a", "A", "A", "abe", "b", "aa", "c" }, "");
 
     PrimitiveArray.merge(table2, table, new int[] { 1, 0 }, new boolean[] { true, false }, true);
-    Test.ensureEqual(((PrimitiveArray) table2.get(0)).toDoubleArray(), new double[] { 110, 0, 100, 50, 5, 15, 25 }, "");
+    Test.ensureEqual(((PrimitiveArray) table2.get(0)).toDoubleArray(), new double[] { 110, 0, 100, 50, 5, 15, 25 },
+        "");
     Test.ensureEqual(((PrimitiveArray) table2.get(1)).toDoubleArray(), new double[] { -5, 1, 3, 3, 4, 14, 24 }, "");
-    Test.ensureEqual(((PrimitiveArray) table2.get(2)).toDoubleArray(), new double[] { 0, 17, 1e300, 3, 3, 13, 1 }, "");
+    Test.ensureEqual(((PrimitiveArray) table2.get(2)).toDoubleArray(), new double[] { 0, 17, 1e300, 3, 3, 13, 1 },
+        "");
     Test.ensureEqual(((PrimitiveArray) table2.get(3)).toStringArray(),
         new String[] { "ABE", "a", "abe", "A", "b", "aa", "c" }, "");
 
@@ -842,22 +852,28 @@ class PrimitiveArrayTests {
 
     // test rafFirstGAE lastParam: precision = 5
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2), 5), 0, "");
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5),
+        0,
         "");
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5),
+        0,
         "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4), 5), 1, "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6), 5), 2, ""); // first
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5), 2,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5),
+        2,
         "");
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5), 2,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5),
+        2,
         "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8), 5), 5, "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1), 5), 0, "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3), 5), 1, "");
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5), 1,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5),
+        1,
         "");
-    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5), 1,
+    Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5),
+        1,
         "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5), 5), 2, "");
     Test.ensureEqual(PrimitiveArray.rafFirstGAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7), 5), 5, "");
@@ -876,22 +892,28 @@ class PrimitiveArrayTests {
 
     // test rafLastLAE lastParam: precision = 5
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2), 5), 0, "");
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.0000001f), 5),
+        0,
         "");
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1.9999999f), 5),
+        0,
         "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(4), 5), 1, "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6), 5), 4, ""); // last
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5), 4,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(6.0000001f), 5),
+        4,
         "");
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5), 4,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5.9999999f), 5),
+        4,
         "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(8), 5), 5, "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(1), 5), -1, "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3), 5), 0, "");
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(3.0000001f), 5),
+        0,
         "");
-    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5), 0,
+    Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(2.9999999f), 5),
+        0,
         "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(5), 5), 1, "");
     Test.ensureEqual(PrimitiveArray.rafLastLAE(raf, PAType.FLOAT, farStart, 0, 5, PAOne.fromFloat(7), 5), 4, "");
@@ -1034,7 +1056,8 @@ class PrimitiveArrayTests {
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.INT, "1.1, 2.2").toString(), "1, 2", "");
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.INT, "1.1, 2.2").addFromPA(other, 1, 2).toString(),
         "1, 2, 22, 33", "");
-    Test.ensureEqual(PrimitiveArray.csvFactory(PAType.LONG, "1, 2").addFromPA(other, 1, 2).toString(), "1, 2, 22, 33",
+    Test.ensureEqual(PrimitiveArray.csvFactory(PAType.LONG, "1, 2").addFromPA(other, 1, 2).toString(),
+        "1, 2, 22, 33",
         "");
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.SHORT, "1.1, 2.2").addFromPA(other, 1, 2).toString(),
         "1, 2, 22, 33", "");
@@ -1049,7 +1072,8 @@ class PrimitiveArrayTests {
             .addFromPA(PrimitiveArray.csvFactory(PAType.BYTE, "11.1, 22.2, 33.3"), 1, 2).toString(),
         "1, 2, 22, 33", "");
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.CHAR, "1.1, 2.2")
-        .addFromPA(PrimitiveArray.csvFactory(PAType.CHAR, "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 2, 3", "");
+        .addFromPA(PrimitiveArray.csvFactory(PAType.CHAR, "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 2, 3",
+        "");
     Test.ensureEqual(
         PrimitiveArray.csvFactory(PAType.DOUBLE, "1.1, 2.2")
             .addFromPA(PrimitiveArray.csvFactory(PAType.DOUBLE, "11.1, 22.2, 33.3"), 1, 2).toString(),
@@ -1059,7 +1083,8 @@ class PrimitiveArrayTests {
             .addFromPA(PrimitiveArray.csvFactory(PAType.FLOAT, "11.1, 22.2, 33.3"), 1, 2).toString(),
         "1.1, 2.2, 22.2, 33.3", "");
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.INT, "1.1, 2.2")
-        .addFromPA(PrimitiveArray.csvFactory(PAType.INT, "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33", "");
+        .addFromPA(PrimitiveArray.csvFactory(PAType.INT, "11.1, 22.2, 33.3"), 1, 2).toString(), "1, 2, 22, 33",
+        "");
     Test.ensureEqual(PrimitiveArray.csvFactory(PAType.LONG, "1, 2")
         .addFromPA(PrimitiveArray.csvFactory(PAType.LONG, "11, 22, 33"), 1, 2).toString(), "1, 2, 22, 33", "");
     Test.ensureEqual(

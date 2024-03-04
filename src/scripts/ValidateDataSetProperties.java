@@ -2,7 +2,7 @@
  * ValidateDataSetPropterties Copyright 2006, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch;
+package scripts;
 
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;

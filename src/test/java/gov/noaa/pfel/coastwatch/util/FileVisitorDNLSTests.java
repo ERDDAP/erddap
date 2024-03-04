@@ -15,7 +15,6 @@ import com.cohort.util.Test;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import tags.TagAWS;
 import tags.TagExternalOther;
-import tags.TagLargeFile;
 import tags.TagLocalERDDAP;
 import tags.TagThredds;
 
@@ -39,9 +38,11 @@ class FileVisitorDNLSTests {
     // //catalog.html //was
     String url = "https://www.ncei.noaa.gov/thredds-ocean/catalog/aquarius/nodc_binned_V4.0/monthly/"; // catalog.html
                                                                                                        // //doesn't
-                                                                                                       // exist. Where
+                                                                                                       // exist.
+                                                                                                       // Where
                                                                                                        // is this
-                                                                                                       // dataset now?
+                                                                                                       // dataset
+                                                                                                       // now?
     String fileNameRegex = "sss_binned_L3_MON_SCI_V4.0_\\d{4}\\.nc";
     boolean recursive = true;
     String pathRegex = null;
@@ -142,7 +143,7 @@ class FileVisitorDNLSTests {
     long time;
     int n;
     String results, expected;
-    String testDir = Path.of(FileVisitorDNLSTests.class.getResource("/fileNames").toURI()).toString();
+    String testDir = Path.of(FileVisitorDNLSTests.class.getResource("/data/fileNames").toURI()).toString();
 
     String expectedDir = testDir.replace("\\", "\\\\") + "\\\\";
 
@@ -194,7 +195,7 @@ class FileVisitorDNLSTests {
     expected = "{\n" +
         "dimensions:\n" +
         "\trow = 4 ;\n" +
-        "\tdirectory_strlen = " + (expectedDir.length() - 2) + " ;\n" +
+        "\tdirectory_strlen = " + (expectedDir.length() - 3) + " ;\n" +
         "\tname_strlen = 27 ;\n" +
         "variables:\n" +
         "\tchar directory(row, directory_strlen) ;\n" +
@@ -370,7 +371,8 @@ class FileVisitorDNLSTests {
       expected = "directory,name,lastModified,size\n" +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,,,\n" +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,doi.txt,1380418295000,35\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n" +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/,nex-dcp30-s3-files.json,1473288687000,2717227\n"
+          +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/,,,\n" +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/CONTRIB/,,,\n" +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/NEX-quartile/,,,\n";
@@ -398,8 +400,10 @@ class FileVisitorDNLSTests {
       table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true);
       results = table.dataToString();
       expected = "directory,name,lastModified,size\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
+          +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
+          +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
           +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
@@ -426,7 +430,8 @@ class FileVisitorDNLSTests {
       table = FileVisitorDNLS.oneStep(parent + child, ".*\\.nc", false, pathRegex, true);
       results = table.dataToString();
       expected = "directory,name,lastModified,size\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
+          +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
           +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
@@ -526,12 +531,15 @@ class FileVisitorDNLSTests {
       FileVisitorDNLS.S3_MAX_KEYS = maxKeys[mk];
 
       // recursive and dirToo
-      table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true); // there is a .nc.md5 for each .nc, so
+      table = FileVisitorDNLS.oneStep(parent, ".*\\.nc", true, pathRegex, true); // there is a .nc.md5 for each
+                                                                                 // .nc, so
                                                                                  // oneStep filters client-side
       results = table.dataToString();
       expected = "directory,name,lastModified,size\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n" +
-          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n" +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/,,,\n"
+          +
+          "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,,,\n"
+          +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_200601-201012.nc,1380652638000,1368229240\n"
           +
           "https://nasanex.s3.us-west-2.amazonaws.com/NEX-DCP30/BCSD/rcp26/mon/atmos/tasmin/r1i1p1/v1.0/CONUS/,tasmin_amon_BCSD_rcp26_r1i1p1_CONUS_bcc-csm1-1_201101-201512.nc,1380649780000,1368487462\n"
@@ -546,7 +554,8 @@ class FileVisitorDNLSTests {
         fullResults = results;
       Test.ensureEqual(results, fullResults, "results=\n" + results + "\nfullResults=\n" + fullResults);
 
-      String2.log("nLines=" + String2.countAll(results, "\n")); // 2021-11-30 441 but it processes ~890 items (half .nc,
+      String2.log("nLines=" + String2.countAll(results, "\n")); // 2021-11-30 441 but it processes ~890 items
+                                                                // (half .nc,
                                                                 // half .nc.md5)
 
     }
@@ -606,7 +615,8 @@ class FileVisitorDNLSTests {
     expected = "directory,name,lastModified,size\n" +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,,,\n" +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
-        "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n" +
+        "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n"
+        +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1620243280000,10478645\n"
         +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n"
@@ -627,7 +637,8 @@ class FileVisitorDNLSTests {
     results = table.dataToString();
     expected = "directory,name,lastModified,size\n" +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,bad.nc,1620243280000,39102\n" +
-        "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n" +
+        "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,BadFileNoExtension,1620243280000,39102\n"
+        +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080101_03.nc.gz,1620243280000,10478645\n"
         +
         "https://bobsimonsdata.s3.us-east-1.amazonaws.com/erdQSwind1day/,erdQSwind1day_20080104_07.nc,1620243281000,49790172\n";
@@ -1245,6 +1256,7 @@ class FileVisitorDNLSTests {
    * This tests the ERSST directory.
    */
   @org.junit.jupiter.api.Test
+  @TagExternalOther
   void testErsst() throws Throwable {
     String2.log("\n*** FileVisitorDNLS.testErsst()\n");
     Table table = FileVisitorDNLS.makeEmptyTable();
@@ -1284,23 +1296,31 @@ class FileVisitorDNLSTests {
     // String2.log("\n*** FileVisitorDNLS.testOneStepToString()");
 
     String results = FileVisitorDNLS.oneStepToString(
-        Path.of(FileVisitorDNLSTests.class.getResource("/CFPointConventions/timeSeries").toURI()).toString(),
+        Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/timeSeries").toURI())
+            .toString(),
         ".*", true, ".*");
     String expected =
         // this tests that all files are before all dirs
-        "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb 2024-01-18T14:31:37Z          5173\n" +
-            "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n" +
+        "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb 2024-01-18T14:31:37Z          5173\n"
+            +
+            "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n"
+            +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2\\\n" +
-            "  README                                                         2024-01-18T14:31:37Z            87\n" +
-            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.cdl 2024-01-18T14:31:37Z          1793\n" +
-            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc 2024-01-18T14:31:37Z          4796\n" +
+            "  README                                                         2024-01-18T14:31:37Z            87\n"
+            +
+            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.cdl 2024-01-18T14:31:37Z          1793\n"
+            +
+            "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc 2024-01-18T14:31:37Z          4796\n"
+            +
             "  timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.ncml 2024-01-18T14:31:37Z          3026\n"
             +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1\\\n" +
-            "  README                                                         2024-01-18T14:31:37Z           538\n" +
+            "  README                                                         2024-01-18T14:31:37Z           538\n"
+            +
             "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl 2024-01-18T14:31:37Z          1515\n"
             +
-            "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n" +
+            "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n"
+            +
             "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml 2024-01-18T14:31:37Z          2625\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
@@ -1313,16 +1333,21 @@ class FileVisitorDNLSTests {
     // String2.log("\n*** FileVisitorDNLS.testPathRegex()");
 
     String results = FileVisitorDNLS.oneStepToString(
-        Path.of(FileVisitorDNLSTests.class.getResource("/CFPointConventions/timeSeries").toURI()).toString(),
+        Path.of(FileVisitorDNLSTests.class.getResource("/data/CFPointConventions/timeSeries").toURI())
+            .toString(),
         ".*", true, // all files
         ".*H\\.2\\.1.*"); // but only H.2.1 dirs
     String expected = "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.rb 2024-01-18T14:31:37Z          5173\n"
         +
-        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n" +
+        "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.rb 2024-01-18T14:31:37Z          2979\n"
+        +
         "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1\\\n" +
-        "  README                                                         2024-01-18T14:31:37Z           538\n" +
-        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl 2024-01-18T14:31:37Z          1515\n" +
-        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n" +
+        "  README                                                         2024-01-18T14:31:37Z           538\n"
+        +
+        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.cdl 2024-01-18T14:31:37Z          1515\n"
+        +
+        "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc 2024-01-18T14:31:37Z         10436\n"
+        +
         "  timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.ncml 2024-01-18T14:31:37Z          2625\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
   }
@@ -1338,17 +1363,24 @@ class FileVisitorDNLSTests {
    * ./FileVisitorDNLS.sh /u00/satellite/MUR41/anom/1day/ ....0401.\*
    */
   @org.junit.jupiter.api.Test
-  @TagLargeFile
   void testSymbolicLinks() throws Throwable {
     // String2.log("\n*** FileVisitorDNLS.testSymbolicLinks()");
     // boolean oDebugMode = debugMode;
     // debugMode = true;
 
     String results = FileVisitorDNLS.oneStepToString(
-        "/u00/satellite/MUR41/anom/1day/", ".*", true, ".*");
+        Path.of(FileVisitorDNLSTests.class.getResource("/largeFiles/satellite/MUR41/anom/1day/").toURI())
+            .toString(),
+        ".*", true,
+        ".*");
     String expected =
         // 2002 are files. 2003 is a shortcut to files
-        "zztop\n";
+        "2003.lnk                                                         2024-03-02T22:15:27Z          1762\n"
+            + //
+            "2002\\\n" + //
+            "  20020601090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 2016-06-01T22:38:34Z     913429216\n"
+            + //
+            "  20020602090000-JPL-L4_GHRSST-SSTfndAnom-MUR-GLOB-v02.0-fv04.1.nc 2016-06-01T22:42:24Z     913067730\n";
     Test.ensureEqual(results, expected, "results=\n" + results);
     // debugMode = oDebugMode;
   }

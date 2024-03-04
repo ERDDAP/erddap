@@ -10,7 +10,7 @@ class FindDuplicateTimeTests {
   @org.junit.jupiter.api.Test
   void testBasic() throws Throwable {
     String2.log("\n*** FindDuplicateTime.test()");
-    String testDir = FindDuplicateTimeTests.class.getResource("/nc").getPath();
+    String testDir = FindDuplicateTimeTests.class.getResource("/data/nc").getPath();
     String results = FindDuplicateTime.findDuplicateTime(testDir,
         "GL_.*\\.nc", "TIME") + "\n";
     String expected = "*** FindDuplicateTime directory=" + testDir

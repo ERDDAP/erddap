@@ -2,14 +2,13 @@
  * MakeErdJavaZip Copyright 2005, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
-package gov.noaa.pfel.coastwatch.pointdata;
+package scripts;
 
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import gov.noaa.pfel.coastwatch.ValidateDataSetProperties;
 import gov.noaa.pfel.coastwatch.griddata.DoubleCenterGrids;
 import gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml;
 import gov.noaa.pfel.coastwatch.griddata.GridSaveAs;
