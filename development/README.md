@@ -9,6 +9,7 @@ To build the docker image you can run the following command from the root of the
 docker build -f development/Dockerfile -t erddap-docker .
 ```
 The initial build of ERDDAP may take a fair amount of time, but the DockerFile uses cache mounts in order to speed up subsequent builds of the application by caching dependencies.
+It is worth noting that the ERDDAP unit tests are ran as part of the build stage.
 
 ### Running the image:
 Once the image has been built, the following command can be used run an ERDDAP container:
