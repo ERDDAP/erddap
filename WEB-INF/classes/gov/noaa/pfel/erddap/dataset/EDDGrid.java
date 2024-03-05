@@ -14380,7 +14380,7 @@ if (ii == iiERDDAP) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " + //gone!
+           "codeList=\"https://data.noaa.gov/resources/iso19139/schema/srv/serviceMetadata.xsd\" " + //gone!
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -14424,7 +14424,7 @@ if (ii == iiOPeNDAP) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/resources/iso19139/schema/srv/serviceMetadata.xsd\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
@@ -14467,7 +14467,7 @@ if (ii == iiWMS) {
 "      </srv:extent>\n" +
 "      <srv:couplingType>\n" +
 "        <srv:SV_CouplingType " +
-           "codeList=\"https://data.noaa.gov/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeList=\"https://data.noaa.gov/resources/iso19139/schema/srv/serviceMetadata.xsd\" " +
            "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
 "      </srv:couplingType>\n" +
 "      <srv:containsOperations>\n" +
