@@ -6,6 +6,8 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
@@ -22,17 +24,17 @@ class SgtMapTests {
 
   private final static String expectedDir = SgtMapTests.class.getResource("/data/images/").getPath() + "/";
 
-  private void initFilePaths() {
+  @BeforeAll
+  static void init() {
     File2.setWebInfParentDirectory();
-    // SSR.tempDirectory = "D:/GitHub/erddap/WEB-INF/temp/";
-    // File2.webInfParentDirectory = "D:/GitHub/erddap/";
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
   }
 
   /** This tests SgtMap making bathymetry maps. 0, 11 */
   @org.junit.jupiter.api.Test
   @TagFontDependent
   void testBathymetry() throws Exception {
-    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // Grid.verbose = true;
@@ -62,7 +64,6 @@ class SgtMapTests {
   @org.junit.jupiter.api.Test
   @TagFontDependent
   void testTopography() throws Exception {
-    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // Grid.verbose = true;
@@ -93,7 +94,6 @@ class SgtMapTests {
   @org.junit.jupiter.api.Test
   @TagFontDependent
   void basicTest() throws Exception {
-    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // String2.log("*** test SgtMap.basicTest");
@@ -240,7 +240,6 @@ class SgtMapTests {
   /** This tests makeCleanMap. (0, 5) */
   @org.junit.jupiter.api.Test
   void testMakeCleanMap() throws Exception {
-    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // String2.log("*** testMakeCleanMap");
@@ -312,7 +311,6 @@ class SgtMapTests {
    */
   void testRegionsMap(double minX, double maxX, double minY, double maxY)
       throws Exception {
-    initFilePaths();
     // verbose = true;
     // reallyVerbose = true;
     // Boundaries.verbose = true;
@@ -345,7 +343,6 @@ class SgtMapTests {
    */
   @org.junit.jupiter.api.Test
   void testCreateTopographyGrid() throws Exception {
-    initFilePaths();
     // String2.log("\ntestCreateTopographyGrid");
     // Grid.verbose = true;
 
@@ -503,7 +500,6 @@ class SgtMapTests {
   @org.junit.jupiter.api.Test
   @TagFontDependent
   void testOceanPalette() throws Exception {
-    initFilePaths();
     int first = 0;
     int last = 7;
 

@@ -2,6 +2,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -26,6 +27,13 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 class EDDGridFromNcFilesUnpackedTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * This tests generateDatasetsXml.
    * 
@@ -34,9 +42,6 @@ class EDDGridFromNcFilesUnpackedTests {
   @org.junit.jupiter.api.Test
   @TagIncompleteTest
   void testGenerateDatasetsXml() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
 
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testGenerateDatasetsXml");
 
@@ -342,9 +347,6 @@ class EDDGridFromNcFilesUnpackedTests {
   void testBasic(boolean deleteCachedDatasetInfo) throws Throwable {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testBasic()\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -534,9 +536,6 @@ class EDDGridFromNcFilesUnpackedTests {
   void testUInt16File() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testUInt16File()");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
@@ -1133,9 +1132,6 @@ class EDDGridFromNcFilesUnpackedTests {
   void testSuperPreciseTimeUnits() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testSuperPreciseTimeUnits");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery;
     String fileDir = Path.of(EDDGridFromNcFilesUnpackedTests.class.getResource("/largeFiles/nc/").toURI()).toString()
@@ -1489,9 +1485,6 @@ class EDDGridFromNcFilesUnpackedTests {
   void testMissingValue() throws Throwable {
     // String2.log("\n*** EDDGridFromNcFilesUnpacked.testMissingValue");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";

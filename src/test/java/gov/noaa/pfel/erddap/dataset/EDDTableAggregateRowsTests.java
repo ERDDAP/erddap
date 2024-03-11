@@ -1,5 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -10,13 +12,17 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import testDataset.EDDTestDataset;
 
 class EDDTableAggregateRowsTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    */
   @org.junit.jupiter.api.Test
   void testBasic() throws Throwable {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // String2.log("\nEDDTableAggregateRows.testBasic()");
     // testVerboseOn();
     // boolean oDebugMode = debugMode;

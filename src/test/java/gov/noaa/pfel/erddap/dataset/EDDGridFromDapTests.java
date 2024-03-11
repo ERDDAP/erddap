@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -49,6 +50,13 @@ import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
 
 class EDDGridFromDapTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   @org.junit.jupiter.api.Test
   @TagExternalOther
   void testForCarleton() throws Throwable {
@@ -3223,8 +3231,6 @@ class EDDGridFromDapTests {
     // this dataset is good test because it has 2 dimension combos
     String url = "http://apdrc.soest.hawaii.edu/dods/public_data/SODA/soda_pop2.2.4";
     // String2.log("\n*** EDDGridFromDap.testGenerateDatasetsXml");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     int language = 0;
 
     String expected1 = "<dataset type=\"EDDGridFromDap\" datasetID=\"hawaii_soest_82a3_7247_c8d7\" active=\"true\">\n"
@@ -4078,9 +4084,6 @@ class EDDGridFromDapTests {
   @org.junit.jupiter.api.Test
   @TagMissingDataset
   void testOneTime() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-
     int language = 0;
 
     // gridDataset = (EDDGridFromDap)oneFromDatasetsXml(null, "pmelOscar");
@@ -4632,8 +4635,6 @@ class EDDGridFromDapTests {
   @TagThredds
   void testDescendingLat() throws Throwable {
     boolean doGraphicsTests = true;
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // String2.log("\n*** EDDGridFromDap.testDescendinglat");
     // testVerboseOn();
     int tSize;
@@ -5323,8 +5324,6 @@ class EDDGridFromDapTests {
    */
   @org.junit.jupiter.api.Test
   void testScaleFactor() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // testVerboseOn();
     int language = 0;
     // soda 2.2.4
@@ -6855,8 +6854,6 @@ class EDDGridFromDapTests {
   @TagThredds
   void testAccessibleTo() throws Throwable {
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdBAssta5day();
     String roleNull[] = null;
     String roleNone[] = new String[0];
@@ -6914,8 +6911,6 @@ class EDDGridFromDapTests {
   @ValueSource(ints = { 2, 4, 6, 96 })
   @TagThredds
   void testBigRequest(int nTimePoints) throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // testVerboseOn();
     String2.log("\n*** EDDGridFromDap.testbigRequest  partialRequestMaxBytes=" +
         EDStatic.partialRequestMaxBytes +
@@ -7704,8 +7699,6 @@ class EDDGridFromDapTests {
   void testMapAntialiasing() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testMapAntialiasing\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     int language = 0;
     EDDGrid gridDataset = (EDDGrid) EDDGridFromDap.oneFromDatasetsXml(null, "etopo360");
 
@@ -11579,8 +11572,6 @@ class EDDGridFromDapTests {
   @TagThredds
   void testActualRange() throws Throwable {
     // String2.log("\n*** EDDGridFromDap.testActualRange");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     int language = 0;
     // testVerboseOn();
     String tDir = EDStatic.fullTestCacheDirectory;

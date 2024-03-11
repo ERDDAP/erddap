@@ -1,5 +1,7 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
@@ -9,6 +11,14 @@ import tags.TagAWS;
 import tags.TagExternalOther;
 
 class FileVisitorSubdirTests {
+
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * This tests a local file system.
    */
@@ -16,7 +26,6 @@ class FileVisitorSubdirTests {
   void testLocal() throws Throwable {
     // String2.log("\n*** FileVisitorSubdir.testLocal");
     // verbose = true;
-    File2.setWebInfParentDirectory();
     String contextDir = File2.webInfParentDirectory(); // with / separator and / at the end
     StringArray alps;
     long time;

@@ -1,5 +1,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
@@ -16,6 +18,13 @@ import tags.TagThredds;
 import testDataset.EDDTestDataset;
 
 class EDDGridAggregateExistingDimensionTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * This tests the basic methods in this class.
    *

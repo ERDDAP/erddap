@@ -2,6 +2,8 @@ package gov.noaa.pfel.erddap.dataset;
 
 import java.io.File;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
@@ -18,8 +20,16 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
+import gov.noaa.pfel.erddap.util.EDStatic;
 
 class EDDTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   @org.junit.jupiter.api.Test
   void testSuggestInstitutionParts() {
     String2.log("\n*** EDD.testSuggestionInstituionParts");
@@ -52,9 +62,9 @@ class EDDTests {
 
   @org.junit.jupiter.api.Test
   void testSparqlP01toP02() throws Exception {
-    String2.log("**** EDD.testSparqlP01toP02()");
+    // String2.log("**** EDD.testSparqlP01toP02()");
     Test.ensureEqual(EDD.sparqlP01toP02("PSLTZZ01"), "PSAL", "");
-    String2.log("* Test of invalid P01 value:");
+    // String2.log("* Test of invalid P01 value:");
     Test.ensureEqual(EDD.sparqlP01toP02("Bob"), null, "");
   }
 
@@ -270,7 +280,7 @@ class EDDTests {
    */
   @org.junit.jupiter.api.Test
   void testAddFillValueAttributes() throws Throwable {
-    String2.log("\n*** EDD.testAddFillValueAttributes()");
+    // String2.log("\n*** EDD.testAddFillValueAttributes()");
     String dir = EDDTests.class.getResource("/data/addFillValueAttributes").getPath() + "/";
 
     try {
@@ -575,6 +585,230 @@ class EDDTests {
     Test.ensureEqual(EDD.adjustNThreads(3, 6000L * Math2.BytesPerMB, 10000L * Math2.BytesPerMB), 1, "m"); // 120% of
                                                                                                           // maxMemory/2
                                                                                                           // is inUse
+  }
+
+  @org.junit.jupiter.api.Test
+  void testInPortXml() throws Throwable {
+    String dir = EDStatic.fullTestCacheDirectory;
+    String gridTable = "grid"; // grid or table
+    String tDatasetID = "erdSWchlamday";
+    String fileName = "ErddapToInPort_" + tDatasetID + ".xml";
+    EDD edd = EDD.oneFromXmlFragment(null,
+        "<dataset type=\"EDD" + String2.toTitleCase(gridTable) + "FromErddap\" datasetID=\"" + tDatasetID
+            + "\" active=\"true\">\n" +
+            "    <sourceUrl>https://coastwatch.pfeg.noaa.gov/erddap/" + gridTable + "dap/" + tDatasetID
+            + "</sourceUrl>\n" +
+            "</dataset>\n");
+    String error = File2.writeToFileUtf8(dir + fileName,
+        edd.getInPortXmlString(
+            "No Archiving Intended",
+            "",
+            "This data is derived from data in an archive. " +
+                "The archives only want to archive the source data."));
+    if (error.length() > 0)
+      throw new RuntimeException(error);
+    String results = File2.directReadFromUtf8File(dir + fileName);
+    String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<inport-metadata version=\"1.0\">\n" +
+        "  <item-identification>\n" +
+        "    <parent-catalog-item-id>???</parent-catalog-item-id>\n" +
+        "    <catalog-item-id>???</catalog-item-id>\n" +
+        "    <catalog-item-type>Data Set</catalog-item-type>\n" +
+        "    <title>Chlorophyll-a, Orbview-2 SeaWiFS, 0.1°, Global, 1997-2010 (Monthly Composite) DEPRECATED</title>\n"
+        +
+        "    <short-name>erdSWchlamday</short-name>\n" +
+        "    <status>In Work</status>\n" +
+        "    <abstract>THIS VERSION IS DEPRECATED. SEE THE NEW R2018.0 VERSION IN erdSW2018chla1day. (Feb 2018) \n" +
+        "NASA GSFC Ocean Color Web distributes science-quality chlorophyll-a concentration data from the Sea-viewing Wide Field-of-view Sensor (SeaWiFS) on the Orbview-2 satellite.</abstract>\n"
+        +
+        "    <purpose></purpose>\n" +
+        "    <notes></notes>\n" +
+        "    <other-citation-details></other-citation-details>\n" +
+        "    <supplemental-information>https://coastwatch.pfeg.noaa.gov/infog/SW_chla_las.html</supplemental-information>\n"
+        +
+        "  </item-identification>\n" +
+        "  <physical-location>\n" + //
+        "    <organization>Your Institution</organization>\n" + //
+        "    <city>Some Town</city>\n" + //
+        "    <state-province>CA</state-province>\n" + //
+        "    <country>USA</country>\n" + //
+        "    <location-description></location-description>\n" + //
+        "  </physical-location>\n" +
+        "  <data-set-information>\n" + //
+        "    <data-presentation-form>Table (digital)</data-presentation-form>\n" + //
+        "    <data-presentation-form-other></data-presentation-form-other>\n" + //
+        "    <instrument>SeaWiFS HRPT</instrument>\n" + //
+        "    <platform>Orbview-2</platform>\n" + //
+        "    <physical-collection-fishing-gear>Not Applicable</physical-collection-fishing-gear>\n" + //
+        "  </data-set-information>\n" + //
+        "  <support-roles mode=\"replace\">\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Metadata Contact</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>your.email@yourCompany.com</person-email>\n" + //
+        "      <organization>Your Institution</organization>\n" + //
+        "      <contact-instructions>email your.email@yourCompany.com</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Distributor</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>your.email@yourCompany.com</person-email>\n" + //
+        "      <organization>Your Institution</organization>\n" + //
+        "      <contact-instructions>email your.email@yourCompany.com</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Author</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>erd.data@noaa.gov</person-email>\n" + //
+        "      <organization></organization>\n" + //
+        "      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Data Set Credit</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>erd.data@noaa.gov</person-email>\n" + //
+        "      <organization></organization>\n" + //
+        "      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Data Steward</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>erd.data@noaa.gov</person-email>\n" + //
+        "      <organization></organization>\n" + //
+        "      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "    <support-role>\n" + //
+        "      <support-role-type>Point of Contact</support-role-type>\n" + //
+        "      <from-date>2024</from-date>\n" + //
+        "      <person-email>erd.data@noaa.gov</person-email>\n" + //
+        "      <organization></organization>\n" + //
+        "      <contact-instructions>email erd.data@noaa.gov</contact-instructions>\n" + //
+        "    </support-role>\n" + //
+        "  </support-roles>\n" +
+        "  <extents mode=\"replace\">\n" +
+        "    <extent>\n" +
+        "      <description></description>\n" +
+        "      <time-frames>\n" +
+        "        <time-frame>\n" +
+        "          <time-frame-type>Range</time-frame-type>\n" +
+        "          <start-date-time>19970916T000000Z</start-date-time>\n" +
+        "          <end-date-time>20101216T120000Z</end-date-time>\n" +
+        "          <description></description>\n" +
+        "        </time-frame>\n" +
+        "      </time-frames>\n" +
+        "      <geographic-areas>\n" +
+        "        <geographic-area>\n" +
+        "          <west-bound>-180.0</west-bound>\n" +
+        "          <east-bound>180.0</east-bound>\n" +
+        "          <north-bound>90.0</north-bound>\n" +
+        "          <south-bound>-90.0</south-bound>\n" +
+        "          <description></description>\n" +
+        "        </geographic-area>\n" +
+        "      </geographic-areas>\n" +
+        "    </extent>\n" +
+        "  </extents>\n" +
+        "  <access-information>\n" +
+        "    <security-class>Unclassified</security-class>\n" +
+        "    <security-classification-system></security-classification-system>\n" +
+        "    <security-handling-description></security-handling-description>\n" +
+        "    <data-access-policy>The data may be used and redistributed for free but is not intended\n" +
+        "for legal use, since it may contain inaccuracies. Neither the data\n" +
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+        "of their employees or contractors, makes any warranty, express or\n" +
+        "implied, including warranties of merchantability and fitness for a\n" +
+        "particular purpose, or assumes any legal liability for the accuracy,\n" +
+        "completeness, or usefulness, of this information.</data-access-policy>\n" +
+        "    <data-access-procedure>The data can be obtained from ERDDAP: https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?searchFor=datasetID&#37;3DerdSWchlamday</data-access-procedure>\n"
+        +
+        "    <data-access-constraints>Not Applicable</data-access-constraints>\n" +
+        "    <data-use-constraints>The data may be used and redistributed for free but is not intended\n" +
+        "for legal use, since it may contain inaccuracies. Neither the data\n" +
+        "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+        "of their employees or contractors, makes any warranty, express or\n" +
+        "implied, including warranties of merchantability and fitness for a\n" +
+        "particular purpose, or assumes any legal liability for the accuracy,\n" +
+        "completeness, or usefulness, of this information.</data-use-constraints>\n" +
+        "    <metadata-access-constraints>None</metadata-access-constraints>\n" +
+        "    <metadata-use-constraints>None</metadata-use-constraints>\n" +
+        "  </access-information>\n" +
+        "  <data-quality>\n" +
+        "    <representativeness></representativeness>\n" +
+        "    <accuracy></accuracy>\n" +
+        "    <analytical-accuracy></analytical-accuracy>\n" +
+        "    <quantitation-limits></quantitation-limits>\n" +
+        "    <bias></bias>\n" +
+        "    <comparability></comparability>\n" +
+        "    <completeness-measure></completeness-measure>\n" +
+        "    <precision></precision>\n" +
+        "    <analytical-precision></analytical-precision>\n" +
+        "    <field-precision></field-precision>\n" +
+        "    <sensitivity></sensitivity>\n" +
+        "    <detection-limit></detection-limit>\n" +
+        "    <completeness-report></completeness-report>\n" +
+        "    <conceptual-consistency></conceptual-consistency>\n" +
+        "    <quality-control-procedures>Data is checked for completeness, conceptual consistency, and reasonableness.</quality-control-procedures>\n"
+        +
+        "  </data-quality>\n" +
+        "  <data-management>\n" +
+        "    <resources-identified>Yes</resources-identified>\n" +
+        "    <resources-budget-percentage>Unknown</resources-budget-percentage>\n" +
+        "    <data-access-directive-compliant>Yes</data-access-directive-compliant>\n" +
+        "    <data-access-directive-waiver></data-access-directive-waiver>\n" +
+        "    <delay-collection-dissemination>0 days</delay-collection-dissemination>\n" +
+        "    <delay-collection-dissemination-explanation></delay-collection-dissemination-explanation>\n" +
+        "    <archive-location>No Archiving Intended</archive-location>\n" +
+        "    <archive-location-explanation-other></archive-location-explanation-other>\n" +
+        "    <archive-location-explanation-none>This data is derived from data in an archive. The archives only want to archive the source data.</archive-location-explanation-none>\n"
+        +
+        "    <delay-collection-archive>Not Applicable</delay-collection-archive>\n" +
+        "    <data-protection-plan>The Environmental Research Department's IT Security and Contingency Plan establishes the security practices that ensure the security of the data and the plans necessary to recover and restore the data if problems occur.</data-protection-plan>\n"
+        +
+        "  </data-management>\n" +
+        "  <lineage>\n" +
+        "    <lineage-statement></lineage-statement>\n" +
+        "    <lineage-process-steps>\n" +
+        "      <lineage-process-step>\n" +
+        "        <sequence-number>1</sequence-number>\n" +
+        "        <description>NASA/GSFC/DAAC, GeoEye</description>\n" +
+        "        <process-date-time></process-date-time>\n" +
+        "        <process-contact-type></process-contact-type>\n" +
+        "        <process-contact></process-contact>\n" +
+        "        <process-contact-phone></process-contact-phone>\n" +
+        "        <process-contact-email-address></process-contact-email-address>\n" +
+        "        <source-citation></source-citation>\n" +
+        "      </lineage-process-step>\n" +
+        "      <lineage-process-step>\n" +
+        "        <sequence-number>2</sequence-number>\n" +
+        "        <description>NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</description>\n" +
+        "        <process-date-time>20121013T011508Z</process-date-time>\n" +
+        "        <process-contact-type></process-contact-type>\n" +
+        "        <process-contact></process-contact>\n" +
+        "        <process-contact-phone></process-contact-phone>\n" +
+        "        <process-contact-email-address></process-contact-email-address>\n" +
+        "        <source-citation></source-citation>\n" +
+        "      </lineage-process-step>\n" +
+        "    </lineage-process-steps>\n" +
+        "  </lineage>\n" +
+        "  <downloads mode=\"replace\">\n" +
+        "    <download>\n" +
+        "      <download-url>https://coastwatch.pfeg.noaa.gov/erddap/search/index.html?searchFor=datasetID&#37;3DerdSWchlamday</download-url>\n"
+        +
+        "      <file-name>erdSWchlamday</file-name>\n" +
+        "      <description>This dataset is available in ERDDAP, a data server that gives you a simple, consistent way to download subsets of gridded and tabular scientific datasets in common file formats and make graphs and maps.</description>\n"
+        +
+        "      <file-date-time></file-date-time>\n" +
+        "      <file-type>In ERDDAP, you can specify the file type that you want. Options include .htmlTable, OPeNDAP .das .dds or .dods, .esriAscii, .esriCsv, .mat, .nc, .odvTxt, .csv, .tsv, .json, .geoJson, .xhtml, .ncHeader, .ncml, .fgdc, .iso19115, Google Earth .kml, .geotif, .png, .transparentPng, and .pdf.</file-type>\n"
+        +
+        "      <fgdc-content-type>Live Data and Maps</fgdc-content-type>\n" +
+        "      <file-size></file-size>\n" +
+        "      <application-version></application-version>\n" +
+        "      <compression>Uncompressed</compression>\n" +
+        "      <review-status>Chked Viruses Inapp Content</review-status>\n" +
+        "    </download>\n" +
+        "  </downloads>\n" +
+        "</inport-metadata>\n";
+    Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
   }
 
 }

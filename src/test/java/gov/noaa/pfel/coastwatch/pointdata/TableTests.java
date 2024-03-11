@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.util.Arrays;
 import java.util.BitSet;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -52,6 +53,13 @@ class TableTests {
 
   @TempDir
   private static Path TEMP_DIR;
+
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
 
   /**
    * This tests the little methods.
@@ -5624,7 +5632,6 @@ class TableTests {
    */
   @org.junit.jupiter.api.Test
   void testHardReadMultidimNc() throws Exception {
-    File2.setWebInfParentDirectory();
     String fileName = TableTests.class.getResource("/data/nc/GLsubdir/GL_201207_TS_DB_44761.nc").getPath();
     // String2.log("\n*** Table.testHardReadMultidimNc(" + fileName + ")");
     // Table.debugMode = true;
@@ -17630,7 +17637,7 @@ class TableTests {
    * This tests readIObis.
    */
   @org.junit.jupiter.api.Test
-  @TagIncompleteTest
+  @TagMissingFile
   void testIobis() throws Exception {
     // Table.verbose = true;
     // Table.reallyVerbose = true;
@@ -17650,7 +17657,7 @@ class TableTests {
       table.readFlatNc(testName, null, 1); // standardizeWhat
     }
     // String2.log(table.toString());
-    table.testObis5354Table();
+    TableTests.testObis5354Table(table);
 
   }
 
@@ -17825,5 +17832,106 @@ class TableTests {
         (new Attributes()).add("_FillValue", 1e300)
             .add("test", new DoubleArray(new double[] { -Double.MAX_VALUE, Double.NaN })));
     return table;
+  }
+
+  /**
+   * This tests that the values in this table are the expected results from
+   * the typical obis "Macrocystis", time 1970+, lat 53.. 54 request.
+   */
+  public static void testObis5354Table(Table table) {
+    String2.log("\n*** Table.testObis5354Table...");
+    table.leftToRightSort(5);
+
+    Test.ensureTrue(table.nRows() >= 30, "nRows=" + table.nRows());
+    Test.ensureEqual(table.nColumns(), 9, "");
+    if (String2.toCSSVString(table.getColumnNames()).equals(
+        "LON, LAT, DEPTH, TIME, ID, " +
+            "darwin:InstitutionCode, darwin:CollectionCode, " +
+            "darwin:ScientificName, obis:Temperature")) {
+    } else if (String2.toCSSVString(table.getColumnNames()).equals(
+        "LON, LAT, DEPTH, TIME, ID, " +
+            "Institutioncode, Collectioncode, " +
+            "Scientificname, Temperature")) {
+    } else
+      throw new RuntimeException(
+          "Unexpected col names: " + String2.toCSSVString(table.getColumnNames()));
+
+    // !!!note that from GHMP request, rows of data are in pairs of almost
+    // duplicates
+    // and CollectionCode includes 2 sources -- 1 I requested and another one (both
+    // served by GHMP?)
+    // and Lat and Lon can be slightly different (e.g., row 60/61 lat)
+    DoubleArray latCol = (DoubleArray) table.getColumn(1);
+    double stats[] = latCol.calculateStats();
+    Test.ensureTrue(stats[PrimitiveArray.STATS_MIN] >= 53, "min=" + stats[PrimitiveArray.STATS_MIN]);
+    Test.ensureTrue(stats[PrimitiveArray.STATS_MAX] <= 54, "max=" + stats[PrimitiveArray.STATS_MAX]);
+    Test.ensureEqual(stats[PrimitiveArray.STATS_N], table.nRows(), "");
+
+    // test time > 0 (1970-01-01)
+    DoubleArray timeCol = (DoubleArray) table.getColumn(3);
+    stats = timeCol.calculateStats();
+    Test.ensureTrue(stats[PrimitiveArray.STATS_MIN] >= 0, "min=" + stats[PrimitiveArray.STATS_MIN]);
+    Test.ensureEqual(stats[PrimitiveArray.STATS_N], table.nRows(), "");
+
+    DoubleArray lonCol = (DoubleArray) table.getColumn(0); // ==0
+    int row = lonCol.indexOf("-132.4223");
+    Test.ensureEqual(table.getDoubleData(0, row), -132.4223, "");
+    Test.ensureEqual(table.getDoubleData(1, row), 53.292, "");
+    Test.ensureEqual(table.getDoubleData(2, row), Double.NaN, "");
+    Test.ensureEqual(table.getDoubleData(3, row), 347155200, "");
+    Test.ensureEqual(table.getStringData(4, row),
+        "BIO:GHMP:10036-MACRINT", "");
+    Test.ensureEqual(table.getStringData(5, row), "BIO", "");
+    Test.ensureEqual(table.getStringData(6, row), "GHMP", "");
+    Test.ensureEqual(table.getStringData(7, row), "Macrocystis integrifolia", "");
+    Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
+    /*
+     * duplicates (described above) disappeared 2007-09-04
+     * row++;
+     * Test.ensureEqual(table.getDoubleData(0, row), -132.4223, "");
+     * Test.ensureEqual(table.getDoubleData(1, row), 53.292, "");
+     * Test.ensureEqual(table.getDoubleData(2, row), Double.NaN, "");
+     * Test.ensureEqual(table.getDoubleData(3, row), 347155200, "");
+     * Test.ensureEqual(table.getStringData(4, row),
+     * "Marine Fish Division, Fisheries and Oceans Canada:Gwaii Haanas Marine Algae:10036-MACRINT"
+     * , "");
+     * Test.ensureEqual(table.getStringData(5, row),
+     * "Marine Fish Division, Fisheries and Oceans Canada", "");
+     * Test.ensureEqual(table.getStringData(6, row), "Gwaii Haanas Marine Algae",
+     * "");
+     * Test.ensureEqual(table.getStringData(7, row), "Macrocystis integrifolia",
+     * "");
+     * Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
+     */
+    row = lonCol.indexOf("-132.08171");
+    Test.ensureEqual(table.getDoubleData(0, row), -132.08171, "");
+    Test.ensureEqual(table.getDoubleData(1, row), 53.22519, "");
+    Test.ensureEqual(table.getDoubleData(2, row), Double.NaN, "");
+    Test.ensureEqual(table.getDoubleData(3, row), 63072000, "");
+    Test.ensureEqual(table.getStringData(4, row),
+        "BIO:GHMP:198-MACRINT", "");
+    Test.ensureEqual(table.getStringData(5, row), "BIO", "");
+    Test.ensureEqual(table.getStringData(6, row), "GHMP", "");
+    Test.ensureEqual(table.getStringData(7, row), "Macrocystis integrifolia", "");
+    Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
+    /*
+     * row++;
+     * Test.ensureEqual(table.getDoubleData(0, row), -132.08171, "");
+     * Test.ensureEqual(table.getDoubleData(1, row), 53.225193, "");
+     * Test.ensureEqual(table.getDoubleData(2, row), Double.NaN, "");
+     * Test.ensureEqual(table.getDoubleData(3, row), 63072000, "");
+     * Test.ensureEqual(table.getStringData(4, row),
+     * "Marine Fish Division, Fisheries and Oceans Canada:Gwaii Haanas Marine Algae:198-MACRINT"
+     * , "");
+     * Test.ensureEqual(table.getStringData(5, row),
+     * "Marine Fish Division, Fisheries and Oceans Canada", "");
+     * Test.ensureEqual(table.getStringData(6, row), "Gwaii Haanas Marine Algae",
+     * "");
+     * Test.ensureEqual(table.getStringData(7, row), "Macrocystis integrifolia",
+     * "");
+     * Test.ensureEqual(table.getDoubleData(8, row), Double.NaN, "");
+     */
+
+    String2.log("Table.testObis5354Table finished successfully.");
   }
 }

@@ -1109,7 +1109,6 @@ WaitThenTryAgainException wttae;
         //need tests of data.Grid2DDataSet classes
         //hdf.SdsWriter.main(null); //needs work
         //GridDataSetCWOpendap.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE. The test files are no longer available since we are moving to thredds
-        Shared.test(                     errorSB, interactive, doSlowTestsToo, 0, -1);   
         Table.test(                      errorSB, interactive, doSlowTestsToo, 0, -1); 
 
         CacheOpendapStation.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
@@ -1124,7 +1123,6 @@ WaitThenTryAgainException wttae;
 
         //ERDDAP
         HtmlWidgets.test(                errorSB, interactive, doSlowTestsToo, 0, -1); 
-        Units2.test(                     errorSB, interactive, doSlowTestsToo, 0, -1); 
         FileVisitorDNLS.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         WatchDirectory.test(             errorSB, interactive, doSlowTestsToo, 0, -1); 
 
@@ -1133,11 +1131,9 @@ WaitThenTryAgainException wttae;
 
         //EDDGrid
         //EDDGridFromBinaryFile.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  class not finished / not in use
-        EDDGridFromNcFiles.test(         errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromMergeIRFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromAudioFiles.test(      errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDGridFromEDDTable.test(        errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDGridCopy.test(                errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridSideBySide.test(          errorSB, interactive, doSlowTestsToo, 0, -1);  //the best grid graphics tests are here
         EDDGridLonPM180.test(            errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDGridLon0360.test(             errorSB, interactive, doSlowTestsToo, 0, -1);
@@ -1151,24 +1147,13 @@ WaitThenTryAgainException wttae;
         EDDTableFromMultidimNcFiles.test(errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromNccsvFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1);
         EDDTableFromHyraxFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromAsciiFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromColumnarAsciiFiles.test(
-                                         errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromAwsXmlFiles.test(    errorSB, interactive, doSlowTestsToo, 0, -1); 
     
         EDDTableFromInvalidCRAFiles.test(errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromJsonlCSVFiles.test(  errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromAudioFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromFileNames.test(      errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromEDDGrid.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
         EDDTableFromDapSequence.test(    errorSB, interactive, doSlowTestsToo, 0, -1);  
         EDDTableFromDatabase.test(       errorSB, interactive, doSlowTestsToo, 0, -1);  
-        EDDTableFromCassandra.test(      errorSB, interactive, doSlowTestsToo, 0, -1);    
         EDDTableFromAsciiServiceNOS.test(errorSB, interactive, doSlowTestsToo, 0, -1);
-        EDDTableFromErddap.test(         errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromHttpGet.test(        errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableFromSOS.test(            errorSB, interactive, doSlowTestsToo, 0, -1); 
-        EDDTableCopy.test(               errorSB, interactive, doSlowTestsToo, 0, -1);
 
         //EDDTableFromWFSFiles.test(     errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE 2021-06-25 because test server is gone
         //EDDTableFromMWFS.test(         errorSB, interactive, doSlowTestsToo, 0, -1);  //INACTIVE as of 2009-01-14 

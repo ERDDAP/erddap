@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -60,6 +61,13 @@ import ucar.nc2.write.NetcdfFormatWriter;
 class EDDTableFromNcFilesTests {
   @TempDir
   private static Path TEMP_DIR;
+
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
 
   /**
    * testGenerateDatasetsXml
@@ -808,9 +816,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n******************
     // EDDTableFromNcFiles.testGenerateDatasetsXmlNcdump() *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
 
     // just header
@@ -877,9 +883,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.test1D()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -1200,9 +1204,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.test2D()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -1438,9 +1440,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.test3D()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -1663,9 +1663,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.test4D()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -1967,9 +1965,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testDistinct()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); // 14 is enough to check hour. Hard
@@ -2285,9 +2281,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testId()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -2344,9 +2338,7 @@ class EDDTableFromNcFilesTests {
   void testOrderBy() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBy()
     // *****************\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -2706,9 +2698,7 @@ class EDDTableFromNcFilesTests {
   void testOrderByCount() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByCount()
     // *****************\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -3121,9 +3111,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -3499,9 +3487,7 @@ class EDDTableFromNcFilesTests {
   void testOrderByMean2() throws Throwable {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMean2()
     // *****************\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -3546,9 +3532,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderBySum()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -3910,9 +3894,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMax()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -4306,9 +4288,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMin()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -4617,9 +4597,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByMinMax()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -4843,9 +4821,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByClosest()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -5167,9 +5143,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testOrderByLimit()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     int language = 0;
     String error = "";
@@ -5396,9 +5370,7 @@ class EDDTableFromNcFilesTests {
     // String2.log("\n****************** EDDTableFromNcFiles.testStationLonLat()
     // *****************\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String error = "";
@@ -5433,9 +5405,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testGlobal() throws Throwable {
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, baseName, tName, results, tResults, expected, userDapQuery, tQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -7405,9 +7375,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testKml() throws Throwable {
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
@@ -7429,9 +7397,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testGraphics() throws Throwable {
     boolean doAll = true;
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     String name, tName, baseName, results, tResults, expected, userDapQuery, tQuery;
@@ -7829,9 +7795,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testGlobecBirds() throws Throwable {
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String results, query, tName, expected;
     String baseQuery = "&time>=2000-08-07&time<2000-08-08";
@@ -7917,9 +7881,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testLatLon() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testLatLon\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     String results, query, tName, expected;
@@ -8064,9 +8026,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testTableWithDepth() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTableWithDepth");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String results, expected, tName;
     int po;
@@ -8171,9 +8131,7 @@ class EDDTableFromNcFilesTests {
 
   @org.junit.jupiter.api.Test
   void testLegend() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String time1 = "now-11months";
     double time2 = Calendar2.nowStringToEpochSeconds(time1);
@@ -8229,9 +8187,7 @@ class EDDTableFromNcFilesTests {
   void testBigRequest() throws Throwable {
     int firstTest = 0;
     int lastTest = -1;
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // String2.log("\n*** EDDTableFromNcFiles.testBigRequest(" + firstTest + "," +
     // lastTest + ")\n");
     int language = 0;
@@ -8361,9 +8317,7 @@ class EDDTableFromNcFilesTests {
   void testPmelTaoAirt() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testPmelTaoAirt");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.getpmelTaoDyAirt(); // was "pmelTaoDyAirt", but definition matches
     String tName, error, results, tResults, expected;
@@ -8845,9 +8799,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testODV() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testODV");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd;
     String tName, error, results, tResults, expected;
@@ -9357,9 +9309,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testMinMaxConstraints() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testMinMaxConstraints");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     // dataset is fromFiles (so min,max are known) and no recent data (so stable)
     EDDTable tedd = (EDDTable) EDDTestDataset.getLiquidR_HBG3_2015_weather();
@@ -9457,9 +9407,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testTimePrecisionMillis() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTimePrecisionMillis()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestTimePrecisionMillisTable();
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -9684,9 +9632,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testSimpleTestNcTable() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testSimpleTestNcTable()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestSimpleTestNcTable();
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -10391,9 +10337,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testSimpleTestNc2Table() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testSimpleTestNc2Table()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.gettestSimpleTestNcTable();
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -10870,9 +10814,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testAddVariablesWhere() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testAddVariablesWhere()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
     EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -10959,9 +10901,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testUpdate() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testUpdate()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTableFromNcFiles eddTable = (EDDTableFromNcFiles) EDDTestDataset.getminiNdbc();
     EDV timeEdv = eddTable.dataVariables()[eddTable.timeIndex];
@@ -11259,9 +11199,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testQuickRestart() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testQuickRestart()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTableFromNcFiles eddTable;
     EDV timeEdv, lonEdv;
@@ -11830,9 +11768,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testNewTime() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     try {
       int language = 0;
       // String2.pressEnterToContinue(
@@ -11889,9 +11825,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testIgor() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testIgor()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     // testVerboseOn();
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
@@ -12002,9 +11936,7 @@ class EDDTableFromNcFilesTests {
   void testTablePseudoSourceNames() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTablePseudoSourceNames()\n");
     // testVerboseOn();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String name, tName, results, tResults, expected, userDapQuery, tQuery;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -12164,9 +12096,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNThreads() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
 
     // Table.verbose = false;
@@ -12323,9 +12253,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNThreads2() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNThreads2()\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
 
     int startNThreads = -3;
@@ -12426,9 +12354,7 @@ class EDDTableFromNcFilesTests {
 
     // String2.log("\n*** testMakeCopyFileTasks\n" +
     // "This requires fedCalLandings in localhost ERDDAP.");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
 
     boolean testMode = false;
@@ -12811,9 +12737,7 @@ class EDDTableFromNcFilesTests {
   @ParameterizedTest
   @ValueSource(booleans = { false, true })
   void testCopyFilesBasic(boolean deleteDataFiles) throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     String2.log("\n*** testCopyFilesBasic(" + deleteDataFiles + ")\n");
     int language = 0;
     // testVerboseOn();
@@ -13476,9 +13400,7 @@ class EDDTableFromNcFilesTests {
   void testGtspp15FilesExist() throws Exception {
     int year1 = 1990;
     int year2 = 2021;
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // String2.log("\n*** testGtspp15FilesExist(" + year1 + ", " + year2 + ")\n" +
     // "This should fail at current calendar month.");
     int language = 0;
@@ -13507,9 +13429,7 @@ class EDDTableFromNcFilesTests {
     int year2 = 2021;
     // String2.log("\n*** testGtsppabFilesExist(" + year1 + ", " + year2 + ")\n" +
     // "This should fail at current calendar month.");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String dir = Path.of(EDDTableFromNcFilesTests.class.getResource("/largeFiles/points/gtsppNcCF/").toURI()).toString()
         + "/";
@@ -13536,9 +13456,7 @@ class EDDTableFromNcFilesTests {
   void testLogAxis() throws Throwable {
     int whichChunk = -1;
     // String2.log("\n*** EDDTableFromNcFiles.testLogAxis()");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String tName, baseName, start, query, results, expected;
@@ -14001,9 +13919,7 @@ class EDDTableFromNcFilesTests {
   void testPrecision() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testPrecision()");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String tDir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String dapQuery, tName, start, query, results, expected;
@@ -14119,9 +14035,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testTransparentPng() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTransparentPng");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     // testVerboseOn();
     int language = 0;
     // reallyVerbose = false;
@@ -14279,9 +14193,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testTimeAxis() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testTimeAxis");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     // testVerboseOn();
     // reallyVerbose = true;
@@ -14348,9 +14260,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testModTime() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testModTime");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     // testVerboseOn();
     // reallyVerbose = true;
@@ -14574,9 +14484,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testManyYears() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testManyYears\n");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable eddTable = (EDDTable) EDDTestDataset.geterdCAMarCatSY();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -14598,9 +14506,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testCAMarCat() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable eddTable;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -15060,9 +14966,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCF1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF1a");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.getcwwcNDBCMet(); // should work
     String tName, error, results, expected;
@@ -15293,9 +15197,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCFMA1a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA1a");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.getcwwcNDBCMet(); // should work
     String tName, error, results, expected;
@@ -15549,9 +15451,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCF1b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF1b");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdFedRockfishStation();
     String tName, error, results, expected;
@@ -15740,9 +15640,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCFMA1b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA1b");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdFedRockfishStation(); // should work
     String tName, error, results, expected;
@@ -16299,9 +16197,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCF2a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF2a");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
     String tName, error, results, expected;
@@ -16543,9 +16439,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCFMA2a() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2a");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.gettestGlobecBottle(); // should work
     String tName, error, results, expected;
@@ -16799,9 +16693,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCF2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCF2b");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest(); // should work
     String tName, error, results, expected;
@@ -17350,9 +17242,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testNcCFMA2b() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest(); // should work
     String tName, error, results, expected;
@@ -18459,9 +18349,7 @@ class EDDTableFromNcFilesTests {
   void testSpeedDAF() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -18502,9 +18390,7 @@ class EDDTableFromNcFilesTests {
   void testSpeedMAG() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
@@ -18541,9 +18427,7 @@ class EDDTableFromNcFilesTests {
   void testSpeedSubset() throws Throwable {
     // setup and warmup
     // EDD.testVerbose(false);
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tableDataset = (EDDTable) EDDTestDataset.getcwwcNDBCMet();
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
@@ -18578,9 +18462,7 @@ class EDDTableFromNcFilesTests {
   @org.junit.jupiter.api.Test
   void testEqualsNaN() throws Throwable {
     // String2.log("\n*** EDDTableFromNcFiles.testEqualsNaN");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     EDDTable tedd = (EDDTable) EDDTestDataset.geterdGtsppBest();
     String tName, error, results, expected;
@@ -18618,9 +18500,7 @@ class EDDTableFromNcFilesTests {
   void testAltitude() throws Throwable {
 
     // String2.log("\n*** EDDTableFromNcFiles.testAltitude");
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
 
     // tests of REVERSED_OPERATOR
@@ -18707,9 +18587,7 @@ class EDDTableFromNcFilesTests {
   void testMV() throws Throwable {
     String2.log("\n*** EDDTableFromNcFiles.testMV\n" +
         "NaN<=-5 = " + (Double.NaN <= -5) + " = " + PrimitiveArray.testValueOpValue(Double.NaN, "<=", -5));
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     int language = 0;
     String dir = TEMP_DIR.toAbsolutePath().toString() + "/";
     String name, tName, results, tResults, expected, dapQuery;
@@ -18742,9 +18620,7 @@ class EDDTableFromNcFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testErdGtsppBest() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    File2.setWebInfParentDirectory();
+
     String tDatasetID = "erdGtsppBest"; // used to test erdGtsppBestNc as well (two calls to the same test), but
                                         // erdGtsppBestNc depends on large files
     // String2.log("\n*** EDDTableFromNcFiles.testErdGtsppBest test:" + tDatasetID);

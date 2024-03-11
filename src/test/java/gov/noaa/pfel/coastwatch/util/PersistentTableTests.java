@@ -1,5 +1,7 @@
 package gov.noaa.pfel.coastwatch.util;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.String2;
@@ -10,6 +12,13 @@ import gov.noaa.pfel.erddap.util.PersistentTable;
 
 class PersistentTableTests {
 
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * This tests this class.
    *
@@ -17,8 +26,6 @@ class PersistentTableTests {
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     String2.log("\nPersistentTable.basicTest()");
     // verbose = true;
     // reallyVerbose = true;

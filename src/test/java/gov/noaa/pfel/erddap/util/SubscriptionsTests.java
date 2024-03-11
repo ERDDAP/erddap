@@ -1,11 +1,20 @@
 package gov.noaa.pfel.erddap.util;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.array.StringArray;
 import com.cohort.util.File2;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 class SubscriptionsTests {
+
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
 
   /**
    * This tests the methods in this class.
@@ -14,9 +23,6 @@ class SubscriptionsTests {
    */
   @org.junit.jupiter.api.Test
   void basicTest() throws Throwable {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // String2.log("\n*** Subscriptions.basicTest");
     // verbose = true;
     // reallyVerbose = true;

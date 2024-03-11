@@ -99,7 +99,9 @@ class TranslateMessagesTests {
    *
    * @throws Exception if trouble
    */
-  public static void testTranslateHtml() throws Exception {
+  @org.junit.jupiter.api.Test
+  @TagPassword
+  void testTranslateHtml() throws Exception {
     String2.log("\n*** TranslateMessages.testTranslateHtml()");
     String raw = // a devious string with numerous of test cases
         "<![CDATA[<br>&bull; &lt;subsetVariables&gt; wasn't specified. Is x&gt;90?\nTest &mdash; test2? Test3 &ndash; test4?\n"

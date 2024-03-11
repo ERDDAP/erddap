@@ -2136,6 +2136,8 @@ public class SSR {
      * This gets the response from a url as a String with unchanged, native line endings.
      * This is useful for short responses.
      * This tries to use compression.
+     * 
+     * TODO: Consider adding support for handing redirects  (300 responses).
      *
      * @param urlString   The query MUST be already percentEncoded as needed.
      *   <br>See https://en.wikipedia.org/wiki/Percent-encoding .

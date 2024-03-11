@@ -23,6 +23,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
+import tags.TagMissingFile;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayByte;
 import ucar.ma2.ArrayChar;
@@ -38,6 +39,8 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 import ucar.nc2.Structure;
 import ucar.nc2.Variable;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.write.NetcdfFormatWriter;
 
 class NcHelperTests {
@@ -716,6 +719,46 @@ class NcHelperTests {
         "    comment =   \"0 comm\",   \"1 comm\",   \"2 comm\",   \"3 comm\",   \"4 comm\"\n" +
         "}\n";
     Test.ensureEqual(results, expected, "");
+  }
 
+  /**
+   * An experiment with NetcdfDataset accessing a DAP sequence dataset.
+   */
+  @org.junit.jupiter.api.Test
+  void testSequence() throws Throwable {
+    NetcdfDataset ncd = NetcdfDatasets.openDataset( // 2021: 's' is new API
+        "https://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
+    try {
+      String2.log(ncd.toString());
+    } finally {
+      ncd.close();
+    }
+  }
+
+  /** Diagnose a problem */
+  @org.junit.jupiter.api.Test
+  @TagMissingFile
+  void testJplG1SST() throws Exception {
+    String dir = "c:/data/jplG1SST/";
+    String request[] = new String[] { "SST" };
+    StringArray varNames = new StringArray();
+    NetcdfFile fi;
+    Variable var; // read start:stop:stride
+
+    fi = NcHelper.openFile(dir + "sst_20120214.nc");
+    var = fi.findVariable("SST");
+    PrimitiveArray pas14 = NcHelper.getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true,
+        NcHelper.isUnsigned(var));
+    fi.close();
+    String2.log(pas14.toString());
+
+    fi = NcHelper.openFile(dir + "sst_20120212.nc");
+    var = fi.findVariable("SST");
+    PrimitiveArray pas13 = NcHelper.getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"), true,
+        NcHelper.isUnsigned(var));
+    fi.close();
+    String2.log(pas13.toString());
+
+    String2.log("diffString=\n" + pas14.diffString(pas13));
   }
 }

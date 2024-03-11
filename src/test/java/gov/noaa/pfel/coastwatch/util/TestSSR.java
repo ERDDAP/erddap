@@ -11,6 +11,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import tags.TagAWS;
+import tags.TagIncompleteTest;
 import tags.TagLocalERDDAP;
 import tags.TagPassword;
 
@@ -414,7 +415,9 @@ public class TestSSR {
    * Prevent mass mailing worms from sending mail" is un-checked.
    * 
    */
-  public static void testEmail(String emailUser, String password) throws Exception {
+  @org.junit.jupiter.api.Test
+  @TagIncompleteTest
+  void testEmail(String emailUser, String password) throws Exception {
 
     String title = "Email Test from TestSSR";
     String content = "This is an email test (local) from user=" + emailUser + " in TestSSR.";

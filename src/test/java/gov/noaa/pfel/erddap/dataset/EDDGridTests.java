@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.text.MessageFormat;
 import java.util.HashMap;
 
+import org.junit.jupiter.api.BeforeAll;
+
 import com.cohort.util.File2;
 import com.cohort.util.Image2;
 import com.cohort.util.Math2;
@@ -20,6 +22,13 @@ import tags.TagThredds;
 import testDataset.EDDTestDataset;
 
 class EDDGridTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * Test saveAsImage, specifically to make sure a transparent png that's
    * partially outside of the range of the dataset still returns the image for
@@ -28,9 +37,7 @@ class EDDGridTests {
   @org.junit.jupiter.api.Test
   @TagThredds
   void testSaveAsImage() throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
-    String2.log("\n*** EDDGrid.testSaveAsImage()");
+    // String2.log("\n*** EDDGrid.testSaveAsImage()");
     EDDGrid eddGrid = (EDDGrid) EDDTestDataset.geterdMHchla8day();
     // EDDGrid eddGrid = (EDDGrid) EDDGrid.oneFromDatasetsXml(null,
     // "erdMHchla8day");
@@ -204,8 +211,6 @@ class EDDGridTests {
   void testSaveAsImageVsExpected(EDDGrid eddGrid, String dir,
       String requestUrl, String userDapQuery, String fileTypeName,
       String expected) throws Throwable {
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     OutputStreamSourceSimple osss = new OutputStreamSourceSimple(baos);
     String filename = dir + Math2.random(Integer.MAX_VALUE) + ".png";

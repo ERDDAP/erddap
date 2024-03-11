@@ -1,5 +1,6 @@
 package gov.noaa.pfel.erddap.dataset;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -19,6 +20,13 @@ import tags.TagMissingDataset;
 import testDataset.EDDTestDataset;
 
 class EDDTableFromThreddsFilesTests {
+  @BeforeAll
+  static void init() {
+    File2.setWebInfParentDirectory();
+    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
+    System.setProperty("doSetupValidation", String.valueOf(false));
+  }
+
   /**
    * This tests the methods in this class.
    *
@@ -28,9 +36,6 @@ class EDDTableFromThreddsFilesTests {
   @ValueSource(booleans = { true, false })
   @TagIncompleteTest
   void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     // String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP()
     // *****************\n");
     // testVerboseOn();
@@ -739,9 +744,6 @@ class EDDTableFromThreddsFilesTests {
    */
   @org.junit.jupiter.api.Test
   void testGetThreddsFileInfo() throws Throwable {
-    File2.setWebInfParentDirectory();
-    System.setProperty("erddapContentDirectory", System.getProperty("user.dir") + "\\content\\erddap");
-    System.setProperty("doSetupValidation", String.valueOf(false));
     String2.log("\n*** EDDTableFromThredds.testGetThreddsFileInfo");
     String results, expected;
 
