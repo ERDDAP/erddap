@@ -145,6 +145,23 @@
                 </configuration>
             </plugin>
 
+            <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-maven-plugin -->
+            <plugin>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
+                <version>12.0.8</version>
+                <configuration>
+                    <webApp>
+                        <contextPath>/erddap</contextPath>
+                        <descriptor>${project.basedir}/WEB-INF/web.xml</descriptor>
+                    </webApp>
+                    <!-- necessary to override the default classesDirectory ${project.basedir}/target/classes due to:
+                    https://github.com/BobSimons/erddap/blob/b92ead9e1dd5e843514dd6b4bbf8af3fe0a74f1c/WEB-INF/classes/com/cohort/util/String2.java#L239 -->
+                    <classesDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</classesDirectory>
+                    <scan>0</scan>
+                </configuration>
+            </plugin>
+
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -216,6 +233,19 @@
                             <target>
                             <get src="https://github.com/ERDDAP/ERDDAPRefFiles/releases/download/${erddapreffiles.download.version}/ref_files.zip" dest="${project.basedir}/download_cache/ref_files.zip" skipexisting="true" verbose="true"/>
                                 <unzip src="${project.basedir}/download_cache/ref_files.zip" dest="${project.basedir}/WEB-INF/ref/" overwrite="false" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>make-data-dir</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.basedir}/data"/>
                             </target>
                         </configuration>
                     </execution>
